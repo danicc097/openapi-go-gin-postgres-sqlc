@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -198,8 +199,8 @@ func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// DemoWorkItemPaginatedByWorkItemIDAsc returns a cursor-paginated list of DemoWorkItem in Asc order.
-func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
+// DemoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of DemoWorkItem.
+func DemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -248,100 +249,31 @@ func DemoWorkItemPaginatedByWorkItemIDAsc(ctx context.Context, db DB, workItemID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	demo_work_items.checked,
-	demo_work_items.work_item_id %s 
-	 FROM xo_tests.demo_work_items %s 
-	 WHERE demo_work_items.work_item_id > $1
-	 %s   %s 
-  ORDER BY 
-		work_item_id Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* DemoWorkItemPaginatedByWorkItemIDAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Asc/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoWorkItem])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Demo work item", Err: err}))
-	}
-	return res, nil
-}
-
-// DemoWorkItemPaginatedByWorkItemIDDesc returns a cursor-paginated list of DemoWorkItem in Desc order.
-func DemoWorkItemPaginatedByWorkItemIDDesc(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
-	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.WorkItem {
-		selectClauses = append(selectClauses, demoWorkItemTableWorkItemSelectSQL)
-		joinClauses = append(joinClauses, demoWorkItemTableWorkItemJoinSQL)
-		groupByClauses = append(groupByClauses, demoWorkItemTableWorkItemGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	demo_work_items.checked,
 	demo_work_items.work_item_id %s 
 	 FROM xo_tests.demo_work_items %s 
-	 WHERE demo_work_items.work_item_id < $1
+	 WHERE demo_work_items.work_item_id %s $1
 	 %s   %s 
   ORDER BY 
-		work_item_id Desc`, selects, joins, filters, groupbys)
+		work_item_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* DemoWorkItemPaginatedByWorkItemIDDesc */\n" + sqlstr
+	sqlstr = "/* DemoWorkItemPaginatedByWorkItemID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Desc/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DemoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Demo work item", Err: err}))
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
 	return res, nil
 }

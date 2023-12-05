@@ -4,9 +4,11 @@ gen-schema generates OpenAPI v3 schema portions from code.
 package codegen
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -18,6 +20,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
 	"github.com/fatih/structtag"
 	"github.com/google/uuid"
+	"github.com/iancoleman/strcase"
 	"github.com/swaggest/jsonschema-go"
 	"github.com/swaggest/openapi-go/openapi3"
 )
@@ -33,11 +36,11 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 	reflector := newSpecReflector()
 
 	for idx, structName := range structNames {
-		// we need to compile gen-schema right after PublicStructs file is updated
+		// fmt.Fprintf(os.Stderr, "Generating struct %s\n", structName)
+		// We need to compile gen-schema right after PublicStructs file is updated
 		// cannot import packages at runtime
 		// if we have an uncompilable state then we need to update src to compile. no way around it
-		// UDPATE: use https://github.com/pkujhd/goloader instead of plugin pkg which cant reload changed go file at runtime
-		// or use yaegi
+		// to work around this would need something like yaegi, but might not support swaggest libs
 		st, ok := PublicStructs[structName]
 		if !ok {
 			log.Fatalf("struct-name %s does not exist in PublicStructs", structName)
@@ -52,8 +55,15 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 
 		handleError(reflector.AddOperation(oc))
 
-		// IMPORTANT: ensure structs are public
-		reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[structName].Schema.MapOfAnything = map[string]any{"x-postgen-struct": structName}
+		// IMPORTANT: ensure structs are public.
+		x, ok := reflector.Spec.Components.Schemas.MapOfSchemaOrRefValues[structName]
+		if !ok {
+			s, err := reflector.Spec.MarshalYAML()
+			handleError(err)
+			fmt.Fprint(os.Stderr, string(s))
+			log.Fatalf("Could not generate %s", structName)
+		}
+		x.Schema.MapOfAnything = map[string]any{"x-postgen-struct": structName}
 	}
 	s, err := reflector.Spec.MarshalYAML()
 	handleError(err)
@@ -65,9 +75,41 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 func newSpecReflector() *openapi3.Reflector {
 	reflector := openapi3.Reflector{Spec: &openapi3.Spec{}}
 
+	reflectTypeNames := map[string]map[string]string{}
+	jsonBlob, err := os.ReadFile("internal/codegen/reflectTypeMap.gen.json")
+	if err != nil {
+		log.Fatalf("Error reading reflect types: %v\n", err)
+	}
+	err = json.Unmarshal(jsonBlob, &reflectTypeNames)
+	if err != nil {
+		log.Fatalf("Error unmarshaling reflect types: %v\n", err)
+	}
 	// see https://github.com/swaggest/openapi-go/discussions/62#discussioncomment-5710581
 	reflector.DefaultOptions = append(reflector.DefaultOptions,
 		jsonschema.InterceptDefName(func(t reflect.Type, defaultDefName string) string {
+			// see https://stackoverflow.com/questions/74838506/get-the-type-name-of-a-generic-struct-without-type-parameters
+			// both t.Name() and t.String() return a composed name
+			// RestGetPaginatedNotificationsResponse has
+			// defaultDefName: RestPaginationBaseResponse[GithubComDanicc097OpenapiGoGinPostgresSqlcInternalRestNotification]
+			// TODO: if we use ast-parser create-generics-map we can generate a JSON mapping real names to composed names
+			// right before gen-schema
+			// PaginationBaseResponse[github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.Notification] may be mapped to
+			// github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.PaginationBaseResponse[github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.Notification]
+			// NOTE: returning structName in intercept will not work since we intercept all indirect types here as well
+			// and would need a way to identify generic structs regardless
+			// fmt.Printf("t.Name(): %v\n", t.Name())
+
+			// c := render.AsCode(g)
+			// fmt.Printf("c: %v\n", c)
+			pkg := t.PkgPath()[strings.LastIndex(t.PkgPath(), "/")+1:]
+			if reflectType, ok := reflectTypeNames[pkg]; ok {
+				if structName, ok := reflectType[t.Name()]; ok {
+					prefix := strcase.ToCamel(pkg)
+
+					return prefix + structName
+				}
+			}
+
 			return defaultDefName
 		}),
 		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {

@@ -35,22 +35,23 @@ func testMain(m *testing.M) int {
 
 	logger, _ := zap.NewDevelopment()
 
-	_testPool, _, err := postgresql.New(logger.Sugar())
+	tempTestPool, _, err := postgresql.New(logger.Sugar())
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't create _testPool: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Couldn't create temporary pool: %s\n", err)
 		os.Exit(1)
 	}
-	defer _testPool.Close()
+	defer tempTestPool.Close()
 
-	schema, err := os.ReadFile("schema.sql")
+	schemaPath := "schema.sql"
+	schema, err := os.ReadFile(schemaPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't read schema.sql: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Couldn't read %s: %s\n", schemaPath, err)
 		return 1
 	}
 
-	_, err = _testPool.Exec(context.Background(), string(schema))
+	_, err = tempTestPool.Exec(context.Background(), string(schema))
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't read schema.sql: %s\n", err)
+		fmt.Fprintf(os.Stderr, "Couldn't execute %s: %s\n", schemaPath, err)
 		return 1
 	}
 

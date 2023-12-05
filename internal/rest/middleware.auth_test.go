@@ -11,7 +11,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestAuthorizationMiddleware(t *testing.T) {
@@ -79,17 +79,18 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		},
 	}
 
-	svcs := services.New(zap.S(), services.CreateTestRepos(), testPool)
+	logger := zaptest.NewLogger(t).Sugar()
+
+	svcs := services.New(logger, services.CreateTestRepos(), testPool)
 
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			resp := httptest.NewRecorder()
-			logger, _ := zap.NewDevelopment()
 			_, engine := gin.CreateTestContext(resp)
 
-			authMw := newAuthMiddleware(logger.Sugar(), testPool, svcs)
+			authMw := newAuthMiddleware(logger, testPool, svcs)
 
 			ff := servicetestutil.NewFixtureFactory(testPool, svcs)
 			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{

@@ -25,7 +25,7 @@ func NewRandomDemoTwoWorkItem(t *testing.T, d db.DBTX, kanbanStepID db.KanbanSte
 		},
 		Base: *RandomWorkItemCreateParams(t, kanbanStepID, workItemTypeID, teamID),
 	})
-	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing failures use random create params instead
+	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
 	return dpwi, nil
 }

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -192,8 +193,8 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// SchemaMigrationPaginatedByVersionAsc returns a cursor-paginated list of SchemaMigration in Asc order.
-func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version SchemaMigrationID, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
+// SchemaMigrationPaginatedByVersion returns a cursor-paginated list of SchemaMigration.
+func SchemaMigrationPaginatedByVersion(ctx context.Context, db DB, version SchemaMigrationID, direction models.Direction, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
 	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -236,94 +237,31 @@ func SchemaMigrationPaginatedByVersionAsc(ctx context.Context, db DB, version Sc
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	schema_migrations.dirty,
-	schema_migrations.version %s 
-	 FROM public.schema_migrations %s 
-	 WHERE schema_migrations.version > $1
-	 %s   %s 
-  ORDER BY 
-		version Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* SchemaMigrationPaginatedByVersionAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Asc/db.Query: %w", &XoError{Entity: "Schema migration", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[SchemaMigration])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Schema migration", Err: err}))
-	}
-	return res, nil
-}
-
-// SchemaMigrationPaginatedByVersionDesc returns a cursor-paginated list of SchemaMigration in Desc order.
-func SchemaMigrationPaginatedByVersionDesc(ctx context.Context, db DB, version SchemaMigrationID, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
-	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	schema_migrations.dirty,
 	schema_migrations.version %s 
 	 FROM public.schema_migrations %s 
-	 WHERE schema_migrations.version < $1
+	 WHERE schema_migrations.version %s $1
 	 %s   %s 
   ORDER BY 
-		version Desc`, selects, joins, filters, groupbys)
+		version %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* SchemaMigrationPaginatedByVersionDesc */\n" + sqlstr
+	sqlstr = "/* SchemaMigrationPaginatedByVersion */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Desc/db.Query: %w", &XoError{Entity: "Schema migration", Err: err}))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/db.Query: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[SchemaMigration])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Schema migration", Err: err}))
+		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}
 	return res, nil
 }

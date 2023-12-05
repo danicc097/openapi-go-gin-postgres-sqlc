@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -36,10 +37,10 @@ type Activity struct {
 
 // ActivityCreateParams represents insert params for 'public.activities'.
 type ActivityCreateParams struct {
-	Description  string    `json:"description" required:"true" nullable:"false"`  // description
-	IsProductive bool      `json:"isProductive" required:"true" nullable:"false"` // is_productive
-	Name         string    `json:"name" required:"true" nullable:"false"`         // name
-	ProjectID    ProjectID `json:"projectID" nullable:"false"`                    // project_id
+	Description  string    `json:"description" required:"true" nullable:"false"`                   // description
+	IsProductive bool      `json:"isProductive" required:"true" nullable:"false"`                  // is_productive
+	Name         string    `json:"name" required:"true" nullable:"false"`                          // name
+	ProjectID    ProjectID `json:"projectID" openapi-go:"ignore" required:"true" nullable:"false"` // project_id
 }
 
 type ActivityID int
@@ -58,10 +59,10 @@ func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*
 
 // ActivityUpdateParams represents update params for 'public.activities'.
 type ActivityUpdateParams struct {
-	Description  *string    `json:"description" nullable:"false"`  // description
-	IsProductive *bool      `json:"isProductive" nullable:"false"` // is_productive
-	Name         *string    `json:"name" nullable:"false"`         // name
-	ProjectID    *ProjectID `json:"projectID" nullable:"false"`    // project_id
+	Description  *string    `json:"description" nullable:"false"`                   // description
+	IsProductive *bool      `json:"isProductive" nullable:"false"`                  // is_productive
+	Name         *string    `json:"name" nullable:"false"`                          // name
+	ProjectID    *ProjectID `json:"projectID" openapi-go:"ignore" nullable:"false"` // project_id
 }
 
 // SetUpdateParams updates public.activities struct fields with the specified params.
@@ -244,8 +245,8 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// ActivityPaginatedByActivityIDAsc returns a cursor-paginated list of Activity in Asc order.
-func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID ActivityID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+// ActivityPaginatedByActivityID returns a cursor-paginated list of Activity.
+func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID ActivityID, direction models.Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -300,6 +301,11 @@ func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID Act
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
 	activities.description,
@@ -307,28 +313,28 @@ func ActivityPaginatedByActivityIDAsc(ctx context.Context, db DB, activityID Act
 	activities.name,
 	activities.project_id %s 
 	 FROM public.activities %s 
-	 WHERE activities.activity_id > $1
+	 WHERE activities.activity_id %s $1
 	 %s   %s 
   ORDER BY 
-		activity_id Asc`, selects, joins, filters, groupbys)
+		activity_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* ActivityPaginatedByActivityIDAsc */\n" + sqlstr
+	sqlstr = "/* ActivityPaginatedByActivityID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
+		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
+		return nil, logerror(fmt.Errorf("Activity/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	return res, nil
 }
 
-// ActivityPaginatedByProjectIDAsc returns a cursor-paginated list of Activity in Asc order.
-func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID ProjectID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+// ActivityPaginatedByProjectID returns a cursor-paginated list of Activity.
+func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -383,6 +389,11 @@ func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID Proje
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
 	activities.description,
@@ -390,188 +401,22 @@ func ActivityPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID Proje
 	activities.name,
 	activities.project_id %s 
 	 FROM public.activities %s 
-	 WHERE activities.project_id > $1
+	 WHERE activities.project_id %s $1
 	 %s   %s 
   ORDER BY 
-		project_id Asc`, selects, joins, filters, groupbys)
+		project_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* ActivityPaginatedByProjectIDAsc */\n" + sqlstr
+	sqlstr = "/* ActivityPaginatedByProjectID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
+		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
-	}
-	return res, nil
-}
-
-// ActivityPaginatedByActivityIDDesc returns a cursor-paginated list of Activity in Desc order.
-func ActivityPaginatedByActivityIDDesc(ctx context.Context, db DB, activityID ActivityID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.Project {
-		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
-		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
-		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
-	}
-
-	if c.joins.TimeEntries {
-		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
-		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
-		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	sqlstr := fmt.Sprintf(`SELECT 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id %s 
-	 FROM public.activities %s 
-	 WHERE activities.activity_id < $1
-	 %s   %s 
-  ORDER BY 
-		activity_id Desc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* ActivityPaginatedByActivityIDDesc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
-	}
-	return res, nil
-}
-
-// ActivityPaginatedByProjectIDDesc returns a cursor-paginated list of Activity in Desc order.
-func ActivityPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID ProjectID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.Project {
-		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
-		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
-		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
-	}
-
-	if c.joins.TimeEntries {
-		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
-		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
-		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	sqlstr := fmt.Sprintf(`SELECT 
-	activities.activity_id,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id %s 
-	 FROM public.activities %s 
-	 WHERE activities.project_id < $1
-	 %s   %s 
-  ORDER BY 
-		project_id Desc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* ActivityPaginatedByProjectIDDesc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
+		return nil, logerror(fmt.Errorf("Activity/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
 	}
 	return res, nil
 }

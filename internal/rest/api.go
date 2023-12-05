@@ -29,6 +29,8 @@ type Handlers struct {
 	provider       rp.RelyingParty
 }
 
+var _ ServerInterface = (*Handlers)(nil)
+
 // NewHandlers returns a server implementation of an openapi specification.
 func NewHandlers(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,
@@ -104,4 +106,7 @@ func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	default:
 		return defaultMws
 	}
+
+	// TODO: last mw should be event dispatcher middleware, that will dispatch pending ones
+	// if renderErrorResponse was not called, ie !ctxHasErrorResponse()
 }

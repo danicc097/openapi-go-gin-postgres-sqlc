@@ -59,7 +59,7 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		if strings.HasPrefix(auth, "Bearer ") {
 			u, err := m.svc.Authentication.GetUserFromAccessToken(c.Request.Context(), strings.Split(auth, "Bearer ")[1])
 			if err != nil || u == nil {
-				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from token"))
+				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from token: %s", err))
 				c.Abort()
 
 				return

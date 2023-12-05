@@ -10,15 +10,15 @@ import (
 )
 
 type WorkItemType struct {
-	logger  *zap.SugaredLogger
-	witRepo repos.WorkItemType
+	logger *zap.SugaredLogger
+	repos  *repos.Repos
 }
 
 // NewWorkItemType returns a new WorkItemType service.
-func NewWorkItemType(logger *zap.SugaredLogger, witRepo repos.WorkItemType) *WorkItemType {
+func NewWorkItemType(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItemType {
 	return &WorkItemType{
-		logger:  logger,
-		witRepo: witRepo,
+		logger: logger,
+		repos:  repos,
 	}
 }
 
@@ -26,9 +26,9 @@ func NewWorkItemType(logger *zap.SugaredLogger, witRepo repos.WorkItemType) *Wor
 func (wit *WorkItemType) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTypeID) (*db.WorkItemType, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	witObj, err := wit.witRepo.ByID(ctx, d, id)
+	witObj, err := wit.repos.WorkItemType.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("witRepo.ByID: %w", err)
+		return nil, fmt.Errorf("repos.WorkItemType.ByID: %w", err)
 	}
 
 	return witObj, nil

@@ -6,8 +6,13 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type Project = 'demo' | 'demo_two'
+export type Direction = 'asc' | 'desc'
+/**
+ * represents a database 'notification_type'
+ */
+export type NotificationType = 'personal' | 'global'
 export type DbUserID = string
+export type Project = 'demo' | 'demo_two'
 export type Scope =
   | 'users:read'
   | 'users:write'
@@ -72,10 +77,6 @@ export type WorkItemRole = 'preparer' | 'reviewer'
 export type UuidUUID = string
 export type WorkItemCreateRequest = DemoWorkItemCreateRequest | DemoTwoWorkItemCreateRequest
 export type DbWorkItemRole = string
-/**
- * represents a database 'notification_type'
- */
-export type NotificationType = 'personal' | 'global'
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 export type DemoProject2KanbanSteps = 'Received'
 export type Demo2WorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
@@ -84,6 +85,84 @@ export type DemoTwoKanbanSteps = 'Received'
 export type DemoTwoWorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
 export type DemoWorkItemTypes = 'Type 1'
 
+export interface WorkItemTagCreateRequest {
+  color: string
+  description: string
+  name: string
+}
+export interface WorkItemTagUpdateRequest {
+  color?: string
+  description?: string
+  name?: string
+}
+export interface WorkItemTag {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTagID: number
+}
+export interface WorkItemTypeCreateRequest {
+  color: string
+  description: string
+  name: string
+}
+export interface WorkItemTypeUpdateRequest {
+  color?: string
+  description?: string
+  name?: string
+}
+export interface WorkItemType {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTypeID: number
+}
+export interface TeamCreateRequest {
+  description: string
+  name: string
+  projectID: number
+}
+export interface TeamUpdateRequest {
+  description?: string
+  name?: string
+  projectID?: number
+}
+export interface Team {
+  createdAt: string
+  description: string
+  name: string
+  projectID: number
+  teamID: number
+  updatedAt: string
+}
+export interface PaginatedNotificationsResponse {
+  items: RestNotification[] | null
+  page: RestPaginationPage
+}
+export interface RestNotification {
+  notification: DbNotification
+  notificationID: number
+  read: boolean
+  userID: DbUserID
+  userNotificationID: number
+}
+export interface DbNotification {
+  body: string
+  createdAt: string
+  labels: string[]
+  link?: string | null
+  notificationID: DbNotificationID
+  notificationType: NotificationType
+  receiver?: DbUserID
+  sender: DbUserID
+  title: string
+}
+export interface DbNotificationID {}
+export interface RestPaginationPage {
+  nextCursor?: string
+}
 export interface DbActivity {
   activityID: number
   description: string
@@ -185,7 +264,7 @@ export interface DbWorkItemComment {
   workItemCommentID: number
   workItemID: number
 }
-export interface DemoWorkItemsResponse {
+export interface DemoWorkItems {
   closedAt?: string | null
   createdAt: string
   deletedAt?: string | null
@@ -205,7 +284,7 @@ export interface DemoWorkItemsResponse {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
-export interface DemoTwoWorkItemsResponse {
+export interface DemoTwoWorkItems {
   closedAt?: string | null
   createdAt: string
   deletedAt?: string | null
@@ -238,15 +317,13 @@ export interface DbWorkItemTagCreateParams {
   color: string
   description: string
   name: string
-  projectID?: DbProjectID
 }
-export interface DbProjectID {}
 export interface DbTeamCreateParams {
   description: string
   name: string
   projectID: number
 }
-export interface ProjectBoardResponse {
+export interface ProjectBoard {
   projectName: Project
 }
 export interface User {
@@ -367,12 +444,6 @@ export interface DbWorkItem {
   workItemID: number
   workItemTypeID: number
 }
-export interface WorkItemTagCreateRequest {
-  color: string
-  description: string
-  name: string
-  projectID?: number
-}
 export interface WorkItemCommentCreateRequest {
   message: string
   userID: DbUserID
@@ -384,4 +455,11 @@ export interface DbActivityCreateParams {
   name: string
   projectID?: number
 }
+export interface DbProjectID {}
 export interface DbWorkItemTypeID {}
+export interface DbUserNotification {
+  notificationID: number
+  read: boolean
+  userID: DbUserID
+  userNotificationID: number
+}

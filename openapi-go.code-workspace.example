@@ -77,7 +77,8 @@
       "teststat",
       "xo",
       "yq",
-      "pnpm"
+      "pnpm",
+      "ast-parser"
     ],
     "vscode-command-help.pre": "source .envrc"
     "launch": {

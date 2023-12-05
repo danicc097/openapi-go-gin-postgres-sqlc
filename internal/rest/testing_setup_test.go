@@ -18,13 +18,13 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	redis "github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap/zaptest"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"go.uber.org/zap"
 
 	_ "embed"
 )
@@ -65,7 +65,7 @@ type testServer struct {
 	client *client.ClientWithResponses
 }
 
-func (s *testServer) cleanup(t *testing.T) {
+func (s *testServer) setupCleanup(t *testing.T) {
 	t.Cleanup(func() {
 		s.server.Close()
 	})
@@ -100,12 +100,9 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 	rdb.Set(ctx, "foo", "bar", 10*time.Second)
 	assert.Equal(t, "bar", rdb.Get(ctx, "foo").Val())
 
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "internal.zapNew")
-	}
+	logger := zaptest.NewLogger(t).Sugar()
 
-	_, err = openapi3.NewLoader().LoadFromFile("../../openapi.yaml")
+	_, err := openapi3.NewLoader().LoadFromFile("../../openapi.yaml")
 	if err != nil {
 		panic(fmt.Sprintf("openapi3.NewLoader: %v", err))
 	}
@@ -115,7 +112,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 		// Address:         ":0", // random next available for each test server
 		Pool:           testPool,
 		Redis:          rdb,
-		Logger:         logger.Sugar(),
+		Logger:         logger,
 		SpecPath:       "../../openapi.yaml",
 		MovieSvcClient: &v1testing.FakeMovieGenreClient{},
 	}, WithMiddlewares(middlewares...))

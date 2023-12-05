@@ -181,6 +181,9 @@ func (a *Authentication) ParseToken(ctx context.Context, token string) (*AppClai
 	jwtToken, err := jwt.ParseWithClaims(token, &AppClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return cfg.SigningKey, nil
 	})
+	if err != nil || jwtToken == nil {
+		return nil, fmt.Errorf("could not parse token: %w", err)
+	}
 
 	if _, ok := jwtToken.Method.(*jwt.SigningMethodHMAC); !ok {
 		return nil, fmt.Errorf("unexpected signing method: %v", jwtToken.Header["alg"])

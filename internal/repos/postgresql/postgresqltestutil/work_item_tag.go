@@ -18,7 +18,7 @@ func NewRandomWorkItemTag(t *testing.T, d db.DBTX, projectID db.ProjectID) (*db.
 	ucp := RandomWorkItemTagCreateParams(t, projectID)
 
 	wit, err := witRepo.Create(context.Background(), d, ucp)
-	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing failures use random create params instead
+	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
 	return wit, nil
 }

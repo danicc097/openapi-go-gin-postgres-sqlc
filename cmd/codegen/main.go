@@ -17,14 +17,16 @@ var (
 	env, spec, opIDAuthPath, structNamesList string
 	stderr                                   bytes.Buffer
 
-	validateSpecCmd = flag.NewFlagSet("validate-spec", flag.ExitOnError)
-	preCmd          = flag.NewFlagSet("pre", flag.ExitOnError)
-	genSchemaCmd    = flag.NewFlagSet("gen-schema", flag.ExitOnError)
+	implementServerCmd = flag.NewFlagSet("implement-server", flag.ExitOnError)
+	validateSpecCmd    = flag.NewFlagSet("validate-spec", flag.ExitOnError)
+	preCmd             = flag.NewFlagSet("pre", flag.ExitOnError)
+	genSchemaCmd       = flag.NewFlagSet("gen-schema", flag.ExitOnError)
 
 	subcommands = map[string]*flag.FlagSet{
-		validateSpecCmd.Name(): validateSpecCmd,
-		preCmd.Name():          preCmd,
-		genSchemaCmd.Name():    genSchemaCmd,
+		validateSpecCmd.Name():    validateSpecCmd,
+		preCmd.Name():             preCmd,
+		genSchemaCmd.Name():       genSchemaCmd,
+		implementServerCmd.Name(): implementServerCmd,
 	}
 )
 
@@ -57,6 +59,13 @@ func main() {
 			structNames[i] = strings.TrimSpace(structNames[i])
 		}
 		codeGen.GenerateSpecSchemas(structNames)
+		os.Exit(0)
+	case "implement-server":
+		if err := codeGen.ImplementServer(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			fmt.Fprintln(os.Stderr, stderr.String())
+			os.Exit(1)
+		}
 		os.Exit(0)
 	case "validate-spec":
 		if err := codeGen.ValidateProjectSpec(); err != nil {

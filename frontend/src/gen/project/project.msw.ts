@@ -183,14 +183,6 @@ export const getGetProjectWorkitemsMock = () =>
     },
   ])
 
-export const getCreateWorkitemTagMock = () => ({
-  color: faker.word.sample(),
-  description: faker.word.sample(),
-  name: faker.word.sample(),
-  projectID: faker.number.int({ min: undefined, max: undefined }),
-  workItemTagID: faker.number.int({ min: undefined, max: undefined }),
-})
-
 export const getProjectMSW = () => [
   rest.post('*/project/:projectName/initialize', (_req, res, ctx) => {
     return res(ctx.delay(1000), ctx.status(200, 'Mocked status'))
@@ -209,8 +201,5 @@ export const getProjectMSW = () => [
   }),
   rest.get('*/project/:projectName/workitems', (_req, res, ctx) => {
     return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getGetProjectWorkitemsMock()))
-  }),
-  rest.post('*/project/:projectName/tag/', (_req, res, ctx) => {
-    return res(ctx.delay(1000), ctx.status(200, 'Mocked status'), ctx.json(getCreateWorkitemTagMock()))
   }),
 ]

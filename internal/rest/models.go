@@ -10,6 +10,30 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 )
 
+/**
+ * Pagination
+ */
+
+type PaginationPage struct {
+	NextCursor string `json:"nextCursor"`
+}
+
+type PaginationBaseResponse[T any] struct {
+	Page  PaginationPage `json:"page"  required:"true"`
+	Items []T            `json:"items" required:"true"`
+}
+
+type PaginatedNotificationsResponse = PaginationBaseResponse[Notification]
+
+/**
+ *
+ */
+
+type Notification struct {
+	db.UserNotification
+	Notification db.Notification `json:"notification" required:"true"` // notification_id clash
+}
+
 // User represents an OpenAPI schema response for a User.
 type User struct {
 	db.User
@@ -28,22 +52,22 @@ type SharedWorkItemFields struct {
 	WorkItemType     *db.WorkItemType      `json:"workItemType"`
 }
 
-// DemoWorkItemsResponse represents an OpenAPI schema response for a ProjectBoard.
-type DemoWorkItemsResponse struct {
+// DemoWorkItems represents an OpenAPI schema response for a ProjectBoard.
+type DemoWorkItems struct {
 	db.WorkItem
 	SharedWorkItemFields
 	DemoWorkItem db.DemoWorkItem `json:"demoWorkItem" required:"true"`
 }
 
-// DemoTwoWorkItemsResponse represents an OpenAPI schema response for a ProjectBoard.
-type DemoTwoWorkItemsResponse struct {
+// DemoTwoWorkItems represents an OpenAPI schema response for a ProjectBoard.
+type DemoTwoWorkItems struct {
 	db.WorkItem
 	SharedWorkItemFields
 	DemoTwoWorkItem db.DemoTwoWorkItem `json:"demoTwoWorkItem" required:"true"`
 }
 
-// ProjectBoardResponse represents an OpenAPI schema response for a ProjectBoard.
-type ProjectBoardResponse struct {
+// ProjectBoard represents an OpenAPI schema response for a ProjectBoard.
+type ProjectBoard struct {
 	ProjectName
 }
 
@@ -55,9 +79,29 @@ type ProjectBoardCreateRequest struct {
 	Tags  *[]db.WorkItemTagCreateParams `json:"tags"`
 }
 
-// WorkItemResponse represents an OpenAPI schema response for a WorkItem.
-type WorkItemResponse struct {
-	db.WorkItem
+type WorkItemTagCreateRequest struct {
+	db.WorkItemTagCreateParams
+}
+type WorkItemTagUpdateRequest struct {
+	db.WorkItemTagUpdateParams
+}
+type WorkItemTag struct {
+	db.WorkItemTag
+	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
+}
+type WorkItemTypeCreateRequest struct {
+	db.WorkItemTypeCreateParams
+}
+type WorkItemTypeUpdateRequest struct {
+	db.WorkItemTypeUpdateParams
+}
+type WorkItemType struct {
+	db.WorkItemType
+}
+
+type Team struct {
+	db.Team
+	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
 
 type TeamCreateRequest struct {
@@ -76,10 +120,6 @@ type DemoWorkItemCreateRequest struct {
 type DemoTwoWorkItemCreateRequest struct {
 	ProjectName
 	services.DemoTwoWorkItemCreateParams
-}
-
-type WorkItemTagCreateRequest struct {
-	db.WorkItemTagCreateParams
 }
 
 type WorkItemCommentCreateRequest struct {

@@ -15,12 +15,14 @@ const (
 	// Operation IDs for the 'events' tag.
 	Events OperationID = "Events"
 
+	// Operation IDs for the 'notifications' tag.
+	GetPaginatedNotifications OperationID = "GetPaginatedNotifications"
+
 	// Operation IDs for the 'oidc' tag.
 	MyProviderCallback OperationID = "MyProviderCallback"
 	MyProviderLogin    OperationID = "MyProviderLogin"
 
 	// Operation IDs for the 'project' tag.
-	CreateWorkitemTag   OperationID = "CreateWorkitemTag"
 	GetProject          OperationID = "GetProject"
 	GetProjectBoard     OperationID = "GetProjectBoard"
 	GetProjectConfig    OperationID = "GetProjectConfig"
@@ -28,16 +30,34 @@ const (
 	InitializeProject   OperationID = "InitializeProject"
 	UpdateProjectConfig OperationID = "UpdateProjectConfig"
 
+	// Operation IDs for the 'team' tag.
+	CreateTeam OperationID = "CreateTeam"
+	DeleteTeam OperationID = "DeleteTeam"
+	GetTeam    OperationID = "GetTeam"
+	UpdateTeam OperationID = "UpdateTeam"
+
 	// Operation IDs for the 'user' tag.
 	DeleteUser              OperationID = "DeleteUser"
 	GetCurrentUser          OperationID = "GetCurrentUser"
 	UpdateUser              OperationID = "UpdateUser"
 	UpdateUserAuthorization OperationID = "UpdateUserAuthorization"
 
-	// Operation IDs for the 'workitem' tag.
+	// Operation IDs for the 'workItem' tag.
 	CreateWorkitem        OperationID = "CreateWorkitem"
 	CreateWorkitemComment OperationID = "CreateWorkitemComment"
 	DeleteWorkitem        OperationID = "DeleteWorkitem"
-	GetWorkitem           OperationID = "GetWorkitem"
+	GetWorkItem           OperationID = "GetWorkItem"
 	UpdateWorkitem        OperationID = "UpdateWorkitem"
+
+	// Operation IDs for the 'workItemTag' tag.
+	CreateWorkItemTag OperationID = "CreateWorkItemTag"
+	DeleteWorkItemTag OperationID = "DeleteWorkItemTag"
+	GetWorkItemTag    OperationID = "GetWorkItemTag"
+	UpdateWorkItemTag OperationID = "UpdateWorkItemTag"
+
+	// Operation IDs for the 'workItemType' tag.
+	CreateWorkItemType OperationID = "CreateWorkItemType"
+	DeleteWorkItemType OperationID = "DeleteWorkItemType"
+	GetWorkItemType    OperationID = "GetWorkItemType"
+	UpdateWorkItemType OperationID = "UpdateWorkItemType"
 )

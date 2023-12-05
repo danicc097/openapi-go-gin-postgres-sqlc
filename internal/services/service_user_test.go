@@ -13,12 +13,11 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
 
 type testUsers struct {
-	guest, user, advancedUser, manager, admin *servicetestutil.CreateUserResult
+	guest, user, advancedUser, manager, admin *servicetestutil.CreateUserFixture
 }
 
 func TestUser_UpdateUser(t *testing.T) {
@@ -295,12 +294,14 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 func createTestUsers(t *testing.T) testUsers {
 	t.Helper()
 
-	svc := services.New(zap.S(), services.CreateTestRepos(), testPool)
+	logger := zaptest.NewLogger(t).Sugar()
+
+	svc := services.New(logger, services.CreateTestRepos(), testPool)
 
 	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	guest, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
-		Role:       models.RoleAdmin,
+		Role:       models.RoleGuest,
 		WithAPIKey: true,
 	})
 	require.NoError(t, err)

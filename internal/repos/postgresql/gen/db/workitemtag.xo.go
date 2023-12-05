@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -39,7 +40,7 @@ type WorkItemTagCreateParams struct {
 	Color       string    `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	Description string    `json:"description" required:"true" nullable:"false"`                                        // description
 	Name        string    `json:"name" required:"true" nullable:"false"`                                               // name
-	ProjectID   ProjectID `json:"projectID" nullable:"false"`                                                          // project_id
+	ProjectID   ProjectID `json:"projectID" openapi-go:"ignore" required:"true" nullable:"false"`                      // project_id
 }
 
 type WorkItemTagID int
@@ -61,7 +62,7 @@ type WorkItemTagUpdateParams struct {
 	Color       *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	Description *string    `json:"description" nullable:"false"`                                        // description
 	Name        *string    `json:"name" nullable:"false"`                                               // name
-	ProjectID   *ProjectID `json:"projectID" nullable:"false"`                                          // project_id
+	ProjectID   *ProjectID `json:"projectID" openapi-go:"ignore" nullable:"false"`                      // project_id
 }
 
 // SetUpdateParams updates public.work_item_tags struct fields with the specified params.
@@ -250,8 +251,8 @@ func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemTagPaginatedByWorkItemTagIDAsc returns a cursor-paginated list of WorkItemTag in Asc order.
-func WorkItemTagPaginatedByWorkItemTagIDAsc(ctx context.Context, db DB, workItemTagID WorkItemTagID, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
+// WorkItemTagPaginatedByWorkItemTagID returns a cursor-paginated list of WorkItemTag.
+func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkItemTagID, direction models.Direction, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -306,6 +307,11 @@ func WorkItemTagPaginatedByWorkItemTagIDAsc(ctx context.Context, db DB, workItem
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
 	work_item_tags.description,
@@ -313,28 +319,28 @@ func WorkItemTagPaginatedByWorkItemTagIDAsc(ctx context.Context, db DB, workItem
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
-	 WHERE work_item_tags.work_item_tag_id > $1
+	 WHERE work_item_tags.work_item_tag_id %s $1
 	 %s   %s 
   ORDER BY 
-		work_item_tag_id Asc`, selects, joins, filters, groupbys)
+		work_item_tag_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* WorkItemTagPaginatedByWorkItemTagIDAsc */\n" + sqlstr
+	sqlstr = "/* WorkItemTagPaginatedByWorkItemTagID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	return res, nil
 }
 
-// WorkItemTagPaginatedByProjectIDAsc returns a cursor-paginated list of WorkItemTag in Asc order.
-func WorkItemTagPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID ProjectID, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
+// WorkItemTagPaginatedByProjectID returns a cursor-paginated list of WorkItemTag.
+func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -389,6 +395,11 @@ func WorkItemTagPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID Pr
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
+	}
+
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
 	work_item_tags.description,
@@ -396,188 +407,22 @@ func WorkItemTagPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID Pr
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
-	 WHERE work_item_tags.project_id > $1
+	 WHERE work_item_tags.project_id %s $1
 	 %s   %s 
   ORDER BY 
-		project_id Asc`, selects, joins, filters, groupbys)
+		project_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* WorkItemTagPaginatedByProjectIDAsc */\n" + sqlstr
+	sqlstr = "/* WorkItemTagPaginatedByProjectID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
-	}
-	return res, nil
-}
-
-// WorkItemTagPaginatedByWorkItemTagIDDesc returns a cursor-paginated list of WorkItemTag in Desc order.
-func WorkItemTagPaginatedByWorkItemTagIDDesc(ctx context.Context, db DB, workItemTagID WorkItemTagID, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.Project {
-		selectClauses = append(selectClauses, workItemTagTableProjectSelectSQL)
-		joinClauses = append(joinClauses, workItemTagTableProjectJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTagTableProjectGroupBySQL)
-	}
-
-	if c.joins.WorkItemsWorkItemTag {
-		selectClauses = append(selectClauses, workItemTagTableWorkItemsWorkItemTagSelectSQL)
-		joinClauses = append(joinClauses, workItemTagTableWorkItemsWorkItemTagJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTagTableWorkItemsWorkItemTagGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_tags.color,
-	work_item_tags.description,
-	work_item_tags.name,
-	work_item_tags.project_id,
-	work_item_tags.work_item_tag_id %s 
-	 FROM public.work_item_tags %s 
-	 WHERE work_item_tags.work_item_tag_id < $1
-	 %s   %s 
-  ORDER BY 
-		work_item_tag_id Desc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* WorkItemTagPaginatedByWorkItemTagIDDesc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
-	}
-	return res, nil
-}
-
-// WorkItemTagPaginatedByProjectIDDesc returns a cursor-paginated list of WorkItemTag in Desc order.
-func WorkItemTagPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID ProjectID, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.Project {
-		selectClauses = append(selectClauses, workItemTagTableProjectSelectSQL)
-		joinClauses = append(joinClauses, workItemTagTableProjectJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTagTableProjectGroupBySQL)
-	}
-
-	if c.joins.WorkItemsWorkItemTag {
-		selectClauses = append(selectClauses, workItemTagTableWorkItemsWorkItemTagSelectSQL)
-		joinClauses = append(joinClauses, workItemTagTableWorkItemsWorkItemTagJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTagTableWorkItemsWorkItemTagGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_tags.color,
-	work_item_tags.description,
-	work_item_tags.name,
-	work_item_tags.project_id,
-	work_item_tags.work_item_tag_id %s 
-	 FROM public.work_item_tags %s 
-	 WHERE work_item_tags.project_id < $1
-	 %s   %s 
-  ORDER BY 
-		project_id Desc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* WorkItemTagPaginatedByProjectIDDesc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
 	return res, nil
 }

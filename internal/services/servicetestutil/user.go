@@ -20,14 +20,14 @@ type CreateUserParams struct {
 	WithAPIKey bool // if true, an api key is created and returned
 }
 
-type CreateUserResult struct {
+type CreateUserFixture struct {
 	User   *db.User
 	APIKey *db.UserAPIKey
 	Token  string
 }
 
 // CreateUser creates a new random user with the given configuration.
-func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParams) (*CreateUserResult, error) {
+func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParams) (*CreateUserFixture, error) {
 	ucp := services.UserRegisterParams{
 		Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
 		Email:      testutil.RandomEmail(),
@@ -39,13 +39,13 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	}
 
 	// don't use repos for tests
-	user, err := ff.svc.User.Register(ctx, ff.d, ucp)
+	user, err := ff.svc.User.Register(ctx, ff.db, ucp)
 	if err != nil {
 		return nil, fmt.Errorf("svc.User.Register: %w", err)
 	}
 
 	if params.DeletedAt != nil {
-		user, err = ff.svc.User.Delete(ctx, ff.d, user.UserID)
+		user, err = ff.svc.User.Delete(ctx, ff.db, user.UserID)
 		if err != nil {
 			return nil, fmt.Errorf("svc.User.Delete: %w", err)
 		}
@@ -63,11 +63,11 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	if params.WithToken {
 		accessToken, err = ff.svc.Authentication.CreateAccessTokenForUser(ctx, user)
 		if err != nil {
-			return nil, fmt.Errorf("svc.Authentication.CreateAPIKeyForUser: %w", err)
+			return nil, fmt.Errorf("svc.Authentication.CreateAccessTokenForUser: %w", err)
 		}
 	}
 
-	return &CreateUserResult{
+	return &CreateUserFixture{
 		User:   user,
 		APIKey: apiKey,
 		Token:  accessToken,

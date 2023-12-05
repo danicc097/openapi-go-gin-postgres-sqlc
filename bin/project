@@ -43,8 +43,8 @@ readonly MAX_FNAME_LOG_LEN=13
 GEN_POSTGRES_DB="gen_db"
 
 # determines if gen cache should be restore at program exit. 0|1
-restore_cache=0
-# stores the first executing function to track if caching gen is already running,
+need_cache_restore=0
+# stores the first executing function of xsetup.backup-gen to track if caching gen is already running,
 # to allow for nested xsetup.backup-gen and cache-cleanup inside multiple functions.
 xsetup_backup_gen_caller=""
 
@@ -124,32 +124,31 @@ xsetup.backup-gen() {
 
   gen_backup_stash_name="backup-stash-$gen_backup_branch"
 
-  uuidgen >backup-gen-stash-dummy.txt
+  echo "$gen_backup_branch" >backup-gen-stash-dummy.txt
+  cp .gitignore .gitignore.bak
+  sed -i "s|^\*\.cache|#\*\.cache|" .gitignore # include cache in stash
   git stash push -m "$gen_backup_stash_name" --include-untracked || err "Could not backup untracked changes before codegen"
   git checkout -b "$gen_backup_branch" &>/dev/null
   git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
 
-  restore_cache=1
+  need_cache_restore=1
 }
 
 xsetup.backup-gen.cleanup() {
-  # only accept gen if the main function that backup it up in the first place
+  # only accept gen if the main function that backed it up in the first place
   # finishes successfully, i.e. this very function was called
   if [[ "$xsetup_backup_gen_caller" = "${FUNCNAME[1]}" ]]; then
-    restore_cache=0
+    need_cache_restore=0
   fi
 }
 
 xsetup.backup-gen.restore() {
   echo "Restoring previously generated code (branch $gen_backup_branch)..."
-  wait
+  wait # for any pending job
 
   git reset --hard && git clean -df &>/dev/null
+  rm -rf "$CACHE" # else `already exists, no checkout` upon stash apply since we have just reset gitignore
   git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
-
-  rm -rf "$CACHE"/*.md5 # cache is not up to date due to forced exit and restore
-  # TODO: delete specific folders like $CACHE/{counterfeiter,gowrap} only if
-  # failure on those tools specifically
 }
 
 xsetup.drop-and-migrate-gen-db() {
@@ -322,8 +321,8 @@ x.gen.pregen() {
     echo "$spec_content" >$SPEC_PATH
 
     echo "Updating roles and scopes in $SPEC_PATH"
-    ######## Sync enums with external sources and validate
-    ######## external json files are the source of truth
+    ######## Sync spec enums with external policy sources and validate existing schema enums.
+    ######## External json files are the source of truth, indexed by enum name
     # arrays can't be nested
     declare -A enum_src_files=(
       [Scope]="scopes.json"
@@ -361,6 +360,7 @@ x.gen.pregen() {
       enum_values[$enum]=$enum_list
     done
 
+    ######## IDE intellisense/validation
     yq -e ".definitions.Operation.properties +=
         {
           \"${enum_vext[Role]}\": {
@@ -692,8 +692,8 @@ x.gen.gowrap() {
     local updated_ifaces=()
     for iface in ${repo_interfaces[@]}; do
       iface_content="$(go-utils.get_interface_methods $iface $repos)"
-      if diff "$cache/$iface" <(echo "$iface_content") &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
-        continue
+      if diff "$cache/$iface" <(echo "$iface_content") &>/dev/null; then
+        [[ $X_FORCE_REGEN -eq 0 ]] && continue
       fi
 
       for suffix in ${suffixes[@]}; do
@@ -737,6 +737,12 @@ x.gen.client-server() {
     oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed types generation"
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
     oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation"
+
+    codegen implement-server # based on oapi gen
+
+    files=$(find "internal/rest/" -name "*.go")
+    goimports -w $files
+    gofumpt -w $files
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -770,13 +776,13 @@ x.gen.counterfeiter() {
       iface="${key%%-*}"
       iface_content="$(go-utils.get_interface_methods $iface $input_path)"
 
-      cache_entry="$cache/$(echo "$key" | base64)"
-      if diff "$cache_entry" <(echo "$iface_content") &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
-        continue
+      cache_entry_path="$cache/$(echo "$key" | base64)"
+      if diff "$cache_entry_path" <(echo "$iface_content") &>/dev/null; then
+        [[ $X_FORCE_REGEN -eq 0 ]] && continue
       fi
 
       counterfeiter -o "${ifaces[$key]}" "$input_path" "$iface" 2>&1 &
-      echo "$iface_content" >"$cache_entry"
+      echo "$iface_content" >"$cache_entry_path"
       updated_ifaces+=("$key")
     done
 
@@ -1546,12 +1552,16 @@ run_shared_services() {
 # no need for ast parsing since all code is predictable
 # NOTE: type grouping not supported.
 generate_structs_map() {
+  # need new cli since this function is called before building the rest of tooling
+  go build -o $BUILD_DIR/ast-parser cmd/ast-parser/main.go
+
+  local path="$PG_REPO_GEN/db"
   local structs=()
   local enums=()
   local all_types=()
-  go-utils.find_structs structs "$PG_REPO_GEN/db"
-  go-utils.find_enums enums "$PG_REPO_GEN/db"
-  go-utils.find_all_types all_types "$PG_REPO_GEN/db"
+  go-utils.find_structs structs "$path" # faster. we know no generics structs exist in gen pkg
+  go-utils.find_enums enums "$path"
+  go-utils.find_all_types all_types "$path"
   find_deleted_pkg_schemas all_types Db
   for struct in ${structs[@]}; do
     map_fields+=("\"Db$struct\": new(db.$struct),") # swaggest requires pointer to struct
@@ -1560,12 +1570,16 @@ generate_structs_map() {
   //
   ")
 
-  structs=()
-  enums=()
-  all_types=()
-  go-utils.find_structs structs "internal/rest/models.go"
-  go-utils.find_enums enums "internal/rest/models.go"
-  go-utils.find_all_types all_types "internal/rest/models.go"
+  local path="internal/rest/models.go"
+  local structs=()
+  local enums=()
+  local all_types=()
+  # workaround for reflection type name with generics in swaggest
+  ast-parser find-structs --create-generics-map --public-only "$path" >"internal/codegen/reflectTypeMap.gen.json"
+
+  mapfile -t structs < <(ast-parser find-structs --exclude-generics --public-only "$path")
+  go-utils.find_enums enums "$path"
+  go-utils.find_all_types all_types "$path"
   find_deleted_pkg_schemas all_types Rest
   for struct in ${structs[@]}; do
     map_fields+=("\"Rest$struct\": new(rest.$struct),")
@@ -1654,15 +1668,6 @@ replace_enum_in_spec() {
     $schema_path.x-generated = \"-\" |
     ($schema_path | key) line_comment=\"Generated from $src_comment. DO NOT EDIT.\"" -i $SPEC_PATH
 }
-
-awk_remove_go_comments='
-     /\/\*/ { f=1 } # set flag that is a block comment
-
-     f==0 && !/^\s*(\/\/|\/\*)/ {
-        print  # print non-commented lines
-     }
-     /\*\// { f=0 } # reset flag at end of comment
-'
 
 find_deleted_pkg_schemas() {
   local -n __all_types="$1"
@@ -1948,15 +1953,17 @@ exit-cleanup() {
   [[ "$exit_cleanup_calls" -gt 0 ]] && return
   ((exit_cleanup_calls++)) || true
 
-  if [[ $restore_cache = 1 && -z $X_NO_CACHE ]]; then
+  if [[ $need_cache_restore = 1 && -z $X_NO_CACHE ]]; then
     xsetup.backup-gen.restore
   fi
 
-  rm -f backup-gen-stash-dummy.txt
+  # shared cleanup regardless of gen success
   git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
+  rm -f backup-gen-stash-dummy.txt
+  mv .gitignore.bak .gitignore &>/dev/null || true
   git branch -D "$gen_backup_branch" &>/dev/null || true
-  cd "$starting_cwd" || true
 
+  cd "$starting_cwd" || true
 }
 
 killgroup() {

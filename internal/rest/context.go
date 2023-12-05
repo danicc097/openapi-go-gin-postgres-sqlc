@@ -16,6 +16,7 @@ const (
 	validateResponseCtxKey      = "skip-response-validation"
 	skipRequestValidationCtxKey = "skip-request-validation"
 	transactionCtxKey           = "transaction"
+	errorCtxKey                 = "error"
 )
 
 func getSkipRequestValidationFromCtx(c *gin.Context) bool {
@@ -89,4 +90,15 @@ func getGinContextFromCtx(c context.Context) *gin.Context {
 
 func getUserDataFromCtx(c context.Context) any {
 	return c.Value(userDataCtxKey)
+}
+
+func ctxHasErrorResponse(c *gin.Context) bool {
+	_, ok := c.Value(errorCtxKey).(struct{})
+
+	return ok
+}
+
+// ctxWithErrorResponse signals current request will receive an error.
+func ctxWithErrorResponse(c *gin.Context) {
+	c.Set(errorCtxKey, struct{}{})
 }

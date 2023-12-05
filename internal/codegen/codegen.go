@@ -5,10 +5,13 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"go/ast"
 	"go/format"
 	"go/parser"
+	"go/printer"
 	"go/token"
 	"io"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -20,6 +23,8 @@ import (
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/iancoleman/strcase"
+	"github.com/kenshaw/snaker"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )
@@ -59,12 +64,21 @@ func ensureUnique[T comparable](s []T) error {
 //go:embed templates
 var templateFiles embed.FS
 
+type operationIDMethod struct {
+	// file path to handlers file
+	handlersFile string
+	method       string
+	comment      string
+}
+
 type CodeGen struct {
-	stderr       io.Writer
-	specPath     string
-	opIDAuthPath string
-	handlersPath string
-	operations   map[string][]string
+	stderr                            io.Writer
+	specPath                          string
+	opIDAuthPath                      string
+	handlersPath                      string
+	operations                        map[string][]string
+	missingOperationIDImplementations map[string]struct{}
+	serverInterfaceMethods            map[string]operationIDMethod
 }
 
 // New returns a new internal code generator.
@@ -72,11 +86,13 @@ func New(stderr io.Writer, specPath, opIDAuthPath, handlersPath string) *CodeGen
 	operations := make(map[string][]string)
 
 	return &CodeGen{
-		stderr:       stderr,
-		specPath:     specPath,
-		opIDAuthPath: opIDAuthPath,
-		operations:   operations,
-		handlersPath: handlersPath,
+		stderr:                            stderr,
+		specPath:                          specPath,
+		opIDAuthPath:                      opIDAuthPath,
+		operations:                        operations,
+		handlersPath:                      handlersPath,
+		missingOperationIDImplementations: map[string]struct{}{},
+		serverInterfaceMethods:            map[string]operationIDMethod{},
 	}
 }
 
@@ -95,7 +111,7 @@ func (o *CodeGen) EnsureCorrectMethodsPerTag() error {
 		return fmt.Errorf("analyze spec: %w", err)
 	}
 
-	if err := o.ensureFunctionMethods(); err != nil {
+	if err := o.ensureHandlerMethodsExist(); err != nil {
 		return fmt.Errorf("tag methods: %w", err)
 	}
 
@@ -111,6 +127,24 @@ func (o *CodeGen) ValidateProjectSpec() error {
 		return fmt.Errorf("analyze spec: %w", err)
 	}
 
+	return nil
+}
+
+func (o *CodeGen) ImplementServer() error {
+	if err := o.analyzeSpec(); err != nil {
+		return fmt.Errorf("analyze spec: %w", err)
+	}
+
+	o.getServerInterfaceMethods()
+
+	// reuses logic to extract missing methods
+	if err := o.ensureHandlerMethodsExist(); err != nil {
+		return fmt.Errorf("tag methods: %w", err)
+	}
+
+	if err := o.implementServerInterfaceMethods(); err != nil {
+		return fmt.Errorf("implement server interface methods: %w", err)
+	}
 	return nil
 }
 
@@ -372,15 +406,23 @@ func removeAndAppendHandlersMethod(src, target *dst.File, opID string) {
 	}
 }
 
-// ensureFunctionMethods parses the AST of each api_<lowercase of tag>.go file and
+// ensureHandlerMethodsExist parses the AST of each api_<lowercase of tag>.go file and
 // ensure it contains function methods for each operation ID.
-func (o *CodeGen) ensureFunctionMethods() error {
+func (o *CodeGen) ensureHandlerMethodsExist() error {
+	var errs []string
+
+	for tag := range o.operations {
+		snakeTag := strcase.ToSnake(tag)
+		handlersPath := filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", snakeTag))
+		if _, err := os.Stat(handlersPath); err != nil {
+			errs = append(errs, fmt.Sprintf("missing file %s for new tag %q", handlersPath, tag))
+		}
+	}
+
 	tagFilePaths, err := filepath.Glob(filepath.Join(o.handlersPath, "api_*.go"))
 	if err != nil {
 		return fmt.Errorf("failed to find api_<tag>.go files: %w", err)
 	}
-
-	var errs []string
 
 	for _, tagFilePath := range tagFilePaths {
 		if strings.HasSuffix(tagFilePath, "_test.go") {
@@ -390,7 +432,7 @@ func (o *CodeGen) ensureFunctionMethods() error {
 		if len(matches) < 2 {
 			return fmt.Errorf("failed to extract tag from file name: %s", tagFilePath)
 		}
-		tag := matches[1]
+		tag := strcase.ToLowerCamel(matches[1])
 
 		apiFileContent, err := os.ReadFile(tagFilePath)
 		if err != nil {
@@ -405,24 +447,18 @@ func (o *CodeGen) ensureFunctionMethods() error {
 		// operation ids are preprocessed to pascal case
 		functions := getHandlersMethods(file)
 
-		var restOfOpIDs []string
-	tag:
-		for opTag, opIDs := range o.operations {
-			if opTag == tag {
-				continue tag
-			}
-			restOfOpIDs = append(restOfOpIDs, opIDs...)
-		}
+		restOfOpIDs := o.getOperationIDDifference(tag)
 
 	fn:
 		for _, opID := range functions {
 			if contains(restOfOpIDs, opID) {
 				correspondingTag := o.findTagByOpID(opID)
+				snakeTag := snaker.CamelToSnake(correspondingTag)
 
-				correctFilePath := filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", correspondingTag))
+				correctFilePath := filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", snakeTag))
 				content, err := os.ReadFile(correctFilePath)
 				if err != nil {
-					errs = append(errs, fmt.Sprintf("misplaced method for operation ID %q - should be in api_%s.go (file does not exist)", opID, correspondingTag))
+					errs = append(errs, fmt.Sprintf("misplaced method for operation ID %q - should be in api_%s.go (file does not exist)", opID, snakeTag))
 
 					break fn
 				}
@@ -432,15 +468,17 @@ func (o *CodeGen) ensureFunctionMethods() error {
 					return fmt.Errorf("failed to parse file %s: %w", tagFilePath, err)
 				}
 
-				fmt.Printf("Moving handler %q to correct file (%s -> %s)", opID, path.Base(tagFilePath), path.Base(correctFilePath))
-				removeAndAppendHandlersMethod(file, correctFile, opID)
+				if path.Base(tagFilePath) != path.Base(correctFilePath) {
+					fmt.Printf("Moving handler %q to correct file (%s -> %s)\n", opID, path.Base(tagFilePath), path.Base(correctFilePath))
+					removeAndAppendHandlersMethod(file, correctFile, opID)
+				}
 
-				err = writeASTToFile(correctFilePath, correctFile)
+				err = writeAST(correctFilePath, correctFile)
 				if err != nil {
 					return fmt.Errorf("failed to write AST to %s: %w", correctFilePath, err)
 				}
 
-				err = writeASTToFile(tagFilePath, file)
+				err = writeAST(tagFilePath, file)
 				if err != nil {
 					return fmt.Errorf("failed to write AST to %s: %w", tagFilePath, err)
 				}
@@ -451,7 +489,11 @@ func (o *CodeGen) ensureFunctionMethods() error {
 
 		for _, opID := range o.operations[tag] {
 			if !contains(functions, opID) {
-				errs = append(errs, fmt.Sprintf("missing function method for operation ID %q in api_%s.go", opID, tag))
+				// NOTE: not worth syncing all opIDs to keep signature changes in sync, we get decent enough errors
+				// to handle bad interface implementations, such as
+				// have CreateTeam(*gin.Context, models.Project)
+				// want CreateTeam(*gin.Context, models.Project, int)
+				o.missingOperationIDImplementations[opID] = struct{}{}
 			}
 		}
 	}
@@ -461,6 +503,119 @@ func (o *CodeGen) ensureFunctionMethods() error {
 	}
 
 	return nil
+}
+
+func (o *CodeGen) implementServerInterfaceMethods() error {
+	for opID := range o.missingOperationIDImplementations {
+		fmt.Printf("Implementing missing server interface method for operation ID: %v\n", opID)
+
+		m := o.serverInterfaceMethods[opID]
+
+		methodStr := fmt.Sprintf(`
+		func (h *Handlers) %s {
+			c.JSON(http.StatusNotImplemented, "not implemented")
+		}
+	`, m.method)
+
+		// we are only here if the method is missing, so just append it
+		f, err := os.OpenFile(m.handlersFile,
+			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
+		if err != nil {
+			return fmt.Errorf("could not open file: %s", err)
+		}
+		defer f.Close()
+		if _, err := f.WriteString(methodStr); err != nil {
+			return fmt.Errorf("could not write to file: %s", err)
+		}
+	}
+
+	return nil
+}
+
+// getServerInterfaceMethods returns the generated server interface methods
+// indexed by operation id.
+func (o *CodeGen) getServerInterfaceMethods() map[string]operationIDMethod {
+	src, err := os.ReadFile("internal/rest/openapi_server.gen.go")
+	if err != nil {
+		log.Fatalf("Error reading server interface file: %s", err)
+	}
+
+	// `import-mapping` oapi config generates unnamed imports
+	src = bytes.ReplaceAll(src, []byte("externalRef0"), []byte("models"))
+
+	fset := token.NewFileSet()
+	node, err := parser.ParseFile(fset, "src.go", string(src), parser.AllErrors|parser.ParseComments)
+	if err != nil {
+		log.Fatalf("Error parsing server interface file: %s", err)
+	}
+
+	for _, decl := range node.Decls {
+		genDecl, ok := decl.(*ast.GenDecl)
+		if !ok {
+			continue
+		}
+		for _, spec := range genDecl.Specs {
+			typeSpec, ok := spec.(*ast.TypeSpec)
+			if !ok {
+				continue
+			}
+			interfaceType, ok := typeSpec.Type.(*ast.InterfaceType)
+			if !ok {
+				continue
+			}
+			for _, method := range interfaceType.Methods.List {
+				operationID := method.Names[0].Name
+				funcType, ok := method.Type.(*ast.FuncType)
+				if !ok {
+					continue
+				}
+				params := extractParameters(funcType)
+
+				correspondingTag := o.findTagByOpID(operationID)
+				snakeTag := strcase.ToSnake(correspondingTag)
+
+				o.serverInterfaceMethods[operationID] = operationIDMethod{
+					handlersFile: filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", snakeTag)),
+					method:       fmt.Sprintf("%s(%s)", operationID, params),
+					comment:      method.Doc.Text(),
+				}
+			}
+		}
+	}
+
+	return o.serverInterfaceMethods
+}
+
+func extractParameters(ft *ast.FuncType) string {
+	var params []string
+	for _, field := range ft.Params.List {
+		for _, name := range field.Names {
+			params = append(params, fmt.Sprintf("%s %s", name.Name, exprToString(field.Type)))
+		}
+	}
+	return strings.Join(params, ", ")
+}
+
+// exprToString converts an AST expression to its string representation.
+func exprToString(expr ast.Expr) string {
+	var buf strings.Builder
+	printer.Fprint(&buf, token.NewFileSet(), expr)
+	return buf.String()
+}
+
+// getOperationIDDifference returns the difference of all operation IDs
+// and those associated to a given tag.
+func (o *CodeGen) getOperationIDDifference(tag string) []string {
+	var restOfOpIDs []string
+
+	for opTag, opIDs := range o.operations {
+		if opTag == tag {
+			continue
+		}
+		restOfOpIDs = append(restOfOpIDs, opIDs...)
+	}
+
+	return restOfOpIDs
 }
 
 // findTagByOpID returns the corresponding tag for a given operation ID.
@@ -474,7 +629,7 @@ func (o *CodeGen) findTagByOpID(opID string) string {
 	return ""
 }
 
-func writeASTToFile(filePath string, file *dst.File) error {
+func writeAST(filePath string, file *dst.File) error {
 	f, err := os.Create(filePath)
 	if err != nil {
 		return fmt.Errorf("failed to create file %s: %w", filePath, err)

@@ -7,6 +7,7 @@ package reposwrappers
 import (
 	"context"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.opentelemetry.io/otel"
@@ -36,7 +37,7 @@ func NewNotificationWithTracing(base repos.Notification, instance string, spanDe
 }
 
 // Create implements repos.Notification
-func (_d NotificationWithTracing) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (np1 *db.Notification, err error) {
+func (_d NotificationWithTracing) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (up1 *db.UserNotification, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -44,7 +45,7 @@ func (_d NotificationWithTracing) Create(ctx context.Context, d db.DBTX, params 
 				"ctx":    ctx,
 				"d":      d,
 				"params": params}, map[string]interface{}{
-				"np1": np1,
+				"up1": up1,
 				"err": err})
 		} else if err != nil {
 			_span.RecordError(err)
@@ -83,9 +84,9 @@ func (_d NotificationWithTracing) Delete(ctx context.Context, d db.DBTX, id db.N
 	return _d.Notification.Delete(ctx, d, id)
 }
 
-// LatestUserNotifications implements repos.Notification
-func (_d NotificationWithTracing) LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.LatestUserNotifications")
+// LatestNotifications implements repos.Notification
+func (_d NotificationWithTracing) LatestNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.LatestNotifications")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -104,5 +105,30 @@ func (_d NotificationWithTracing) LatestUserNotifications(ctx context.Context, d
 
 		_span.End()
 	}()
-	return _d.Notification.LatestUserNotifications(ctx, d, params)
+	return _d.Notification.LatestNotifications(ctx, d, params)
+}
+
+// PaginatedNotifications implements repos.Notification
+func (_d NotificationWithTracing) PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) (ua1 []db.UserNotification, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.PaginatedNotifications")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":    ctx,
+				"d":      d,
+				"userID": userID,
+				"params": params}, map[string]interface{}{
+				"ua1": ua1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.Notification.PaginatedNotifications(ctx, d, userID, params)
 }

@@ -7,6 +7,7 @@ require (
 	github.com/danicc097/xo/v5 v5.1.0
 	github.com/dave/dst v0.27.3
 	github.com/deepmap/oapi-codegen v1.13.4
+	github.com/fatih/structs v1.1.0
 	github.com/fatih/structtag v1.2.0
 	github.com/getkin/kin-openapi v0.119.0
 	github.com/gin-contrib/cors v1.4.0
@@ -20,6 +21,7 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.16.2
 	github.com/google/go-cmp v0.5.9
 	github.com/google/uuid v1.3.1
+	github.com/iancoleman/strcase v0.3.0
 	github.com/jackc/pgconn v1.14.1
 	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/jackc/pgx-zap v0.0.0-20221202020421-94b1cb2f889f

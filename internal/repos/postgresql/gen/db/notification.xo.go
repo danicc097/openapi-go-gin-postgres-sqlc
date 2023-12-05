@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -310,8 +311,8 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// NotificationPaginatedByNotificationIDAsc returns a cursor-paginated list of Notification in Asc order.
-func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notificationID NotificationID, opts ...NotificationSelectConfigOption) ([]Notification, error) {
+// NotificationPaginatedByNotificationID returns a cursor-paginated list of Notification.
+func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID NotificationID, direction models.Direction, opts ...NotificationSelectConfigOption) ([]Notification, error) {
 	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -372,98 +373,9 @@ func NotificationPaginatedByNotificationIDAsc(ctx context.Context, db DB, notifi
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	notifications.body,
-	notifications.created_at,
-	notifications.labels,
-	notifications.link,
-	notifications.notification_id,
-	notifications.notification_type,
-	notifications.receiver,
-	notifications.receiver_rank,
-	notifications.sender,
-	notifications.title %s 
-	 FROM public.notifications %s 
-	 WHERE notifications.notification_id > $1
-	 %s   %s 
-  ORDER BY 
-		notification_id Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* NotificationPaginatedByNotificationIDAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Paginated/Asc/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Notification])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Notification", Err: err}))
-	}
-	return res, nil
-}
-
-// NotificationPaginatedByNotificationIDDesc returns a cursor-paginated list of Notification in Desc order.
-func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notificationID NotificationID, opts ...NotificationSelectConfigOption) ([]Notification, error) {
-	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.UserReceiver {
-		selectClauses = append(selectClauses, notificationTableUserReceiverSelectSQL)
-		joinClauses = append(joinClauses, notificationTableUserReceiverJoinSQL)
-		groupByClauses = append(groupByClauses, notificationTableUserReceiverGroupBySQL)
-	}
-
-	if c.joins.UserSender {
-		selectClauses = append(selectClauses, notificationTableUserSenderSelectSQL)
-		joinClauses = append(joinClauses, notificationTableUserSenderJoinSQL)
-		groupByClauses = append(groupByClauses, notificationTableUserSenderGroupBySQL)
-	}
-
-	if c.joins.UserNotifications {
-		selectClauses = append(selectClauses, notificationTableUserNotificationsSelectSQL)
-		joinClauses = append(joinClauses, notificationTableUserNotificationsJoinSQL)
-		groupByClauses = append(groupByClauses, notificationTableUserNotificationsGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -478,22 +390,22 @@ func NotificationPaginatedByNotificationIDDesc(ctx context.Context, db DB, notif
 	notifications.sender,
 	notifications.title %s 
 	 FROM public.notifications %s 
-	 WHERE notifications.notification_id < $1
+	 WHERE notifications.notification_id %s $1
 	 %s   %s 
   ORDER BY 
-		notification_id Desc`, selects, joins, filters, groupbys)
+		notification_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* NotificationPaginatedByNotificationIDDesc */\n" + sqlstr
+	sqlstr = "/* NotificationPaginatedByNotificationID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Paginated/Desc/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
+		return nil, logerror(fmt.Errorf("Notification/Paginated/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Notification])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Notification/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Notification", Err: err}))
+		return nil, logerror(fmt.Errorf("Notification/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Notification", Err: err}))
 	}
 	return res, nil
 }

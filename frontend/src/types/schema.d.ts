@@ -20,6 +20,10 @@ export interface paths {
   "/events": {
     get: operations["Events"];
   };
+  "/notifications/user/page": {
+    /** Get paginated user notifications */
+    get: operations["GetPaginatedNotifications"];
+  };
   "/ping": {
     /** Ping pongs */
     get: operations["Ping"];
@@ -31,6 +35,42 @@ export interface paths {
   "/admin/ping": {
     /** Ping pongs */
     get: operations["AdminPing"];
+  };
+  "/project/{projectName}/team/": {
+    /** create team. */
+    post: operations["CreateTeam"];
+  };
+  "/project/{projectName}/team/{id}/": {
+    /** get team. */
+    get: operations["GetTeam"];
+    /** delete team. */
+    delete: operations["DeleteTeam"];
+    /** update team. */
+    patch: operations["UpdateTeam"];
+  };
+  "/project/{projectName}/workItemTag/": {
+    /** create workitemtag. */
+    post: operations["CreateWorkItemTag"];
+  };
+  "/project/{projectName}/workItemTag/{id}/": {
+    /** get workitemtag. */
+    get: operations["GetWorkItemTag"];
+    /** delete workitemtag. */
+    delete: operations["DeleteWorkItemTag"];
+    /** update workitemtag. */
+    patch: operations["UpdateWorkItemTag"];
+  };
+  "/project/{projectName}/workItemType/": {
+    /** create workitemtype. */
+    post: operations["CreateWorkItemType"];
+  };
+  "/project/{projectName}/workItemType/{id}/": {
+    /** get workitemtype. */
+    get: operations["GetWorkItemType"];
+    /** delete workitemtype. */
+    delete: operations["DeleteWorkItemType"];
+    /** update workitemtype. */
+    patch: operations["UpdateWorkItemType"];
   };
   "/user/me": {
     /** returns the logged in user */
@@ -68,17 +108,13 @@ export interface paths {
     /** returns workitems for a project */
     get: operations["GetProjectWorkitems"];
   };
-  "/project/{projectName}/tag/": {
-    /** create workitem tag */
-    post: operations["CreateWorkitemTag"];
-  };
   "/workitem/": {
     /** create workitem */
     post: operations["CreateWorkitem"];
   };
   "/workitem/{id}/": {
     /** get workitem */
-    get: operations["GetWorkitem"];
+    get: operations["GetWorkItem"];
     /** delete workitem */
     delete: operations["DeleteWorkitem"];
     /** update workitem */
@@ -94,6 +130,66 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
+    WorkItemTagCreateRequest: {
+      color: string;
+      description: string;
+      name: string;
+    };
+    WorkItemTagUpdateRequest: {
+      color?: string;
+      description?: string;
+      name?: string;
+    };
+    WorkItemTag: {
+      color: string;
+      description: string;
+      name: string;
+      projectID: number;
+      workItemTagID: number;
+    };
+    WorkItemTypeCreateRequest: {
+      color: string;
+      description: string;
+      name: string;
+    };
+    WorkItemTypeUpdateRequest: {
+      color?: string;
+      description?: string;
+      name?: string;
+    };
+    WorkItemType: {
+      color: string;
+      description: string;
+      name: string;
+      projectID: number;
+      workItemTypeID: number;
+    };
+    TeamCreateRequest: {
+      description: string;
+      name: string;
+      projectID: number;
+    };
+    TeamUpdateRequest: {
+      description?: string;
+      name?: string;
+      projectID?: number;
+    };
+    Team: {
+      /** Format: date-time */
+      createdAt: string;
+      description: string;
+      name: string;
+      projectID: number;
+      teamID: number;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    /** @enum {string} */
+    Direction: "asc" | "desc";
+    PaginatedNotificationsResponse: {
+      items: components["schemas"]["RestNotification"][] | null;
+      page: components["schemas"]["RestPaginationPage"];
+    };
     DbActivity: {
       activityID: number;
       description: string;
@@ -206,7 +302,7 @@ export interface components {
       path: string;
       showCollapsed: boolean;
     };
-    DemoWorkItemsResponse: {
+    DemoWorkItems: {
       /** Format: date-time */
       closedAt?: string | null;
       /** Format: date-time */
@@ -233,7 +329,7 @@ export interface components {
       workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
     };
-    DemoTwoWorkItemsResponse: {
+    DemoTwoWorkItems: {
       /** Format: date-time */
       closedAt?: string | null;
       /** Format: date-time */
@@ -264,7 +360,7 @@ export interface components {
       tags?: components["schemas"]["DbWorkItemTagCreateParams"][] | null;
       teams?: components["schemas"]["DbTeamCreateParams"][] | null;
     };
-    ProjectBoardResponse: {
+    ProjectBoard: {
       projectName: components["schemas"]["Project"];
     };
     User: {
@@ -409,12 +505,6 @@ export interface components {
       workItemID: number;
       workItemTypeID: number;
     };
-    WorkItemTagCreateRequest: {
-      color: string;
-      description: string;
-      name: string;
-      projectID?: number;
-    };
     DemoTwoWorkItemCreateRequest: {
       base: components["schemas"]["DbWorkItemCreateParams"];
       demoTwoProject: components["schemas"]["DbDemoTwoWorkItemCreateParams"];
@@ -451,7 +541,6 @@ export interface components {
       color: string;
       description: string;
       name: string;
-      projectID?: components["schemas"]["DbProjectID"];
     };
     DbWorkItemRole: string;
     /**
@@ -511,6 +600,35 @@ export interface components {
     DbProjectID: unknown;
     DbUserID: string;
     DbWorkItemTypeID: unknown;
+    DbNotificationID: unknown;
+    DbNotification: {
+      body: string;
+      /** Format: date-time */
+      createdAt: string;
+      labels: string[];
+      link?: string | null;
+      notificationID: components["schemas"]["DbNotificationID"];
+      notificationType: components["schemas"]["NotificationType"];
+      receiver?: components["schemas"]["DbUserID"];
+      sender: components["schemas"]["DbUserID"];
+      title: string;
+    };
+    DbUserNotification: {
+      notificationID: number;
+      read: boolean;
+      userID: components["schemas"]["DbUserID"];
+      userNotificationID: number;
+    };
+    RestPaginationPage: {
+      nextCursor?: string;
+    };
+    RestNotification: {
+      notification: components["schemas"]["DbNotification"];
+      notificationID: number;
+      read: boolean;
+      userID: components["schemas"]["DbUserID"];
+      userNotificationID: number;
+    };
   };
   responses: never;
   parameters: {
@@ -528,7 +646,7 @@ export interface components {
      * @description integer identifier
      * @example 41131
      */
-    Serial: number;
+    SerialID: number;
   };
   requestBodies: never;
   headers: never;
@@ -566,6 +684,34 @@ export interface operations {
       };
     };
   };
+  /** Get paginated user notifications */
+  GetPaginatedNotifications: {
+    parameters: {
+      query: {
+        limit: number;
+        direction: components["schemas"]["Direction"];
+        cursor: string;
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PaginatedNotificationsResponse"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
   /** Ping pongs */
   Ping: {
     responses: {
@@ -575,6 +721,10 @@ export interface operations {
           "text/plain": string;
         };
       };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
       /** @description Error response */
       "4XX": {
         content: {
@@ -603,6 +753,349 @@ export interface operations {
           "text/plain": string;
         };
       };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** create team. */
+  CreateTeam: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TeamCreateRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      201: {
+        content: {
+          "application/json": components["schemas"]["Team"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** get team. */
+  GetTeam: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Team"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** delete team. */
+  DeleteTeam: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      204: never;
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** update team. */
+  UpdateTeam: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["TeamUpdateRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Team"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** create workitemtag. */
+  CreateWorkItemTag: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["WorkItemTagCreateRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      201: {
+        content: {
+          "application/json": components["schemas"]["WorkItemTag"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** get workitemtag. */
+  GetWorkItemTag: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["WorkItemTag"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** delete workitemtag. */
+  DeleteWorkItemTag: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      204: never;
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** update workitemtag. */
+  UpdateWorkItemTag: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["WorkItemTagUpdateRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["WorkItemTag"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** create workitemtype. */
+  CreateWorkItemType: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["WorkItemTypeCreateRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      201: {
+        content: {
+          "application/json": components["schemas"]["WorkItemType"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** get workitemtype. */
+  GetWorkItemType: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["WorkItemType"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** delete workitemtype. */
+  DeleteWorkItemType: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      204: never;
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** update workitemtype. */
+  UpdateWorkItemType: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["WorkItemTypeUpdateRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["WorkItemType"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
       /** @description Error response */
       "4XX": {
         content: {
@@ -658,8 +1151,16 @@ export interface operations {
     responses: {
       /** @description User deleted successfully */
       204: never;
-      /** @description User not found */
-      404: never;
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
     };
   };
   /** updates the user by id */
@@ -765,7 +1266,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["ProjectBoardResponse"];
+          "application/json": components["schemas"]["ProjectBoard"];
         };
       };
     };
@@ -785,28 +1286,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["DemoWorkItemsResponse"] | components["schemas"]["DemoTwoWorkItemsResponse"];
-        };
-      };
-    };
-  };
-  /** create workitem tag */
-  CreateWorkitemTag: {
-    parameters: {
-      path: {
-        projectName: components["parameters"]["ProjectName"];
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["WorkItemTagCreateRequest"];
-      };
-    };
-    responses: {
-      /** @description Success. */
-      201: {
-        content: {
-          "application/json": components["schemas"]["DbWorkItemTag"];
+          "application/json": components["schemas"]["DemoWorkItems"] | components["schemas"]["DemoTwoWorkItems"];
         };
       };
     };
@@ -828,10 +1308,10 @@ export interface operations {
     };
   };
   /** get workitem */
-  GetWorkitem: {
+  GetWorkItem: {
     parameters: {
       path: {
-        id: components["parameters"]["Serial"];
+        id: components["parameters"]["SerialID"];
       };
     };
     responses: {
@@ -847,7 +1327,7 @@ export interface operations {
   DeleteWorkitem: {
     parameters: {
       path: {
-        id: components["parameters"]["Serial"];
+        id: components["parameters"]["SerialID"];
       };
     };
     responses: {
@@ -859,7 +1339,7 @@ export interface operations {
   UpdateWorkitem: {
     parameters: {
       path: {
-        id: components["parameters"]["Serial"];
+        id: components["parameters"]["SerialID"];
       };
     };
     responses: {
@@ -875,7 +1355,7 @@ export interface operations {
   CreateWorkitemComment: {
     parameters: {
       path: {
-        id: components["parameters"]["Serial"];
+        id: components["parameters"]["SerialID"];
       };
     };
     requestBody: {

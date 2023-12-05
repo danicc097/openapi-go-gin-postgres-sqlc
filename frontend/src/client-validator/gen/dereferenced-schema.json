@@ -2,6 +2,377 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
+    "WorkItemTagCreateRequest": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "color",
+        "description",
+        "name"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTagCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemTagUpdateRequest": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTagUpdateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemTag": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTagID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTagID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTag",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemTypeCreateRequest": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "color",
+        "description",
+        "name"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTypeCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemTypeUpdateRequest": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTypeUpdateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemType": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTypeID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemType",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "TeamCreateRequest": {
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "description",
+        "name",
+        "projectID"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestTeamCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "TeamUpdateRequest": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestTeamUpdateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Team": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        }
+      },
+      "required": [
+        "teamID",
+        "projectID",
+        "name",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestTeam",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Direction": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "PaginatedNotificationsResponse": {
+      "properties": {
+        "items": {
+          "items": {
+            "properties": {
+              "notification": {
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "createdAt": {
+                    "format": "date-time",
+                    "type": [
+                      "object"
+                    ]
+                  },
+                  "labels": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array",
+                    "minLength": 1
+                  },
+                  "link": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "notificationID": {
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  },
+                  "notificationType": {
+                    "description": "represents a database 'notification_type'",
+                    "type": "string",
+                    "x-generated": "-",
+                    "enum": [
+                      "personal",
+                      "global"
+                    ],
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  },
+                  "receiver": {
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                    "type": "string",
+                    "x-go-type": "uuid.UUID",
+                    "x-go-type-import": {
+                      "name": "uuid",
+                      "path": "github.com/google/uuid"
+                    },
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  },
+                  "sender": {
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                    "type": "string",
+                    "x-go-type": "uuid.UUID",
+                    "x-go-type-import": {
+                      "name": "uuid",
+                      "path": "github.com/google/uuid"
+                    },
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "notificationID",
+                  "title",
+                  "body",
+                  "labels",
+                  "createdAt",
+                  "sender",
+                  "notificationType"
+                ],
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "notificationID": {
+                "type": "integer"
+              },
+              "read": {
+                "type": "boolean"
+              },
+              "userID": {
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "userNotificationID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "userNotificationID",
+              "notificationID",
+              "read",
+              "userID",
+              "notification"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "page": {
+          "properties": {
+            "nextCursor": {
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      },
+      "required": [
+        "page",
+        "items"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestPaginatedNotificationsResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "DbActivity": {
       "properties": {
         "activityID": {
@@ -621,7 +992,7 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DemoWorkItemsResponse": {
+    "DemoWorkItems": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -1013,10 +1384,10 @@
         "demoWorkItem"
       ],
       "type": "object",
-      "x-postgen-struct": "RestDemoWorkItemsResponse",
+      "x-postgen-struct": "RestDemoWorkItems",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DemoTwoWorkItemsResponse": {
+    "DemoTwoWorkItems": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -1391,7 +1762,7 @@
         "demoTwoWorkItem"
       ],
       "type": "object",
-      "x-postgen-struct": "RestDemoTwoWorkItemsResponse",
+      "x-postgen-struct": "RestDemoTwoWorkItems",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "InitializeProjectRequest": {
@@ -1411,9 +1782,6 @@
               "name": {
                 "type": "string",
                 "minLength": 1
-              },
-              "projectID": {
-                "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
             "required": [
@@ -1462,7 +1830,7 @@
       "x-postgen-struct": "RestProjectBoardCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "ProjectBoardResponse": {
+    "ProjectBoard": {
       "properties": {
         "projectName": {
           "enum": [
@@ -1478,7 +1846,7 @@
         "projectName"
       ],
       "type": "object",
-      "x-postgen-struct": "RestProjectBoardResponse",
+      "x-postgen-struct": "RestProjectBoard",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "User": {
@@ -2518,34 +2886,6 @@
       "x-postgen-struct": "DbWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "WorkItemTagCreateRequest": {
-      "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string",
-          "minLength": 1
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "color",
-        "description",
-        "name"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestWorkItemTagCreateRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "DemoTwoWorkItemCreateRequest": {
       "properties": {
         "base": {
@@ -2909,9 +3249,6 @@
         "name": {
           "type": "string",
           "minLength": 1
-        },
-        "projectID": {
-          "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
       "required": [
@@ -3158,10 +3495,606 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemTypeID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbNotificationID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbNotification": {
+      "properties": {
+        "body": {
+          "type": "string",
+          "minLength": 1
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "labels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "minLength": 1
+        },
+        "link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notificationID": {
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "notificationType": {
+          "description": "represents a database 'notification_type'",
+          "type": "string",
+          "x-generated": "-",
+          "enum": [
+            "personal",
+            "global"
+          ],
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "receiver": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "sender": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "notificationID",
+        "title",
+        "body",
+        "labels",
+        "createdAt",
+        "sender",
+        "notificationType"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserNotification": {
+      "properties": {
+        "notificationID": {
+          "type": "integer"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "userNotificationID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "userNotificationID",
+        "notificationID",
+        "read",
+        "userID"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestPaginationPage": {
+      "properties": {
+        "nextCursor": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestNotification": {
+      "properties": {
+        "notification": {
+          "properties": {
+            "body": {
+              "type": "string",
+              "minLength": 1
+            },
+            "createdAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "labels": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minLength": 1
+            },
+            "link": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "notificationID": {
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "notificationType": {
+              "description": "represents a database 'notification_type'",
+              "type": "string",
+              "x-generated": "-",
+              "enum": [
+                "personal",
+                "global"
+              ],
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "receiver": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "sender": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "notificationID",
+            "title",
+            "body",
+            "labels",
+            "createdAt",
+            "sender",
+            "notificationType"
+          ],
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "notificationID": {
+          "type": "integer"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "userNotificationID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "userNotificationID",
+        "notificationID",
+        "read",
+        "userID",
+        "notification"
+      ],
+      "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
+    "WorkItemTagCreateRequest": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "color",
+        "description",
+        "name"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTagCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemTagUpdateRequest": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTagUpdateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemTag": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTagID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTagID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTag",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemTypeCreateRequest": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "color",
+        "description",
+        "name"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTypeCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemTypeUpdateRequest": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTypeUpdateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "WorkItemType": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTypeID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemType",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "TeamCreateRequest": {
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "description",
+        "name",
+        "projectID"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestTeamCreateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "TeamUpdateRequest": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestTeamUpdateRequest",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Team": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        }
+      },
+      "required": [
+        "teamID",
+        "projectID",
+        "name",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestTeam",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "Direction": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "PaginatedNotificationsResponse": {
+      "properties": {
+        "items": {
+          "items": {
+            "properties": {
+              "notification": {
+                "properties": {
+                  "body": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "createdAt": {
+                    "format": "date-time",
+                    "type": [
+                      "object"
+                    ]
+                  },
+                  "labels": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array",
+                    "minLength": 1
+                  },
+                  "link": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "notificationID": {
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  },
+                  "notificationType": {
+                    "description": "represents a database 'notification_type'",
+                    "type": "string",
+                    "x-generated": "-",
+                    "enum": [
+                      "personal",
+                      "global"
+                    ],
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  },
+                  "receiver": {
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                    "type": "string",
+                    "x-go-type": "uuid.UUID",
+                    "x-go-type-import": {
+                      "name": "uuid",
+                      "path": "github.com/google/uuid"
+                    },
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  },
+                  "sender": {
+                    "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                    "type": "string",
+                    "x-go-type": "uuid.UUID",
+                    "x-go-type-import": {
+                      "name": "uuid",
+                      "path": "github.com/google/uuid"
+                    },
+                    "$schema": "http://json-schema.org/draft-04/schema#"
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "notificationID",
+                  "title",
+                  "body",
+                  "labels",
+                  "createdAt",
+                  "sender",
+                  "notificationType"
+                ],
+                "type": "object",
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "notificationID": {
+                "type": "integer"
+              },
+              "read": {
+                "type": "boolean"
+              },
+              "userID": {
+                "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+                "type": "string",
+                "x-go-type": "uuid.UUID",
+                "x-go-type-import": {
+                  "name": "uuid",
+                  "path": "github.com/google/uuid"
+                },
+                "$schema": "http://json-schema.org/draft-04/schema#"
+              },
+              "userNotificationID": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "userNotificationID",
+              "notificationID",
+              "read",
+              "userID",
+              "notification"
+            ],
+            "type": "object",
+            "$schema": "http://json-schema.org/draft-04/schema#"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "page": {
+          "properties": {
+            "nextCursor": {
+              "type": "string"
+            }
+          },
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      },
+      "required": [
+        "page",
+        "items"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestPaginatedNotificationsResponse",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
     "DbActivity": {
       "properties": {
         "activityID": {
@@ -3781,7 +4714,7 @@
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DemoWorkItemsResponse": {
+    "DemoWorkItems": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -4173,10 +5106,10 @@
         "demoWorkItem"
       ],
       "type": "object",
-      "x-postgen-struct": "RestDemoWorkItemsResponse",
+      "x-postgen-struct": "RestDemoWorkItems",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DemoTwoWorkItemsResponse": {
+    "DemoTwoWorkItems": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -4551,7 +5484,7 @@
         "demoTwoWorkItem"
       ],
       "type": "object",
-      "x-postgen-struct": "RestDemoTwoWorkItemsResponse",
+      "x-postgen-struct": "RestDemoTwoWorkItems",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "InitializeProjectRequest": {
@@ -4571,9 +5504,6 @@
               "name": {
                 "type": "string",
                 "minLength": 1
-              },
-              "projectID": {
-                "$schema": "http://json-schema.org/draft-04/schema#"
               }
             },
             "required": [
@@ -4622,7 +5552,7 @@
       "x-postgen-struct": "RestProjectBoardCreateRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "ProjectBoardResponse": {
+    "ProjectBoard": {
       "properties": {
         "projectName": {
           "enum": [
@@ -4638,7 +5568,7 @@
         "projectName"
       ],
       "type": "object",
-      "x-postgen-struct": "RestProjectBoardResponse",
+      "x-postgen-struct": "RestProjectBoard",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "User": {
@@ -5678,34 +6608,6 @@
       "x-postgen-struct": "DbWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "WorkItemTagCreateRequest": {
-      "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string",
-          "minLength": 1
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "color",
-        "description",
-        "name"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestWorkItemTagCreateRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
     "DemoTwoWorkItemCreateRequest": {
       "properties": {
         "base": {
@@ -6069,9 +6971,6 @@
         "name": {
           "type": "string",
           "minLength": 1
-        },
-        "projectID": {
-          "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
       "required": [
@@ -6318,6 +7217,231 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbWorkItemTypeID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbNotificationID": {
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbNotification": {
+      "properties": {
+        "body": {
+          "type": "string",
+          "minLength": 1
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "labels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "minLength": 1
+        },
+        "link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notificationID": {
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "notificationType": {
+          "description": "represents a database 'notification_type'",
+          "type": "string",
+          "x-generated": "-",
+          "enum": [
+            "personal",
+            "global"
+          ],
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "receiver": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "sender": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "notificationID",
+        "title",
+        "body",
+        "labels",
+        "createdAt",
+        "sender",
+        "notificationType"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserNotification": {
+      "properties": {
+        "notificationID": {
+          "type": "integer"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "userNotificationID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "userNotificationID",
+        "notificationID",
+        "read",
+        "userID"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestPaginationPage": {
+      "properties": {
+        "nextCursor": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "RestNotification": {
+      "properties": {
+        "notification": {
+          "properties": {
+            "body": {
+              "type": "string",
+              "minLength": 1
+            },
+            "createdAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "labels": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minLength": 1
+            },
+            "link": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "notificationID": {
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "notificationType": {
+              "description": "represents a database 'notification_type'",
+              "type": "string",
+              "x-generated": "-",
+              "enum": [
+                "personal",
+                "global"
+              ],
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "receiver": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "sender": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "$schema": "http://json-schema.org/draft-04/schema#"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "notificationID",
+            "title",
+            "body",
+            "labels",
+            "createdAt",
+            "sender",
+            "notificationType"
+          ],
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "notificationID": {
+          "type": "integer"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "userNotificationID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "userNotificationID",
+        "notificationID",
+        "read",
+        "userID",
+        "notification"
+      ],
+      "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   }

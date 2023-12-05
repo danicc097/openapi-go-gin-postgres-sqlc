@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -182,8 +183,8 @@ func (dj *DummyJoin) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// DummyJoinPaginatedByDummyJoinIDAsc returns a cursor-paginated list of DummyJoin in Asc order.
-func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID DummyJoinID, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
+// DummyJoinPaginatedByDummyJoinID returns a cursor-paginated list of DummyJoin.
+func DummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID DummyJoinID, direction models.Direction, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
 	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -226,94 +227,31 @@ func DummyJoinPaginatedByDummyJoinIDAsc(ctx context.Context, db DB, dummyJoinID 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	dummy_join.dummy_join_id,
-	dummy_join.name %s 
-	 FROM xo_tests.dummy_join %s 
-	 WHERE dummy_join.dummy_join_id > $1
-	 %s   %s 
-  ORDER BY 
-		dummy_join_id Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* DummyJoinPaginatedByDummyJoinIDAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Asc/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DummyJoin])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Dummy join", Err: err}))
-	}
-	return res, nil
-}
-
-// DummyJoinPaginatedByDummyJoinIDDesc returns a cursor-paginated list of DummyJoin in Desc order.
-func DummyJoinPaginatedByDummyJoinIDDesc(ctx context.Context, db DB, dummyJoinID DummyJoinID, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
-	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	dummy_join.dummy_join_id,
 	dummy_join.name %s 
 	 FROM xo_tests.dummy_join %s 
-	 WHERE dummy_join.dummy_join_id < $1
+	 WHERE dummy_join.dummy_join_id %s $1
 	 %s   %s 
   ORDER BY 
-		dummy_join_id Desc`, selects, joins, filters, groupbys)
+		dummy_join_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* DummyJoinPaginatedByDummyJoinIDDesc */\n" + sqlstr
+	sqlstr = "/* DummyJoinPaginatedByDummyJoinID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Desc/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DummyJoin])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Dummy join", Err: err}))
+		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 	return res, nil
 }

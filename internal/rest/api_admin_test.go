@@ -11,13 +11,15 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestAdminPingRoute(t *testing.T) {
 	t.Parallel()
 
-	svc := services.New(zap.S(), services.CreateTestRepos(), testPool)
+	logger := zaptest.NewLogger(t).Sugar()
+
+	svc := services.New(logger, services.CreateTestRepos(), testPool)
 	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
@@ -30,7 +32,7 @@ func TestAdminPingRoute(t *testing.T) {
 
 	srv, err := runTestServer(t, testPool)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
-	srv.cleanup(t)
+	srv.setupCleanup(t)
 
 	t.Run("authorized", func(t *testing.T) {
 		t.Parallel()

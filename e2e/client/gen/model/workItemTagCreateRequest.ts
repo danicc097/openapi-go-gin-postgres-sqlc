@@ -10,5 +10,4 @@ export interface WorkItemTagCreateRequest {
   color: string
   description: string
   name: string
-  projectID?: number
 }

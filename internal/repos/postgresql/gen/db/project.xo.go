@@ -334,8 +334,8 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// ProjectPaginatedByProjectIDAsc returns a cursor-paginated list of Project in Asc order.
-func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID ProjectID, opts ...ProjectSelectConfigOption) ([]Project, error) {
+// ProjectPaginatedByProjectID returns a cursor-paginated list of Project.
+func ProjectPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...ProjectSelectConfigOption) ([]Project, error) {
 	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -408,107 +408,9 @@ func ProjectPaginatedByProjectIDAsc(ctx context.Context, db DB, projectID Projec
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	projects.board_config,
-	projects.created_at,
-	projects.description,
-	projects.name,
-	projects.project_id,
-	projects.updated_at,
-	projects.work_items_table_name %s 
-	 FROM public.projects %s 
-	 WHERE projects.project_id > $1
-	 %s   %s 
-  ORDER BY 
-		project_id Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* ProjectPaginatedByProjectIDAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Project/Paginated/Asc/db.Query: %w", &XoError{Entity: "Project", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Project])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Project/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Project", Err: err}))
-	}
-	return res, nil
-}
-
-// ProjectPaginatedByProjectIDDesc returns a cursor-paginated list of Project in Desc order.
-func ProjectPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID ProjectID, opts ...ProjectSelectConfigOption) ([]Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.Activities {
-		selectClauses = append(selectClauses, projectTableActivitiesSelectSQL)
-		joinClauses = append(joinClauses, projectTableActivitiesJoinSQL)
-		groupByClauses = append(groupByClauses, projectTableActivitiesGroupBySQL)
-	}
-
-	if c.joins.KanbanSteps {
-		selectClauses = append(selectClauses, projectTableKanbanStepsSelectSQL)
-		joinClauses = append(joinClauses, projectTableKanbanStepsJoinSQL)
-		groupByClauses = append(groupByClauses, projectTableKanbanStepsGroupBySQL)
-	}
-
-	if c.joins.Teams {
-		selectClauses = append(selectClauses, projectTableTeamsSelectSQL)
-		joinClauses = append(joinClauses, projectTableTeamsJoinSQL)
-		groupByClauses = append(groupByClauses, projectTableTeamsGroupBySQL)
-	}
-
-	if c.joins.WorkItemTags {
-		selectClauses = append(selectClauses, projectTableWorkItemTagsSelectSQL)
-		joinClauses = append(joinClauses, projectTableWorkItemTagsJoinSQL)
-		groupByClauses = append(groupByClauses, projectTableWorkItemTagsGroupBySQL)
-	}
-
-	if c.joins.WorkItemTypes {
-		selectClauses = append(selectClauses, projectTableWorkItemTypesSelectSQL)
-		joinClauses = append(joinClauses, projectTableWorkItemTypesJoinSQL)
-		groupByClauses = append(groupByClauses, projectTableWorkItemTypesGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -520,22 +422,22 @@ func ProjectPaginatedByProjectIDDesc(ctx context.Context, db DB, projectID Proje
 	projects.updated_at,
 	projects.work_items_table_name %s 
 	 FROM public.projects %s 
-	 WHERE projects.project_id < $1
+	 WHERE projects.project_id %s $1
 	 %s   %s 
   ORDER BY 
-		project_id Desc`, selects, joins, filters, groupbys)
+		project_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* ProjectPaginatedByProjectIDDesc */\n" + sqlstr
+	sqlstr = "/* ProjectPaginatedByProjectID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Project/Paginated/Desc/db.Query: %w", &XoError{Entity: "Project", Err: err}))
+		return nil, logerror(fmt.Errorf("Project/Paginated/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Project])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Project/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Project", Err: err}))
+		return nil, logerror(fmt.Errorf("Project/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Project", Err: err}))
 	}
 	return res, nil
 }

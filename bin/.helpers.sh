@@ -429,6 +429,15 @@ docker.images.load_latest() {
 
 ######################## go ###########################
 
+AWK_REMOVE_GO_COMMENTS='
+     /\/\*/ { f=1 } # set flag that is a block comment
+
+     f==0 && !/^\s*(\/\/|\/\*)/ {
+        print  # print non-commented lines
+     }
+     /\*\// { f=0 } # reset flag at end of comment
+'
+
 # Stores go structs in package to a given array.
 # Parameters:
 #    Struct array (nameref)
@@ -436,8 +445,23 @@ docker.images.load_latest() {
 go-utils.find_structs() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
-    sed -ne 's/[\s]*type\(.*\)struct.*/\1/p')
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+    sed -ne '/\[/!s/[\s]*type\(.*\)struct.*/\1/p') # /\[/! excludes lines containing [ right away
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    err "No structs found in package $pkg"
+  fi
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+}
+
+# Stores go generic structs in package to a given array.
+# Parameters:
+#    Struct array (nameref)
+#    Package directory
+go-utils.find_generic_structs() {
+  local -n __arr="$1"
+  local pkg="$2"
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+    sed -ne 's/[\s]*type\s*\([^\[]*\)\(\[.*\]\)\+\s*struct.*/\1/p')
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No structs found in package $pkg"
   fi
@@ -451,7 +475,7 @@ go-utils.find_structs() {
 go-utils.find_interfaces() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
     sed -ne 's/[\s]*type\(.*\)interface.*/\1/p')
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No interfaces found in package $pkg"
@@ -466,7 +490,7 @@ go-utils.find_interfaces() {
 go-utils.find_enums() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
     sed -ne 's/.*type[[:space:]]\+\([^=[:space:]]\+\)[[:space:]]\+string.*/\1/p')
   if [[ ${#__arr[@]} -eq 0 ]]; then
     echo "No enums found in package $pkg"
@@ -483,7 +507,7 @@ go-utils.get_interface_methods() {
   local file="$2"
   awk "/^type $interface /{flag=1; print; next} flag && /^}/{flag=0} flag" $file |
     sed -e '1d' |
-    awk "$awk_remove_go_comments"
+    awk "$AWK_REMOVE_GO_COMMENTS"
 }
 
 # Stores go custom types in package to a given array.
@@ -493,7 +517,7 @@ go-utils.get_interface_methods() {
 go-utils.find_all_types() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$awk_remove_go_comments" {} \; |
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
     sed -E -n 's/^type[[:space:]]+([A-Z][A-Za-z0-9_]+)[[:space:]].*/\1/p')
   if [[ ${#__arr[@]} -eq 0 ]]; then
     echo "No types found in package $pkg"

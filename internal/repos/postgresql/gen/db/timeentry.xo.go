@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -308,8 +309,8 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// TimeEntryPaginatedByTimeEntryIDAsc returns a cursor-paginated list of TimeEntry in Asc order.
-func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID TimeEntryID, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
+// TimeEntryPaginatedByTimeEntryID returns a cursor-paginated list of TimeEntry.
+func TimeEntryPaginatedByTimeEntryID(ctx context.Context, db DB, timeEntryID TimeEntryID, direction models.Direction, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -376,102 +377,9 @@ func TimeEntryPaginatedByTimeEntryIDAsc(ctx context.Context, db DB, timeEntryID 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	time_entries.activity_id,
-	time_entries.comment,
-	time_entries.duration_minutes,
-	time_entries.start,
-	time_entries.team_id,
-	time_entries.time_entry_id,
-	time_entries.user_id,
-	time_entries.work_item_id %s 
-	 FROM public.time_entries %s 
-	 WHERE time_entries.time_entry_id > $1
-	 %s   %s 
-  ORDER BY 
-		time_entry_id Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* TimeEntryPaginatedByTimeEntryIDAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Asc/db.Query: %w", &XoError{Entity: "Time entry", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[TimeEntry])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Time entry", Err: err}))
-	}
-	return res, nil
-}
-
-// TimeEntryPaginatedByTimeEntryIDDesc returns a cursor-paginated list of TimeEntry in Desc order.
-func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID TimeEntryID, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
-	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.Activity {
-		selectClauses = append(selectClauses, timeEntryTableActivitySelectSQL)
-		joinClauses = append(joinClauses, timeEntryTableActivityJoinSQL)
-		groupByClauses = append(groupByClauses, timeEntryTableActivityGroupBySQL)
-	}
-
-	if c.joins.Team {
-		selectClauses = append(selectClauses, timeEntryTableTeamSelectSQL)
-		joinClauses = append(joinClauses, timeEntryTableTeamJoinSQL)
-		groupByClauses = append(groupByClauses, timeEntryTableTeamGroupBySQL)
-	}
-
-	if c.joins.User {
-		selectClauses = append(selectClauses, timeEntryTableUserSelectSQL)
-		joinClauses = append(joinClauses, timeEntryTableUserJoinSQL)
-		groupByClauses = append(groupByClauses, timeEntryTableUserGroupBySQL)
-	}
-
-	if c.joins.WorkItem {
-		selectClauses = append(selectClauses, timeEntryTableWorkItemSelectSQL)
-		joinClauses = append(joinClauses, timeEntryTableWorkItemJoinSQL)
-		groupByClauses = append(groupByClauses, timeEntryTableWorkItemGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -484,22 +392,22 @@ func TimeEntryPaginatedByTimeEntryIDDesc(ctx context.Context, db DB, timeEntryID
 	time_entries.user_id,
 	time_entries.work_item_id %s 
 	 FROM public.time_entries %s 
-	 WHERE time_entries.time_entry_id < $1
+	 WHERE time_entries.time_entry_id %s $1
 	 %s   %s 
   ORDER BY 
-		time_entry_id Desc`, selects, joins, filters, groupbys)
+		time_entry_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* TimeEntryPaginatedByTimeEntryIDDesc */\n" + sqlstr
+	sqlstr = "/* TimeEntryPaginatedByTimeEntryID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Desc/db.Query: %w", &XoError{Entity: "Time entry", Err: err}))
+		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/db.Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[TimeEntry])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Time entry", Err: err}))
+		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
 	return res, nil
 }

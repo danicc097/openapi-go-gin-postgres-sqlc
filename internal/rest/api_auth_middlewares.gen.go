@@ -17,6 +17,18 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 					MinimumRole: models.Role("admin"),
 				}),
 		}
+	case CreateTeam:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case CreateWorkItemTag:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case CreateWorkItemType:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
 	case CreateWorkitem:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
@@ -25,7 +37,7 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
-	case CreateWorkitemTag:
+	case DeleteTeam:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
@@ -36,8 +48,17 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 				AuthRestriction{
 					MinimumRole: models.Role("admin"),
 					RequiredScopes: models.Scopes{
-						models.Scope("users:delete")},
+						models.Scope("users:delete"),
+					},
 				}),
+		}
+	case DeleteWorkItemTag:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case DeleteWorkItemType:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
 		}
 	case DeleteWorkitem:
 		return []gin.HandlerFunc{
@@ -46,6 +67,10 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 	case Events:
 		return []gin.HandlerFunc{}
 	case GetCurrentUser:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case GetPaginatedNotifications:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
@@ -69,7 +94,19 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
-	case GetWorkitem:
+	case GetTeam:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case GetWorkItem:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case GetWorkItemTag:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case GetWorkItemType:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
@@ -97,6 +134,10 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 					MinimumRole: models.Role("admin"),
 				}),
 		}
+	case UpdateTeam:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
 	case UpdateUser:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
@@ -111,8 +152,17 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
 					RequiredScopes: models.Scopes{
-						models.Scope("scopes:write")},
+						models.Scope("scopes:write"),
+					},
 				}),
+		}
+	case UpdateWorkItemTag:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case UpdateWorkItemType:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
 		}
 	case UpdateWorkitem:
 		return []gin.HandlerFunc{

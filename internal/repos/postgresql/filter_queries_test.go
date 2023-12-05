@@ -16,7 +16,7 @@ type filterTestCase[T any] struct {
 	// filter represents the slice of arguments to pass to repoMethod, excluding context and db connection.
 	filter     any
 	repoMethod reflect.Value
-	callback   genericFilterCallbackFunc[T] // T needs to be a specific type in a single TDT so this is useless
+	callback   genericFilterCallbackFunc[T]
 }
 
 // callback function that should test repo method output matches expectation.

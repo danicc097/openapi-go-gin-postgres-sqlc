@@ -8,6 +8,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
@@ -29,8 +30,8 @@ func NewNotificationWithRetry(base repos.Notification, retryCount int, retryInte
 }
 
 // Create implements repos.Notification
-func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (np1 *db.Notification, err error) {
-	np1, err = _d.Notification.Create(ctx, d, params)
+func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (up1 *db.UserNotification, err error) {
+	up1, err = _d.Notification.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -42,7 +43,7 @@ func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params *d
 			return
 		case <-_ticker.C:
 		}
-		np1, err = _d.Notification.Create(ctx, d, params)
+		up1, err = _d.Notification.Create(ctx, d, params)
 	}
 	return
 }
@@ -66,9 +67,9 @@ func (_d NotificationWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Not
 	return
 }
 
-// LatestUserNotifications implements repos.Notification
-func (_d NotificationWithRetry) LatestUserNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
-	ga1, err = _d.Notification.LatestUserNotifications(ctx, d, params)
+// LatestNotifications implements repos.Notification
+func (_d NotificationWithRetry) LatestNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
+	ga1, err = _d.Notification.LatestNotifications(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -80,7 +81,26 @@ func (_d NotificationWithRetry) LatestUserNotifications(ctx context.Context, d d
 			return
 		case <-_ticker.C:
 		}
-		ga1, err = _d.Notification.LatestUserNotifications(ctx, d, params)
+		ga1, err = _d.Notification.LatestNotifications(ctx, d, params)
+	}
+	return
+}
+
+// PaginatedNotifications implements repos.Notification
+func (_d NotificationWithRetry) PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) (ua1 []db.UserNotification, err error) {
+	ua1, err = _d.Notification.PaginatedNotifications(ctx, d, userID, params)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		ua1, err = _d.Notification.PaginatedNotifications(ctx, d, userID, params)
 	}
 	return
 }

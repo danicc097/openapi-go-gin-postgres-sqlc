@@ -110,6 +110,7 @@ func TestEnsureFunctionMethods_MisplacedMethod(t *testing.T) {
 	type tag = string
 	const foo = tag("foo")
 	const bar = tag("bar")
+	const barCamelCase = tag("barCamelCase")
 
 	type handlerFiles map[tag]tagHandlerFile
 
@@ -117,7 +118,7 @@ func TestEnsureFunctionMethods_MisplacedMethod(t *testing.T) {
 		name        string
 		operations  map[tag][]string
 		files       handlerFiles
-		errContains string
+		errContains []string
 	}
 
 	tests := []testCase{
@@ -172,8 +173,23 @@ func (h *Handlers) Baz() {}
 			}(),
 		},
 		{
+			name:        "no correct file created yet",
+			errContains: []string{`api_bar_camel_case.go for new tag "barCamelCase"`, "missing file"},
+			operations:  map[tag][]string{foo: {"Foo"}, barCamelCase: {"Bar"}},
+			files: func() handlerFiles {
+				content := `package rest
+
+				func (h *Handlers) Foo() {}
+				`
+
+				return handlerFiles{
+					foo: {content: content, newContent: content},
+				}
+			}(),
+		},
+		{
 			name:        "misplaced with no correct file created yet",
-			errContains: `misplaced method for operation ID "Bar" - should be in api_bar.go (file does not exist)`,
+			errContains: []string{`misplaced method for operation ID "Bar" - should be in api_bar.go (file does not exist)`},
 			operations:  map[tag][]string{foo: {"Foo"}, bar: {"Bar"}},
 			files: func() handlerFiles {
 				content := `package rest
@@ -187,21 +203,22 @@ func (h *Handlers) Baz() {}
 				}
 			}(),
 		},
-		{
-			name:        "missing method in existing file",
-			errContains: `missing function method for operation ID "Bar" in api_foo.go`,
-			operations:  map[tag][]string{foo: {"Foo", "Bar"}},
-			files: func() handlerFiles {
-				content := `package rest
+		// we now fix these automatically via server interface implementation
+		// {
+		// 	name:        "missing method in existing file",
+		// 	errContains: []string{`missing function method for operation ID "Bar" in api_foo.go`},
+		// 	operations:  map[tag][]string{foo: {"Foo", "Bar"}},
+		// 	files: func() handlerFiles {
+		// 		content := `package rest
 
-				func (h *Handlers) Foo() {}
-				`
+		// 		func (h *Handlers) Foo() {}
+		// 		`
 
-				return handlerFiles{
-					foo: {content: content, newContent: content},
-				}
-			}(),
-		},
+		// 		return handlerFiles{
+		// 			foo: {content: content, newContent: content},
+		// 		}
+		// 	}(),
+		// },
 	}
 	for _, tc := range tests {
 		tc := tc
@@ -221,16 +238,14 @@ func (h *Handlers) Baz() {}
 				require.NoError(t, err, "Failed to write test file")
 			}
 
-			o := &CodeGen{
-				stderr:       &bytes.Buffer{},
-				specPath:     "",
-				operations:   tc.operations,
-				handlersPath: tmpDir,
-			}
+			o := New(&bytes.Buffer{}, "", "", tmpDir)
+			o.operations = tc.operations
 
-			err := o.ensureFunctionMethods()
-			if tc.errContains != "" {
-				assert.ErrorContains(t, err, tc.errContains)
+			err := o.ensureHandlerMethodsExist()
+			if len(tc.errContains) > 0 {
+				for _, e := range tc.errContains {
+					assert.ErrorContains(t, err, e)
+				}
 			} else {
 				require.NoError(t, err)
 			}

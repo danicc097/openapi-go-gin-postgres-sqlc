@@ -10,10 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/google/uuid"
 )
 
 // PagElement represents a row from 'xo_tests.pag_element'.
@@ -238,8 +240,8 @@ func (pe *PagElement) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// PagElementPaginatedByCreatedAtAsc returns a cursor-paginated list of PagElement in Asc order.
-func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time, opts ...PagElementSelectConfigOption) ([]PagElement, error) {
+// PagElementPaginatedByCreatedAt returns a cursor-paginated list of PagElement.
+func PagElementPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...PagElementSelectConfigOption) ([]PagElement, error) {
 	c := &PagElementSelectConfig{joins: PagElementJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -288,80 +290,9 @@ func PagElementPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt tim
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	pag_element.created_at,
-	pag_element.dummy,
-	pag_element.name,
-	pag_element.paginated_element_id %s 
-	 FROM xo_tests.pag_element %s 
-	 WHERE pag_element.created_at > $1
-	 %s   %s 
-  ORDER BY 
-		created_at Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* PagElementPaginatedByCreatedAtAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Paginated/Asc/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[PagElement])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Pag element", Err: err}))
-	}
-	return res, nil
-}
-
-// PagElementPaginatedByCreatedAtDesc returns a cursor-paginated list of PagElement in Desc order.
-func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Time, opts ...PagElementSelectConfigOption) ([]PagElement, error) {
-	c := &PagElementSelectConfig{joins: PagElementJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.DummyJoin {
-		selectClauses = append(selectClauses, pagElementTableDummyJoinSelectSQL)
-		joinClauses = append(joinClauses, pagElementTableDummyJoinJoinSQL)
-		groupByClauses = append(groupByClauses, pagElementTableDummyJoinGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -370,22 +301,22 @@ func PagElementPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt ti
 	pag_element.name,
 	pag_element.paginated_element_id %s 
 	 FROM xo_tests.pag_element %s 
-	 WHERE pag_element.created_at < $1
+	 WHERE pag_element.created_at %s $1
 	 %s   %s 
   ORDER BY 
-		created_at Desc`, selects, joins, filters, groupbys)
+		created_at %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* PagElementPaginatedByCreatedAtDesc */\n" + sqlstr
+	sqlstr = "/* PagElementPaginatedByCreatedAt */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Paginated/Desc/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
+		return nil, logerror(fmt.Errorf("PagElement/Paginated/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[PagElement])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("PagElement/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Pag element", Err: err}))
+		return nil, logerror(fmt.Errorf("PagElement/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
 	return res, nil
 }

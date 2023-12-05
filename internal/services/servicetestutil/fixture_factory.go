@@ -8,17 +8,17 @@ import (
 // FixtureFactory provides fixtures to create randomized elements
 // in the data store.
 type FixtureFactory struct {
-	d   db.DBTX
+	db  db.DBTX
 	svc *services.Services
 }
 
 // NewFixtureFactory returns a new FixtureFactory.
 func NewFixtureFactory(
-	d db.DBTX,
+	db db.DBTX,
 	svc *services.Services,
 ) *FixtureFactory {
 	return &FixtureFactory{
-		d:   d,
+		db:  db,
 		svc: svc,
 	}
 }

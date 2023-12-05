@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestValidationErrorsResponse(t *testing.T) {
@@ -22,8 +22,8 @@ func TestValidationErrorsResponse(t *testing.T) {
 		t.Fatalf("could not read test spec: %s", err)
 	}
 
-	logger, _ := zap.NewDevelopment()
-	oasMw := newOpenapiMiddleware(logger.Sugar(), openapi)
+	logger := zaptest.NewLogger(t).Sugar()
+	oasMw := newOpenapiMiddleware(logger, openapi)
 	oaOptions := createOpenAPIValidatorOptions()
 
 	t.Run("response_validation", func(t *testing.T) {

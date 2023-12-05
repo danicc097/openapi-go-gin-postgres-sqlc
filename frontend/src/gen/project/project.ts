@@ -18,13 +18,11 @@ import type {
 } from '@tanstack/react-query'
 import type {
   DbProject,
-  DbWorkItemTag,
   GetProjectWorkitems200,
   GetProjectWorkitemsParams,
   InitializeProjectRequest,
-  ProjectBoardResponse,
+  ProjectBoard,
   ProjectConfig,
-  WorkItemTagCreateRequest,
 } from '.././model'
 import { customInstance } from '../../api/mutator'
 
@@ -378,7 +376,7 @@ export const getProjectBoard = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal,
 ) => {
-  return customInstance<ProjectBoardResponse>({ url: `/project/${projectName}/board`, method: 'get', signal }, options)
+  return customInstance<ProjectBoard>({ url: `/project/${projectName}/board`, method: 'get', signal }, options)
 }
 
 export const getGetProjectBoardQueryKey = (projectName: 'demo' | 'demo_two') => {
@@ -593,72 +591,4 @@ export const useGetProjectWorkitems = <TData = Awaited<ReturnType<typeof getProj
   query.queryKey = queryOptions.queryKey
 
   return query
-}
-
-/**
- * @summary create workitem tag
- */
-export const createWorkitemTag = (
-  projectName: 'demo' | 'demo_two',
-  workItemTagCreateRequest: WorkItemTagCreateRequest,
-  options?: SecondParameter<typeof customInstance>,
-) => {
-  return customInstance<DbWorkItemTag>(
-    {
-      url: `/project/${projectName}/tag/`,
-      method: 'post',
-      headers: { 'Content-Type': 'application/json' },
-      data: workItemTagCreateRequest,
-    },
-    options,
-  )
-}
-
-export const getCreateWorkitemTagMutationOptions = <TError = unknown, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createWorkitemTag>>,
-    TError,
-    { projectName: 'demo' | 'demo_two'; data: WorkItemTagCreateRequest },
-    TContext
-  >
-  request?: SecondParameter<typeof customInstance>
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof createWorkitemTag>>,
-  TError,
-  { projectName: 'demo' | 'demo_two'; data: WorkItemTagCreateRequest },
-  TContext
-> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {}
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createWorkitemTag>>,
-    { projectName: 'demo' | 'demo_two'; data: WorkItemTagCreateRequest }
-  > = (props) => {
-    const { projectName, data } = props ?? {}
-
-    return createWorkitemTag(projectName, data, requestOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type CreateWorkitemTagMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkitemTag>>>
-export type CreateWorkitemTagMutationBody = WorkItemTagCreateRequest
-export type CreateWorkitemTagMutationError = unknown
-
-/**
- * @summary create workitem tag
- */
-export const useCreateWorkitemTag = <TError = unknown, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createWorkitemTag>>,
-    TError,
-    { projectName: 'demo' | 'demo_two'; data: WorkItemTagCreateRequest },
-    TContext
-  >
-  request?: SecondParameter<typeof customInstance>
-}) => {
-  const mutationOptions = getCreateWorkitemTagMutationOptions(options)
-
-  return useMutation(mutationOptions)
 }

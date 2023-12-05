@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -297,8 +298,8 @@ func (b *Book) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// BookPaginatedByBookIDAsc returns a cursor-paginated list of Book in Asc order.
-func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID BookID, opts ...BookSelectConfigOption) ([]Book, error) {
+// BookPaginatedByBookID returns a cursor-paginated list of Book.
+func BookPaginatedByBookID(ctx context.Context, db DB, bookID BookID, direction models.Direction, opts ...BookSelectConfigOption) ([]Book, error) {
 	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -365,118 +366,31 @@ func BookPaginatedByBookIDAsc(ctx context.Context, db DB, bookID BookID, opts ..
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	books.book_id,
-	books.name %s 
-	 FROM xo_tests.books %s 
-	 WHERE books.book_id > $1
-	 %s   %s 
-  ORDER BY 
-		book_id Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* BookPaginatedByBookIDAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Paginated/Asc/db.Query: %w", &XoError{Entity: "Book", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Book])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Book", Err: err}))
-	}
-	return res, nil
-}
-
-// BookPaginatedByBookIDDesc returns a cursor-paginated list of Book in Desc order.
-func BookPaginatedByBookIDDesc(ctx context.Context, db DB, bookID BookID, opts ...BookSelectConfigOption) ([]Book, error) {
-	c := &BookSelectConfig{joins: BookJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.AuthorsBook {
-		selectClauses = append(selectClauses, bookTableAuthorsBookSelectSQL)
-		joinClauses = append(joinClauses, bookTableAuthorsBookJoinSQL)
-		groupByClauses = append(groupByClauses, bookTableAuthorsBookGroupBySQL)
-	}
-
-	if c.joins.AuthorsBookUsers {
-		selectClauses = append(selectClauses, bookTableAuthorsBookUsersSelectSQL)
-		joinClauses = append(joinClauses, bookTableAuthorsBookUsersJoinSQL)
-		groupByClauses = append(groupByClauses, bookTableAuthorsBookUsersGroupBySQL)
-	}
-
-	if c.joins.BookReviews {
-		selectClauses = append(selectClauses, bookTableBookReviewsSelectSQL)
-		joinClauses = append(joinClauses, bookTableBookReviewsJoinSQL)
-		groupByClauses = append(groupByClauses, bookTableBookReviewsGroupBySQL)
-	}
-
-	if c.joins.Sellers {
-		selectClauses = append(selectClauses, bookTableSellersSelectSQL)
-		joinClauses = append(joinClauses, bookTableSellersJoinSQL)
-		groupByClauses = append(groupByClauses, bookTableSellersGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	books.book_id,
 	books.name %s 
 	 FROM xo_tests.books %s 
-	 WHERE books.book_id < $1
+	 WHERE books.book_id %s $1
 	 %s   %s 
   ORDER BY 
-		book_id Desc`, selects, joins, filters, groupbys)
+		book_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* BookPaginatedByBookIDDesc */\n" + sqlstr
+	sqlstr = "/* BookPaginatedByBookID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Paginated/Desc/db.Query: %w", &XoError{Entity: "Book", Err: err}))
+		return nil, logerror(fmt.Errorf("Book/Paginated/db.Query: %w", &XoError{Entity: "Book", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Book])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Book/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Book", Err: err}))
+		return nil, logerror(fmt.Errorf("Book/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Book", Err: err}))
 	}
 	return res, nil
 }

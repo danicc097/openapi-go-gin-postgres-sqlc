@@ -10,10 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/google/uuid"
 )
 
 // User represents a row from 'xo_tests.users'.
@@ -461,8 +463,8 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 	return newu, nil
 }
 
-// UserPaginatedByCreatedAtAsc returns a cursor-paginated list of User in Asc order.
-func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
+// UserPaginatedByCreatedAt returns a cursor-paginated list of User.
+func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -553,123 +555,9 @@ func UserPaginatedByCreatedAtAsc(ctx context.Context, db DB, createdAt time.Time
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	users.api_key_id,
-	users.created_at,
-	users.deleted_at,
-	users.name,
-	users.user_id %s 
-	 FROM xo_tests.users %s 
-	 WHERE users.created_at > $1
-	 %s   AND users.deleted_at is %s  %s 
-  ORDER BY 
-		created_at Asc`, selects, joins, filters, c.deletedAt, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* UserPaginatedByCreatedAtAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/Asc/db.Query: %w", &XoError{Entity: "User", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "User", Err: err}))
-	}
-	return res, nil
-}
-
-// UserPaginatedByCreatedAtDesc returns a cursor-paginated list of User in Desc order.
-func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, userTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, userTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, userTableBooksAuthorGroupBySQL)
-	}
-
-	if c.joins.BooksAuthorBooks {
-		selectClauses = append(selectClauses, userTableBooksAuthorBooksSelectSQL)
-		joinClauses = append(joinClauses, userTableBooksAuthorBooksJoinSQL)
-		groupByClauses = append(groupByClauses, userTableBooksAuthorBooksGroupBySQL)
-	}
-
-	if c.joins.BookReviews {
-		selectClauses = append(selectClauses, userTableBookReviewsSelectSQL)
-		joinClauses = append(joinClauses, userTableBookReviewsJoinSQL)
-		groupByClauses = append(groupByClauses, userTableBookReviewsGroupBySQL)
-	}
-
-	if c.joins.BooksSeller {
-		selectClauses = append(selectClauses, userTableBooksSellerSelectSQL)
-		joinClauses = append(joinClauses, userTableBooksSellerJoinSQL)
-		groupByClauses = append(groupByClauses, userTableBooksSellerGroupBySQL)
-	}
-
-	if c.joins.NotificationsReceiver {
-		selectClauses = append(selectClauses, userTableNotificationsReceiverSelectSQL)
-		joinClauses = append(joinClauses, userTableNotificationsReceiverJoinSQL)
-		groupByClauses = append(groupByClauses, userTableNotificationsReceiverGroupBySQL)
-	}
-
-	if c.joins.NotificationsSender {
-		selectClauses = append(selectClauses, userTableNotificationsSenderSelectSQL)
-		joinClauses = append(joinClauses, userTableNotificationsSenderJoinSQL)
-		groupByClauses = append(groupByClauses, userTableNotificationsSenderGroupBySQL)
-	}
-
-	if c.joins.UserAPIKey {
-		selectClauses = append(selectClauses, userTableUserAPIKeySelectSQL)
-		joinClauses = append(joinClauses, userTableUserAPIKeyJoinSQL)
-		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
-	}
-
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -679,22 +567,22 @@ func UserPaginatedByCreatedAtDesc(ctx context.Context, db DB, createdAt time.Tim
 	users.name,
 	users.user_id %s 
 	 FROM xo_tests.users %s 
-	 WHERE users.created_at < $1
+	 WHERE users.created_at %s $1
 	 %s   AND users.deleted_at is %s  %s 
   ORDER BY 
-		created_at Desc`, selects, joins, filters, c.deletedAt, groupbys)
+		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* UserPaginatedByCreatedAtDesc */\n" + sqlstr
+	sqlstr = "/* UserPaginatedByCreatedAt */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/Desc/db.Query: %w", &XoError{Entity: "User", Err: err}))
+		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "User", Err: err}))
+		return nil, logerror(fmt.Errorf("User/Paginated/pgx.CollectRows: %w", &XoError{Entity: "User", Err: err}))
 	}
 	return res, nil
 }

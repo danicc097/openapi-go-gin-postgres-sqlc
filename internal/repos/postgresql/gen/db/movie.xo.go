@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -202,8 +203,8 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// MoviePaginatedByMovieIDAsc returns a cursor-paginated list of Movie in Asc order.
-func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID MovieID, opts ...MovieSelectConfigOption) ([]Movie, error) {
+// MoviePaginatedByMovieID returns a cursor-paginated list of Movie.
+func MoviePaginatedByMovieID(ctx context.Context, db DB, movieID MovieID, direction models.Direction, opts ...MovieSelectConfigOption) ([]Movie, error) {
 	c := &MovieSelectConfig{joins: MovieJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -246,74 +247,9 @@ func MoviePaginatedByMovieIDAsc(ctx context.Context, db DB, movieID MovieID, opt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
-	movies.movie_id,
-	movies.synopsis,
-	movies.title,
-	movies.year %s 
-	 FROM public.movies %s 
-	 WHERE movies.movie_id > $1
-	 %s   %s 
-  ORDER BY 
-		movie_id Asc`, selects, joins, filters, groupbys)
-	sqlstr += c.limit
-	sqlstr = "/* MoviePaginatedByMovieIDAsc */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Paginated/Asc/db.Query: %w", &XoError{Entity: "Movie", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Movie])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Paginated/Asc/pgx.CollectRows: %w", &XoError{Entity: "Movie", Err: err}))
-	}
-	return res, nil
-}
-
-// MoviePaginatedByMovieIDDesc returns a cursor-paginated list of Movie in Desc order.
-func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID MovieID, opts ...MovieSelectConfigOption) ([]Movie, error) {
-	c := &MovieSelectConfig{joins: MovieJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -322,22 +258,22 @@ func MoviePaginatedByMovieIDDesc(ctx context.Context, db DB, movieID MovieID, op
 	movies.title,
 	movies.year %s 
 	 FROM public.movies %s 
-	 WHERE movies.movie_id < $1
+	 WHERE movies.movie_id %s $1
 	 %s   %s 
   ORDER BY 
-		movie_id Desc`, selects, joins, filters, groupbys)
+		movie_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* MoviePaginatedByMovieIDDesc */\n" + sqlstr
+	sqlstr = "/* MoviePaginatedByMovieID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{movieID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Paginated/Desc/db.Query: %w", &XoError{Entity: "Movie", Err: err}))
+		return nil, logerror(fmt.Errorf("Movie/Paginated/db.Query: %w", &XoError{Entity: "Movie", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Movie])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("Movie/Paginated/Desc/pgx.CollectRows: %w", &XoError{Entity: "Movie", Err: err}))
+		return nil, logerror(fmt.Errorf("Movie/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Movie", Err: err}))
 	}
 	return res, nil
 }

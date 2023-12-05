@@ -281,7 +281,7 @@ func (u *User) LatestPersonalNotifications(ctx context.Context, d db.DBTX, userI
 	// 	return nil, internal.NewErrorf(models.ErrorCodeInvalidUUID, "could not parse UUID")
 	// }
 
-	// user, err := u.notificationrepo.LatestUserNotifications(ctx, d, db.GetUserNotificationsParams{UserID: uid})
+	// user, err := u.notificationrepo.LatestNotifications(ctx, d, db.GetUserNotificationsParams{UserID: uid})
 	// if err != nil {
 	// 	return nil, fmt.Errorf("repos.User.ByAPIKey: %w", err)
 	// }
