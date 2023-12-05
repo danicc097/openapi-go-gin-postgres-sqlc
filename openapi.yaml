@@ -778,6 +778,8 @@ components:
           type: string
         name:
           type: string
+        projectID:
+          type: integer
         workItemTagID:
           type: integer
       required:
@@ -824,6 +826,8 @@ components:
           type: string
         name:
           type: string
+        projectID:
+          type: integer
         workItemTypeID:
           type: integer
       required:
@@ -932,6 +936,8 @@ components:
           type: integer
         name:
           type: string
+        projectID:
+          type: integer
         stepOrder:
           type: integer
         timeTrackable:
@@ -1004,6 +1010,8 @@ components:
           type: string
         name:
           type: string
+        projectID:
+          type: integer
         workItemTagID:
           type: integer
       required:
@@ -1023,6 +1031,8 @@ components:
           type: string
         name:
           type: string
+        projectID:
+          type: integer
         workItemTypeID:
           type: integer
       required:

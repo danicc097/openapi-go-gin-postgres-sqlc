@@ -12,6 +12,7 @@ export const getCreateWorkItemTypeMock = () => ({
   color: faker.word.sample(),
   description: faker.word.sample(),
   name: faker.word.sample(),
+  projectID: faker.number.int({ min: undefined, max: undefined }),
   workItemTypeID: faker.number.int({ min: undefined, max: undefined }),
 })
 
@@ -19,6 +20,7 @@ export const getGetWorkItemTypeMock = () => ({
   color: faker.word.sample(),
   description: faker.word.sample(),
   name: faker.word.sample(),
+  projectID: faker.number.int({ min: undefined, max: undefined }),
   workItemTypeID: faker.number.int({ min: undefined, max: undefined }),
 })
 
@@ -26,6 +28,7 @@ export const getUpdateWorkItemTypeMock = () => ({
   color: faker.word.sample(),
   description: faker.word.sample(),
   name: faker.word.sample(),
+  projectID: faker.number.int({ min: undefined, max: undefined }),
   workItemTypeID: faker.number.int({ min: undefined, max: undefined }),
 })
 

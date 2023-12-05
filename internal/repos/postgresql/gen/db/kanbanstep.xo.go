@@ -25,7 +25,7 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type KanbanStep struct {
 	KanbanStepID  KanbanStepID `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`                              // kanban_step_id
-	ProjectID     ProjectID    `json:"projectID" db:"project_id" openapi-go:"ignore" required:"true" nullable:"false"`                 // project_id
+	ProjectID     ProjectID    `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                     // project_id
 	StepOrder     int          `json:"stepOrder" db:"step_order" required:"true" nullable:"false"`                                     // step_order
 	Name          string       `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
 	Description   string       `json:"description" db:"description" required:"true" nullable:"false"`                                  // description

@@ -10,5 +10,6 @@ export interface WorkItemType {
   color: string
   description: string
   name: string
+  projectID: number
   workItemTypeID: number
 }

@@ -99,6 +99,7 @@ export interface WorkItemTag {
   color: string
   description: string
   name: string
+  projectID: number
   workItemTagID: number
 }
 export interface WorkItemTypeCreateRequest {
@@ -115,6 +116,7 @@ export interface WorkItemType {
   color: string
   description: string
   name: string
+  projectID: number
   workItemTypeID: number
 }
 export interface TeamCreateRequest {
@@ -173,6 +175,7 @@ export interface DbKanbanStep {
   description: string
   kanbanStepID: number
   name: string
+  projectID: number
   stepOrder: number
   timeTrackable: boolean
 }
@@ -208,12 +211,14 @@ export interface DbWorkItemTag {
   color: string
   description: string
   name: string
+  projectID: number
   workItemTagID: number
 }
 export interface DbWorkItemType {
   color: string
   description: string
   name: string
+  projectID: number
   workItemTypeID: number
 }
 export interface DbDemoWorkItem {

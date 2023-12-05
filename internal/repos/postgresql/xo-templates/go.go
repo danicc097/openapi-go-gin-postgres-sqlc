@@ -59,10 +59,9 @@ const (
 	propertyJSONPrivate = "private"
 	// propertyOpenAPINotRequired marks schema field as not required
 	propertyOpenAPINotRequired = "not-required"
-	// propertyOpenAPIHidden makes schema generator skip over field.
-	// Useful when we don't need a property in db (Create|Update)Params to
-	// be set by client or we want to replace it with a more user-friendly field
-	// that gets converted to the db field
+	// propertyOpenAPIHidden makes schema generator skip over field in db (Create|Update)Params
+	// Useful when the field doesn't need to be set in body or we want to replace it with a more user-friendly field
+	// that gets converted to the db field internally
 	propertyOpenAPIHidden = "hidden"
 
 	// example: "properties":private,another-property && "type":models.Project && "tags":pattern: ^[\.a-zA-Z0-9_-]+$
@@ -3724,9 +3723,9 @@ func (f *Funcs) typefn(typ string) string {
 // field generates a field definition for a struct.
 func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
+	hidden := false
 	isPrivate := contains(field.Properties, propertyJSONPrivate)
 	notRequired := contains(field.Properties, propertyOpenAPINotRequired)
-	hidden := contains(field.Properties, propertyOpenAPIHidden)
 	isPointer := strings.HasPrefix(field.Type, "*")
 	af := analyzeField(table, field)
 	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
@@ -3735,6 +3734,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	var skipExtraTags bool
 	switch mode {
 	case "CreateParams":
+		hidden = contains(field.Properties, propertyOpenAPIHidden)
 		if af.isSingleFK && af.isSinglePK {
 			ignoreJson = true // need for repo but unknown for request
 		}
@@ -3743,6 +3743,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		}
 		skipExtraTags = true
 	case "UpdateParams":
+		hidden = contains(field.Properties, propertyOpenAPIHidden)
 		notRequired = true // PATCH, all optional
 		if skipField {
 			return "", nil

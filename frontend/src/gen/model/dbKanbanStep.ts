@@ -11,6 +11,7 @@ export interface DbKanbanStep {
   description: string
   kanbanStepID: number
   name: string
+  projectID: number
   stepOrder: number
   timeTrackable: boolean
 }

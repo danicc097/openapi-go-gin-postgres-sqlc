@@ -330,6 +330,7 @@ type DbKanbanStep struct {
 	Description   string `json:"description"`
 	KanbanStepID  int    `json:"kanbanStepID"`
 	Name          string `json:"name"`
+	ProjectID     int    `json:"projectID"`
 	StepOrder     int    `json:"stepOrder"`
 	TimeTrackable bool   `json:"timeTrackable"`
 }
@@ -476,6 +477,7 @@ type DbWorkItemTag struct {
 	Color         string `json:"color"`
 	Description   string `json:"description"`
 	Name          string `json:"name"`
+	ProjectID     int    `json:"projectID"`
 	WorkItemTagID int    `json:"workItemTagID"`
 }
 
@@ -491,6 +493,7 @@ type DbWorkItemType struct {
 	Color          string `json:"color"`
 	Description    string `json:"description"`
 	Name           string `json:"name"`
+	ProjectID      int    `json:"projectID"`
 	WorkItemTypeID int    `json:"workItemTypeID"`
 }
 
@@ -784,6 +787,7 @@ type WorkItemTag struct {
 	Color         string `json:"color"`
 	Description   string `json:"description"`
 	Name          string `json:"name"`
+	ProjectID     int    `json:"projectID"`
 	WorkItemTagID int    `json:"workItemTagID"`
 }
 
@@ -806,6 +810,7 @@ type WorkItemType struct {
 	Color          string `json:"color"`
 	Description    string `json:"description"`
 	Name           string `json:"name"`
+	ProjectID      int    `json:"projectID"`
 	WorkItemTypeID int    `json:"workItemTypeID"`
 }
 

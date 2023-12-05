@@ -144,6 +144,7 @@ export interface components {
       color: string;
       description: string;
       name: string;
+      projectID: number;
       workItemTagID: number;
     };
     WorkItemTypeCreateRequest: {
@@ -160,6 +161,7 @@ export interface components {
       color: string;
       description: string;
       name: string;
+      projectID: number;
       workItemTypeID: number;
     };
     TeamCreateRequest: {
@@ -200,6 +202,7 @@ export interface components {
       description: string;
       kanbanStepID: number;
       name: string;
+      projectID: number;
       stepOrder: number;
       timeTrackable: boolean;
     };
@@ -227,12 +230,14 @@ export interface components {
       color: string;
       description: string;
       name: string;
+      projectID: number;
       workItemTagID: number;
     };
     DbWorkItemType: {
       color: string;
       description: string;
       name: string;
+      projectID: number;
       workItemTypeID: number;
     };
     DbDemoWorkItem: {

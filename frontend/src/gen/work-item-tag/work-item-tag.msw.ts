@@ -12,6 +12,7 @@ export const getCreateWorkItemTagMock = () => ({
   color: faker.word.sample(),
   description: faker.word.sample(),
   name: faker.word.sample(),
+  projectID: faker.number.int({ min: undefined, max: undefined }),
   workItemTagID: faker.number.int({ min: undefined, max: undefined }),
 })
 
@@ -19,6 +20,7 @@ export const getGetWorkItemTagMock = () => ({
   color: faker.word.sample(),
   description: faker.word.sample(),
   name: faker.word.sample(),
+  projectID: faker.number.int({ min: undefined, max: undefined }),
   workItemTagID: faker.number.int({ min: undefined, max: undefined }),
 })
 
@@ -26,6 +28,7 @@ export const getUpdateWorkItemTagMock = () => ({
   color: faker.word.sample(),
   description: faker.word.sample(),
   name: faker.word.sample(),
+  projectID: faker.number.int({ min: undefined, max: undefined }),
   workItemTagID: faker.number.int({ min: undefined, max: undefined }),
 })
 

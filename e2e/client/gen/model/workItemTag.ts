@@ -10,5 +10,6 @@ export interface WorkItemTag {
   color: string
   description: string
   name: string
+  projectID: number
   workItemTagID: number
 }
