@@ -203,21 +203,22 @@ func (h *Handlers) Baz() {}
 				}
 			}(),
 		},
-		{
-			name:        "missing method in existing file",
-			errContains: []string{`missing function method for operation ID "Bar" in api_foo.go`},
-			operations:  map[tag][]string{foo: {"Foo", "Bar"}},
-			files: func() handlerFiles {
-				content := `package rest
+		// we now fix these automatically via server interface implementation
+		// {
+		// 	name:        "missing method in existing file",
+		// 	errContains: []string{`missing function method for operation ID "Bar" in api_foo.go`},
+		// 	operations:  map[tag][]string{foo: {"Foo", "Bar"}},
+		// 	files: func() handlerFiles {
+		// 		content := `package rest
 
-				func (h *Handlers) Foo() {}
-				`
+		// 		func (h *Handlers) Foo() {}
+		// 		`
 
-				return handlerFiles{
-					foo: {content: content, newContent: content},
-				}
-			}(),
-		},
+		// 		return handlerFiles{
+		// 			foo: {content: content, newContent: content},
+		// 		}
+		// 	}(),
+		// },
 	}
 	for _, tc := range tests {
 		tc := tc
@@ -237,12 +238,8 @@ func (h *Handlers) Baz() {}
 				require.NoError(t, err, "Failed to write test file")
 			}
 
-			o := &CodeGen{
-				stderr:       &bytes.Buffer{},
-				specPath:     "",
-				operations:   tc.operations,
-				handlersPath: tmpDir,
-			}
+			o := New(&bytes.Buffer{}, "", "", tmpDir)
+			o.operations = tc.operations
 
 			err := o.ensureHandlerMethodsExist()
 			if len(tc.errContains) > 0 {

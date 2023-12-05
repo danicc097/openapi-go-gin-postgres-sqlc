@@ -131,7 +131,6 @@ type MiddlewareFunc func(c *gin.Context)
 
 // AdminPing operation with its own middleware.
 func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
-
 	c.Set(externalRef0.Bearer_authScopes, []string{})
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
@@ -141,19 +140,16 @@ func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 
 // MyProviderCallback operation with its own middleware.
 func (siw *ServerInterfaceWrapper) MyProviderCallback(c *gin.Context) {
-
 	siw.Handler.MyProviderCallback(c)
 }
 
 // MyProviderLogin operation with its own middleware.
 func (siw *ServerInterfaceWrapper) MyProviderLogin(c *gin.Context) {
-
 	siw.Handler.MyProviderLogin(c)
 }
 
 // Events operation with its own middleware.
 func (siw *ServerInterfaceWrapper) Events(c *gin.Context) {
-
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
@@ -162,7 +158,6 @@ func (siw *ServerInterfaceWrapper) Events(c *gin.Context) {
 	// ------------- Required query parameter "projectName" -------------
 
 	if paramValue := c.Query("projectName"); paramValue != "" {
-
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument projectName is required, but not found"})
 		return
@@ -179,7 +174,6 @@ func (siw *ServerInterfaceWrapper) Events(c *gin.Context) {
 
 // GetPaginatedNotifications operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetPaginatedNotifications(c *gin.Context) {
-
 	var err error
 
 	c.Set(externalRef0.Bearer_authScopes, []string{})
@@ -192,7 +186,6 @@ func (siw *ServerInterfaceWrapper) GetPaginatedNotifications(c *gin.Context) {
 	// ------------- Required query parameter "limit" -------------
 
 	if paramValue := c.Query("limit"); paramValue != "" {
-
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument limit is required, but not found"})
 		return
@@ -207,7 +200,6 @@ func (siw *ServerInterfaceWrapper) GetPaginatedNotifications(c *gin.Context) {
 	// ------------- Required query parameter "direction" -------------
 
 	if paramValue := c.Query("direction"); paramValue != "" {
-
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument direction is required, but not found"})
 		return
@@ -222,7 +214,6 @@ func (siw *ServerInterfaceWrapper) GetPaginatedNotifications(c *gin.Context) {
 	// ------------- Required query parameter "cursor" -------------
 
 	if paramValue := c.Query("cursor"); paramValue != "" {
-
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument cursor is required, but not found"})
 		return
@@ -239,19 +230,16 @@ func (siw *ServerInterfaceWrapper) GetPaginatedNotifications(c *gin.Context) {
 
 // OpenapiYamlGet operation with its own middleware.
 func (siw *ServerInterfaceWrapper) OpenapiYamlGet(c *gin.Context) {
-
 	siw.Handler.OpenapiYamlGet(c)
 }
 
 // Ping operation with its own middleware.
 func (siw *ServerInterfaceWrapper) Ping(c *gin.Context) {
-
 	siw.Handler.Ping(c)
 }
 
 // GetProject operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetProject(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -272,7 +260,6 @@ func (siw *ServerInterfaceWrapper) GetProject(c *gin.Context) {
 
 // GetProjectBoard operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetProjectBoard(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -293,7 +280,6 @@ func (siw *ServerInterfaceWrapper) GetProjectBoard(c *gin.Context) {
 
 // GetProjectConfig operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetProjectConfig(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -314,7 +300,6 @@ func (siw *ServerInterfaceWrapper) GetProjectConfig(c *gin.Context) {
 
 // UpdateProjectConfig operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateProjectConfig(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -335,7 +320,6 @@ func (siw *ServerInterfaceWrapper) UpdateProjectConfig(c *gin.Context) {
 
 // InitializeProject operation with its own middleware.
 func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -356,7 +340,6 @@ func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
 
 // CreateTeam operation with its own middleware.
 func (siw *ServerInterfaceWrapper) CreateTeam(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -377,7 +360,6 @@ func (siw *ServerInterfaceWrapper) CreateTeam(c *gin.Context) {
 
 // DeleteTeam operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteTeam(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -407,7 +389,6 @@ func (siw *ServerInterfaceWrapper) DeleteTeam(c *gin.Context) {
 
 // GetTeam operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetTeam(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -437,7 +418,6 @@ func (siw *ServerInterfaceWrapper) GetTeam(c *gin.Context) {
 
 // UpdateTeam operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -467,7 +447,6 @@ func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
 
 // CreateWorkItemTag operation with its own middleware.
 func (siw *ServerInterfaceWrapper) CreateWorkItemTag(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -488,7 +467,6 @@ func (siw *ServerInterfaceWrapper) CreateWorkItemTag(c *gin.Context) {
 
 // DeleteWorkItemTag operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteWorkItemTag(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -518,7 +496,6 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemTag(c *gin.Context) {
 
 // GetWorkItemTag operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetWorkItemTag(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -548,7 +525,6 @@ func (siw *ServerInterfaceWrapper) GetWorkItemTag(c *gin.Context) {
 
 // UpdateWorkItemTag operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateWorkItemTag(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -578,7 +554,6 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemTag(c *gin.Context) {
 
 // CreateWorkItemType operation with its own middleware.
 func (siw *ServerInterfaceWrapper) CreateWorkItemType(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -599,7 +574,6 @@ func (siw *ServerInterfaceWrapper) CreateWorkItemType(c *gin.Context) {
 
 // DeleteWorkItemType operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteWorkItemType(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -629,7 +603,6 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemType(c *gin.Context) {
 
 // GetWorkItemType operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetWorkItemType(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -659,7 +632,6 @@ func (siw *ServerInterfaceWrapper) GetWorkItemType(c *gin.Context) {
 
 // UpdateWorkItemType operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateWorkItemType(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -689,7 +661,6 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemType(c *gin.Context) {
 
 // GetProjectWorkitems operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetProjectWorkitems(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
@@ -729,7 +700,6 @@ func (siw *ServerInterfaceWrapper) GetProjectWorkitems(c *gin.Context) {
 
 // GetCurrentUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
-
 	c.Set(externalRef0.Bearer_authScopes, []string{})
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
@@ -739,7 +709,6 @@ func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 
 // DeleteUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "id" -------------
@@ -760,7 +729,6 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 
 // UpdateUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "id" -------------
@@ -781,7 +749,6 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 
 // UpdateUserAuthorization operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "id" -------------
@@ -802,7 +769,6 @@ func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
 
 // CreateWorkitem operation with its own middleware.
 func (siw *ServerInterfaceWrapper) CreateWorkitem(c *gin.Context) {
-
 	c.Set(externalRef0.Bearer_authScopes, []string{})
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
@@ -812,7 +778,6 @@ func (siw *ServerInterfaceWrapper) CreateWorkitem(c *gin.Context) {
 
 // DeleteWorkitem operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteWorkitem(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "id" -------------
@@ -833,7 +798,6 @@ func (siw *ServerInterfaceWrapper) DeleteWorkitem(c *gin.Context) {
 
 // GetWorkItem operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetWorkItem(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "id" -------------
@@ -854,7 +818,6 @@ func (siw *ServerInterfaceWrapper) GetWorkItem(c *gin.Context) {
 
 // UpdateWorkitem operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateWorkitem(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "id" -------------
@@ -875,7 +838,6 @@ func (siw *ServerInterfaceWrapper) UpdateWorkitem(c *gin.Context) {
 
 // CreateWorkitemComment operation with its own middleware.
 func (siw *ServerInterfaceWrapper) CreateWorkitemComment(c *gin.Context) {
-
 	var err error
 
 	// ------------- Path parameter "id" -------------

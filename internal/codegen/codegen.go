@@ -141,10 +141,10 @@ func (o *CodeGen) ImplementServer() error {
 	if err := o.ensureHandlerMethodsExist(); err != nil {
 		return fmt.Errorf("tag methods: %w", err)
 	}
-	fmt.Printf("o.serverInterfaceMethods: %v\n", o.serverInterfaceMethods)
-	fmt.Printf("o.missingOperationIDImplementations: %v\n", o.missingOperationIDImplementations)
-	// o.implementServerInterfaceMethods()
 
+	if err := o.implementServerInterfaceMethods(); err != nil {
+		return fmt.Errorf("implement server interface methods: %w", err)
+	}
 	return nil
 }
 
@@ -412,7 +412,7 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 	var errs []string
 
 	for tag := range o.operations {
-		snakeTag := snaker.CamelToSnake(tag)
+		snakeTag := strcase.ToSnake(tag)
 		handlersPath := filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", snakeTag))
 		if _, err := os.Stat(handlersPath); err != nil {
 			errs = append(errs, fmt.Sprintf("missing file %s for new tag %q", handlersPath, tag))
@@ -432,7 +432,7 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 		if len(matches) < 2 {
 			return fmt.Errorf("failed to extract tag from file name: %s", tagFilePath)
 		}
-		tag := matches[1] // snake
+		tag := strcase.ToLowerCamel(matches[1])
 
 		apiFileContent, err := os.ReadFile(tagFilePath)
 		if err != nil {
@@ -515,9 +515,9 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 	return nil
 }
 
-func (o *CodeGen) implementServerInterfaceMethods() {
+func (o *CodeGen) implementServerInterfaceMethods() error {
 	for opID := range o.missingOperationIDImplementations {
-		fmt.Printf("Implementing server interface method for operation ID: %v\n", opID)
+		fmt.Printf("Implementing missing server interface method for operation ID: %v\n", opID)
 
 		m := o.serverInterfaceMethods[opID]
 
@@ -531,13 +531,15 @@ func (o *CodeGen) implementServerInterfaceMethods() {
 		f, err := os.OpenFile(m.handlersFile,
 			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o644)
 		if err != nil {
-			log.Println(err)
+			return fmt.Errorf("could not open file: %s", err)
 		}
 		defer f.Close()
 		if _, err := f.WriteString(methodStr); err != nil {
-			log.Println(err)
+			return fmt.Errorf("could not write to file: %s", err)
 		}
 	}
+
+	return nil
 }
 
 // getServerInterfaceMethods returns the generated server interface methods

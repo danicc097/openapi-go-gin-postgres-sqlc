@@ -48,7 +48,8 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 				AuthRestriction{
 					MinimumRole: models.Role("admin"),
 					RequiredScopes: models.Scopes{
-						models.Scope("users:delete")},
+						models.Scope("users:delete"),
+					},
 				}),
 		}
 	case DeleteWorkItemTag:
@@ -151,7 +152,8 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
 					RequiredScopes: models.Scopes{
-						models.Scope("scopes:write")},
+						models.Scope("scopes:write"),
+					},
 				}),
 		}
 	case UpdateWorkItemTag:

@@ -96,3 +96,15 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, res)
 }
+
+func (h *Handlers) DeleteWorkitem(c *gin.Context, id models.SerialID) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+}
+
+func (h *Handlers) UpdateWorkitem(c *gin.Context, id models.SerialID) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+}
+
+func (h *Handlers) GetWorkItem(c *gin.Context, id models.SerialID) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+}

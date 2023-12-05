@@ -739,6 +739,10 @@ x.gen.client-server() {
     oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation"
 
     codegen implement-server # based on oapi gen
+
+    files=$(find "internal/rest/" -name "*.go")
+    goimports -w $files
+    gofumpt -w $files
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
