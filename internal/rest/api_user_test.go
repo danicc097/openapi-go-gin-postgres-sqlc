@@ -17,7 +17,7 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
-func TestDeleteUserRoute(t *testing.T) {
+func TestHandlers_DeleteUser(t *testing.T) {
 	t.Parallel()
 
 	logger := zaptest.NewLogger(t).Sugar()
@@ -61,15 +61,15 @@ func TestDeleteUserRoute(t *testing.T) {
 			})
 			require.NoError(t, err, "ff.CreateUser: %s")
 
-			ures, err := srv.client.DeleteUserWithResponse(context.Background(), ufixture.User.UserID.UUID, resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
-			fmt.Printf("ures.Body: %v\n", string(ures.Body))
+			res, err := srv.client.DeleteUserWithResponse(context.Background(), ufixture.User.UserID.UUID, resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
+			fmt.Printf("res.Body: %v\n", string(res.Body))
 			require.NoError(t, err)
-			assert.Equal(t, tc.status, ures.StatusCode())
+			require.Equal(t, tc.status, res.StatusCode())
 		})
 	}
 }
 
-func TestGetUserRoute(t *testing.T) {
+func TestHandlers_GetCurrentUser(t *testing.T) {
 	t.Parallel()
 
 	logger := zaptest.NewLogger(t).Sugar()
@@ -94,12 +94,12 @@ func TestGetUserRoute(t *testing.T) {
 		})
 		require.NoError(t, err, "ff.CreateUser: %s")
 
-		ures, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
+		res, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, ures.StatusCode())
+		assert.Equal(t, http.StatusOK, res.StatusCode())
 
-		got, err := json.Marshal(ures.JSON200)
+		got, err := json.Marshal(res.JSON200)
 		require.NoError(t, err)
 		want, err := json.Marshal(&User{User: *ufixture.User, Role: role})
 		require.NoError(t, err)
@@ -108,7 +108,7 @@ func TestGetUserRoute(t *testing.T) {
 	})
 }
 
-func TestUpdateUserRoutes(t *testing.T) {
+func TestHandlers_UpdateUser(t *testing.T) {
 	t.Parallel()
 
 	logger := zaptest.NewLogger(t).Sugar()
@@ -149,15 +149,16 @@ func TestUpdateUserRoutes(t *testing.T) {
 			updateAuthParams := models.UpdateUserAuthRequest{
 				Role: pointers.New(models.RoleManager),
 			}
-			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
+			ures, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
-			assert.Equal(t, http.StatusNoContent, res.StatusCode())
+			fmt.Printf("ures.Body: %v\n", string(ures.Body))
+			require.Equal(t, http.StatusNoContent, ures.StatusCode())
 
-			ures, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+			res, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
-			assert.Equal(t, *updateAuthParams.Role, ures.JSON200.Role)
+			assert.Equal(t, *updateAuthParams.Role, res.JSON200.Role)
 		})
 
 		t.Run("insufficient_caller_scopes", func(t *testing.T) {
@@ -235,26 +236,26 @@ func TestUpdateUserRoutes(t *testing.T) {
 			})
 			require.NoError(t, err, "ff.CreateUser: %s")
 
-			res, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.User.UserID.UUID, tc.body, resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+			ures, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.User.UserID.UUID, tc.body, resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
-			assert.Equal(t, tc.status, res.StatusCode())
+			require.Equal(t, tc.status, ures.StatusCode())
 
 			if len(tc.validationErrorContains) > 0 {
 				for _, ve := range tc.validationErrorContains {
-					assert.Contains(t, string(res.Body), ve)
+					assert.Contains(t, string(ures.Body), ve)
 				}
 
 				return
 			}
 
-			assert.Equal(t, normalUser.User.UserID.UUID, res.JSON200.UserID)
+			assert.Equal(t, normalUser.User.UserID.UUID, ures.JSON200.UserID)
 
-			ures, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+			res, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
-			assert.Equal(t, tc.body.FirstName, ures.JSON200.FirstName)
-			assert.Equal(t, tc.body.LastName, ures.JSON200.LastName)
+			assert.Equal(t, tc.body.FirstName, res.JSON200.FirstName)
+			assert.Equal(t, tc.body.LastName, res.JSON200.LastName)
 		})
 	}
 }

@@ -319,7 +319,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 {{- end }}
 {{- if .hidden }} openapi-go:"ignore"
 {{- end }}
-{{- if .required }} required:"true"
+{{- if and (.required) (not .hidden)}} required:"true"
 {{- end }}
 {{- if not .nullable }} nullable:"false"
 {{- end }}

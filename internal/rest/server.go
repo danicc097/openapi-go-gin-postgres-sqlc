@@ -186,7 +186,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 
 	rlMw := newRateLimitMiddleware(conf.Logger, 25, 10)
 	switch cfg.AppEnv {
-	case "prod", "e2e":
+	case internal.AppEnvProd, internal.AppEnvE2E:
 		vg.Use(rlMw.Limit())
 	}
 	repos := services.CreateRepos()
@@ -333,10 +333,10 @@ func Run(env, specPath string) (<-chan error, error) {
 		var err error
 
 		switch cfg.AppEnv {
-		case "dev", "ci":
+		case internal.AppEnvDev, internal.AppEnvCI:
 			// err = srv.httpsrv.ListenAndServe()
 			err = srv.httpsrv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
-		case "prod", "e2e":
+		case internal.AppEnvProd, internal.AppEnvE2E:
 			err = srv.httpsrv.ListenAndServe()
 		default:
 			err = fmt.Errorf("unknown APP_ENV: %s", env)

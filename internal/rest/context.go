@@ -9,16 +9,18 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+const ctxKeyPrefix = "rest-"
+
 const (
-	userCtxKey                  = "user"
-	userInfoCtxKey              = "user-info"
-	ginContextCtxKey            = "middleware.openapi/gin-context"
-	userDataCtxKey              = "middleware.openapi/user-data"
-	validateResponseCtxKey      = "skip-response-validation"
-	skipRequestValidationCtxKey = "skip-request-validation"
-	transactionCtxKey           = "transaction"
-	spanCtxKey                  = "span"
-	errorCtxKey                 = "error"
+	userCtxKey                  = ctxKeyPrefix + "user"
+	userInfoCtxKey              = ctxKeyPrefix + "user-info"
+	ginContextCtxKey            = ctxKeyPrefix + "middleware.openapi/gin-context"
+	userDataCtxKey              = ctxKeyPrefix + "middleware.openapi/user-data"
+	validateResponseCtxKey      = ctxKeyPrefix + "skip-response-validation"
+	skipRequestValidationCtxKey = ctxKeyPrefix + "skip-request-validation"
+	transactionCtxKey           = ctxKeyPrefix + "transaction"
+	spanCtxKey                  = ctxKeyPrefix + "span"
+	errorCtxKey                 = ctxKeyPrefix + "error"
 )
 
 func getSkipRequestValidationFromCtx(c *gin.Context) bool {
@@ -66,6 +68,8 @@ func ctxWithUserInfo(c *gin.Context, userinfo []byte) {
 	c.Set(userInfoCtxKey, userinfo)
 }
 
+// getTxFromCtx returns the ongoing db transaction.
+// Automatic commit and rollback is handled in db middleware.
 func getTxFromCtx(c *gin.Context) pgx.Tx {
 	tx, ok := c.Value(transactionCtxKey).(pgx.Tx)
 	if !ok {

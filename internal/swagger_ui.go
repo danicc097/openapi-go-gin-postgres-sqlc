@@ -45,7 +45,7 @@ window.onload = function () {
 
 	params := map[string]interface{}{
 		"URL": strconv.Quote(url),
-		"Env": strconv.Quote(Config.AppEnv),
+		"Env": strconv.Quote(string(Config.AppEnv)),
 	}
 
 	if err := t.Execute(buf, params); err != nil {

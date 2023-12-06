@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
@@ -14,12 +13,9 @@ import (
 
 // DeleteUser deletes the user by id.
 func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
-	ctx := c.Request.Context()
-
 	defer newOTelSpanWithUser(c).End()
 
 	tx := getTxFromCtx(c)
-	defer tx.Rollback(ctx)
 
 	_, err := h.svc.User.Delete(c, tx, db.NewUserID(id))
 	if err != nil {
@@ -57,14 +53,12 @@ func (h *Handlers) GetCurrentUser(c *gin.Context) {
 func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 	// span attribute not inheritable:
 	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
-	ctx := c.Request.Context()
 	caller := getUserFromCtx(c)
 
 	span := getSpanFromCtx(c)
 	span.AddEvent("update-user") // filterable with event="update-user"
 
 	tx := getTxFromCtx(c)
-	defer tx.Rollback(ctx)
 
 	body := &models.UpdateUserRequest{}
 	if shouldReturn := parseBody(c, body); shouldReturn {
@@ -74,13 +68,6 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 	user, err := h.svc.User.Update(c, tx, db.UserID{UUID: id}, caller, body)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)
-
-		return
-	}
-
-	err = tx.Commit(ctx)
-	if err != nil {
-		renderErrorResponse(c, "Database error", err)
 
 		return
 	}
@@ -99,14 +86,12 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 
 // UpdateUserAuthorization updates authorization information, e.g. roles, scopes.
 func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
-	ctx := c.Request.Context()
 	caller := getUserFromCtx(c)
 
 	span := getSpanFromCtx(c)
 	span.AddEvent("update-user") // filterable with event="update-user"
 
 	tx := getTxFromCtx(c)
-	defer tx.Rollback(ctx)
 
 	body := &models.UpdateUserAuthRequest{}
 	if shouldReturn := parseBody(c, body); shouldReturn {
@@ -115,12 +100,6 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 
 	if _, err := h.svc.User.UpdateUserAuthorization(c, tx, db.UserID{UUID: id}, caller, body); err != nil {
 		renderErrorResponse(c, "Error updating user authorization", err)
-
-		return
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		renderErrorResponse(c, "Database error", internal.WrapErrorf(err, models.ErrorCodePrivate, "could not commit transaction"))
 
 		return
 	}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -90,7 +91,9 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		case models.ErrorCodeUnauthenticated:
 			resp.Status = http.StatusUnauthorized
 		case models.ErrorCodePrivate:
-			resp = models.HTTPError{Title: "internal error", Detail: "internal error"}
+			if os.Getenv("TESTING") != "" {
+				resp = models.HTTPError{Title: "internal error", Detail: "internal error"}
+			}
 
 			fallthrough
 		case models.ErrorCodeUnknown:

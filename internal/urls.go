@@ -25,7 +25,7 @@ func BuildAPIURL(subpaths ...string) string {
 	var host string
 
 	switch cfg.AppEnv {
-	case "prod", "e2e":
+	case AppEnvProd, AppEnvE2E:
 		host = cfg.Domain
 	default:
 		host = cfg.Domain + ":" + cfg.APIPort

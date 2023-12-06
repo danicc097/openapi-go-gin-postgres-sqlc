@@ -11,6 +11,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -87,8 +88,8 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			resp := httptest.NewRecorder()
-			_, engine := gin.CreateTestContext(resp)
+			res := httptest.NewRecorder()
+			_, engine := gin.CreateTestContext(res)
 
 			authMw := newAuthMiddleware(logger, testPool, svcs)
 
@@ -117,11 +118,11 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			})
 
 			req, _ := http.NewRequest(http.MethodGet, "/", nil)
-			engine.ServeHTTP(resp, req)
+			engine.ServeHTTP(res, req)
 
-			assert.Equal(t, tc.status, resp.Code)
+			require.Equal(t, tc.status, res.Code)
 			if tc.body != "" {
-				assert.Contains(t, resp.Body.String(), tc.body)
+				assert.Contains(t, res.Body.String(), tc.body)
 			}
 		})
 	}

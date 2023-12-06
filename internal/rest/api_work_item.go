@@ -14,13 +14,11 @@ import (
 
 // create workitem comment.
 func (h *Handlers) CreateWorkitemComment(c *gin.Context, id models.SerialID) {
-	ctx := c.Request.Context()
-
 	defer newOTelSpanWithUser(c).End()
 
 	// caller := getUserFromCtx(c)
 	tx := getTxFromCtx(c)
-	defer tx.Rollback(ctx)
+	_ = tx
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
@@ -33,7 +31,6 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 
 	// caller := getUserFromCtx(c)
 	tx := getTxFromCtx(c)
-	defer tx.Rollback(ctx)
 
 	jsonBody, err := io.ReadAll(c.Request.Body)
 	if err != nil {

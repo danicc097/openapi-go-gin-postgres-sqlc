@@ -21,8 +21,8 @@ import (
 // also see sse test: https://github.com/prysmaticlabs/prysm/blob/f7cecf9f8a6dca95e021bab2fc30dd7c6d6ce760/beacon-chain/rpc/apimiddleware/custom_handlers_test.go#LL250C10-L250C10
 // complete implementation and tests: https://github.com/MarinX/go/blob/06804256ef814c8381e3f54b1c89a8c95cabb300/services/horizon/internal/render/sse/main.go
 func TestHandlers_Events(t *testing.T) {
-	// resp := httptest.NewRecorder()
-	// _, engine := gin.CreateTestContext(resp)
+	// res := httptest.NewRecorder()
+	// _, engine := gin.CreateTestContext(res)
 
 	// req, _ := http.NewRequest(http.MethodGet, "/", nil)
 
@@ -31,10 +31,10 @@ func TestHandlers_Events(t *testing.T) {
 	// engine.GET("/", func(c *gin.Context) {
 	// 	c.String(http.StatusOK, "ok")
 	// })
-	// engine.ServeHTTP(resp, req)
+	// engine.ServeHTTP(res, req)
 
-	// assert.Equal(t, tc.status, resp.Code)
-	// assert.Contains(t, resp.Body.String(), tc.body)
+	// assert.Equal(t, tc.status, res.Code)
+	// assert.Contains(t, res.Body.String(), tc.body)
 }
 
 type StreamRecorder struct {

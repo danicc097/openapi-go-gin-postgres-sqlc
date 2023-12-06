@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"fmt"
+
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
@@ -35,10 +37,19 @@ func (m *dbMiddleware) BeginTransaction() gin.HandlerFunc {
 
 			return
 		}
-		defer tx.Rollback(ctx)
 
 		ctxWithTx(c, tx)
 
 		c.Next()
+
+		if err := tx.Commit(ctx); err != nil {
+			msg := "could not commit transaction"
+			if err := tx.Rollback(ctx); err != nil {
+				msg += fmt.Sprintf(" (rollback error: %s)", err)
+			}
+			renderErrorResponse(c, "Database error", internal.WrapErrorf(err, models.ErrorCodePrivate, msg))
+
+			return
+		}
 	}
 }

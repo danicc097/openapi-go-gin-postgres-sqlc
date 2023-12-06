@@ -755,7 +755,6 @@ components:
         - color
         - description
         - name
-        - projectID
       type: object
       x-postgen-struct: RestWorkItemTagCreateRequest
     WorkItemTagUpdateRequest: # Generated from internal structs. DO NOT EDIT.
@@ -803,7 +802,6 @@ components:
         - color
         - description
         - name
-        - projectID
       type: object
       x-postgen-struct: RestWorkItemTypeCreateRequest
     WorkItemTypeUpdateRequest: # Generated from internal structs. DO NOT EDIT.
@@ -1797,7 +1795,6 @@ components:
         - color
         - description
         - name
-        - projectID
       type: object
     DbWorkItemRole: # Generated from internal structs. DO NOT EDIT.
       type: string
