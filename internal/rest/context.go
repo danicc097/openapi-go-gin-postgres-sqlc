@@ -6,6 +6,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
+	"go.opentelemetry.io/otel/trace"
 )
 
 const (
@@ -16,6 +17,7 @@ const (
 	validateResponseCtxKey      = "skip-response-validation"
 	skipRequestValidationCtxKey = "skip-request-validation"
 	transactionCtxKey           = "transaction"
+	spanCtxKey                  = "span"
 	errorCtxKey                 = "error"
 )
 
@@ -73,8 +75,21 @@ func getTxFromCtx(c *gin.Context) pgx.Tx {
 	return tx
 }
 
-func ctxWithTx(c *gin.Context, txc pgx.Tx) {
-	c.Set(transactionCtxKey, txc)
+func ctxWithTx(c *gin.Context, tx pgx.Tx) {
+	c.Set(transactionCtxKey, tx)
+}
+
+func getSpanFromCtx(c *gin.Context) trace.Span {
+	span, ok := c.Value(spanCtxKey).(trace.Span)
+	if !ok {
+		return nil
+	}
+
+	return span
+}
+
+func ctxWithSpan(c *gin.Context, span trace.Span) {
+	c.Set(spanCtxKey, span)
 }
 
 // Helper function to get the gin context from within requests. It returns

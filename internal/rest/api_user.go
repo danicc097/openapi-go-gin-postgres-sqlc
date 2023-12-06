@@ -37,6 +37,9 @@ func (h *Handlers) GetCurrentUser(c *gin.Context) {
 
 	caller := getUserFromCtx(c)
 
+	span := getSpanFromCtx(c)
+	span.AddEvent("get-current-user") // filterable with event="update-user"
+
 	role, ok := h.svc.Authorization.RoleByRank(caller.RoleRank)
 	if !ok {
 		msg := fmt.Sprintf("role with rank %d not found", caller.RoleRank)
@@ -57,9 +60,8 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 	ctx := c.Request.Context()
 	caller := getUserFromCtx(c)
 
-	s := newOTelSpanWithUser(c)
-	s.AddEvent("update-user") // filterable with event="update-user"
-	defer s.End()
+	span := getSpanFromCtx(c)
+	span.AddEvent("update-user") // filterable with event="update-user"
 
 	tx := getTxFromCtx(c)
 	defer tx.Rollback(ctx)
@@ -100,9 +102,8 @@ func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 	ctx := c.Request.Context()
 	caller := getUserFromCtx(c)
 
-	s := newOTelSpanWithUser(c)
-	s.AddEvent("update-user") // filterable with event="update-user"
-	defer s.End()
+	span := getSpanFromCtx(c)
+	span.AddEvent("update-user") // filterable with event="update-user"
 
 	tx := getTxFromCtx(c)
 	defer tx.Rollback(ctx)

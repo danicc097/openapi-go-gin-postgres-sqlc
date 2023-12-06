@@ -87,9 +87,12 @@ func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	defaultMws := []gin.HandlerFunc{}
 
 	dbMw := newDBMiddleware(h.logger, h.pool)
+	tracingMw := newTracingMiddleware()
 
-	if opID != MyProviderLogin {
-		defaultMws = append(defaultMws, dbMw.BeginTransaction())
+	ignoredOperationID := opID == MyProviderLogin
+
+	if !ignoredOperationID {
+		defaultMws = append(defaultMws, tracingMw.WithSpan(), dbMw.BeginTransaction())
 	}
 
 	switch opID {

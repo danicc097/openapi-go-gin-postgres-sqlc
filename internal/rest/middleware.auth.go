@@ -52,9 +52,6 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 
 			ctxWithUser(c, u)
 
-			// TODO: generic ctxWithSpan(c, u) called on all handlers by default, and then
-			// in EnsureAuthenticated we getSpanFromCtx(c) and do span.SetAttributes(userIDAttribute(c))
-
 			c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
 
 			return
