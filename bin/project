@@ -1032,11 +1032,13 @@ x.test.backend() {
   { { {
     x.test.xo
 
-    yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
-    POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
+    yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true # nochange exits
+    # POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # post-migration scripts now run automatically in testutil db setup
 
     local cache_opt="-count=1"
     cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
+
+    rm -f /tmp/migration_marker
 
     set -x
     APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo $cache_opt "$@" ./...
@@ -1086,7 +1088,7 @@ x.test.xo() {
     xo_schema -o "$test_dir/got" --debug \
       --schema xo_tests \
       --ignore "*.created_at" \
-      --ignore "*.updated_at" || err "Failed xo xo_tests schema generation"
+      --ignore "*.updated_at" >/dev/null || err "Failed xo xo_tests schema generation"
 
     files=$(find "$test_dir/got" \
       -name "*.go")
@@ -1332,12 +1334,12 @@ x.migrate.create() {
 
 # psql session for the current environment.
 x.db.psql() {
-  x.db.psql-db $POSTGRES_DB
+  x.db.psql-with-db $POSTGRES_DB
 }
 
 # psql session for `database`.
 # Args: database
-x.db.psql-db() {
+x.db.psql-with-db() {
   docker exec -it postgres_db_"$PROJECT_PREFIX" psql -d $1
 }
 
