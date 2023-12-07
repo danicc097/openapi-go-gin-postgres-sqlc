@@ -18,8 +18,6 @@ sql:
         emit_enum_valid_method: true
         emit_all_enum_values: true
         emit_methods_with_db_argument: true
-        disable_emit_enums: true
-        disable_emit_table_structs: true
         output_files_suffix: .sqlc
         # only necessary for stdlib, pgx automatically prepares and caches statements by default
         # emit_prepared_queries: true # mutually exclusive with emit_methods_with_db_argument
@@ -27,11 +25,29 @@ sql:
         json_tags_case_style: snake
         # TODO new flag on main branch to not use sql.Null when using pgx
         emit_pointers_for_null_types: true
-        rename:
+        # rename:
         # Customize the name of generated struct fields.
         # https://docs.sqlc.dev/en/stable/reference/config.html?highlight=Renaming%20fields#renaming-fields
         overrides:
-          - go_type: "github.com/google/uuid.UUID"
-            db_type: "uuid"
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: UUID
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              type: UUID
+              pointer: true
+            nullable: true
+          - db_type: pg_catalog.timestamptz
+            go_type:
+              import: time
+              type: Time
+              pointer: true
+            nullable: true
+          - db_type: pg_catalog.timestamptz
+            go_type:
+              import: time
+              type: Time
         # It is a collection of definitions that dictates which types are used to map a database types.
         # https://docs.sqlc.dev/en/stable/reference/config.html?highlight=Renaming%20fields#renaming-fields

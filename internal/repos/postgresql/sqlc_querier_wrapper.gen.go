@@ -50,23 +50,3 @@ func (w QuerierWrapper) IsUserInProject(ctx context.Context, db db.DBTX, arg db.
 	}
 	return
 }
-
-func (w QuerierWrapper) RegisterNewUser(ctx context.Context, db db.DBTX, arg db.RegisterNewUserParams) (r1 db.RegisterNewUserRow, err error) {
-	/* defer newOTelSpan().Build(ctx).End() */
-
-	r1, err = w.Querier.RegisterNewUser(ctx, db, arg)
-	if err != nil {
-		err = fmt.Errorf("Querier: %w", parseDBErrorDetail(err))
-	}
-	return
-}
-
-func (w QuerierWrapper) Test(ctx context.Context, db db.DBTX) (err error) {
-	/* defer newOTelSpan().Build(ctx).End() */
-
-	err = w.Querier.Test(ctx, db)
-	if err != nil {
-		err = fmt.Errorf("Querier: %w", parseDBErrorDetail(err))
-	}
-	return
-}
