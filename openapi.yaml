@@ -208,7 +208,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TeamCreateRequest'
+              $ref: '#/components/schemas/CreateTeamRequest'
         required: true
       responses:
         201:
@@ -249,7 +249,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TeamUpdateRequest'
+              $ref: '#/components/schemas/UpdateTeamRequest'
         required: true
       responses:
         200:
@@ -287,7 +287,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkItemTagCreateRequest'
+              $ref: '#/components/schemas/CreateWorkItemTagRequest'
         required: true
       responses:
         201:
@@ -328,7 +328,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkItemTagUpdateRequest'
+              $ref: '#/components/schemas/UpdateWorkItemTagRequest'
         required: true
       responses:
         200:
@@ -364,7 +364,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkItemTypeCreateRequest'
+              $ref: '#/components/schemas/CreateWorkItemTypeRequest'
         required: true
       responses:
         201:
@@ -405,7 +405,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkItemTypeUpdateRequest'
+              $ref: '#/components/schemas/UpdateWorkItemTypeRequest'
         required: true
       responses:
         200:
@@ -641,7 +641,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkItemCreateRequest'
+              $ref: '#/components/schemas/CreateWorkItemRequest'
         required: true
       responses:
         201:
@@ -706,7 +706,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WorkItemCommentCreateRequest'
+              $ref: '#/components/schemas/CreateWorkItemCommentRequest'
         required: true
       parameters:
         - $ref: '#/components/parameters/SerialID'
@@ -744,7 +744,7 @@ components:
       example: 41131
       style: simple
   schemas:
-    WorkItemTagCreateRequest: # Generated from internal structs. DO NOT EDIT.
+    CreateWorkItemTagRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
@@ -758,8 +758,8 @@ components:
         - description
         - name
       type: object
-      x-postgen-struct: RestWorkItemTagCreateRequest
-    WorkItemTagUpdateRequest: # Generated from internal structs. DO NOT EDIT.
+      x-postgen-struct: RestCreateWorkItemTagRequest
+    UpdateWorkItemTagRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
@@ -769,7 +769,7 @@ components:
         name:
           type: string
       type: object
-      x-postgen-struct: RestWorkItemTagUpdateRequest
+      x-postgen-struct: RestUpdateWorkItemTagRequest
     WorkItemTag: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
@@ -791,7 +791,7 @@ components:
         - color
       type: object
       x-postgen-struct: RestWorkItemTag
-    WorkItemTypeCreateRequest: # Generated from internal structs. DO NOT EDIT.
+    CreateWorkItemTypeRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
@@ -805,8 +805,8 @@ components:
         - description
         - name
       type: object
-      x-postgen-struct: RestWorkItemTypeCreateRequest
-    WorkItemTypeUpdateRequest: # Generated from internal structs. DO NOT EDIT.
+      x-postgen-struct: RestCreateWorkItemTypeRequest
+    UpdateWorkItemTypeRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
@@ -816,7 +816,7 @@ components:
         name:
           type: string
       type: object
-      x-postgen-struct: RestWorkItemTypeUpdateRequest
+      x-postgen-struct: RestUpdateWorkItemTypeRequest
     WorkItemType: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
@@ -838,7 +838,7 @@ components:
         - color
       type: object
       x-postgen-struct: RestWorkItemType
-    TeamCreateRequest: # Generated from internal structs. DO NOT EDIT.
+    CreateTeamRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         description:
           type: string
@@ -851,8 +851,8 @@ components:
         - name
         - projectID
       type: object
-      x-postgen-struct: RestTeamCreateRequest
-    TeamUpdateRequest: # Generated from internal structs. DO NOT EDIT.
+      x-postgen-struct: RestCreateTeamRequest
+    UpdateTeamRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         description:
           type: string
@@ -861,7 +861,7 @@ components:
         projectID:
           type: integer
       type: object
-      x-postgen-struct: RestTeamUpdateRequest
+      x-postgen-struct: RestUpdateTeamRequest
     Team: # Generated from internal structs. DO NOT EDIT.
       properties:
         createdAt:
@@ -1372,7 +1372,7 @@ components:
           nullable: true
           type: array
       type: object
-      x-postgen-struct: RestProjectBoardCreateRequest
+      x-postgen-struct: RestCreateProjectBoardRequest
     ProjectBoard: # Generated from internal structs. DO NOT EDIT.
       properties:
         projectName:
@@ -1613,15 +1613,15 @@ components:
       x-go-type-import:
         name: uuid
         path: github.com/google/uuid
-    # IMPORTANT: anyOf since WorkItemCreateRequestDiscriminator will always be matched.
-    # we should be able to then remove projectName from DemoWorkItemCreateRequest and
-    # DemoTwoWorkItemCreateRequest
-    # WorkItemCreateRequest:
+    # IMPORTANT: anyOf since CreateWorkItemRequestDiscriminator will always be matched.
+    # we should be able to then remove projectName from CreateDemoWorkItemRequest and
+    # CreateDemoTwoWorkItemRequest
+    # CreateWorkItemRequest:
     #   anyOf:
-    #     - $ref: '#/components/schemas/WorkItemCreateRequestDiscriminator'
-    #     - $ref: '#/components/schemas/DemoWorkItemCreateRequest'
-    #     - $ref: '#/components/schemas/DemoTwoWorkItemCreateRequest'
-    # WorkItemCreateRequestDiscriminator:
+    #     - $ref: '#/components/schemas/CreateWorkItemRequestDiscriminator'
+    #     - $ref: '#/components/schemas/CreateDemoWorkItemRequest'
+    #     - $ref: '#/components/schemas/CreateDemoTwoWorkItemRequest'
+    # CreateWorkItemRequestDiscriminator:
     #   type: object
     #   properties:
     #     projectName:
@@ -1629,20 +1629,20 @@ components:
     #   discriminator:
     #     propertyName: projectName
     #     mapping:
-    #       demo: '#/components/schemas/DemoWorkItemCreateRequest'
-    #       demo_two: '#/components/schemas/DemoTwoWorkItemCreateRequest'
+    #       demo: '#/components/schemas/CreateDemoWorkItemRequest'
+    #       demo_two: '#/components/schemas/CreateDemoTwoWorkItemRequest'
 
     # IMPORTANT: discriminator must be defined this way so validation works
     # and to ensure proper oapi-codegen generation. Disregard any other method.
-    WorkItemCreateRequest:
+    CreateWorkItemRequest:
       oneOf:
-        - $ref: '#/components/schemas/DemoWorkItemCreateRequest'
-        - $ref: '#/components/schemas/DemoTwoWorkItemCreateRequest'
+        - $ref: '#/components/schemas/CreateDemoWorkItemRequest'
+        - $ref: '#/components/schemas/CreateDemoTwoWorkItemRequest'
       discriminator:
         propertyName: projectName
         mapping:
-          demo: '#/components/schemas/DemoWorkItemCreateRequest'
-          demo_two: '#/components/schemas/DemoTwoWorkItemCreateRequest'
+          demo: '#/components/schemas/CreateDemoWorkItemRequest'
+          demo_two: '#/components/schemas/CreateDemoTwoWorkItemRequest'
     DbWorkItem: # Generated from internal structs. DO NOT EDIT.
       properties:
         closedAt:
@@ -1690,7 +1690,7 @@ components:
         - updatedAt
       type: object
       x-postgen-struct: DbWorkItem
-    DemoTwoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
+    CreateDemoTwoWorkItemRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         base:
           $ref: '#/components/schemas/DbWorkItemCreateParams'
@@ -1713,8 +1713,8 @@ components:
         - tagIDs
         - members
       type: object
-      x-postgen-struct: RestDemoTwoWorkItemCreateRequest
-    DemoWorkItemCreateRequest: # Generated from internal structs. DO NOT EDIT.
+      x-postgen-struct: RestCreateDemoTwoWorkItemRequest
+    CreateDemoWorkItemRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         base:
           $ref: '#/components/schemas/DbWorkItemCreateParams'
@@ -1737,8 +1737,8 @@ components:
         - tagIDs
         - members
       type: object
-      x-postgen-struct: RestDemoWorkItemCreateRequest
-    WorkItemCommentCreateRequest: # Generated from internal structs. DO NOT EDIT.
+      x-postgen-struct: RestCreateDemoWorkItemRequest
+    CreateWorkItemCommentRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         message:
           type: string
@@ -1751,7 +1751,7 @@ components:
         - userID
         - workItemID
       type: object
-      x-postgen-struct: RestWorkItemCommentCreateRequest
+      x-postgen-struct: RestCreateWorkItemCommentRequest
     Project: # Generated from projects table. DO NOT EDIT.
       enum: ["demo", "demo_two"]
       type: string

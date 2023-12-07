@@ -130,12 +130,12 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
-    WorkItemTagCreateRequest: {
+    CreateWorkItemTagRequest: {
       color: string;
       description: string;
       name: string;
     };
-    WorkItemTagUpdateRequest: {
+    UpdateWorkItemTagRequest: {
       color?: string;
       description?: string;
       name?: string;
@@ -147,12 +147,12 @@ export interface components {
       projectID: number;
       workItemTagID: number;
     };
-    WorkItemTypeCreateRequest: {
+    CreateWorkItemTypeRequest: {
       color: string;
       description: string;
       name: string;
     };
-    WorkItemTypeUpdateRequest: {
+    UpdateWorkItemTypeRequest: {
       color?: string;
       description?: string;
       name?: string;
@@ -164,12 +164,12 @@ export interface components {
       projectID: number;
       workItemTypeID: number;
     };
-    TeamCreateRequest: {
+    CreateTeamRequest: {
       description: string;
       name: string;
       projectID: number;
     };
-    TeamUpdateRequest: {
+    UpdateTeamRequest: {
       description?: string;
       name?: string;
       projectID?: number;
@@ -483,7 +483,7 @@ export interface components {
       ctx?: Record<string, never>;
     };
     UuidUUID: string;
-    WorkItemCreateRequest: components["schemas"]["DemoWorkItemCreateRequest"] | components["schemas"]["DemoTwoWorkItemCreateRequest"];
+    CreateWorkItemRequest: components["schemas"]["CreateDemoWorkItemRequest"] | components["schemas"]["CreateDemoTwoWorkItemRequest"];
     DbWorkItem: {
       /** Format: date-time */
       closedAt?: string | null;
@@ -505,21 +505,21 @@ export interface components {
       workItemID: number;
       workItemTypeID: number;
     };
-    DemoTwoWorkItemCreateRequest: {
+    CreateDemoTwoWorkItemRequest: {
       base: components["schemas"]["DbWorkItemCreateParams"];
       demoTwoProject: components["schemas"]["DbDemoTwoWorkItemCreateParams"];
       members: components["schemas"]["ServicesMember"][];
       projectName: components["schemas"]["Project"];
       tagIDs: number[];
     };
-    DemoWorkItemCreateRequest: {
+    CreateDemoWorkItemRequest: {
       base: components["schemas"]["DbWorkItemCreateParams"];
       demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
       members: components["schemas"]["ServicesMember"][];
       projectName: components["schemas"]["Project"];
       tagIDs: number[];
     };
-    WorkItemCommentCreateRequest: {
+    CreateWorkItemCommentRequest: {
       message: string;
       userID: components["schemas"]["DbUserID"];
       workItemID: number;
@@ -774,7 +774,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["TeamCreateRequest"];
+        "application/json": components["schemas"]["CreateTeamRequest"];
       };
     };
     responses: {
@@ -856,7 +856,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["TeamUpdateRequest"];
+        "application/json": components["schemas"]["UpdateTeamRequest"];
       };
     };
     responses: {
@@ -887,7 +887,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["WorkItemTagCreateRequest"];
+        "application/json": components["schemas"]["CreateWorkItemTagRequest"];
       };
     };
     responses: {
@@ -969,7 +969,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["WorkItemTagUpdateRequest"];
+        "application/json": components["schemas"]["UpdateWorkItemTagRequest"];
       };
     };
     responses: {
@@ -1000,7 +1000,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["WorkItemTypeCreateRequest"];
+        "application/json": components["schemas"]["CreateWorkItemTypeRequest"];
       };
     };
     responses: {
@@ -1082,7 +1082,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["WorkItemTypeUpdateRequest"];
+        "application/json": components["schemas"]["UpdateWorkItemTypeRequest"];
       };
     };
     responses: {
@@ -1295,7 +1295,7 @@ export interface operations {
   CreateWorkitem: {
     requestBody: {
       content: {
-        "application/json": components["schemas"]["WorkItemCreateRequest"];
+        "application/json": components["schemas"]["CreateWorkItemRequest"];
       };
     };
     responses: {
@@ -1360,7 +1360,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["WorkItemCommentCreateRequest"];
+        "application/json": components["schemas"]["CreateWorkItemCommentRequest"];
       };
     };
     responses: {

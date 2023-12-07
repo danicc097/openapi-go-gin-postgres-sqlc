@@ -6,8 +6,8 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export interface WorkItemTagUpdateRequest {
-  color?: string
-  description?: string
-  name?: string
+export interface CreateWorkItemTypeRequest {
+  color: string
+  description: string
+  name: string
 }

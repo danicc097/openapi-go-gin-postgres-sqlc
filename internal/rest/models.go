@@ -71,7 +71,7 @@ type ProjectBoard struct {
 	ProjectName
 }
 
-type ProjectBoardCreateRequest struct {
+type CreateProjectBoardRequest struct {
 	// services models not needed yet, projectId is trivial to include in every request...
 	// if services use db CreateParams as is we can also have specific per-project logic
 	// anyway
@@ -79,20 +79,20 @@ type ProjectBoardCreateRequest struct {
 	Tags  *[]db.WorkItemTagCreateParams `json:"tags"`
 }
 
-type WorkItemTagCreateRequest struct {
+type CreateWorkItemTagRequest struct {
 	db.WorkItemTagCreateParams
 }
-type WorkItemTagUpdateRequest struct {
+type UpdateWorkItemTagRequest struct {
 	db.WorkItemTagUpdateParams
 }
 type WorkItemTag struct {
 	db.WorkItemTag
 	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
-type WorkItemTypeCreateRequest struct {
+type CreateWorkItemTypeRequest struct {
 	db.WorkItemTypeCreateParams
 }
-type WorkItemTypeUpdateRequest struct {
+type UpdateWorkItemTypeRequest struct {
 	db.WorkItemTypeUpdateParams
 }
 type WorkItemType struct {
@@ -104,25 +104,25 @@ type Team struct {
 	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
 
-type TeamCreateRequest struct {
+type CreateTeamRequest struct {
 	db.TeamCreateParams
 }
 
-type TeamUpdateRequest struct {
+type UpdateTeamRequest struct {
 	db.TeamUpdateParams
 }
 
-type DemoWorkItemCreateRequest struct {
+type CreateDemoWorkItemRequest struct {
 	ProjectName
 	services.DemoWorkItemCreateParams
 }
 
-type DemoTwoWorkItemCreateRequest struct {
+type CreateDemoTwoWorkItemRequest struct {
 	ProjectName
 	services.DemoTwoWorkItemCreateParams
 }
 
-type WorkItemCommentCreateRequest struct {
+type CreateWorkItemCommentRequest struct {
 	db.WorkItemCommentCreateParams
 }
 

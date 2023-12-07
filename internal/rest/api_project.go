@@ -57,7 +57,7 @@ func (h *Handlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
 
 	caller := getUserFromCtx(c)
 
-	body := &WorkItemTagCreateRequest{}
+	body := &CreateWorkItemTagRequest{}
 	if shouldReturn := parseBody(c, body); shouldReturn {
 		return
 	}

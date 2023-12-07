@@ -110,7 +110,7 @@ xsetup.build-tools() {
 
   xsetup_tools_built="${FUNCNAME[1]}"
 
-  x.gen.build-tools
+  x.gen.build-tools || err Could not rebuild gen tools
 }
 
 gen_backup_branch="backup-gen-$(uuidgen)"
@@ -714,7 +714,7 @@ x.gen.gowrap() {
       updated_ifaces+=("$iface")
     done
 
-    wait_without_error
+    wait_without_error || err Failed jobs
 
     if [[ ${#updated_ifaces[@]} -gt 0 ]]; then
       echo "Updated repo interfaces: ${updated_ifaces[*]}"
@@ -786,7 +786,7 @@ x.gen.counterfeiter() {
       updated_ifaces+=("$key")
     done
 
-    wait_without_error
+    wait_without_error || err Failed jobs
 
     # counterfeiter is unaware of grpc's obscure mustEmbedUnimplemented***() for forward server compatibility
     if ! grep -q 'v1\.UnimplementedMovieGenreServer' $tfidfpb_dir/v1testing/movie_genre_server.gen.go; then
@@ -855,7 +855,7 @@ export type schemas = components['schemas']
     } &
     orval --config $orval_config &
 
-    wait_without_error
+    wait_without_error || err Failed jobs
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup-gen.cleanup
 }
@@ -904,7 +904,7 @@ x.gen() {
     x.gen.jet &
     generate_repo_constructor &
 
-    wait_without_error
+    wait_without_error || err Failed jobs
 
     {
       x.gen.pregen
@@ -912,7 +912,7 @@ x.gen() {
     } &
     x.gen.counterfeiter & # delay since it depends on generated output (xo, proto...)
 
-    wait_without_error
+    wait_without_error || err Failed jobs
 
     x.gen.postgen
 
@@ -925,7 +925,7 @@ x.gen() {
     x.gen.frontend &
     x.gen.e2e &
 
-    wait_without_error
+    wait_without_error || err Failed jobs
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup-gen.cleanup
 }
@@ -943,7 +943,7 @@ x.gen.build-tools() {
       { go build -o $out_dir/$cmd cmd/$cmd/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]; } &
     done
 
-    wait
+    wait_without_error || err Could not rebuild all gen tools
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1231,7 +1231,7 @@ x.release() {
     search_stopship "STOPSHIP" &
     GOWORK=off go mod verify & # (https://github.com/golang/go/issues/54372)
 
-    wait_without_error
+    wait_without_error || err Failed jobs
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1730,6 +1730,7 @@ update_spec_with_structs() {
         | (.components.schemas.$schema_name | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
       " "$SPEC_PATH" $gen_schema_spec >/tmp/final-spec
 
+    # TODO: better handle in gen_schema if possible to not generate at all in the first place
     if [[ "$schema_name" != "$schema" ]]; then
       echo "Deleting schema \"$schema\". Replace references with \"$schema_name\""
       yq e "del(.components.schemas.$schema)" -i /tmp/final-spec
@@ -1969,7 +1970,7 @@ exit-cleanup() {
 }
 
 killgroup() {
-  printf "\nKilling spawned processes...\n\n"
+  printf "Killing spawned processes...\n\n"
   # kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
   kill_descendants 2>/dev/null || true
   pgrep -P $PROC | xargs kill || true
@@ -1977,7 +1978,7 @@ killgroup() {
 }
 
 errtrap() {
-  printf "\nExiting due to propagated error...\n"
+  printf "Exiting due to propagated error...\n"
   killgroup
 }
 

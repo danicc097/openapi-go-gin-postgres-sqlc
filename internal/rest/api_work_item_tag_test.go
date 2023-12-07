@@ -28,18 +28,18 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(), testPool)
 	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
+	requiredProject := models.ProjectDemo
+
 	tests := []struct {
-		name    string
-		status  int
-		role    models.Role
-		scopes  models.Scopes
-		project models.Project
+		name   string
+		status int
+		role   models.Role
+		scopes models.Scopes
 	}{
 		{
-			name:    "valid tag creation",
-			status:  http.StatusCreated,
-			scopes:  []models.Scope{models.ScopeWorkItemTagCreate},
-			project: models.ProjectDemo,
+			name:   "valid tag creation",
+			status: http.StatusCreated,
+			scopes: []models.Scope{models.ScopeWorkItemTagCreate},
 		},
 	}
 	for _, tc := range tests {
@@ -47,9 +47,7 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			requiredProject := models.ProjectDemo
-
-			team, err := svc.Team.Create(context.Background(), testPool, postgresqltestutil.RandomTeamCreateParams(t, internal.ProjectIDByName[tc.project]))
+			team, err := svc.Team.Create(context.Background(), testPool, postgresqltestutil.RandomTeamCreateParams(t, internal.ProjectIDByName[requiredProject]))
 			require.NoError(t, err)
 			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
@@ -58,10 +56,11 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, team.TeamID)
+			err = svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, team.TeamID)
+			require.NoError(t, err)
 
 			witCreateParams := postgresqltestutil.RandomWorkItemTagCreateParams(t, internal.ProjectIDByName[requiredProject])
-			res, err := srv.client.CreateWorkItemTagWithResponse(context.Background(), requiredProject, models.WorkItemTagCreateRequest{
+			res, err := srv.client.CreateWorkItemTagWithResponse(context.Background(), requiredProject, models.CreateWorkItemTagRequest{
 				Color:       witCreateParams.Color,
 				Description: witCreateParams.Description,
 				Name:        witCreateParams.Name,

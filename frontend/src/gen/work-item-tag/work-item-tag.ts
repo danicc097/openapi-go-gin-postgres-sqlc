@@ -16,7 +16,7 @@ import type {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query'
-import type { HTTPError, WorkItemTag, WorkItemTagCreateRequest, WorkItemTagUpdateRequest } from '.././model'
+import type { CreateWorkItemTagRequest, HTTPError, UpdateWorkItemTagRequest, WorkItemTag } from '.././model'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -27,7 +27,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  */
 export const createWorkItemTag = (
   projectName: 'demo' | 'demo_two',
-  workItemTagCreateRequest: WorkItemTagCreateRequest,
+  createWorkItemTagRequest: CreateWorkItemTagRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemTag>(
@@ -35,7 +35,7 @@ export const createWorkItemTag = (
       url: `/project/${projectName}/workItemTag/`,
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
-      data: workItemTagCreateRequest,
+      data: createWorkItemTagRequest,
     },
     options,
   )
@@ -45,21 +45,21 @@ export const getCreateWorkItemTagMutationOptions = <TError = void | HTTPError, T
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkItemTag>>,
     TError,
-    { projectName: 'demo' | 'demo_two'; data: WorkItemTagCreateRequest },
+    { projectName: 'demo' | 'demo_two'; data: CreateWorkItemTagRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof createWorkItemTag>>,
   TError,
-  { projectName: 'demo' | 'demo_two'; data: WorkItemTagCreateRequest },
+  { projectName: 'demo' | 'demo_two'; data: CreateWorkItemTagRequest },
   TContext
 > => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof createWorkItemTag>>,
-    { projectName: 'demo' | 'demo_two'; data: WorkItemTagCreateRequest }
+    { projectName: 'demo' | 'demo_two'; data: CreateWorkItemTagRequest }
   > = (props) => {
     const { projectName, data } = props ?? {}
 
@@ -70,7 +70,7 @@ export const getCreateWorkItemTagMutationOptions = <TError = void | HTTPError, T
 }
 
 export type CreateWorkItemTagMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkItemTag>>>
-export type CreateWorkItemTagMutationBody = WorkItemTagCreateRequest
+export type CreateWorkItemTagMutationBody = CreateWorkItemTagRequest
 export type CreateWorkItemTagMutationError = void | HTTPError
 
 /**
@@ -80,7 +80,7 @@ export const useCreateWorkItemTag = <TError = void | HTTPError, TContext = unkno
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkItemTag>>,
     TError,
-    { projectName: 'demo' | 'demo_two'; data: WorkItemTagCreateRequest },
+    { projectName: 'demo' | 'demo_two'; data: CreateWorkItemTagRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
@@ -215,7 +215,7 @@ export const useGetWorkItemTag = <TData = Awaited<ReturnType<typeof getWorkItemT
 export const updateWorkItemTag = (
   projectName: 'demo' | 'demo_two',
   id: number,
-  workItemTagUpdateRequest: WorkItemTagUpdateRequest,
+  updateWorkItemTagRequest: UpdateWorkItemTagRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemTag>(
@@ -223,7 +223,7 @@ export const updateWorkItemTag = (
       url: `/project/${projectName}/workItemTag/${id}/`,
       method: 'patch',
       headers: { 'Content-Type': 'application/json' },
-      data: workItemTagUpdateRequest,
+      data: updateWorkItemTagRequest,
     },
     options,
   )
@@ -233,21 +233,21 @@ export const getUpdateWorkItemTagMutationOptions = <TError = void | HTTPError, T
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateWorkItemTag>>,
     TError,
-    { projectName: 'demo' | 'demo_two'; id: number; data: WorkItemTagUpdateRequest },
+    { projectName: 'demo' | 'demo_two'; id: number; data: UpdateWorkItemTagRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateWorkItemTag>>,
   TError,
-  { projectName: 'demo' | 'demo_two'; id: number; data: WorkItemTagUpdateRequest },
+  { projectName: 'demo' | 'demo_two'; id: number; data: UpdateWorkItemTagRequest },
   TContext
 > => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateWorkItemTag>>,
-    { projectName: 'demo' | 'demo_two'; id: number; data: WorkItemTagUpdateRequest }
+    { projectName: 'demo' | 'demo_two'; id: number; data: UpdateWorkItemTagRequest }
   > = (props) => {
     const { projectName, id, data } = props ?? {}
 
@@ -258,7 +258,7 @@ export const getUpdateWorkItemTagMutationOptions = <TError = void | HTTPError, T
 }
 
 export type UpdateWorkItemTagMutationResult = NonNullable<Awaited<ReturnType<typeof updateWorkItemTag>>>
-export type UpdateWorkItemTagMutationBody = WorkItemTagUpdateRequest
+export type UpdateWorkItemTagMutationBody = UpdateWorkItemTagRequest
 export type UpdateWorkItemTagMutationError = void | HTTPError
 
 /**
@@ -268,7 +268,7 @@ export const useUpdateWorkItemTag = <TError = void | HTTPError, TContext = unkno
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateWorkItemTag>>,
     TError,
-    { projectName: 'demo' | 'demo_two'; id: number; data: WorkItemTagUpdateRequest },
+    { projectName: 'demo' | 'demo_two'; id: number; data: UpdateWorkItemTagRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>

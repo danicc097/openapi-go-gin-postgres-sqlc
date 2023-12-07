@@ -16,7 +16,7 @@ import type {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query'
-import type { HTTPError, WorkItemType, WorkItemTypeCreateRequest, WorkItemTypeUpdateRequest } from '.././model'
+import type { CreateWorkItemTypeRequest, HTTPError, UpdateWorkItemTypeRequest, WorkItemType } from '.././model'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -27,7 +27,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  */
 export const createWorkItemType = (
   projectName: 'demo' | 'demo_two',
-  workItemTypeCreateRequest: WorkItemTypeCreateRequest,
+  createWorkItemTypeRequest: CreateWorkItemTypeRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemType>(
@@ -35,7 +35,7 @@ export const createWorkItemType = (
       url: `/project/${projectName}/workItemType/`,
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
-      data: workItemTypeCreateRequest,
+      data: createWorkItemTypeRequest,
     },
     options,
   )
@@ -45,21 +45,21 @@ export const getCreateWorkItemTypeMutationOptions = <TError = void | HTTPError, 
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkItemType>>,
     TError,
-    { projectName: 'demo' | 'demo_two'; data: WorkItemTypeCreateRequest },
+    { projectName: 'demo' | 'demo_two'; data: CreateWorkItemTypeRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof createWorkItemType>>,
   TError,
-  { projectName: 'demo' | 'demo_two'; data: WorkItemTypeCreateRequest },
+  { projectName: 'demo' | 'demo_two'; data: CreateWorkItemTypeRequest },
   TContext
 > => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof createWorkItemType>>,
-    { projectName: 'demo' | 'demo_two'; data: WorkItemTypeCreateRequest }
+    { projectName: 'demo' | 'demo_two'; data: CreateWorkItemTypeRequest }
   > = (props) => {
     const { projectName, data } = props ?? {}
 
@@ -70,7 +70,7 @@ export const getCreateWorkItemTypeMutationOptions = <TError = void | HTTPError, 
 }
 
 export type CreateWorkItemTypeMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkItemType>>>
-export type CreateWorkItemTypeMutationBody = WorkItemTypeCreateRequest
+export type CreateWorkItemTypeMutationBody = CreateWorkItemTypeRequest
 export type CreateWorkItemTypeMutationError = void | HTTPError
 
 /**
@@ -80,7 +80,7 @@ export const useCreateWorkItemType = <TError = void | HTTPError, TContext = unkn
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkItemType>>,
     TError,
-    { projectName: 'demo' | 'demo_two'; data: WorkItemTypeCreateRequest },
+    { projectName: 'demo' | 'demo_two'; data: CreateWorkItemTypeRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
@@ -215,7 +215,7 @@ export const useGetWorkItemType = <TData = Awaited<ReturnType<typeof getWorkItem
 export const updateWorkItemType = (
   projectName: 'demo' | 'demo_two',
   id: number,
-  workItemTypeUpdateRequest: WorkItemTypeUpdateRequest,
+  updateWorkItemTypeRequest: UpdateWorkItemTypeRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemType>(
@@ -223,7 +223,7 @@ export const updateWorkItemType = (
       url: `/project/${projectName}/workItemType/${id}/`,
       method: 'patch',
       headers: { 'Content-Type': 'application/json' },
-      data: workItemTypeUpdateRequest,
+      data: updateWorkItemTypeRequest,
     },
     options,
   )
@@ -233,21 +233,21 @@ export const getUpdateWorkItemTypeMutationOptions = <TError = void | HTTPError, 
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateWorkItemType>>,
     TError,
-    { projectName: 'demo' | 'demo_two'; id: number; data: WorkItemTypeUpdateRequest },
+    { projectName: 'demo' | 'demo_two'; id: number; data: UpdateWorkItemTypeRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateWorkItemType>>,
   TError,
-  { projectName: 'demo' | 'demo_two'; id: number; data: WorkItemTypeUpdateRequest },
+  { projectName: 'demo' | 'demo_two'; id: number; data: UpdateWorkItemTypeRequest },
   TContext
 > => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateWorkItemType>>,
-    { projectName: 'demo' | 'demo_two'; id: number; data: WorkItemTypeUpdateRequest }
+    { projectName: 'demo' | 'demo_two'; id: number; data: UpdateWorkItemTypeRequest }
   > = (props) => {
     const { projectName, id, data } = props ?? {}
 
@@ -258,7 +258,7 @@ export const getUpdateWorkItemTypeMutationOptions = <TError = void | HTTPError, 
 }
 
 export type UpdateWorkItemTypeMutationResult = NonNullable<Awaited<ReturnType<typeof updateWorkItemType>>>
-export type UpdateWorkItemTypeMutationBody = WorkItemTypeUpdateRequest
+export type UpdateWorkItemTypeMutationBody = UpdateWorkItemTypeRequest
 export type UpdateWorkItemTypeMutationError = void | HTTPError
 
 /**
@@ -268,7 +268,7 @@ export const useUpdateWorkItemType = <TError = void | HTTPError, TContext = unkn
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateWorkItemType>>,
     TError,
-    { projectName: 'demo' | 'demo_two'; id: number; data: WorkItemTypeUpdateRequest },
+    { projectName: 'demo' | 'demo_two'; id: number; data: UpdateWorkItemTypeRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>

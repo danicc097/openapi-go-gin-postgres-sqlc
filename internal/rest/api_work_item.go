@@ -41,7 +41,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	span.SetAttributes(tracing.MetadataAttribute(jsonBody))
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
 
-	body := &models.WorkItemCreateRequest{}
+	body := &models.CreateWorkItemRequest{}
 	if err := json.Unmarshal(jsonBody, body); err != nil {
 		return
 	}
@@ -50,7 +50,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 
 	switch disc, _ := body.Discriminator(); models.Project(disc) {
 	case models.ProjectDemo:
-		body := &DemoWorkItemCreateRequest{}
+		body := &CreateDemoWorkItemRequest{}
 		if shouldReturn := parseBody(c, body); shouldReturn {
 			return
 		}
@@ -68,7 +68,7 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 			DemoWorkItem:         *workItem.DemoWorkItemJoin,
 		}
 	case models.ProjectDemoTwo:
-		body := &DemoTwoWorkItemCreateRequest{}
+		body := &CreateDemoTwoWorkItemRequest{}
 		if shouldReturn := parseBody(c, body); shouldReturn {
 			return
 		}

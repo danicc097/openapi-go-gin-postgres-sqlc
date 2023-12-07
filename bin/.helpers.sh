@@ -94,9 +94,9 @@ wait_without_error() {
   done
   #trap 'wait || :' EXIT # wait for all jobs before exiting (regardless of handling above)
   if ((err != 0)); then
-    echo "A job failed"
+    echo "A job failed" >&2
     kill -s SIGUSR1 $PROC
-    exit 1
+    return 1
   fi
 }
 

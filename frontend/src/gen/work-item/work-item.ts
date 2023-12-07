@@ -16,7 +16,7 @@ import type {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query'
-import type { DbWorkItem, DbWorkItemComment, WorkItemCommentCreateRequest, WorkItemCreateRequest } from '.././model'
+import type { CreateWorkItemCommentRequest, CreateWorkItemRequest, DbWorkItem, DbWorkItemComment } from '.././model'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -26,11 +26,11 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  * @summary create workitem
  */
 export const createWorkitem = (
-  workItemCreateRequest: WorkItemCreateRequest,
+  createWorkItemRequest: CreateWorkItemRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<DbWorkItem>(
-    { url: `/workitem/`, method: 'post', headers: { 'Content-Type': 'application/json' }, data: workItemCreateRequest },
+    { url: `/workitem/`, method: 'post', headers: { 'Content-Type': 'application/json' }, data: createWorkItemRequest },
     options,
   )
 }
@@ -39,19 +39,19 @@ export const getCreateWorkitemMutationOptions = <TError = unknown, TContext = un
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitem>>,
     TError,
-    { data: WorkItemCreateRequest },
+    { data: CreateWorkItemRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof createWorkitem>>,
   TError,
-  { data: WorkItemCreateRequest },
+  { data: CreateWorkItemRequest },
   TContext
 > => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof createWorkitem>>, { data: WorkItemCreateRequest }> = (
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof createWorkitem>>, { data: CreateWorkItemRequest }> = (
     props,
   ) => {
     const { data } = props ?? {}
@@ -63,7 +63,7 @@ export const getCreateWorkitemMutationOptions = <TError = unknown, TContext = un
 }
 
 export type CreateWorkitemMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkitem>>>
-export type CreateWorkitemMutationBody = WorkItemCreateRequest
+export type CreateWorkitemMutationBody = CreateWorkItemRequest
 export type CreateWorkitemMutationError = unknown
 
 /**
@@ -73,7 +73,7 @@ export const useCreateWorkitem = <TError = unknown, TContext = unknown>(options?
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitem>>,
     TError,
-    { data: WorkItemCreateRequest },
+    { data: CreateWorkItemRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
@@ -258,7 +258,7 @@ export const useDeleteWorkitem = <TError = unknown, TContext = unknown>(options?
  */
 export const createWorkitemComment = (
   id: number,
-  workItemCommentCreateRequest: WorkItemCommentCreateRequest,
+  createWorkItemCommentRequest: CreateWorkItemCommentRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<DbWorkItemComment>(
@@ -266,7 +266,7 @@ export const createWorkitemComment = (
       url: `/workitem/${id}/comments/`,
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
-      data: workItemCommentCreateRequest,
+      data: createWorkItemCommentRequest,
     },
     options,
   )
@@ -276,21 +276,21 @@ export const getCreateWorkitemCommentMutationOptions = <TError = unknown, TConte
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitemComment>>,
     TError,
-    { id: number; data: WorkItemCommentCreateRequest },
+    { id: number; data: CreateWorkItemCommentRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof createWorkitemComment>>,
   TError,
-  { id: number; data: WorkItemCommentCreateRequest },
+  { id: number; data: CreateWorkItemCommentRequest },
   TContext
 > => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof createWorkitemComment>>,
-    { id: number; data: WorkItemCommentCreateRequest }
+    { id: number; data: CreateWorkItemCommentRequest }
   > = (props) => {
     const { id, data } = props ?? {}
 
@@ -301,7 +301,7 @@ export const getCreateWorkitemCommentMutationOptions = <TError = unknown, TConte
 }
 
 export type CreateWorkitemCommentMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkitemComment>>>
-export type CreateWorkitemCommentMutationBody = WorkItemCommentCreateRequest
+export type CreateWorkitemCommentMutationBody = CreateWorkItemCommentRequest
 export type CreateWorkitemCommentMutationError = unknown
 
 /**
@@ -311,7 +311,7 @@ export const useCreateWorkitemComment = <TError = unknown, TContext = unknown>(o
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkitemComment>>,
     TError,
-    { id: number; data: WorkItemCommentCreateRequest },
+    { id: number; data: CreateWorkItemCommentRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>

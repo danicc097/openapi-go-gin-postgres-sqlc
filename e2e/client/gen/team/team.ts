@@ -5,7 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { Team, TeamCreateRequest, TeamUpdateRequest } from '.././model'
+import type { Team, CreateTeamRequest, UpdateTeamRequest } from '.././model'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -16,7 +16,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  */
 export const createTeam = (
   projectName: 'demo' | 'demo_two',
-  teamCreateRequest: TeamCreateRequest,
+  createTeamRequest: CreateTeamRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<Team>(
@@ -24,7 +24,7 @@ export const createTeam = (
       url: `/project/${projectName}/team/`,
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
-      data: teamCreateRequest,
+      data: createTeamRequest,
     },
     options,
   )
@@ -45,7 +45,7 @@ export const getTeam = (
 export const updateTeam = (
   projectName: 'demo' | 'demo_two',
   id: number,
-  teamUpdateRequest: TeamUpdateRequest,
+  updateTeamRequest: UpdateTeamRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<Team>(
@@ -53,7 +53,7 @@ export const updateTeam = (
       url: `/project/${projectName}/team/${id}/`,
       method: 'patch',
       headers: { 'Content-Type': 'application/json' },
-      data: teamUpdateRequest,
+      data: updateTeamRequest,
     },
     options,
   )

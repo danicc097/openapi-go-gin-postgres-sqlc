@@ -2,7 +2,7 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
-    "WorkItemTagCreateRequest": {
+    "CreateWorkItemTagRequest": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -24,10 +24,10 @@
         "name"
       ],
       "type": "object",
-      "x-postgen-struct": "RestWorkItemTagCreateRequest",
+      "x-postgen-struct": "RestCreateWorkItemTagRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "WorkItemTagUpdateRequest": {
+    "UpdateWorkItemTagRequest": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -41,7 +41,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestWorkItemTagUpdateRequest",
+      "x-postgen-struct": "RestUpdateWorkItemTagRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "WorkItemTag": {
@@ -77,7 +77,7 @@
       "x-postgen-struct": "RestWorkItemTag",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "WorkItemTypeCreateRequest": {
+    "CreateWorkItemTypeRequest": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -99,10 +99,10 @@
         "name"
       ],
       "type": "object",
-      "x-postgen-struct": "RestWorkItemTypeCreateRequest",
+      "x-postgen-struct": "RestCreateWorkItemTypeRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "WorkItemTypeUpdateRequest": {
+    "UpdateWorkItemTypeRequest": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -116,7 +116,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestWorkItemTypeUpdateRequest",
+      "x-postgen-struct": "RestUpdateWorkItemTypeRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "WorkItemType": {
@@ -152,7 +152,7 @@
       "x-postgen-struct": "RestWorkItemType",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "TeamCreateRequest": {
+    "CreateTeamRequest": {
       "properties": {
         "description": {
           "type": "string",
@@ -172,10 +172,10 @@
         "projectID"
       ],
       "type": "object",
-      "x-postgen-struct": "RestTeamCreateRequest",
+      "x-postgen-struct": "RestCreateTeamRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "TeamUpdateRequest": {
+    "UpdateTeamRequest": {
       "properties": {
         "description": {
           "type": "string"
@@ -188,7 +188,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestTeamUpdateRequest",
+      "x-postgen-struct": "RestUpdateTeamRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Team": {
@@ -1007,7 +1007,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestProjectBoardCreateRequest",
+      "x-postgen-struct": "RestCreateProjectBoardRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "ProjectBoard": {
@@ -1349,13 +1349,13 @@
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "WorkItemCreateRequest": {
+    "CreateWorkItemRequest": {
       "oneOf": [
         {
-          "$ref": "#/definitions/DemoWorkItemCreateRequest"
+          "$ref": "#/definitions/CreateDemoWorkItemRequest"
         },
         {
-          "$ref": "#/definitions/DemoTwoWorkItemCreateRequest"
+          "$ref": "#/definitions/CreateDemoTwoWorkItemRequest"
         }
       ],
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -1433,7 +1433,7 @@
       "x-postgen-struct": "DbWorkItem",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DemoTwoWorkItemCreateRequest": {
+    "CreateDemoTwoWorkItemRequest": {
       "properties": {
         "base": {
           "$ref": "#/definitions/DbWorkItemCreateParams"
@@ -1465,10 +1465,10 @@
         "members"
       ],
       "type": "object",
-      "x-postgen-struct": "RestDemoTwoWorkItemCreateRequest",
+      "x-postgen-struct": "RestCreateDemoTwoWorkItemRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "DemoWorkItemCreateRequest": {
+    "CreateDemoWorkItemRequest": {
       "properties": {
         "base": {
           "$ref": "#/definitions/DbWorkItemCreateParams"
@@ -1500,10 +1500,10 @@
         "members"
       ],
       "type": "object",
-      "x-postgen-struct": "RestDemoWorkItemCreateRequest",
+      "x-postgen-struct": "RestCreateDemoWorkItemRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
-    "WorkItemCommentCreateRequest": {
+    "CreateWorkItemCommentRequest": {
       "properties": {
         "message": {
           "type": "string",
@@ -1522,7 +1522,7 @@
         "workItemID"
       ],
       "type": "object",
-      "x-postgen-struct": "RestWorkItemCommentCreateRequest",
+      "x-postgen-struct": "RestCreateWorkItemCommentRequest",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Project": {
@@ -1948,29 +1948,29 @@
     }
   },
   "properties": {
-    "WorkItemTagCreateRequest": {
-      "$ref": "#/definitions/WorkItemTagCreateRequest"
+    "CreateWorkItemTagRequest": {
+      "$ref": "#/definitions/CreateWorkItemTagRequest"
     },
-    "WorkItemTagUpdateRequest": {
-      "$ref": "#/definitions/WorkItemTagUpdateRequest"
+    "UpdateWorkItemTagRequest": {
+      "$ref": "#/definitions/UpdateWorkItemTagRequest"
     },
     "WorkItemTag": {
       "$ref": "#/definitions/WorkItemTag"
     },
-    "WorkItemTypeCreateRequest": {
-      "$ref": "#/definitions/WorkItemTypeCreateRequest"
+    "CreateWorkItemTypeRequest": {
+      "$ref": "#/definitions/CreateWorkItemTypeRequest"
     },
-    "WorkItemTypeUpdateRequest": {
-      "$ref": "#/definitions/WorkItemTypeUpdateRequest"
+    "UpdateWorkItemTypeRequest": {
+      "$ref": "#/definitions/UpdateWorkItemTypeRequest"
     },
     "WorkItemType": {
       "$ref": "#/definitions/WorkItemType"
     },
-    "TeamCreateRequest": {
-      "$ref": "#/definitions/TeamCreateRequest"
+    "CreateTeamRequest": {
+      "$ref": "#/definitions/CreateTeamRequest"
     },
-    "TeamUpdateRequest": {
-      "$ref": "#/definitions/TeamUpdateRequest"
+    "UpdateTeamRequest": {
+      "$ref": "#/definitions/UpdateTeamRequest"
     },
     "Team": {
       "$ref": "#/definitions/Team"
@@ -2071,20 +2071,20 @@
     "UuidUUID": {
       "$ref": "#/definitions/UuidUUID"
     },
-    "WorkItemCreateRequest": {
-      "$ref": "#/definitions/WorkItemCreateRequest"
+    "CreateWorkItemRequest": {
+      "$ref": "#/definitions/CreateWorkItemRequest"
     },
     "DbWorkItem": {
       "$ref": "#/definitions/DbWorkItem"
     },
-    "DemoTwoWorkItemCreateRequest": {
-      "$ref": "#/definitions/DemoTwoWorkItemCreateRequest"
+    "CreateDemoTwoWorkItemRequest": {
+      "$ref": "#/definitions/CreateDemoTwoWorkItemRequest"
     },
-    "DemoWorkItemCreateRequest": {
-      "$ref": "#/definitions/DemoWorkItemCreateRequest"
+    "CreateDemoWorkItemRequest": {
+      "$ref": "#/definitions/CreateDemoWorkItemRequest"
     },
-    "WorkItemCommentCreateRequest": {
-      "$ref": "#/definitions/WorkItemCommentCreateRequest"
+    "CreateWorkItemCommentRequest": {
+      "$ref": "#/definitions/CreateWorkItemCommentRequest"
     },
     "Project": {
       "$ref": "#/definitions/Project"

@@ -6,10 +6,10 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export type DemoWorkItemCreateRequestProjectName =
-  typeof DemoWorkItemCreateRequestProjectName[keyof typeof DemoWorkItemCreateRequestProjectName]
+export type CreateDemoWorkItemRequestProjectName =
+  typeof CreateDemoWorkItemRequestProjectName[keyof typeof CreateDemoWorkItemRequestProjectName]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const DemoWorkItemCreateRequestProjectName = {
+export const CreateDemoWorkItemRequestProjectName = {
   demo: 'demo',
 } as const
