@@ -24,6 +24,12 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 	case CreateWorkItemTag:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					RequiredScopes: models.Scopes{
+						models.Scope("work-item-tag:create"),
+					},
+				}),
 		}
 	case CreateWorkItemType:
 		return []gin.HandlerFunc{

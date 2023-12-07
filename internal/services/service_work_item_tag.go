@@ -50,6 +50,25 @@ func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, proj
 func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller *db.User, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
+	// TODO: we should use GetUserInProject and not rely on db.User joins.
+	// but we want the ctx user set from auth mw
+	// to be as light as possible.
+	// userInProject := false
+	// for _, team := range *caller.MemberTeamsJoin {
+	// 	if team.ProjectID == params.ProjectID {
+	// 		userInProject = true
+	// 	}
+	// }
+
+	userInProject, err := wit.repos.User.IsUserInProject(ctx, d, db.IsUserInProjectParams{
+		UserID:    caller.UserID.UUID,
+		ProjectID: int32(params.ProjectID),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("repos.User.IsUserInProject: %w", err)
+	}
+	fmt.Printf("userInProject: %v\n", userInProject)
+
 	witObj, err := wit.repos.WorkItemTag.Create(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("repos.WorkItemTag.Create: %w", err)

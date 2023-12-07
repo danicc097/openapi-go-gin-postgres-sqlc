@@ -1,4 +1,18 @@
 {
+  "sqlc-repo-method": {
+    "scope": "go",
+    "prefix": "sqlc-repo-method",
+    "body": [
+      "func (u *$1) $2(ctx context.Context, db db.DBTX, arg db.$2Params) (bool, error) {",
+      "  r, err := u.q.$2(ctx, db, arg)",
+      "  if err != nil {",
+      "    return false, fmt.Errorf(\"q.$2: %w\", parseDBErrorDetail(err))",
+      "  }",
+      "  ",
+      "  return r, nil",
+      "}",
+    ]
+  },
   "openapi-crud": {
     "scope": "yaml",
     "prefix": "openapi-crud",

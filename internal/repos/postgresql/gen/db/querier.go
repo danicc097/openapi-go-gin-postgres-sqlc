@@ -11,6 +11,7 @@ import (
 type Querier interface {
 	GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetUserRow, error)
 	GetUserNotifications(ctx context.Context, db DBTX, arg GetUserNotificationsParams) ([]GetUserNotificationsRow, error)
+	IsUserInProject(ctx context.Context, db DBTX, arg IsUserInProjectParams) (bool, error)
 	// plpgsql-language-server:disable
 	RegisterNewUser(ctx context.Context, db DBTX, arg RegisterNewUserParams) (RegisterNewUserRow, error)
 	// update

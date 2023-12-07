@@ -37,7 +37,7 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 		{
 			name:   "valid tag creation",
 			status: http.StatusCreated,
-			role:   models.RoleAdmin,
+			scopes: []models.Scope{models.ScopeWorkItemTagCreate},
 		},
 	}
 	for _, tc := range tests {

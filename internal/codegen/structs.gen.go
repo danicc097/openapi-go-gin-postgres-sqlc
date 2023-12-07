@@ -35,6 +35,7 @@ var PublicStructs = map[string]any{
 	"DbGetUserNotificationsRow":             new(db.GetUserNotificationsRow),
 	"DbGetUserParams":                       new(db.GetUserParams),
 	"DbGetUserRow":                          new(db.GetUserRow),
+	"DbIsUserInProjectParams":               new(db.IsUserInProjectParams),
 	"DbKanbanStep":                          new(db.KanbanStep),
 	"DbKanbanStepCreateParams":              new(db.KanbanStepCreateParams),
 	"DbKanbanStepJoins":                     new(db.KanbanStepJoins),

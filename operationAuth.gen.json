@@ -55,7 +55,9 @@
     "requiresAuthentication": true
   },
   "CreateWorkItemTag": {
-    "scopes": null,
+    "scopes": [
+      "work-item-tag:create"
+    ],
     "role": null,
     "requiresAuthentication": true
   },

@@ -281,6 +281,8 @@ paths:
       operationId: CreateWorkItemTag
       parameters:
         - $ref: '#/components/parameters/ProjectName'
+      x-required-scopes:
+        - work-item-tag:create
       requestBody:
         content:
           application/json:
