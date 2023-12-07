@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
@@ -67,7 +69,10 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller *db.User, 
 	if err != nil {
 		return nil, fmt.Errorf("repos.User.IsUserInProject: %w", err)
 	}
-	fmt.Printf("userInProject: %v\n", userInProject)
+
+	if !userInProject {
+		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "User is not a member of project %q", internal.ProjectNameByID[params.ProjectID])
+	}
 
 	witObj, err := wit.repos.WorkItemTag.Create(ctx, d, params)
 	if err != nil {

@@ -29,31 +29,39 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	tests := []struct {
-		name   string
-		status int
-		role   models.Role
-		scopes models.Scopes
+		name    string
+		status  int
+		role    models.Role
+		scopes  models.Scopes
+		project models.Project
 	}{
 		{
-			name:   "valid tag creation",
-			status: http.StatusCreated,
-			scopes: []models.Scope{models.ScopeWorkItemTagCreate},
+			name:    "valid tag creation",
+			status:  http.StatusCreated,
+			scopes:  []models.Scope{models.ScopeWorkItemTagCreate},
+			project: models.ProjectDemo,
 		},
 	}
 	for _, tc := range tests {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+
+			requiredProject := models.ProjectDemo
+
+			team, err := svc.Team.Create(context.Background(), testPool, postgresqltestutil.RandomTeamCreateParams(t, internal.ProjectIDByName[tc.project]))
+			require.NoError(t, err)
 			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
 			})
-			require.NoError(t, err, "ff.CreateUser: %s")
+			require.NoError(t, err)
 
-			project := models.ProjectDemo
-			witCreateParams := postgresqltestutil.RandomWorkItemTagCreateParams(t, internal.ProjectIDByName[project])
-			res, err := srv.client.CreateWorkItemTagWithResponse(context.Background(), project, models.WorkItemTagCreateRequest{
+			svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, team.TeamID)
+
+			witCreateParams := postgresqltestutil.RandomWorkItemTagCreateParams(t, internal.ProjectIDByName[requiredProject])
+			res, err := srv.client.CreateWorkItemTagWithResponse(context.Background(), requiredProject, models.WorkItemTagCreateRequest{
 				Color:       witCreateParams.Color,
 				Description: witCreateParams.Description,
 				Name:        witCreateParams.Name,
