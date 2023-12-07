@@ -25,33 +25,31 @@ func TestWorkItemTag_Update(t *testing.T) {
 
 	requiredProject := models.ProjectDemo
 
-	type args struct {
-		params *db.WorkItemTagUpdateParams
-		id     db.WorkItemTagID
-		caller *db.User
-	}
-	type want struct {
-		Name *string
-	}
-
-	testUsers := createTestUsers(t)
-
 	svc := services.New(logger, services.CreateTestRepos(), testPool)
 	ff := servicetestutil.NewFixtureFactory(testPool, svc)
 
 	team, err := svc.Team.Create(context.Background(), testPool, postgresqltestutil.RandomTeamCreateParams(t, internal.ProjectIDByName[requiredProject]))
 	require.NoError(t, err)
-	ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	tagCreator, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		WithAPIKey: true,
 	})
 	require.NoError(t, err)
 
-	err = svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, team.TeamID)
+	err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, team.TeamID)
 	require.NoError(t, err)
 
 	witCreateParams := postgresqltestutil.RandomWorkItemTagCreateParams(t, internal.ProjectIDByName[requiredProject])
-	wit, err := svc.WorkItemTag.Create(context.Background(), testPool, ufixture.User, witCreateParams)
+	wit, err := svc.WorkItemTag.Create(context.Background(), testPool, tagCreator.User, witCreateParams)
 	require.NoError(t, err)
+
+	type args struct {
+		params            *db.WorkItemTagUpdateParams
+		id                db.WorkItemTagID
+		withUserInProject bool
+	}
+	type want struct {
+		Name *string
+	}
 
 	tests := []struct {
 		name          string
@@ -65,8 +63,8 @@ func TestWorkItemTag_Update(t *testing.T) {
 				params: &db.WorkItemTagUpdateParams{
 					Name: pointers.New("changed"),
 				},
-				id:     wit.WorkItemTagID,
-				caller: testUsers.user.User,
+				withUserInProject: true,
+				id:                wit.WorkItemTagID,
 			},
 			want: want{
 				Name: pointers.New("changed"),
@@ -75,9 +73,9 @@ func TestWorkItemTag_Update(t *testing.T) {
 		{
 			name: "user not in project",
 			args: args{
-				params: &db.WorkItemTagUpdateParams{},
-				id:     wit.WorkItemTagID,
-				caller: testUsers.advancedUser.User,
+				params:            &db.WorkItemTagUpdateParams{},
+				withUserInProject: false,
+				id:                wit.WorkItemTagID,
 			},
 			errorContains: "user is not a member of project",
 		},
@@ -95,8 +93,18 @@ func TestWorkItemTag_Update(t *testing.T) {
 			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
 			defer tx.Rollback(ctx)
 
+			user, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+				WithAPIKey: true,
+			})
+			require.NoError(t, err)
+
+			if tc.args.withUserInProject {
+				err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)
+				require.NoError(t, err)
+			}
+
 			w := services.NewWorkItemTag(logger, repos)
-			got, err := w.Update(ctx, tx, tc.args.caller, tc.args.id, tc.args.params)
+			got, err := w.Update(ctx, tx, user.User, tc.args.id, tc.args.params)
 			if (err != nil) && tc.errorContains == "" {
 				t.Fatalf("unexpected error = %v", err)
 			}

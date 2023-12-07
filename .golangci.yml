@@ -78,6 +78,7 @@ linters-settings:
     ignore-map-index-ok: true
     ignore-chan-recv-ok: true
     ignore-names:
+      - id
       - tx
       - ctx
     ignore-decls:
