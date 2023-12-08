@@ -259,7 +259,7 @@ x.install-tools() {
     # install node libs with --prefix $TOOLS_DIR, if any
     # ...
 
-    wait
+    wait_without_error || err Could not install all tools
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
