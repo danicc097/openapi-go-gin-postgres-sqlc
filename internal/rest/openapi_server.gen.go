@@ -14,6 +14,7 @@ import (
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/google/uuid"
+	strictgin "github.com/oapi-codegen/runtime/strictmiddleware/gin"
 )
 
 // ServerInterface represents all server handlers.
@@ -2169,27 +2170,28 @@ type StrictServerInterface interface {
 }
 
 type (
-	StrictHandlerFunc    = runtime.StrictGinHandlerFunc
-	StrictMiddlewareFunc = runtime.StrictGinMiddlewareFunc
+	StrictHandlerFunc    = strictgin.StrictGinHandlerFunc
+	StrictMiddlewareFunc = strictgin.StrictGinMiddlewareFunc
 )
 
-// func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc) ServerInterface {
-// 	return &strictHandler{ssi: ssi, middlewares: middlewares}
-// }
+func NewStrictHandler(ssi StrictServerInterface, strictMiddlewares []StrictMiddlewareFunc, h Handlers) ServerInterface {
+	return &strictHandlers{ssi: ssi, strictMiddlewares: strictMiddlewares, h: &h}
+}
 
-type strictHandler struct {
-	ssi         StrictServerInterface
-	middlewares []StrictMiddlewareFunc
+type strictHandlers struct {
+	ssi               StrictServerInterface
+	strictMiddlewares []StrictMiddlewareFunc
+	h                 *Handlers
 }
 
 // AdminPing operation middleware
-func (sh *strictHandler) AdminPing(ctx *gin.Context) {
+func (sh *strictHandlers) AdminPing(ctx *gin.Context) {
 	var request AdminPingRequestObject
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.AdminPing(ctx, request.(AdminPingRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "AdminPing")
 	}
 
@@ -2203,18 +2205,18 @@ func (sh *strictHandler) AdminPing(ctx *gin.Context) {
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // MyProviderCallback operation middleware
-func (sh *strictHandler) MyProviderCallback(ctx *gin.Context) {
+func (sh *strictHandlers) MyProviderCallback(ctx *gin.Context) {
 	var request MyProviderCallbackRequestObject
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.MyProviderCallback(ctx, request.(MyProviderCallbackRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "MyProviderCallback")
 	}
 
@@ -2228,18 +2230,18 @@ func (sh *strictHandler) MyProviderCallback(ctx *gin.Context) {
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // MyProviderLogin operation middleware
-func (sh *strictHandler) MyProviderLogin(ctx *gin.Context) {
+func (sh *strictHandlers) MyProviderLogin(ctx *gin.Context) {
 	var request MyProviderLoginRequestObject
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.MyProviderLogin(ctx, request.(MyProviderLoginRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "MyProviderLogin")
 	}
 
@@ -2253,12 +2255,12 @@ func (sh *strictHandler) MyProviderLogin(ctx *gin.Context) {
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // Events operation middleware
-func (sh *strictHandler) Events(ctx *gin.Context, params externalRef0.EventsParams) {
+func (sh *strictHandlers) Events(ctx *gin.Context, params externalRef0.EventsParams) {
 	var request EventsRequestObject
 
 	request.Params = params
@@ -2266,7 +2268,7 @@ func (sh *strictHandler) Events(ctx *gin.Context, params externalRef0.EventsPara
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.Events(ctx, request.(EventsRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "Events")
 	}
 
@@ -2280,12 +2282,12 @@ func (sh *strictHandler) Events(ctx *gin.Context, params externalRef0.EventsPara
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // GetPaginatedNotifications operation middleware
-func (sh *strictHandler) GetPaginatedNotifications(ctx *gin.Context, params externalRef0.GetPaginatedNotificationsParams) {
+func (sh *strictHandlers) GetPaginatedNotifications(ctx *gin.Context, params externalRef0.GetPaginatedNotificationsParams) {
 	var request GetPaginatedNotificationsRequestObject
 
 	request.Params = params
@@ -2293,7 +2295,7 @@ func (sh *strictHandler) GetPaginatedNotifications(ctx *gin.Context, params exte
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetPaginatedNotifications(ctx, request.(GetPaginatedNotificationsRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "GetPaginatedNotifications")
 	}
 
@@ -2307,18 +2309,18 @@ func (sh *strictHandler) GetPaginatedNotifications(ctx *gin.Context, params exte
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // OpenapiYamlGet operation middleware
-func (sh *strictHandler) OpenapiYamlGet(ctx *gin.Context) {
+func (sh *strictHandlers) OpenapiYamlGet(ctx *gin.Context) {
 	var request OpenapiYamlGetRequestObject
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.OpenapiYamlGet(ctx, request.(OpenapiYamlGetRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "OpenapiYamlGet")
 	}
 
@@ -2332,18 +2334,18 @@ func (sh *strictHandler) OpenapiYamlGet(ctx *gin.Context) {
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // Ping operation middleware
-func (sh *strictHandler) Ping(ctx *gin.Context) {
+func (sh *strictHandlers) Ping(ctx *gin.Context) {
 	var request PingRequestObject
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.Ping(ctx, request.(PingRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "Ping")
 	}
 
@@ -2357,12 +2359,12 @@ func (sh *strictHandler) Ping(ctx *gin.Context) {
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // GetProject operation middleware
-func (sh *strictHandler) GetProject(ctx *gin.Context, projectName externalRef0.ProjectName) {
+func (sh *strictHandlers) GetProject(ctx *gin.Context, projectName externalRef0.ProjectName) {
 	var request GetProjectRequestObject
 
 	request.ProjectName = projectName
@@ -2370,7 +2372,7 @@ func (sh *strictHandler) GetProject(ctx *gin.Context, projectName externalRef0.P
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetProject(ctx, request.(GetProjectRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "GetProject")
 	}
 
@@ -2384,12 +2386,12 @@ func (sh *strictHandler) GetProject(ctx *gin.Context, projectName externalRef0.P
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // GetProjectBoard operation middleware
-func (sh *strictHandler) GetProjectBoard(ctx *gin.Context, projectName externalRef0.ProjectName) {
+func (sh *strictHandlers) GetProjectBoard(ctx *gin.Context, projectName externalRef0.ProjectName) {
 	var request GetProjectBoardRequestObject
 
 	request.ProjectName = projectName
@@ -2397,7 +2399,7 @@ func (sh *strictHandler) GetProjectBoard(ctx *gin.Context, projectName externalR
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetProjectBoard(ctx, request.(GetProjectBoardRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "GetProjectBoard")
 	}
 
@@ -2411,12 +2413,12 @@ func (sh *strictHandler) GetProjectBoard(ctx *gin.Context, projectName externalR
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // GetProjectConfig operation middleware
-func (sh *strictHandler) GetProjectConfig(ctx *gin.Context, projectName externalRef0.ProjectName) {
+func (sh *strictHandlers) GetProjectConfig(ctx *gin.Context, projectName externalRef0.ProjectName) {
 	var request GetProjectConfigRequestObject
 
 	request.ProjectName = projectName
@@ -2424,7 +2426,7 @@ func (sh *strictHandler) GetProjectConfig(ctx *gin.Context, projectName external
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetProjectConfig(ctx, request.(GetProjectConfigRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "GetProjectConfig")
 	}
 
@@ -2438,12 +2440,12 @@ func (sh *strictHandler) GetProjectConfig(ctx *gin.Context, projectName external
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // UpdateProjectConfig operation middleware
-func (sh *strictHandler) UpdateProjectConfig(ctx *gin.Context, projectName externalRef0.ProjectName) {
+func (sh *strictHandlers) UpdateProjectConfig(ctx *gin.Context, projectName externalRef0.ProjectName) {
 	var request UpdateProjectConfigRequestObject
 
 	request.ProjectName = projectName
@@ -2459,7 +2461,7 @@ func (sh *strictHandler) UpdateProjectConfig(ctx *gin.Context, projectName exter
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.UpdateProjectConfig(ctx, request.(UpdateProjectConfigRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "UpdateProjectConfig")
 	}
 
@@ -2473,12 +2475,12 @@ func (sh *strictHandler) UpdateProjectConfig(ctx *gin.Context, projectName exter
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // InitializeProject operation middleware
-func (sh *strictHandler) InitializeProject(ctx *gin.Context, projectName externalRef0.ProjectName) {
+func (sh *strictHandlers) InitializeProject(ctx *gin.Context, projectName externalRef0.ProjectName) {
 	var request InitializeProjectRequestObject
 
 	request.ProjectName = projectName
@@ -2494,7 +2496,7 @@ func (sh *strictHandler) InitializeProject(ctx *gin.Context, projectName externa
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.InitializeProject(ctx, request.(InitializeProjectRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "InitializeProject")
 	}
 
@@ -2508,12 +2510,12 @@ func (sh *strictHandler) InitializeProject(ctx *gin.Context, projectName externa
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // CreateTeam operation middleware
-func (sh *strictHandler) CreateTeam(ctx *gin.Context, projectName externalRef0.ProjectName) {
+func (sh *strictHandlers) CreateTeam(ctx *gin.Context, projectName externalRef0.ProjectName) {
 	var request CreateTeamRequestObject
 
 	request.ProjectName = projectName
@@ -2529,7 +2531,7 @@ func (sh *strictHandler) CreateTeam(ctx *gin.Context, projectName externalRef0.P
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.CreateTeam(ctx, request.(CreateTeamRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "CreateTeam")
 	}
 
@@ -2543,12 +2545,12 @@ func (sh *strictHandler) CreateTeam(ctx *gin.Context, projectName externalRef0.P
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // DeleteTeam operation middleware
-func (sh *strictHandler) DeleteTeam(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
 	var request DeleteTeamRequestObject
 
 	request.ProjectName = projectName
@@ -2557,7 +2559,7 @@ func (sh *strictHandler) DeleteTeam(ctx *gin.Context, projectName externalRef0.P
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.DeleteTeam(ctx, request.(DeleteTeamRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "DeleteTeam")
 	}
 
@@ -2571,12 +2573,12 @@ func (sh *strictHandler) DeleteTeam(ctx *gin.Context, projectName externalRef0.P
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // GetTeam operation middleware
-func (sh *strictHandler) GetTeam(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+func (sh *strictHandlers) GetTeam(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
 	var request GetTeamRequestObject
 
 	request.ProjectName = projectName
@@ -2585,7 +2587,7 @@ func (sh *strictHandler) GetTeam(ctx *gin.Context, projectName externalRef0.Proj
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetTeam(ctx, request.(GetTeamRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "GetTeam")
 	}
 
@@ -2599,12 +2601,12 @@ func (sh *strictHandler) GetTeam(ctx *gin.Context, projectName externalRef0.Proj
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // UpdateTeam operation middleware
-func (sh *strictHandler) UpdateTeam(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
 	var request UpdateTeamRequestObject
 
 	request.ProjectName = projectName
@@ -2621,7 +2623,7 @@ func (sh *strictHandler) UpdateTeam(ctx *gin.Context, projectName externalRef0.P
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.UpdateTeam(ctx, request.(UpdateTeamRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "UpdateTeam")
 	}
 
@@ -2635,12 +2637,12 @@ func (sh *strictHandler) UpdateTeam(ctx *gin.Context, projectName externalRef0.P
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // CreateWorkItemTag operation middleware
-func (sh *strictHandler) CreateWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName) {
+func (sh *strictHandlers) CreateWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName) {
 	var request CreateWorkItemTagRequestObject
 
 	request.ProjectName = projectName
@@ -2656,7 +2658,7 @@ func (sh *strictHandler) CreateWorkItemTag(ctx *gin.Context, projectName externa
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.CreateWorkItemTag(ctx, request.(CreateWorkItemTagRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "CreateWorkItemTag")
 	}
 
@@ -2670,12 +2672,12 @@ func (sh *strictHandler) CreateWorkItemTag(ctx *gin.Context, projectName externa
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // DeleteWorkItemTag operation middleware
-func (sh *strictHandler) DeleteWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
 	var request DeleteWorkItemTagRequestObject
 
 	request.ProjectName = projectName
@@ -2684,7 +2686,7 @@ func (sh *strictHandler) DeleteWorkItemTag(ctx *gin.Context, projectName externa
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.DeleteWorkItemTag(ctx, request.(DeleteWorkItemTagRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "DeleteWorkItemTag")
 	}
 
@@ -2698,12 +2700,12 @@ func (sh *strictHandler) DeleteWorkItemTag(ctx *gin.Context, projectName externa
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // GetWorkItemTag operation middleware
-func (sh *strictHandler) GetWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
 	var request GetWorkItemTagRequestObject
 
 	request.ProjectName = projectName
@@ -2712,7 +2714,7 @@ func (sh *strictHandler) GetWorkItemTag(ctx *gin.Context, projectName externalRe
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetWorkItemTag(ctx, request.(GetWorkItemTagRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "GetWorkItemTag")
 	}
 
@@ -2726,12 +2728,12 @@ func (sh *strictHandler) GetWorkItemTag(ctx *gin.Context, projectName externalRe
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // UpdateWorkItemTag operation middleware
-func (sh *strictHandler) UpdateWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
 	var request UpdateWorkItemTagRequestObject
 
 	request.ProjectName = projectName
@@ -2748,7 +2750,7 @@ func (sh *strictHandler) UpdateWorkItemTag(ctx *gin.Context, projectName externa
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.UpdateWorkItemTag(ctx, request.(UpdateWorkItemTagRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "UpdateWorkItemTag")
 	}
 
@@ -2762,12 +2764,12 @@ func (sh *strictHandler) UpdateWorkItemTag(ctx *gin.Context, projectName externa
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // CreateWorkItemType operation middleware
-func (sh *strictHandler) CreateWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName) {
+func (sh *strictHandlers) CreateWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName) {
 	var request CreateWorkItemTypeRequestObject
 
 	request.ProjectName = projectName
@@ -2783,7 +2785,7 @@ func (sh *strictHandler) CreateWorkItemType(ctx *gin.Context, projectName extern
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.CreateWorkItemType(ctx, request.(CreateWorkItemTypeRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "CreateWorkItemType")
 	}
 
@@ -2797,12 +2799,12 @@ func (sh *strictHandler) CreateWorkItemType(ctx *gin.Context, projectName extern
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // DeleteWorkItemType operation middleware
-func (sh *strictHandler) DeleteWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
 	var request DeleteWorkItemTypeRequestObject
 
 	request.ProjectName = projectName
@@ -2811,7 +2813,7 @@ func (sh *strictHandler) DeleteWorkItemType(ctx *gin.Context, projectName extern
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.DeleteWorkItemType(ctx, request.(DeleteWorkItemTypeRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "DeleteWorkItemType")
 	}
 
@@ -2825,12 +2827,12 @@ func (sh *strictHandler) DeleteWorkItemType(ctx *gin.Context, projectName extern
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // GetWorkItemType operation middleware
-func (sh *strictHandler) GetWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
 	var request GetWorkItemTypeRequestObject
 
 	request.ProjectName = projectName
@@ -2839,7 +2841,7 @@ func (sh *strictHandler) GetWorkItemType(ctx *gin.Context, projectName externalR
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetWorkItemType(ctx, request.(GetWorkItemTypeRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "GetWorkItemType")
 	}
 
@@ -2853,12 +2855,12 @@ func (sh *strictHandler) GetWorkItemType(ctx *gin.Context, projectName externalR
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // UpdateWorkItemType operation middleware
-func (sh *strictHandler) UpdateWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
 	var request UpdateWorkItemTypeRequestObject
 
 	request.ProjectName = projectName
@@ -2875,7 +2877,7 @@ func (sh *strictHandler) UpdateWorkItemType(ctx *gin.Context, projectName extern
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.UpdateWorkItemType(ctx, request.(UpdateWorkItemTypeRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "UpdateWorkItemType")
 	}
 
@@ -2889,12 +2891,12 @@ func (sh *strictHandler) UpdateWorkItemType(ctx *gin.Context, projectName extern
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // GetProjectWorkitems operation middleware
-func (sh *strictHandler) GetProjectWorkitems(ctx *gin.Context, projectName externalRef0.ProjectName, params externalRef0.GetProjectWorkitemsParams) {
+func (sh *strictHandlers) GetProjectWorkitems(ctx *gin.Context, projectName externalRef0.ProjectName, params externalRef0.GetProjectWorkitemsParams) {
 	var request GetProjectWorkitemsRequestObject
 
 	request.ProjectName = projectName
@@ -2903,7 +2905,7 @@ func (sh *strictHandler) GetProjectWorkitems(ctx *gin.Context, projectName exter
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetProjectWorkitems(ctx, request.(GetProjectWorkitemsRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "GetProjectWorkitems")
 	}
 
@@ -2917,18 +2919,18 @@ func (sh *strictHandler) GetProjectWorkitems(ctx *gin.Context, projectName exter
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // GetCurrentUser operation middleware
-func (sh *strictHandler) GetCurrentUser(ctx *gin.Context) {
+func (sh *strictHandlers) GetCurrentUser(ctx *gin.Context) {
 	var request GetCurrentUserRequestObject
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetCurrentUser(ctx, request.(GetCurrentUserRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "GetCurrentUser")
 	}
 
@@ -2942,12 +2944,12 @@ func (sh *strictHandler) GetCurrentUser(ctx *gin.Context) {
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // DeleteUser operation middleware
-func (sh *strictHandler) DeleteUser(ctx *gin.Context, id uuid.UUID) {
+func (sh *strictHandlers) DeleteUser(ctx *gin.Context, id uuid.UUID) {
 	var request DeleteUserRequestObject
 
 	request.Id = id
@@ -2955,7 +2957,7 @@ func (sh *strictHandler) DeleteUser(ctx *gin.Context, id uuid.UUID) {
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.DeleteUser(ctx, request.(DeleteUserRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "DeleteUser")
 	}
 
@@ -2969,12 +2971,12 @@ func (sh *strictHandler) DeleteUser(ctx *gin.Context, id uuid.UUID) {
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // UpdateUser operation middleware
-func (sh *strictHandler) UpdateUser(ctx *gin.Context, id uuid.UUID) {
+func (sh *strictHandlers) UpdateUser(ctx *gin.Context, id uuid.UUID) {
 	var request UpdateUserRequestObject
 
 	request.Id = id
@@ -2990,7 +2992,7 @@ func (sh *strictHandler) UpdateUser(ctx *gin.Context, id uuid.UUID) {
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.UpdateUser(ctx, request.(UpdateUserRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "UpdateUser")
 	}
 
@@ -3004,12 +3006,12 @@ func (sh *strictHandler) UpdateUser(ctx *gin.Context, id uuid.UUID) {
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // UpdateUserAuthorization operation middleware
-func (sh *strictHandler) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID) {
+func (sh *strictHandlers) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID) {
 	var request UpdateUserAuthorizationRequestObject
 
 	request.Id = id
@@ -3025,7 +3027,7 @@ func (sh *strictHandler) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID)
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.UpdateUserAuthorization(ctx, request.(UpdateUserAuthorizationRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "UpdateUserAuthorization")
 	}
 
@@ -3039,12 +3041,12 @@ func (sh *strictHandler) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID)
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // CreateWorkitem operation middleware
-func (sh *strictHandler) CreateWorkitem(ctx *gin.Context) {
+func (sh *strictHandlers) CreateWorkitem(ctx *gin.Context) {
 	var request CreateWorkitemRequestObject
 
 	var body externalRef0.CreateWorkitemJSONRequestBody
@@ -3058,7 +3060,7 @@ func (sh *strictHandler) CreateWorkitem(ctx *gin.Context) {
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.CreateWorkitem(ctx, request.(CreateWorkitemRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "CreateWorkitem")
 	}
 
@@ -3072,12 +3074,12 @@ func (sh *strictHandler) CreateWorkitem(ctx *gin.Context) {
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // DeleteWorkitem operation middleware
-func (sh *strictHandler) DeleteWorkitem(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, id externalRef0.SerialID) {
 	var request DeleteWorkitemRequestObject
 
 	request.Id = id
@@ -3085,7 +3087,7 @@ func (sh *strictHandler) DeleteWorkitem(ctx *gin.Context, id externalRef0.Serial
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.DeleteWorkitem(ctx, request.(DeleteWorkitemRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "DeleteWorkitem")
 	}
 
@@ -3099,12 +3101,12 @@ func (sh *strictHandler) DeleteWorkitem(ctx *gin.Context, id externalRef0.Serial
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // GetWorkItem operation middleware
-func (sh *strictHandler) GetWorkItem(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, id externalRef0.SerialID) {
 	var request GetWorkItemRequestObject
 
 	request.Id = id
@@ -3112,7 +3114,7 @@ func (sh *strictHandler) GetWorkItem(ctx *gin.Context, id externalRef0.SerialID)
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetWorkItem(ctx, request.(GetWorkItemRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "GetWorkItem")
 	}
 
@@ -3126,12 +3128,12 @@ func (sh *strictHandler) GetWorkItem(ctx *gin.Context, id externalRef0.SerialID)
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // UpdateWorkitem operation middleware
-func (sh *strictHandler) UpdateWorkitem(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) UpdateWorkitem(ctx *gin.Context, id externalRef0.SerialID) {
 	var request UpdateWorkitemRequestObject
 
 	request.Id = id
@@ -3139,7 +3141,7 @@ func (sh *strictHandler) UpdateWorkitem(ctx *gin.Context, id externalRef0.Serial
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.UpdateWorkitem(ctx, request.(UpdateWorkitemRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "UpdateWorkitem")
 	}
 
@@ -3153,12 +3155,12 @@ func (sh *strictHandler) UpdateWorkitem(ctx *gin.Context, id externalRef0.Serial
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }
 
 // CreateWorkitemComment operation middleware
-func (sh *strictHandler) CreateWorkitemComment(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) CreateWorkitemComment(ctx *gin.Context, id externalRef0.SerialID) {
 	var request CreateWorkitemCommentRequestObject
 
 	request.Id = id
@@ -3174,7 +3176,7 @@ func (sh *strictHandler) CreateWorkitemComment(ctx *gin.Context, id externalRef0
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.CreateWorkitemComment(ctx, request.(CreateWorkitemCommentRequestObject))
 	}
-	for _, middleware := range sh.middlewares {
+	for _, middleware := range sh.strictMiddlewares {
 		handler = middleware(handler, "CreateWorkitemComment")
 	}
 
@@ -3188,6 +3190,6 @@ func (sh *strictHandler) CreateWorkitemComment(ctx *gin.Context, id externalRef0
 			ctx.Error(err)
 		}
 	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
 	}
 }

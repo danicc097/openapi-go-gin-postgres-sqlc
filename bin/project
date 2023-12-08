@@ -1995,7 +1995,7 @@ if [[ -n "$1" ]]; then
     if [[ $c == "$CMD" && -n "$cmd" ]]; then
       "x.$CMD" "$@"
       if [[ -n $X_IGNORE_BUILD_ERRORS ]]; then
-        echo "${YELLOW}[WARNING] A rerun without ignoring build errors is required" && continue
+        echo "${YELLOW}[WARNING] A rerun without ignoring build errors is required"
       fi
       exit $?
     fi
