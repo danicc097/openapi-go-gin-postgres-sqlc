@@ -4462,7 +4462,6 @@ func addInitialisms(ctx context.Context) error {
 }
 
 // contains determines if v contains s.
-// NOTE: yaegi not supporting generics yet
 func contains(v []string, s string) bool {
 	for _, z := range v {
 		if z == s {

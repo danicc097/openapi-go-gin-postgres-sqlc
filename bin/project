@@ -1706,7 +1706,8 @@ update_spec_with_structs() {
   struct_names_list=$(join_by "," ${struct_names[*]})
   ((${#struct_names_list} == 0)) && return
 
-  # NOTE: maybe https://github.com/pkujhd/goloader allows reloading packages at runtime
+  # NOTE: https://github.com/pkujhd/goloader allows reloading packages at runtime
+  # NOTE: yaegi extraction doesn't work with generics and is slow. See failed-yaegi* branches
   # otherwise maybe yaegi can be used for openapi-go without much fuzz
   # Only implement the above if there are cases where we cant have compilable state when
   # building gen-schema at this step, or the workaround is too tedious
