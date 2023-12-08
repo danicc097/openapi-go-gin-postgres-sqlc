@@ -567,6 +567,10 @@ github.com/tdewolff/parse/v2/js
 github.com/tdewolff/parse/v2/json
 github.com/tdewolff/parse/v2/strconv
 github.com/tdewolff/parse/v2/xml
+# github.com/traefik/yaegi v0.14.3
+## explicit; go 1.18
+github.com/traefik/yaegi/internal/unsafe2
+github.com/traefik/yaegi/interp
 # github.com/twitchyliquid64/golang-asm v0.15.1
 ## explicit; go 1.13
 github.com/twitchyliquid64/golang-asm/asm/arch

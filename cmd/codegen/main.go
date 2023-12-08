@@ -9,7 +9,11 @@ import (
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/codegen"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/codegen/symbols"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
+
+	"github.com/traefik/yaegi/interp"
+	"github.com/traefik/yaegi/stdlib"
 )
 
 // nolint: gochecknoglobals
@@ -54,11 +58,36 @@ func main() {
 
 	switch os.Args[1] {
 	case "gen-schema":
+		i := interp.New(interp.Options{
+			GoPath: ".",
+			// SourcecodeFilesystem: sourceFS{path: "src/main/vendor/" + target, fs: src},
+			Unrestricted: true,
+		})
+		if err := i.Use(stdlib.Symbols); err != nil {
+			panic(err)
+		}
+		if err := i.Use(symbols.Symbols); err != nil {
+			panic(err)
+		}
+
+		if _, err := i.EvalPath("internal/codegen/structs.gen.go"); err != nil {
+			panic(err)
+		}
+		if _, err := i.EvalPath("internal/codegen/gen_schema.go"); err != nil {
+			panic(err)
+		}
 		structNames := strings.Split(structNamesList, ",")
 		for i := range structNames {
 			structNames[i] = strings.TrimSpace(structNames[i])
 		}
-		codeGen.GenerateSpecSchemas(structNames)
+
+		v, err := i.Eval("codegen.GenerateSpecSchemas")
+		if err != nil {
+			panic(err)
+		}
+		genSpecSchemas := v.Interface().(func([]string) string)
+		r := genSpecSchemas(structNames)
+		println(r)
 		os.Exit(0)
 	case "implement-server":
 		if err := codeGen.ImplementServer(); err != nil {

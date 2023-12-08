@@ -15,8 +15,6 @@ import (
 
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3".
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	internalslices "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
 	"github.com/fatih/structtag"
 	"github.com/google/uuid"
@@ -32,7 +30,7 @@ func handleError(err error) {
 }
 
 // GenerateSpecSchemas creates OpenAPI schemas from code.
-func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
+func GenerateSpecSchemas(structNames []string) {
 	reflector := newSpecReflector()
 
 	for idx, structName := range structNames {
@@ -145,9 +143,14 @@ func newSpecReflector() *openapi3.Reflector {
 				if params.Field.Tag.Get("nullable") == "false" {
 					if types := params.PropertySchema.Type.SliceOfSimpleTypeValues; len(types) > 0 {
 						// fmt.Fprintf(os.Stderr, "nullable schema: %s\n", params.Name)
-						params.PropertySchema.Type.SliceOfSimpleTypeValues = internalslices.Filter(types, func(item jsonschema.SimpleType, _ int) bool {
-							return item != jsonschema.Null
-						})
+						nonNulls := make([]jsonschema.SimpleType, 0, len(types))
+
+						for _, item := range types {
+							if item != jsonschema.Null {
+								nonNulls = append(nonNulls, item)
+							}
+						}
+						params.PropertySchema.Type.SliceOfSimpleTypeValues = nonNulls
 					}
 				}
 			}
@@ -192,8 +195,10 @@ func newSpecReflector() *openapi3.Reflector {
 
 			// TODO: also if type script and has a field UUID
 			if t == reflect.TypeOf(uuid.New()) || isCustomUUID {
-				params.Schema.Type = &jsonschema.Type{SimpleTypes: pointers.New(jsonschema.String)}
-				params.Schema.Pattern = pointers.New("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
+				st := jsonschema.String
+				params.Schema.Type = &jsonschema.Type{SimpleTypes: &st}
+				pattern := "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+				params.Schema.Pattern = &pattern
 				params.Schema.Items = &jsonschema.Items{}
 				// x-go* extensions cannot be used for Models(.*) themselves,
 				// but Models(.*) should not be generated at all. a ref tag is needed in structs
