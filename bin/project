@@ -237,7 +237,7 @@ x.install-tools() {
     echo "Installing tools..."
 
     go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 &
-    go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.24.0 &
+    go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.24.0 &
     # for easier test search.
     # NOTE: unrelated run test broken discovery: https://github.com/golang/vscode-go/issues/2719
     # go install github.com/danicc097/go-test-renamer@v0.2.0 &
