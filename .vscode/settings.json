@@ -55,31 +55,6 @@
       "includeAllSymbols": true
     }
   ],
-  "python.linting.pylintArgs": [
-    "--init-hook='import sys; sys.path.append(\"/workspace\")'"
-  ],
-  "python.defaultInterpreterPath": "./e2e/.venv/bin/python",
-  "python.linting.flake8Path": "./e2e/.venv/bin/flake8",
-  "python.sortImports.path": "./e2e/.venv/bin/isort",
-  "python.linting.mypyEnabled": true,
-  "python.linting.flake8Enabled": true,
-  "python.linting.flake8Args": [
-    "--config=e2e/tox.ini"
-  ],
-  "python.formatting.blackPath": "./e2e/.venv/bin/black",
-  "python.linting.mypyPath": "./e2e/.venv/bin/mypy",
-  "pytest.pythonPath": "./e2e/.venv/bin/python",
-  "pytest.command": "./e2e/.venv/bin/pytest",
-  "python.linting.mypyArgs": [
-    // "--follow-imports=silent",
-    "--show-column-numbers",
-    // add configuration located in setup.cfg
-    "--config-file=e2e/setup.cfg"
-  ],
-  "python.testing.unittestEnabled": false,
-  "python.testing.pytestEnabled": true, // using docker
-  "python.formatting.provider": "black",
-  // TODO remove after extension testing
   "plpgsqlLanguageServer.database": "gen_db",
   "plpgsqlLanguageServer.user": "postgres",
   "plpgsqlLanguageServer.password": "postgres",

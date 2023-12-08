@@ -1981,7 +1981,7 @@ errtrap() {
   killgroup
 }
 
-source ".envrc"
+source .envrc
 
 pids=""
 
