@@ -4,7 +4,10 @@
 package rest
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	externalRef0 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -1042,4 +1045,2149 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		wrapper.Handler.authMiddlewares(CreateWorkitemComment),
 		append(wrapper.Handler.middlewares(CreateWorkitemComment), wrapper.CreateWorkitemComment)...,
 	)...)
+}
+
+type AdminPingRequestObject struct{}
+
+type AdminPingResponseObject interface {
+	VisitAdminPingResponse(w http.ResponseWriter) error
+}
+
+type AdminPing200TextResponse string
+
+func (response AdminPing200TextResponse) VisitAdminPingResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(200)
+
+	_, err := w.Write([]byte(response))
+	return err
+}
+
+type AdminPing401Response struct{}
+
+func (response AdminPing401Response) VisitAdminPingResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type AdminPing403Response struct{}
+
+func (response AdminPing403Response) VisitAdminPingResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type AdminPing4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response AdminPing4XXJSONResponse) VisitAdminPingResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type MyProviderCallbackRequestObject struct{}
+
+type MyProviderCallbackResponseObject interface {
+	VisitMyProviderCallbackResponse(w http.ResponseWriter) error
+}
+
+type MyProviderCallback200Response struct{}
+
+func (response MyProviderCallback200Response) VisitMyProviderCallbackResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type MyProviderLoginRequestObject struct{}
+
+type MyProviderLoginResponseObject interface {
+	VisitMyProviderLoginResponse(w http.ResponseWriter) error
+}
+
+type MyProviderLogin302Response struct{}
+
+func (response MyProviderLogin302Response) VisitMyProviderLoginResponse(w http.ResponseWriter) error {
+	w.WriteHeader(302)
+	return nil
+}
+
+type EventsRequestObject struct {
+	Params externalRef0.EventsParams
+}
+
+type EventsResponseObject interface {
+	VisitEventsResponse(w http.ResponseWriter) error
+}
+
+type Events200TexteventStreamResponse struct {
+	Body          io.Reader
+	ContentLength int64
+}
+
+func (response Events200TexteventStreamResponse) VisitEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "text/event-stream")
+	if response.ContentLength != 0 {
+		w.Header().Set("Content-Length", fmt.Sprint(response.ContentLength))
+	}
+	w.WriteHeader(200)
+
+	if closer, ok := response.Body.(io.ReadCloser); ok {
+		defer closer.Close()
+	}
+	_, err := io.Copy(w, response.Body)
+	return err
+}
+
+type GetPaginatedNotificationsRequestObject struct {
+	Params externalRef0.GetPaginatedNotificationsParams
+}
+
+type GetPaginatedNotificationsResponseObject interface {
+	VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error
+}
+
+type GetPaginatedNotifications200JSONResponse externalRef0.PaginatedNotificationsResponse
+
+func (response GetPaginatedNotifications200JSONResponse) VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetPaginatedNotifications401Response struct{}
+
+func (response GetPaginatedNotifications401Response) VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetPaginatedNotifications403Response struct{}
+
+func (response GetPaginatedNotifications403Response) VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetPaginatedNotifications4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetPaginatedNotifications4XXJSONResponse) VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type OpenapiYamlGetRequestObject struct{}
+
+type OpenapiYamlGetResponseObject interface {
+	VisitOpenapiYamlGetResponse(w http.ResponseWriter) error
+}
+
+type OpenapiYamlGet200ApplicationxYamlResponse struct {
+	Body          io.Reader
+	ContentLength int64
+}
+
+func (response OpenapiYamlGet200ApplicationxYamlResponse) VisitOpenapiYamlGetResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/x-yaml")
+	if response.ContentLength != 0 {
+		w.Header().Set("Content-Length", fmt.Sprint(response.ContentLength))
+	}
+	w.WriteHeader(200)
+
+	if closer, ok := response.Body.(io.ReadCloser); ok {
+		defer closer.Close()
+	}
+	_, err := io.Copy(w, response.Body)
+	return err
+}
+
+type PingRequestObject struct{}
+
+type PingResponseObject interface {
+	VisitPingResponse(w http.ResponseWriter) error
+}
+
+type Ping200TextResponse string
+
+func (response Ping200TextResponse) VisitPingResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(200)
+
+	_, err := w.Write([]byte(response))
+	return err
+}
+
+type Ping401Response struct{}
+
+func (response Ping401Response) VisitPingResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type Ping403Response struct{}
+
+func (response Ping403Response) VisitPingResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type Ping4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response Ping4XXJSONResponse) VisitPingResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetProjectRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+}
+
+type GetProjectResponseObject interface {
+	VisitGetProjectResponse(w http.ResponseWriter) error
+}
+
+type GetProject200JSONResponse externalRef0.DbProject
+
+func (response GetProject200JSONResponse) VisitGetProjectResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetProjectBoardRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+}
+
+type GetProjectBoardResponseObject interface {
+	VisitGetProjectBoardResponse(w http.ResponseWriter) error
+}
+
+type GetProjectBoard200JSONResponse externalRef0.ProjectBoard
+
+func (response GetProjectBoard200JSONResponse) VisitGetProjectBoardResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetProjectConfigRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+}
+
+type GetProjectConfigResponseObject interface {
+	VisitGetProjectConfigResponse(w http.ResponseWriter) error
+}
+
+type GetProjectConfig200JSONResponse externalRef0.ProjectConfig
+
+func (response GetProjectConfig200JSONResponse) VisitGetProjectConfigResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateProjectConfigRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Body        *externalRef0.UpdateProjectConfigJSONRequestBody
+}
+
+type UpdateProjectConfigResponseObject interface {
+	VisitUpdateProjectConfigResponse(w http.ResponseWriter) error
+}
+
+type UpdateProjectConfig204Response struct{}
+
+func (response UpdateProjectConfig204Response) VisitUpdateProjectConfigResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type InitializeProjectRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Body        *externalRef0.InitializeProjectJSONRequestBody
+}
+
+type InitializeProjectResponseObject interface {
+	VisitInitializeProjectResponse(w http.ResponseWriter) error
+}
+
+type InitializeProject204Response struct{}
+
+func (response InitializeProject204Response) VisitInitializeProjectResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type CreateTeamRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Body        *externalRef0.CreateTeamJSONRequestBody
+}
+
+type CreateTeamResponseObject interface {
+	VisitCreateTeamResponse(w http.ResponseWriter) error
+}
+
+type CreateTeam201JSONResponse externalRef0.Team
+
+func (response CreateTeam201JSONResponse) VisitCreateTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateTeam401Response struct{}
+
+func (response CreateTeam401Response) VisitCreateTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type CreateTeam403Response struct{}
+
+func (response CreateTeam403Response) VisitCreateTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type CreateTeam4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response CreateTeam4XXJSONResponse) VisitCreateTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeleteTeamRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type DeleteTeamResponseObject interface {
+	VisitDeleteTeamResponse(w http.ResponseWriter) error
+}
+
+type DeleteTeam204Response struct{}
+
+func (response DeleteTeam204Response) VisitDeleteTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteTeam401Response struct{}
+
+func (response DeleteTeam401Response) VisitDeleteTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteTeam403Response struct{}
+
+func (response DeleteTeam403Response) VisitDeleteTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteTeam4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteTeam4XXJSONResponse) VisitDeleteTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetTeamRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type GetTeamResponseObject interface {
+	VisitGetTeamResponse(w http.ResponseWriter) error
+}
+
+type GetTeam200JSONResponse externalRef0.Team
+
+func (response GetTeam200JSONResponse) VisitGetTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTeam401Response struct{}
+
+func (response GetTeam401Response) VisitGetTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetTeam403Response struct{}
+
+func (response GetTeam403Response) VisitGetTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetTeam4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetTeam4XXJSONResponse) VisitGetTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateTeamRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+	Body        *externalRef0.UpdateTeamJSONRequestBody
+}
+
+type UpdateTeamResponseObject interface {
+	VisitUpdateTeamResponse(w http.ResponseWriter) error
+}
+
+type UpdateTeam200JSONResponse externalRef0.Team
+
+func (response UpdateTeam200JSONResponse) VisitUpdateTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateTeam401Response struct{}
+
+func (response UpdateTeam401Response) VisitUpdateTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateTeam403Response struct{}
+
+func (response UpdateTeam403Response) VisitUpdateTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type UpdateTeam4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response UpdateTeam4XXJSONResponse) VisitUpdateTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type CreateWorkItemTagRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Body        *externalRef0.CreateWorkItemTagJSONRequestBody
+}
+
+type CreateWorkItemTagResponseObject interface {
+	VisitCreateWorkItemTagResponse(w http.ResponseWriter) error
+}
+
+type CreateWorkItemTag201JSONResponse externalRef0.WorkItemTag
+
+func (response CreateWorkItemTag201JSONResponse) VisitCreateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateWorkItemTag401Response struct{}
+
+func (response CreateWorkItemTag401Response) VisitCreateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type CreateWorkItemTag403Response struct{}
+
+func (response CreateWorkItemTag403Response) VisitCreateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type CreateWorkItemTag4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response CreateWorkItemTag4XXJSONResponse) VisitCreateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeleteWorkItemTagRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type DeleteWorkItemTagResponseObject interface {
+	VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error
+}
+
+type DeleteWorkItemTag204Response struct{}
+
+func (response DeleteWorkItemTag204Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteWorkItemTag401Response struct{}
+
+func (response DeleteWorkItemTag401Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteWorkItemTag403Response struct{}
+
+func (response DeleteWorkItemTag403Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteWorkItemTag4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteWorkItemTag4XXJSONResponse) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetWorkItemTagRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type GetWorkItemTagResponseObject interface {
+	VisitGetWorkItemTagResponse(w http.ResponseWriter) error
+}
+
+type GetWorkItemTag200JSONResponse externalRef0.WorkItemTag
+
+func (response GetWorkItemTag200JSONResponse) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWorkItemTag401Response struct{}
+
+func (response GetWorkItemTag401Response) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetWorkItemTag403Response struct{}
+
+func (response GetWorkItemTag403Response) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetWorkItemTag4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetWorkItemTag4XXJSONResponse) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateWorkItemTagRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+	Body        *externalRef0.UpdateWorkItemTagJSONRequestBody
+}
+
+type UpdateWorkItemTagResponseObject interface {
+	VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error
+}
+
+type UpdateWorkItemTag200JSONResponse externalRef0.WorkItemTag
+
+func (response UpdateWorkItemTag200JSONResponse) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateWorkItemTag401Response struct{}
+
+func (response UpdateWorkItemTag401Response) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateWorkItemTag403Response struct{}
+
+func (response UpdateWorkItemTag403Response) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type UpdateWorkItemTag4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response UpdateWorkItemTag4XXJSONResponse) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type CreateWorkItemTypeRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Body        *externalRef0.CreateWorkItemTypeJSONRequestBody
+}
+
+type CreateWorkItemTypeResponseObject interface {
+	VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error
+}
+
+type CreateWorkItemType201JSONResponse externalRef0.WorkItemType
+
+func (response CreateWorkItemType201JSONResponse) VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateWorkItemType401Response struct{}
+
+func (response CreateWorkItemType401Response) VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type CreateWorkItemType403Response struct{}
+
+func (response CreateWorkItemType403Response) VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type CreateWorkItemType4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response CreateWorkItemType4XXJSONResponse) VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeleteWorkItemTypeRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type DeleteWorkItemTypeResponseObject interface {
+	VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error
+}
+
+type DeleteWorkItemType204Response struct{}
+
+func (response DeleteWorkItemType204Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteWorkItemType401Response struct{}
+
+func (response DeleteWorkItemType401Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteWorkItemType403Response struct{}
+
+func (response DeleteWorkItemType403Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteWorkItemType4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteWorkItemType4XXJSONResponse) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetWorkItemTypeRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type GetWorkItemTypeResponseObject interface {
+	VisitGetWorkItemTypeResponse(w http.ResponseWriter) error
+}
+
+type GetWorkItemType200JSONResponse externalRef0.WorkItemType
+
+func (response GetWorkItemType200JSONResponse) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWorkItemType401Response struct{}
+
+func (response GetWorkItemType401Response) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetWorkItemType403Response struct{}
+
+func (response GetWorkItemType403Response) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetWorkItemType4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetWorkItemType4XXJSONResponse) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateWorkItemTypeRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+	Body        *externalRef0.UpdateWorkItemTypeJSONRequestBody
+}
+
+type UpdateWorkItemTypeResponseObject interface {
+	VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error
+}
+
+type UpdateWorkItemType200JSONResponse externalRef0.WorkItemType
+
+func (response UpdateWorkItemType200JSONResponse) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateWorkItemType401Response struct{}
+
+func (response UpdateWorkItemType401Response) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateWorkItemType403Response struct{}
+
+func (response UpdateWorkItemType403Response) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type UpdateWorkItemType4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response UpdateWorkItemType4XXJSONResponse) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetProjectWorkitemsRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Params      externalRef0.GetProjectWorkitemsParams
+}
+
+type GetProjectWorkitemsResponseObject interface {
+	VisitGetProjectWorkitemsResponse(w http.ResponseWriter) error
+}
+
+type GetProjectWorkitems200JSONResponse struct {
+	union json.RawMessage
+}
+
+func (response GetProjectWorkitems200JSONResponse) VisitGetProjectWorkitemsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCurrentUserRequestObject struct{}
+
+type GetCurrentUserResponseObject interface {
+	VisitGetCurrentUserResponse(w http.ResponseWriter) error
+}
+
+type GetCurrentUser200JSONResponse externalRef0.User
+
+func (response GetCurrentUser200JSONResponse) VisitGetCurrentUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteUserRequestObject struct {
+	Id uuid.UUID `json:"id"`
+}
+
+type DeleteUserResponseObject interface {
+	VisitDeleteUserResponse(w http.ResponseWriter) error
+}
+
+type DeleteUser204Response struct{}
+
+func (response DeleteUser204Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteUser401Response struct{}
+
+func (response DeleteUser401Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteUser403Response struct{}
+
+func (response DeleteUser403Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteUser4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteUser4XXJSONResponse) VisitDeleteUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateUserRequestObject struct {
+	Id   uuid.UUID `json:"id"`
+	Body *externalRef0.UpdateUserJSONRequestBody
+}
+
+type UpdateUserResponseObject interface {
+	VisitUpdateUserResponse(w http.ResponseWriter) error
+}
+
+type UpdateUser200JSONResponse externalRef0.User
+
+func (response UpdateUser200JSONResponse) VisitUpdateUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateUserAuthorizationRequestObject struct {
+	Id   uuid.UUID `json:"id"`
+	Body *externalRef0.UpdateUserAuthorizationJSONRequestBody
+}
+
+type UpdateUserAuthorizationResponseObject interface {
+	VisitUpdateUserAuthorizationResponse(w http.ResponseWriter) error
+}
+
+type UpdateUserAuthorization204Response struct{}
+
+func (response UpdateUserAuthorization204Response) VisitUpdateUserAuthorizationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type CreateWorkitemRequestObject struct {
+	Body *externalRef0.CreateWorkitemJSONRequestBody
+}
+
+type CreateWorkitemResponseObject interface {
+	VisitCreateWorkitemResponse(w http.ResponseWriter) error
+}
+
+type CreateWorkitem201JSONResponse struct {
+	union json.RawMessage
+}
+
+func (response CreateWorkitem201JSONResponse) VisitCreateWorkitemResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWorkitemRequestObject struct {
+	Id externalRef0.SerialID `json:"id"`
+}
+
+type DeleteWorkitemResponseObject interface {
+	VisitDeleteWorkitemResponse(w http.ResponseWriter) error
+}
+
+type DeleteWorkitem204Response struct{}
+
+func (response DeleteWorkitem204Response) VisitDeleteWorkitemResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type GetWorkItemRequestObject struct {
+	Id externalRef0.SerialID `json:"id"`
+}
+
+type GetWorkItemResponseObject interface {
+	VisitGetWorkItemResponse(w http.ResponseWriter) error
+}
+
+type GetWorkItem200JSONResponse struct {
+	union json.RawMessage
+}
+
+func (response GetWorkItem200JSONResponse) VisitGetWorkItemResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateWorkitemRequestObject struct {
+	Id externalRef0.SerialID `json:"id"`
+}
+
+type UpdateWorkitemResponseObject interface {
+	VisitUpdateWorkitemResponse(w http.ResponseWriter) error
+}
+
+type UpdateWorkitem200JSONResponse struct {
+	union json.RawMessage
+}
+
+func (response UpdateWorkitem200JSONResponse) VisitUpdateWorkitemResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateWorkitemCommentRequestObject struct {
+	Id   externalRef0.SerialID `json:"id"`
+	Body *externalRef0.CreateWorkitemCommentJSONRequestBody
+}
+
+type CreateWorkitemCommentResponseObject interface {
+	VisitCreateWorkitemCommentResponse(w http.ResponseWriter) error
+}
+
+type CreateWorkitemComment200JSONResponse struct {
+	union json.RawMessage
+}
+
+func (response CreateWorkitemComment200JSONResponse) VisitCreateWorkitemCommentResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+// StrictServerInterface represents all server handlers.
+type StrictServerInterface interface {
+	// Ping pongs
+	// (GET /admin/ping)
+	AdminPing(ctx context.Context, request AdminPingRequestObject) (AdminPingResponseObject, error)
+
+	// (GET /auth/myprovider/callback)
+	MyProviderCallback(ctx context.Context, request MyProviderCallbackRequestObject) (MyProviderCallbackResponseObject, error)
+
+	// (GET /auth/myprovider/login)
+	MyProviderLogin(ctx context.Context, request MyProviderLoginRequestObject) (MyProviderLoginResponseObject, error)
+
+	// (GET /events)
+	Events(ctx context.Context, request EventsRequestObject) (EventsResponseObject, error)
+	// Get paginated user notifications
+	// (GET /notifications/user/page)
+	GetPaginatedNotifications(ctx context.Context, request GetPaginatedNotificationsRequestObject) (GetPaginatedNotificationsResponseObject, error)
+	// Returns this very OpenAPI spec.
+	// (GET /openapi.yaml)
+	OpenapiYamlGet(ctx context.Context, request OpenapiYamlGetRequestObject) (OpenapiYamlGetResponseObject, error)
+	// Ping pongs
+	// (GET /ping)
+	Ping(ctx context.Context, request PingRequestObject) (PingResponseObject, error)
+	// returns board data for a project
+	// (GET /project/{projectName}/)
+	GetProject(ctx context.Context, request GetProjectRequestObject) (GetProjectResponseObject, error)
+	// returns board data for a project
+	// (GET /project/{projectName}/board)
+	GetProjectBoard(ctx context.Context, request GetProjectBoardRequestObject) (GetProjectBoardResponseObject, error)
+	// returns the project configuration
+	// (GET /project/{projectName}/config)
+	GetProjectConfig(ctx context.Context, request GetProjectConfigRequestObject) (GetProjectConfigResponseObject, error)
+	// updates the project configuration
+	// (PUT /project/{projectName}/config)
+	UpdateProjectConfig(ctx context.Context, request UpdateProjectConfigRequestObject) (UpdateProjectConfigResponseObject, error)
+	// creates initial data (teams, tags...) for a new project
+	// (POST /project/{projectName}/initialize)
+	InitializeProject(ctx context.Context, request InitializeProjectRequestObject) (InitializeProjectResponseObject, error)
+	// create team.
+	// (POST /project/{projectName}/team/)
+	CreateTeam(ctx context.Context, request CreateTeamRequestObject) (CreateTeamResponseObject, error)
+	// delete team.
+	// (DELETE /project/{projectName}/team/{id}/)
+	DeleteTeam(ctx context.Context, request DeleteTeamRequestObject) (DeleteTeamResponseObject, error)
+	// get team.
+	// (GET /project/{projectName}/team/{id}/)
+	GetTeam(ctx context.Context, request GetTeamRequestObject) (GetTeamResponseObject, error)
+	// update team.
+	// (PATCH /project/{projectName}/team/{id}/)
+	UpdateTeam(ctx context.Context, request UpdateTeamRequestObject) (UpdateTeamResponseObject, error)
+	// create workitemtag.
+	// (POST /project/{projectName}/workItemTag/)
+	CreateWorkItemTag(ctx context.Context, request CreateWorkItemTagRequestObject) (CreateWorkItemTagResponseObject, error)
+	// delete workitemtag.
+	// (DELETE /project/{projectName}/workItemTag/{id}/)
+	DeleteWorkItemTag(ctx context.Context, request DeleteWorkItemTagRequestObject) (DeleteWorkItemTagResponseObject, error)
+	// get workitemtag.
+	// (GET /project/{projectName}/workItemTag/{id}/)
+	GetWorkItemTag(ctx context.Context, request GetWorkItemTagRequestObject) (GetWorkItemTagResponseObject, error)
+	// update workitemtag.
+	// (PATCH /project/{projectName}/workItemTag/{id}/)
+	UpdateWorkItemTag(ctx context.Context, request UpdateWorkItemTagRequestObject) (UpdateWorkItemTagResponseObject, error)
+	// create workitemtype.
+	// (POST /project/{projectName}/workItemType/)
+	CreateWorkItemType(ctx context.Context, request CreateWorkItemTypeRequestObject) (CreateWorkItemTypeResponseObject, error)
+	// delete workitemtype.
+	// (DELETE /project/{projectName}/workItemType/{id}/)
+	DeleteWorkItemType(ctx context.Context, request DeleteWorkItemTypeRequestObject) (DeleteWorkItemTypeResponseObject, error)
+	// get workitemtype.
+	// (GET /project/{projectName}/workItemType/{id}/)
+	GetWorkItemType(ctx context.Context, request GetWorkItemTypeRequestObject) (GetWorkItemTypeResponseObject, error)
+	// update workitemtype.
+	// (PATCH /project/{projectName}/workItemType/{id}/)
+	UpdateWorkItemType(ctx context.Context, request UpdateWorkItemTypeRequestObject) (UpdateWorkItemTypeResponseObject, error)
+	// returns workitems for a project
+	// (GET /project/{projectName}/workitems)
+	GetProjectWorkitems(ctx context.Context, request GetProjectWorkitemsRequestObject) (GetProjectWorkitemsResponseObject, error)
+	// returns the logged in user
+	// (GET /user/me)
+	GetCurrentUser(ctx context.Context, request GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error)
+	// deletes the user by id
+	// (DELETE /user/{id})
+	DeleteUser(ctx context.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error)
+	// updates the user by id
+	// (PATCH /user/{id})
+	UpdateUser(ctx context.Context, request UpdateUserRequestObject) (UpdateUserResponseObject, error)
+	// updates user role and scopes by id
+	// (PATCH /user/{id}/authorization)
+	UpdateUserAuthorization(ctx context.Context, request UpdateUserAuthorizationRequestObject) (UpdateUserAuthorizationResponseObject, error)
+	// create workitem
+	// (POST /workitem/)
+	CreateWorkitem(ctx context.Context, request CreateWorkitemRequestObject) (CreateWorkitemResponseObject, error)
+	// delete workitem
+	// (DELETE /workitem/{id}/)
+	DeleteWorkitem(ctx context.Context, request DeleteWorkitemRequestObject) (DeleteWorkitemResponseObject, error)
+	// get workitem
+	// (GET /workitem/{id}/)
+	GetWorkItem(ctx context.Context, request GetWorkItemRequestObject) (GetWorkItemResponseObject, error)
+	// update workitem
+	// (PATCH /workitem/{id}/)
+	UpdateWorkitem(ctx context.Context, request UpdateWorkitemRequestObject) (UpdateWorkitemResponseObject, error)
+	// create workitem comment
+	// (POST /workitem/{id}/comments/)
+	CreateWorkitemComment(ctx context.Context, request CreateWorkitemCommentRequestObject) (CreateWorkitemCommentResponseObject, error)
+}
+
+type (
+	StrictHandlerFunc    = runtime.StrictGinHandlerFunc
+	StrictMiddlewareFunc = runtime.StrictGinMiddlewareFunc
+)
+
+// func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc) ServerInterface {
+// 	return &strictHandler{ssi: ssi, middlewares: middlewares}
+// }
+
+type strictHandler struct {
+	ssi         StrictServerInterface
+	middlewares []StrictMiddlewareFunc
+}
+
+// AdminPing operation middleware
+func (sh *strictHandler) AdminPing(ctx *gin.Context) {
+	var request AdminPingRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.AdminPing(ctx, request.(AdminPingRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "AdminPing")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(AdminPingResponseObject); ok {
+		if err := validResponse.VisitAdminPingResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// MyProviderCallback operation middleware
+func (sh *strictHandler) MyProviderCallback(ctx *gin.Context) {
+	var request MyProviderCallbackRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.MyProviderCallback(ctx, request.(MyProviderCallbackRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "MyProviderCallback")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(MyProviderCallbackResponseObject); ok {
+		if err := validResponse.VisitMyProviderCallbackResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// MyProviderLogin operation middleware
+func (sh *strictHandler) MyProviderLogin(ctx *gin.Context) {
+	var request MyProviderLoginRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.MyProviderLogin(ctx, request.(MyProviderLoginRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "MyProviderLogin")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(MyProviderLoginResponseObject); ok {
+		if err := validResponse.VisitMyProviderLoginResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// Events operation middleware
+func (sh *strictHandler) Events(ctx *gin.Context, params externalRef0.EventsParams) {
+	var request EventsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.Events(ctx, request.(EventsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "Events")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(EventsResponseObject); ok {
+		if err := validResponse.VisitEventsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// GetPaginatedNotifications operation middleware
+func (sh *strictHandler) GetPaginatedNotifications(ctx *gin.Context, params externalRef0.GetPaginatedNotificationsParams) {
+	var request GetPaginatedNotificationsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetPaginatedNotifications(ctx, request.(GetPaginatedNotificationsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetPaginatedNotifications")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetPaginatedNotificationsResponseObject); ok {
+		if err := validResponse.VisitGetPaginatedNotificationsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// OpenapiYamlGet operation middleware
+func (sh *strictHandler) OpenapiYamlGet(ctx *gin.Context) {
+	var request OpenapiYamlGetRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.OpenapiYamlGet(ctx, request.(OpenapiYamlGetRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "OpenapiYamlGet")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(OpenapiYamlGetResponseObject); ok {
+		if err := validResponse.VisitOpenapiYamlGetResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// Ping operation middleware
+func (sh *strictHandler) Ping(ctx *gin.Context) {
+	var request PingRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.Ping(ctx, request.(PingRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "Ping")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PingResponseObject); ok {
+		if err := validResponse.VisitPingResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// GetProject operation middleware
+func (sh *strictHandler) GetProject(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request GetProjectRequestObject
+
+	request.ProjectName = projectName
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetProject(ctx, request.(GetProjectRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetProject")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetProjectResponseObject); ok {
+		if err := validResponse.VisitGetProjectResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// GetProjectBoard operation middleware
+func (sh *strictHandler) GetProjectBoard(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request GetProjectBoardRequestObject
+
+	request.ProjectName = projectName
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetProjectBoard(ctx, request.(GetProjectBoardRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetProjectBoard")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetProjectBoardResponseObject); ok {
+		if err := validResponse.VisitGetProjectBoardResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// GetProjectConfig operation middleware
+func (sh *strictHandler) GetProjectConfig(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request GetProjectConfigRequestObject
+
+	request.ProjectName = projectName
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetProjectConfig(ctx, request.(GetProjectConfigRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetProjectConfig")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetProjectConfigResponseObject); ok {
+		if err := validResponse.VisitGetProjectConfigResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// UpdateProjectConfig operation middleware
+func (sh *strictHandler) UpdateProjectConfig(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request UpdateProjectConfigRequestObject
+
+	request.ProjectName = projectName
+
+	var body externalRef0.UpdateProjectConfigJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateProjectConfig(ctx, request.(UpdateProjectConfigRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateProjectConfig")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateProjectConfigResponseObject); ok {
+		if err := validResponse.VisitUpdateProjectConfigResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// InitializeProject operation middleware
+func (sh *strictHandler) InitializeProject(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request InitializeProjectRequestObject
+
+	request.ProjectName = projectName
+
+	var body externalRef0.InitializeProjectJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.InitializeProject(ctx, request.(InitializeProjectRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "InitializeProject")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(InitializeProjectResponseObject); ok {
+		if err := validResponse.VisitInitializeProjectResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// CreateTeam operation middleware
+func (sh *strictHandler) CreateTeam(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request CreateTeamRequestObject
+
+	request.ProjectName = projectName
+
+	var body externalRef0.CreateTeamJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateTeam(ctx, request.(CreateTeamRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateTeam")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateTeamResponseObject); ok {
+		if err := validResponse.VisitCreateTeamResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// DeleteTeam operation middleware
+func (sh *strictHandler) DeleteTeam(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request DeleteTeamRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteTeam(ctx, request.(DeleteTeamRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteTeam")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteTeamResponseObject); ok {
+		if err := validResponse.VisitDeleteTeamResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// GetTeam operation middleware
+func (sh *strictHandler) GetTeam(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request GetTeamRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetTeam(ctx, request.(GetTeamRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetTeam")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetTeamResponseObject); ok {
+		if err := validResponse.VisitGetTeamResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// UpdateTeam operation middleware
+func (sh *strictHandler) UpdateTeam(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request UpdateTeamRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	var body externalRef0.UpdateTeamJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateTeam(ctx, request.(UpdateTeamRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateTeam")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateTeamResponseObject); ok {
+		if err := validResponse.VisitUpdateTeamResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// CreateWorkItemTag operation middleware
+func (sh *strictHandler) CreateWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request CreateWorkItemTagRequestObject
+
+	request.ProjectName = projectName
+
+	var body externalRef0.CreateWorkItemTagJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateWorkItemTag(ctx, request.(CreateWorkItemTagRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateWorkItemTag")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateWorkItemTagResponseObject); ok {
+		if err := validResponse.VisitCreateWorkItemTagResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// DeleteWorkItemTag operation middleware
+func (sh *strictHandler) DeleteWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request DeleteWorkItemTagRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteWorkItemTag(ctx, request.(DeleteWorkItemTagRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteWorkItemTag")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteWorkItemTagResponseObject); ok {
+		if err := validResponse.VisitDeleteWorkItemTagResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// GetWorkItemTag operation middleware
+func (sh *strictHandler) GetWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request GetWorkItemTagRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWorkItemTag(ctx, request.(GetWorkItemTagRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetWorkItemTag")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWorkItemTagResponseObject); ok {
+		if err := validResponse.VisitGetWorkItemTagResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// UpdateWorkItemTag operation middleware
+func (sh *strictHandler) UpdateWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request UpdateWorkItemTagRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	var body externalRef0.UpdateWorkItemTagJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateWorkItemTag(ctx, request.(UpdateWorkItemTagRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateWorkItemTag")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateWorkItemTagResponseObject); ok {
+		if err := validResponse.VisitUpdateWorkItemTagResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// CreateWorkItemType operation middleware
+func (sh *strictHandler) CreateWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request CreateWorkItemTypeRequestObject
+
+	request.ProjectName = projectName
+
+	var body externalRef0.CreateWorkItemTypeJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateWorkItemType(ctx, request.(CreateWorkItemTypeRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateWorkItemType")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateWorkItemTypeResponseObject); ok {
+		if err := validResponse.VisitCreateWorkItemTypeResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// DeleteWorkItemType operation middleware
+func (sh *strictHandler) DeleteWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request DeleteWorkItemTypeRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteWorkItemType(ctx, request.(DeleteWorkItemTypeRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteWorkItemType")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteWorkItemTypeResponseObject); ok {
+		if err := validResponse.VisitDeleteWorkItemTypeResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// GetWorkItemType operation middleware
+func (sh *strictHandler) GetWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request GetWorkItemTypeRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWorkItemType(ctx, request.(GetWorkItemTypeRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetWorkItemType")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWorkItemTypeResponseObject); ok {
+		if err := validResponse.VisitGetWorkItemTypeResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// UpdateWorkItemType operation middleware
+func (sh *strictHandler) UpdateWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request UpdateWorkItemTypeRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	var body externalRef0.UpdateWorkItemTypeJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateWorkItemType(ctx, request.(UpdateWorkItemTypeRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateWorkItemType")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateWorkItemTypeResponseObject); ok {
+		if err := validResponse.VisitUpdateWorkItemTypeResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// GetProjectWorkitems operation middleware
+func (sh *strictHandler) GetProjectWorkitems(ctx *gin.Context, projectName externalRef0.ProjectName, params externalRef0.GetProjectWorkitemsParams) {
+	var request GetProjectWorkitemsRequestObject
+
+	request.ProjectName = projectName
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetProjectWorkitems(ctx, request.(GetProjectWorkitemsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetProjectWorkitems")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetProjectWorkitemsResponseObject); ok {
+		if err := validResponse.VisitGetProjectWorkitemsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// GetCurrentUser operation middleware
+func (sh *strictHandler) GetCurrentUser(ctx *gin.Context) {
+	var request GetCurrentUserRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCurrentUser(ctx, request.(GetCurrentUserRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetCurrentUser")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCurrentUserResponseObject); ok {
+		if err := validResponse.VisitGetCurrentUserResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// DeleteUser operation middleware
+func (sh *strictHandler) DeleteUser(ctx *gin.Context, id uuid.UUID) {
+	var request DeleteUserRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteUser(ctx, request.(DeleteUserRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteUser")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteUserResponseObject); ok {
+		if err := validResponse.VisitDeleteUserResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// UpdateUser operation middleware
+func (sh *strictHandler) UpdateUser(ctx *gin.Context, id uuid.UUID) {
+	var request UpdateUserRequestObject
+
+	request.Id = id
+
+	var body externalRef0.UpdateUserJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateUser(ctx, request.(UpdateUserRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateUser")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateUserResponseObject); ok {
+		if err := validResponse.VisitUpdateUserResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// UpdateUserAuthorization operation middleware
+func (sh *strictHandler) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID) {
+	var request UpdateUserAuthorizationRequestObject
+
+	request.Id = id
+
+	var body externalRef0.UpdateUserAuthorizationJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateUserAuthorization(ctx, request.(UpdateUserAuthorizationRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateUserAuthorization")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateUserAuthorizationResponseObject); ok {
+		if err := validResponse.VisitUpdateUserAuthorizationResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// CreateWorkitem operation middleware
+func (sh *strictHandler) CreateWorkitem(ctx *gin.Context) {
+	var request CreateWorkitemRequestObject
+
+	var body externalRef0.CreateWorkitemJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateWorkitem(ctx, request.(CreateWorkitemRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateWorkitem")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateWorkitemResponseObject); ok {
+		if err := validResponse.VisitCreateWorkitemResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// DeleteWorkitem operation middleware
+func (sh *strictHandler) DeleteWorkitem(ctx *gin.Context, id externalRef0.SerialID) {
+	var request DeleteWorkitemRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteWorkitem(ctx, request.(DeleteWorkitemRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteWorkitem")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteWorkitemResponseObject); ok {
+		if err := validResponse.VisitDeleteWorkitemResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// GetWorkItem operation middleware
+func (sh *strictHandler) GetWorkItem(ctx *gin.Context, id externalRef0.SerialID) {
+	var request GetWorkItemRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWorkItem(ctx, request.(GetWorkItemRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetWorkItem")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWorkItemResponseObject); ok {
+		if err := validResponse.VisitGetWorkItemResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// UpdateWorkitem operation middleware
+func (sh *strictHandler) UpdateWorkitem(ctx *gin.Context, id externalRef0.SerialID) {
+	var request UpdateWorkitemRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateWorkitem(ctx, request.(UpdateWorkitemRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateWorkitem")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateWorkitemResponseObject); ok {
+		if err := validResponse.VisitUpdateWorkitemResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
+// CreateWorkitemComment operation middleware
+func (sh *strictHandler) CreateWorkitemComment(ctx *gin.Context, id externalRef0.SerialID) {
+	var request CreateWorkitemCommentRequestObject
+
+	request.Id = id
+
+	var body externalRef0.CreateWorkitemCommentJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateWorkitemComment(ctx, request.(CreateWorkitemCommentRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "CreateWorkitemComment")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateWorkitemCommentResponseObject); ok {
+		if err := validResponse.VisitCreateWorkitemCommentResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
 }

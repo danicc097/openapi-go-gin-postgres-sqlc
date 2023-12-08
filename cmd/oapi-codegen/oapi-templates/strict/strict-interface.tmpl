@@ -5,14 +5,14 @@
             {{.GoName | ucFirst}} {{.TypeDef}} {{.JsonTag}}
         {{end -}}
         {{if .RequiresParamObject -}}
-            Params {{$opid}}Params
+            Params externalRef0.{{$opid}}Params
         {{end -}}
         {{if .HasMaskedRequestContentTypes -}}
             ContentType string
         {{end -}}
         {{$multipleBodies := gt (len .Bodies) 1 -}}
         {{range .Bodies -}}
-            {{if $multipleBodies}}{{.NameTag}}{{end}}Body {{if eq .NameTag "Multipart"}}*multipart.Reader{{else if ne .NameTag ""}}*{{$opid}}{{.NameTag}}RequestBody{{else}}io.Reader{{end}}
+            {{if $multipleBodies}}{{.NameTag}}{{end}}Body {{if eq .NameTag "Multipart"}}*multipart.Reader{{else if ne .NameTag ""}}*externalRef0.{{$opid}}{{.NameTag}}RequestBody{{else}}io.Reader{{end}}
         {{end -}}
     }
 
