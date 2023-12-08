@@ -84,15 +84,11 @@ func NewHandlers(
 
 // middlewares to be applied after authMiddlewares, based on operation IDs.
 func (sh *strictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
-	return middlewares(opID, sh.h)
+	return sh.h.middlewares(opID)
 }
 
 // middlewares to be applied after authMiddlewares, based on operation IDs.
 func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
-	return middlewares(opID, h)
-}
-
-func middlewares(opID OperationID, h *Handlers) []gin.HandlerFunc {
 	defaultMws := []gin.HandlerFunc{}
 
 	dbMw := newDBMiddleware(h.logger, h.pool)

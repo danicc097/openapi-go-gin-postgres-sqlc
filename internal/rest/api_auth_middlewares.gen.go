@@ -8,14 +8,10 @@ import (
 )
 
 func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
-	return authMiddlewares(opID, sh.h)
+	return sh.h.authMiddlewares(opID)
 }
 
 func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
-	return authMiddlewares(opID, h)
-}
-
-func authMiddlewares(opID OperationID, h *Handlers) []gin.HandlerFunc {
 	switch opID {
 	case AdminPing:
 		return []gin.HandlerFunc{
