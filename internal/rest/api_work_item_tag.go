@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handlers) CreateWorkItemTag(c *gin.Context, projectName models.ProjectName) {
+func (h *StrictHandlers) CreateWorkItemTag(c *gin.Context, projectName models.ProjectName) {
 	tx := getTxFromCtx(c)
 	u := getUserFromCtx(c)
 
@@ -33,14 +33,14 @@ func (h *Handlers) CreateWorkItemTag(c *gin.Context, projectName models.ProjectN
 	renderResponse(c, wit, http.StatusCreated)
 }
 
-func (h *Handlers) UpdateWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *StrictHandlers) UpdateWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *Handlers) GetWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *StrictHandlers) GetWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *Handlers) DeleteWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *StrictHandlers) DeleteWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }

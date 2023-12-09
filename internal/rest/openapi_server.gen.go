@@ -4,7 +4,6 @@
 package rest
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -2067,106 +2066,106 @@ func (response CreateWorkitemComment200JSONResponse) VisitCreateWorkitemCommentR
 type StrictServerInterface interface {
 	// Ping pongs
 	// (GET /admin/ping)
-	AdminPing(ctx context.Context, request AdminPingRequestObject) (AdminPingResponseObject, error)
+	AdminPing(c *gin.Context, request AdminPingRequestObject) (AdminPingResponseObject, error)
 
 	// (GET /auth/myprovider/callback)
-	MyProviderCallback(ctx context.Context, request MyProviderCallbackRequestObject) (MyProviderCallbackResponseObject, error)
+	MyProviderCallback(c *gin.Context, request MyProviderCallbackRequestObject) (MyProviderCallbackResponseObject, error)
 
 	// (GET /auth/myprovider/login)
-	MyProviderLogin(ctx context.Context, request MyProviderLoginRequestObject) (MyProviderLoginResponseObject, error)
+	MyProviderLogin(c *gin.Context, request MyProviderLoginRequestObject) (MyProviderLoginResponseObject, error)
 
 	// (GET /events)
-	Events(ctx context.Context, request EventsRequestObject) (EventsResponseObject, error)
+	Events(c *gin.Context, request EventsRequestObject) (EventsResponseObject, error)
 	// Get paginated user notifications
 	// (GET /notifications/user/page)
-	GetPaginatedNotifications(ctx context.Context, request GetPaginatedNotificationsRequestObject) (GetPaginatedNotificationsResponseObject, error)
+	GetPaginatedNotifications(c *gin.Context, request GetPaginatedNotificationsRequestObject) (GetPaginatedNotificationsResponseObject, error)
 	// Returns this very OpenAPI spec.
 	// (GET /openapi.yaml)
-	OpenapiYamlGet(ctx context.Context, request OpenapiYamlGetRequestObject) (OpenapiYamlGetResponseObject, error)
+	OpenapiYamlGet(c *gin.Context, request OpenapiYamlGetRequestObject) (OpenapiYamlGetResponseObject, error)
 	// Ping pongs
 	// (GET /ping)
-	Ping(ctx context.Context, request PingRequestObject) (PingResponseObject, error)
+	Ping(c *gin.Context, request PingRequestObject) (PingResponseObject, error)
 	// returns board data for a project
 	// (GET /project/{projectName}/)
-	GetProject(ctx context.Context, request GetProjectRequestObject) (GetProjectResponseObject, error)
+	GetProject(c *gin.Context, request GetProjectRequestObject) (GetProjectResponseObject, error)
 	// returns board data for a project
 	// (GET /project/{projectName}/board)
-	GetProjectBoard(ctx context.Context, request GetProjectBoardRequestObject) (GetProjectBoardResponseObject, error)
+	GetProjectBoard(c *gin.Context, request GetProjectBoardRequestObject) (GetProjectBoardResponseObject, error)
 	// returns the project configuration
 	// (GET /project/{projectName}/config)
-	GetProjectConfig(ctx context.Context, request GetProjectConfigRequestObject) (GetProjectConfigResponseObject, error)
+	GetProjectConfig(c *gin.Context, request GetProjectConfigRequestObject) (GetProjectConfigResponseObject, error)
 	// updates the project configuration
 	// (PUT /project/{projectName}/config)
-	UpdateProjectConfig(ctx context.Context, request UpdateProjectConfigRequestObject) (UpdateProjectConfigResponseObject, error)
+	UpdateProjectConfig(c *gin.Context, request UpdateProjectConfigRequestObject) (UpdateProjectConfigResponseObject, error)
 	// creates initial data (teams, tags...) for a new project
 	// (POST /project/{projectName}/initialize)
-	InitializeProject(ctx context.Context, request InitializeProjectRequestObject) (InitializeProjectResponseObject, error)
+	InitializeProject(c *gin.Context, request InitializeProjectRequestObject) (InitializeProjectResponseObject, error)
 	// create team.
 	// (POST /project/{projectName}/team/)
-	CreateTeam(ctx context.Context, request CreateTeamRequestObject) (CreateTeamResponseObject, error)
+	CreateTeam(c *gin.Context, request CreateTeamRequestObject) (CreateTeamResponseObject, error)
 	// delete team.
 	// (DELETE /project/{projectName}/team/{id}/)
-	DeleteTeam(ctx context.Context, request DeleteTeamRequestObject) (DeleteTeamResponseObject, error)
+	DeleteTeam(c *gin.Context, request DeleteTeamRequestObject) (DeleteTeamResponseObject, error)
 	// get team.
 	// (GET /project/{projectName}/team/{id}/)
-	GetTeam(ctx context.Context, request GetTeamRequestObject) (GetTeamResponseObject, error)
+	GetTeam(c *gin.Context, request GetTeamRequestObject) (GetTeamResponseObject, error)
 	// update team.
 	// (PATCH /project/{projectName}/team/{id}/)
-	UpdateTeam(ctx context.Context, request UpdateTeamRequestObject) (UpdateTeamResponseObject, error)
+	UpdateTeam(c *gin.Context, request UpdateTeamRequestObject) (UpdateTeamResponseObject, error)
 	// create workitemtag.
 	// (POST /project/{projectName}/workItemTag/)
-	CreateWorkItemTag(ctx context.Context, request CreateWorkItemTagRequestObject) (CreateWorkItemTagResponseObject, error)
+	CreateWorkItemTag(c *gin.Context, request CreateWorkItemTagRequestObject) (CreateWorkItemTagResponseObject, error)
 	// delete workitemtag.
 	// (DELETE /project/{projectName}/workItemTag/{id}/)
-	DeleteWorkItemTag(ctx context.Context, request DeleteWorkItemTagRequestObject) (DeleteWorkItemTagResponseObject, error)
+	DeleteWorkItemTag(c *gin.Context, request DeleteWorkItemTagRequestObject) (DeleteWorkItemTagResponseObject, error)
 	// get workitemtag.
 	// (GET /project/{projectName}/workItemTag/{id}/)
-	GetWorkItemTag(ctx context.Context, request GetWorkItemTagRequestObject) (GetWorkItemTagResponseObject, error)
+	GetWorkItemTag(c *gin.Context, request GetWorkItemTagRequestObject) (GetWorkItemTagResponseObject, error)
 	// update workitemtag.
 	// (PATCH /project/{projectName}/workItemTag/{id}/)
-	UpdateWorkItemTag(ctx context.Context, request UpdateWorkItemTagRequestObject) (UpdateWorkItemTagResponseObject, error)
+	UpdateWorkItemTag(c *gin.Context, request UpdateWorkItemTagRequestObject) (UpdateWorkItemTagResponseObject, error)
 	// create workitemtype.
 	// (POST /project/{projectName}/workItemType/)
-	CreateWorkItemType(ctx context.Context, request CreateWorkItemTypeRequestObject) (CreateWorkItemTypeResponseObject, error)
+	CreateWorkItemType(c *gin.Context, request CreateWorkItemTypeRequestObject) (CreateWorkItemTypeResponseObject, error)
 	// delete workitemtype.
 	// (DELETE /project/{projectName}/workItemType/{id}/)
-	DeleteWorkItemType(ctx context.Context, request DeleteWorkItemTypeRequestObject) (DeleteWorkItemTypeResponseObject, error)
+	DeleteWorkItemType(c *gin.Context, request DeleteWorkItemTypeRequestObject) (DeleteWorkItemTypeResponseObject, error)
 	// get workitemtype.
 	// (GET /project/{projectName}/workItemType/{id}/)
-	GetWorkItemType(ctx context.Context, request GetWorkItemTypeRequestObject) (GetWorkItemTypeResponseObject, error)
+	GetWorkItemType(c *gin.Context, request GetWorkItemTypeRequestObject) (GetWorkItemTypeResponseObject, error)
 	// update workitemtype.
 	// (PATCH /project/{projectName}/workItemType/{id}/)
-	UpdateWorkItemType(ctx context.Context, request UpdateWorkItemTypeRequestObject) (UpdateWorkItemTypeResponseObject, error)
+	UpdateWorkItemType(c *gin.Context, request UpdateWorkItemTypeRequestObject) (UpdateWorkItemTypeResponseObject, error)
 	// returns workitems for a project
 	// (GET /project/{projectName}/workitems)
-	GetProjectWorkitems(ctx context.Context, request GetProjectWorkitemsRequestObject) (GetProjectWorkitemsResponseObject, error)
+	GetProjectWorkitems(c *gin.Context, request GetProjectWorkitemsRequestObject) (GetProjectWorkitemsResponseObject, error)
 	// returns the logged in user
 	// (GET /user/me)
-	GetCurrentUser(ctx context.Context, request GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error)
+	GetCurrentUser(c *gin.Context, request GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error)
 	// deletes the user by id
 	// (DELETE /user/{id})
-	DeleteUser(ctx context.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error)
+	DeleteUser(c *gin.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error)
 	// updates the user by id
 	// (PATCH /user/{id})
-	UpdateUser(ctx context.Context, request UpdateUserRequestObject) (UpdateUserResponseObject, error)
+	UpdateUser(c *gin.Context, request UpdateUserRequestObject) (UpdateUserResponseObject, error)
 	// updates user role and scopes by id
 	// (PATCH /user/{id}/authorization)
-	UpdateUserAuthorization(ctx context.Context, request UpdateUserAuthorizationRequestObject) (UpdateUserAuthorizationResponseObject, error)
+	UpdateUserAuthorization(c *gin.Context, request UpdateUserAuthorizationRequestObject) (UpdateUserAuthorizationResponseObject, error)
 	// create workitem
 	// (POST /workitem/)
-	CreateWorkitem(ctx context.Context, request CreateWorkitemRequestObject) (CreateWorkitemResponseObject, error)
+	CreateWorkitem(c *gin.Context, request CreateWorkitemRequestObject) (CreateWorkitemResponseObject, error)
 	// delete workitem
 	// (DELETE /workitem/{id}/)
-	DeleteWorkitem(ctx context.Context, request DeleteWorkitemRequestObject) (DeleteWorkitemResponseObject, error)
+	DeleteWorkitem(c *gin.Context, request DeleteWorkitemRequestObject) (DeleteWorkitemResponseObject, error)
 	// get workitem
 	// (GET /workitem/{id}/)
-	GetWorkItem(ctx context.Context, request GetWorkItemRequestObject) (GetWorkItemResponseObject, error)
+	GetWorkItem(c *gin.Context, request GetWorkItemRequestObject) (GetWorkItemResponseObject, error)
 	// update workitem
 	// (PATCH /workitem/{id}/)
-	UpdateWorkitem(ctx context.Context, request UpdateWorkitemRequestObject) (UpdateWorkitemResponseObject, error)
+	UpdateWorkitem(c *gin.Context, request UpdateWorkitemRequestObject) (UpdateWorkitemResponseObject, error)
 	// create workitem comment
 	// (POST /workitem/{id}/comments/)
-	CreateWorkitemComment(ctx context.Context, request CreateWorkitemCommentRequestObject) (CreateWorkitemCommentResponseObject, error)
+	CreateWorkitemComment(c *gin.Context, request CreateWorkitemCommentRequestObject) (CreateWorkitemCommentResponseObject, error)
 }
 
 type (
@@ -2174,14 +2173,14 @@ type (
 	StrictMiddlewareFunc = strictgin.StrictGinMiddlewareFunc
 )
 
-func NewStrictHandler(ssi StrictServerInterface, strictMiddlewares []StrictMiddlewareFunc, h Handlers) ServerInterface {
-	return &strictHandlers{ssi: ssi, strictMiddlewares: strictMiddlewares, h: &h}
+func NewStrictHandler(ssi StrictServerInterface, strictMiddlewares []StrictMiddlewareFunc) ServerInterface {
+	return &strictHandlers{ssi: ssi, strictMiddlewares: strictMiddlewares}
 }
 
 type strictHandlers struct {
 	ssi               StrictServerInterface
 	strictMiddlewares []StrictMiddlewareFunc
-	h                 *Handlers
+	h                 *StrictHandlers
 }
 
 // AdminPing operation middleware

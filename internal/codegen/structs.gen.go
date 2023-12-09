@@ -226,7 +226,7 @@ var PublicStructs = map[string]any{
 	"RestGetWorkItemType4XXJSONResponse":            new(rest.GetWorkItemType4XXJSONResponse),
 	"RestGetWorkItemTypeRequestObject":              new(rest.GetWorkItemTypeRequestObject),
 	"RestGinServerOptions":                          new(rest.GinServerOptions),
-	"RestHandlers":                                  new(rest.Handlers),
+	"RestHandlers":                                  new(rest.StrictHandlers),
 	"RestInitializeProject204Response":              new(rest.InitializeProject204Response),
 	"RestInitializeProjectRequestObject":            new(rest.InitializeProjectRequestObject),
 	"RestMyProviderCallback200Response":             new(rest.MyProviderCallback200Response),

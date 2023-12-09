@@ -167,15 +167,15 @@ channel use cases,etc:
 // Events represents server events.
 // TODO requires query param projectId=...
 // to subscribe to the current project's topics only.
-func (h *Handlers) Events(c *gin.Context, params models.EventsParams) {
+func (h *StrictHandlers) Events(c *gin.Context, request EventsRequestObject) (EventsResponseObject, error) {
 	c.Set(skipRequestValidationCtxKey, true)
 	clientChan, ok := c.Value("clientChan").(ClientChan)
 	if !ok {
-		return
+		return nil, nil
 	}
 	userNotificationsChan, ok := c.Value("userNotificationsChan").(UserNotificationsChan)
 	if !ok {
-		return
+		return nil, nil
 	}
 	// TODO map of channels for each Role ('global' notif.) ?
 	// TODO map of channels for every connected user for 'personal' notif. ?
@@ -227,6 +227,8 @@ func (h *Handlers) Events(c *gin.Context, params models.EventsParams) {
 			return false
 		}
 	})
+
+	return nil, nil
 }
 
 // newSSEServer initializes events and starts processing requests.

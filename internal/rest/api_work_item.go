@@ -13,7 +13,7 @@ import (
 )
 
 // create workitem comment.
-func (h *Handlers) CreateWorkitemComment(c *gin.Context, id models.SerialID) {
+func (h *StrictHandlers) CreateWorkitemComment(c *gin.Context, id models.SerialID) {
 	defer newOTelSpanWithUser(c).End()
 
 	// caller := getUserFromCtx(c)
@@ -23,7 +23,7 @@ func (h *Handlers) CreateWorkitemComment(c *gin.Context, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *Handlers) CreateWorkitem(c *gin.Context) {
+func (h *StrictHandlers) CreateWorkitem(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	span := newOTelSpanWithUser(c)
@@ -94,14 +94,14 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	c.JSON(http.StatusCreated, res)
 }
 
-func (h *Handlers) DeleteWorkitem(c *gin.Context, id models.SerialID) {
+func (h *StrictHandlers) DeleteWorkitem(c *gin.Context, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *Handlers) UpdateWorkitem(c *gin.Context, id models.SerialID) {
+func (h *StrictHandlers) UpdateWorkitem(c *gin.Context, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *Handlers) GetWorkItem(c *gin.Context, id models.SerialID) {
+func (h *StrictHandlers) GetWorkItem(c *gin.Context, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }

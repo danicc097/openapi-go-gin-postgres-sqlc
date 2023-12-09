@@ -14,7 +14,7 @@ import (
 	"github.com/zitadel/oidc/v2/pkg/oidc"
 )
 
-func (h *Handlers) MyProviderLogin(c *gin.Context) {
+func (h *StrictHandlers) MyProviderLogin(c *gin.Context) {
 	c.Set(skipRequestValidationCtxKey, true)
 
 	gin.WrapH(rp.AuthURLHandler(state, h.provider))(c)
@@ -36,7 +36,7 @@ func (h *Handlers) MyProviderLogin(c *gin.Context) {
 	// initial-data for dev can create api keys for every user.
 }
 
-func (h *Handlers) MyProviderCallback(c *gin.Context) {
+func (h *StrictHandlers) MyProviderCallback(c *gin.Context) {
 	c.Set(skipRequestValidationCtxKey, true)
 
 	userinfo := getUserInfoFromCtx(c)
@@ -57,7 +57,7 @@ func state() string {
 	return uuid.New().String()
 }
 
-func (h *Handlers) marshalUserinfo(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
+func (h *StrictHandlers) marshalUserinfo(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
 	data, err := json.Marshal(info)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("could not marshal userinfo: %s", err.Error()), http.StatusInternalServerError)
@@ -72,7 +72,7 @@ func (h *Handlers) marshalUserinfo(w http.ResponseWriter, r *http.Request, token
 	}
 }
 
-func (h *Handlers) codeExchange() gin.HandlerFunc {
+func (h *StrictHandlers) codeExchange() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		rbw := &responseBodyWriter{body: &bytes.Buffer{}, ResponseWriter: c.Writer}
 		c.Writer = rbw

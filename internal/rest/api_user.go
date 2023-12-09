@@ -12,7 +12,7 @@ import (
 )
 
 // DeleteUser deletes the user by id.
-func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
+func (h *StrictHandlers) DeleteUser(c *gin.Context, id uuid.UUID) {
 	defer newOTelSpanWithUser(c).End()
 
 	tx := getTxFromCtx(c)
@@ -28,7 +28,7 @@ func (h *Handlers) DeleteUser(c *gin.Context, id uuid.UUID) {
 }
 
 // GetCurrentUser returns the logged in user.
-func (h *Handlers) GetCurrentUser(c *gin.Context) {
+func (h *StrictHandlers) GetCurrentUser(c *gin.Context) {
 	defer newOTelSpanWithUser(c).End()
 
 	caller := getUserFromCtx(c)
@@ -50,7 +50,7 @@ func (h *Handlers) GetCurrentUser(c *gin.Context) {
 }
 
 // UpdateUser updates the user by id.
-func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
+func (h *StrictHandlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 	// span attribute not inheritable:
 	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
 	caller := getUserFromCtx(c)
@@ -85,7 +85,7 @@ func (h *Handlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 }
 
 // UpdateUserAuthorization updates authorization information, e.g. roles, scopes.
-func (h *Handlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
+func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 	caller := getUserFromCtx(c)
 
 	span := getSpanFromCtx(c)

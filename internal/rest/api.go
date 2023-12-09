@@ -17,8 +17,7 @@ const (
 	authorizationHeaderKey = "x-api-key"
 )
 
-// Handlers implements ServerInterface.
-type Handlers struct {
+type StrictHandlers struct {
 	svc *services.Services
 
 	logger         *zap.SugaredLogger
@@ -30,17 +29,17 @@ type Handlers struct {
 	provider       rp.RelyingParty
 }
 
-var _ ServerInterface = (*Handlers)(nil)
+var _ StrictServerInterface = (*StrictHandlers)(nil)
 
-// NewHandlers returns a server implementation of an openapi specification.
-func NewHandlers(
+// NewStrictHandlers returns a server implementation of an openapi specification.
+func NewStrictHandlers(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,
 	moviesvcclient v1.MovieGenreClient,
 	specPath string,
 	svcs *services.Services,
 	authmw *authMiddleware, // middleware needed here since it's generated code
 	provider rp.RelyingParty,
-) *Handlers {
+) *StrictHandlers {
 	event := newSSEServer()
 
 	// we can have as many of these but need to delay call
@@ -70,7 +69,7 @@ func NewHandlers(
 		}
 	}()
 
-	return &Handlers{
+	return &StrictHandlers{
 		logger:         logger,
 		pool:           pool,
 		moviesvcclient: moviesvcclient,
@@ -88,7 +87,7 @@ func (sh *strictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
 }
 
 // middlewares to be applied after authMiddlewares, based on operation IDs.
-func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
+func (h *StrictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	defaultMws := []gin.HandlerFunc{}
 
 	dbMw := newDBMiddleware(h.logger, h.pool)

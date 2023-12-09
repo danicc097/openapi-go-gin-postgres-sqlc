@@ -10,32 +10,32 @@ import (
 )
 
 // InitializeProject.
-func (h *Handlers) InitializeProject(c *gin.Context, project models.Project) {
+func (h *StrictHandlers) InitializeProject(c *gin.Context, project models.Project) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
 // GetProjectBoard.
-func (h *Handlers) GetProjectBoard(c *gin.Context, project models.Project) {
+func (h *StrictHandlers) GetProjectBoard(c *gin.Context, project models.Project) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
 // GetProjectWorkitems.
-func (h *Handlers) GetProjectWorkitems(c *gin.Context, project models.Project, params models.GetProjectWorkitemsParams) {
+func (h *StrictHandlers) GetProjectWorkitems(c *gin.Context, project models.Project, params models.GetProjectWorkitemsParams) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
 // GetProjectConfig.
-func (h *Handlers) GetProjectConfig(c *gin.Context, project models.Project) {
+func (h *StrictHandlers) GetProjectConfig(c *gin.Context, project models.Project) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
 // UpdateProjectConfig.
-func (h *Handlers) UpdateProjectConfig(c *gin.Context, project models.Project) {
+func (h *StrictHandlers) UpdateProjectConfig(c *gin.Context, project models.Project) {
 	c.String(http.StatusNotImplemented, "not implemented")
 }
 
 // GetProject.
-func (h *Handlers) GetProject(c *gin.Context, project models.Project) {
+func (h *StrictHandlers) GetProject(c *gin.Context, project models.Project) {
 	defer newOTelSpanWithUser(c).End()
 
 	// TODO project service (includes project, team, board...)
@@ -52,7 +52,7 @@ func (h *Handlers) GetProject(c *gin.Context, project models.Project) {
 	// c.JSON(http.StatusOK, res)
 }
 
-func (h *Handlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
+func (h *StrictHandlers) CreateWorkitemTag(c *gin.Context, project models.Project) {
 	defer newOTelSpanWithUser(c).End()
 
 	caller := getUserFromCtx(c)

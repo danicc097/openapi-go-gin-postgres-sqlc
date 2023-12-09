@@ -11,7 +11,7 @@ func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 	return sh.h.authMiddlewares(opID)
 }
 
-func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
+func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 	switch opID {
 	case AdminPing:
 		return []gin.HandlerFunc{

@@ -7,18 +7,18 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handlers) CreateTeam(c *gin.Context, projectName models.ProjectName) {
+func (h *StrictHandlers) CreateTeam(c *gin.Context, projectName models.ProjectName) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *Handlers) DeleteTeam(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *StrictHandlers) DeleteTeam(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *Handlers) GetTeam(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *StrictHandlers) GetTeam(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *Handlers) UpdateTeam(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *StrictHandlers) UpdateTeam(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
