@@ -102,9 +102,14 @@ func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error)
 		// large packages still slow
 		ParseFile: func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
 			// IMPORTANT: we need to include every file and package.
-			// if !strings.Contains(filename, filepath) {
-			// 	return nil, nil
-			// }
+			// however we do want to include types only from the given paths in arguments, e.g. internal/rest/models.go (ie filepath arg)
+			if strings.Contains(filename, filepath) {
+				// TODO: here we get struct names found in filename and store in list
+				// and exit below loop if struct not in the list.
+				// however we will have the same issue where ast does not know about a generic instantiated struct,
+				// where ast type is IndexExpr (<gen_st>[<st>])
+				return nil, nil
+			}
 
 			const mode = parser.AllErrors | parser.ParseComments
 
@@ -133,6 +138,7 @@ func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error)
 
 	for _, pkg := range pkgs {
 		for _, syn := range pkg.Syntax {
+			fmt.Printf("syn: %+v\n", syn)
 			for _, dec := range syn.Decls {
 				if gen, ok := dec.(*ast.GenDecl); ok && gen.Tok == token.TYPE {
 					for _, spec := range gen.Specs {

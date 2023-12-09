@@ -739,6 +739,10 @@ x.gen.client-server() {
 
     codegen implement-server # based on oapi gen
 
+    local structs=()
+    mapfile -t structs < <(ast-parser find-structs --exclude-generics --public-only "internal/rest/models.go")
+    struct_names_list=$(join_by "," ${structs[*]})
+    echo struct_names_list: $struct_names_list
     files=$(find "internal/rest/" -name "*.go")
     goimports -w $files
     gofumpt -w $files

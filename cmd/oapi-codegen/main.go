@@ -91,9 +91,12 @@ func generate(spec *openapi3.T, config codegen.Configuration, templates embed.FS
 	}
 	// include other template functions, if any
 	templateFunctions := template.FuncMap{
-		"modelsPkg": func() string {
+		"models_pkg": func() string {
 			return modelsPkg + "."
 		},
+		// "is_rest_struct": func() string {
+		// 	return slices.Contains()
+		// },
 	}
 	for k, v := range templateFunctions {
 		codegen.TemplateFunctions[k] = v

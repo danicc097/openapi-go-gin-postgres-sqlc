@@ -12,7 +12,7 @@
         {{end -}}
         {{$multipleBodies := gt (len .Bodies) 1 -}}
         {{range .Bodies -}}
-            {{if $multipleBodies}}{{.NameTag}}{{end}}Body {{if eq .NameTag "Multipart"}}*multipart.Reader{{else if ne .NameTag ""}}/*{{modelsPkg}}*/ *externalRef0.{{$opid}}{{.NameTag}}RequestBody{{else}}io.Reader{{end}}
+            {{if $multipleBodies}}{{.NameTag}}{{end}}Body {{if eq .NameTag "Multipart"}}*multipart.Reader{{else if ne .NameTag ""}}*externalRef0.{{$opid}}{{.NameTag}}RequestBody{{else}}io.Reader{{end}}
         {{end -}}
     }
 
