@@ -29,6 +29,13 @@ type StrictHandlers struct {
 	provider       rp.RelyingParty
 }
 
+// IMPORTANT: oapi codegen uses its own types for responses and request bodies,
+// and we absolutely do not want this, since we would need to manually convert
+// to or from oapi's Rest<..> and Db<..> structs.
+// is it worth it to rewrite strict server gen to use rest package structs for request/response bodies?
+// we could check in templates with a simple if stmt
+// that if a type in rest package exists with the same name we don't prepend `externalRef0.`
+// We already have the rest pkg struct list from ast-parser gen
 var _ StrictServerInterface = (*StrictHandlers)(nil)
 
 // NewStrictHandlers returns a server implementation of an openapi specification.
