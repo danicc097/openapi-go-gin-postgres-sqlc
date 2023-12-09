@@ -378,7 +378,7 @@ func getHandlersMethods(file *dst.File) []string {
 				recvType, ok := x.Recv.List[0].Type.(*dst.StarExpr)
 				if ok {
 					ident, ok := recvType.X.(*dst.Ident)
-					if ok && ident.Name == "Handlers" {
+					if ok && ident.Name == "StrictHandlers" {
 						functions = append(functions, x.Name.Name)
 					}
 				}
@@ -512,7 +512,7 @@ func (o *CodeGen) implementServerInterfaceMethods() error {
 		m := o.serverInterfaceMethods[opID]
 
 		methodStr := fmt.Sprintf(`
-		func (h *Handlers) %s {
+		func (h *StrictHandlers) %s {
 			c.JSON(http.StatusNotImplemented, "not implemented")
 		}
 	`, m.method)
@@ -560,9 +560,10 @@ func (o *CodeGen) getServerInterfaceMethods() map[string]operationIDMethod {
 				continue
 			}
 			interfaceType, ok := typeSpec.Type.(*ast.InterfaceType)
-			if !ok {
+			if !ok || typeSpec.Name.String() != "StrictServerInterface" {
 				continue
 			}
+
 			for _, method := range interfaceType.Methods.List {
 				operationID := method.Names[0].Name
 				funcType, ok := method.Type.(*ast.FuncType)

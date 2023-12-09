@@ -36,7 +36,7 @@ type StrictHandlers struct {
 // we could check in templates with a simple if stmt
 // that if a type in rest package exists with the same name we don't prepend `externalRef0.`
 // We already have the rest pkg struct list from ast-parser gen
-var _ StrictServerInterface = (*StrictHandlers)(nil)
+// var _ StrictServerInterface = (*StrictHandlers)(nil)
 
 // NewStrictHandlers returns a server implementation of an openapi specification.
 func NewStrictHandlers(
@@ -86,11 +86,6 @@ func NewStrictHandlers(
 		provider:       provider,
 		specPath:       specPath,
 	}
-}
-
-// middlewares to be applied after authMiddlewares, based on operation IDs.
-func (sh *strictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
-	return sh.h.middlewares(opID)
 }
 
 // middlewares to be applied after authMiddlewares, based on operation IDs.

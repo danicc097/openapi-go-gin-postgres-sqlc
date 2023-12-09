@@ -7,10 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
-	return sh.h.authMiddlewares(opID)
-}
-
 func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 	switch opID {
 	case AdminPing:

@@ -1,14 +1,21 @@
 type StrictHandlerFunc = strictgin.StrictGinHandlerFunc
 type StrictMiddlewareFunc = strictgin.StrictGinMiddlewareFunc
 
-func NewStrictHandler(ssi StrictServerInterface, strictMiddlewares []StrictMiddlewareFunc, h Handlers) ServerInterface {
-	return &strictHandlers{ssi: ssi, strictMiddlewares: strictMiddlewares, h: &h}
+func NewStrictHandler(ssi StrictServerInterface, strictMiddlewares []StrictMiddlewareFunc) ServerInterface {
+	return &strictHandlers{ssi: ssi, strictMiddlewares: strictMiddlewares}
 }
 
 type strictHandlers struct {
-    ssi StrictServerInterface
-    strictMiddlewares []StrictMiddlewareFunc
-    h *Handlers
+	ssi               StrictServerInterface
+	strictMiddlewares []StrictMiddlewareFunc
+}
+
+func (sh *strictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
+	return sh.ssi.middlewares(opID)
+}
+
+func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
+	return sh.ssi.authMiddlewares(opID)
 }
 
 {{range .}}

@@ -194,17 +194,18 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	svcs := services.New(conf.Logger, repos, conf.Pool)
 
 	authmw := newAuthMiddleware(conf.Logger, conf.Pool, svcs)
-
-	handlers := NewHandlers(
-		conf.Logger,
-		conf.Pool,
-		conf.MovieSvcClient,
-		conf.SpecPath,
-		svcs,
-		authmw, // middleware needed here since it's generated code
-		provider,
-	)
-	RegisterHandlers(vg, handlers)
+	_ = authmw
+	_ = provider
+	// handlers := NewHandlers(
+	// 	conf.Logger,
+	// 	conf.Pool,
+	// 	conf.MovieSvcClient,
+	// 	conf.SpecPath,
+	// 	svcs,
+	// 	authmw, // middleware needed here since it's generated code
+	// 	provider,
+	// )
+	// RegisterHandlers(vg, handlers)
 
 	conf.Logger.Info("Server started")
 

@@ -1305,7 +1305,7 @@ func (response GetProjectConfig200JSONResponse) VisitGetProjectConfigResponse(w 
 
 type UpdateProjectConfigRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
-	Body        *externalRef0.UpdateProjectConfigJSONRequestBody
+	Body/*models.*/ *externalRef0.UpdateProjectConfigJSONRequestBody
 }
 
 type UpdateProjectConfigResponseObject interface {
@@ -1321,7 +1321,7 @@ func (response UpdateProjectConfig204Response) VisitUpdateProjectConfigResponse(
 
 type InitializeProjectRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
-	Body        *externalRef0.InitializeProjectJSONRequestBody
+	Body/*models.*/ *externalRef0.InitializeProjectJSONRequestBody
 }
 
 type InitializeProjectResponseObject interface {
@@ -1337,7 +1337,7 @@ func (response InitializeProject204Response) VisitInitializeProjectResponse(w ht
 
 type CreateTeamRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
-	Body        *externalRef0.CreateTeamJSONRequestBody
+	Body/*models.*/ *externalRef0.CreateTeamJSONRequestBody
 }
 
 type CreateTeamResponseObject interface {
@@ -1468,7 +1468,7 @@ func (response GetTeam4XXJSONResponse) VisitGetTeamResponse(w http.ResponseWrite
 type UpdateTeamRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
 	Id          externalRef0.SerialID    `json:"id"`
-	Body        *externalRef0.UpdateTeamJSONRequestBody
+	Body/*models.*/ *externalRef0.UpdateTeamJSONRequestBody
 }
 
 type UpdateTeamResponseObject interface {
@@ -1512,7 +1512,7 @@ func (response UpdateTeam4XXJSONResponse) VisitUpdateTeamResponse(w http.Respons
 
 type CreateWorkItemTagRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
-	Body        *externalRef0.CreateWorkItemTagJSONRequestBody
+	Body/*models.*/ *externalRef0.CreateWorkItemTagJSONRequestBody
 }
 
 type CreateWorkItemTagResponseObject interface {
@@ -1643,7 +1643,7 @@ func (response GetWorkItemTag4XXJSONResponse) VisitGetWorkItemTagResponse(w http
 type UpdateWorkItemTagRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
 	Id          externalRef0.SerialID    `json:"id"`
-	Body        *externalRef0.UpdateWorkItemTagJSONRequestBody
+	Body/*models.*/ *externalRef0.UpdateWorkItemTagJSONRequestBody
 }
 
 type UpdateWorkItemTagResponseObject interface {
@@ -1687,7 +1687,7 @@ func (response UpdateWorkItemTag4XXJSONResponse) VisitUpdateWorkItemTagResponse(
 
 type CreateWorkItemTypeRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
-	Body        *externalRef0.CreateWorkItemTypeJSONRequestBody
+	Body/*models.*/ *externalRef0.CreateWorkItemTypeJSONRequestBody
 }
 
 type CreateWorkItemTypeResponseObject interface {
@@ -1818,7 +1818,7 @@ func (response GetWorkItemType4XXJSONResponse) VisitGetWorkItemTypeResponse(w ht
 type UpdateWorkItemTypeRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
 	Id          externalRef0.SerialID    `json:"id"`
-	Body        *externalRef0.UpdateWorkItemTypeJSONRequestBody
+	Body/*models.*/ *externalRef0.UpdateWorkItemTypeJSONRequestBody
 }
 
 type UpdateWorkItemTypeResponseObject interface {
@@ -1937,8 +1937,8 @@ func (response DeleteUser4XXJSONResponse) VisitDeleteUserResponse(w http.Respons
 }
 
 type UpdateUserRequestObject struct {
-	Id   uuid.UUID `json:"id"`
-	Body *externalRef0.UpdateUserJSONRequestBody
+	Id uuid.UUID `json:"id"`
+	Body/*models.*/ *externalRef0.UpdateUserJSONRequestBody
 }
 
 type UpdateUserResponseObject interface {
@@ -1955,8 +1955,8 @@ func (response UpdateUser200JSONResponse) VisitUpdateUserResponse(w http.Respons
 }
 
 type UpdateUserAuthorizationRequestObject struct {
-	Id   uuid.UUID `json:"id"`
-	Body *externalRef0.UpdateUserAuthorizationJSONRequestBody
+	Id uuid.UUID `json:"id"`
+	Body/*models.*/ *externalRef0.UpdateUserAuthorizationJSONRequestBody
 }
 
 type UpdateUserAuthorizationResponseObject interface {
@@ -1971,7 +1971,7 @@ func (response UpdateUserAuthorization204Response) VisitUpdateUserAuthorizationR
 }
 
 type CreateWorkitemRequestObject struct {
-	Body *externalRef0.CreateWorkitemJSONRequestBody
+	Body /*models.*/ *externalRef0.CreateWorkitemJSONRequestBody
 }
 
 type CreateWorkitemResponseObject interface {
@@ -2043,8 +2043,8 @@ func (response UpdateWorkitem200JSONResponse) VisitUpdateWorkitemResponse(w http
 }
 
 type CreateWorkitemCommentRequestObject struct {
-	Id   externalRef0.SerialID `json:"id"`
-	Body *externalRef0.CreateWorkitemCommentJSONRequestBody
+	Id externalRef0.SerialID `json:"id"`
+	Body/*models.*/ *externalRef0.CreateWorkitemCommentJSONRequestBody
 }
 
 type CreateWorkitemCommentResponseObject interface {
@@ -2166,6 +2166,8 @@ type StrictServerInterface interface {
 	// create workitem comment
 	// (POST /workitem/{id}/comments/)
 	CreateWorkitemComment(c *gin.Context, request CreateWorkitemCommentRequestObject) (CreateWorkitemCommentResponseObject, error)
+	middlewares(opID OperationID) []gin.HandlerFunc
+	authMiddlewares(opID OperationID) []gin.HandlerFunc
 }
 
 type (
@@ -2180,7 +2182,14 @@ func NewStrictHandler(ssi StrictServerInterface, strictMiddlewares []StrictMiddl
 type strictHandlers struct {
 	ssi               StrictServerInterface
 	strictMiddlewares []StrictMiddlewareFunc
-	h                 *StrictHandlers
+}
+
+func (sh *strictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
+	return sh.ssi.middlewares(opID)
+}
+
+func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
+	return sh.ssi.authMiddlewares(opID)
 }
 
 // AdminPing operation middleware
