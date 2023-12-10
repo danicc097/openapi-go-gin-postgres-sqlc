@@ -388,6 +388,8 @@ func getHandlersMethods(file *dst.File) []string {
 		return true
 	})
 
+	fmt.Printf("functions: %v\n", functions)
+
 	return functions
 }
 

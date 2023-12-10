@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"net/http"
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
@@ -8,7 +9,7 @@ import (
 )
 
 // OpenapiYamlGet returns this very openapi spec.
-func (h *StrictHandlers) OpenapiYamlGet(c *gin.Context, request OpenapiYamlGetRequestObject) (OpenapiYamlGetResponseObject, error) {
+func (h *dummyStrictHandlers) OpenapiYamlGet(c *gin.Context, request OpenapiYamlGetRequestObject) (OpenapiYamlGetResponseObject, error) {
 	oas, err := static.SwaggerUI.ReadFile("swagger-ui/openapi.yaml")
 	if err != nil {
 		panic("openapi spec not found")
@@ -20,6 +21,14 @@ func (h *StrictHandlers) OpenapiYamlGet(c *gin.Context, request OpenapiYamlGetRe
 }
 
 // Ping ping pongs.
-func (h *StrictHandlers) Ping(c *gin.Context, request PingRequestObject) (PingResponseObject, error) {
+func (h *dummyStrictHandlers) Ping(c *gin.Context, request PingRequestObject) (PingResponseObject, error) {
 	return Ping200TextResponse("pong"), nil
+}
+
+func (h *StrictHandlers) OpenapiYamlGet(c *gin.Context, request OpenapiYamlGetRequestObject) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+}
+
+func (h *StrictHandlers) Ping(c *gin.Context, request PingRequestObject) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
 }

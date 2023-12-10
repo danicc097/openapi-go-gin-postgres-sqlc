@@ -7,18 +7,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *StrictHandlers) DeleteWorkItemType(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *dummyStrictHandlers) DeleteWorkItemType(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *StrictHandlers) GetWorkItemType(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *dummyStrictHandlers) GetWorkItemType(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *StrictHandlers) CreateWorkItemType(c *gin.Context, projectName models.ProjectName) {
+func (h *dummyStrictHandlers) CreateWorkItemType(c *gin.Context, projectName models.ProjectName) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *StrictHandlers) UpdateWorkItemType(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *dummyStrictHandlers) UpdateWorkItemType(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+}
+
+func (h *StrictHandlers) GetWorkItemType(c *gin.Context, request GetWorkItemTypeRequestObject) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+}
+
+func (h *StrictHandlers) CreateWorkItemType(c *gin.Context, request CreateWorkItemTypeRequestObject) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+}
+
+func (h *StrictHandlers) UpdateWorkItemType(c *gin.Context, request UpdateWorkItemTypeRequestObject) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+}
+
+func (h *StrictHandlers) DeleteWorkItemType(c *gin.Context, request DeleteWorkItemTypeRequestObject) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }

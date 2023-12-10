@@ -38,6 +38,8 @@ type StrictHandlers struct {
 // We already have the rest pkg struct list from ast-parser gen
 // var _ StrictServerInterface = (*StrictHandlers)(nil)
 
+type dummyStrictHandlers string
+
 // NewStrictHandlers returns a server implementation of an openapi specification.
 func NewStrictHandlers(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,

@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *StrictHandlers) CreateWorkItemTag(c *gin.Context, projectName models.ProjectName) {
+func (h *dummyStrictHandlers) CreateWorkItemTag(c *gin.Context, projectName models.ProjectName) {
 	tx := getTxFromCtx(c)
 	u := getUserFromCtx(c)
 
@@ -33,14 +33,30 @@ func (h *StrictHandlers) CreateWorkItemTag(c *gin.Context, projectName models.Pr
 	renderResponse(c, wit, http.StatusCreated)
 }
 
-func (h *StrictHandlers) UpdateWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *dummyStrictHandlers) UpdateWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *StrictHandlers) GetWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *dummyStrictHandlers) GetWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *StrictHandlers) DeleteWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *dummyStrictHandlers) DeleteWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+}
+
+func (h *StrictHandlers) UpdateWorkItemTag(c *gin.Context, request UpdateWorkItemTagRequestObject) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+}
+
+func (h *StrictHandlers) DeleteWorkItemTag(c *gin.Context, request DeleteWorkItemTagRequestObject) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+}
+
+func (h *StrictHandlers) CreateWorkItemTag(c *gin.Context, request CreateWorkItemTagRequestObject) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+}
+
+func (h *StrictHandlers) GetWorkItemTag(c *gin.Context, request GetWorkItemTagRequestObject) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }

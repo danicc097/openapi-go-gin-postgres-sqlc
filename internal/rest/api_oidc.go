@@ -14,45 +14,6 @@ import (
 	"github.com/zitadel/oidc/v2/pkg/oidc"
 )
 
-func (h *StrictHandlers) MyProviderLogin(c *gin.Context) {
-	c.Set(skipRequestValidationCtxKey, true)
-
-	gin.WrapH(rp.AuthURLHandler(state, h.provider))(c)
-
-	// use adaptation of https://github.com/zitadel/oidc/blob/main/example/client/app/app.go
-
-	// X TODO if env is dev should have helper func or just use zitadel oidcserver but with dummy data?
-	// X real server, though fake, will be hard to keep in sync. much easier to use a map of tokens that get returned
-	// X and key is set in .env.dev -> "DEV_USER": <map key> so that backend route on login gets that inmemory token,
-	// X and sets to cookie instead of redirecting to auth server and then doing all that in MyProviderCallback
-	// X (user already exists, all users got created via project db.initial-data )
-	// X if the above is done, we still need to test provider callback logic anyway (we can use mocked returned tokens in the same style as the above ones)
-	// X for testing, the app_env switch is not what will happen in prod. should int tests run in app_env=ci or app_env=prod?
-	// X to test auth server calls: https://deliveroo.engineering/2018/09/11/testing-with-third-parties-in-go.html
-
-	// IMPORTANT: easiest if import.meta is dev then use headers.set('x-api-key', `...`) for UI.
-	// that needs to have remove Authorization header removed. (or could fallthrough if auth header check failed so both can be used at the same time)
-	// its the same we do to test out swagger ui.
-	// initial-data for dev can create api keys for every user.
-}
-
-func (h *StrictHandlers) MyProviderCallback(c *gin.Context) {
-	c.Set(skipRequestValidationCtxKey, true)
-
-	userinfo := getUserInfoFromCtx(c)
-	if userinfo == nil {
-		renderErrorResponse(c, "OIDC authentication error", internal.NewErrorf(models.ErrorCodeOIDC, "could not get OIDC userinfo from context"))
-	}
-	fmt.Printf("userinfo in MyProviderCallback: %v\n", string(userinfo))
-	// {"email":"admin@admin.com","email_verified":true,"family_name":"Admin","given_name":"Mr","locale":"de","name":"Mr Admin","preferred_username":"admin","sub":"id1"}
-
-	// GetOrRegisterUserFromUserInfo
-	// CreateAccessTokenForUser
-	// get "auth:redirect-uri" cookie
-
-	c.String(200, "would have been redirected to app frontend with actual user and logged in with JWT")
-}
-
 func state() string {
 	return uuid.New().String()
 }
@@ -82,4 +43,42 @@ func (h *StrictHandlers) codeExchange() gin.HandlerFunc {
 		c.Next()
 		rbw.ResponseWriter.Write(rbw.body.Bytes())
 	}
+}
+
+func (h *StrictHandlers) MyProviderCallback(c *gin.Context, request MyProviderCallbackRequestObject) {
+	c.Set(skipRequestValidationCtxKey, true)
+	userinfo := getUserInfoFromCtx(c)
+	if userinfo == nil {
+		renderErrorResponse(c, "OIDC authentication error", internal.NewErrorf(models.ErrorCodeOIDC, "could not get OIDC userinfo from context"))
+	}
+	fmt.Printf("userinfo in MyProviderCallback: %v\n", string(userinfo))
+	// {"email":"admin@admin.com","email_verified":true,"family_name":"Admin","given_name":"Mr","locale":"de","name":"Mr Admin","preferred_username":"admin","sub":"id1"}
+
+	// GetOrRegisterUserFromUserInfo
+	// CreateAccessTokenForUser
+	// get "auth:redirect-uri" cookie
+
+	c.String(200, "would have been redirected to app frontend with actual user and logged in with JWT")
+}
+
+func (h *StrictHandlers) MyProviderLogin(c *gin.Context, request MyProviderLoginRequestObject) {
+	c.Set(skipRequestValidationCtxKey, true)
+
+	gin.WrapH(rp.AuthURLHandler(state, h.provider))(c)
+
+	// use adaptation of https://github.com/zitadel/oidc/blob/main/example/client/app/app.go
+
+	// X TODO if env is dev should have helper func or just use zitadel oidcserver but with dummy data?
+	// X real server, though fake, will be hard to keep in sync. much easier to use a map of tokens that get returned
+	// X and key is set in .env.dev -> "DEV_USER": <map key> so that backend route on login gets that inmemory token,
+	// X and sets to cookie instead of redirecting to auth server and then doing all that in MyProviderCallback
+	// X (user already exists, all users got created via project db.initial-data )
+	// X if the above is done, we still need to test provider callback logic anyway (we can use mocked returned tokens in the same style as the above ones)
+	// X for testing, the app_env switch is not what will happen in prod. should int tests run in app_env=ci or app_env=prod?
+	// X to test auth server calls: https://deliveroo.engineering/2018/09/11/testing-with-third-parties-in-go.html
+
+	// IMPORTANT: easiest if import.meta is dev then use headers.set('x-api-key', `...`) for UI.
+	// that needs to have remove Authorization header removed. (or could fallthrough if auth header check failed so both can be used at the same time)
+	// its the same we do to test out swagger ui.
+	// initial-data for dev can create api keys for every user.
 }
