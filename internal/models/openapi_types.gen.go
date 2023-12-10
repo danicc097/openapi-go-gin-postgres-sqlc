@@ -891,6 +891,7 @@ type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
 // CreateWorkitemCommentJSONRequestBody defines body for CreateWorkitemComment for application/json ContentType.
 type CreateWorkitemCommentJSONRequestBody = CreateWorkItemCommentRequest
 
+// CreateDemoWorkItemRequest
 // AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {
 	var body CreateDemoWorkItemRequest
@@ -919,6 +920,7 @@ func (t *CreateWorkItemRequest) MergeCreateDemoWorkItemRequest(v CreateDemoWorkI
 	return err
 }
 
+// CreateDemoTwoWorkItemRequest
 // AsCreateDemoTwoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoTwoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoTwoWorkItemRequest() (CreateDemoTwoWorkItemRequest, error) {
 	var body CreateDemoTwoWorkItemRequest

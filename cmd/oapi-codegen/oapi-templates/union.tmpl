@@ -3,16 +3,21 @@
     {{$discriminator := .Schema.Discriminator}}
     {{$properties := .Schema.Properties -}}
     {{range .Schema.UnionElements}}
-        {{$element := . -}}
-        // As{{ .Method }} returns the union data inside the {{$typeName}} as a {{.}}
-        func (t {{$typeName}}) As{{ .Method }}() ({{.}}, error) {
-            var body {{.}}
+        {{ $element := printf "%v" . -}}
+        {{ $name := $element -}}
+        {{ if (is_rest_struct $element) -}}
+        {{ $name = (printf "%v%v" $element "Request") -}}
+        {{ end -}}
+        // {{$element}}
+        // As{{ .Method }} returns the union data inside the {{$typeName}} as a {{$name}}
+        func (t {{$typeName}}) As{{ .Method }}() ({{$name}}, error) {
+            var body {{$name}}
             err := json.Unmarshal(t.union, &body)
             return body, err
         }
 
-        // From{{ .Method }} overwrites any union data inside the {{$typeName}} as the provided {{.}}
-        func (t *{{$typeName}}) From{{ .Method }} (v {{.}}) error {
+        // From{{ .Method }} overwrites any union data inside the {{$typeName}} as the provided {{$name}}
+        func (t *{{$typeName}}) From{{ .Method }} (v {{$name}}) error {
             {{if $discriminator -}}
                 {{range $value, $type := $discriminator.Mapping -}}
                     {{if eq $type $element -}}
@@ -32,8 +37,8 @@
             return err
         }
 
-        // Merge{{ .Method }} performs a merge with any union data inside the {{$typeName}}, using the provided {{.}}
-        func (t *{{$typeName}}) Merge{{ .Method }} (v {{.}}) error {
+        // Merge{{ .Method }} performs a merge with any union data inside the {{$typeName}}, using the provided {{$name}}
+        func (t *{{$typeName}}) Merge{{ .Method }} (v {{$name}}) error {
             {{if $discriminator -}}
                 {{range $value, $type := $discriminator.Mapping -}}
                     {{if eq $type $element -}}
