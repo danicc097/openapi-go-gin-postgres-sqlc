@@ -1,4 +1,4 @@
-package rest
+package rest_test
 
 import (
 	"context"
@@ -11,10 +11,9 @@ import (
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/client"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	redis "github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
@@ -62,7 +61,7 @@ func testMain(m *testing.M) int {
 
 type testServer struct {
 	server *http.Server
-	client *client.ClientWithResponses
+	client *ClientWithResponses
 }
 
 func (s *testServer) setupCleanup(t *testing.T) {
@@ -107,7 +106,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 		panic(fmt.Sprintf("openapi3.NewLoader: %v", err))
 	}
 
-	srv, err := NewServer(Config{
+	srv, err := rest.NewServer(rest.Config{
 		// not necessary when using ServeHTTP. Won't actually listen.
 		// Address:         ":0", // random next available for each test server
 		Pool:           testPool,
@@ -115,15 +114,15 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 		Logger:         logger,
 		SpecPath:       "../../openapi.yaml",
 		MovieSvcClient: &v1testing.FakeMovieGenreClient{},
-	}, WithMiddlewares(middlewares...))
+	}, rest.WithMiddlewares(middlewares...))
 	if err != nil {
 		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewServer")
 	}
 
-	client, err := client.NewTestClient(resttestutil.MustConstructInternalPath(""), srv.httpsrv.Handler)
+	client, err := NewTestClient(MustConstructInternalPath(""), srv.Httpsrv.Handler)
 	if err != nil {
-		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "client.NewTestClient")
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewTestClient")
 	}
 
-	return &testServer{server: srv.httpsrv, client: client}, nil
+	return &testServer{server: srv.Httpsrv, client: client}, nil
 }

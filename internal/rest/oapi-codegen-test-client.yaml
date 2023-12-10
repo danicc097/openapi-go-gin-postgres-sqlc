@@ -1,0 +1,8 @@
+# see https://github.com/deepmap/oapi-codegen/blob/eea15c751f801d686c9c9c817c35a9b92f3a482d/pkg/codegen/configuration.go
+package: rest_test
+generate:
+  client: true
+output: internal/rest/openapi_client_gen_test.go
+additional-imports:
+  - alias: .
+    package: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest

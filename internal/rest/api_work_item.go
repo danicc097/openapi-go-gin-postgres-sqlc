@@ -93,35 +93,3 @@ func (h *dummyStrictHandlers) CreateWorkitem(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, res)
 }
-
-func (h *dummyStrictHandlers) DeleteWorkitem(c *gin.Context, id models.SerialID) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *dummyStrictHandlers) UpdateWorkitem(c *gin.Context, id models.SerialID) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *dummyStrictHandlers) GetWorkItem(c *gin.Context, id models.SerialID) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) DeleteWorkitem(c *gin.Context, request DeleteWorkitemRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) UpdateWorkitem(c *gin.Context, request UpdateWorkitemRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) CreateWorkitemComment(c *gin.Context, request CreateWorkitemCommentRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) GetWorkItem(c *gin.Context, request GetWorkItemRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}

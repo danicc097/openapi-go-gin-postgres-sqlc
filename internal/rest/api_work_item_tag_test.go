@@ -9,7 +9,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/stretchr/testify/require"
@@ -64,7 +63,7 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 				Color:       witCreateParams.Color,
 				Description: witCreateParams.Description,
 				Name:        witCreateParams.Name,
-			}, resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
+			}, ReqWithAPIKey(ufixture.APIKey.APIKey))
 			fmt.Printf("ures.Body: %v\n", string(res.Body))
 			require.NoError(t, err)
 			require.Equal(t, tc.status, res.StatusCode())

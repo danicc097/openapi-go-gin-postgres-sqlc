@@ -1,4 +1,4 @@
-package rest
+package rest_test
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
@@ -61,7 +61,7 @@ func TestHandlers_DeleteUser(t *testing.T) {
 			})
 			require.NoError(t, err, "ff.CreateUser: %s")
 
-			res, err := srv.client.DeleteUserWithResponse(context.Background(), ufixture.User.UserID.UUID, resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
+			res, err := srv.client.DeleteUserWithResponse(context.Background(), ufixture.User.UserID.UUID, ReqWithAPIKey(ufixture.APIKey.APIKey))
 			fmt.Printf("res.Body: %v\n", string(res.Body))
 			require.NoError(t, err)
 			require.Equal(t, tc.status, res.StatusCode())
@@ -94,14 +94,14 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 		})
 		require.NoError(t, err, "ff.CreateUser: %s")
 
-		res, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
+		res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, res.StatusCode())
 
 		got, err := json.Marshal(res.JSON200)
 		require.NoError(t, err)
-		want, err := json.Marshal(&User{User: *ufixture.User, Role: role})
+		want, err := json.Marshal(&rest.User{User: *ufixture.User, Role: rest.Role(role)})
 		require.NoError(t, err)
 
 		assert.JSONEqf(t, string(want), string(got), "")
@@ -146,16 +146,16 @@ func TestHandlers_UpdateUser(t *testing.T) {
 		t.Run("valid_update", func(t *testing.T) {
 			t.Parallel()
 
-			updateAuthParams := models.UpdateUserAuthRequest{
-				Role: pointers.New(models.RoleManager),
+			updateAuthParams := rest.UpdateUserAuthRequest{
+				Role: pointers.New(rest.RoleManager),
 			}
-			ures, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
+			ures, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
 			fmt.Printf("ures.Body: %v\n", string(ures.Body))
 			require.Equal(t, http.StatusNoContent, ures.StatusCode())
 
-			res, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+			res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			assert.Equal(t, *updateAuthParams.Role, res.JSON200.Role)
@@ -165,25 +165,25 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			t.Parallel()
 
 			managerWithoutScopes, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
-				Role:       models.RoleManager,
+				Role:       models.Role(rest.RoleManager),
 				WithAPIKey: true,
 			})
 			require.NoError(t, err, "ff.CreateUser: %s")
 
-			updateAuthParams := models.UpdateUserAuthRequest{
-				Role: pointers.New(models.RoleManager),
+			updateAuthParams := rest.UpdateUserAuthRequest{
+				Role: pointers.New(rest.RoleManager),
 			}
-			badres, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, resttestutil.ReqWithAPIKey(managerWithoutScopes.APIKey.APIKey))
+			badres, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(managerWithoutScopes.APIKey.APIKey))
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusForbidden, badres.StatusCode())
 		})
 
 		t.Run("invalid_role_update", func(t *testing.T) {
 			t.Parallel()
-			updateAuthParams := models.UpdateUserAuthRequest{
-				Role: pointers.New(models.Role("bad")),
+			updateAuthParams := rest.UpdateUserAuthRequest{
+				Role: pointers.New(rest.Role("bad")),
 			}
-			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
+			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusBadRequest, res.StatusCode())
@@ -191,10 +191,10 @@ func TestHandlers_UpdateUser(t *testing.T) {
 
 		t.Run("invalid_scopes_update", func(t *testing.T) {
 			t.Parallel()
-			updateAuthParams := models.UpdateUserAuthRequest{
-				Scopes: &[]models.Scope{models.Scope("bad")},
+			updateAuthParams := rest.UpdateUserAuthRequest{
+				Scopes: &[]rest.Scope{rest.Scope("bad")},
 			}
-			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, resttestutil.ReqWithAPIKey(manager.APIKey.APIKey))
+			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusBadRequest, res.StatusCode())
@@ -204,13 +204,13 @@ func TestHandlers_UpdateUser(t *testing.T) {
 	tests := []struct {
 		name                    string
 		status                  int
-		body                    models.UpdateUserRequest
+		body                    rest.UpdateUserRequest
 		validationErrorContains []string
 	}{
 		{
 			name:   "valid user update",
 			status: http.StatusOK,
-			body: models.UpdateUserRequest{
+			body: rest.UpdateUserRequest{
 				FirstName: pointers.New("new name"),
 				LastName:  pointers.New("new name two"),
 			},
@@ -218,7 +218,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 		{
 			name:   "invalid user update param",
 			status: http.StatusBadRequest,
-			body: models.UpdateUserRequest{
+			body: rest.UpdateUserRequest{
 				FirstName: pointers.New("new name"),
 				LastName:  pointers.New("new name 43412"),
 			},
@@ -236,7 +236,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			})
 			require.NoError(t, err, "ff.CreateUser: %s")
 
-			ures, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.User.UserID.UUID, tc.body, resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+			ures, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.User.UserID.UUID, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			require.Equal(t, tc.status, ures.StatusCode())
@@ -251,7 +251,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 
 			assert.Equal(t, normalUser.User.UserID.UUID, ures.JSON200.UserID)
 
-			res, err := srv.client.GetCurrentUserWithResponse(context.Background(), resttestutil.ReqWithAPIKey(normalUser.APIKey.APIKey))
+			res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			assert.Equal(t, tc.body.FirstName, res.JSON200.FirstName)

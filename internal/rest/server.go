@@ -85,7 +85,7 @@ func (c *Config) validate() error {
 }
 
 type Server struct {
-	httpsrv     *http.Server
+	Httpsrv     *http.Server
 	middlewares []gin.HandlerFunc
 }
 
@@ -209,7 +209,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 
 	conf.Logger.Info("Server started")
 
-	srv.httpsrv = &http.Server{
+	srv.Httpsrv = &http.Server{
 		Handler: router,
 		Addr:    conf.Address,
 		// ReadTimeout:       10 * time.Second,
@@ -317,9 +317,9 @@ func Run(env, specPath string) (<-chan error, error) {
 			// TODO close SSE channels
 		}()
 
-		srv.httpsrv.SetKeepAlivesEnabled(false)
+		srv.Httpsrv.SetKeepAlivesEnabled(false)
 
-		if err := srv.httpsrv.Shutdown(ctxTimeout); err != nil { //nolint: contextcheck
+		if err := srv.Httpsrv.Shutdown(ctxTimeout); err != nil { //nolint: contextcheck
 			errC <- err
 		}
 
@@ -336,9 +336,9 @@ func Run(env, specPath string) (<-chan error, error) {
 		switch cfg.AppEnv {
 		case internal.AppEnvDev, internal.AppEnvCI:
 			// err = srv.httpsrv.ListenAndServe()
-			err = srv.httpsrv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
+			err = srv.Httpsrv.ListenAndServeTLS("certificates/localhost.pem", "certificates/localhost-key.pem")
 		case internal.AppEnvProd, internal.AppEnvE2E:
-			err = srv.httpsrv.ListenAndServe()
+			err = srv.Httpsrv.ListenAndServe()
 		default:
 			err = fmt.Errorf("unknown APP_ENV: %s", env)
 		}

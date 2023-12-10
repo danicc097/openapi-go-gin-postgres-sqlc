@@ -24,11 +24,3 @@ func (h *dummyStrictHandlers) OpenapiYamlGet(c *gin.Context, request OpenapiYaml
 func (h *dummyStrictHandlers) Ping(c *gin.Context, request PingRequestObject) (PingResponseObject, error) {
 	return Ping200TextResponse("pong"), nil
 }
-
-func (h *StrictHandlers) OpenapiYamlGet(c *gin.Context, request OpenapiYamlGetRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) Ping(c *gin.Context, request PingRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}

@@ -388,8 +388,6 @@ func getHandlersMethods(file *dst.File) []string {
 		return true
 	})
 
-	fmt.Printf("functions: %v\n", functions)
-
 	return functions
 }
 
@@ -573,13 +571,13 @@ func (o *CodeGen) getServerInterfaceMethods() map[string]operationIDMethod {
 					continue
 				}
 				params := extractParameters(funcType)
-
+				returns := extractReturns(funcType)
 				correspondingTag := o.findTagByOpID(operationID)
 				snakeTag := strcase.ToSnake(correspondingTag)
 
 				o.serverInterfaceMethods[operationID] = operationIDMethod{
 					handlersFile: filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", snakeTag)),
-					method:       fmt.Sprintf("%s(%s)", operationID, params),
+					method:       fmt.Sprintf("%s(%s) %s", operationID, params, returns),
 					comment:      method.Doc.Text(),
 				}
 			}
@@ -597,6 +595,18 @@ func extractParameters(ft *ast.FuncType) string {
 		}
 	}
 	return strings.Join(params, ", ")
+}
+
+func extractReturns(ft *ast.FuncType) string {
+	var returns []string
+	if ft.Results != nil {
+		for _, field := range ft.Results.List {
+			for _, name := range field.Names {
+				returns = append(returns, fmt.Sprintf("(%s %s)", name.Name, exprToString(field.Type)))
+			}
+		}
+	}
+	return strings.Join(returns, ", ")
 }
 
 // exprToString converts an AST expression to its string representation.

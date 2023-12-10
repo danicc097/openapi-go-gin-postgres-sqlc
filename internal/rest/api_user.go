@@ -106,19 +106,3 @@ func (h *dummyStrictHandlers) UpdateUserAuthorization(c *gin.Context, id uuid.UU
 
 	c.Status(http.StatusNoContent)
 }
-
-func (h *StrictHandlers) GetCurrentUser(c *gin.Context, request GetCurrentUserRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) UpdateUser(c *gin.Context, request UpdateUserRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) DeleteUser(c *gin.Context, request DeleteUserRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateUserAuthorizationRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}

@@ -746,6 +746,7 @@ x.gen.client-server() {
     oapi-codegen --config internal/rest/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed rest types generation"
     ast-parser find-redeclared --delete internal/rest/models.go # for duplicates in rest
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models --structs "$struct_names_list" "$paths" || err "Failed server generation"
+    oapi-codegen --config internal/rest/oapi-codegen-test-client.yaml "$SPEC_PATH" || err "Failed client generation"
     oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation"
 
     codegen implement-server # based on oapi gen

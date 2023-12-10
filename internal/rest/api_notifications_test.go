@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/stretchr/testify/assert"
@@ -39,7 +38,7 @@ func TestGetPaginatedNotificationsRoute(t *testing.T) {
 		require.NoError(t, err)
 
 		p := &models.GetPaginatedNotificationsParams{Limit: 5, Direction: models.DirectionAsc, Cursor: "0"}
-		nres, err := srv.client.GetPaginatedNotificationsWithResponse(context.Background(), p, resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
+		nres, err := srv.client.GetPaginatedNotificationsWithResponse(context.Background(), p, ReqWithAPIKey(ufixture.APIKey.APIKey))
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, nres.StatusCode())
 

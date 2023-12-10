@@ -76,27 +76,3 @@ func (h *dummyStrictHandlers) CreateWorkitemTag(c *gin.Context, project models.P
 
 	c.JSON(http.StatusCreated, wit)
 }
-
-func (h *StrictHandlers) InitializeProject(c *gin.Context, request InitializeProjectRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) GetProjectBoard(c *gin.Context, request GetProjectBoardRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) UpdateProjectConfig(c *gin.Context, request UpdateProjectConfigRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) GetProjectConfig(c *gin.Context, request GetProjectConfigRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) GetProject(c *gin.Context, request GetProjectRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) GetProjectWorkitems(c *gin.Context, request GetProjectWorkitemsRequestObject) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
