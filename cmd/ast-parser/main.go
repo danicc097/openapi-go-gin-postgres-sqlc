@@ -52,10 +52,10 @@ func (m *ReflectTypeMap) MarshalJSON() ([]byte, error) {
 type flagSet string
 
 const (
-	findStructsFlagSet      flagSet = "find-structs"
-	findInterfacesFlagSet   flagSet = "find-interfaces"
-	deleteRedeclaredFlagSet flagSet = "delete-redeclared"
-	verifyNoImportFlagSet   flagSet = "verify-no-import"
+	findStructsFlagSet    flagSet = "find-structs"
+	findInterfacesFlagSet flagSet = "find-interfaces"
+	findRedeclaredFlagSet flagSet = "find-redeclared"
+	verifyNoImportFlagSet flagSet = "verify-no-import"
 )
 
 //nolint:gochecknoglobals
@@ -63,16 +63,16 @@ var (
 	privateOnly, publicOnly, excludeGenerics, createGenericsInstanceMap bool
 	importsStr                                                          string
 
-	structsCmd          = flag.NewFlagSet(string(findStructsFlagSet), flag.ExitOnError)
-	interfacesCmd       = flag.NewFlagSet(string(findInterfacesFlagSet), flag.ExitOnError)
-	deleteRedeclaredCmd = flag.NewFlagSet(string(deleteRedeclaredFlagSet), flag.ExitOnError)
-	verifyNoImportCmd   = flag.NewFlagSet(string(verifyNoImportFlagSet), flag.ExitOnError)
+	structsCmd        = flag.NewFlagSet(string(findStructsFlagSet), flag.ExitOnError)
+	interfacesCmd     = flag.NewFlagSet(string(findInterfacesFlagSet), flag.ExitOnError)
+	findRedeclaredCmd = flag.NewFlagSet(string(findRedeclaredFlagSet), flag.ExitOnError) // ast-parser find-redeclared internal/rest/models.go [--delete]
+	verifyNoImportCmd = flag.NewFlagSet(string(verifyNoImportFlagSet), flag.ExitOnError) // ast-parser verify-no-import --imports "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models" internal/rest/models.go
 
 	subcommands = map[string]*flag.FlagSet{
-		structsCmd.Name():          structsCmd,
-		interfacesCmd.Name():       interfacesCmd,
-		deleteRedeclaredCmd.Name(): deleteRedeclaredCmd,
-		verifyNoImportCmd.Name():   verifyNoImportCmd,
+		structsCmd.Name():        structsCmd,
+		interfacesCmd.Name():     interfacesCmd,
+		findRedeclaredCmd.Name(): findRedeclaredCmd,
+		verifyNoImportCmd.Name(): verifyNoImportCmd,
 	}
 
 	wg sync.WaitGroup
@@ -107,8 +107,6 @@ func getReflectionType(s string) ReflectionType {
 }
 
 func verifyNoImport(path string, imports []string, errCh chan<- error) {
-	defer wg.Done()
-
 	for _, importPath := range imports {
 		if _, found := importedPkgs.pkgs[importPath]; found {
 			errCh <- fmt.Errorf("restricted import detected in %s: %s", path, importPath)
@@ -209,15 +207,13 @@ const loadMode = packages.NeedName |
 	packages.NeedTypesInfo
 
 type Pkgs struct {
-	pkgs           map[string]struct{}
-	mu             sync.Mutex
-	redeclarations []string
+	pkgs map[string]struct{}
+	mu   sync.Mutex
 }
 
-var importedPkgs = Pkgs{
-	pkgs:           make(map[string]struct{}),
-	redeclarations: []string{},
-	mu:             sync.Mutex{},
+var importedPkgs = &Pkgs{
+	pkgs: map[string]struct{}{},
+	mu:   sync.Mutex{},
 }
 
 func (p *Pkgs) addPkg(pkg string) {
@@ -225,13 +221,6 @@ func (p *Pkgs) addPkg(pkg string) {
 	defer p.mu.Unlock()
 
 	p.pkgs[pkg] = struct{}{}
-}
-
-func (p *Pkgs) addRedeclaration(rd string) {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	p.redeclarations = append(p.redeclarations, rd)
 }
 
 func (p *Pkgs) String() string {
@@ -265,8 +254,7 @@ func main() {
 
 	// go build -o bin/build/ast-parser cmd/ast-parser/main.go; ast-parser find-structs internal/rest/models.go
 	switch flag := os.Args[1]; flagSet(flag) {
-	case deleteRedeclaredFlagSet:
-	case findStructsFlagSet, findInterfacesFlagSet, verifyNoImportFlagSet:
+	case findStructsFlagSet, findInterfacesFlagSet, verifyNoImportFlagSet, findRedeclaredFlagSet:
 		resultCh := make(chan []string)
 		errCh := make(chan error)
 
@@ -293,11 +281,18 @@ func main() {
 							case findStructsFlagSet:
 								go parseStructs(path, resultCh, errCh)
 							case verifyNoImportFlagSet:
-
 								go func() {
+									defer wg.Done()
 									loadPackages(path)
 									imports := strings.Split(importsStr, ",")
 									verifyNoImport(path, imports, errCh)
+								}()
+							case findRedeclaredFlagSet:
+
+								go func() {
+									defer wg.Done()
+									typeErrors := loadPackages(path)
+									resultCh <- typeErrors.redeclarations
 								}()
 							}
 						}
@@ -314,9 +309,16 @@ func main() {
 						go parseStructs(filename, resultCh, errCh)
 					case verifyNoImportFlagSet:
 						go func() {
+							defer wg.Done()
 							loadPackages(filename)
 							imports := strings.Split(importsStr, ",")
 							verifyNoImport(filename, imports, errCh)
+						}()
+					case findRedeclaredFlagSet:
+						go func() {
+							defer wg.Done()
+							typeErrors := loadPackages(filename)
+							resultCh <- typeErrors.redeclarations
 						}()
 					}
 				}
@@ -329,16 +331,16 @@ func main() {
 
 				items := map[string]struct{}{}
 
-				if flagSet(flag) == findStructsFlagSet || flagSet(flag) == findInterfacesFlagSet {
+				if flagSet(flag) == findStructsFlagSet ||
+					flagSet(flag) == findInterfacesFlagSet ||
+					flagSet(flag) == findRedeclaredFlagSet {
 					for res := range resultCh {
-						println("here 1")
 						for _, st := range res {
 							items[st] = struct{}{}
 						}
 					}
 				}
 
-				fmt.Printf("importedPkgs.redeclarations: %v\n", importedPkgs.redeclarations)
 				errs := []error{}
 				for err := range errCh {
 					errs = append(errs, err)
@@ -364,7 +366,12 @@ func main() {
 	}
 }
 
-func loadPackages(filename string) {
+type typeErrors struct {
+	redeclarations []string
+}
+
+func loadPackages(filename string) typeErrors {
+	res := typeErrors{}
 	cfg := *loadConfig
 	// bare minimum to get imports per file. speeds up considerably
 	cfg.Mode = packages.NeedName |
@@ -375,7 +382,9 @@ func loadPackages(filename string) {
 	if err != nil {
 		log.Fatalf("failed to load package: %v", err)
 	}
+
 	re := regexp.MustCompile(`^(.*)\sredeclared in this block.*`)
+
 	for _, p := range pp {
 		for _, terr := range p.TypeErrors {
 			// internal codes: https://go.dev/src/internal/types/errors/codes.go
@@ -385,8 +394,7 @@ func loadPackages(filename string) {
 			if e := terr.Msg; strings.Contains(e, "redeclared in this block") {
 				matches := re.FindStringSubmatch(terr.Msg)
 				if len(matches) > 0 {
-					fmt.Println("Redeclaration:", matches[1])
-					importedPkgs.addRedeclaration(matches[1])
+					res.redeclarations = append(res.redeclarations, matches[1])
 				}
 			}
 		}
@@ -394,4 +402,6 @@ func loadPackages(filename string) {
 			importedPkgs.addPkg(ip.PkgPath)
 		}
 	}
+
+	return res
 }
