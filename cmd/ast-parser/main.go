@@ -48,16 +48,30 @@ func (m *ReflectTypeMap) MarshalJSON() ([]byte, error) {
 	return json.Marshal(m.Map)
 }
 
+type flagSet string
+
+const (
+	findStructsFlagSet      flagSet = "find-structs"
+	findInterfacesFlagSet   flagSet = "find-interfaces"
+	deleteRedeclaredFlagSet flagSet = "delete-redeclared"
+	verifyNoImportFlagSet   flagSet = "verify-no-import"
+)
+
 //nolint:gochecknoglobals
 var (
 	privateOnly, publicOnly, excludeGenerics, createGenericsInstanceMap bool
+	importsStr                                                          string
 
-	structsCmd    = flag.NewFlagSet("find-structs", flag.ExitOnError)
-	interfacesCmd = flag.NewFlagSet("find-interfaces", flag.ExitOnError)
+	structsCmd          = flag.NewFlagSet(string(findStructsFlagSet), flag.ExitOnError)
+	interfacesCmd       = flag.NewFlagSet(string(findInterfacesFlagSet), flag.ExitOnError)
+	deleteRedeclaredCmd = flag.NewFlagSet(string(deleteRedeclaredFlagSet), flag.ExitOnError)
+	verifyNoImportCmd   = flag.NewFlagSet(string(verifyNoImportFlagSet), flag.ExitOnError)
 
 	subcommands = map[string]*flag.FlagSet{
-		structsCmd.Name():    structsCmd,
-		interfacesCmd.Name(): interfacesCmd,
+		structsCmd.Name():          structsCmd,
+		interfacesCmd.Name():       interfacesCmd,
+		deleteRedeclaredCmd.Name(): deleteRedeclaredCmd,
+		verifyNoImportCmd.Name():   verifyNoImportCmd,
 	}
 
 	wg sync.WaitGroup
@@ -91,36 +105,48 @@ func getReflectionType(s string) ReflectionType {
 	return ReflectionType{Name: s}
 }
 
+func verifyNoImport(imports []string, errCh chan<- error) {
+	defer wg.Done()
+
+	for _, importPath := range imports {
+		if _, found := importedPkgs.pkgs[importPath]; found {
+			println("here")
+			errCh <- fmt.Errorf("restricted import detected (%s)", importPath)
+			return
+		}
+	}
+}
+
+var loadConfig = &packages.Config{
+	Fset: token.NewFileSet(),
+	Mode: loadMode,
+	// large packages still slow
+	ParseFile: func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
+		// IMPORTANT: we need to parser.ParseFile every file and package.
+
+		const mode = parser.AllErrors | parser.ParseComments
+
+		file, err := parser.ParseFile(fset, filename, src, mode)
+		if err != nil {
+			return nil, fmt.Errorf("parser.ParseFile: %w", err)
+		}
+
+		// Skip function bodies to speed up.
+		// NOTE: no improvement clearing struct fields beforehand
+		for _, decl := range file.Decls {
+			if funcDecl, ok := decl.(*ast.FuncDecl); ok {
+				funcDecl.Body = nil
+			}
+		}
+
+		return file, nil
+	},
+}
+
 func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error) {
 	defer wg.Done()
 
 	var sts []string
-
-	loadConfig := &packages.Config{
-		Fset: token.NewFileSet(),
-		Mode: loadMode,
-		// large packages still slow
-		ParseFile: func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
-			// IMPORTANT: we need to parser.ParseFile every file and package.
-
-			const mode = parser.AllErrors | parser.ParseComments
-
-			file, err := parser.ParseFile(fset, filename, src, mode)
-			if err != nil {
-				return nil, fmt.Errorf("parser.ParseFile: %w", err)
-			}
-
-			// Skip function bodies to speed up.
-			// NOTE: no improvement clearing struct fields beforehand
-			for _, decl := range file.Decls {
-				if funcDecl, ok := decl.(*ast.FuncDecl); ok {
-					funcDecl.Body = nil
-				}
-			}
-
-			return file, nil
-		},
-	}
 
 	pkgs, err := packages.Load(loadConfig, "file="+filepath)
 	if err != nil {
@@ -182,11 +208,30 @@ const loadMode = packages.NeedName |
 	packages.NeedSyntax |
 	packages.NeedTypesInfo
 
+type Pkgs struct {
+	pkgs map[string]struct{}
+	mu   sync.Mutex
+}
+
+var importedPkgs = Pkgs{
+	pkgs: make(map[string]struct{}),
+	mu:   sync.Mutex{},
+}
+
+func (p *Pkgs) add(pkg string) {
+	p.pkgs[pkg] = struct{}{}
+}
+
+func (p *Pkgs) String() string {
+	return fmt.Sprintf("%s", p.pkgs)
+}
+
 func main() {
 	structsCmd.BoolVar(&createGenericsInstanceMap, "create-generics-map", false, "Returns a JSON encoded map of structs to their generics reflection type name instead of a list of structs found")
 	structsCmd.BoolVar(&excludeGenerics, "exclude-generics", false, "Find non generic structs only")
 	structsCmd.BoolVar(&privateOnly, "private-only", false, "Find private structs only")
 	structsCmd.BoolVar(&publicOnly, "public-only", false, "Find public structs only")
+	verifyNoImportCmd.StringVar(&importsStr, "imports", "", "Comma-separated list of imports to verify")
 
 	cmd, ok := subcommands[os.Args[1]]
 	if !ok {
@@ -207,8 +252,9 @@ func main() {
 	}
 
 	// go build -o bin/build/ast-parser cmd/ast-parser/main.go; ast-parser find-structs internal/rest/models.go
-	switch flag := os.Args[1]; flag {
-	case "find-structs", "find-interfaces":
+	switch flag := os.Args[1]; flagSet(flag) {
+	case deleteRedeclaredFlagSet:
+	case findStructsFlagSet, findInterfacesFlagSet, verifyNoImportFlagSet:
 		resultCh := make(chan []string)
 		errCh := make(chan error)
 
@@ -218,6 +264,7 @@ func main() {
 				log.Fatal(err)
 			}
 			for _, filename := range matches {
+				var err error
 				fileInfo, err := os.Stat(filename)
 				if err != nil {
 					log.Fatalf("os.Stat: %s", err)
@@ -230,9 +277,13 @@ func main() {
 						}
 						if !info.IsDir() && filepath.Ext(path) == ".go" && filepath.Base(path) != "_test.go" {
 							wg.Add(1)
-							switch flag {
-							case "find-structs":
+							switch flagSet(flag) {
+							case findStructsFlagSet:
 								go parseStructs(path, resultCh, errCh)
+							case verifyNoImportFlagSet:
+								loadPackages(path)
+								imports := strings.Split(importsStr, ",")
+								go verifyNoImport(imports, errCh)
 							}
 						}
 
@@ -243,9 +294,13 @@ func main() {
 					}
 				} else {
 					wg.Add(1)
-					switch flag {
-					case "find-structs":
+					switch flagSet(flag) {
+					case findStructsFlagSet:
 						go parseStructs(filename, resultCh, errCh)
+					case verifyNoImportFlagSet:
+						loadPackages(filename)
+						imports := strings.Split(importsStr, ",")
+						go verifyNoImport(imports, errCh)
 					}
 				}
 
@@ -256,9 +311,13 @@ func main() {
 				}()
 
 				items := map[string]struct{}{}
-				for res := range resultCh {
-					for _, st := range res {
-						items[st] = struct{}{}
+
+				if flagSet(flag) == findStructsFlagSet || flagSet(flag) == findInterfacesFlagSet {
+					for res := range resultCh {
+						println("here 1")
+						for _, st := range res {
+							items[st] = struct{}{}
+						}
 					}
 				}
 
@@ -281,4 +340,47 @@ func main() {
 			}
 		}
 	}
+}
+
+func loadPackages(filename string) {
+	_ = &packages.Config{
+		Mode: loadMode,
+		Fset: token.NewFileSet(),
+		ParseFile: func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
+			// IMPORTANT: we need to parser.ParseFile every file and package.
+
+			const mode = parser.AllErrors | parser.ParseComments
+
+			file, err := parser.ParseFile(fset, filename, src, mode)
+			if err != nil {
+				return nil, fmt.Errorf("parser.ParseFile: %w", err)
+			}
+
+			// Skip function bodies to speed up.
+			// NOTE: no improvement clearing struct fields beforehand
+			for _, decl := range file.Decls {
+				if funcDecl, ok := decl.(*ast.FuncDecl); ok {
+					funcDecl.Body = nil
+				}
+			}
+
+			return file, nil
+		},
+	}
+
+	fmt.Printf("filename: %v\n", filename)
+
+	pp, err := packages.Load(loadConfig, "file="+filename)
+	if err != nil {
+		log.Fatalf("failed to load package: %v", err)
+	}
+
+	fmt.Printf("pp: %v\n", pp)
+
+	for _, p := range pp {
+		for _, ip := range p.Imports {
+			importedPkgs.add(ip.PkgPath)
+		}
+	}
+	fmt.Printf("pkgs: %v\n", importedPkgs)
 }
