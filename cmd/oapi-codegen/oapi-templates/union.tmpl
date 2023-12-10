@@ -16,6 +16,7 @@
             return body, err
         }
 
+        {{/*
         // From{{ .Method }} overwrites any union data inside the {{$typeName}} as the provided {{$name}}
         func (t *{{$typeName}}) From{{ .Method }} (v {{$name}}) error {
             {{if $discriminator -}}
@@ -62,6 +63,7 @@
             t.union = merged
             return err
         }
+        */}}
     {{end}}
 
     {{if $discriminator}}
