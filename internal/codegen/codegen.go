@@ -66,9 +66,9 @@ var templateFiles embed.FS
 
 type operationIDMethod struct {
 	// file path to handlers file
-	handlersFile string
-	method       string
-	comment      string
+	handlersFile    string
+	methodSignature string
+	comment         string
 }
 
 type CodeGen struct {
@@ -512,10 +512,12 @@ func (o *CodeGen) implementServerInterfaceMethods() error {
 		m := o.serverInterfaceMethods[opID]
 
 		methodStr := fmt.Sprintf(`
-		func (h *StrictHandlers) %s {
+		func (h *StrictHandlers) %s%s {
 			c.JSON(http.StatusNotImplemented, "not implemented")
+
+			return nil, nil
 		}
-	`, m.method)
+	`, strcase.ToCamel(opID), m.methodSignature)
 
 		// we are only here if the method is missing, so just append it
 		f, err := os.OpenFile(m.handlersFile,
@@ -570,19 +572,23 @@ func (o *CodeGen) getServerInterfaceMethods() map[string]operationIDMethod {
 				if !ok {
 					continue
 				}
-				params := extractParameters(funcType)
-				returns := extractReturns(funcType)
+				// params := extractParameters(funcType)
+				// returns := extractReturns(funcType)
 				correspondingTag := o.findTagByOpID(operationID)
 				snakeTag := strcase.ToSnake(correspondingTag)
-
+				var buf bytes.Buffer
+				printer.Fprint(&buf, token.NewFileSet(), funcType)
+				fmt.Println(buf.String()[4:])
 				o.serverInterfaceMethods[operationID] = operationIDMethod{
-					handlersFile: filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", snakeTag)),
-					method:       fmt.Sprintf("%s(%s) %s", operationID, params, returns),
-					comment:      method.Doc.Text(),
+					handlersFile:    filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", snakeTag)),
+					methodSignature: buf.String()[4:], // exclude func
+					comment:         method.Doc.Text(),
 				}
 			}
 		}
 	}
+
+	fmt.Printf("o.serverInterfaceMethods: %v\n", o.serverInterfaceMethods)
 
 	return o.serverInterfaceMethods
 }
@@ -597,7 +603,8 @@ func extractParameters(ft *ast.FuncType) string {
 	return strings.Join(params, ", ")
 }
 
-func extractReturns(ft *ast.FuncType) string {
+// FIXME: does nothing.
+func _extractReturns(ft *ast.FuncType) string {
 	var returns []string
 	if ft.Results != nil {
 		for _, field := range ft.Results.List {
