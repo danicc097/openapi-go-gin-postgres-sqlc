@@ -60,8 +60,8 @@ const (
 
 //nolint:gochecknoglobals
 var (
-	privateOnly, publicOnly, excludeGenerics, createGenericsInstanceMap bool
-	importsStr                                                          string
+	privateOnly, publicOnly, excludeGenerics, createGenericsInstanceMap, deleteRedeclared bool
+	importsStr                                                                            string
 
 	structsCmd        = flag.NewFlagSet(string(findStructsFlagSet), flag.ExitOnError)
 	interfacesCmd     = flag.NewFlagSet(string(findInterfacesFlagSet), flag.ExitOnError)
@@ -79,6 +79,149 @@ var (
 
 	reflectTypeMap = &ReflectTypeMap{Map: map[string]map[string]string{}}
 )
+
+func main() {
+	structsCmd.BoolVar(&createGenericsInstanceMap, "create-generics-map", false, "Returns a JSON encoded map of structs to their generics reflection type name instead of a list of structs found")
+	structsCmd.BoolVar(&excludeGenerics, "exclude-generics", false, "Find non generic structs only")
+	structsCmd.BoolVar(&privateOnly, "private-only", false, "Find private structs only")
+	structsCmd.BoolVar(&publicOnly, "public-only", false, "Find public structs only")
+	findRedeclaredCmd.BoolVar(&deleteRedeclared, "delete", false, "Delete the nodes that declare duplicated types")
+	verifyNoImportCmd.StringVar(&importsStr, "imports", "", "Comma-separated list of imports to verify")
+
+	cmd, ok := subcommands[os.Args[1]]
+	if !ok {
+		for _, fs := range subcommands {
+			fs.Usage()
+		}
+
+		return
+	}
+
+	err := cmd.Parse(os.Args[2:])
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if createGenericsInstanceMap {
+		excludeGenerics = true
+	}
+
+	// go build -o bin/build/ast-parser cmd/ast-parser/main.go; ast-parser find-structs internal/rest/models.go
+	switch flag := os.Args[1]; flagSet(flag) {
+	case findStructsFlagSet, findInterfacesFlagSet, verifyNoImportFlagSet, findRedeclaredFlagSet:
+		resultCh := make(chan []string)
+		errCh := make(chan error)
+
+		for _, pattern := range cmd.Args() {
+			matches, err := filepath.Glob(pattern)
+			if err != nil {
+				log.Fatal(err)
+			}
+			for _, filename := range matches {
+				var err error
+				fileInfo, err := os.Stat(filename)
+				if err != nil {
+					log.Fatalf("os.Stat: %s", err)
+				}
+
+				if fileInfo.IsDir() {
+					err := filepath.Walk(filename, func(path string, info os.FileInfo, err error) error {
+						if err != nil {
+							return err
+						}
+						if !info.IsDir() && filepath.Ext(path) == ".go" && filepath.Base(path) != "_test.go" {
+							wg.Add(1)
+							switch flagSet(flag) {
+							case findStructsFlagSet:
+								go parseStructs(path, resultCh, errCh)
+							case verifyNoImportFlagSet:
+								go func() {
+									defer wg.Done()
+									loadPackages(path)
+									imports := strings.Split(importsStr, ",")
+									verifyNoImport(path, imports, errCh)
+								}()
+							case findRedeclaredFlagSet:
+								if deleteRedeclared {
+									log.Fatal("cannot delete redeclared types for multiple files at once") // not worth it. call independently
+								}
+
+								go func() {
+									defer wg.Done()
+									typeErrors := loadPackages(path)
+									resultCh <- typeErrors.redeclarations
+								}()
+							}
+						}
+
+						return nil
+					})
+					if err != nil {
+						log.Fatal(err)
+					}
+				} else {
+					wg.Add(1)
+					switch flagSet(flag) {
+					case findStructsFlagSet:
+						go parseStructs(filename, resultCh, errCh)
+					case verifyNoImportFlagSet:
+						go func() {
+							defer wg.Done()
+							loadPackages(filename)
+							imports := strings.Split(importsStr, ",")
+							verifyNoImport(filename, imports, errCh)
+						}()
+					case findRedeclaredFlagSet:
+						go func() {
+							defer wg.Done()
+							typeErrors := loadPackages(filename)
+							resultCh <- typeErrors.redeclarations
+						}()
+					}
+				}
+
+				go func() {
+					wg.Wait()
+					close(resultCh)
+					close(errCh)
+				}()
+
+				items := map[string]struct{}{}
+
+				if flagSet(flag) == findStructsFlagSet ||
+					flagSet(flag) == findInterfacesFlagSet ||
+					flagSet(flag) == findRedeclaredFlagSet {
+					for res := range resultCh {
+						for _, st := range res {
+							items[st] = struct{}{}
+						}
+					}
+				}
+
+				errs := []error{}
+				for err := range errCh {
+					errs = append(errs, err)
+				}
+				if len(errs) > 0 {
+					fmt.Fprint(os.Stderr, fmt.Sprintf("%s\n", errors.Join(errs...)))
+					os.Exit(1)
+				}
+
+				if createGenericsInstanceMap {
+					bytes, _ := json.MarshalIndent(reflectTypeMap, "", "  ")
+					fmt.Println(string(bytes))
+					os.Exit(0)
+				}
+
+				sortedItems := maps.Keys(items)
+				sort.Slice(sortedItems, func(i, j int) bool {
+					return sortedItems[i] < sortedItems[j]
+				})
+				fmt.Println(strings.Join(sortedItems, "\n"))
+			}
+		}
+	}
+}
 
 func isGenericInstance(s string) bool {
 	r := regexp.MustCompile(`\.?(.*\[.*)`)
@@ -225,145 +368,6 @@ func (p *Pkgs) addPkg(pkg string) {
 
 func (p *Pkgs) String() string {
 	return fmt.Sprintf("%s", p.pkgs)
-}
-
-func main() {
-	structsCmd.BoolVar(&createGenericsInstanceMap, "create-generics-map", false, "Returns a JSON encoded map of structs to their generics reflection type name instead of a list of structs found")
-	structsCmd.BoolVar(&excludeGenerics, "exclude-generics", false, "Find non generic structs only")
-	structsCmd.BoolVar(&privateOnly, "private-only", false, "Find private structs only")
-	structsCmd.BoolVar(&publicOnly, "public-only", false, "Find public structs only")
-	verifyNoImportCmd.StringVar(&importsStr, "imports", "", "Comma-separated list of imports to verify")
-
-	cmd, ok := subcommands[os.Args[1]]
-	if !ok {
-		for _, fs := range subcommands {
-			fs.Usage()
-		}
-
-		return
-	}
-
-	err := cmd.Parse(os.Args[2:])
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if createGenericsInstanceMap {
-		excludeGenerics = true
-	}
-
-	// go build -o bin/build/ast-parser cmd/ast-parser/main.go; ast-parser find-structs internal/rest/models.go
-	switch flag := os.Args[1]; flagSet(flag) {
-	case findStructsFlagSet, findInterfacesFlagSet, verifyNoImportFlagSet, findRedeclaredFlagSet:
-		resultCh := make(chan []string)
-		errCh := make(chan error)
-
-		for _, pattern := range cmd.Args() {
-			matches, err := filepath.Glob(pattern)
-			if err != nil {
-				log.Fatal(err)
-			}
-			for _, filename := range matches {
-				var err error
-				fileInfo, err := os.Stat(filename)
-				if err != nil {
-					log.Fatalf("os.Stat: %s", err)
-				}
-
-				if fileInfo.IsDir() {
-					err := filepath.Walk(filename, func(path string, info os.FileInfo, err error) error {
-						if err != nil {
-							return err
-						}
-						if !info.IsDir() && filepath.Ext(path) == ".go" && filepath.Base(path) != "_test.go" {
-							wg.Add(1)
-							switch flagSet(flag) {
-							case findStructsFlagSet:
-								go parseStructs(path, resultCh, errCh)
-							case verifyNoImportFlagSet:
-								go func() {
-									defer wg.Done()
-									loadPackages(path)
-									imports := strings.Split(importsStr, ",")
-									verifyNoImport(path, imports, errCh)
-								}()
-							case findRedeclaredFlagSet:
-
-								go func() {
-									defer wg.Done()
-									typeErrors := loadPackages(path)
-									resultCh <- typeErrors.redeclarations
-								}()
-							}
-						}
-
-						return nil
-					})
-					if err != nil {
-						log.Fatal(err)
-					}
-				} else {
-					wg.Add(1)
-					switch flagSet(flag) {
-					case findStructsFlagSet:
-						go parseStructs(filename, resultCh, errCh)
-					case verifyNoImportFlagSet:
-						go func() {
-							defer wg.Done()
-							loadPackages(filename)
-							imports := strings.Split(importsStr, ",")
-							verifyNoImport(filename, imports, errCh)
-						}()
-					case findRedeclaredFlagSet:
-						go func() {
-							defer wg.Done()
-							typeErrors := loadPackages(filename)
-							resultCh <- typeErrors.redeclarations
-						}()
-					}
-				}
-
-				go func() {
-					wg.Wait()
-					close(resultCh)
-					close(errCh)
-				}()
-
-				items := map[string]struct{}{}
-
-				if flagSet(flag) == findStructsFlagSet ||
-					flagSet(flag) == findInterfacesFlagSet ||
-					flagSet(flag) == findRedeclaredFlagSet {
-					for res := range resultCh {
-						for _, st := range res {
-							items[st] = struct{}{}
-						}
-					}
-				}
-
-				errs := []error{}
-				for err := range errCh {
-					errs = append(errs, err)
-				}
-				if len(errs) > 0 {
-					fmt.Fprint(os.Stderr, fmt.Sprintf("%s\n", errors.Join(errs...)))
-					os.Exit(1)
-				}
-
-				if createGenericsInstanceMap {
-					bytes, _ := json.MarshalIndent(reflectTypeMap, "", "  ")
-					fmt.Println(string(bytes))
-					os.Exit(0)
-				}
-
-				sortedItems := maps.Keys(items)
-				sort.Slice(sortedItems, func(i, j int) bool {
-					return sortedItems[i] < sortedItems[j]
-				})
-				fmt.Println(strings.Join(sortedItems, "\n"))
-			}
-		}
-	}
 }
 
 type typeErrors struct {
