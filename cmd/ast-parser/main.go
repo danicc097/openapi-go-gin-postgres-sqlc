@@ -209,20 +209,29 @@ const loadMode = packages.NeedName |
 	packages.NeedTypesInfo
 
 type Pkgs struct {
-	pkgs map[string]struct{}
-	mu   sync.Mutex
+	pkgs           map[string]struct{}
+	mu             sync.Mutex
+	redeclarations []string
 }
 
 var importedPkgs = Pkgs{
-	pkgs: make(map[string]struct{}),
-	mu:   sync.Mutex{},
+	pkgs:           make(map[string]struct{}),
+	redeclarations: []string{},
+	mu:             sync.Mutex{},
 }
 
-func (p *Pkgs) add(pkg string) {
+func (p *Pkgs) addPkg(pkg string) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
 	p.pkgs[pkg] = struct{}{}
+}
+
+func (p *Pkgs) addRedeclaration(rd string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.redeclarations = append(p.redeclarations, rd)
 }
 
 func (p *Pkgs) String() string {
@@ -329,6 +338,7 @@ func main() {
 					}
 				}
 
+				fmt.Printf("importedPkgs.redeclarations: %v\n", importedPkgs.redeclarations)
 				errs := []error{}
 				for err := range errCh {
 					errs = append(errs, err)
@@ -359,15 +369,29 @@ func loadPackages(filename string) {
 	// bare minimum to get imports per file. speeds up considerably
 	cfg.Mode = packages.NeedName |
 		packages.NeedFiles |
-		packages.NeedImports
+		packages.NeedImports |
+		packages.NeedTypes // TODO: to type check when we use remove duplicate delcarations
 	pp, err := packages.Load(&cfg, "file="+filename)
 	if err != nil {
 		log.Fatalf("failed to load package: %v", err)
 	}
-
+	re := regexp.MustCompile(`^(.*)\sredeclared in this block.*`)
 	for _, p := range pp {
+		for _, terr := range p.TypeErrors {
+			// internal codes: https://go.dev/src/internal/types/errors/codes.go
+			// see https://tip.golang.org/src/internal/types/errors/codes_test.go
+			// but for now must stick to regex.
+
+			if e := terr.Msg; strings.Contains(e, "redeclared in this block") {
+				matches := re.FindStringSubmatch(terr.Msg)
+				if len(matches) > 0 {
+					fmt.Println("Redeclaration:", matches[1])
+					importedPkgs.addRedeclaration(matches[1])
+				}
+			}
+		}
 		for _, ip := range p.Imports {
-			importedPkgs.add(ip.PkgPath)
+			importedPkgs.addPkg(ip.PkgPath)
 		}
 	}
 }
