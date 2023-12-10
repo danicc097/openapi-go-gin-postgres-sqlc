@@ -7,6 +7,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"go/ast"
@@ -105,13 +106,12 @@ func getReflectionType(s string) ReflectionType {
 	return ReflectionType{Name: s}
 }
 
-func verifyNoImport(imports []string, errCh chan<- error) {
+func verifyNoImport(path string, imports []string, errCh chan<- error) {
 	defer wg.Done()
 
 	for _, importPath := range imports {
 		if _, found := importedPkgs.pkgs[importPath]; found {
-			println("here")
-			errCh <- fmt.Errorf("restricted import detected (%s)", importPath)
+			errCh <- fmt.Errorf("restricted import detected in %s: %s", path, importPath)
 			return
 		}
 	}
@@ -283,7 +283,7 @@ func main() {
 							case verifyNoImportFlagSet:
 								loadPackages(path)
 								imports := strings.Split(importsStr, ",")
-								go verifyNoImport(imports, errCh)
+								go verifyNoImport(path, imports, errCh)
 							}
 						}
 
@@ -300,7 +300,7 @@ func main() {
 					case verifyNoImportFlagSet:
 						loadPackages(filename)
 						imports := strings.Split(importsStr, ",")
-						go verifyNoImport(imports, errCh)
+						go verifyNoImport(filename, imports, errCh)
 					}
 				}
 
@@ -324,6 +324,13 @@ func main() {
 				if len(errCh) > 0 {
 					err := <-errCh
 					log.Fatal(err)
+				}
+				errs := []error{}
+				for err := range errCh {
+					errs = append(errs, err)
+				}
+				if len(errs) > 0 {
+					log.Fatal(errors.Join(errs...))
 				}
 
 				if createGenericsInstanceMap {
@@ -368,19 +375,14 @@ func loadPackages(filename string) {
 		},
 	}
 
-	fmt.Printf("filename: %v\n", filename)
-
 	pp, err := packages.Load(loadConfig, "file="+filename)
 	if err != nil {
 		log.Fatalf("failed to load package: %v", err)
 	}
-
-	fmt.Printf("pp: %v\n", pp)
 
 	for _, p := range pp {
 		for _, ip := range p.Imports {
 			importedPkgs.add(ip.PkgPath)
 		}
 	}
-	fmt.Printf("pkgs: %v\n", importedPkgs)
 }
