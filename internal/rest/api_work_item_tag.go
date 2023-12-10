@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *dummyStrictHandlers) CreateWorkItemTag(c *gin.Context, projectName models.ProjectName) {
+func (h *StrictHandlers) CreateWorkItemTag(c *gin.Context, projectName models.ProjectName) {
 	tx := getTxFromCtx(c)
 	u := getUserFromCtx(c)
 

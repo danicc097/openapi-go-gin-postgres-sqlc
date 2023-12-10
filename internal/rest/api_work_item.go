@@ -13,7 +13,7 @@ import (
 )
 
 // create workitem comment.
-func (h *dummyStrictHandlers) CreateWorkitemComment(c *gin.Context, id models.SerialID) {
+func (h *StrictHandlers) CreateWorkitemComment(c *gin.Context, id models.SerialID) {
 	defer newOTelSpanWithUser(c).End()
 
 	// caller := getUserFromCtx(c)
@@ -23,7 +23,7 @@ func (h *dummyStrictHandlers) CreateWorkitemComment(c *gin.Context, id models.Se
 	c.JSON(http.StatusNotImplemented, "not implemented")
 }
 
-func (h *dummyStrictHandlers) CreateWorkitem(c *gin.Context) {
+func (h *StrictHandlers) CreateWorkitem(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	span := newOTelSpanWithUser(c)

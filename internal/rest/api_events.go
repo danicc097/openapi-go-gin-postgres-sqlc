@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/http"
 	"sync"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -168,7 +167,7 @@ channel use cases,etc:
 // Events represents server events.
 // TODO requires query param projectId=...
 // to subscribe to the current project's topics only.
-func (h *dummyStrictHandlers) Events(c *gin.Context, request EventsRequestObject) (EventsResponseObject, error) {
+func (h *StrictHandlers) Events(c *gin.Context, request EventsRequestObject) (EventsResponseObject, error) {
 	c.Set(skipRequestValidationCtxKey, true)
 	clientChan, ok := c.Value("clientChan").(ClientChan)
 	if !ok {

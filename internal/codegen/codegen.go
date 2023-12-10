@@ -584,6 +584,8 @@ func (o *CodeGen) getServerInterfaceMethods() map[string]operationIDMethod {
 		}
 	}
 
+	fmt.Printf("o.serverInterfaceMethods: %v\n", o.serverInterfaceMethods)
+
 	return o.serverInterfaceMethods
 }
 
