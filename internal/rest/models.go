@@ -67,7 +67,7 @@ type DemoTwoWorkItems struct {
 
 // ProjectBoard represents an OpenAPI schema response for a ProjectBoard.
 type ProjectBoard struct {
-	ProjectName
+	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 }
 
 type CreateProjectBoardRequest struct {

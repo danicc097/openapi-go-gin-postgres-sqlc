@@ -463,6 +463,7 @@ paths:
           description: User auth updated successfully.
       x-required-scopes:
         - scopes:write
+      x-required-role: admin
       tags:
         - user
   /user/{id}:

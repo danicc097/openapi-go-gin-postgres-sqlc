@@ -157,6 +157,7 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthenticated(),
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
+					MinimumRole: models.Role("admin"),
 					RequiredScopes: models.Scopes{
 						models.Scope("scopes:write"),
 					},
