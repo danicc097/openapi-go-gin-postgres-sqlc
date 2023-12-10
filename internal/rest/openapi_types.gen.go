@@ -278,55 +278,9 @@ func AllWorkItemRoleValues() []WorkItemRole {
 	}
 }
 
-// CreateDemoTwoWorkItemRequest defines the model for CreateDemoTwoWorkItemRequest.
-type CreateDemoTwoWorkItemRequest struct {
-	Base           DbWorkItemCreateParams        `json:"base"`
-	DemoTwoProject DbDemoTwoWorkItemCreateParams `json:"demoTwoProject"`
-	Members        []ServicesMember              `json:"members"`
-	ProjectName    Project                       `json:"projectName"`
-	TagIDs         []int                         `json:"tagIDs"`
-}
-
-// CreateDemoWorkItemRequest defines the model for CreateDemoWorkItemRequest.
-type CreateDemoWorkItemRequest struct {
-	Base        DbWorkItemCreateParams     `json:"base"`
-	DemoProject DbDemoWorkItemCreateParams `json:"demoProject"`
-	Members     []ServicesMember           `json:"members"`
-	ProjectName Project                    `json:"projectName"`
-	TagIDs      []int                      `json:"tagIDs"`
-}
-
-// CreateTeamRequest defines the model for CreateTeamRequest.
-type CreateTeamRequest struct {
-	Description string `json:"description"`
-	Name        string `json:"name"`
-	ProjectID   int    `json:"projectID"`
-}
-
-// CreateWorkItemCommentRequest defines the model for CreateWorkItemCommentRequest.
-type CreateWorkItemCommentRequest struct {
-	Message    string   `json:"message"`
-	UserID     DbUserID `json:"userID"`
-	WorkItemID int      `json:"workItemID"`
-}
-
 // CreateWorkItemRequest defines the model for CreateWorkItemRequest.
 type CreateWorkItemRequest struct {
 	union json.RawMessage
-}
-
-// CreateWorkItemTagRequest defines the model for CreateWorkItemTagRequest.
-type CreateWorkItemTagRequest struct {
-	Color       string `json:"color"`
-	Description string `json:"description"`
-	Name        string `json:"name"`
-}
-
-// CreateWorkItemTypeRequest defines the model for CreateWorkItemTypeRequest.
-type CreateWorkItemTypeRequest struct {
-	Color       string `json:"color"`
-	Description string `json:"description"`
-	Name        string `json:"name"`
 }
 
 // DbActivity defines the model for DbActivity.
@@ -568,52 +522,8 @@ type DemoTwoKanbanSteps string
 // DemoTwoWorkItemTypes defines the model for DemoTwoWorkItemTypes.
 type DemoTwoWorkItemTypes string
 
-// DemoTwoWorkItems defines the model for DemoTwoWorkItems.
-type DemoTwoWorkItems struct {
-	ClosedAt         *time.Time             `json:"closedAt"`
-	CreatedAt        time.Time              `json:"createdAt"`
-	DeletedAt        *time.Time             `json:"deletedAt"`
-	DemoTwoWorkItem  DbDemoTwoWorkItem      `json:"demoTwoWorkItem"`
-	Description      string                 `json:"description"`
-	KanbanStepID     int                    `json:"kanbanStepID"`
-	Members          *[]DbUser              `json:"members"`
-	Metadata         map[string]interface{} `json:"metadata"`
-	TargetDate       time.Time              `json:"targetDate"`
-	TeamID           int                    `json:"teamID"`
-	TimeEntries      *[]DbTimeEntry         `json:"timeEntries"`
-	Title            string                 `json:"title"`
-	UpdatedAt        time.Time              `json:"updatedAt"`
-	WorkItemComments *[]DbWorkItemComment   `json:"workItemComments"`
-	WorkItemID       int                    `json:"workItemID"`
-	WorkItemTags     *[]DbWorkItemTag       `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType        `json:"workItemType,omitempty"`
-	WorkItemTypeID   int                    `json:"workItemTypeID"`
-}
-
 // DemoWorkItemTypes defines the model for DemoWorkItemTypes.
 type DemoWorkItemTypes string
-
-// DemoWorkItems defines the model for DemoWorkItems.
-type DemoWorkItems struct {
-	ClosedAt         *time.Time             `json:"closedAt"`
-	CreatedAt        time.Time              `json:"createdAt"`
-	DeletedAt        *time.Time             `json:"deletedAt"`
-	DemoWorkItem     DbDemoWorkItem         `json:"demoWorkItem"`
-	Description      string                 `json:"description"`
-	KanbanStepID     int                    `json:"kanbanStepID"`
-	Members          *[]DbUser              `json:"members"`
-	Metadata         map[string]interface{} `json:"metadata"`
-	TargetDate       time.Time              `json:"targetDate"`
-	TeamID           int                    `json:"teamID"`
-	TimeEntries      *[]DbTimeEntry         `json:"timeEntries"`
-	Title            string                 `json:"title"`
-	UpdatedAt        time.Time              `json:"updatedAt"`
-	WorkItemComments *[]DbWorkItemComment   `json:"workItemComments"`
-	WorkItemID       int                    `json:"workItemID"`
-	WorkItemTags     *[]DbWorkItemTag       `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType        `json:"workItemType,omitempty"`
-	WorkItemTypeID   int                    `json:"workItemTypeID"`
-}
 
 // Direction defines the model for Direction.
 type Direction string
@@ -658,19 +568,8 @@ type InitializeProjectRequest struct {
 // NotificationType represents a database 'notification_type'
 type NotificationType string
 
-// PaginatedNotificationsResponse defines the model for PaginatedNotificationsResponse.
-type PaginatedNotificationsResponse struct {
-	Items *[]RestNotification `json:"items"`
-	Page  RestPaginationPage  `json:"page"`
-}
-
 // Project defines the model for Project.
 type Project string
-
-// ProjectBoard defines the model for ProjectBoard.
-type ProjectBoard struct {
-	ProjectName Project `json:"projectName"`
-}
 
 // ProjectConfig defines the model for ProjectConfig.
 type ProjectConfig struct {
@@ -718,25 +617,8 @@ type ServicesMember struct {
 	UserID DbUserID     `json:"userID"`
 }
 
-// Team defines the model for Team.
-type Team struct {
-	CreatedAt   time.Time `json:"createdAt"`
-	Description string    `json:"description"`
-	Name        string    `json:"name"`
-	ProjectID   int       `json:"projectID"`
-	TeamID      int       `json:"teamID"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-}
-
 // Topics string identifiers for SSE event listeners.
 type Topics string
-
-// UpdateTeamRequest defines the model for UpdateTeamRequest.
-type UpdateTeamRequest struct {
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-	ProjectID   *int    `json:"projectID,omitempty"`
-}
 
 // UpdateUserAuthRequest represents User authorization data to update
 type UpdateUserAuthRequest struct {
@@ -751,39 +633,6 @@ type UpdateUserRequest struct {
 
 	// LastName originally from auth server but updatable
 	LastName *string `json:"lastName,omitempty"`
-}
-
-// UpdateWorkItemTagRequest defines the model for UpdateWorkItemTagRequest.
-type UpdateWorkItemTagRequest struct {
-	Color       *string `json:"color,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-}
-
-// UpdateWorkItemTypeRequest defines the model for UpdateWorkItemTypeRequest.
-type UpdateWorkItemTypeRequest struct {
-	Color       *string `json:"color,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-}
-
-// User defines the model for User.
-type User struct {
-	ApiKey                   *DbUserAPIKey `json:"apiKey,omitempty"`
-	CreatedAt                time.Time     `json:"createdAt"`
-	DeletedAt                *time.Time    `json:"deletedAt"`
-	Email                    string        `json:"email"`
-	FirstName                *string       `json:"firstName"`
-	FullName                 *string       `json:"fullName"`
-	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`
-	HasPersonalNotifications bool          `json:"hasPersonalNotifications"`
-	LastName                 *string       `json:"lastName"`
-	Projects                 *[]DbProject  `json:"projects"`
-	Role                     Role          `json:"role"`
-	Scopes                   Scopes        `json:"scopes"`
-	Teams                    *[]DbTeam     `json:"teams"`
-	UserID                   DbUserID      `json:"userID"`
-	Username                 string        `json:"username"`
 }
 
 // UuidUUID defines the model for UuidUUID.
@@ -808,27 +657,6 @@ type ValidationError struct {
 
 // WorkItemRole represents a database 'work_item_role'
 type WorkItemRole string
-
-// WorkItemTag defines the model for WorkItemTag.
-type WorkItemTag struct {
-	Color         string `json:"color"`
-	Description   string `json:"description"`
-	Name          string `json:"name"`
-	ProjectID     int    `json:"projectID"`
-	WorkItemTagID int    `json:"workItemTagID"`
-}
-
-// WorkItemType defines the model for WorkItemType.
-type WorkItemType struct {
-	Color          string `json:"color"`
-	Description    string `json:"description"`
-	Name           string `json:"name"`
-	ProjectID      int    `json:"projectID"`
-	WorkItemTypeID int    `json:"workItemTypeID"`
-}
-
-// ProjectName defines the model for ProjectName.
-type ProjectName = Project
 
 // SerialID defines the model for SerialID.
 type SerialID = int

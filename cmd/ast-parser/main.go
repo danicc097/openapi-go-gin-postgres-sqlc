@@ -6,12 +6,14 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"go/ast"
 	"go/parser"
+	"go/printer"
 	"go/token"
 	"go/types"
 	"log"
@@ -22,6 +24,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/dave/dst"
+	"github.com/dave/dst/decorator"
+	"github.com/dave/dst/dstutil"
 	"golang.org/x/exp/maps"
 	"golang.org/x/tools/go/packages"
 )
@@ -215,6 +220,29 @@ func main() {
 					fmt.Fprint(os.Stderr, fmt.Sprintf("%s\n", errors.Join(errs...)))
 					os.Exit(1)
 				}
+				path := "internal/rest/openapi_types.gen.go"
+				src, err := os.ReadFile(path)
+				if err != nil {
+					log.Fatalf("could not read %s: %v", path, err)
+				}
+				fileAST, err := decorator.Parse(src)
+				if err != nil {
+					log.Fatalf("Error parsing file: %v", err)
+				}
+				if deleteRedeclared {
+					for typeName := range items {
+						fmt.Printf("deleting %s node\n", typeName)
+
+						fileAST = deleteNodesFromAST(fileAST, typeName)
+					}
+
+					fmt.Printf("deleting duplicate rest models in %s...\n", path)
+					err = writeAST(path, fileAST)
+					if err != nil {
+						log.Fatalf("Failed to write modified AST to file: %v", err)
+					}
+					os.Exit(0)
+				}
 
 				if createGenericsInstanceMap {
 					bytes, _ := json.MarshalIndent(reflectTypeMap, "", "  ")
@@ -405,6 +433,9 @@ func loadPackages(filename string) typeErrors {
 			// but for now must stick to regex.
 
 			if e := terr.Msg; strings.Contains(e, "redeclared in this block") {
+				// in our case for now we can just hardcode internal/rest/openapi_types.gen.go since its the only use case
+				// position := p.Fset.Position(terr.Pos)
+				// fmt.Printf("position: %v\n", position)
 				matches := re.FindStringSubmatch(terr.Msg)
 				if len(matches) > 0 {
 					res.redeclarations = append(res.redeclarations, matches[1])
@@ -417,4 +448,69 @@ func loadPackages(filename string) typeErrors {
 	}
 
 	return res
+}
+
+// Function to delete nodes from the AST.
+func deleteNodesFromAST(file *dst.File, typeNameToDelete string) *dst.File {
+	dstutil.Apply(file, func(c *dstutil.Cursor) bool {
+		n := c.Node()
+		if genDecl, ok := n.(*dst.GenDecl); ok && genDecl.Tok == token.TYPE {
+			var specsToDelete []dst.Spec
+			for _, spec := range genDecl.Specs {
+				if typeSpec, ok := spec.(*dst.TypeSpec); ok && typeSpec.Name.Name == typeNameToDelete {
+					// Node to be deleted
+					specsToDelete = append(specsToDelete, spec)
+				}
+			}
+
+			// Remove the specsToDelete from the GenDecl
+			genDecl.Specs = removeSpecs(genDecl.Specs, specsToDelete...)
+
+			// Check if there are remaining specs in the GenDecl
+			if len(genDecl.Specs) > 0 {
+				c.Replace(genDecl)
+			} else {
+				c.Delete()
+			}
+		}
+
+		return true
+	}, nil)
+
+	var buf bytes.Buffer
+	printer.Fprint(&buf, token.NewFileSet(), file)
+
+	return file
+}
+
+// Function to remove specs from a list of specs.
+func removeSpecs(specs []dst.Spec, specsToRemove ...dst.Spec) []dst.Spec {
+	var newSpecs []dst.Spec
+	for _, spec := range specs {
+		var found bool
+		for _, specToRemove := range specsToRemove {
+			if spec == specToRemove {
+				found = true
+				break
+			}
+		}
+		if !found {
+			newSpecs = append(newSpecs, spec)
+		}
+	}
+	return newSpecs
+}
+
+func writeAST(filePath string, file *dst.File) error {
+	f, err := os.Create(filePath)
+	if err != nil {
+		return fmt.Errorf("failed to create file %s: %w", filePath, err)
+	}
+	defer f.Close()
+
+	if err := decorator.Fprint(f, file); err != nil {
+		return fmt.Errorf("failed to write AST to %s: %w", filePath, err)
+	}
+
+	return nil
 }
