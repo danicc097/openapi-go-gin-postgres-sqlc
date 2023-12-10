@@ -117,6 +117,19 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
+
+			// validation
+			for _, filename := range matches {
+				var err error
+				fileInfo, err := os.Stat(filename)
+				if err != nil {
+					log.Fatalf("os.Stat: %s", err)
+				}
+				if fileInfo.IsDir() && deleteRedeclared {
+					log.Fatal("cannot delete redeclared types for multiple files at once") // not worth it. call independently
+				}
+			}
+
 			for _, filename := range matches {
 				var err error
 				fileInfo, err := os.Stat(filename)
@@ -142,10 +155,6 @@ func main() {
 									verifyNoImport(path, imports, errCh)
 								}()
 							case findRedeclaredFlagSet:
-								if deleteRedeclared {
-									log.Fatal("cannot delete redeclared types for multiple files at once") // not worth it. call independently
-								}
-
 								go func() {
 									defer wg.Done()
 									typeErrors := loadPackages(path)
