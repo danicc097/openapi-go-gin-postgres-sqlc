@@ -203,7 +203,7 @@ const loadMode = packages.NeedName |
 	packages.NeedFiles |
 	packages.NeedCompiledGoFiles |
 	packages.NeedImports |
-	packages.NeedDeps |
+	packages.NeedDeps | // necessary for resolving structs from package imports
 	packages.NeedTypes | // necessary to get position information later, which contains filename that we can use to match against filepath
 	packages.NeedSyntax |
 	packages.NeedTypesInfo
@@ -219,6 +219,9 @@ var importedPkgs = Pkgs{
 }
 
 func (p *Pkgs) add(pkg string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	p.pkgs[pkg] = struct{}{}
 }
 
@@ -281,9 +284,12 @@ func main() {
 							case findStructsFlagSet:
 								go parseStructs(path, resultCh, errCh)
 							case verifyNoImportFlagSet:
-								loadPackages(path)
-								imports := strings.Split(importsStr, ",")
-								go verifyNoImport(path, imports, errCh)
+
+								go func() {
+									loadPackages(path)
+									imports := strings.Split(importsStr, ",")
+									verifyNoImport(path, imports, errCh)
+								}()
 							}
 						}
 
@@ -298,9 +304,11 @@ func main() {
 					case findStructsFlagSet:
 						go parseStructs(filename, resultCh, errCh)
 					case verifyNoImportFlagSet:
-						loadPackages(filename)
-						imports := strings.Split(importsStr, ",")
-						go verifyNoImport(filename, imports, errCh)
+						go func() {
+							loadPackages(filename)
+							imports := strings.Split(importsStr, ",")
+							verifyNoImport(filename, imports, errCh)
+						}()
 					}
 				}
 
@@ -321,16 +329,13 @@ func main() {
 					}
 				}
 
-				if len(errCh) > 0 {
-					err := <-errCh
-					log.Fatal(err)
-				}
 				errs := []error{}
 				for err := range errCh {
 					errs = append(errs, err)
 				}
 				if len(errs) > 0 {
-					log.Fatal(errors.Join(errs...))
+					fmt.Fprint(os.Stderr, fmt.Sprintf("%s\n", errors.Join(errs...)))
+					os.Exit(1)
 				}
 
 				if createGenericsInstanceMap {
@@ -350,32 +355,12 @@ func main() {
 }
 
 func loadPackages(filename string) {
-	_ = &packages.Config{
-		Mode: loadMode,
-		Fset: token.NewFileSet(),
-		ParseFile: func(fset *token.FileSet, filename string, src []byte) (*ast.File, error) {
-			// IMPORTANT: we need to parser.ParseFile every file and package.
-
-			const mode = parser.AllErrors | parser.ParseComments
-
-			file, err := parser.ParseFile(fset, filename, src, mode)
-			if err != nil {
-				return nil, fmt.Errorf("parser.ParseFile: %w", err)
-			}
-
-			// Skip function bodies to speed up.
-			// NOTE: no improvement clearing struct fields beforehand
-			for _, decl := range file.Decls {
-				if funcDecl, ok := decl.(*ast.FuncDecl); ok {
-					funcDecl.Body = nil
-				}
-			}
-
-			return file, nil
-		},
-	}
-
-	pp, err := packages.Load(loadConfig, "file="+filename)
+	cfg := *loadConfig
+	// bare minimum to get imports per file. speeds up considerably
+	cfg.Mode = packages.NeedName |
+		packages.NeedFiles |
+		packages.NeedImports
+	pp, err := packages.Load(&cfg, "file="+filename)
 	if err != nil {
 		log.Fatalf("failed to load package: %v", err)
 	}
