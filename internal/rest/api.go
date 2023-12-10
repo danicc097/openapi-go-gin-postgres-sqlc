@@ -35,10 +35,8 @@ type StrictHandlers struct {
 // is it worth it to rewrite strict server gen to use rest package structs for request/response bodies?
 // we could check in templates with a simple if stmt
 // that if a type in rest package exists with the same name we don't prepend `externalRef0.`
-// We already have the rest pkg struct list from ast-parser gen
-// var _ StrictServerInterface = (*StrictHandlers)(nil)
-
-type dummyStrictHandlers string
+// We already have the rest pkg struct list from ast-parser gen.
+var _ StrictServerInterface = (*StrictHandlers)(nil)
 
 // NewStrictHandlers returns a server implementation of an openapi specification.
 func NewStrictHandlers(
@@ -48,7 +46,7 @@ func NewStrictHandlers(
 	svcs *services.Services,
 	authmw *authMiddleware, // middleware needed here since it's generated code
 	provider rp.RelyingParty,
-) *StrictHandlers {
+) StrictServerInterface {
 	event := newSSEServer()
 
 	// we can have as many of these but need to delay call

@@ -45,7 +45,7 @@ func (h *StrictHandlers) codeExchange() gin.HandlerFunc {
 	}
 }
 
-func (h *StrictHandlers) MyProviderCallback(c *gin.Context, request MyProviderCallbackRequestObject) {
+func (h *StrictHandlers) MyProviderCallback(c *gin.Context, request MyProviderCallbackRequestObject) (MyProviderCallbackResponseObject, error) {
 	c.Set(skipRequestValidationCtxKey, true)
 	userinfo := GetUserInfoFromCtx(c)
 	if userinfo == nil {
@@ -59,9 +59,10 @@ func (h *StrictHandlers) MyProviderCallback(c *gin.Context, request MyProviderCa
 	// get "auth:redirect-uri" cookie
 
 	c.String(200, "would have been redirected to app frontend with actual user and logged in with JWT")
+	return nil, nil
 }
 
-func (h *StrictHandlers) MyProviderLogin(c *gin.Context, request MyProviderLoginRequestObject) {
+func (h *StrictHandlers) MyProviderLogin(c *gin.Context, request MyProviderLoginRequestObject) (MyProviderLoginResponseObject, error) {
 	c.Set(skipRequestValidationCtxKey, true)
 
 	gin.WrapH(rp.AuthURLHandler(state, h.provider))(c)
@@ -81,4 +82,5 @@ func (h *StrictHandlers) MyProviderLogin(c *gin.Context, request MyProviderLogin
 	// that needs to have remove Authorization header removed. (or could fallthrough if auth header check failed so both can be used at the same time)
 	// its the same we do to test out swagger ui.
 	// initial-data for dev can create api keys for every user.
+	return nil, nil
 }

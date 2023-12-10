@@ -1,6 +1,6 @@
 //go:build !race
 
-package rest
+package rest_test
 
 import (
 	"context"

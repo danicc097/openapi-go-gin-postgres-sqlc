@@ -12,8 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// create workitem comment.
-func (h *dummyStrictHandlers) CreateWorkitemComment(c *gin.Context, id models.SerialID) {
+func (h *StrictHandlers) CreateWorkitemComment(c *gin.Context, request CreateWorkitemCommentRequestObject) (CreateWorkitemCommentResponseObject, error) {
 	defer newOTelSpanWithUser(c).End()
 
 	// caller := getUserFromCtx(c)
@@ -21,11 +20,6 @@ func (h *dummyStrictHandlers) CreateWorkitemComment(c *gin.Context, id models.Se
 	_ = tx
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *StrictHandlers) CreateWorkitemComment(c *gin.Context, request CreateWorkitemCommentRequestObject) (CreateWorkitemCommentResponseObject, error) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-
 	return nil, nil
 }
 

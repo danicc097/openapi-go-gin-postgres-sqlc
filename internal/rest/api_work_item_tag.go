@@ -28,7 +28,6 @@ func (h *StrictHandlers) CreateWorkItemTag(c *gin.Context, request CreateWorkIte
 		renderErrorResponse(c, "Could not create work item tag", err)
 
 		return nil, nil
-
 	}
 
 	renderResponse(c, wit, http.StatusCreated)

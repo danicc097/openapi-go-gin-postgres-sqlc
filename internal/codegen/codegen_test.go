@@ -96,7 +96,7 @@ func (h *SomeOtherStruct) NotHandlersMethod() {}
 	assert.NoError(t, err)
 
 	functions := getHandlersMethods(file)
-	assert.ElementsMatch(t, []string{"MyFunction1", "MyFunction2", "UnrelatedFunction"}, functions)
+	assert.ElementsMatch(t, []any{"MyFunction1", "MyFunction2", "UnrelatedFunction"}, functions)
 }
 
 func TestEnsureFunctionMethods_MisplacedMethod(t *testing.T) {

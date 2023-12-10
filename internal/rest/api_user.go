@@ -8,33 +8,9 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
-// GetCurrentUser returns the logged in user.
-func (h *dummyStrictHandlers) GetCurrentUser(c *gin.Context) {
-	defer newOTelSpanWithUser(c).End()
-
-	caller := getUserFromCtx(c)
-
-	span := GetSpanFromCtx(c)
-	span.AddEvent("get-current-user") // filterable with event="update-user"
-
-	role, ok := h.svc.Authorization.RoleByRank(caller.RoleRank)
-	if !ok {
-		msg := fmt.Sprintf("role with rank %d not found", caller.RoleRank)
-		renderErrorResponse(c, msg, errors.New(msg))
-
-		return
-	}
-
-	res := User{User: *caller, Role: Role(role.Name)}
-
-	c.JSON(http.StatusOK, res)
-}
-
-// UpdateUser updates the user by id.
-func (h *dummyStrictHandlers) UpdateUser(c *gin.Context, id uuid.UUID) {
+func (h *StrictHandlers) UpdateUser(c *gin.Context, request UpdateUserRequestObject) (UpdateUserResponseObject, error) {
 	// span attribute not inheritable:
 	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
 	caller := getUserFromCtx(c)
@@ -46,54 +22,26 @@ func (h *dummyStrictHandlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 
 	body := &models.UpdateUserRequest{}
 	if shouldReturn := parseBody(c, body); shouldReturn {
-		return
+		return nil, nil
 	}
 
-	user, err := h.svc.User.Update(c, tx, db.UserID{UUID: id}, caller, body)
+	user, err := h.svc.User.Update(c, tx, db.UserID{UUID: request.Id}, caller, body)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)
 
-		return
+		return nil, nil
 	}
 
 	role, ok := h.svc.Authorization.RoleByRank(user.RoleRank)
 	if !ok {
 		renderErrorResponse(c, fmt.Sprintf("Role with rank %d not found", user.RoleRank), nil)
 
-		return
+		return nil, nil
 	}
 
 	res := User{User: *user, Role: Role(role.Name)}
 
 	renderResponse(c, res, http.StatusOK)
-}
-
-// UpdateUserAuthorization updates authorization information, e.g. roles, scopes.
-func (h *dummyStrictHandlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
-	caller := getUserFromCtx(c)
-
-	span := GetSpanFromCtx(c)
-	span.AddEvent("update-user") // filterable with event="update-user"
-
-	tx := GetTxFromCtx(c)
-
-	body := &models.UpdateUserAuthRequest{}
-	if shouldReturn := parseBody(c, body); shouldReturn {
-		return
-	}
-
-	if _, err := h.svc.User.UpdateUserAuthorization(c, tx, db.UserID{UUID: id}, caller, body); err != nil {
-		renderErrorResponse(c, "Error updating user authorization", err)
-
-		return
-	}
-
-	c.Status(http.StatusNoContent)
-}
-
-func (h *StrictHandlers) UpdateUser(c *gin.Context, request UpdateUserRequestObject) (UpdateUserResponseObject, error) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-
 	return nil, nil
 }
 
@@ -114,13 +62,46 @@ func (h *StrictHandlers) DeleteUser(c *gin.Context, request DeleteUserRequestObj
 }
 
 func (h *StrictHandlers) GetCurrentUser(c *gin.Context, request GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	defer newOTelSpanWithUser(c).End()
 
+	caller := getUserFromCtx(c)
+
+	span := GetSpanFromCtx(c)
+	span.AddEvent("get-current-user") // filterable with event="update-user"
+
+	role, ok := h.svc.Authorization.RoleByRank(caller.RoleRank)
+	if !ok {
+		msg := fmt.Sprintf("role with rank %d not found", caller.RoleRank)
+		renderErrorResponse(c, msg, errors.New(msg))
+
+		return nil, nil
+	}
+
+	res := User{User: *caller, Role: Role(role.Name)}
+
+	c.JSON(http.StatusOK, res)
 	return nil, nil
 }
 
 func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateUserAuthorizationRequestObject) (UpdateUserAuthorizationResponseObject, error) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	caller := getUserFromCtx(c)
 
+	span := GetSpanFromCtx(c)
+	span.AddEvent("update-user") // filterable with event="update-user"
+
+	tx := GetTxFromCtx(c)
+
+	body := &models.UpdateUserAuthRequest{}
+	if shouldReturn := parseBody(c, body); shouldReturn {
+		return nil, nil
+	}
+
+	if _, err := h.svc.User.UpdateUserAuthorization(c, tx, db.UserID{UUID: request.Id}, caller, body); err != nil {
+		renderErrorResponse(c, "Error updating user authorization", err)
+
+		return nil, nil
+	}
+
+	c.Status(http.StatusNoContent)
 	return nil, nil
 }
