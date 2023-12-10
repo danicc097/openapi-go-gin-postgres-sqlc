@@ -1337,7 +1337,7 @@ func (response InitializeProject204Response) VisitInitializeProjectResponse(w ht
 
 type CreateTeamRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
-	Body        *externalRef0.CreateTeamJSONRequestBody
+	Body        *CreateTeamRequest
 }
 
 type CreateTeamResponseObject interface {
@@ -1468,7 +1468,7 @@ func (response GetTeam4XXJSONResponse) VisitGetTeamResponse(w http.ResponseWrite
 type UpdateTeamRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
 	Id          externalRef0.SerialID    `json:"id"`
-	Body        *externalRef0.UpdateTeamJSONRequestBody
+	Body        *UpdateTeamRequest
 }
 
 type UpdateTeamResponseObject interface {
@@ -1512,7 +1512,7 @@ func (response UpdateTeam4XXJSONResponse) VisitUpdateTeamResponse(w http.Respons
 
 type CreateWorkItemTagRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
-	Body        *externalRef0.CreateWorkItemTagJSONRequestBody
+	Body        *CreateWorkItemTagRequest
 }
 
 type CreateWorkItemTagResponseObject interface {
@@ -1643,7 +1643,7 @@ func (response GetWorkItemTag4XXJSONResponse) VisitGetWorkItemTagResponse(w http
 type UpdateWorkItemTagRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
 	Id          externalRef0.SerialID    `json:"id"`
-	Body        *externalRef0.UpdateWorkItemTagJSONRequestBody
+	Body        *UpdateWorkItemTagRequest
 }
 
 type UpdateWorkItemTagResponseObject interface {
@@ -1687,7 +1687,7 @@ func (response UpdateWorkItemTag4XXJSONResponse) VisitUpdateWorkItemTagResponse(
 
 type CreateWorkItemTypeRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
-	Body        *externalRef0.CreateWorkItemTypeJSONRequestBody
+	Body        *CreateWorkItemTypeRequest
 }
 
 type CreateWorkItemTypeResponseObject interface {
@@ -1818,7 +1818,7 @@ func (response GetWorkItemType4XXJSONResponse) VisitGetWorkItemTypeResponse(w ht
 type UpdateWorkItemTypeRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
 	Id          externalRef0.SerialID    `json:"id"`
-	Body        *externalRef0.UpdateWorkItemTypeJSONRequestBody
+	Body        *UpdateWorkItemTypeRequest
 }
 
 type UpdateWorkItemTypeResponseObject interface {
@@ -2458,6 +2458,7 @@ func (sh *strictHandlers) UpdateProjectConfig(ctx *gin.Context, projectName exte
 
 	request.ProjectName = projectName
 
+	// UpdateProjectConfigRequest
 	var body externalRef0.UpdateProjectConfigJSONRequestBody
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -2493,6 +2494,7 @@ func (sh *strictHandlers) InitializeProject(ctx *gin.Context, projectName extern
 
 	request.ProjectName = projectName
 
+	// InitializeProjectRequest
 	var body externalRef0.InitializeProjectJSONRequestBody
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -2528,7 +2530,8 @@ func (sh *strictHandlers) CreateTeam(ctx *gin.Context, projectName externalRef0.
 
 	request.ProjectName = projectName
 
-	var body externalRef0.CreateTeamJSONRequestBody
+	// CreateTeamRequest
+	var body CreateTeamRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
 		ctx.Error(err)
@@ -2620,7 +2623,8 @@ func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, projectName externalRef0.
 	request.ProjectName = projectName
 	request.Id = id
 
-	var body externalRef0.UpdateTeamJSONRequestBody
+	// UpdateTeamRequest
+	var body UpdateTeamRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
 		ctx.Error(err)
@@ -2655,7 +2659,8 @@ func (sh *strictHandlers) CreateWorkItemTag(ctx *gin.Context, projectName extern
 
 	request.ProjectName = projectName
 
-	var body externalRef0.CreateWorkItemTagJSONRequestBody
+	// CreateWorkItemTagRequest
+	var body CreateWorkItemTagRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
 		ctx.Error(err)
@@ -2747,7 +2752,8 @@ func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, projectName extern
 	request.ProjectName = projectName
 	request.Id = id
 
-	var body externalRef0.UpdateWorkItemTagJSONRequestBody
+	// UpdateWorkItemTagRequest
+	var body UpdateWorkItemTagRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
 		ctx.Error(err)
@@ -2782,7 +2788,8 @@ func (sh *strictHandlers) CreateWorkItemType(ctx *gin.Context, projectName exter
 
 	request.ProjectName = projectName
 
-	var body externalRef0.CreateWorkItemTypeJSONRequestBody
+	// CreateWorkItemTypeRequest
+	var body CreateWorkItemTypeRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
 		ctx.Error(err)
@@ -2874,7 +2881,8 @@ func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, projectName exter
 	request.ProjectName = projectName
 	request.Id = id
 
-	var body externalRef0.UpdateWorkItemTypeJSONRequestBody
+	// UpdateWorkItemTypeRequest
+	var body UpdateWorkItemTypeRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
 		ctx.Error(err)
@@ -2989,6 +2997,7 @@ func (sh *strictHandlers) UpdateUser(ctx *gin.Context, id uuid.UUID) {
 
 	request.Id = id
 
+	// UpdateUserRequest
 	var body externalRef0.UpdateUserJSONRequestBody
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -3024,6 +3033,7 @@ func (sh *strictHandlers) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID
 
 	request.Id = id
 
+	// UpdateUserAuthorizationRequest
 	var body externalRef0.UpdateUserAuthorizationJSONRequestBody
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -3057,6 +3067,7 @@ func (sh *strictHandlers) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID
 func (sh *strictHandlers) CreateWorkitem(ctx *gin.Context) {
 	var request CreateWorkitemRequestObject
 
+	// CreateWorkitemRequest
 	var body externalRef0.CreateWorkitemJSONRequestBody
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -3173,6 +3184,7 @@ func (sh *strictHandlers) CreateWorkitemComment(ctx *gin.Context, id externalRef
 
 	request.Id = id
 
+	// CreateWorkitemCommentRequest
 	var body externalRef0.CreateWorkitemCommentJSONRequestBody
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)

@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -30,9 +31,10 @@ var templates embed.FS
 
 func main() {
 	log.SetFlags(0)
-	var cfgPath, modelsPkg string
+	var cfgPath, modelsPkg, structsStr string
 	flag.StringVar(&cfgPath, "config", "", "path to config file")
 	flag.StringVar(&modelsPkg, "models-pkg", "models", "package containing models")
+	flag.StringVar(&structsStr, "structs", "structs", "list of struct names to use in place of generated oapi-codegen ones")
 	flag.Parse()
 	if cfgPath == "" {
 		log.Fatal("--config is required")
@@ -40,6 +42,7 @@ func main() {
 	if flag.NArg() < 1 {
 		log.Fatal("Please specify a path to an OpenAPI 3.0 spec file")
 	}
+	structs := strings.Split(structsStr, ",")
 
 	// loading specification
 	input := flag.Arg(0)
@@ -66,7 +69,7 @@ func main() {
 	}
 
 	// generating output
-	output, err := generate(spec, cfg.Configuration, templates, modelsPkg)
+	output, err := generate(spec, cfg.Configuration, templates, modelsPkg, structs)
 	if err != nil {
 		log.Fatalf("error generating code: %v", err)
 	}
@@ -83,7 +86,7 @@ func main() {
 	outFile.Close()
 }
 
-func generate(spec *openapi3.T, config codegen.Configuration, templates embed.FS, modelsPkg string) (string, error) {
+func generate(spec *openapi3.T, config codegen.Configuration, templates embed.FS, modelsPkg string, structs []string) (string, error) {
 	var err error
 	config, err = addTemplateOverrides(config, templates)
 	if err != nil {
@@ -94,9 +97,9 @@ func generate(spec *openapi3.T, config codegen.Configuration, templates embed.FS
 		"models_pkg": func() string {
 			return modelsPkg + "."
 		},
-		// "is_rest_struct": func() string {
-		// 	return slices.Contains()
-		// },
+		"is_rest_struct": func(st string) bool {
+			return slices.Contains(structs, st)
+		},
 	}
 	for k, v := range templateFunctions {
 		codegen.TemplateFunctions[k] = v

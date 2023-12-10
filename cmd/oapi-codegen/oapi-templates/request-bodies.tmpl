@@ -5,7 +5,8 @@
 {{with .TypeDef $opid}}
 
 // {{.TypeName}} defines body for {{$opid}} for {{$contentType}} ContentType.
-type {{.TypeName}} {{if .IsAlias}}={{end}} {{/*TODO: if .Schema.TypeDecl is in internal rest package structs then add rest. prefix right here*/}}{{.Schema.TypeDecl}}
+{{- /* cannot import rest in types gen package, circ. {{if is_rest_struct .Schema.TypeDecl}}rest.{{end}} */}}
+type {{.TypeName}} {{if .IsAlias}}={{end}}{{.Schema.TypeDecl}}
 {{end}}
 {{end}}
 {{end}}

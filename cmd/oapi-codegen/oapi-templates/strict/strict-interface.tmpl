@@ -12,7 +12,10 @@
         {{end -}}
         {{$multipleBodies := gt (len .Bodies) 1 -}}
         {{range .Bodies -}}
-            {{if $multipleBodies}}{{.NameTag}}{{end}}Body {{if eq .NameTag "Multipart"}}*multipart.Reader{{else if ne .NameTag ""}}*externalRef0.{{$opid}}{{.NameTag}}RequestBody{{else}}io.Reader{{end}}
+            {{- $st := (printf "%v%v" $opid "Request") -}}
+            {{if $multipleBodies}}{{.NameTag}}{{end}}Body {{if eq .NameTag "Multipart"}}*multipart.Reader{{else if ne .NameTag ""}}
+            {{- if not (is_rest_struct $st)}}*externalRef0.{{$opid}}{{.NameTag}}RequestBody{{else}}*{{$st}}{{end}}
+            {{- else}}io.Reader{{end}}
         {{end -}}
     }
 
