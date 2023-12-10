@@ -180,7 +180,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		return nil, err
 	}
 
-	oasMw := newOpenapiMiddleware(conf.Logger, openapi)
+	oasMw := NewOpenapiMiddleware(conf.Logger, openapi)
 	oaOptions := createOpenAPIValidatorOptions()
 	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
 
@@ -193,7 +193,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 
 	svcs := services.New(conf.Logger, repos, conf.Pool)
 
-	authmw := newAuthMiddleware(conf.Logger, conf.Pool, svcs)
+	authmw := NewAuthMiddleware(conf.Logger, conf.Pool, svcs)
 	_ = authmw
 	_ = provider
 	// handlers := NewHandlers(

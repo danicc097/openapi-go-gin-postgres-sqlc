@@ -11,29 +11,13 @@ import (
 	"github.com/google/uuid"
 )
 
-// DeleteUser deletes the user by id.
-func (h *dummyStrictHandlers) DeleteUser(c *gin.Context, id uuid.UUID) {
-	defer newOTelSpanWithUser(c).End()
-
-	tx := getTxFromCtx(c)
-
-	_, err := h.svc.User.Delete(c, tx, db.NewUserID(id))
-	if err != nil {
-		renderErrorResponse(c, "Could not delete user", err)
-
-		return
-	}
-
-	c.Status(http.StatusNoContent)
-}
-
 // GetCurrentUser returns the logged in user.
 func (h *dummyStrictHandlers) GetCurrentUser(c *gin.Context) {
 	defer newOTelSpanWithUser(c).End()
 
 	caller := getUserFromCtx(c)
 
-	span := getSpanFromCtx(c)
+	span := GetSpanFromCtx(c)
 	span.AddEvent("get-current-user") // filterable with event="update-user"
 
 	role, ok := h.svc.Authorization.RoleByRank(caller.RoleRank)
@@ -55,10 +39,10 @@ func (h *dummyStrictHandlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
 	caller := getUserFromCtx(c)
 
-	span := getSpanFromCtx(c)
+	span := GetSpanFromCtx(c)
 	span.AddEvent("update-user") // filterable with event="update-user"
 
-	tx := getTxFromCtx(c)
+	tx := GetTxFromCtx(c)
 
 	body := &models.UpdateUserRequest{}
 	if shouldReturn := parseBody(c, body); shouldReturn {
@@ -88,10 +72,10 @@ func (h *dummyStrictHandlers) UpdateUser(c *gin.Context, id uuid.UUID) {
 func (h *dummyStrictHandlers) UpdateUserAuthorization(c *gin.Context, id uuid.UUID) {
 	caller := getUserFromCtx(c)
 
-	span := getSpanFromCtx(c)
+	span := GetSpanFromCtx(c)
 	span.AddEvent("update-user") // filterable with event="update-user"
 
-	tx := getTxFromCtx(c)
+	tx := GetTxFromCtx(c)
 
 	body := &models.UpdateUserAuthRequest{}
 	if shouldReturn := parseBody(c, body); shouldReturn {
@@ -105,4 +89,38 @@ func (h *dummyStrictHandlers) UpdateUserAuthorization(c *gin.Context, id uuid.UU
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+func (h *StrictHandlers) UpdateUser(c *gin.Context, request UpdateUserRequestObject) (UpdateUserResponseObject, error) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
+}
+
+func (h *StrictHandlers) DeleteUser(c *gin.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error) {
+	defer newOTelSpanWithUser(c).End()
+
+	tx := GetTxFromCtx(c)
+
+	_, err := h.svc.User.Delete(c, tx, db.NewUserID(request.Id))
+	if err != nil {
+		renderErrorResponse(c, "Could not delete user", err)
+
+		return nil, nil
+	}
+
+	c.Status(http.StatusNoContent)
+	return nil, nil
+}
+
+func (h *StrictHandlers) GetCurrentUser(c *gin.Context, request GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
+}
+
+func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateUserAuthorizationRequestObject) (UpdateUserAuthorizationResponseObject, error) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
 }

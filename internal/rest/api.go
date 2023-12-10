@@ -120,5 +120,5 @@ func (h *StrictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	}
 
 	// TODO: last mw should be event dispatcher middleware, that will dispatch pending ones
-	// if renderErrorResponse was not called, ie !ctxHasErrorResponse()
+	// if renderErrorResponse was not called, ie !CtxHasErrorResponse()
 }

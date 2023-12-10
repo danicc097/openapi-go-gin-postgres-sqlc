@@ -9,26 +9,46 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *dummyStrictHandlers) CreateWorkItemTag(c *gin.Context, projectName models.ProjectName) {
-	tx := getTxFromCtx(c)
+func (h *StrictHandlers) CreateWorkItemTag(c *gin.Context, request CreateWorkItemTagRequestObject) (CreateWorkItemTagResponseObject, error) {
+	tx := GetTxFromCtx(c)
 	u := getUserFromCtx(c)
 
 	body := &models.CreateWorkItemTagJSONRequestBody{}
 	if shouldReturn := parseBody(c, body); shouldReturn {
-		return
+		return nil, nil
 	}
 
 	wit, err := h.svc.WorkItemTag.Create(c, tx, u, &db.WorkItemTagCreateParams{
 		Color:       body.Color,
 		Description: body.Description,
 		Name:        body.Name,
-		ProjectID:   internal.ProjectIDByName[projectName],
+		ProjectID:   internal.ProjectIDByName[request.ProjectName],
 	})
 	if err != nil {
 		renderErrorResponse(c, "Could not create work item tag", err)
 
-		return
+		return nil, nil
+
 	}
 
 	renderResponse(c, wit, http.StatusCreated)
+	return nil, nil
+}
+
+func (h *StrictHandlers) GetWorkItemTag(c *gin.Context, request GetWorkItemTagRequestObject) (GetWorkItemTagResponseObject, error) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
+}
+
+func (h *StrictHandlers) DeleteWorkItemTag(c *gin.Context, request DeleteWorkItemTagRequestObject) (DeleteWorkItemTagResponseObject, error) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
+}
+
+func (h *StrictHandlers) UpdateWorkItemTag(c *gin.Context, request UpdateWorkItemTagRequestObject) (UpdateWorkItemTagResponseObject, error) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
 }

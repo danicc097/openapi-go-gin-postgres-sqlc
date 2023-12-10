@@ -658,6 +658,9 @@ type ValidationError struct {
 // WorkItemRole represents a database 'work_item_role'
 type WorkItemRole string
 
+// ProjectName defines the model for ProjectName.
+type ProjectName = Project
+
 // SerialID defines the model for SerialID.
 type SerialID = int
 

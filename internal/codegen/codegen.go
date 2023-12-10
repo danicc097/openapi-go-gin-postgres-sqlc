@@ -576,9 +576,10 @@ func (o *CodeGen) getServerInterfaceMethods() map[string]operationIDMethod {
 				// returns := extractReturns(funcType)
 				correspondingTag := o.findTagByOpID(operationID)
 				snakeTag := strcase.ToSnake(correspondingTag)
+
 				var buf bytes.Buffer
 				printer.Fprint(&buf, token.NewFileSet(), funcType)
-				fmt.Println(buf.String()[4:])
+
 				o.serverInterfaceMethods[operationID] = operationIDMethod{
 					handlersFile:    filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", snakeTag)),
 					methodSignature: buf.String()[4:], // exclude func

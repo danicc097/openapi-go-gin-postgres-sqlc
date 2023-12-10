@@ -147,7 +147,6 @@ var PublicStructs = map[string]any{
 	"RestPaginatedNotificationsResponse": new(rest.PaginatedNotificationsResponse),
 	"RestPaginationPage":                 new(rest.PaginationPage),
 	"RestProjectBoard":                   new(rest.ProjectBoard),
-	"RestProjectName":                    new(rest.ProjectName),
 	"RestSharedWorkItemFields":           new(rest.SharedWorkItemFields),
 	"RestTeam":                           new(rest.Team),
 	"RestUpdateTeamRequest":              new(rest.UpdateTeamRequest),

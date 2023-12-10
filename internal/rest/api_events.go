@@ -320,3 +320,9 @@ func SSEHeadersMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+func (h *StrictHandlers) Events(c *gin.Context, request EventsRequestObject) (EventsResponseObject, error) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
+}

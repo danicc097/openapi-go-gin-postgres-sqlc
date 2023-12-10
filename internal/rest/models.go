@@ -112,19 +112,15 @@ type UpdateTeamRequest struct {
 }
 
 type CreateDemoWorkItemRequest struct {
-	ProjectName
+	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 	services.DemoWorkItemCreateParams
 }
 
 type CreateDemoTwoWorkItemRequest struct {
-	ProjectName
+	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 	services.DemoTwoWorkItemCreateParams
 }
 
 type CreateWorkItemCommentRequest struct {
 	db.WorkItemCommentCreateParams
-}
-
-type ProjectName struct {
-	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 }

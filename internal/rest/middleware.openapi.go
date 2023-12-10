@@ -44,7 +44,7 @@ type openapiMiddleware struct {
 // - see openapi3filter.NewValidator and tests/examples
 // we just need to add our own onError func and wrap it all in gin.WrapH
 // there's also onLog to use zap.
-func newOpenapiMiddleware(
+func NewOpenapiMiddleware(
 	logger *zap.SugaredLogger, spec *openapi3.T,
 ) *openapiMiddleware {
 	// kinopenapi's own mux based on gorilla for validation only
@@ -65,7 +65,7 @@ func newOpenapiMiddleware(
 // for reference middelware see https://github.com/aereal/go-openapi3-validation-middleware/blob/main/middleware.go
 func (m *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOptions) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if getSkipRequestValidationFromCtx(c) {
+		if GetSkipRequestValidationFromCtx(c) {
 			c.Next()
 
 			return
@@ -93,7 +93,7 @@ func (m *openapiMiddleware) RequestValidatorWithOptions(options *OAValidatorOpti
 
 		c.Next() // handle actual endpoint
 
-		if !options.ValidateResponse && !getValidateResponseFromCtx(c) {
+		if !options.ValidateResponse && !GetValidateResponseFromCtx(c) {
 			rbw.ResponseWriter.Write(rbw.body.Bytes())
 
 			return

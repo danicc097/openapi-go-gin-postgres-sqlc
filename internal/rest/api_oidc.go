@@ -38,7 +38,7 @@ func (h *StrictHandlers) codeExchange() gin.HandlerFunc {
 		rbw := &responseBodyWriter{body: &bytes.Buffer{}, ResponseWriter: c.Writer}
 		c.Writer = rbw
 		rp.CodeExchangeHandler(rp.UserinfoCallback(h.marshalUserinfo), h.provider).ServeHTTP(rbw, c.Request)
-		ctxWithUserInfo(c, rbw.body.Bytes())
+		CtxWithUserInfo(c, rbw.body.Bytes())
 		rbw.body = &bytes.Buffer{}
 		c.Next()
 		rbw.ResponseWriter.Write(rbw.body.Bytes())
@@ -47,7 +47,7 @@ func (h *StrictHandlers) codeExchange() gin.HandlerFunc {
 
 func (h *StrictHandlers) MyProviderCallback(c *gin.Context, request MyProviderCallbackRequestObject) {
 	c.Set(skipRequestValidationCtxKey, true)
-	userinfo := getUserInfoFromCtx(c)
+	userinfo := GetUserInfoFromCtx(c)
 	if userinfo == nil {
 		renderErrorResponse(c, "OIDC authentication error", internal.NewErrorf(models.ErrorCodeOIDC, "could not get OIDC userinfo from context"))
 	}
