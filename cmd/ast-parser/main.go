@@ -20,7 +20,9 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -286,9 +288,13 @@ func getReflectionType(s string) ReflectionType {
 
 // FIXME: get list of imports from parsing file directly. packages.Load gives everything.
 func verifyNoImport(path string, imports []string, errCh chan<- error) {
-	fmt.Printf("importedPkgs.pkgs: %v\n", importedPkgs.pkgs)
+	fileImports, err := getImports(path)
+	if err != nil {
+		errCh <- fmt.Errorf("could not getImports in %s: %s", path, err)
+		return
+	}
 	for _, importPath := range imports {
-		if _, found := importedPkgs.pkgs[importPath]; found {
+		if slices.Contains(fileImports, importPath) {
 			errCh <- fmt.Errorf("restricted import detected in %s: %s", path, importPath)
 			return
 		}
@@ -513,4 +519,32 @@ func writeAST(filePath string, file *dst.File) error {
 	}
 
 	return nil
+}
+
+// getImports returns a slice of strings representing the imported packages in the specified file.
+func getImports(filePath string) ([]string, error) {
+	// Set up the file set and parse the file
+	fset := token.NewFileSet()
+	file, err := parser.ParseFile(fset, filePath, nil, parser.ImportsOnly)
+	if err != nil {
+		return nil, err
+	}
+
+	// Extract imported packages from the file's AST
+	var imports []string
+	for _, decl := range file.Decls {
+		if genDecl, ok := decl.(*ast.GenDecl); ok && genDecl.Tok == token.IMPORT {
+			for _, spec := range genDecl.Specs {
+				if importSpec, ok := spec.(*ast.ImportSpec); ok {
+					path, err := strconv.Unquote(importSpec.Path.Value)
+					if err != nil {
+						return nil, err
+					}
+					imports = append(imports, path)
+				}
+			}
+		}
+	}
+
+	return imports, nil
 }

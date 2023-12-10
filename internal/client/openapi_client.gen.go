@@ -2593,17 +2593,17 @@ type ClientWithResponsesInterface interface {
 	// UpdateProjectConfig request with any body
 	UpdateProjectConfigWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error)
 
-	UpdateProjectConfigWithResponse(ctx context.Context, projectName ProjectName, bodyUpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error)
+	UpdateProjectConfigWithResponse(ctx context.Context, projectName ProjectName, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error)
 
 	// InitializeProject request with any body
 	InitializeProjectWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
 
-	InitializeProjectWithResponse(ctx context.Context, projectName ProjectName, bodyInitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
+	InitializeProjectWithResponse(ctx context.Context, projectName ProjectName, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
 
 	// CreateTeam request with any body
 	CreateTeamWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTeamResponse, error)
 
-	CreateTeamWithResponse(ctx context.Context, projectName ProjectName, bodyCreateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTeamResponse, error)
+	CreateTeamWithResponse(ctx context.Context, projectName ProjectName, body CreateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTeamResponse, error)
 
 	// DeleteTeam request
 	DeleteTeamWithResponse(ctx context.Context, projectName ProjectName, id SerialID, reqEditors ...RequestEditorFn) (*DeleteTeamResponse, error)
@@ -2614,12 +2614,12 @@ type ClientWithResponsesInterface interface {
 	// UpdateTeam request with any body
 	UpdateTeamWithBodyWithResponse(ctx context.Context, projectName ProjectName, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
 
-	UpdateTeamWithResponse(ctx context.Context, projectName ProjectName, id SerialID, bodyUpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
+	UpdateTeamWithResponse(ctx context.Context, projectName ProjectName, id SerialID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
 
 	// CreateWorkItemTag request with any body
 	CreateWorkItemTagWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkItemTagResponse, error)
 
-	CreateWorkItemTagWithResponse(ctx context.Context, projectName ProjectName, bodyCreateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemTagResponse, error)
+	CreateWorkItemTagWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemTagResponse, error)
 
 	// DeleteWorkItemTag request
 	DeleteWorkItemTagWithResponse(ctx context.Context, projectName ProjectName, id SerialID, reqEditors ...RequestEditorFn) (*DeleteWorkItemTagResponse, error)
@@ -2630,12 +2630,12 @@ type ClientWithResponsesInterface interface {
 	// UpdateWorkItemTag request with any body
 	UpdateWorkItemTagWithBodyWithResponse(ctx context.Context, projectName ProjectName, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error)
 
-	UpdateWorkItemTagWithResponse(ctx context.Context, projectName ProjectName, id SerialID, bodyUpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error)
+	UpdateWorkItemTagWithResponse(ctx context.Context, projectName ProjectName, id SerialID, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error)
 
 	// CreateWorkItemType request with any body
 	CreateWorkItemTypeWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkItemTypeResponse, error)
 
-	CreateWorkItemTypeWithResponse(ctx context.Context, projectName ProjectName, bodyCreateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemTypeResponse, error)
+	CreateWorkItemTypeWithResponse(ctx context.Context, projectName ProjectName, body CreateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemTypeResponse, error)
 
 	// DeleteWorkItemType request
 	DeleteWorkItemTypeWithResponse(ctx context.Context, projectName ProjectName, id SerialID, reqEditors ...RequestEditorFn) (*DeleteWorkItemTypeResponse, error)
@@ -2646,7 +2646,7 @@ type ClientWithResponsesInterface interface {
 	// UpdateWorkItemType request with any body
 	UpdateWorkItemTypeWithBodyWithResponse(ctx context.Context, projectName ProjectName, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error)
 
-	UpdateWorkItemTypeWithResponse(ctx context.Context, projectName ProjectName, id SerialID, bodyUpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error)
+	UpdateWorkItemTypeWithResponse(ctx context.Context, projectName ProjectName, id SerialID, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error)
 
 	// GetProjectWorkitems request
 	GetProjectWorkitemsWithResponse(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*GetProjectWorkitemsResponse, error)
@@ -2660,17 +2660,17 @@ type ClientWithResponsesInterface interface {
 	// UpdateUser request with any body
 	UpdateUserWithBodyWithResponse(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
-	UpdateUserWithResponse(ctx context.Context, id uuid.UUID, bodyUpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
+	UpdateUserWithResponse(ctx context.Context, id uuid.UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserResponse, error)
 
 	// UpdateUserAuthorization request with any body
 	UpdateUserAuthorizationWithBodyWithResponse(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
 
-	UpdateUserAuthorizationWithResponse(ctx context.Context, id uuid.UUID, bodyUpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
+	UpdateUserAuthorizationWithResponse(ctx context.Context, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
 
 	// CreateWorkitem request with any body
 	CreateWorkitemWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
 
-	CreateWorkitemWithResponse(ctx context.Context, bodyCreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
+	CreateWorkitemWithResponse(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
 
 	// DeleteWorkitem request
 	DeleteWorkitemWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*DeleteWorkitemResponse, error)
@@ -2684,7 +2684,7 @@ type ClientWithResponsesInterface interface {
 	// CreateWorkitemComment request with any body
 	CreateWorkitemCommentWithBodyWithResponse(ctx context.Context, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error)
 
-	CreateWorkitemCommentWithResponse(ctx context.Context, id SerialID, bodyCreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error)
+	CreateWorkitemCommentWithResponse(ctx context.Context, id SerialID, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error)
 }
 
 type AdminPingResponse struct {
