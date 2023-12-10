@@ -231,8 +231,6 @@ func main() {
 				}
 				if deleteRedeclared {
 					for typeName := range items {
-						fmt.Printf("deleting %s node\n", typeName)
-
 						fileAST = deleteNodesFromAST(fileAST, typeName)
 					}
 
@@ -458,7 +456,7 @@ func deleteNodesFromAST(file *dst.File, typeNameToDelete string) *dst.File {
 			var specsToDelete []dst.Spec
 			for _, spec := range genDecl.Specs {
 				if typeSpec, ok := spec.(*dst.TypeSpec); ok && typeSpec.Name.Name == typeNameToDelete {
-					// Node to be deleted
+					// genDecl.Decs.Start.Append(fmt.Sprintf("/* Removed duplicated type %s */", typeNameToDelete))
 					specsToDelete = append(specsToDelete, spec)
 				}
 			}
