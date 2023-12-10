@@ -284,7 +284,9 @@ func getReflectionType(s string) ReflectionType {
 	return ReflectionType{Name: s}
 }
 
+// FIXME: get list of imports from parsing file directly. packages.Load gives everything.
 func verifyNoImport(path string, imports []string, errCh chan<- error) {
+	fmt.Printf("importedPkgs.pkgs: %v\n", importedPkgs.pkgs)
 	for _, importPath := range imports {
 		if _, found := importedPkgs.pkgs[importPath]; found {
 			errCh <- fmt.Errorf("restricted import detected in %s: %s", path, importPath)

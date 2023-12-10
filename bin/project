@@ -289,6 +289,7 @@ x.gen.pregen() {
     echo "Running generation"
 
     codegen validate-spec -env=".env.$X_ENV"
+    ast-parser verify-no-import --imports "$GOMOD_PKG/internal/models" internal/rest/models.go || err Please use generated rest package OpenAPI types instead.
 
     sync_spec_with_db
 

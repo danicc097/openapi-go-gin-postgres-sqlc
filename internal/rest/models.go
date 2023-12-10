@@ -5,7 +5,6 @@ package rest
  */
 
 import (
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 )
@@ -37,7 +36,7 @@ type Notification struct {
 // User represents an OpenAPI schema response for a User.
 type User struct {
 	db.User
-	Role models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
+	Role Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 
 	APIKey   *db.UserAPIKey `json:"apiKey,omitempty"`
 	Teams    *[]db.Team     `json:"teams"`
@@ -127,5 +126,5 @@ type CreateWorkItemCommentRequest struct {
 }
 
 type ProjectName struct {
-	ProjectName models.Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
+	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 }
