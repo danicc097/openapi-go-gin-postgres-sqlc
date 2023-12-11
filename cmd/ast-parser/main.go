@@ -60,6 +60,7 @@ type flagSet string
 
 const (
 	findStructsFlagSet    flagSet = "find-structs"
+	findTypesFlagSet      flagSet = "find-types"
 	findInterfacesFlagSet flagSet = "find-interfaces"
 	findRedeclaredFlagSet flagSet = "find-redeclared"
 	verifyNoImportFlagSet flagSet = "verify-no-import"
@@ -71,11 +72,13 @@ var (
 	importsStr                                                                            string
 
 	structsCmd        = flag.NewFlagSet(string(findStructsFlagSet), flag.ExitOnError)
+	typesCmd          = flag.NewFlagSet(string(findTypesFlagSet), flag.ExitOnError)
 	interfacesCmd     = flag.NewFlagSet(string(findInterfacesFlagSet), flag.ExitOnError)
 	findRedeclaredCmd = flag.NewFlagSet(string(findRedeclaredFlagSet), flag.ExitOnError) // ast-parser find-redeclared internal/rest/models.go [--delete]
 	verifyNoImportCmd = flag.NewFlagSet(string(verifyNoImportFlagSet), flag.ExitOnError) // ast-parser verify-no-import --imports "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models" internal/rest/models.go
 
 	subcommands = map[string]*flag.FlagSet{
+		typesCmd.Name():          typesCmd,
 		structsCmd.Name():        structsCmd,
 		interfacesCmd.Name():     interfacesCmd,
 		findRedeclaredCmd.Name(): findRedeclaredCmd,
@@ -88,10 +91,13 @@ var (
 )
 
 func main() {
+	for _, cmd := range []*flag.FlagSet{structsCmd, interfacesCmd, typesCmd} {
+		cmd.BoolVar(&excludeGenerics, "exclude-generics", false, "Find non generic types only")
+		cmd.BoolVar(&privateOnly, "private-only", false, "Find private types only")
+		cmd.BoolVar(&publicOnly, "public-only", false, "Find public types only")
+	}
+
 	structsCmd.BoolVar(&createGenericsInstanceMap, "create-generics-map", false, "Returns a JSON encoded map of structs to their generics reflection type name instead of a list of structs found")
-	structsCmd.BoolVar(&excludeGenerics, "exclude-generics", false, "Find non generic structs only")
-	structsCmd.BoolVar(&privateOnly, "private-only", false, "Find private structs only")
-	structsCmd.BoolVar(&publicOnly, "public-only", false, "Find public structs only")
 	findRedeclaredCmd.BoolVar(&deleteRedeclared, "delete", false, "Delete the nodes that declare duplicated types")
 	verifyNoImportCmd.StringVar(&importsStr, "imports", "", "Comma-separated list of imports to verify")
 
@@ -115,8 +121,8 @@ func main() {
 
 	// go build -o bin/build/ast-parser cmd/ast-parser/main.go; ast-parser find-structs internal/rest/models.go
 	switch flag := os.Args[1]; flagSet(flag) {
-	case findStructsFlagSet, findInterfacesFlagSet, verifyNoImportFlagSet, findRedeclaredFlagSet:
-		resultCh := make(chan []string)
+	case findStructsFlagSet, findInterfacesFlagSet, verifyNoImportFlagSet, findRedeclaredFlagSet, findTypesFlagSet:
+		itemsCh := make(chan []string)
 		errCh := make(chan error)
 
 		for _, pattern := range cmd.Args() {
@@ -152,8 +158,16 @@ func main() {
 						if !info.IsDir() && filepath.Ext(path) == ".go" && filepath.Base(path) != "_test.go" {
 							wg.Add(1)
 							switch flagSet(flag) {
+							case findTypesFlagSet:
+								go func() {
+									defer wg.Done()
+									parseTypes(parseModeAll, path, itemsCh, errCh)
+								}()
 							case findStructsFlagSet:
-								go parseStructs(path, resultCh, errCh)
+								go func() {
+									defer wg.Done()
+									parseTypes(parseModeStruct, path, itemsCh, errCh)
+								}()
 							case verifyNoImportFlagSet:
 								go func() {
 									defer wg.Done()
@@ -165,7 +179,7 @@ func main() {
 								go func() {
 									defer wg.Done()
 									typeErrors := loadPackages(path)
-									resultCh <- typeErrors.redeclarations
+									itemsCh <- typeErrors.redeclarations
 								}()
 							}
 						}
@@ -178,8 +192,16 @@ func main() {
 				} else {
 					wg.Add(1)
 					switch flagSet(flag) {
+					case findTypesFlagSet:
+						go func() {
+							defer wg.Done()
+							parseTypes(parseModeAll, filename, itemsCh, errCh)
+						}()
 					case findStructsFlagSet:
-						go parseStructs(filename, resultCh, errCh)
+						go func() {
+							defer wg.Done()
+							parseTypes(parseModeStruct, filename, itemsCh, errCh)
+						}()
 					case verifyNoImportFlagSet:
 						go func() {
 							defer wg.Done()
@@ -191,23 +213,24 @@ func main() {
 						go func() {
 							defer wg.Done()
 							typeErrors := loadPackages(filename)
-							resultCh <- typeErrors.redeclarations
+							itemsCh <- typeErrors.redeclarations
 						}()
 					}
 				}
 
 				go func() {
 					wg.Wait()
-					close(resultCh)
+					close(itemsCh)
 					close(errCh)
 				}()
 
 				items := map[string]struct{}{}
 
 				if flagSet(flag) == findStructsFlagSet ||
+					flagSet(flag) == findTypesFlagSet ||
 					flagSet(flag) == findInterfacesFlagSet ||
 					flagSet(flag) == findRedeclaredFlagSet {
-					for res := range resultCh {
+					for res := range itemsCh {
 						for _, st := range res {
 							items[st] = struct{}{}
 						}
@@ -330,10 +353,15 @@ var loadConfig = &packages.Config{
 	},
 }
 
-func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error) {
-	defer wg.Done()
+type parseMode string
 
-	var sts []string
+const (
+	parseModeStruct parseMode = "struct"
+	parseModeAll    parseMode = "all"
+)
+
+func parseTypes(mode parseMode, filepath string, resultCh chan<- []string, errCh chan<- error) {
+	var typs []string
 
 	pkgs, err := packages.Load(loadConfig, "file="+filepath)
 	if err != nil {
@@ -357,24 +385,34 @@ func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error)
 							if !ok {
 								continue
 							}
-							if _, ok := obj.Type().Underlying().(*types.Struct); ok {
-								structName := obj.Name()
 
-								if isGeneric && excludeGenerics {
-									fmt.Fprintf(os.Stderr, "Skipping generic struct %s\n", structName)
+							typeName := obj.Name()
 
+							if isGeneric && excludeGenerics {
+								fmt.Fprintf(os.Stderr, "Skipping generic type %s\n", typeName)
+
+								continue
+							}
+
+							if (obj.Exported() && privateOnly) || (!obj.Exported() && publicOnly) {
+								continue
+							}
+							switch mode {
+							case parseModeAll:
+								typs = append(typs, typeName)
+							case parseModeStruct:
+								if _, ok := obj.Type().Underlying().(*types.Struct); !ok {
 									continue
 								}
-								if (obj.Exported() && privateOnly) || (!obj.Exported() && publicOnly) {
-									continue
-								}
-
 								if isGenericInstance(obj.Type().String()) {
 									reflectTypeName := getReflectionType(obj.Type().String())
-									reflectTypeMap.Add(structName, reflectTypeName)
+									reflectTypeMap.Add(typeName, reflectTypeName)
 								}
 
-								sts = append(sts, structName)
+								typs = append(typs, typeName)
+							default:
+								errCh <- fmt.Errorf("unknown parse mode: %s", mode)
+								return
 							}
 						}
 					}
@@ -383,7 +421,7 @@ func parseStructs(filepath string, resultCh chan<- []string, errCh chan<- error)
 		}
 	}
 
-	resultCh <- sts
+	resultCh <- typs
 }
 
 const loadMode = packages.NeedName |

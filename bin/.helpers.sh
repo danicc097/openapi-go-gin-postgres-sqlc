@@ -439,6 +439,7 @@ AWK_REMOVE_GO_COMMENTS='
 '
 
 # Stores go structs in package to a given array.
+# Deprecated: use `ast-parser find-structs` and calculate difference
 # Parameters:
 #    Struct array (nameref)
 #    Package directory
@@ -454,6 +455,7 @@ go-utils.find_structs() {
 }
 
 # Stores go generic structs in package to a given array.
+# Deprecated: use `ast-parser find-structs [--exclude-generics]` and calculate difference
 # Parameters:
 #    Struct array (nameref)
 #    Package directory
@@ -511,6 +513,7 @@ go-utils.get_interface_methods() {
 }
 
 # Stores go custom types in package to a given array.
+# Deprecated: use `ast-parser find-types`
 # Parameters:
 #    Custom types array (nameref)
 #    Package directory
