@@ -2,11 +2,10 @@ package rest
 
 import (
 	"bytes"
-	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
@@ -50,20 +49,20 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 	span.SetAttributes(tracing.MetadataAttribute(jsonBody))
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
 
-	body := &models.CreateWorkItemRequest{}
-	if err := json.Unmarshal(jsonBody, body); err != nil {
-		return nil, nil
-	}
+	// body := &models.CreateWorkItemRequest{}
+	// if err := json.Unmarshal(jsonBody, body); err != nil {
+	// 	return nil, nil
+	// }
 
 	var res any // depends on project
+	b, err := request.Body.ValueByDiscriminator()
+	if err != nil {
+		renderErrorResponse(c, "Failed to read discriminator", err)
 
-	switch disc, _ := body.Discriminator(); models.Project(disc) {
-	case models.ProjectDemo:
-		body := &CreateDemoWorkItemRequest{}
-		if shouldReturn := parseBody(c, body); shouldReturn {
-			return nil, nil
-		}
-
+		return nil, nil
+	}
+	switch body := b.(type) {
+	case CreateDemoWorkItemRequest:
 		workItem, err := h.svc.DemoWorkItem.Create(ctx, tx, body.DemoWorkItemCreateParams)
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
@@ -76,12 +75,7 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 			SharedWorkItemFields: SharedWorkItemFields{},
 			DemoWorkItem:         *workItem.DemoWorkItemJoin,
 		}
-	case models.ProjectDemoTwo:
-		body := &CreateDemoTwoWorkItemRequest{}
-		if shouldReturn := parseBody(c, body); shouldReturn {
-			return nil, nil
-		}
-
+	case CreateDemoTwoWorkItemRequest:
 		workItem, err := h.svc.DemoTwoWorkItem.Create(ctx, tx, body.DemoTwoWorkItemCreateParams)
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
@@ -95,14 +89,12 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 			DemoTwoWorkItem:      *workItem.DemoTwoWorkItemJoin,
 		}
 	default:
-		renderErrorResponse(c, fmt.Sprintf("Unknown project %q", disc), nil)
+		renderErrorResponse(c, "Unknown body", internal.NewErrorf(models.ErrorCodeUnknown, "%+v", b))
 
 		return nil, nil
 	}
 
-	c.JSON(http.StatusCreated, res)
-
-	return nil, nil
+	return CreateWorkitem201JSONResponse{union: rawMessage(res)}, nil
 }
 
 func (h *StrictHandlers) GetWorkItem(c *gin.Context, request GetWorkItemRequestObject) (GetWorkItemResponseObject, error) {

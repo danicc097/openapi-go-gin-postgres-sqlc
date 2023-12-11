@@ -229,3 +229,12 @@ func parseBody(c *gin.Context, body any) bool {
 
 	return false
 }
+
+func rawMessage(data any) json.RawMessage {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return json.RawMessage{}
+	}
+
+	return json.RawMessage(jsonData)
+}

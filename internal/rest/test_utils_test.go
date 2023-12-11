@@ -9,16 +9,13 @@ import (
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-)
-
-const (
-	apiKeyHeaderKey = "x-api-key"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )
 
 func ReqWithAPIKey(apiKey string) RequestEditorFn {
 	return func(ctx context.Context, req *http.Request) error {
 		req.Header.Add("Content-Type", "application/json")
-		req.Header.Add(apiKeyHeaderKey, apiKey)
+		req.Header.Add(rest.ApiKeyHeaderKey, apiKey)
 
 		return nil
 	}

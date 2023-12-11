@@ -39,8 +39,8 @@ func NewAuthMiddleware(
 // else redirect to /auth/{provider}/login (no auth middleware here or in */callback).
 func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		apiKey := c.Request.Header.Get(apiKeyHeaderKey)
-		auth := c.Request.Header.Get(authorizationHeaderKey)
+		apiKey := c.Request.Header.Get(ApiKeyHeaderKey)
+		auth := c.Request.Header.Get(AuthorizationHeaderKey)
 		if apiKey != "" {
 			u, err := m.svc.Authentication.GetUserFromAPIKey(c.Request.Context(), apiKey)
 			if err != nil || u == nil {
@@ -141,7 +141,7 @@ func verifyAuthentication(c context.Context, input *openapi3filter.Authenticatio
 			return fmt.Errorf("http security scheme only supports 'bearer' scheme")
 		}
 
-		authHeader, found := input.RequestValidationInput.Request.Header[http.CanonicalHeaderKey(authorizationHeaderKey)]
+		authHeader, found := input.RequestValidationInput.Request.Header[http.CanonicalHeaderKey(AuthorizationHeaderKey)]
 		if !found {
 			return fmt.Errorf("authorization header missing")
 		}

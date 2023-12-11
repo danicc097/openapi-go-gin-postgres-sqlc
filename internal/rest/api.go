@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	apiKeyHeaderKey        = "x-api-key"
-	authorizationHeaderKey = "x-api-key"
+	ApiKeyHeaderKey        = "x-api-key"
+	AuthorizationHeaderKey = "authorization"
 )
 
 type StrictHandlers struct {
