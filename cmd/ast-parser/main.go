@@ -219,27 +219,30 @@ func main() {
 					errs = append(errs, err)
 				}
 				if len(errs) > 0 {
-					fmt.Fprint(os.Stderr, fmt.Sprintf("%s\n", errors.Join(errs...)))
+					fmt.Fprintf(os.Stderr, "%s\n", errors.Join(errs...))
 					os.Exit(1)
 				}
-				path := "internal/rest/openapi_types.gen.go"
-				src, err := os.ReadFile(path)
-				if err != nil {
-					log.Fatalf("could not read %s: %v", path, err)
-				}
-				fileAST, err := decorator.Parse(src)
-				if err != nil {
-					log.Fatalf("Error parsing file: %v", err)
-				}
 				if deleteRedeclared {
-					for typeName := range items {
-						fileAST = deleteNodesFromAST(fileAST, typeName)
-					}
+					paths := []string{"internal/rest/openapi_types.gen.go", "internal/rest/openapi_server.gen.go"}
+					for _, path := range paths {
+						src, err := os.ReadFile(path)
+						if err != nil {
+							fmt.Printf("[WARNING] Could not read %s: %v\n", path, err)
+							continue
+						}
+						fileAST, err := decorator.Parse(src)
+						if err != nil {
+							log.Fatalf("Error parsing file: %v", err)
+						}
+						for typeName := range items {
+							fileAST = deleteNodesFromAST(fileAST, typeName)
+						}
 
-					fmt.Printf("deleting duplicate rest models in %s...\n", path)
-					err = writeAST(path, fileAST)
-					if err != nil {
-						log.Fatalf("Failed to write modified AST to file: %v", err)
+						fmt.Printf("deleting duplicate rest models in %s...\n", path)
+						err = writeAST(path, fileAST)
+						if err != nil {
+							log.Fatalf("Failed to write modified AST to file: %v", err)
+						}
 					}
 					os.Exit(0)
 				}

@@ -5,7 +5,7 @@
     {{range .Schema.UnionElements}}
         {{ $element := printf "%v" . -}}
         {{ $name := $element -}}
-        {{ if (is_rest_struct $element) -}}
+        {{ if (is_rest_type $element) -}}
         {{ $name = (printf "%v%v" $element "Request") -}}
         {{ end -}}
         // {{$element}}
@@ -74,17 +74,17 @@
             err := json.Unmarshal(t.union, &discriminator)
             return discriminator.Discriminator, err
         }
-
+        {{/* TODO: can use is_rest_type here too. */}}
         {{if ne 0 (len $discriminator.Mapping)}}
             func (t {{.TypeName}}) ValueByDiscriminator() (interface{}, error) {
                 discriminator, err := t.Discriminator()
                 if err != nil {
                     return nil, err
                 }
-                switch discriminator{
+                switch discriminator {
                     {{range $value, $type := $discriminator.Mapping -}}
                         case "{{$value}}":
-                            return t.As{{$type}}()
+                            return t.As{{camel $type}}()
                     {{end -}}
                     default:
                         return nil, errors.New("unknown discriminator value: "+discriminator)

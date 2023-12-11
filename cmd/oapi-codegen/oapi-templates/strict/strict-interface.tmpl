@@ -14,7 +14,7 @@
         {{range .Bodies -}}
             {{- $st := (printf "%v%v" $opid "Request") -}}
             {{if $multipleBodies}}{{.NameTag}}{{end}}Body {{if eq .NameTag "Multipart"}}*multipart.Reader{{else if ne .NameTag ""}}
-            {{- if not (is_rest_struct $st)}}*externalRef0.{{$opid}}{{.NameTag}}RequestBody{{else}}*{{$st}}{{end}}
+            {{- if not (is_rest_type $st)}}*externalRef0.{{$opid}}{{.NameTag}}RequestBody{{else}}*{{$st}}{{end}}
             {{- else}}io.Reader{{end}}
         {{end -}}
     }
@@ -44,7 +44,7 @@
             {{if and $fixedStatusCode $isRef -}}
                 type {{$receiverTypeName}} struct{ {{$ref}}{{.NameTagOrContentType}}Response }
             {{else if and (not $hasHeaders) ($fixedStatusCode) (.IsSupported) -}}
-                type {{$receiverTypeName}} {{if eq .NameTag "Multipart"}}func(writer *multipart.Writer)error{{else if .IsSupported}}{{if .Schema.IsRef}}={{end}} {{.Schema.TypeDecl}}{{else}}io.Reader{{end}}
+                type {{$receiverTypeName}} {{if eq .NameTag "Multipart"}}func(writer *multipart.Writer)error{{else if .IsSupported}}{{if .Schema.IsRef}}={{end}} {{ if not (is_rest_type .Schema.TypeDecl)}}{{.Schema.TypeDecl}}{{else}}{{rest_type .Schema.TypeDecl}}{{end}}{{else}}io.Reader{{end}} {{/* FIXME: strict response should use rest (not external ref) in .Schema.TypeDecl*/}}
             {{else -}}
                 type {{$receiverTypeName}} struct {
                     Body {{if eq .NameTag "Multipart"}}func(writer *multipart.Writer)error{{else if .IsSupported}}{{.Schema.TypeDecl}}{{else}}io.Reader{{end}}

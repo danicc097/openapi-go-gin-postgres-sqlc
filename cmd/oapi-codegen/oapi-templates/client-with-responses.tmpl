@@ -38,7 +38,7 @@ type ClientWithResponsesInterface interface {
 {{range .Bodies}}
     {{if .IsSupportedByClient -}}
         {{ $st := (printf "%v%v" $opid "Request") }}
-        {{$opid}}{{.Suffix}}WithResponse(ctx context.Context{{genParamArgs $pathParams}}{{if $hasParams}}, params *{{$opid}}Params{{end}}, body {{ if not (is_rest_struct $st)}}{{$opid}}{{.NameTag}}RequestBody{{else}}{{$st}}{{end}}, reqEditors... RequestEditorFn) (*{{genResponseTypeName $opid}}, error)
+        {{$opid}}{{.Suffix}}WithResponse(ctx context.Context{{genParamArgs $pathParams}}{{if $hasParams}}, params *{{$opid}}Params{{end}}, body {{ if not (is_rest_type $st)}}{{$opid}}{{.NameTag}}RequestBody{{else}}{{$st}}{{end}}, reqEditors... RequestEditorFn) (*{{genResponseTypeName $opid}}, error)
     {{end -}}
 {{end}}{{/* range .Bodies */}}
 {{end}}{{/* range . $opid := .OperationId */}}

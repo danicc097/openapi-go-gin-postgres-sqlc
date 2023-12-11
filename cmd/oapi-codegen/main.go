@@ -9,13 +9,13 @@ import (
 	"log"
 	"os"
 	"path"
-	"slices"
 	"strings"
 	"text/template"
 
 	"github.com/deepmap/oapi-codegen/pkg/util"
 	"github.com/deepmap/oapi-codegen/v2/pkg/codegen"
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/iancoleman/strcase"
 	"gopkg.in/yaml.v3"
 )
 
@@ -23,7 +23,8 @@ type configuration struct {
 	codegen.Configuration `yaml:",inline"`
 
 	// OutputFile is the filename to output.
-	OutputFile string `yaml:"output,omitempty"`
+	OutputFile       string `yaml:"output,omitempty"`
+	ExcludeRestTypes bool   `yaml:"exclude-rest-types,omitempty"`
 }
 
 //go:embed oapi-templates
@@ -31,10 +32,10 @@ var templates embed.FS
 
 func main() {
 	log.SetFlags(0)
-	var cfgPath, modelsPkg, structsStr string
+	var cfgPath, modelsPkg, typesStr string
 	flag.StringVar(&cfgPath, "config", "", "path to config file")
 	flag.StringVar(&modelsPkg, "models-pkg", "models", "package containing models")
-	flag.StringVar(&structsStr, "structs", "structs", "list of struct names to use in place of generated oapi-codegen ones")
+	flag.StringVar(&typesStr, "types", "types", "list of type names to use in place of generated oapi-codegen ones")
 	flag.Parse()
 	if cfgPath == "" {
 		log.Fatal("--config is required")
@@ -42,7 +43,7 @@ func main() {
 	if flag.NArg() < 1 {
 		log.Fatal("Please specify a path to an OpenAPI 3.0 spec file")
 	}
-	structs := strings.Split(structsStr, ",")
+	types := strings.Split(typesStr, ",")
 
 	// loading specification
 	input := flag.Arg(0)
@@ -69,7 +70,7 @@ func main() {
 	}
 
 	// generating output
-	output, err := generate(spec, cfg.Configuration, templates, modelsPkg, structs)
+	output, err := generate(spec, cfg, templates, modelsPkg, types)
 	if err != nil {
 		log.Fatalf("error generating code: %v", err)
 	}
@@ -86,7 +87,7 @@ func main() {
 	outFile.Close()
 }
 
-func generate(spec *openapi3.T, config codegen.Configuration, templates embed.FS, modelsPkg string, structs []string) (string, error) {
+func generate(spec *openapi3.T, config configuration, templates embed.FS, modelsPkg string, types []string) (string, error) {
 	var err error
 	config, err = addTemplateOverrides(config, templates)
 	if err != nil {
@@ -94,21 +95,36 @@ func generate(spec *openapi3.T, config codegen.Configuration, templates embed.FS
 	}
 	// include other template functions, if any
 	templateFunctions := template.FuncMap{
+		"exclude_rest_types": func() bool {
+			return config.ExcludeRestTypes
+		},
 		"models_pkg": func() string {
 			return modelsPkg + "."
 		},
-		"is_rest_struct": func(st string) bool {
-			return slices.Contains(structs, st)
+		"is_rest_type": func(st string) bool {
+			for _, s := range types {
+				if s := strings.TrimPrefix(s, "externalRef0."); s == st {
+					return true
+				}
+			}
+
+			return false
+		},
+		"rest_type": func(s string) string {
+			return strings.TrimPrefix(s, "externalRef0.")
+		},
+		"camel": func(s string) string {
+			return strcase.ToCamel(s)
 		},
 	}
 	for k, v := range templateFunctions {
 		codegen.TemplateFunctions[k] = v
 	}
 
-	return codegen.Generate(spec, config)
+	return codegen.Generate(spec, config.Configuration)
 }
 
-func addTemplateOverrides(config codegen.Configuration, templates embed.FS) (codegen.Configuration, error) {
+func addTemplateOverrides(config configuration, templates embed.FS) (configuration, error) {
 	overrides := config.OutputOptions.UserTemplates
 	if overrides == nil {
 		overrides = make(map[string]string)
@@ -129,7 +145,7 @@ func addTemplateOverrides(config codegen.Configuration, templates embed.FS) (cod
 
 		return nil
 	})
-	config.OutputOptions.UserTemplates = overrides
+	config.Configuration.OutputOptions.UserTemplates = overrides
 
 	return config, err
 }

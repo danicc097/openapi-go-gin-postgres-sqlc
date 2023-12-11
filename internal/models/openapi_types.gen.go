@@ -855,39 +855,51 @@ type GetProjectWorkitemsParams struct {
 }
 
 // UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
+
 type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
+
 type InitializeProjectJSONRequestBody = InitializeProjectRequest
 
 // CreateTeamJSONRequestBody defines body for CreateTeam for application/json ContentType.
+
 type CreateTeamJSONRequestBody = CreateTeamRequest
 
 // UpdateTeamJSONRequestBody defines body for UpdateTeam for application/json ContentType.
+
 type UpdateTeamJSONRequestBody = UpdateTeamRequest
 
 // CreateWorkItemTagJSONRequestBody defines body for CreateWorkItemTag for application/json ContentType.
+
 type CreateWorkItemTagJSONRequestBody = CreateWorkItemTagRequest
 
 // UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
+
 type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
 
 // CreateWorkItemTypeJSONRequestBody defines body for CreateWorkItemType for application/json ContentType.
+
 type CreateWorkItemTypeJSONRequestBody = CreateWorkItemTypeRequest
 
 // UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
+
 type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
+
 type UpdateUserJSONRequestBody = UpdateUserRequest
 
 // UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
+
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
 // CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
+
 type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
 
 // CreateWorkitemCommentJSONRequestBody defines body for CreateWorkitemComment for application/json ContentType.
+
 type CreateWorkitemCommentJSONRequestBody = CreateWorkItemCommentRequest
 
 // CreateDemoWorkItemRequest

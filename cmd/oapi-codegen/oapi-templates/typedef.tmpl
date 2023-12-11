@@ -1,5 +1,8 @@
 {{range .Types}}
 {{/* IMPORTANT: changed */}}
+{{if and ((is_rest_type .TypeName)) (exclude_rest_types)}}/* Ignoring existing rest struct{{end}}
 {{ if .Schema.Description }}{{ toGoComment .Schema.Description .TypeName  }}{{ else }}// {{.TypeName}} defines the model for {{.JsonName}}.{{ end }}
-type {{.TypeName}} {{if .IsAlias }}={{end}} {{.Schema.TypeDecl}}
+type {{.TypeName}} {{if .IsAlias }}={{end}} {{.Schema.TypeDecl}} //test
+{{if and ((is_rest_type .TypeName)) (exclude_rest_types)}}*/{{end}}
 {{end}}
+

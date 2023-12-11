@@ -35,5 +35,6 @@ func (h *StrictHandlers) GetPaginatedNotifications(c *gin.Context, request GetPa
 	renderResponse(c, res, http.StatusOK)
 
 	// FIXME: oapi codegen uses its own types for responses and request bodies, and we absolutely do not want this, since we would need to manually convert to or from oapi's Rest<..> and Db<..> structs.
+	// return GetPaginatedNotifications200JSONResponse(res), nil // TODO: when generating types properly
 	return GetPaginatedNotifications200JSONResponse{}, nil
 }

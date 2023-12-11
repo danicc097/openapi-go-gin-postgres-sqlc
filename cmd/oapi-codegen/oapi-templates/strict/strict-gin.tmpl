@@ -42,7 +42,7 @@ func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
                 {{if .IsJSON }}
                     {{ $st := (printf "%v%v" $opid "Request") }}
                     //{{$st}}
-                    var body {{if not (is_rest_struct $st)}}externalRef0.{{$opid}}{{.NameTag}}RequestBody{{else}}{{$st}}{{end}}
+                    var body {{if not (is_rest_type $st)}}externalRef0.{{$opid}}{{.NameTag}}RequestBody{{else}}{{$st}}{{end}}
                     if err := ctx.ShouldBind(&body); err != nil {
                         ctx.Status(http.StatusBadRequest)
                         ctx.Error(err)
@@ -55,7 +55,7 @@ func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
                         ctx.Error(err)
                         return
                     }
-                    var body {{if not (is_rest_struct $st)}}externalRef0.{{$opid}}{{.NameTag}}RequestBody{{else}}{{$st}}{{end}}
+                    var body {{if not (is_rest_type $st)}}externalRef0.{{$opid}}{{.NameTag}}RequestBody{{else}}{{$st}}{{end}}
                     if err := runtime.BindForm(&body, ctx.Request.Form, nil, nil); err != nil {
                         ctx.Error(err)
                         return
