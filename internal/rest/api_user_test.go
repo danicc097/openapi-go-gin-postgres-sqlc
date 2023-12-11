@@ -147,7 +147,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			t.Parallel()
 
 			updateAuthParams := rest.UpdateUserAuthRequest{
-				Role: pointers.New(rest.RoleManager),
+				Role: pointers.New(models.RoleManager),
 			}
 			ures, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
@@ -158,7 +158,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
-			assert.Equal(t, *updateAuthParams.Role, res.JSON200.Role)
+			assert.EqualValues(t, *updateAuthParams.Role, res.JSON200.Role)
 		})
 
 		t.Run("insufficient_caller_scopes", func(t *testing.T) {
@@ -171,7 +171,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			require.NoError(t, err, "ff.CreateUser: %s")
 
 			updateAuthParams := rest.UpdateUserAuthRequest{
-				Role: pointers.New(rest.RoleManager),
+				Role: pointers.New(models.RoleManager),
 			}
 			badres, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(managerWithoutScopes.APIKey.APIKey))
 			require.NoError(t, err)
@@ -181,7 +181,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 		t.Run("invalid_role_update", func(t *testing.T) {
 			t.Parallel()
 			updateAuthParams := rest.UpdateUserAuthRequest{
-				Role: pointers.New(rest.Role("bad")),
+				Role: pointers.New(models.Role("bad")),
 			}
 			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
@@ -192,7 +192,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 		t.Run("invalid_scopes_update", func(t *testing.T) {
 			t.Parallel()
 			updateAuthParams := rest.UpdateUserAuthRequest{
-				Scopes: &[]rest.Scope{rest.Scope("bad")},
+				Scopes: &[]models.Scope{models.Scope("bad")},
 			}
 			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 

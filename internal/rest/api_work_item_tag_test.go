@@ -60,7 +60,7 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 			require.NoError(t, err)
 
 			witCreateParams := postgresqltestutil.RandomWorkItemTagCreateParams(t, internal.ProjectIDByName[requiredProject])
-			res, err := srv.client.CreateWorkItemTagWithResponse(context.Background(), rest.Project(requiredProject), rest.CreateWorkItemTagRequest{
+			res, err := srv.client.CreateWorkItemTagWithResponse(context.Background(), requiredProject, rest.CreateWorkItemTagRequest{
 				WorkItemTagCreateParams: *witCreateParams,
 			}, ReqWithAPIKey(ufixture.APIKey.APIKey))
 			fmt.Printf("ures.Body: %v\n", string(res.Body))
