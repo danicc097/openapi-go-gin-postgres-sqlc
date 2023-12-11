@@ -1,4 +1,4 @@
-package rest
+package rest_test
 
 import (
 	"context"
@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/gin-gonic/gin"
@@ -91,7 +92,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			res := httptest.NewRecorder()
 			_, engine := gin.CreateTestContext(res)
 
-			authMw := newAuthMiddleware(logger, testPool, svcs)
+			authMw := rest.NewAuthMiddleware(logger, testPool, svcs)
 
 			ff := servicetestutil.NewFixtureFactory(testPool, svcs)
 			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
@@ -105,11 +106,11 @@ func TestAuthorizationMiddleware(t *testing.T) {
 
 			if !tc.withoutUser {
 				engine.Use(func(c *gin.Context) {
-					ctxWithUser(c, ufixture.User)
+					rest.CtxWithUser(c, ufixture.User)
 				})
 			}
 
-			engine.Use(authMw.EnsureAuthorized(AuthRestriction{
+			engine.Use(authMw.EnsureAuthorized(rest.AuthRestriction{
 				MinimumRole:    tc.requiredRole,
 				RequiredScopes: tc.requiredScopes,
 			}))

@@ -3,16 +3,21 @@
     {{$discriminator := .Schema.Discriminator}}
     {{$properties := .Schema.Properties -}}
     {{range .Schema.UnionElements}}
-        {{$element := . -}}
-        // As{{ .Method }} returns the union data inside the {{$typeName}} as a {{.}}
-        func (t {{$typeName}}) As{{ .Method }}() ({{.}}, error) {
-            var body {{.}}
+        {{ $element := printf "%v" . -}}
+        {{ $name := $element -}}
+        {{ if (is_rest_type $element) -}}
+        {{ $name = (printf "%v" (rest_type $element)) -}}
+        {{ end -}}
+        // As{{$name}} returns the union data inside the {{$typeName}} as a {{$name}}
+        func (t {{$typeName}}) As{{$name}}() ({{$name}}, error) {
+            var body {{$name}}
             err := json.Unmarshal(t.union, &body)
             return body, err
         }
 
-        // From{{ .Method }} overwrites any union data inside the {{$typeName}} as the provided {{.}}
-        func (t *{{$typeName}}) From{{ .Method }} (v {{.}}) error {
+        {{/*
+        // From{{ .Method }} overwrites any union data inside the {{$typeName}} as the provided {{$name}}
+        func (t *{{$typeName}}) From{{ .Method }} (v {{$name}}) error {
             {{if $discriminator -}}
                 {{range $value, $type := $discriminator.Mapping -}}
                     {{if eq $type $element -}}
@@ -32,8 +37,8 @@
             return err
         }
 
-        // Merge{{ .Method }} performs a merge with any union data inside the {{$typeName}}, using the provided {{.}}
-        func (t *{{$typeName}}) Merge{{ .Method }} (v {{.}}) error {
+        // Merge{{ .Method }} performs a merge with any union data inside the {{$typeName}}, using the provided {{$name}}
+        func (t *{{$typeName}}) Merge{{ .Method }} (v {{$name}}) error {
             {{if $discriminator -}}
                 {{range $value, $type := $discriminator.Mapping -}}
                     {{if eq $type $element -}}
@@ -57,6 +62,7 @@
             t.union = merged
             return err
         }
+        */}}
     {{end}}
 
     {{if $discriminator}}
@@ -67,17 +73,17 @@
             err := json.Unmarshal(t.union, &discriminator)
             return discriminator.Discriminator, err
         }
-
+        {{/* TODO: can use is_rest_type here too. */}}
         {{if ne 0 (len $discriminator.Mapping)}}
             func (t {{.TypeName}}) ValueByDiscriminator() (interface{}, error) {
                 discriminator, err := t.Discriminator()
                 if err != nil {
                     return nil, err
                 }
-                switch discriminator{
+                switch discriminator {
                     {{range $value, $type := $discriminator.Mapping -}}
                         case "{{$value}}":
-                            return t.As{{$type}}()
+                            return t.As{{rest_type (camel $type)}}()
                     {{end -}}
                     default:
                         return nil, errors.New("unknown discriminator value: "+discriminator)

@@ -66,9 +66,9 @@ var templateFiles embed.FS
 
 type operationIDMethod struct {
 	// file path to handlers file
-	handlersFile string
-	method       string
-	comment      string
+	handlersFile    string
+	methodSignature string
+	comment         string
 }
 
 type CodeGen struct {
@@ -378,7 +378,7 @@ func getHandlersMethods(file *dst.File) []string {
 				recvType, ok := x.Recv.List[0].Type.(*dst.StarExpr)
 				if ok {
 					ident, ok := recvType.X.(*dst.Ident)
-					if ok && ident.Name == "Handlers" {
+					if ok && ident.Name == "StrictHandlers" {
 						functions = append(functions, x.Name.Name)
 					}
 				}
@@ -391,7 +391,7 @@ func getHandlersMethods(file *dst.File) []string {
 	return functions
 }
 
-// removeAndAppendHandlersMethod removes a Handlers method with the given name from its source file
+// removeAndAppendHandlersMethod removes a StrictHandlers method with the given name from its source file
 // and appends it to a target file.
 func removeAndAppendHandlersMethod(src, target *dst.File, opID string) {
 	for i, decl := range src.Decls {
@@ -512,10 +512,12 @@ func (o *CodeGen) implementServerInterfaceMethods() error {
 		m := o.serverInterfaceMethods[opID]
 
 		methodStr := fmt.Sprintf(`
-		func (h *Handlers) %s {
+		func (h *StrictHandlers) %s%s {
 			c.JSON(http.StatusNotImplemented, "not implemented")
+
+			return nil, nil
 		}
-	`, m.method)
+	`, strcase.ToCamel(opID), m.methodSignature)
 
 		// we are only here if the method is missing, so just append it
 		f, err := os.OpenFile(m.handlersFile,
@@ -560,24 +562,28 @@ func (o *CodeGen) getServerInterfaceMethods() map[string]operationIDMethod {
 				continue
 			}
 			interfaceType, ok := typeSpec.Type.(*ast.InterfaceType)
-			if !ok {
+			if !ok || typeSpec.Name.String() != "StrictServerInterface" {
 				continue
 			}
+
 			for _, method := range interfaceType.Methods.List {
 				operationID := method.Names[0].Name
 				funcType, ok := method.Type.(*ast.FuncType)
 				if !ok {
 					continue
 				}
-				params := extractParameters(funcType)
-
+				// params := extractParameters(funcType)
+				// returns := extractReturns(funcType)
 				correspondingTag := o.findTagByOpID(operationID)
 				snakeTag := strcase.ToSnake(correspondingTag)
 
+				var buf bytes.Buffer
+				printer.Fprint(&buf, token.NewFileSet(), funcType)
+
 				o.serverInterfaceMethods[operationID] = operationIDMethod{
-					handlersFile: filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", snakeTag)),
-					method:       fmt.Sprintf("%s(%s)", operationID, params),
-					comment:      method.Doc.Text(),
+					handlersFile:    filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", snakeTag)),
+					methodSignature: buf.String()[4:], // exclude func
+					comment:         method.Doc.Text(),
 				}
 			}
 		}
@@ -594,6 +600,19 @@ func extractParameters(ft *ast.FuncType) string {
 		}
 	}
 	return strings.Join(params, ", ")
+}
+
+// FIXME: does nothing.
+func _extractReturns(ft *ast.FuncType) string {
+	var returns []string
+	if ft.Results != nil {
+		for _, field := range ft.Results.List {
+			for _, name := range field.Names {
+				returns = append(returns, fmt.Sprintf("(%s %s)", name.Name, exprToString(field.Type)))
+			}
+		}
+	}
+	return strings.Join(returns, ", ")
 }
 
 // exprToString converts an AST expression to its string representation.

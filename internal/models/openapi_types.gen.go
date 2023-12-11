@@ -8,7 +8,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	uuid "github.com/google/uuid"
 )
 
@@ -856,39 +855,51 @@ type GetProjectWorkitemsParams struct {
 }
 
 // UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
+
 type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
+
 type InitializeProjectJSONRequestBody = InitializeProjectRequest
 
 // CreateTeamJSONRequestBody defines body for CreateTeam for application/json ContentType.
+
 type CreateTeamJSONRequestBody = CreateTeamRequest
 
 // UpdateTeamJSONRequestBody defines body for UpdateTeam for application/json ContentType.
+
 type UpdateTeamJSONRequestBody = UpdateTeamRequest
 
 // CreateWorkItemTagJSONRequestBody defines body for CreateWorkItemTag for application/json ContentType.
+
 type CreateWorkItemTagJSONRequestBody = CreateWorkItemTagRequest
 
 // UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
+
 type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
 
 // CreateWorkItemTypeJSONRequestBody defines body for CreateWorkItemType for application/json ContentType.
+
 type CreateWorkItemTypeJSONRequestBody = CreateWorkItemTypeRequest
 
 // UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
+
 type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
+
 type UpdateUserJSONRequestBody = UpdateUserRequest
 
 // UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
+
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
 // CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
+
 type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
 
 // CreateWorkitemCommentJSONRequestBody defines body for CreateWorkitemComment for application/json ContentType.
+
 type CreateWorkitemCommentJSONRequestBody = CreateWorkItemCommentRequest
 
 // AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
@@ -898,53 +909,11 @@ func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItem
 	return body, err
 }
 
-// FromCreateDemoWorkItemRequest overwrites any union data inside the CreateWorkItemRequest as the provided CreateDemoWorkItemRequest
-func (t *CreateWorkItemRequest) FromCreateDemoWorkItemRequest(v CreateDemoWorkItemRequest) error {
-	v.ProjectName = "demo"
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeCreateDemoWorkItemRequest performs a merge with any union data inside the CreateWorkItemRequest, using the provided CreateDemoWorkItemRequest
-func (t *CreateWorkItemRequest) MergeCreateDemoWorkItemRequest(v CreateDemoWorkItemRequest) error {
-	v.ProjectName = "demo"
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JsonMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
 // AsCreateDemoTwoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoTwoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoTwoWorkItemRequest() (CreateDemoTwoWorkItemRequest, error) {
 	var body CreateDemoTwoWorkItemRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
-}
-
-// FromCreateDemoTwoWorkItemRequest overwrites any union data inside the CreateWorkItemRequest as the provided CreateDemoTwoWorkItemRequest
-func (t *CreateWorkItemRequest) FromCreateDemoTwoWorkItemRequest(v CreateDemoTwoWorkItemRequest) error {
-	v.ProjectName = "demo_two"
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeCreateDemoTwoWorkItemRequest performs a merge with any union data inside the CreateWorkItemRequest, using the provided CreateDemoTwoWorkItemRequest
-func (t *CreateWorkItemRequest) MergeCreateDemoTwoWorkItemRequest(v CreateDemoTwoWorkItemRequest) error {
-	v.ProjectName = "demo_two"
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JsonMerge(t.union, b)
-	t.union = merged
-	return err
 }
 
 func (t CreateWorkItemRequest) Discriminator() (string, error) {

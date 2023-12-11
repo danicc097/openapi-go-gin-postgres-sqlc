@@ -5,7 +5,6 @@ package rest
  */
 
 import (
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 )
@@ -37,7 +36,7 @@ type Notification struct {
 // User represents an OpenAPI schema response for a User.
 type User struct {
 	db.User
-	Role models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
+	Role Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 
 	APIKey   *db.UserAPIKey `json:"apiKey,omitempty"`
 	Teams    *[]db.Team     `json:"teams"`
@@ -68,7 +67,7 @@ type DemoTwoWorkItems struct {
 
 // ProjectBoard represents an OpenAPI schema response for a ProjectBoard.
 type ProjectBoard struct {
-	ProjectName
+	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 }
 
 type CreateProjectBoardRequest struct {
@@ -113,19 +112,15 @@ type UpdateTeamRequest struct {
 }
 
 type CreateDemoWorkItemRequest struct {
-	ProjectName
+	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 	services.DemoWorkItemCreateParams
 }
 
 type CreateDemoTwoWorkItemRequest struct {
-	ProjectName
+	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 	services.DemoTwoWorkItemCreateParams
 }
 
 type CreateWorkItemCommentRequest struct {
 	db.WorkItemCommentCreateParams
-}
-
-type ProjectName struct {
-	ProjectName models.Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 }

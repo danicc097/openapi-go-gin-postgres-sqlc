@@ -2,10 +2,10 @@ type StrictHandlerFunc = runtime.StrictEchoHandlerFunc
 type StrictMiddlewareFunc = runtime.StrictEchoMiddlewareFunc
 
 func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc) ServerInterface {
-    return &strictHandler{ssi: ssi, middlewares: middlewares}
+    return &strictHandlers{ssi: ssi, middlewares: middlewares}
 }
 
-type strictHandler struct {
+type strictHandlers struct {
     ssi StrictServerInterface
     middlewares []StrictMiddlewareFunc
 }
@@ -13,7 +13,7 @@ type strictHandler struct {
 {{range .}}
     {{$opid := .OperationId}}
     // {{$opid}} operation middleware
-    func (sh *strictHandler) {{.OperationId}}(ctx echo.Context{{genParamArgs .PathParams}}{{if .RequiresParamObject}}, params {{.OperationId}}Params{{end}}) error {
+    func (sh *strictHandlers) {{.OperationId}}(ctx echo.Context{{genParamArgs .PathParams}}{{if .RequiresParamObject}}, params {{.OperationId}}Params{{end}}) error {
         var request {{$opid | ucFirst}}RequestObject
 
         {{range .PathParams -}}

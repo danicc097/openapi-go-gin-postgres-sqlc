@@ -1,13 +1,28 @@
-package resttestutil
+package rest_test
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"net/url"
 	"reflect"
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 )
+
+const (
+	apiKeyHeaderKey = "x-api-key"
+)
+
+func ReqWithAPIKey(apiKey string) RequestEditorFn {
+	return func(ctx context.Context, req *http.Request) error {
+		req.Header.Add("Content-Type", "application/json")
+		req.Header.Add(apiKeyHeaderKey, apiKey)
+
+		return nil
+	}
+}
 
 type constructURLOptions struct {
 	params any

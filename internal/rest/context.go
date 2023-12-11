@@ -23,7 +23,7 @@ const (
 	errorCtxKey                 = ctxKeyPrefix + "error"
 )
 
-func getSkipRequestValidationFromCtx(c *gin.Context) bool {
+func GetSkipRequestValidationFromCtx(c *gin.Context) bool {
 	skip, ok := c.Value(skipRequestValidationCtxKey).(bool)
 	if !ok {
 		return false
@@ -32,7 +32,7 @@ func getSkipRequestValidationFromCtx(c *gin.Context) bool {
 	return skip
 }
 
-func getValidateResponseFromCtx(c *gin.Context) bool {
+func GetValidateResponseFromCtx(c *gin.Context) bool {
 	skip, ok := c.Value(validateResponseCtxKey).(bool)
 	if !ok {
 		return false
@@ -51,11 +51,11 @@ func getUserFromCtx(c *gin.Context) *db.User {
 	return user
 }
 
-func ctxWithUser(c *gin.Context, user *db.User) {
+func CtxWithUser(c *gin.Context, user *db.User) {
 	c.Set(userCtxKey, user)
 }
 
-func getUserInfoFromCtx(c *gin.Context) []byte {
+func GetUserInfoFromCtx(c *gin.Context) []byte {
 	user, ok := c.Value(userInfoCtxKey).([]byte)
 	if !ok {
 		return nil
@@ -64,13 +64,13 @@ func getUserInfoFromCtx(c *gin.Context) []byte {
 	return user
 }
 
-func ctxWithUserInfo(c *gin.Context, userinfo []byte) {
+func CtxWithUserInfo(c *gin.Context, userinfo []byte) {
 	c.Set(userInfoCtxKey, userinfo)
 }
 
-// getTxFromCtx returns the ongoing db transaction.
+// GetTxFromCtx returns the ongoing db transaction.
 // Automatic commit and rollback is handled in db middleware.
-func getTxFromCtx(c *gin.Context) pgx.Tx {
+func GetTxFromCtx(c *gin.Context) pgx.Tx {
 	tx, ok := c.Value(transactionCtxKey).(pgx.Tx)
 	if !ok {
 		return nil
@@ -83,7 +83,7 @@ func ctxWithTx(c *gin.Context, tx pgx.Tx) {
 	c.Set(transactionCtxKey, tx)
 }
 
-func getSpanFromCtx(c *gin.Context) trace.Span {
+func GetSpanFromCtx(c *gin.Context) trace.Span {
 	span, ok := c.Value(spanCtxKey).(trace.Span)
 	if !ok {
 		return nil
@@ -99,7 +99,7 @@ func ctxWithSpan(c *gin.Context, span trace.Span) {
 // Helper function to get the gin context from within requests. It returns
 // nil if not found or wrong type.
 // Useful for kin-openapi functions which only accept context.
-func getGinContextFromCtx(c context.Context) *gin.Context {
+func GetGinContextFromCtx(c context.Context) *gin.Context {
 	ginCtx, ok := c.Value(ginContextCtxKey).(*gin.Context)
 	if !ok {
 		return nil
@@ -107,11 +107,11 @@ func getGinContextFromCtx(c context.Context) *gin.Context {
 	return ginCtx
 }
 
-func getUserDataFromCtx(c context.Context) any {
+func GetUserDataFromCtx(c context.Context) any {
 	return c.Value(userDataCtxKey)
 }
 
-func ctxHasErrorResponse(c *gin.Context) bool {
+func CtxHasErrorResponse(c *gin.Context) bool {
 	_, ok := c.Value(errorCtxKey).(struct{})
 
 	return ok

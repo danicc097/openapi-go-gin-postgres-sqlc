@@ -56,5 +56,5 @@ func (m *movie) PredictGenre(ctx context.Context, synopsis string) ([]*tfidf.Pre
 		return nil, fmt.Errorf("calling Predict: %w", err)
 	}
 
-	return response.Predictions, nil
+	return response.GetPredictions(), nil
 }

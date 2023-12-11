@@ -15,6 +15,7 @@ import (
 	"github.com/deepmap/oapi-codegen/pkg/util"
 	"github.com/deepmap/oapi-codegen/v2/pkg/codegen"
 	"github.com/getkin/kin-openapi/openapi3"
+	"github.com/iancoleman/strcase"
 	"gopkg.in/yaml.v3"
 )
 
@@ -22,7 +23,8 @@ type configuration struct {
 	codegen.Configuration `yaml:",inline"`
 
 	// OutputFile is the filename to output.
-	OutputFile string `yaml:"output,omitempty"`
+	OutputFile       string `yaml:"output,omitempty"`
+	ExcludeRestTypes bool   `yaml:"exclude-rest-types,omitempty"`
 }
 
 //go:embed oapi-templates
@@ -30,9 +32,10 @@ var templates embed.FS
 
 func main() {
 	log.SetFlags(0)
-	var cfgPath, modelsPkg string
+	var cfgPath, modelsPkg, typesStr string
 	flag.StringVar(&cfgPath, "config", "", "path to config file")
 	flag.StringVar(&modelsPkg, "models-pkg", "models", "package containing models")
+	flag.StringVar(&typesStr, "types", "types", "list of type names to use in place of generated oapi-codegen ones")
 	flag.Parse()
 	if cfgPath == "" {
 		log.Fatal("--config is required")
@@ -40,6 +43,7 @@ func main() {
 	if flag.NArg() < 1 {
 		log.Fatal("Please specify a path to an OpenAPI 3.0 spec file")
 	}
+	types := strings.Split(typesStr, ",")
 
 	// loading specification
 	input := flag.Arg(0)
@@ -66,7 +70,7 @@ func main() {
 	}
 
 	// generating output
-	output, err := generate(spec, cfg.Configuration, templates, modelsPkg)
+	output, err := generate(spec, cfg, templates, modelsPkg, types)
 	if err != nil {
 		log.Fatalf("error generating code: %v", err)
 	}
@@ -83,7 +87,7 @@ func main() {
 	outFile.Close()
 }
 
-func generate(spec *openapi3.T, config codegen.Configuration, templates embed.FS, modelsPkg string) (string, error) {
+func generate(spec *openapi3.T, config configuration, templates embed.FS, modelsPkg string, types []string) (string, error) {
 	var err error
 	config, err = addTemplateOverrides(config, templates)
 	if err != nil {
@@ -91,18 +95,34 @@ func generate(spec *openapi3.T, config codegen.Configuration, templates embed.FS
 	}
 	// include other template functions, if any
 	templateFunctions := template.FuncMap{
-		"modelsPkg": func() string {
+		"exclude_rest_types": func() bool {
+			return config.ExcludeRestTypes
+		},
+		"models_pkg": func() string {
 			return modelsPkg + "."
 		},
+		"is_rest_type": func(t string) bool {
+			for _, typ := range types {
+				if stName := strings.TrimPrefix(t, "externalRef0."); stName == typ {
+					return true
+				}
+			}
+
+			return false
+		},
+		"rest_type": func(s string) string {
+			return strings.TrimPrefix(strings.ReplaceAll(s, "ExternalRef0", ""), "externalRef0.")
+		},
+		"camel": strcase.ToCamel,
 	}
 	for k, v := range templateFunctions {
 		codegen.TemplateFunctions[k] = v
 	}
 
-	return codegen.Generate(spec, config)
+	return codegen.Generate(spec, config.Configuration)
 }
 
-func addTemplateOverrides(config codegen.Configuration, templates embed.FS) (codegen.Configuration, error) {
+func addTemplateOverrides(config configuration, templates embed.FS) (configuration, error) {
 	overrides := config.OutputOptions.UserTemplates
 	if overrides == nil {
 		overrides = make(map[string]string)
@@ -123,7 +143,7 @@ func addTemplateOverrides(config codegen.Configuration, templates embed.FS) (cod
 
 		return nil
 	})
-	config.OutputOptions.UserTemplates = overrides
+	config.Configuration.OutputOptions.UserTemplates = overrides
 
 	return config, err
 }

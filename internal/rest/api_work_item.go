@@ -12,38 +12,47 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// create workitem comment.
-func (h *Handlers) CreateWorkitemComment(c *gin.Context, id models.SerialID) {
-	defer newOTelSpanWithUser(c).End()
-
+func (h *StrictHandlers) CreateWorkitemComment(c *gin.Context, request CreateWorkitemCommentRequestObject) (CreateWorkitemCommentResponseObject, error) {
 	// caller := getUserFromCtx(c)
-	tx := getTxFromCtx(c)
+	tx := GetTxFromCtx(c)
 	_ = tx
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
+	return nil, nil
 }
 
-func (h *Handlers) CreateWorkitem(c *gin.Context) {
+func (h *StrictHandlers) UpdateWorkitem(c *gin.Context, request UpdateWorkitemRequestObject) (UpdateWorkitemResponseObject, error) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
+}
+
+func (h *StrictHandlers) DeleteWorkitem(c *gin.Context, request DeleteWorkitemRequestObject) (DeleteWorkitemResponseObject, error) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
+}
+
+func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRequestObject) (CreateWorkitemResponseObject, error) {
 	ctx := c.Request.Context()
 
-	span := newOTelSpanWithUser(c)
-	defer span.End()
+	span := GetSpanFromCtx(c)
 
 	// caller := getUserFromCtx(c)
-	tx := getTxFromCtx(c)
+	tx := GetTxFromCtx(c)
 
 	jsonBody, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		renderErrorResponse(c, "Failed to read request body", err)
 
-		return
+		return nil, nil
 	}
 	span.SetAttributes(tracing.MetadataAttribute(jsonBody))
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
 
 	body := &models.CreateWorkItemRequest{}
 	if err := json.Unmarshal(jsonBody, body); err != nil {
-		return
+		return nil, nil
 	}
 
 	var res any // depends on project
@@ -52,14 +61,14 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	case models.ProjectDemo:
 		body := &CreateDemoWorkItemRequest{}
 		if shouldReturn := parseBody(c, body); shouldReturn {
-			return
+			return nil, nil
 		}
 
 		workItem, err := h.svc.DemoWorkItem.Create(ctx, tx, body.DemoWorkItemCreateParams)
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
 
-			return
+			return nil, nil
 		}
 
 		res = DemoWorkItems{
@@ -70,14 +79,14 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	case models.ProjectDemoTwo:
 		body := &CreateDemoTwoWorkItemRequest{}
 		if shouldReturn := parseBody(c, body); shouldReturn {
-			return
+			return nil, nil
 		}
 
 		workItem, err := h.svc.DemoTwoWorkItem.Create(ctx, tx, body.DemoTwoWorkItemCreateParams)
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
 
-			return
+			return nil, nil
 		}
 
 		res = DemoTwoWorkItems{
@@ -88,20 +97,16 @@ func (h *Handlers) CreateWorkitem(c *gin.Context) {
 	default:
 		renderErrorResponse(c, fmt.Sprintf("Unknown project %q", disc), nil)
 
-		return
+		return nil, nil
 	}
 
 	c.JSON(http.StatusCreated, res)
+
+	return nil, nil
 }
 
-func (h *Handlers) DeleteWorkitem(c *gin.Context, id models.SerialID) {
+func (h *StrictHandlers) GetWorkItem(c *gin.Context, request GetWorkItemRequestObject) (GetWorkItemResponseObject, error) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
-}
 
-func (h *Handlers) UpdateWorkitem(c *gin.Context, id models.SerialID) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *Handlers) GetWorkItem(c *gin.Context, id models.SerialID) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	return nil, nil
 }

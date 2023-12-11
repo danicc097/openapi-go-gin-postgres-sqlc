@@ -17,8 +17,7 @@ const (
 	authorizationHeaderKey = "x-api-key"
 )
 
-// Handlers implements ServerInterface.
-type Handlers struct {
+type StrictHandlers struct {
 	svc *services.Services
 
 	logger         *zap.SugaredLogger
@@ -30,17 +29,24 @@ type Handlers struct {
 	provider       rp.RelyingParty
 }
 
-var _ ServerInterface = (*Handlers)(nil)
+// IMPORTANT: oapi codegen uses its own types for responses and request bodies,
+// and we absolutely do not want this, since we would need to manually convert
+// to or from oapi's Rest<..> and Db<..> structs.
+// is it worth it to rewrite strict server gen to use rest package structs for request/response bodies?
+// we could check in templates with a simple if stmt
+// that if a type in rest package exists with the same name we don't prepend `externalRef0.`
+// We already have the rest pkg struct list from ast-parser gen.
+var _ StrictServerInterface = (*StrictHandlers)(nil)
 
-// NewHandlers returns a server implementation of an openapi specification.
-func NewHandlers(
+// NewStrictHandlers returns a server implementation of an openapi specification.
+func NewStrictHandlers(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,
 	moviesvcclient v1.MovieGenreClient,
 	specPath string,
 	svcs *services.Services,
 	authmw *authMiddleware, // middleware needed here since it's generated code
 	provider rp.RelyingParty,
-) *Handlers {
+) StrictServerInterface {
 	event := newSSEServer()
 
 	// we can have as many of these but need to delay call
@@ -70,7 +76,7 @@ func NewHandlers(
 		}
 	}()
 
-	return &Handlers{
+	return &StrictHandlers{
 		logger:         logger,
 		pool:           pool,
 		moviesvcclient: moviesvcclient,
@@ -83,7 +89,7 @@ func NewHandlers(
 }
 
 // middlewares to be applied after authMiddlewares, based on operation IDs.
-func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
+func (h *StrictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	defaultMws := []gin.HandlerFunc{}
 
 	dbMw := newDBMiddleware(h.logger, h.pool)
@@ -112,5 +118,5 @@ func (h *Handlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	}
 
 	// TODO: last mw should be event dispatcher middleware, that will dispatch pending ones
-	// if renderErrorResponse was not called, ie !ctxHasErrorResponse()
+	// if renderErrorResponse was not called, ie !CtxHasErrorResponse()
 }

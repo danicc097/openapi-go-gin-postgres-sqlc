@@ -289,6 +289,7 @@ x.gen.pregen() {
     echo "Running generation"
 
     codegen validate-spec -env=".env.$X_ENV"
+    ast-parser verify-no-import --imports "$GOMOD_PKG/internal/models" internal/rest/models.go || err Please use generated rest package OpenAPI types instead.
 
     sync_spec_with_db
 
@@ -726,18 +727,28 @@ x.gen.gowrap() {
 x.gen.client-server() {
   { { {
     echo "Running generation"
-    paths=".openapi.paths.yaml"
+    paths_file=".openapi.paths.yaml"
 
+    local all_types=()
+    mapfile -t all_types < <(ast-parser find-types --exclude-generics --public-only "internal/rest/models.go")
+    all_types_list=$(join_by "," ${all_types[*]})
+
+    types_list=$(join_by "," ${all_types[*]})
     # hack to get separate types generation
-    sed "s/\$ref: '\#\//\$ref: '$SPEC_PATH\#\//g" $SPEC_PATH >"$paths"
-    # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even if we are not generating types
+    sed "s/\$ref: '\#\//\$ref: '$SPEC_PATH\#\//g" $SPEC_PATH >"$paths_file"
+    # yq e 'del(.components)' -i "$paths_file" # dont delete since recent oapi-codegen does some checks even if we are not generating types
     go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # templates are embedded, required rebuild
 
+    # Generated types in models pkg will be used in services, repos, db, but rest package must use original
+    # models from rest/models.go (source of generated spec schemas)
+    # and not the generated ones to avoid (a lot of) unnecessary conversions.
     oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed types generation"
-    oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
+    oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models --types "$types_list" "$paths_file" || err "Failed server generation"
+    oapi-codegen --config internal/rest/oapi-codegen-test-client.yaml "$SPEC_PATH" || err "Failed client generation"
     oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation"
 
-    codegen implement-server # based on oapi gen
+    ast-parser find-redeclared --delete internal/rest/models.go # for duplicates in rest
+    codegen implement-server                                    # based on oapi gen
 
     files=$(find "internal/rest/" -name "*.go")
     goimports -w $files
@@ -937,7 +948,7 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in jet oapi-codegen codegen; do
+    for cmd in jet oapi-codegen codegen ast-parser; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]; } &
     done

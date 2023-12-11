@@ -1,6 +1,6 @@
 //go:build !race
 
-package rest
+package rest_test
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -65,7 +64,7 @@ func TestSSEStream(t *testing.T) {
 	t.Parallel()
 
 	res := NewStreamRecorder()
-	req := httptest.NewRequest(http.MethodGet, resttestutil.MustConstructInternalPath("/events", resttestutil.WithQueryParams(models.EventsParams{ProjectName: models.ProjectDemo})), nil)
+	req := httptest.NewRequest(http.MethodGet, MustConstructInternalPath("/events", WithQueryParams(models.EventsParams{ProjectName: models.ProjectDemo})), nil)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	req = req.WithContext(ctx)

@@ -134,8 +134,6 @@ var PublicStructs = map[string]any{
 
 	//
 
-	"RestAuthRestriction":                new(rest.AuthRestriction),
-	"RestConfig":                         new(rest.Config),
 	"RestCreateDemoTwoWorkItemRequest":   new(rest.CreateDemoTwoWorkItemRequest),
 	"RestCreateDemoWorkItemRequest":      new(rest.CreateDemoWorkItemRequest),
 	"RestCreateProjectBoardRequest":      new(rest.CreateProjectBoardRequest),
@@ -145,18 +143,10 @@ var PublicStructs = map[string]any{
 	"RestCreateWorkItemTypeRequest":      new(rest.CreateWorkItemTypeRequest),
 	"RestDemoTwoWorkItems":               new(rest.DemoTwoWorkItems),
 	"RestDemoWorkItems":                  new(rest.DemoWorkItems),
-	"RestEvent":                          new(rest.Event),
-	"RestGinServerOptions":               new(rest.GinServerOptions),
-	"RestHandlers":                       new(rest.Handlers),
 	"RestNotification":                   new(rest.Notification),
-	"RestOAValidatorOptions":             new(rest.OAValidatorOptions),
 	"RestPaginatedNotificationsResponse": new(rest.PaginatedNotificationsResponse),
 	"RestPaginationPage":                 new(rest.PaginationPage),
 	"RestProjectBoard":                   new(rest.ProjectBoard),
-	"RestProjectName":                    new(rest.ProjectName),
-	"RestPubSub":                         new(rest.PubSub),
-	"RestServer":                         new(rest.Server),
-	"RestServerInterfaceWrapper":         new(rest.ServerInterfaceWrapper),
 	"RestSharedWorkItemFields":           new(rest.SharedWorkItemFields),
 	"RestTeam":                           new(rest.Team),
 	"RestUpdateTeamRequest":              new(rest.UpdateTeamRequest),

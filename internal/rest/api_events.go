@@ -2,9 +2,11 @@ package rest
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
+	"strings"
 	"sync"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -164,71 +166,6 @@ channel use cases,etc:
  - https://go101.org/article/channel.html
 */
 
-// Events represents server events.
-// TODO requires query param projectId=...
-// to subscribe to the current project's topics only.
-func (h *Handlers) Events(c *gin.Context, params models.EventsParams) {
-	c.Set(skipRequestValidationCtxKey, true)
-	clientChan, ok := c.Value("clientChan").(ClientChan)
-	if !ok {
-		return
-	}
-	userNotificationsChan, ok := c.Value("userNotificationsChan").(UserNotificationsChan)
-	if !ok {
-		return
-	}
-	// TODO map of channels for each Role ('global' notif.) ?
-	// TODO map of channels for every connected user for 'personal' notif. ?
-	// will use to alert cards moving, selected as card member, etc.
-	// test with curl -X 'GET' -N 'https://localhost:8090/v2/events?projectName=demo'
-	c.Stream(func(w io.Writer) bool {
-		select {
-		case msg, ok := <-clientChan:
-			if !ok {
-				return true
-			}
-			// TODO this part should actually be done before sending to channel.
-			// should it fail marshalling earlier, msg is an error message (literal or {"error":"..."})
-			// but all sse channels receive strings
-			te := &timeEvent{
-				Foo: "bar\n\n",
-				Msg: msg,
-			}
-			sseMsg, err := json.Marshal(te)
-			if err != nil {
-				c.SSEvent("message", "could not marshal message")
-
-				return true // should probably continue regardless. client should handle the error and stop/continue if desired
-			}
-			c.Render(-1, sse.Event{
-				Event: "test-event",
-				Data:  string(sseMsg),
-			})
-
-			c.Writer.Flush()
-
-			return true
-		case msg, ok := <-userNotificationsChan:
-			if !ok {
-				return true
-			}
-			c.Render(-1, sse.Event{
-				Event: string(models.TopicsGlobalAlerts),
-				Data:  msg,
-			})
-			c.Writer.Flush()
-
-			return true
-		case <-c.Request.Context().Done():
-			fmt.Printf("Client gone. Context cancelled: %v\n", c.Request.Context().Err())
-			c.SSEvent("message", "channel closed")
-			c.Writer.Flush()
-
-			return false
-		}
-	})
-}
-
 // newSSEServer initializes events and starts processing requests.
 func newSSEServer() *Event {
 	event := &Event{
@@ -316,4 +253,71 @@ func SSEHeadersMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Transfer-Encoding", "chunked")
 		c.Next()
 	}
+}
+
+// Events represents server events.
+// TODO requires query param projectId=...
+// to subscribe to the current project's topics only.
+func (h *StrictHandlers) Events(c *gin.Context, request EventsRequestObject) (EventsResponseObject, error) {
+	c.Set(skipRequestValidationCtxKey, true)
+	clientChan, ok := c.Value("clientChan").(ClientChan)
+	if !ok {
+		return nil, errors.New("clientChan missing")
+	}
+	userNotificationsChan, ok := c.Value("userNotificationsChan").(UserNotificationsChan)
+	if !ok {
+		return nil, errors.New("userNotificationsChan missing")
+	}
+	// TODO map of channels for each Role ('global' notif.) ?
+	// TODO map of channels for every connected user for 'personal' notif. ?
+	// will use to alert cards moving, selected as card member, etc.
+	// test with curl -X 'GET' -N 'https://localhost:8090/v2/events?projectName=demo'
+	c.Stream(func(w io.Writer) bool {
+		select {
+		case msg, ok := <-clientChan:
+			if !ok {
+				return true
+			}
+			// TODO this part should actually be done before sending to channel.
+			// should it fail marshalling earlier, msg is an error message (literal or {"error":"..."})
+			// but all sse channels receive strings
+			te := &timeEvent{
+				Foo: "bar\n\n",
+				Msg: msg,
+			}
+			sseMsg, err := json.Marshal(te)
+			if err != nil {
+				c.SSEvent("message", "could not marshal message")
+
+				return true // should probably continue regardless. client should handle the error and stop/continue if desired
+			}
+			c.Render(-1, sse.Event{
+				Event: "test-event",
+				Data:  string(sseMsg),
+			})
+
+			c.Writer.Flush()
+
+			return true
+		case msg, ok := <-userNotificationsChan:
+			if !ok {
+				return true
+			}
+			c.Render(-1, sse.Event{
+				Event: string(models.TopicsGlobalAlerts),
+				Data:  msg,
+			})
+			c.Writer.Flush()
+
+			return true
+		case <-c.Request.Context().Done():
+			fmt.Printf("Client gone. Context cancelled: %v\n", c.Request.Context().Err())
+			c.SSEvent("message", "channel closed")
+			c.Writer.Flush()
+
+			return false
+		}
+	})
+
+	return Events200TexteventStreamResponse{Body: strings.NewReader("")}, nil
 }

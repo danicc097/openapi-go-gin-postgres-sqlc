@@ -1,4 +1,4 @@
-package rest
+package rest_test
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/oapi-codegen/testutil"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -51,10 +52,10 @@ func TestOapiRequestValidator(t *testing.T) {
 	// access to "someScope", but disallow others.
 	kinopenapiOpts := openapi3filter.Options{
 		AuthenticationFunc: func(c context.Context, input *openapi3filter.AuthenticationInput) error {
-			gCtx := getGinContextFromCtx(c)
+			gCtx := rest.GetGinContextFromCtx(c)
 			assert.NotNil(t, gCtx)
 
-			assert.EqualValues(t, "hi!", getUserDataFromCtx(c))
+			assert.EqualValues(t, "hi!", rest.GetUserDataFromCtx(c))
 
 			for _, s := range input.Scopes {
 				if s == "someScope" {
@@ -68,9 +69,9 @@ func TestOapiRequestValidator(t *testing.T) {
 		},
 	}
 
-	kinopenapiOpts.WithCustomSchemaErrorFunc(CustomSchemaErrorFunc)
+	kinopenapiOpts.WithCustomSchemaErrorFunc(rest.CustomSchemaErrorFunc)
 
-	options := OAValidatorOptions{
+	options := rest.OAValidatorOptions{
 		ErrorHandler: func(c *gin.Context, message string, statusCode int) {
 			c.String(statusCode, "test: "+message)
 		},
@@ -78,7 +79,7 @@ func TestOapiRequestValidator(t *testing.T) {
 		UserData: "hi!",
 	}
 
-	oasMw := newOpenapiMiddleware(zaptest.NewLogger(t).Sugar(), openapi)
+	oasMw := rest.NewOpenapiMiddleware(zaptest.NewLogger(t).Sugar(), openapi)
 	g.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	called := false
@@ -209,12 +210,12 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 		MultiError:            true,
 	}
 	// TODO markSchemaErrorKey in kin-openapi should add path parameters to SchemaError.reversePath
-	kinopenapiOpts.WithCustomSchemaErrorFunc(CustomSchemaErrorFunc)
-	options := OAValidatorOptions{
+	kinopenapiOpts.WithCustomSchemaErrorFunc(rest.CustomSchemaErrorFunc)
+	options := rest.OAValidatorOptions{
 		Options: kinopenapiOpts,
 	}
 
-	oasMw := newOpenapiMiddleware(zaptest.NewLogger(t).Sugar(), openapi)
+	oasMw := rest.NewOpenapiMiddleware(zaptest.NewLogger(t).Sugar(), openapi)
 	g.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	called := false

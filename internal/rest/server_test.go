@@ -23,7 +23,7 @@ func TestValidationErrorsResponse(t *testing.T) {
 	}
 
 	logger := zaptest.NewLogger(t).Sugar()
-	oasMw := newOpenapiMiddleware(logger, openapi)
+	oasMw := NewOpenapiMiddleware(logger, openapi)
 	oaOptions := createOpenAPIValidatorOptions()
 
 	t.Run("response_validation", func(t *testing.T) {

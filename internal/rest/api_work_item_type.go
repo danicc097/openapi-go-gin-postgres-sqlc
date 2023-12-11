@@ -3,22 +3,29 @@ package rest
 import (
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handlers) DeleteWorkItemType(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *StrictHandlers) CreateWorkItemType(c *gin.Context, request CreateWorkItemTypeRequestObject) (CreateWorkItemTypeResponseObject, error) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
 }
 
-func (h *Handlers) GetWorkItemType(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *StrictHandlers) DeleteWorkItemType(c *gin.Context, request DeleteWorkItemTypeRequestObject) (DeleteWorkItemTypeResponseObject, error) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
 }
 
-func (h *Handlers) CreateWorkItemType(c *gin.Context, projectName models.ProjectName) {
+func (h *StrictHandlers) UpdateWorkItemType(c *gin.Context, request UpdateWorkItemTypeRequestObject) (UpdateWorkItemTypeResponseObject, error) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
 }
 
-func (h *Handlers) UpdateWorkItemType(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *StrictHandlers) GetWorkItemType(c *gin.Context, request GetWorkItemTypeRequestObject) (GetWorkItemTypeResponseObject, error) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
 }

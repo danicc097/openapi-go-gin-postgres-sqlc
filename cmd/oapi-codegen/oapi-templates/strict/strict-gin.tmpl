@@ -1,19 +1,27 @@
-type StrictHandlerFunc = runtime.StrictGinHandlerFunc
-type StrictMiddlewareFunc = runtime.StrictGinMiddlewareFunc
+type StrictHandlerFunc = strictgin.StrictGinHandlerFunc
+type StrictMiddlewareFunc = strictgin.StrictGinMiddlewareFunc
 
-func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc) ServerInterface {
-    return &strictHandler{ssi: ssi, middlewares: middlewares}
+func NewStrictHandler(ssi StrictServerInterface, strictMiddlewares []StrictMiddlewareFunc) ServerInterface {
+	return &strictHandlers{ssi: ssi, strictMiddlewares: strictMiddlewares}
 }
 
-type strictHandler struct {
-    ssi StrictServerInterface
-    middlewares []StrictMiddlewareFunc
+type strictHandlers struct {
+	ssi               StrictServerInterface
+	strictMiddlewares []StrictMiddlewareFunc
+}
+
+func (sh *strictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
+	return sh.ssi.middlewares(opID)
+}
+
+func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
+	return sh.ssi.authMiddlewares(opID)
 }
 
 {{range .}}
     {{$opid := .OperationId}}
     // {{$opid}} operation middleware
-    func (sh *strictHandler) {{.OperationId}}(ctx *gin.Context{{genParamArgs .PathParams}}{{if .RequiresParamObject}}, params {{.OperationId}}Params{{end}}) {
+    func (sh *strictHandlers) {{.OperationId}}(ctx *gin.Context{{genParamArgs .PathParams}}{{if .RequiresParamObject}}, params externalRef0.{{.OperationId}}Params{{end}}) {
         var request {{$opid | ucFirst}}RequestObject
 
         {{range .PathParams -}}
@@ -31,8 +39,10 @@ type strictHandler struct {
         {{$multipleBodies := gt (len .Bodies) 1 -}}
         {{range .Bodies -}}
             {{if $multipleBodies}}if strings.HasPrefix(ctx.GetHeader("Content-Type"), "{{.ContentType}}") { {{end}}
-                {{if eq .NameTag "JSON" -}}
-                    var body {{$opid}}{{.NameTag}}RequestBody
+                {{if .IsJSON }}
+                    {{ $st := (printf "%v%v" $opid "Request") }}
+                    //{{$st}}
+                    var body {{if not (is_rest_type $st)}}externalRef0.{{$opid}}{{.NameTag}}RequestBody{{else}}{{$st}}{{end}}
                     if err := ctx.ShouldBind(&body); err != nil {
                         ctx.Status(http.StatusBadRequest)
                         ctx.Error(err)
@@ -40,11 +50,12 @@ type strictHandler struct {
                     }
                     request.{{if $multipleBodies}}{{.NameTag}}{{end}}Body = &body
                 {{else if eq .NameTag "Formdata" -}}
+                    {{ $st := (printf "%v@%v" $opid "Request") }}
                     if err := ctx.Request.ParseForm(); err != nil {
                         ctx.Error(err)
                         return
                     }
-                    var body {{$opid}}{{.NameTag}}RequestBody
+                    var body {{if not (is_rest_type $st)}}externalRef0.{{$opid}}{{.NameTag}}RequestBody{{else}}{{$st}}{{end}}
                     if err := runtime.BindForm(&body, ctx.Request.Form, nil, nil); err != nil {
                         ctx.Error(err)
                         return
@@ -74,7 +85,7 @@ type strictHandler struct {
         handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
             return sh.ssi.{{.OperationId}}(ctx, request.({{$opid | ucFirst}}RequestObject))
         }
-        for _, middleware := range sh.middlewares {
+        for _, middleware := range sh.strictMiddlewares {
             handler = middleware(handler, "{{.OperationId}}")
         }
 
@@ -88,7 +99,7 @@ type strictHandler struct {
                 ctx.Error(err)
             }
         } else if response != nil {
-            ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+            ctx.Error(fmt.Errorf("unexpected response type: %T", response))
         }
     }
 {{end}}

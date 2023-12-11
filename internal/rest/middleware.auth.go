@@ -23,7 +23,7 @@ type authMiddleware struct {
 	svc    *services.Services
 }
 
-func newAuthMiddleware(
+func NewAuthMiddleware(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,
 	svcs *services.Services,
 ) *authMiddleware {
@@ -50,7 +50,7 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 				return
 			}
 
-			ctxWithUser(c, u)
+			CtxWithUser(c, u)
 
 			c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
 
@@ -65,7 +65,7 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 				return
 			}
 
-			ctxWithUser(c, u)
+			CtxWithUser(c, u)
 
 			c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
 

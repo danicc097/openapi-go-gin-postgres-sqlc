@@ -4,14 +4,991 @@
 package rest
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
+	"time"
 
 	externalRef0 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/google/uuid"
+	strictgin "github.com/oapi-codegen/runtime/strictmiddleware/gin"
 )
+
+const (
+	Api_keyScopes     = "api_key.Scopes"
+	Bearer_authScopes = "bearer_auth.Scopes"
+)
+
+// Defines values for Demo2WorkItemTypes.
+const (
+	Demo2WorkItemTypesAnotherType Demo2WorkItemTypes = "Another type"
+	Demo2WorkItemTypesType1       Demo2WorkItemTypes = "Type 1"
+	Demo2WorkItemTypesType2       Demo2WorkItemTypes = "Type 2"
+)
+
+// AllDemo2WorkItemTypesValues returns all possible values for Demo2WorkItemTypes.
+func AllDemo2WorkItemTypesValues() []Demo2WorkItemTypes {
+	return []Demo2WorkItemTypes{
+		Demo2WorkItemTypesAnotherType,
+		Demo2WorkItemTypesType1,
+		Demo2WorkItemTypesType2,
+	}
+}
+
+// Defines values for DemoKanbanSteps.
+const (
+	DemoKanbanStepsDisabled       DemoKanbanSteps = "Disabled"
+	DemoKanbanStepsReceived       DemoKanbanSteps = "Received"
+	DemoKanbanStepsUnderReview    DemoKanbanSteps = "Under review"
+	DemoKanbanStepsWorkInProgress DemoKanbanSteps = "Work in progress"
+)
+
+// AllDemoKanbanStepsValues returns all possible values for DemoKanbanSteps.
+func AllDemoKanbanStepsValues() []DemoKanbanSteps {
+	return []DemoKanbanSteps{
+		DemoKanbanStepsDisabled,
+		DemoKanbanStepsReceived,
+		DemoKanbanStepsUnderReview,
+		DemoKanbanStepsWorkInProgress,
+	}
+}
+
+// Defines values for DemoProject2KanbanSteps.
+const (
+	DemoProject2KanbanStepsReceived DemoProject2KanbanSteps = "Received"
+)
+
+// AllDemoProject2KanbanStepsValues returns all possible values for DemoProject2KanbanSteps.
+func AllDemoProject2KanbanStepsValues() []DemoProject2KanbanSteps {
+	return []DemoProject2KanbanSteps{
+		DemoProject2KanbanStepsReceived,
+	}
+}
+
+// Defines values for DemoProjectKanbanSteps.
+const (
+	DemoProjectKanbanStepsDisabled       DemoProjectKanbanSteps = "Disabled"
+	DemoProjectKanbanStepsReceived       DemoProjectKanbanSteps = "Received"
+	DemoProjectKanbanStepsUnderReview    DemoProjectKanbanSteps = "Under review"
+	DemoProjectKanbanStepsWorkInProgress DemoProjectKanbanSteps = "Work in progress"
+)
+
+// AllDemoProjectKanbanStepsValues returns all possible values for DemoProjectKanbanSteps.
+func AllDemoProjectKanbanStepsValues() []DemoProjectKanbanSteps {
+	return []DemoProjectKanbanSteps{
+		DemoProjectKanbanStepsDisabled,
+		DemoProjectKanbanStepsReceived,
+		DemoProjectKanbanStepsUnderReview,
+		DemoProjectKanbanStepsWorkInProgress,
+	}
+}
+
+// Defines values for DemoTwoKanbanSteps.
+const (
+	DemoTwoKanbanStepsReceived DemoTwoKanbanSteps = "Received"
+)
+
+// AllDemoTwoKanbanStepsValues returns all possible values for DemoTwoKanbanSteps.
+func AllDemoTwoKanbanStepsValues() []DemoTwoKanbanSteps {
+	return []DemoTwoKanbanSteps{
+		DemoTwoKanbanStepsReceived,
+	}
+}
+
+// Defines values for DemoTwoWorkItemTypes.
+const (
+	DemoTwoWorkItemTypesAnotherType DemoTwoWorkItemTypes = "Another type"
+	DemoTwoWorkItemTypesType1       DemoTwoWorkItemTypes = "Type 1"
+	DemoTwoWorkItemTypesType2       DemoTwoWorkItemTypes = "Type 2"
+)
+
+// AllDemoTwoWorkItemTypesValues returns all possible values for DemoTwoWorkItemTypes.
+func AllDemoTwoWorkItemTypesValues() []DemoTwoWorkItemTypes {
+	return []DemoTwoWorkItemTypes{
+		DemoTwoWorkItemTypesAnotherType,
+		DemoTwoWorkItemTypesType1,
+		DemoTwoWorkItemTypesType2,
+	}
+}
+
+// Defines values for DemoWorkItemTypes.
+const (
+	DemoWorkItemTypesType1 DemoWorkItemTypes = "Type 1"
+)
+
+// AllDemoWorkItemTypesValues returns all possible values for DemoWorkItemTypes.
+func AllDemoWorkItemTypesValues() []DemoWorkItemTypes {
+	return []DemoWorkItemTypes{
+		DemoWorkItemTypesType1,
+	}
+}
+
+// Defines values for Direction.
+const (
+	DirectionAsc  Direction = "asc"
+	DirectionDesc Direction = "desc"
+)
+
+// AllDirectionValues returns all possible values for Direction.
+func AllDirectionValues() []Direction {
+	return []Direction{
+		DirectionAsc,
+		DirectionDesc,
+	}
+}
+
+// ErrorCode Represents standardized HTTP error types.
+// Notes:
+// - 'Private' marks an error to be hidden in response.
+const (
+	ErrorCodeAlreadyExists      ErrorCode = "AlreadyExists"
+	ErrorCodeInvalidArgument    ErrorCode = "InvalidArgument"
+	ErrorCodeInvalidRole        ErrorCode = "InvalidRole"
+	ErrorCodeInvalidScope       ErrorCode = "InvalidScope"
+	ErrorCodeInvalidUUID        ErrorCode = "InvalidUUID"
+	ErrorCodeNotFound           ErrorCode = "NotFound"
+	ErrorCodeOIDC               ErrorCode = "OIDC"
+	ErrorCodePrivate            ErrorCode = "Private"
+	ErrorCodeRequestValidation  ErrorCode = "RequestValidation"
+	ErrorCodeResponseValidation ErrorCode = "ResponseValidation"
+	ErrorCodeUnauthenticated    ErrorCode = "Unauthenticated"
+	ErrorCodeUnauthorized       ErrorCode = "Unauthorized"
+	ErrorCodeUnknown            ErrorCode = "Unknown"
+)
+
+// AllErrorCodeValues returns all possible values for ErrorCode.
+func AllErrorCodeValues() []ErrorCode {
+	return []ErrorCode{
+		ErrorCodeAlreadyExists,
+		ErrorCodeInvalidArgument,
+		ErrorCodeInvalidRole,
+		ErrorCodeInvalidScope,
+		ErrorCodeInvalidUUID,
+		ErrorCodeNotFound,
+		ErrorCodeOIDC,
+		ErrorCodePrivate,
+		ErrorCodeRequestValidation,
+		ErrorCodeResponseValidation,
+		ErrorCodeUnauthenticated,
+		ErrorCodeUnauthorized,
+		ErrorCodeUnknown,
+	}
+}
+
+// NotificationType represents a database 'notification_type'
+const (
+	NotificationTypeGlobal   NotificationType = "global"
+	NotificationTypePersonal NotificationType = "personal"
+)
+
+// AllNotificationTypeValues returns all possible values for NotificationType.
+func AllNotificationTypeValues() []NotificationType {
+	return []NotificationType{
+		NotificationTypeGlobal,
+		NotificationTypePersonal,
+	}
+}
+
+// Defines values for Project.
+const (
+	ProjectDemo    Project = "demo"
+	ProjectDemoTwo Project = "demo_two"
+)
+
+// AllProjectValues returns all possible values for Project.
+func AllProjectValues() []Project {
+	return []Project{
+		ProjectDemo,
+		ProjectDemoTwo,
+	}
+}
+
+// Defines values for Role.
+const (
+	RoleAdmin        Role = "admin"
+	RoleAdvancedUser Role = "advancedUser"
+	RoleGuest        Role = "guest"
+	RoleManager      Role = "manager"
+	RoleSuperAdmin   Role = "superAdmin"
+	RoleUser         Role = "user"
+)
+
+// AllRoleValues returns all possible values for Role.
+func AllRoleValues() []Role {
+	return []Role{
+		RoleAdmin,
+		RoleAdvancedUser,
+		RoleGuest,
+		RoleManager,
+		RoleSuperAdmin,
+		RoleUser,
+	}
+}
+
+// Defines values for Scope.
+const (
+	ScopeProjectSettingsWrite Scope = "project-settings:write"
+	ScopeScopesWrite          Scope = "scopes:write"
+	ScopeTeamSettingsWrite    Scope = "team-settings:write"
+	ScopeUsersDelete          Scope = "users:delete"
+	ScopeUsersRead            Scope = "users:read"
+	ScopeUsersWrite           Scope = "users:write"
+	ScopeWorkItemReview       Scope = "work-item:review"
+	ScopeWorkItemTagCreate    Scope = "work-item-tag:create"
+	ScopeWorkItemTagDelete    Scope = "work-item-tag:delete"
+	ScopeWorkItemTagEdit      Scope = "work-item-tag:edit"
+)
+
+// AllScopeValues returns all possible values for Scope.
+func AllScopeValues() []Scope {
+	return []Scope{
+		ScopeProjectSettingsWrite,
+		ScopeScopesWrite,
+		ScopeTeamSettingsWrite,
+		ScopeUsersDelete,
+		ScopeUsersRead,
+		ScopeUsersWrite,
+		ScopeWorkItemReview,
+		ScopeWorkItemTagCreate,
+		ScopeWorkItemTagDelete,
+		ScopeWorkItemTagEdit,
+	}
+}
+
+// Topics string identifiers for SSE event listeners.
+const (
+	TopicsGlobalAlerts Topics = "GlobalAlerts"
+)
+
+// AllTopicsValues returns all possible values for Topics.
+func AllTopicsValues() []Topics {
+	return []Topics{
+		TopicsGlobalAlerts,
+	}
+}
+
+// WorkItemRole represents a database 'work_item_role'
+const (
+	WorkItemRolePreparer WorkItemRole = "preparer"
+	WorkItemRoleReviewer WorkItemRole = "reviewer"
+)
+
+// AllWorkItemRoleValues returns all possible values for WorkItemRole.
+func AllWorkItemRoleValues() []WorkItemRole {
+	return []WorkItemRole{
+		WorkItemRolePreparer,
+		WorkItemRoleReviewer,
+	}
+}
+
+/* Ignoring existing rest struct
+// CreateDemoTwoWorkItemRequest defines the model for CreateDemoTwoWorkItemRequest.
+type CreateDemoTwoWorkItemRequest  struct {
+    Base externalRef0.DbWorkItemCreateParams`json:"base"`
+    DemoTwoProject externalRef0.DbDemoTwoWorkItemCreateParams`json:"demoTwoProject"`
+    Members []externalRef0.ServicesMember`json:"members"`
+    ProjectName externalRef0.Project`json:"projectName"`
+    TagIDs []int`json:"tagIDs"`
+}
+*/
+
+/* Ignoring existing rest struct
+// CreateDemoWorkItemRequest defines the model for CreateDemoWorkItemRequest.
+type CreateDemoWorkItemRequest  struct {
+    Base externalRef0.DbWorkItemCreateParams`json:"base"`
+    DemoProject externalRef0.DbDemoWorkItemCreateParams`json:"demoProject"`
+    Members []externalRef0.ServicesMember`json:"members"`
+    ProjectName externalRef0.Project`json:"projectName"`
+    TagIDs []int`json:"tagIDs"`
+}
+*/
+
+/* Ignoring existing rest struct
+// CreateTeamRequest defines the model for CreateTeamRequest.
+type CreateTeamRequest  struct {
+    Description string`json:"description"`
+    Name string`json:"name"`
+    ProjectID int`json:"projectID"`
+}
+*/
+
+/* Ignoring existing rest struct
+// CreateWorkItemCommentRequest defines the model for CreateWorkItemCommentRequest.
+type CreateWorkItemCommentRequest  struct {
+    Message string`json:"message"`
+    UserID externalRef0.DbUserID`json:"userID"`
+    WorkItemID int`json:"workItemID"`
+}
+*/
+
+// CreateWorkItemRequest defines the model for CreateWorkItemRequest.
+type CreateWorkItemRequest struct {
+	union json.RawMessage
+}
+
+/* Ignoring existing rest struct
+// CreateWorkItemTagRequest defines the model for CreateWorkItemTagRequest.
+type CreateWorkItemTagRequest  struct {
+    Color string`json:"color"`
+    Description string`json:"description"`
+    Name string`json:"name"`
+}
+*/
+
+/* Ignoring existing rest struct
+// CreateWorkItemTypeRequest defines the model for CreateWorkItemTypeRequest.
+type CreateWorkItemTypeRequest  struct {
+    Color string`json:"color"`
+    Description string`json:"description"`
+    Name string`json:"name"`
+}
+*/
+
+// DbActivity defines the model for DbActivity.
+type DbActivity struct {
+	ActivityID   int    `json:"activityID"`
+	Description  string `json:"description"`
+	IsProductive bool   `json:"isProductive"`
+	Name         string `json:"name"`
+	ProjectID    int    `json:"projectID"`
+}
+
+// DbActivityCreateParams defines the model for DbActivityCreateParams.
+type DbActivityCreateParams struct {
+	Description  string `json:"description"`
+	IsProductive bool   `json:"isProductive"`
+	Name         string `json:"name"`
+	ProjectID    *int   `json:"projectID,omitempty"`
+}
+
+// DbDemoTwoWorkItem defines the model for DbDemoTwoWorkItem.
+type DbDemoTwoWorkItem struct {
+	CustomDateForProject2 *time.Time                `json:"customDateForProject2"`
+	WorkItemID            externalRef0.DbWorkItemID `json:"workItemID"`
+}
+
+// DbDemoTwoWorkItemCreateParams defines the model for DbDemoTwoWorkItemCreateParams.
+type DbDemoTwoWorkItemCreateParams struct {
+	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
+}
+
+// DbDemoWorkItem defines the model for DbDemoWorkItem.
+type DbDemoWorkItem struct {
+	LastMessageAt time.Time `json:"lastMessageAt"`
+	Line          string    `json:"line"`
+	Ref           string    `json:"ref"`
+	Reopened      bool      `json:"reopened"`
+	WorkItemID    int       `json:"workItemID"`
+}
+
+// DbDemoWorkItemCreateParams defines the model for DbDemoWorkItemCreateParams.
+type DbDemoWorkItemCreateParams struct {
+	LastMessageAt time.Time `json:"lastMessageAt"`
+	Line          string    `json:"line"`
+	Ref           string    `json:"ref"`
+	Reopened      bool      `json:"reopened"`
+}
+
+// DbKanbanStep defines the model for DbKanbanStep.
+type DbKanbanStep struct {
+	Color         string `json:"color"`
+	Description   string `json:"description"`
+	KanbanStepID  int    `json:"kanbanStepID"`
+	Name          string `json:"name"`
+	ProjectID     int    `json:"projectID"`
+	StepOrder     int    `json:"stepOrder"`
+	TimeTrackable bool   `json:"timeTrackable"`
+}
+
+// DbNotification defines the model for DbNotification.
+type DbNotification struct {
+	Body           string                        `json:"body"`
+	CreatedAt      time.Time                     `json:"createdAt"`
+	Labels         []string                      `json:"labels"`
+	Link           *string                       `json:"link"`
+	NotificationID externalRef0.DbNotificationID `json:"notificationID"`
+
+	// NotificationType represents a database 'notification_type'
+	NotificationType externalRef0.NotificationType `json:"notificationType"`
+	Receiver         *externalRef0.DbUserID        `json:"receiver,omitempty"`
+	Sender           externalRef0.DbUserID         `json:"sender"`
+	Title            string                        `json:"title"`
+}
+
+// DbNotificationID defines the model for DbNotificationID.
+type DbNotificationID = interface{}
+
+// DbProject defines the model for DbProject.
+type DbProject struct {
+	BoardConfig externalRef0.ProjectConfig `json:"boardConfig"`
+	CreatedAt   time.Time                  `json:"createdAt"`
+	Description string                     `json:"description"`
+	Name        externalRef0.Project       `json:"name"`
+	ProjectID   int                        `json:"projectID"`
+	UpdatedAt   time.Time                  `json:"updatedAt"`
+}
+
+// DbProjectID defines the model for DbProjectID.
+type DbProjectID = interface{}
+
+// DbTeam defines the model for DbTeam.
+type DbTeam struct {
+	CreatedAt   time.Time `json:"createdAt"`
+	Description string    `json:"description"`
+	Name        string    `json:"name"`
+	ProjectID   int       `json:"projectID"`
+	TeamID      int       `json:"teamID"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
+// DbTeamCreateParams defines the model for DbTeamCreateParams.
+type DbTeamCreateParams struct {
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	ProjectID   int    `json:"projectID"`
+}
+
+// DbTimeEntry defines the model for DbTimeEntry.
+type DbTimeEntry struct {
+	ActivityID      int                   `json:"activityID"`
+	Comment         string                `json:"comment"`
+	DurationMinutes *int                  `json:"durationMinutes"`
+	Start           time.Time             `json:"start"`
+	TeamID          *int                  `json:"teamID"`
+	TimeEntryID     int                   `json:"timeEntryID"`
+	UserID          externalRef0.DbUserID `json:"userID"`
+	WorkItemID      *int                  `json:"workItemID"`
+}
+
+// DbUser defines the model for DbUser.
+type DbUser struct {
+	CreatedAt                time.Time             `json:"createdAt"`
+	DeletedAt                *time.Time            `json:"deletedAt"`
+	Email                    string                `json:"email"`
+	FirstName                *string               `json:"firstName"`
+	FullName                 *string               `json:"fullName"`
+	HasGlobalNotifications   bool                  `json:"hasGlobalNotifications"`
+	HasPersonalNotifications bool                  `json:"hasPersonalNotifications"`
+	LastName                 *string               `json:"lastName"`
+	Scopes                   externalRef0.Scopes   `json:"scopes"`
+	UserID                   externalRef0.DbUserID `json:"userID"`
+	Username                 string                `json:"username"`
+}
+
+// DbUserAPIKey defines the model for DbUserAPIKey.
+type DbUserAPIKey struct {
+	ApiKey    string                `json:"apiKey"`
+	ExpiresOn time.Time             `json:"expiresOn"`
+	UserID    externalRef0.DbUserID `json:"userID"`
+}
+
+// DbUserID defines the model for DbUserID.
+type DbUserID = uuid.UUID
+
+// DbUserNotification defines the model for DbUserNotification.
+type DbUserNotification struct {
+	NotificationID     int                   `json:"notificationID"`
+	Read               bool                  `json:"read"`
+	UserID             externalRef0.DbUserID `json:"userID"`
+	UserNotificationID int                   `json:"userNotificationID"`
+}
+
+// DbWorkItem defines the model for DbWorkItem.
+type DbWorkItem struct {
+	ClosedAt       *time.Time             `json:"closedAt"`
+	CreatedAt      time.Time              `json:"createdAt"`
+	DeletedAt      *time.Time             `json:"deletedAt"`
+	Description    string                 `json:"description"`
+	KanbanStepID   int                    `json:"kanbanStepID"`
+	Metadata       map[string]interface{} `json:"metadata"`
+	TargetDate     time.Time              `json:"targetDate"`
+	TeamID         int                    `json:"teamID"`
+	Title          string                 `json:"title"`
+	UpdatedAt      time.Time              `json:"updatedAt"`
+	WorkItemID     int                    `json:"workItemID"`
+	WorkItemTypeID int                    `json:"workItemTypeID"`
+}
+
+// DbWorkItemComment defines the model for DbWorkItemComment.
+type DbWorkItemComment struct {
+	CreatedAt         time.Time             `json:"createdAt"`
+	Message           string                `json:"message"`
+	UpdatedAt         time.Time             `json:"updatedAt"`
+	UserID            externalRef0.DbUserID `json:"userID"`
+	WorkItemCommentID int                   `json:"workItemCommentID"`
+	WorkItemID        int                   `json:"workItemID"`
+}
+
+// DbWorkItemCreateParams defines the model for DbWorkItemCreateParams.
+type DbWorkItemCreateParams struct {
+	ClosedAt       *time.Time             `json:"closedAt"`
+	Description    string                 `json:"description"`
+	KanbanStepID   int                    `json:"kanbanStepID"`
+	Metadata       map[string]interface{} `json:"metadata"`
+	TargetDate     time.Time              `json:"targetDate"`
+	TeamID         int                    `json:"teamID"`
+	Title          string                 `json:"title"`
+	WorkItemTypeID int                    `json:"workItemTypeID"`
+}
+
+// DbWorkItemID defines the model for DbWorkItemID.
+type DbWorkItemID = interface{}
+
+// DbWorkItemRole defines the model for DbWorkItemRole.
+type DbWorkItemRole = string
+
+// DbWorkItemTag defines the model for DbWorkItemTag.
+type DbWorkItemTag struct {
+	Color         string `json:"color"`
+	Description   string `json:"description"`
+	Name          string `json:"name"`
+	ProjectID     int    `json:"projectID"`
+	WorkItemTagID int    `json:"workItemTagID"`
+}
+
+// DbWorkItemTagCreateParams defines the model for DbWorkItemTagCreateParams.
+type DbWorkItemTagCreateParams struct {
+	Color       string `json:"color"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+}
+
+// DbWorkItemType defines the model for DbWorkItemType.
+type DbWorkItemType struct {
+	Color          string `json:"color"`
+	Description    string `json:"description"`
+	Name           string `json:"name"`
+	ProjectID      int    `json:"projectID"`
+	WorkItemTypeID int    `json:"workItemTypeID"`
+}
+
+// DbWorkItemTypeID defines the model for DbWorkItemTypeID.
+type DbWorkItemTypeID = interface{}
+
+// Demo2WorkItemTypes defines the model for Demo2WorkItemTypes.
+type Demo2WorkItemTypes string
+
+// DemoKanbanSteps defines the model for DemoKanbanSteps.
+type DemoKanbanSteps string
+
+// DemoProject2KanbanSteps defines the model for DemoProject2KanbanSteps.
+type DemoProject2KanbanSteps string
+
+// DemoProjectKanbanSteps defines the model for DemoProjectKanbanSteps.
+type DemoProjectKanbanSteps string
+
+// DemoTwoKanbanSteps defines the model for DemoTwoKanbanSteps.
+type DemoTwoKanbanSteps string
+
+// DemoTwoWorkItemTypes defines the model for DemoTwoWorkItemTypes.
+type DemoTwoWorkItemTypes string
+
+/* Ignoring existing rest struct
+// DemoTwoWorkItems defines the model for DemoTwoWorkItems.
+type DemoTwoWorkItems  struct {
+    ClosedAt *time.Time`json:"closedAt"`
+    CreatedAt time.Time`json:"createdAt"`
+    DeletedAt *time.Time`json:"deletedAt"`
+    DemoTwoWorkItem externalRef0.DbDemoTwoWorkItem`json:"demoTwoWorkItem"`
+    Description string`json:"description"`
+    KanbanStepID int`json:"kanbanStepID"`
+    Members *[]externalRef0.DbUser`json:"members"`
+    Metadata map[string]interface{}`json:"metadata"`
+    TargetDate time.Time`json:"targetDate"`
+    TeamID int`json:"teamID"`
+    TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
+    Title string`json:"title"`
+    UpdatedAt time.Time`json:"updatedAt"`
+    WorkItemComments *[]externalRef0.DbWorkItemComment`json:"workItemComments"`
+    WorkItemID int`json:"workItemID"`
+    WorkItemTags *[]externalRef0.DbWorkItemTag`json:"workItemTags"`
+    WorkItemType *externalRef0.DbWorkItemType`json:"workItemType,omitempty"`
+    WorkItemTypeID int`json:"workItemTypeID"`
+}
+*/
+
+// DemoWorkItemTypes defines the model for DemoWorkItemTypes.
+type DemoWorkItemTypes string
+
+/* Ignoring existing rest struct
+// DemoWorkItems defines the model for DemoWorkItems.
+type DemoWorkItems  struct {
+    ClosedAt *time.Time`json:"closedAt"`
+    CreatedAt time.Time`json:"createdAt"`
+    DeletedAt *time.Time`json:"deletedAt"`
+    DemoWorkItem externalRef0.DbDemoWorkItem`json:"demoWorkItem"`
+    Description string`json:"description"`
+    KanbanStepID int`json:"kanbanStepID"`
+    Members *[]externalRef0.DbUser`json:"members"`
+    Metadata map[string]interface{}`json:"metadata"`
+    TargetDate time.Time`json:"targetDate"`
+    TeamID int`json:"teamID"`
+    TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
+    Title string`json:"title"`
+    UpdatedAt time.Time`json:"updatedAt"`
+    WorkItemComments *[]externalRef0.DbWorkItemComment`json:"workItemComments"`
+    WorkItemID int`json:"workItemID"`
+    WorkItemTags *[]externalRef0.DbWorkItemTag`json:"workItemTags"`
+    WorkItemType *externalRef0.DbWorkItemType`json:"workItemType,omitempty"`
+    WorkItemTypeID int`json:"workItemTypeID"`
+}
+*/
+
+// Direction defines the model for Direction.
+type Direction string
+
+// ErrorCode Represents standardized HTTP error types.
+// Notes:
+// - 'Private' marks an error to be hidden in response.
+type ErrorCode string
+
+// HTTPError represents an error message response.
+type HTTPError struct {
+	Detail string `json:"detail"`
+	Error  string `json:"error"`
+
+	// Loc location in body path, if any
+	Loc    *[]string `json:"loc,omitempty"`
+	Status int       `json:"status"`
+	Title  string    `json:"title"`
+
+	// Type Represents standardized HTTP error types.
+	// Notes:
+	// - 'Private' marks an error to be hidden in response.
+	Type            externalRef0.ErrorCode            `json:"type"`
+	ValidationError *externalRef0.HTTPValidationError `json:"validationError,omitempty"`
+}
+
+// HTTPValidationError defines the model for HTTPValidationError.
+type HTTPValidationError struct {
+	// Detail Additional details for validation errors
+	Detail *[]externalRef0.ValidationError `json:"detail,omitempty"`
+
+	// Messages Descriptive error messages to show in a callout
+	Messages []string `json:"messages"`
+}
+
+// InitializeProjectRequest defines the model for InitializeProjectRequest.
+type InitializeProjectRequest struct {
+	Tags  *[]externalRef0.DbWorkItemTagCreateParams `json:"tags"`
+	Teams *[]externalRef0.DbTeamCreateParams        `json:"teams"`
+}
+
+// NotificationType represents a database 'notification_type'
+type NotificationType string
+
+/* Ignoring existing rest struct
+// PaginatedNotificationsResponse defines the model for PaginatedNotificationsResponse.
+type PaginatedNotificationsResponse  struct {
+    Items *[]externalRef0.RestNotification`json:"items"`
+    Page externalRef0.RestPaginationPage`json:"page"`
+}
+*/
+
+// Project defines the model for Project.
+type Project string
+
+/* Ignoring existing rest struct
+// ProjectBoard defines the model for ProjectBoard.
+type ProjectBoard  struct {
+    ProjectName externalRef0.Project`json:"projectName"`
+}
+*/
+
+// ProjectConfig defines the model for ProjectConfig.
+type ProjectConfig struct {
+	Fields        []externalRef0.ProjectConfigField `json:"fields"`
+	Header        []string                          `json:"header"`
+	Visualization *map[string]interface{}           `json:"visualization,omitempty"`
+}
+
+// ProjectConfigField defines the model for ProjectConfigField.
+type ProjectConfigField struct {
+	IsEditable    bool   `json:"isEditable"`
+	IsVisible     bool   `json:"isVisible"`
+	Name          string `json:"name"`
+	Path          string `json:"path"`
+	ShowCollapsed bool   `json:"showCollapsed"`
+}
+
+// RestNotification defines the model for RestNotification.
+type RestNotification struct {
+	Notification       externalRef0.DbNotification `json:"notification"`
+	NotificationID     int                         `json:"notificationID"`
+	Read               bool                        `json:"read"`
+	UserID             externalRef0.DbUserID       `json:"userID"`
+	UserNotificationID int                         `json:"userNotificationID"`
+}
+
+// RestPaginationPage defines the model for RestPaginationPage.
+type RestPaginationPage struct {
+	NextCursor *string `json:"nextCursor,omitempty"`
+}
+
+// Role defines the model for Role.
+type Role string
+
+// Scope defines the model for Scope.
+type Scope string
+
+// Scopes defines the model for Scopes.
+type Scopes = []externalRef0.Scope
+
+// ServicesMember defines the model for ServicesMember.
+type ServicesMember struct {
+	// Role represents a database 'work_item_role'
+	Role   externalRef0.WorkItemRole `json:"role"`
+	UserID externalRef0.DbUserID     `json:"userID"`
+}
+
+/* Ignoring existing rest struct
+// Team defines the model for Team.
+type Team  struct {
+    CreatedAt time.Time`json:"createdAt"`
+    Description string`json:"description"`
+    Name string`json:"name"`
+    ProjectID int`json:"projectID"`
+    TeamID int`json:"teamID"`
+    UpdatedAt time.Time`json:"updatedAt"`
+}
+*/
+
+// Topics string identifiers for SSE event listeners.
+type Topics string
+
+/* Ignoring existing rest struct
+// UpdateTeamRequest defines the model for UpdateTeamRequest.
+type UpdateTeamRequest  struct {
+    Description *string`json:"description,omitempty"`
+    Name *string`json:"name,omitempty"`
+    ProjectID *int`json:"projectID,omitempty"`
+}
+*/
+
+// UpdateUserAuthRequest represents User authorization data to update
+type UpdateUserAuthRequest struct {
+	Role   *externalRef0.Role   `json:"role,omitempty"`
+	Scopes *externalRef0.Scopes `json:"scopes,omitempty"`
+}
+
+// UpdateUserRequest represents User data to update
+type UpdateUserRequest struct {
+	// FirstName originally from auth server but updatable
+	FirstName *string `json:"firstName,omitempty"`
+
+	// LastName originally from auth server but updatable
+	LastName *string `json:"lastName,omitempty"`
+}
+
+/* Ignoring existing rest struct
+// UpdateWorkItemTagRequest defines the model for UpdateWorkItemTagRequest.
+type UpdateWorkItemTagRequest  struct {
+    Color *string`json:"color,omitempty"`
+    Description *string`json:"description,omitempty"`
+    Name *string`json:"name,omitempty"`
+}
+*/
+
+/* Ignoring existing rest struct
+// UpdateWorkItemTypeRequest defines the model for UpdateWorkItemTypeRequest.
+type UpdateWorkItemTypeRequest  struct {
+    Color *string`json:"color,omitempty"`
+    Description *string`json:"description,omitempty"`
+    Name *string`json:"name,omitempty"`
+}
+*/
+
+/* Ignoring existing rest struct
+// User defines the model for User.
+type User  struct {
+    ApiKey *externalRef0.DbUserAPIKey`json:"apiKey,omitempty"`
+    CreatedAt time.Time`json:"createdAt"`
+    DeletedAt *time.Time`json:"deletedAt"`
+    Email string`json:"email"`
+    FirstName *string`json:"firstName"`
+    FullName *string`json:"fullName"`
+    HasGlobalNotifications bool`json:"hasGlobalNotifications"`
+    HasPersonalNotifications bool`json:"hasPersonalNotifications"`
+    LastName *string`json:"lastName"`
+    Projects *[]externalRef0.DbProject`json:"projects"`
+    Role externalRef0.Role`json:"role"`
+    Scopes externalRef0.Scopes`json:"scopes"`
+    Teams *[]externalRef0.DbTeam`json:"teams"`
+    UserID externalRef0.DbUserID`json:"userID"`
+    Username string`json:"username"`
+}
+*/
+
+// UuidUUID defines the model for UuidUUID.
+type UuidUUID = uuid.UUID
+
+// ValidationError defines the model for ValidationError.
+type ValidationError struct {
+	Ctx *map[string]interface{} `json:"ctx,omitempty"`
+
+	// Detail verbose details of the error
+	Detail struct {
+		Schema map[string]interface{} `json:"schema"`
+		Value  string                 `json:"value"`
+	} `json:"detail"`
+
+	// Loc location in body path, if any
+	Loc []string `json:"loc"`
+
+	// Msg should always be shown to the user
+	Msg string `json:"msg"`
+}
+
+// WorkItemRole represents a database 'work_item_role'
+type WorkItemRole string
+
+/* Ignoring existing rest struct
+// WorkItemTag defines the model for WorkItemTag.
+type WorkItemTag  struct {
+    Color string`json:"color"`
+    Description string`json:"description"`
+    Name string`json:"name"`
+    ProjectID int`json:"projectID"`
+    WorkItemTagID int`json:"workItemTagID"`
+}
+*/
+
+/* Ignoring existing rest struct
+// WorkItemType defines the model for WorkItemType.
+type WorkItemType  struct {
+    Color string`json:"color"`
+    Description string`json:"description"`
+    Name string`json:"name"`
+    ProjectID int`json:"projectID"`
+    WorkItemTypeID int`json:"workItemTypeID"`
+}
+*/
+
+// ProjectName defines the model for ProjectName.
+type ProjectName = externalRef0.Project
+
+// SerialID defines the model for SerialID.
+type SerialID = int
+
+// UUID defines the model for UUID.
+type UUID = uuid.UUID
+
+// EventsParams defines parameters for Events.
+type EventsParams struct {
+	ProjectName externalRef0.Project `form:"projectName" json:"projectName"`
+}
+
+// GetPaginatedNotificationsParams defines parameters for GetPaginatedNotifications.
+type GetPaginatedNotificationsParams struct {
+	Limit     int                    `form:"limit" json:"limit"`
+	Direction externalRef0.Direction `form:"direction" json:"direction"`
+	Cursor    string                 `form:"cursor" json:"cursor"`
+}
+
+// GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
+type GetProjectWorkitemsParams struct {
+	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
+	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
+}
+
+// UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
+
+type UpdateProjectConfigJSONRequestBody = ProjectConfig
+
+// InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
+
+type InitializeProjectJSONRequestBody = InitializeProjectRequest
+
+// CreateTeamJSONRequestBody defines body for CreateTeam for application/json ContentType.
+
+type CreateTeamJSONRequestBody = CreateTeamRequest
+
+// UpdateTeamJSONRequestBody defines body for UpdateTeam for application/json ContentType.
+
+type UpdateTeamJSONRequestBody = UpdateTeamRequest
+
+// CreateWorkItemTagJSONRequestBody defines body for CreateWorkItemTag for application/json ContentType.
+
+type CreateWorkItemTagJSONRequestBody = CreateWorkItemTagRequest
+
+// UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
+
+type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
+
+// CreateWorkItemTypeJSONRequestBody defines body for CreateWorkItemType for application/json ContentType.
+
+type CreateWorkItemTypeJSONRequestBody = CreateWorkItemTypeRequest
+
+// UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
+
+type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
+
+// UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
+
+type UpdateUserJSONRequestBody = UpdateUserRequest
+
+// UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
+
+type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
+
+// CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
+
+type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
+
+// CreateWorkitemCommentJSONRequestBody defines body for CreateWorkitemComment for application/json ContentType.
+
+type CreateWorkitemCommentJSONRequestBody = CreateWorkItemCommentRequest
+
+// AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
+func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {
+	var body CreateDemoWorkItemRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// AsCreateDemoTwoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoTwoWorkItemRequest
+func (t CreateWorkItemRequest) AsCreateDemoTwoWorkItemRequest() (CreateDemoTwoWorkItemRequest, error) {
+	var body CreateDemoTwoWorkItemRequest
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t CreateWorkItemRequest) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"projectName"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t CreateWorkItemRequest) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "CreateDemoTwoWorkItemRequest":
+		return t.AsCreateDemoTwoWorkItemRequest()
+	case "CreateDemoWorkItemRequest":
+		return t.AsCreateDemoWorkItemRequest()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t CreateWorkItemRequest) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -243,7 +1220,7 @@ func (siw *ServerInterfaceWrapper) GetProject(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -263,7 +1240,7 @@ func (siw *ServerInterfaceWrapper) GetProjectBoard(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -283,7 +1260,7 @@ func (siw *ServerInterfaceWrapper) GetProjectConfig(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -303,7 +1280,7 @@ func (siw *ServerInterfaceWrapper) UpdateProjectConfig(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -323,7 +1300,7 @@ func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -343,7 +1320,7 @@ func (siw *ServerInterfaceWrapper) CreateTeam(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -363,7 +1340,7 @@ func (siw *ServerInterfaceWrapper) DeleteTeam(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -372,7 +1349,7 @@ func (siw *ServerInterfaceWrapper) DeleteTeam(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID
+	var id externalRef0.SerialID // SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -392,7 +1369,7 @@ func (siw *ServerInterfaceWrapper) GetTeam(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -401,7 +1378,7 @@ func (siw *ServerInterfaceWrapper) GetTeam(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID
+	var id externalRef0.SerialID // SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -421,7 +1398,7 @@ func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -430,7 +1407,7 @@ func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID
+	var id externalRef0.SerialID // SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -450,7 +1427,7 @@ func (siw *ServerInterfaceWrapper) CreateWorkItemTag(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -470,7 +1447,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemTag(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -479,7 +1456,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemTag(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID
+	var id externalRef0.SerialID // SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -499,7 +1476,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemTag(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -508,7 +1485,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemTag(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID
+	var id externalRef0.SerialID // SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -528,7 +1505,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemTag(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -537,7 +1514,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemTag(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID
+	var id externalRef0.SerialID // SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -557,7 +1534,7 @@ func (siw *ServerInterfaceWrapper) CreateWorkItemType(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -577,7 +1554,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemType(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -586,7 +1563,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemType(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID
+	var id externalRef0.SerialID // SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -606,7 +1583,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemType(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -615,7 +1592,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemType(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID
+	var id externalRef0.SerialID // SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -635,7 +1612,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemType(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -644,7 +1621,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemType(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID
+	var id externalRef0.SerialID // SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -664,7 +1641,7 @@ func (siw *ServerInterfaceWrapper) GetProjectWorkitems(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName
+	var projectName externalRef0.ProjectName // ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -712,7 +1689,7 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id uuid.UUID
+	var id uuid.UUID // uuid.UUID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -732,7 +1709,7 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id uuid.UUID
+	var id uuid.UUID // uuid.UUID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -752,7 +1729,7 @@ func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id uuid.UUID
+	var id uuid.UUID // uuid.UUID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -781,7 +1758,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkitem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID
+	var id externalRef0.SerialID // SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -801,7 +1778,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID
+	var id externalRef0.SerialID // SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -821,7 +1798,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkitem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID
+	var id externalRef0.SerialID // SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -841,7 +1818,7 @@ func (siw *ServerInterfaceWrapper) CreateWorkitemComment(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID
+	var id externalRef0.SerialID // SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1042,4 +2019,2171 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		wrapper.Handler.authMiddlewares(CreateWorkitemComment),
 		append(wrapper.Handler.middlewares(CreateWorkitemComment), wrapper.CreateWorkitemComment)...,
 	)...)
+}
+
+type AdminPingRequestObject struct{}
+
+type AdminPingResponseObject interface {
+	VisitAdminPingResponse(w http.ResponseWriter) error
+}
+
+type AdminPing200TextResponse string
+
+func (response AdminPing200TextResponse) VisitAdminPingResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(200)
+
+	_, err := w.Write([]byte(response))
+	return err
+}
+
+type AdminPing401Response struct{}
+
+func (response AdminPing401Response) VisitAdminPingResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type AdminPing403Response struct{}
+
+func (response AdminPing403Response) VisitAdminPingResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type AdminPing4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response AdminPing4XXJSONResponse) VisitAdminPingResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type MyProviderCallbackRequestObject struct{}
+
+type MyProviderCallbackResponseObject interface {
+	VisitMyProviderCallbackResponse(w http.ResponseWriter) error
+}
+
+type MyProviderCallback200Response struct{}
+
+func (response MyProviderCallback200Response) VisitMyProviderCallbackResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type MyProviderLoginRequestObject struct{}
+
+type MyProviderLoginResponseObject interface {
+	VisitMyProviderLoginResponse(w http.ResponseWriter) error
+}
+
+type MyProviderLogin302Response struct{}
+
+func (response MyProviderLogin302Response) VisitMyProviderLoginResponse(w http.ResponseWriter) error {
+	w.WriteHeader(302)
+	return nil
+}
+
+type EventsRequestObject struct {
+	Params externalRef0.EventsParams
+}
+
+type EventsResponseObject interface {
+	VisitEventsResponse(w http.ResponseWriter) error
+}
+
+type Events200TexteventStreamResponse struct {
+	Body          io.Reader
+	ContentLength int64
+}
+
+func (response Events200TexteventStreamResponse) VisitEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "text/event-stream")
+	if response.ContentLength != 0 {
+		w.Header().Set("Content-Length", fmt.Sprint(response.ContentLength))
+	}
+	w.WriteHeader(200)
+
+	if closer, ok := response.Body.(io.ReadCloser); ok {
+		defer closer.Close()
+	}
+	_, err := io.Copy(w, response.Body)
+	return err
+}
+
+type GetPaginatedNotificationsRequestObject struct {
+	Params externalRef0.GetPaginatedNotificationsParams
+}
+
+type GetPaginatedNotificationsResponseObject interface {
+	VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error
+}
+
+type GetPaginatedNotifications200JSONResponse PaginatedNotificationsResponse
+
+func (response GetPaginatedNotifications200JSONResponse) VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetPaginatedNotifications401Response struct{}
+
+func (response GetPaginatedNotifications401Response) VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetPaginatedNotifications403Response struct{}
+
+func (response GetPaginatedNotifications403Response) VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetPaginatedNotifications4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetPaginatedNotifications4XXJSONResponse) VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type OpenapiYamlGetRequestObject struct{}
+
+type OpenapiYamlGetResponseObject interface {
+	VisitOpenapiYamlGetResponse(w http.ResponseWriter) error
+}
+
+type OpenapiYamlGet200ApplicationxYamlResponse struct {
+	Body          io.Reader
+	ContentLength int64
+}
+
+func (response OpenapiYamlGet200ApplicationxYamlResponse) VisitOpenapiYamlGetResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/x-yaml")
+	if response.ContentLength != 0 {
+		w.Header().Set("Content-Length", fmt.Sprint(response.ContentLength))
+	}
+	w.WriteHeader(200)
+
+	if closer, ok := response.Body.(io.ReadCloser); ok {
+		defer closer.Close()
+	}
+	_, err := io.Copy(w, response.Body)
+	return err
+}
+
+type PingRequestObject struct{}
+
+type PingResponseObject interface {
+	VisitPingResponse(w http.ResponseWriter) error
+}
+
+type Ping200TextResponse string
+
+func (response Ping200TextResponse) VisitPingResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(200)
+
+	_, err := w.Write([]byte(response))
+	return err
+}
+
+type Ping401Response struct{}
+
+func (response Ping401Response) VisitPingResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type Ping403Response struct{}
+
+func (response Ping403Response) VisitPingResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type Ping4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response Ping4XXJSONResponse) VisitPingResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetProjectRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+}
+
+type GetProjectResponseObject interface {
+	VisitGetProjectResponse(w http.ResponseWriter) error
+}
+
+type GetProject200JSONResponse externalRef0.DbProject
+
+func (response GetProject200JSONResponse) VisitGetProjectResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetProjectBoardRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+}
+
+type GetProjectBoardResponseObject interface {
+	VisitGetProjectBoardResponse(w http.ResponseWriter) error
+}
+
+type GetProjectBoard200JSONResponse ProjectBoard
+
+func (response GetProjectBoard200JSONResponse) VisitGetProjectBoardResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetProjectConfigRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+}
+
+type GetProjectConfigResponseObject interface {
+	VisitGetProjectConfigResponse(w http.ResponseWriter) error
+}
+
+type GetProjectConfig200JSONResponse externalRef0.ProjectConfig
+
+func (response GetProjectConfig200JSONResponse) VisitGetProjectConfigResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateProjectConfigRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Body        *externalRef0.UpdateProjectConfigJSONRequestBody
+}
+
+type UpdateProjectConfigResponseObject interface {
+	VisitUpdateProjectConfigResponse(w http.ResponseWriter) error
+}
+
+type UpdateProjectConfig204Response struct{}
+
+func (response UpdateProjectConfig204Response) VisitUpdateProjectConfigResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type InitializeProjectRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Body        *externalRef0.InitializeProjectJSONRequestBody
+}
+
+type InitializeProjectResponseObject interface {
+	VisitInitializeProjectResponse(w http.ResponseWriter) error
+}
+
+type InitializeProject204Response struct{}
+
+func (response InitializeProject204Response) VisitInitializeProjectResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type CreateTeamRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Body        *CreateTeamRequest
+}
+
+type CreateTeamResponseObject interface {
+	VisitCreateTeamResponse(w http.ResponseWriter) error
+}
+
+type CreateTeam201JSONResponse Team
+
+func (response CreateTeam201JSONResponse) VisitCreateTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateTeam401Response struct{}
+
+func (response CreateTeam401Response) VisitCreateTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type CreateTeam403Response struct{}
+
+func (response CreateTeam403Response) VisitCreateTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type CreateTeam4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response CreateTeam4XXJSONResponse) VisitCreateTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeleteTeamRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type DeleteTeamResponseObject interface {
+	VisitDeleteTeamResponse(w http.ResponseWriter) error
+}
+
+type DeleteTeam204Response struct{}
+
+func (response DeleteTeam204Response) VisitDeleteTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteTeam401Response struct{}
+
+func (response DeleteTeam401Response) VisitDeleteTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteTeam403Response struct{}
+
+func (response DeleteTeam403Response) VisitDeleteTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteTeam4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteTeam4XXJSONResponse) VisitDeleteTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetTeamRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type GetTeamResponseObject interface {
+	VisitGetTeamResponse(w http.ResponseWriter) error
+}
+
+type GetTeam200JSONResponse Team
+
+func (response GetTeam200JSONResponse) VisitGetTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTeam401Response struct{}
+
+func (response GetTeam401Response) VisitGetTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetTeam403Response struct{}
+
+func (response GetTeam403Response) VisitGetTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetTeam4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetTeam4XXJSONResponse) VisitGetTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateTeamRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+	Body        *UpdateTeamRequest
+}
+
+type UpdateTeamResponseObject interface {
+	VisitUpdateTeamResponse(w http.ResponseWriter) error
+}
+
+type UpdateTeam200JSONResponse Team
+
+func (response UpdateTeam200JSONResponse) VisitUpdateTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateTeam401Response struct{}
+
+func (response UpdateTeam401Response) VisitUpdateTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateTeam403Response struct{}
+
+func (response UpdateTeam403Response) VisitUpdateTeamResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type UpdateTeam4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response UpdateTeam4XXJSONResponse) VisitUpdateTeamResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type CreateWorkItemTagRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Body        *CreateWorkItemTagRequest
+}
+
+type CreateWorkItemTagResponseObject interface {
+	VisitCreateWorkItemTagResponse(w http.ResponseWriter) error
+}
+
+type CreateWorkItemTag201JSONResponse WorkItemTag
+
+func (response CreateWorkItemTag201JSONResponse) VisitCreateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateWorkItemTag401Response struct{}
+
+func (response CreateWorkItemTag401Response) VisitCreateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type CreateWorkItemTag403Response struct{}
+
+func (response CreateWorkItemTag403Response) VisitCreateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type CreateWorkItemTag4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response CreateWorkItemTag4XXJSONResponse) VisitCreateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeleteWorkItemTagRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type DeleteWorkItemTagResponseObject interface {
+	VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error
+}
+
+type DeleteWorkItemTag204Response struct{}
+
+func (response DeleteWorkItemTag204Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteWorkItemTag401Response struct{}
+
+func (response DeleteWorkItemTag401Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteWorkItemTag403Response struct{}
+
+func (response DeleteWorkItemTag403Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteWorkItemTag4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteWorkItemTag4XXJSONResponse) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetWorkItemTagRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type GetWorkItemTagResponseObject interface {
+	VisitGetWorkItemTagResponse(w http.ResponseWriter) error
+}
+
+type GetWorkItemTag200JSONResponse WorkItemTag
+
+func (response GetWorkItemTag200JSONResponse) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWorkItemTag401Response struct{}
+
+func (response GetWorkItemTag401Response) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetWorkItemTag403Response struct{}
+
+func (response GetWorkItemTag403Response) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetWorkItemTag4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetWorkItemTag4XXJSONResponse) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateWorkItemTagRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+	Body        *UpdateWorkItemTagRequest
+}
+
+type UpdateWorkItemTagResponseObject interface {
+	VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error
+}
+
+type UpdateWorkItemTag200JSONResponse WorkItemTag
+
+func (response UpdateWorkItemTag200JSONResponse) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateWorkItemTag401Response struct{}
+
+func (response UpdateWorkItemTag401Response) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateWorkItemTag403Response struct{}
+
+func (response UpdateWorkItemTag403Response) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type UpdateWorkItemTag4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response UpdateWorkItemTag4XXJSONResponse) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type CreateWorkItemTypeRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Body        *CreateWorkItemTypeRequest
+}
+
+type CreateWorkItemTypeResponseObject interface {
+	VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error
+}
+
+type CreateWorkItemType201JSONResponse WorkItemType
+
+func (response CreateWorkItemType201JSONResponse) VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateWorkItemType401Response struct{}
+
+func (response CreateWorkItemType401Response) VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type CreateWorkItemType403Response struct{}
+
+func (response CreateWorkItemType403Response) VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type CreateWorkItemType4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response CreateWorkItemType4XXJSONResponse) VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeleteWorkItemTypeRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type DeleteWorkItemTypeResponseObject interface {
+	VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error
+}
+
+type DeleteWorkItemType204Response struct{}
+
+func (response DeleteWorkItemType204Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteWorkItemType401Response struct{}
+
+func (response DeleteWorkItemType401Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteWorkItemType403Response struct{}
+
+func (response DeleteWorkItemType403Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteWorkItemType4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteWorkItemType4XXJSONResponse) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetWorkItemTypeRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type GetWorkItemTypeResponseObject interface {
+	VisitGetWorkItemTypeResponse(w http.ResponseWriter) error
+}
+
+type GetWorkItemType200JSONResponse WorkItemType
+
+func (response GetWorkItemType200JSONResponse) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWorkItemType401Response struct{}
+
+func (response GetWorkItemType401Response) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetWorkItemType403Response struct{}
+
+func (response GetWorkItemType403Response) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetWorkItemType4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetWorkItemType4XXJSONResponse) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateWorkItemTypeRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+	Body        *UpdateWorkItemTypeRequest
+}
+
+type UpdateWorkItemTypeResponseObject interface {
+	VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error
+}
+
+type UpdateWorkItemType200JSONResponse WorkItemType
+
+func (response UpdateWorkItemType200JSONResponse) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateWorkItemType401Response struct{}
+
+func (response UpdateWorkItemType401Response) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateWorkItemType403Response struct{}
+
+func (response UpdateWorkItemType403Response) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type UpdateWorkItemType4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response UpdateWorkItemType4XXJSONResponse) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetProjectWorkitemsRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Params      externalRef0.GetProjectWorkitemsParams
+}
+
+type GetProjectWorkitemsResponseObject interface {
+	VisitGetProjectWorkitemsResponse(w http.ResponseWriter) error
+}
+
+type GetProjectWorkitems200JSONResponse struct {
+	union json.RawMessage
+}
+
+func (response GetProjectWorkitems200JSONResponse) VisitGetProjectWorkitemsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCurrentUserRequestObject struct{}
+
+type GetCurrentUserResponseObject interface {
+	VisitGetCurrentUserResponse(w http.ResponseWriter) error
+}
+
+type GetCurrentUser200JSONResponse User
+
+func (response GetCurrentUser200JSONResponse) VisitGetCurrentUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteUserRequestObject struct {
+	Id uuid.UUID `json:"id"`
+}
+
+type DeleteUserResponseObject interface {
+	VisitDeleteUserResponse(w http.ResponseWriter) error
+}
+
+type DeleteUser204Response struct{}
+
+func (response DeleteUser204Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteUser401Response struct{}
+
+func (response DeleteUser401Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteUser403Response struct{}
+
+func (response DeleteUser403Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteUser4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteUser4XXJSONResponse) VisitDeleteUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateUserRequestObject struct {
+	Id   uuid.UUID `json:"id"`
+	Body *externalRef0.UpdateUserJSONRequestBody
+}
+
+type UpdateUserResponseObject interface {
+	VisitUpdateUserResponse(w http.ResponseWriter) error
+}
+
+type UpdateUser200JSONResponse User
+
+func (response UpdateUser200JSONResponse) VisitUpdateUserResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateUserAuthorizationRequestObject struct {
+	Id   uuid.UUID `json:"id"`
+	Body *externalRef0.UpdateUserAuthorizationJSONRequestBody
+}
+
+type UpdateUserAuthorizationResponseObject interface {
+	VisitUpdateUserAuthorizationResponse(w http.ResponseWriter) error
+}
+
+type UpdateUserAuthorization204Response struct{}
+
+func (response UpdateUserAuthorization204Response) VisitUpdateUserAuthorizationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type CreateWorkitemRequestObject struct {
+	Body *externalRef0.CreateWorkitemJSONRequestBody
+}
+
+type CreateWorkitemResponseObject interface {
+	VisitCreateWorkitemResponse(w http.ResponseWriter) error
+}
+
+type CreateWorkitem201JSONResponse struct {
+	union json.RawMessage
+}
+
+func (response CreateWorkitem201JSONResponse) VisitCreateWorkitemResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWorkitemRequestObject struct {
+	Id externalRef0.SerialID `json:"id"`
+}
+
+type DeleteWorkitemResponseObject interface {
+	VisitDeleteWorkitemResponse(w http.ResponseWriter) error
+}
+
+type DeleteWorkitem204Response struct{}
+
+func (response DeleteWorkitem204Response) VisitDeleteWorkitemResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type GetWorkItemRequestObject struct {
+	Id externalRef0.SerialID `json:"id"`
+}
+
+type GetWorkItemResponseObject interface {
+	VisitGetWorkItemResponse(w http.ResponseWriter) error
+}
+
+type GetWorkItem200JSONResponse struct {
+	union json.RawMessage
+}
+
+func (response GetWorkItem200JSONResponse) VisitGetWorkItemResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateWorkitemRequestObject struct {
+	Id externalRef0.SerialID `json:"id"`
+}
+
+type UpdateWorkitemResponseObject interface {
+	VisitUpdateWorkitemResponse(w http.ResponseWriter) error
+}
+
+type UpdateWorkitem200JSONResponse struct {
+	union json.RawMessage
+}
+
+func (response UpdateWorkitem200JSONResponse) VisitUpdateWorkitemResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateWorkitemCommentRequestObject struct {
+	Id   externalRef0.SerialID `json:"id"`
+	Body *externalRef0.CreateWorkitemCommentJSONRequestBody
+}
+
+type CreateWorkitemCommentResponseObject interface {
+	VisitCreateWorkitemCommentResponse(w http.ResponseWriter) error
+}
+
+type CreateWorkitemComment200JSONResponse struct {
+	union json.RawMessage
+}
+
+func (response CreateWorkitemComment200JSONResponse) VisitCreateWorkitemCommentResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+// StrictServerInterface represents all server handlers.
+type StrictServerInterface interface {
+	// Ping pongs
+	// (GET /admin/ping)
+	AdminPing(c *gin.Context, request AdminPingRequestObject) (AdminPingResponseObject, error)
+
+	// (GET /auth/myprovider/callback)
+	MyProviderCallback(c *gin.Context, request MyProviderCallbackRequestObject) (MyProviderCallbackResponseObject, error)
+
+	// (GET /auth/myprovider/login)
+	MyProviderLogin(c *gin.Context, request MyProviderLoginRequestObject) (MyProviderLoginResponseObject, error)
+
+	// (GET /events)
+	Events(c *gin.Context, request EventsRequestObject) (EventsResponseObject, error)
+	// Get paginated user notifications
+	// (GET /notifications/user/page)
+	GetPaginatedNotifications(c *gin.Context, request GetPaginatedNotificationsRequestObject) (GetPaginatedNotificationsResponseObject, error)
+	// Returns this very OpenAPI spec.
+	// (GET /openapi.yaml)
+	OpenapiYamlGet(c *gin.Context, request OpenapiYamlGetRequestObject) (OpenapiYamlGetResponseObject, error)
+	// Ping pongs
+	// (GET /ping)
+	Ping(c *gin.Context, request PingRequestObject) (PingResponseObject, error)
+	// returns board data for a project
+	// (GET /project/{projectName}/)
+	GetProject(c *gin.Context, request GetProjectRequestObject) (GetProjectResponseObject, error)
+	// returns board data for a project
+	// (GET /project/{projectName}/board)
+	GetProjectBoard(c *gin.Context, request GetProjectBoardRequestObject) (GetProjectBoardResponseObject, error)
+	// returns the project configuration
+	// (GET /project/{projectName}/config)
+	GetProjectConfig(c *gin.Context, request GetProjectConfigRequestObject) (GetProjectConfigResponseObject, error)
+	// updates the project configuration
+	// (PUT /project/{projectName}/config)
+	UpdateProjectConfig(c *gin.Context, request UpdateProjectConfigRequestObject) (UpdateProjectConfigResponseObject, error)
+	// creates initial data (teams, tags...) for a new project
+	// (POST /project/{projectName}/initialize)
+	InitializeProject(c *gin.Context, request InitializeProjectRequestObject) (InitializeProjectResponseObject, error)
+	// create team.
+	// (POST /project/{projectName}/team/)
+	CreateTeam(c *gin.Context, request CreateTeamRequestObject) (CreateTeamResponseObject, error)
+	// delete team.
+	// (DELETE /project/{projectName}/team/{id}/)
+	DeleteTeam(c *gin.Context, request DeleteTeamRequestObject) (DeleteTeamResponseObject, error)
+	// get team.
+	// (GET /project/{projectName}/team/{id}/)
+	GetTeam(c *gin.Context, request GetTeamRequestObject) (GetTeamResponseObject, error)
+	// update team.
+	// (PATCH /project/{projectName}/team/{id}/)
+	UpdateTeam(c *gin.Context, request UpdateTeamRequestObject) (UpdateTeamResponseObject, error)
+	// create workitemtag.
+	// (POST /project/{projectName}/workItemTag/)
+	CreateWorkItemTag(c *gin.Context, request CreateWorkItemTagRequestObject) (CreateWorkItemTagResponseObject, error)
+	// delete workitemtag.
+	// (DELETE /project/{projectName}/workItemTag/{id}/)
+	DeleteWorkItemTag(c *gin.Context, request DeleteWorkItemTagRequestObject) (DeleteWorkItemTagResponseObject, error)
+	// get workitemtag.
+	// (GET /project/{projectName}/workItemTag/{id}/)
+	GetWorkItemTag(c *gin.Context, request GetWorkItemTagRequestObject) (GetWorkItemTagResponseObject, error)
+	// update workitemtag.
+	// (PATCH /project/{projectName}/workItemTag/{id}/)
+	UpdateWorkItemTag(c *gin.Context, request UpdateWorkItemTagRequestObject) (UpdateWorkItemTagResponseObject, error)
+	// create workitemtype.
+	// (POST /project/{projectName}/workItemType/)
+	CreateWorkItemType(c *gin.Context, request CreateWorkItemTypeRequestObject) (CreateWorkItemTypeResponseObject, error)
+	// delete workitemtype.
+	// (DELETE /project/{projectName}/workItemType/{id}/)
+	DeleteWorkItemType(c *gin.Context, request DeleteWorkItemTypeRequestObject) (DeleteWorkItemTypeResponseObject, error)
+	// get workitemtype.
+	// (GET /project/{projectName}/workItemType/{id}/)
+	GetWorkItemType(c *gin.Context, request GetWorkItemTypeRequestObject) (GetWorkItemTypeResponseObject, error)
+	// update workitemtype.
+	// (PATCH /project/{projectName}/workItemType/{id}/)
+	UpdateWorkItemType(c *gin.Context, request UpdateWorkItemTypeRequestObject) (UpdateWorkItemTypeResponseObject, error)
+	// returns workitems for a project
+	// (GET /project/{projectName}/workitems)
+	GetProjectWorkitems(c *gin.Context, request GetProjectWorkitemsRequestObject) (GetProjectWorkitemsResponseObject, error)
+	// returns the logged in user
+	// (GET /user/me)
+	GetCurrentUser(c *gin.Context, request GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error)
+	// deletes the user by id
+	// (DELETE /user/{id})
+	DeleteUser(c *gin.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error)
+	// updates the user by id
+	// (PATCH /user/{id})
+	UpdateUser(c *gin.Context, request UpdateUserRequestObject) (UpdateUserResponseObject, error)
+	// updates user role and scopes by id
+	// (PATCH /user/{id}/authorization)
+	UpdateUserAuthorization(c *gin.Context, request UpdateUserAuthorizationRequestObject) (UpdateUserAuthorizationResponseObject, error)
+	// create workitem
+	// (POST /workitem/)
+	CreateWorkitem(c *gin.Context, request CreateWorkitemRequestObject) (CreateWorkitemResponseObject, error)
+	// delete workitem
+	// (DELETE /workitem/{id}/)
+	DeleteWorkitem(c *gin.Context, request DeleteWorkitemRequestObject) (DeleteWorkitemResponseObject, error)
+	// get workitem
+	// (GET /workitem/{id}/)
+	GetWorkItem(c *gin.Context, request GetWorkItemRequestObject) (GetWorkItemResponseObject, error)
+	// update workitem
+	// (PATCH /workitem/{id}/)
+	UpdateWorkitem(c *gin.Context, request UpdateWorkitemRequestObject) (UpdateWorkitemResponseObject, error)
+	// create workitem comment
+	// (POST /workitem/{id}/comments/)
+	CreateWorkitemComment(c *gin.Context, request CreateWorkitemCommentRequestObject) (CreateWorkitemCommentResponseObject, error)
+	middlewares(opID OperationID) []gin.HandlerFunc
+	authMiddlewares(opID OperationID) []gin.HandlerFunc
+}
+
+type (
+	StrictHandlerFunc    = strictgin.StrictGinHandlerFunc
+	StrictMiddlewareFunc = strictgin.StrictGinMiddlewareFunc
+)
+
+func NewStrictHandler(ssi StrictServerInterface, strictMiddlewares []StrictMiddlewareFunc) ServerInterface {
+	return &strictHandlers{ssi: ssi, strictMiddlewares: strictMiddlewares}
+}
+
+type strictHandlers struct {
+	ssi               StrictServerInterface
+	strictMiddlewares []StrictMiddlewareFunc
+}
+
+func (sh *strictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
+	return sh.ssi.middlewares(opID)
+}
+
+func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
+	return sh.ssi.authMiddlewares(opID)
+}
+
+// AdminPing operation middleware
+func (sh *strictHandlers) AdminPing(ctx *gin.Context) {
+	var request AdminPingRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.AdminPing(ctx, request.(AdminPingRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "AdminPing")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(AdminPingResponseObject); ok {
+		if err := validResponse.VisitAdminPingResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// MyProviderCallback operation middleware
+func (sh *strictHandlers) MyProviderCallback(ctx *gin.Context) {
+	var request MyProviderCallbackRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.MyProviderCallback(ctx, request.(MyProviderCallbackRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "MyProviderCallback")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(MyProviderCallbackResponseObject); ok {
+		if err := validResponse.VisitMyProviderCallbackResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// MyProviderLogin operation middleware
+func (sh *strictHandlers) MyProviderLogin(ctx *gin.Context) {
+	var request MyProviderLoginRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.MyProviderLogin(ctx, request.(MyProviderLoginRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "MyProviderLogin")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(MyProviderLoginResponseObject); ok {
+		if err := validResponse.VisitMyProviderLoginResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// Events operation middleware
+func (sh *strictHandlers) Events(ctx *gin.Context, params externalRef0.EventsParams) {
+	var request EventsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.Events(ctx, request.(EventsRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "Events")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(EventsResponseObject); ok {
+		if err := validResponse.VisitEventsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetPaginatedNotifications operation middleware
+func (sh *strictHandlers) GetPaginatedNotifications(ctx *gin.Context, params externalRef0.GetPaginatedNotificationsParams) {
+	var request GetPaginatedNotificationsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetPaginatedNotifications(ctx, request.(GetPaginatedNotificationsRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetPaginatedNotifications")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetPaginatedNotificationsResponseObject); ok {
+		if err := validResponse.VisitGetPaginatedNotificationsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// OpenapiYamlGet operation middleware
+func (sh *strictHandlers) OpenapiYamlGet(ctx *gin.Context) {
+	var request OpenapiYamlGetRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.OpenapiYamlGet(ctx, request.(OpenapiYamlGetRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "OpenapiYamlGet")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(OpenapiYamlGetResponseObject); ok {
+		if err := validResponse.VisitOpenapiYamlGetResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// Ping operation middleware
+func (sh *strictHandlers) Ping(ctx *gin.Context) {
+	var request PingRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.Ping(ctx, request.(PingRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "Ping")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PingResponseObject); ok {
+		if err := validResponse.VisitPingResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetProject operation middleware
+func (sh *strictHandlers) GetProject(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request GetProjectRequestObject
+
+	request.ProjectName = projectName
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetProject(ctx, request.(GetProjectRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetProject")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetProjectResponseObject); ok {
+		if err := validResponse.VisitGetProjectResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetProjectBoard operation middleware
+func (sh *strictHandlers) GetProjectBoard(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request GetProjectBoardRequestObject
+
+	request.ProjectName = projectName
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetProjectBoard(ctx, request.(GetProjectBoardRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetProjectBoard")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetProjectBoardResponseObject); ok {
+		if err := validResponse.VisitGetProjectBoardResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetProjectConfig operation middleware
+func (sh *strictHandlers) GetProjectConfig(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request GetProjectConfigRequestObject
+
+	request.ProjectName = projectName
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetProjectConfig(ctx, request.(GetProjectConfigRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetProjectConfig")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetProjectConfigResponseObject); ok {
+		if err := validResponse.VisitGetProjectConfigResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateProjectConfig operation middleware
+func (sh *strictHandlers) UpdateProjectConfig(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request UpdateProjectConfigRequestObject
+
+	request.ProjectName = projectName
+
+	// UpdateProjectConfigRequest
+	var body externalRef0.UpdateProjectConfigJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateProjectConfig(ctx, request.(UpdateProjectConfigRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateProjectConfig")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateProjectConfigResponseObject); ok {
+		if err := validResponse.VisitUpdateProjectConfigResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// InitializeProject operation middleware
+func (sh *strictHandlers) InitializeProject(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request InitializeProjectRequestObject
+
+	request.ProjectName = projectName
+
+	// InitializeProjectRequest
+	var body externalRef0.InitializeProjectJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.InitializeProject(ctx, request.(InitializeProjectRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "InitializeProject")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(InitializeProjectResponseObject); ok {
+		if err := validResponse.VisitInitializeProjectResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateTeam operation middleware
+func (sh *strictHandlers) CreateTeam(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request CreateTeamRequestObject
+
+	request.ProjectName = projectName
+
+	// CreateTeamRequest
+	var body CreateTeamRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateTeam(ctx, request.(CreateTeamRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "CreateTeam")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateTeamResponseObject); ok {
+		if err := validResponse.VisitCreateTeamResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteTeam operation middleware
+func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request DeleteTeamRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteTeam(ctx, request.(DeleteTeamRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "DeleteTeam")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteTeamResponseObject); ok {
+		if err := validResponse.VisitDeleteTeamResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetTeam operation middleware
+func (sh *strictHandlers) GetTeam(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request GetTeamRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetTeam(ctx, request.(GetTeamRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetTeam")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetTeamResponseObject); ok {
+		if err := validResponse.VisitGetTeamResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateTeam operation middleware
+func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request UpdateTeamRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	// UpdateTeamRequest
+	var body UpdateTeamRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateTeam(ctx, request.(UpdateTeamRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateTeam")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateTeamResponseObject); ok {
+		if err := validResponse.VisitUpdateTeamResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateWorkItemTag operation middleware
+func (sh *strictHandlers) CreateWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request CreateWorkItemTagRequestObject
+
+	request.ProjectName = projectName
+
+	// CreateWorkItemTagRequest
+	var body CreateWorkItemTagRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateWorkItemTag(ctx, request.(CreateWorkItemTagRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "CreateWorkItemTag")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateWorkItemTagResponseObject); ok {
+		if err := validResponse.VisitCreateWorkItemTagResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteWorkItemTag operation middleware
+func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request DeleteWorkItemTagRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteWorkItemTag(ctx, request.(DeleteWorkItemTagRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "DeleteWorkItemTag")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteWorkItemTagResponseObject); ok {
+		if err := validResponse.VisitDeleteWorkItemTagResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWorkItemTag operation middleware
+func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request GetWorkItemTagRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWorkItemTag(ctx, request.(GetWorkItemTagRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetWorkItemTag")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWorkItemTagResponseObject); ok {
+		if err := validResponse.VisitGetWorkItemTagResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateWorkItemTag operation middleware
+func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request UpdateWorkItemTagRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	// UpdateWorkItemTagRequest
+	var body UpdateWorkItemTagRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateWorkItemTag(ctx, request.(UpdateWorkItemTagRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateWorkItemTag")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateWorkItemTagResponseObject); ok {
+		if err := validResponse.VisitUpdateWorkItemTagResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateWorkItemType operation middleware
+func (sh *strictHandlers) CreateWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request CreateWorkItemTypeRequestObject
+
+	request.ProjectName = projectName
+
+	// CreateWorkItemTypeRequest
+	var body CreateWorkItemTypeRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateWorkItemType(ctx, request.(CreateWorkItemTypeRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "CreateWorkItemType")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateWorkItemTypeResponseObject); ok {
+		if err := validResponse.VisitCreateWorkItemTypeResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteWorkItemType operation middleware
+func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request DeleteWorkItemTypeRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteWorkItemType(ctx, request.(DeleteWorkItemTypeRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "DeleteWorkItemType")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteWorkItemTypeResponseObject); ok {
+		if err := validResponse.VisitDeleteWorkItemTypeResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWorkItemType operation middleware
+func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request GetWorkItemTypeRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWorkItemType(ctx, request.(GetWorkItemTypeRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetWorkItemType")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWorkItemTypeResponseObject); ok {
+		if err := validResponse.VisitGetWorkItemTypeResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateWorkItemType operation middleware
+func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request UpdateWorkItemTypeRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	// UpdateWorkItemTypeRequest
+	var body UpdateWorkItemTypeRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateWorkItemType(ctx, request.(UpdateWorkItemTypeRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateWorkItemType")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateWorkItemTypeResponseObject); ok {
+		if err := validResponse.VisitUpdateWorkItemTypeResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetProjectWorkitems operation middleware
+func (sh *strictHandlers) GetProjectWorkitems(ctx *gin.Context, projectName externalRef0.ProjectName, params externalRef0.GetProjectWorkitemsParams) {
+	var request GetProjectWorkitemsRequestObject
+
+	request.ProjectName = projectName
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetProjectWorkitems(ctx, request.(GetProjectWorkitemsRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetProjectWorkitems")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetProjectWorkitemsResponseObject); ok {
+		if err := validResponse.VisitGetProjectWorkitemsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetCurrentUser operation middleware
+func (sh *strictHandlers) GetCurrentUser(ctx *gin.Context) {
+	var request GetCurrentUserRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetCurrentUser(ctx, request.(GetCurrentUserRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetCurrentUser")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetCurrentUserResponseObject); ok {
+		if err := validResponse.VisitGetCurrentUserResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteUser operation middleware
+func (sh *strictHandlers) DeleteUser(ctx *gin.Context, id uuid.UUID) {
+	var request DeleteUserRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteUser(ctx, request.(DeleteUserRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "DeleteUser")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteUserResponseObject); ok {
+		if err := validResponse.VisitDeleteUserResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateUser operation middleware
+func (sh *strictHandlers) UpdateUser(ctx *gin.Context, id uuid.UUID) {
+	var request UpdateUserRequestObject
+
+	request.Id = id
+
+	// UpdateUserRequest
+	var body externalRef0.UpdateUserJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateUser(ctx, request.(UpdateUserRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateUser")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateUserResponseObject); ok {
+		if err := validResponse.VisitUpdateUserResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateUserAuthorization operation middleware
+func (sh *strictHandlers) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID) {
+	var request UpdateUserAuthorizationRequestObject
+
+	request.Id = id
+
+	// UpdateUserAuthorizationRequest
+	var body externalRef0.UpdateUserAuthorizationJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateUserAuthorization(ctx, request.(UpdateUserAuthorizationRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateUserAuthorization")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateUserAuthorizationResponseObject); ok {
+		if err := validResponse.VisitUpdateUserAuthorizationResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateWorkitem operation middleware
+func (sh *strictHandlers) CreateWorkitem(ctx *gin.Context) {
+	var request CreateWorkitemRequestObject
+
+	// CreateWorkitemRequest
+	var body externalRef0.CreateWorkitemJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateWorkitem(ctx, request.(CreateWorkitemRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "CreateWorkitem")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateWorkitemResponseObject); ok {
+		if err := validResponse.VisitCreateWorkitemResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteWorkitem operation middleware
+func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, id externalRef0.SerialID) {
+	var request DeleteWorkitemRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteWorkitem(ctx, request.(DeleteWorkitemRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "DeleteWorkitem")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteWorkitemResponseObject); ok {
+		if err := validResponse.VisitDeleteWorkitemResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWorkItem operation middleware
+func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, id externalRef0.SerialID) {
+	var request GetWorkItemRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWorkItem(ctx, request.(GetWorkItemRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetWorkItem")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWorkItemResponseObject); ok {
+		if err := validResponse.VisitGetWorkItemResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateWorkitem operation middleware
+func (sh *strictHandlers) UpdateWorkitem(ctx *gin.Context, id externalRef0.SerialID) {
+	var request UpdateWorkitemRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateWorkitem(ctx, request.(UpdateWorkitemRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateWorkitem")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateWorkitemResponseObject); ok {
+		if err := validResponse.VisitUpdateWorkitemResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateWorkitemComment operation middleware
+func (sh *strictHandlers) CreateWorkitemComment(ctx *gin.Context, id externalRef0.SerialID) {
+	var request CreateWorkitemCommentRequestObject
+
+	request.Id = id
+
+	// CreateWorkitemCommentRequest
+	var body externalRef0.CreateWorkitemCommentJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateWorkitemComment(ctx, request.(CreateWorkitemCommentRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "CreateWorkitemComment")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateWorkitemCommentResponseObject); ok {
+		if err := validResponse.VisitCreateWorkitemCommentResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
 }
