@@ -6,11 +6,10 @@
         {{ $element := printf "%v" . -}}
         {{ $name := $element -}}
         {{ if (is_rest_type $element) -}}
-        {{ $name = (printf "%v%v" $element "Request") -}}
+        {{ $name = (printf "%v" (rest_type $element)) -}}
         {{ end -}}
-        // {{$element}}
-        // As{{ .Method }} returns the union data inside the {{$typeName}} as a {{$name}}
-        func (t {{$typeName}}) As{{ .Method }}() ({{$name}}, error) {
+        // As{{$name}} returns the union data inside the {{$typeName}} as a {{$name}}
+        func (t {{$typeName}}) As{{$name}}() ({{$name}}, error) {
             var body {{$name}}
             err := json.Unmarshal(t.union, &body)
             return body, err
@@ -84,7 +83,7 @@
                 switch discriminator {
                     {{range $value, $type := $discriminator.Mapping -}}
                         case "{{$value}}":
-                            return t.As{{camel $type}}()
+                            return t.As{{rest_type (camel $type)}}()
                     {{end -}}
                     default:
                         return nil, errors.New("unknown discriminator value: "+discriminator)

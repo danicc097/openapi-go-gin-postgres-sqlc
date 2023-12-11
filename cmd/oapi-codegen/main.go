@@ -101,9 +101,9 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 		"models_pkg": func() string {
 			return modelsPkg + "."
 		},
-		"is_rest_type": func(st string) bool {
-			for _, s := range types {
-				if s := strings.TrimPrefix(s, "externalRef0."); s == st {
+		"is_rest_type": func(t string) bool {
+			for _, typ := range types {
+				if stName := strings.TrimPrefix(t, "externalRef0."); stName == typ {
 					return true
 				}
 			}
@@ -111,11 +111,9 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 			return false
 		},
 		"rest_type": func(s string) string {
-			return strings.TrimPrefix(s, "externalRef0.")
+			return strings.TrimPrefix(strings.ReplaceAll(s, "ExternalRef0", ""), "externalRef0.")
 		},
-		"camel": func(s string) string {
-			return strcase.ToCamel(s)
-		},
+		"camel": strcase.ToCamel,
 	}
 	for k, v := range templateFunctions {
 		codegen.TemplateFunctions[k] = v

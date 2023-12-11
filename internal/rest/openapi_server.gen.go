@@ -943,18 +943,16 @@ type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
 
 type CreateWorkitemCommentJSONRequestBody = CreateWorkItemCommentRequest
 
-// externalRef0.CreateDemoWorkItemRequest
-// AsExternalRef0CreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a externalRef0.CreateDemoWorkItemRequest
-func (t CreateWorkItemRequest) AsExternalRef0CreateDemoWorkItemRequest() (externalRef0.CreateDemoWorkItemRequest, error) {
-	var body externalRef0.CreateDemoWorkItemRequest
+// AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
+func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {
+	var body CreateDemoWorkItemRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// externalRef0.CreateDemoTwoWorkItemRequest
-// AsExternalRef0CreateDemoTwoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a externalRef0.CreateDemoTwoWorkItemRequest
-func (t CreateWorkItemRequest) AsExternalRef0CreateDemoTwoWorkItemRequest() (externalRef0.CreateDemoTwoWorkItemRequest, error) {
-	var body externalRef0.CreateDemoTwoWorkItemRequest
+// AsCreateDemoTwoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoTwoWorkItemRequest
+func (t CreateWorkItemRequest) AsCreateDemoTwoWorkItemRequest() (CreateDemoTwoWorkItemRequest, error) {
+	var body CreateDemoTwoWorkItemRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
@@ -974,9 +972,9 @@ func (t CreateWorkItemRequest) ValueByDiscriminator() (interface{}, error) {
 	}
 	switch discriminator {
 	case "CreateDemoTwoWorkItemRequest":
-		return t.AsExternalRef0CreateDemoTwoWorkItemRequest()
+		return t.AsCreateDemoTwoWorkItemRequest()
 	case "CreateDemoWorkItemRequest":
-		return t.AsExternalRef0CreateDemoWorkItemRequest()
+		return t.AsCreateDemoWorkItemRequest()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
 	}
@@ -2126,7 +2124,7 @@ type GetPaginatedNotificationsResponseObject interface {
 	VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error
 }
 
-type GetPaginatedNotifications200JSONResponse externalRef0.PaginatedNotificationsResponse
+type GetPaginatedNotifications200JSONResponse PaginatedNotificationsResponse
 
 func (response GetPaginatedNotifications200JSONResponse) VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2253,7 +2251,7 @@ type GetProjectBoardResponseObject interface {
 	VisitGetProjectBoardResponse(w http.ResponseWriter) error
 }
 
-type GetProjectBoard200JSONResponse externalRef0.ProjectBoard
+type GetProjectBoard200JSONResponse ProjectBoard
 
 func (response GetProjectBoard200JSONResponse) VisitGetProjectBoardResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2320,7 +2318,7 @@ type CreateTeamResponseObject interface {
 	VisitCreateTeamResponse(w http.ResponseWriter) error
 }
 
-type CreateTeam201JSONResponse externalRef0.Team
+type CreateTeam201JSONResponse Team
 
 func (response CreateTeam201JSONResponse) VisitCreateTeamResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2406,7 +2404,7 @@ type GetTeamResponseObject interface {
 	VisitGetTeamResponse(w http.ResponseWriter) error
 }
 
-type GetTeam200JSONResponse externalRef0.Team
+type GetTeam200JSONResponse Team
 
 func (response GetTeam200JSONResponse) VisitGetTeamResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2451,7 +2449,7 @@ type UpdateTeamResponseObject interface {
 	VisitUpdateTeamResponse(w http.ResponseWriter) error
 }
 
-type UpdateTeam200JSONResponse externalRef0.Team
+type UpdateTeam200JSONResponse Team
 
 func (response UpdateTeam200JSONResponse) VisitUpdateTeamResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2495,7 +2493,7 @@ type CreateWorkItemTagResponseObject interface {
 	VisitCreateWorkItemTagResponse(w http.ResponseWriter) error
 }
 
-type CreateWorkItemTag201JSONResponse externalRef0.WorkItemTag
+type CreateWorkItemTag201JSONResponse WorkItemTag
 
 func (response CreateWorkItemTag201JSONResponse) VisitCreateWorkItemTagResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2581,7 +2579,7 @@ type GetWorkItemTagResponseObject interface {
 	VisitGetWorkItemTagResponse(w http.ResponseWriter) error
 }
 
-type GetWorkItemTag200JSONResponse externalRef0.WorkItemTag
+type GetWorkItemTag200JSONResponse WorkItemTag
 
 func (response GetWorkItemTag200JSONResponse) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2626,7 +2624,7 @@ type UpdateWorkItemTagResponseObject interface {
 	VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error
 }
 
-type UpdateWorkItemTag200JSONResponse externalRef0.WorkItemTag
+type UpdateWorkItemTag200JSONResponse WorkItemTag
 
 func (response UpdateWorkItemTag200JSONResponse) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2670,7 +2668,7 @@ type CreateWorkItemTypeResponseObject interface {
 	VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error
 }
 
-type CreateWorkItemType201JSONResponse externalRef0.WorkItemType
+type CreateWorkItemType201JSONResponse WorkItemType
 
 func (response CreateWorkItemType201JSONResponse) VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2756,7 +2754,7 @@ type GetWorkItemTypeResponseObject interface {
 	VisitGetWorkItemTypeResponse(w http.ResponseWriter) error
 }
 
-type GetWorkItemType200JSONResponse externalRef0.WorkItemType
+type GetWorkItemType200JSONResponse WorkItemType
 
 func (response GetWorkItemType200JSONResponse) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2801,7 +2799,7 @@ type UpdateWorkItemTypeResponseObject interface {
 	VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error
 }
 
-type UpdateWorkItemType200JSONResponse externalRef0.WorkItemType
+type UpdateWorkItemType200JSONResponse WorkItemType
 
 func (response UpdateWorkItemType200JSONResponse) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2862,7 +2860,7 @@ type GetCurrentUserResponseObject interface {
 	VisitGetCurrentUserResponse(w http.ResponseWriter) error
 }
 
-type GetCurrentUser200JSONResponse externalRef0.User
+type GetCurrentUser200JSONResponse User
 
 func (response GetCurrentUser200JSONResponse) VisitGetCurrentUserResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2921,7 +2919,7 @@ type UpdateUserResponseObject interface {
 	VisitUpdateUserResponse(w http.ResponseWriter) error
 }
 
-type UpdateUser200JSONResponse externalRef0.User
+type UpdateUser200JSONResponse User
 
 func (response UpdateUser200JSONResponse) VisitUpdateUserResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")

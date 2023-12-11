@@ -902,7 +902,6 @@ type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
 
 type CreateWorkitemCommentJSONRequestBody = CreateWorkItemCommentRequest
 
-// CreateDemoWorkItemRequest
 // AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {
 	var body CreateDemoWorkItemRequest
@@ -910,7 +909,6 @@ func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItem
 	return body, err
 }
 
-// CreateDemoTwoWorkItemRequest
 // AsCreateDemoTwoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoTwoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoTwoWorkItemRequest() (CreateDemoTwoWorkItemRequest, error) {
 	var body CreateDemoTwoWorkItemRequest
