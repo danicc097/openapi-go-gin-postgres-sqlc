@@ -49,6 +49,6 @@ func TestAdminPingRoute(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, res.StatusCode())
-		assert.Equal(t, models.ErrorCodeRequestValidation, res.JSON4XX.Type)
+		assert.EqualValues(t, models.ErrorCodeRequestValidation, res.JSON4XX.Type)
 	})
 }

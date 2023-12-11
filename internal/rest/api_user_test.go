@@ -239,7 +239,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			ures, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.User.UserID.UUID, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
-			require.Equal(t, tc.status, ures.StatusCode())
+			require.EqualValues(t, tc.status, ures.StatusCode())
 
 			if len(tc.validationErrorContains) > 0 {
 				for _, ve := range tc.validationErrorContains {
@@ -249,13 +249,13 @@ func TestHandlers_UpdateUser(t *testing.T) {
 				return
 			}
 
-			assert.Equal(t, normalUser.User.UserID.UUID, ures.JSON200.UserID)
+			assert.EqualValues(t, normalUser.User.UserID, ures.JSON200.UserID)
 
 			res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
-			assert.Equal(t, tc.body.FirstName, res.JSON200.FirstName)
-			assert.Equal(t, tc.body.LastName, res.JSON200.LastName)
+			assert.EqualValues(t, tc.body.FirstName, res.JSON200.FirstName)
+			assert.EqualValues(t, tc.body.LastName, res.JSON200.LastName)
 		})
 	}
 }

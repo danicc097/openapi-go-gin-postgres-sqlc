@@ -2,9 +2,11 @@ package rest
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
+	"strings"
 	"sync"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -260,11 +262,11 @@ func (h *StrictHandlers) Events(c *gin.Context, request EventsRequestObject) (Ev
 	c.Set(skipRequestValidationCtxKey, true)
 	clientChan, ok := c.Value("clientChan").(ClientChan)
 	if !ok {
-		return nil, nil
+		return nil, errors.New("clientChan missing")
 	}
 	userNotificationsChan, ok := c.Value("userNotificationsChan").(UserNotificationsChan)
 	if !ok {
-		return nil, nil
+		return nil, errors.New("userNotificationsChan missing")
 	}
 	// TODO map of channels for each Role ('global' notif.) ?
 	// TODO map of channels for every connected user for 'personal' notif. ?
@@ -317,5 +319,5 @@ func (h *StrictHandlers) Events(c *gin.Context, request EventsRequestObject) (Ev
 		}
 	})
 
-	return nil, nil
+	return Events200TexteventStreamResponse{Body: strings.NewReader("")}, nil
 }

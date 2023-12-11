@@ -391,7 +391,7 @@ func getHandlersMethods(file *dst.File) []string {
 	return functions
 }
 
-// removeAndAppendHandlersMethod removes a Handlers method with the given name from its source file
+// removeAndAppendHandlersMethod removes a StrictHandlers method with the given name from its source file
 // and appends it to a target file.
 func removeAndAppendHandlersMethod(src, target *dst.File, opID string) {
 	for i, decl := range src.Decls {

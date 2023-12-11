@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
 )
@@ -20,12 +19,7 @@ func (h *StrictHandlers) UpdateUser(c *gin.Context, request UpdateUserRequestObj
 
 	tx := GetTxFromCtx(c)
 
-	body := &models.UpdateUserRequest{}
-	if shouldReturn := parseBody(c, body); shouldReturn {
-		return nil, nil
-	}
-
-	user, err := h.svc.User.Update(c, tx, db.UserID{UUID: request.Id}, caller, body)
+	user, err := h.svc.User.Update(c, tx, db.UserID{UUID: request.Id}, caller, request.Body)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)
 
@@ -91,12 +85,7 @@ func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateU
 
 	tx := GetTxFromCtx(c)
 
-	body := &models.UpdateUserAuthRequest{}
-	if shouldReturn := parseBody(c, body); shouldReturn {
-		return nil, nil
-	}
-
-	if _, err := h.svc.User.UpdateUserAuthorization(c, tx, db.UserID{UUID: request.Id}, caller, body); err != nil {
+	if _, err := h.svc.User.UpdateUserAuthorization(c, tx, db.UserID{UUID: request.Id}, caller, request.Body); err != nil {
 		renderErrorResponse(c, "Error updating user authorization", err)
 
 		return nil, nil
