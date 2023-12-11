@@ -7,7 +7,6 @@ import (
 )
 
 func (h *StrictHandlers) GetPaginatedNotifications(c *gin.Context, request GetPaginatedNotificationsRequestObject) (GetPaginatedNotificationsResponseObject, error) {
-	defer newOTelSpanWithUser(c).End()
 	caller := getUserFromCtx(c)
 
 	nn, err := h.svc.Notification.PaginatedNotifications(c.Request.Context(), h.pool, caller.UserID, request.Params)

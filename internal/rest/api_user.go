@@ -40,8 +40,6 @@ func (h *StrictHandlers) UpdateUser(c *gin.Context, request UpdateUserRequestObj
 }
 
 func (h *StrictHandlers) DeleteUser(c *gin.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error) {
-	defer newOTelSpanWithUser(c).End()
-
 	tx := GetTxFromCtx(c)
 
 	_, err := h.svc.User.Delete(c, tx, db.NewUserID(request.Id))
@@ -56,8 +54,6 @@ func (h *StrictHandlers) DeleteUser(c *gin.Context, request DeleteUserRequestObj
 }
 
 func (h *StrictHandlers) GetCurrentUser(c *gin.Context, request GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error) {
-	defer newOTelSpanWithUser(c).End()
-
 	caller := getUserFromCtx(c)
 
 	span := GetSpanFromCtx(c)

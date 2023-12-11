@@ -13,8 +13,6 @@ import (
 )
 
 func (h *StrictHandlers) CreateWorkitemComment(c *gin.Context, request CreateWorkitemCommentRequestObject) (CreateWorkitemCommentResponseObject, error) {
-	defer newOTelSpanWithUser(c).End()
-
 	// caller := getUserFromCtx(c)
 	tx := GetTxFromCtx(c)
 	_ = tx
@@ -38,8 +36,7 @@ func (h *StrictHandlers) DeleteWorkitem(c *gin.Context, request DeleteWorkitemRe
 func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRequestObject) (CreateWorkitemResponseObject, error) {
 	ctx := c.Request.Context()
 
-	span := newOTelSpanWithUser(c)
-	defer span.End()
+	span := GetSpanFromCtx(c)
 
 	// caller := getUserFromCtx(c)
 	tx := GetTxFromCtx(c)
