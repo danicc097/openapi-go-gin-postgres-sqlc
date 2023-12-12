@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -12,30 +13,20 @@ import (
 	"go.uber.org/zap"
 )
 
-/**
- *
- * TODO: generic logic here, eg
-AssignTags
-RemoveTags
-AssignUsers
-RemoveAssignedUsers
-
-it will accept projectName (tags) and teamID (members) if necessary, e.g. to ensure asigntag called with
-tag belonging to project and a member that belongs to the team
-(notice how seeming redundancy between repo/service starts to lose strength)
-
-*/
-
 type WorkItem struct {
 	logger *zap.SugaredLogger
 	repos  *repos.Repos
+	// sharedDBOpts represents shared db select options for all work item entities
+	// for returned values
+	sharedDBOpts []db.WorkItemSelectConfigOption
 }
 
-// NewWorkItem returns a new WorkItem service with common logic for all project workitems.
+// NewWorkItem returns a new WorkItem service with common logic for all project worki tems.
 func NewWorkItem(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItem {
 	return &WorkItem{
-		logger: logger,
-		repos:  repos,
+		logger:       logger,
+		repos:        repos,
+		sharedDBOpts: []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, WorkItemTags: true})},
 	}
 }
 
@@ -90,20 +81,25 @@ func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItem 
 	return nil
 }
 
-func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, projectName models.Project, workItemID db.WorkItemID, tagIDs []db.WorkItemTagID) error {
+func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, workItemID db.WorkItemID, tagIDs []db.WorkItemTagID) error {
+	wi, err := w.repos.WorkItem.ByID(ctx, d, workItemID, db.WithWorkItemJoin(db.WorkItemJoins{Team: true}))
+	if err != nil {
+		return fmt.Errorf("repos.WorkItem.ByID: %w", err)
+	}
+
 	for idx, tagID := range tagIDs {
 		tag, err := w.repos.WorkItemTag.ByID(ctx, d, tagID)
 		if err != nil {
 			return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{strconv.Itoa(idx)}, "tag with id %d not found", tagID)
 		}
 
-		if internal.ProjectIDByName[projectName] != tag.ProjectID {
-			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "tag %q does not belong to project %q", tag.Name, tag.ProjectJoin.Name)
+		if wi.TeamJoin.ProjectID != tag.ProjectID {
+			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "tag %q does not belong to work item's project", tag.Name)
 		}
 
 		err = w.repos.WorkItem.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
 			WorkItemTagID: tagID,
-			WorkItemID:    workItemID,
+			WorkItemID:    wi.WorkItemID,
 		})
 		var ierr *internal.Error
 		if err != nil {
@@ -118,11 +114,11 @@ func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, projectName models
 	return nil
 }
 
-func (w *WorkItem) RemoveTags(ctx context.Context, d db.DBTX, workItemID db.WorkItemID, tagIDs []db.WorkItemTagID) error {
+func (w *WorkItem) RemoveTags(ctx context.Context, d db.DBTX, workItem *db.WorkItem, tagIDs []db.WorkItemTagID) error {
 	for idx, tagID := range tagIDs {
 		lookup := &db.WorkItemWorkItemTag{
 			WorkItemTagID: tagID,
-			WorkItemID:    workItemID,
+			WorkItemID:    workItem.WorkItemID,
 		}
 
 		err := lookup.Delete(ctx, d)
