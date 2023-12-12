@@ -61,6 +61,7 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 
 		return nil, nil
 	}
+
 	switch body := b.(type) {
 	case CreateDemoWorkItemRequest:
 		workItem, err := h.svc.DemoWorkItem.Create(ctx, tx, body.DemoWorkItemCreateParams)
@@ -71,9 +72,12 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 		}
 
 		res = DemoWorkItems{
-			WorkItem:             *workItem,
-			SharedWorkItemFields: SharedWorkItemFields{},
-			DemoWorkItem:         *workItem.DemoWorkItemJoin,
+			WorkItem: *workItem,
+			SharedWorkItemFields: SharedWorkItemFields{
+				Members:      workItem.WorkItemAssignedUsersJoin,
+				WorkItemTags: workItem.WorkItemWorkItemTagsJoin,
+			},
+			DemoWorkItem: *workItem.DemoWorkItemJoin,
 		}
 	case CreateDemoTwoWorkItemRequest:
 		workItem, err := h.svc.DemoTwoWorkItem.Create(ctx, tx, body.DemoTwoWorkItemCreateParams)
@@ -84,9 +88,12 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 		}
 
 		res = DemoTwoWorkItems{
-			WorkItem:             *workItem,
-			SharedWorkItemFields: SharedWorkItemFields{},
-			DemoTwoWorkItem:      *workItem.DemoTwoWorkItemJoin,
+			WorkItem: *workItem,
+			SharedWorkItemFields: SharedWorkItemFields{
+				Members:      workItem.WorkItemAssignedUsersJoin,
+				WorkItemTags: workItem.WorkItemWorkItemTagsJoin,
+			},
+			DemoTwoWorkItem: *workItem.DemoTwoWorkItemJoin,
 		}
 	default:
 		renderErrorResponse(c, "Unknown body", internal.NewErrorf(models.ErrorCodeUnknown, "%+v", b))

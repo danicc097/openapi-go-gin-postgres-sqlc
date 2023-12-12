@@ -81,6 +81,7 @@ import {
   DbUserNotification,
   RestPaginationPage,
   RestNotification,
+  DbUserWIAUWorkItem,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -963,5 +964,17 @@ export const RestNotificationDecoder: Decoder<RestNotification> = {
       throw new Error(`Schema ${RestNotificationDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, RestNotificationDecoder.definitionName)
+  },
+}
+export const DbUserWIAUWorkItemDecoder: Decoder<DbUserWIAUWorkItem> = {
+  definitionName: 'DbUserWIAUWorkItem',
+  schemaRef: '#/definitions/DbUserWIAUWorkItem',
+
+  decode(json: unknown): DbUserWIAUWorkItem {
+    const schema = ajv.getSchema(DbUserWIAUWorkItemDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbUserWIAUWorkItemDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbUserWIAUWorkItemDecoder.definitionName)
   },
 }

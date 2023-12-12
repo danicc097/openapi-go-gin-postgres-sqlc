@@ -58,7 +58,7 @@
     "scopes": [
       "work-item-tag:create"
     ],
-    "role": null,
+    "role": "manager",
     "requiresAuthentication": true
   },
   "GetWorkItemTag": {

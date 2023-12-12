@@ -44,8 +44,13 @@ var (
 	userScopes = models.Scopes{
 		models.ScopeUsersRead,
 	}
-	managerScopes = append(userScopes, models.ScopeWorkItemReview)
-	adminScopes   = append(managerScopes, models.ScopeUsersWrite)
+	managerScopes = append(
+		userScopes,
+		models.ScopeWorkItemReview,
+		models.ScopeWorkItemTagCreate,
+		models.ScopeWorkItemTagDelete,
+		models.ScopeWorkItemTagEdit)
+	adminScopes = append(managerScopes, models.ScopeUsersWrite)
 
 	// scopesByRole represents user scopes by role.
 	scopesByRole = map[models.Role]models.Scopes{

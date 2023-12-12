@@ -77,6 +77,7 @@ import {
   DbUserNotification,
   RestPaginationPage,
   RestNotification,
+  DbUserWIAUWorkItem,
 } from './models'
 
 export const schemaDefinitions = {
@@ -201,6 +202,7 @@ export const schemaDefinitions = {
   DbUserNotification: info<DbUserNotification>('DbUserNotification', '#/definitions/DbUserNotification'),
   RestPaginationPage: info<RestPaginationPage>('RestPaginationPage', '#/definitions/RestPaginationPage'),
   RestNotification: info<RestNotification>('RestNotification', '#/definitions/RestNotification'),
+  DbUserWIAUWorkItem: info<DbUserWIAUWorkItem>('DbUserWIAUWorkItem', '#/definitions/DbUserWIAUWorkItem'),
 }
 
 export interface SchemaInfo<T> {

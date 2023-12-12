@@ -61,7 +61,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		return nil, fmt.Errorf("repos.DemoWorkItem.Create: %w", err)
 	}
 
-	err = w.wiSvc.AssignTags(ctx, d, models.ProjectDemo, demoWi, params.TagIDs)
+	err = w.wiSvc.AssignTags(ctx, d, models.ProjectDemo, demoWi.WorkItemID, params.TagIDs)
 	if err != nil {
 		return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs"}, "could not assign tags")
 	}
@@ -71,9 +71,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		return nil, internal.WrapErrorWithLocf(err, "", []string{"members"}, "could not assign members")
 	}
 
-	// TODO rest response with non pointer required joins as usual, so that it is always up to date
-	// (else tests - with response validation - will fail)
-	// response validation could be disabled in prod for better availability in place of strictness
+	// NOTE: rest response with non pointer joins as usual
 	opts := db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true, AssignedUsers: true, WorkItemTags: true})
 	wi, err := w.repos.DemoWorkItem.ByID(ctx, d, demoWi.WorkItemID, opts)
 	if err != nil {

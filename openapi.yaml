@@ -283,6 +283,7 @@ paths:
         - $ref: '#/components/parameters/ProjectName'
       x-required-scopes:
         - work-item-tag:create
+      x-required-role: manager
       requestBody:
         content:
           application/json:
@@ -1237,7 +1238,7 @@ components:
           type: integer
         members:
           items:
-            $ref: '#/components/schemas/DbUser'
+            $ref: '#/components/schemas/DbUserWIAUWorkItem'
           nullable: true
           type: array
         metadata:
@@ -1309,7 +1310,7 @@ components:
           type: integer
         members:
           items:
-            $ref: '#/components/schemas/DbUser'
+            $ref: '#/components/schemas/DbUserWIAUWorkItem'
           nullable: true
           type: array
         metadata:
@@ -2016,6 +2017,16 @@ components:
         - read
         - userID
         - notification
+      type: object
+    DbUserWIAUWorkItem: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        role:
+          $ref: '#/components/schemas/WorkItemRole'
+        user:
+          $ref: '#/components/schemas/DbUser'
+      required:
+        - user
+        - role
       type: object
   examples: # Generated from internal structs. DO NOT EDIT.
     User:

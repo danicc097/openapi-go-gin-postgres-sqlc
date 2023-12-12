@@ -785,7 +785,7 @@
         },
         "members": {
           "items": {
-            "$ref": "#/definitions/DbUser"
+            "$ref": "#/definitions/DbUserWIAUWorkItem"
           },
           "type": [
             "array",
@@ -901,7 +901,7 @@
         },
         "members": {
           "items": {
-            "$ref": "#/definitions/DbUser"
+            "$ref": "#/definitions/DbUserWIAUWorkItem"
           },
           "type": [
             "array",
@@ -1945,6 +1945,22 @@
       ],
       "type": "object",
       "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DbUserWIAUWorkItem": {
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/WorkItemRole"
+        },
+        "user": {
+          "$ref": "#/definitions/DbUser"
+        }
+      },
+      "required": [
+        "user",
+        "role"
+      ],
+      "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
   "properties": {
@@ -2166,6 +2182,9 @@
     },
     "RestNotification": {
       "$ref": "#/definitions/RestNotification"
+    },
+    "DbUserWIAUWorkItem": {
+      "$ref": "#/definitions/DbUserWIAUWorkItem"
     }
   }
 }

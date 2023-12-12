@@ -25,6 +25,10 @@ export type Scope =
   | 'work-item-tag:delete'
   | 'work-item:review'
 export type Scopes = Scope[]
+/**
+ * represents a database 'work_item_role'
+ */
+export type WorkItemRole = 'preparer' | 'reviewer'
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 /**
  * location in body path, if any
@@ -70,10 +74,6 @@ export type Location1 = string[]
  * string identifiers for SSE event listeners.
  */
 export type Topics = 'GlobalAlerts'
-/**
- * represents a database 'work_item_role'
- */
-export type WorkItemRole = 'preparer' | 'reviewer'
 export type UuidUUID = string
 export type CreateWorkItemRequest = CreateDemoWorkItemRequest | CreateDemoTwoWorkItemRequest
 export type DbWorkItemRole = string
@@ -271,7 +271,7 @@ export interface DemoWorkItems {
   demoWorkItem: DbDemoWorkItem
   description: string
   kanbanStepID: number
-  members?: DbUser[] | null
+  members?: DbUserWIAUWorkItem[] | null
   metadata: {}
   targetDate: string
   teamID: number
@@ -284,6 +284,10 @@ export interface DemoWorkItems {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
+export interface DbUserWIAUWorkItem {
+  role: WorkItemRole
+  user: DbUser
+}
 export interface DemoTwoWorkItems {
   closedAt?: string | null
   createdAt: string
@@ -291,7 +295,7 @@ export interface DemoTwoWorkItems {
   demoTwoWorkItem: DbDemoTwoWorkItem
   description: string
   kanbanStepID: number
-  members?: DbUser[] | null
+  members?: DbUserWIAUWorkItem[] | null
   metadata: {}
   targetDate: string
   teamID: number

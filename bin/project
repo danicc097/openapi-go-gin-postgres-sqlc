@@ -594,6 +594,7 @@ x.gen.sqlc() {
   { { {
     echo "Running generation"
     rm -f "$PG_REPO_GEN"/db/*.sqlc.go
+    x.lint.sql
     sqlc generate --experimental -f "$PG_REPO_DIR"/sqlc.yaml || err "Failed sqlc generation"
     rm -f "$PG_REPO_GEN"/db/models.go # sqlc enums
     gowrap gen \
@@ -1526,8 +1527,7 @@ x.diff-oas() {
     if oasdiff $args -base "$base_spec" -revision $SPEC_PATH; then
       echo "${GREEN}No breaking changes found in $SPEC_PATH${OFF}"
     else
-      echo "${RED}Breaking changes found in $SPEC_PATH${OFF}"
-      return 1
+      err "${RED}Breaking changes found in $SPEC_PATH${OFF}"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1574,7 +1574,7 @@ generate_structs_map() {
   go-utils.find_structs structs "$path" # faster. we know no generics structs exist in gen pkg
   go-utils.find_enums enums "$path"
   go-utils.find_all_types all_types "$path"
-  find_deleted_pkg_schemas all_types Db
+  # find_deleted_pkg_schemas all_types Db
   for struct in ${structs[@]}; do
     map_fields+=("\"Db$struct\": new(db.$struct),") # swaggest requires pointer to struct
   done
@@ -1592,7 +1592,7 @@ generate_structs_map() {
   mapfile -t structs < <(ast-parser find-structs --exclude-generics --public-only "$path")
   go-utils.find_enums enums "$path"
   go-utils.find_all_types all_types "$path"
-  find_deleted_pkg_schemas all_types Rest
+  # find_deleted_pkg_schemas all_types Rest
   for struct in ${structs[@]}; do
     map_fields+=("\"Rest$struct\": new(rest.$struct),")
   done
@@ -1742,10 +1742,10 @@ update_spec_with_structs() {
       " "$SPEC_PATH" $gen_schema_spec >/tmp/final-spec
 
     # TODO: better handle in gen_schema if possible to not generate at all in the first place
-    if [[ "$schema_name" != "$schema" ]]; then
-      echo "Deleting schema \"$schema\". Replace references with \"$schema_name\""
-      yq e "del(.components.schemas.$schema)" -i /tmp/final-spec
-    fi
+    # if [[ "$schema_name" != "$schema" ]]; then
+    #   echo "Deleting schema \"$schema\". Replace references with \"$schema_name\""
+    #   # yq e "del(.components.schemas.$schema)" -i /tmp/final-spec
+    # fi
 
     mv /tmp/final-spec "$SPEC_PATH" # need to update at each iteration since next depends on it
   done

@@ -312,7 +312,7 @@ export interface components {
       demoWorkItem: components["schemas"]["DbDemoWorkItem"];
       description: string;
       kanbanStepID: number;
-      members?: components["schemas"]["DbUser"][] | null;
+      members?: components["schemas"]["DbUserWIAUWorkItem"][] | null;
       metadata: {
         [key: string]: unknown;
       };
@@ -339,7 +339,7 @@ export interface components {
       demoTwoWorkItem: components["schemas"]["DbDemoTwoWorkItem"];
       description: string;
       kanbanStepID: number;
-      members?: components["schemas"]["DbUser"][] | null;
+      members?: components["schemas"]["DbUserWIAUWorkItem"][] | null;
       metadata: {
         [key: string]: unknown;
       };
@@ -628,6 +628,10 @@ export interface components {
       read: boolean;
       userID: components["schemas"]["DbUserID"];
       userNotificationID: number;
+    };
+    DbUserWIAUWorkItem: {
+      role: components["schemas"]["WorkItemRole"];
+      user: components["schemas"]["DbUser"];
     };
   };
   responses: never;

@@ -90,25 +90,20 @@ func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItem 
 	return nil
 }
 
-func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, projectName models.Project, workItem *db.WorkItem, tagIDs []db.WorkItemTagID) error {
-	project, err := w.repos.Project.ByName(ctx, d, projectName, db.WithProjectJoin(db.ProjectJoins{Teams: true}))
-	if err != nil {
-		return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{}, "project %s not found", projectName)
-	}
-
+func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, projectName models.Project, workItemID db.WorkItemID, tagIDs []db.WorkItemTagID) error {
 	for idx, tagID := range tagIDs {
 		tag, err := w.repos.WorkItemTag.ByID(ctx, d, tagID)
 		if err != nil {
 			return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{strconv.Itoa(idx)}, "tag with id %d not found", tagID)
 		}
 
-		if project.ProjectID != tag.ProjectID {
+		if internal.ProjectIDByName[projectName] != tag.ProjectID {
 			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "tag %q does not belong to project %q", tag.Name, tag.ProjectJoin.Name)
 		}
 
 		err = w.repos.WorkItem.AssignTag(ctx, d, &db.WorkItemWorkItemTagCreateParams{
 			WorkItemTagID: tagID,
-			WorkItemID:    workItem.WorkItemID,
+			WorkItemID:    workItemID,
 		})
 		var ierr *internal.Error
 		if err != nil {
@@ -123,11 +118,11 @@ func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, projectName models
 	return nil
 }
 
-func (w *WorkItem) RemoveTags(ctx context.Context, d db.DBTX, workItem *db.WorkItem, tagIDs []db.WorkItemTagID) error {
+func (w *WorkItem) RemoveTags(ctx context.Context, d db.DBTX, workItemID db.WorkItemID, tagIDs []db.WorkItemTagID) error {
 	for idx, tagID := range tagIDs {
 		lookup := &db.WorkItemWorkItemTag{
 			WorkItemTagID: tagID,
-			WorkItemID:    workItem.WorkItemID,
+			WorkItemID:    workItemID,
 		}
 
 		err := lookup.Delete(ctx, d)

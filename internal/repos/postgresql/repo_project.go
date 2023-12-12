@@ -23,6 +23,15 @@ func NewProject() *Project {
 
 var _ repos.Project = (*Project)(nil)
 
+func (u *Project) IsTeamInProject(ctx context.Context, db db.DBTX, arg db.IsTeamInProjectParams) (bool, error) {
+	r, err := u.q.IsTeamInProject(ctx, db, arg)
+	if err != nil {
+		return false, fmt.Errorf("q.IsTeamInProject: %w", parseDBErrorDetail(err))
+	}
+
+	return r, nil
+}
+
 func (u *Project) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (*db.Project, error) {
 	project, err := db.ProjectByProjectID(ctx, d, id, opts...)
 	if err != nil {

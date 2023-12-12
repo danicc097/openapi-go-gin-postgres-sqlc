@@ -478,6 +478,13 @@ type DbUserNotification struct {
 	UserNotificationID int      `json:"userNotificationID"`
 }
 
+// DbUserWIAUWorkItem defines the model for DbUserWIAUWorkItem.
+type DbUserWIAUWorkItem struct {
+	// Role represents a database 'work_item_role'
+	Role WorkItemRole `json:"role"`
+	User DbUser       `json:"user"`
+}
+
 // DbWorkItem defines the model for DbWorkItem.
 type DbWorkItem struct {
 	ClosedAt       *time.Time             `json:"closedAt"`
@@ -576,7 +583,7 @@ type DemoTwoWorkItems struct {
 	DemoTwoWorkItem  DbDemoTwoWorkItem      `json:"demoTwoWorkItem"`
 	Description      string                 `json:"description"`
 	KanbanStepID     int                    `json:"kanbanStepID"`
-	Members          *[]DbUser              `json:"members"`
+	Members          *[]DbUserWIAUWorkItem  `json:"members"`
 	Metadata         map[string]interface{} `json:"metadata"`
 	TargetDate       time.Time              `json:"targetDate"`
 	TeamID           int                    `json:"teamID"`
@@ -601,7 +608,7 @@ type DemoWorkItems struct {
 	DemoWorkItem     DbDemoWorkItem         `json:"demoWorkItem"`
 	Description      string                 `json:"description"`
 	KanbanStepID     int                    `json:"kanbanStepID"`
-	Members          *[]DbUser              `json:"members"`
+	Members          *[]DbUserWIAUWorkItem  `json:"members"`
 	Metadata         map[string]interface{} `json:"metadata"`
 	TargetDate       time.Time              `json:"targetDate"`
 	TeamID           int                    `json:"teamID"`

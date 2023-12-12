@@ -7,7 +7,7 @@
  */
 import { faker } from '@faker-js/faker'
 import { rest } from 'msw'
-import { Project, Scope } from '.././model'
+import { Project, Scope, WorkItemRole } from '.././model'
 
 export const getGetProjectMock = () => ({
   boardConfig: {
@@ -62,17 +62,20 @@ export const getGetProjectWorkitemsMock = () =>
       description: faker.word.sample(),
       kanbanStepID: faker.number.int({ min: undefined, max: undefined }),
       members: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-        createdAt: (() => faker.date.past())(),
-        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-        email: faker.word.sample(),
-        firstName: faker.helpers.arrayElement([faker.word.sample(), null]),
-        fullName: faker.helpers.arrayElement([faker.word.sample(), null]),
-        hasGlobalNotifications: faker.datatype.boolean(),
-        hasPersonalNotifications: faker.datatype.boolean(),
-        lastName: faker.helpers.arrayElement([faker.word.sample(), null]),
-        scopes: faker.helpers.arrayElements(Object.values(Scope)),
-        userID: faker.word.sample(),
-        username: faker.word.sample(),
+        role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
+        user: {
+          createdAt: (() => faker.date.past())(),
+          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+          email: faker.word.sample(),
+          firstName: faker.helpers.arrayElement([faker.word.sample(), null]),
+          fullName: faker.helpers.arrayElement([faker.word.sample(), null]),
+          hasGlobalNotifications: faker.datatype.boolean(),
+          hasPersonalNotifications: faker.datatype.boolean(),
+          lastName: faker.helpers.arrayElement([faker.word.sample(), null]),
+          scopes: faker.helpers.arrayElements(Object.values(Scope)),
+          userID: faker.word.sample(),
+          username: faker.word.sample(),
+        },
       })),
       metadata: (() => ({
         key: faker.color.hsl(),
@@ -127,17 +130,20 @@ export const getGetProjectWorkitemsMock = () =>
       description: faker.word.sample(),
       kanbanStepID: faker.number.int({ min: undefined, max: undefined }),
       members: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-        createdAt: (() => faker.date.past())(),
-        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-        email: faker.word.sample(),
-        firstName: faker.helpers.arrayElement([faker.word.sample(), null]),
-        fullName: faker.helpers.arrayElement([faker.word.sample(), null]),
-        hasGlobalNotifications: faker.datatype.boolean(),
-        hasPersonalNotifications: faker.datatype.boolean(),
-        lastName: faker.helpers.arrayElement([faker.word.sample(), null]),
-        scopes: faker.helpers.arrayElements(Object.values(Scope)),
-        userID: faker.word.sample(),
-        username: faker.word.sample(),
+        role: faker.helpers.arrayElement(Object.values(WorkItemRole)),
+        user: {
+          createdAt: (() => faker.date.past())(),
+          deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+          email: faker.word.sample(),
+          firstName: faker.helpers.arrayElement([faker.word.sample(), null]),
+          fullName: faker.helpers.arrayElement([faker.word.sample(), null]),
+          hasGlobalNotifications: faker.datatype.boolean(),
+          hasPersonalNotifications: faker.datatype.boolean(),
+          lastName: faker.helpers.arrayElement([faker.word.sample(), null]),
+          scopes: faker.helpers.arrayElements(Object.values(Scope)),
+          userID: faker.word.sample(),
+          username: faker.word.sample(),
+        },
       })),
       metadata: (() => ({
         key: faker.color.hsl(),

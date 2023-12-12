@@ -26,6 +26,7 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthenticated(),
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
+					MinimumRole: models.Role("manager"),
 					RequiredScopes: models.Scopes{
 						models.Scope("work-item-tag:create"),
 					},

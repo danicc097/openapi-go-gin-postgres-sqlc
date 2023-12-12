@@ -497,6 +497,13 @@ type DbUserNotification struct {
 	UserNotificationID int                   `json:"userNotificationID"`
 }
 
+// DbUserWIAUWorkItem defines the model for DbUserWIAUWorkItem.
+type DbUserWIAUWorkItem struct {
+	// Role represents a database 'work_item_role'
+	Role externalRef0.WorkItemRole `json:"role"`
+	User externalRef0.DbUser       `json:"user"`
+}
+
 // DbWorkItem defines the model for DbWorkItem.
 type DbWorkItem struct {
 	ClosedAt       *time.Time             `json:"closedAt"`
@@ -596,7 +603,7 @@ type DemoTwoWorkItems  struct {
     DemoTwoWorkItem externalRef0.DbDemoTwoWorkItem`json:"demoTwoWorkItem"`
     Description string`json:"description"`
     KanbanStepID int`json:"kanbanStepID"`
-    Members *[]externalRef0.DbUser`json:"members"`
+    Members *[]externalRef0.DbUserWIAUWorkItem`json:"members"`
     Metadata map[string]interface{}`json:"metadata"`
     TargetDate time.Time`json:"targetDate"`
     TeamID int`json:"teamID"`
@@ -623,7 +630,7 @@ type DemoWorkItems  struct {
     DemoWorkItem externalRef0.DbDemoWorkItem`json:"demoWorkItem"`
     Description string`json:"description"`
     KanbanStepID int`json:"kanbanStepID"`
-    Members *[]externalRef0.DbUser`json:"members"`
+    Members *[]externalRef0.DbUserWIAUWorkItem`json:"members"`
     Metadata map[string]interface{}`json:"metadata"`
     TargetDate time.Time`json:"targetDate"`
     TeamID int`json:"teamID"`

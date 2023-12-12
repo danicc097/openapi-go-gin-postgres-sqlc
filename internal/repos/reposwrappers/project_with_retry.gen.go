@@ -66,3 +66,22 @@ func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name models.Pr
 	}
 	return
 }
+
+// IsTeamInProject implements repos.Project
+func (_d ProjectWithRetry) IsTeamInProject(ctx context.Context, db db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
+	b1, err = _d.Project.IsTeamInProject(ctx, db, arg)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		b1, err = _d.Project.IsTeamInProject(ctx, db, arg)
+	}
+	return
+}

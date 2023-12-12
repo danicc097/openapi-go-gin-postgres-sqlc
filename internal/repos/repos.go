@@ -90,6 +90,7 @@ type User interface {
 type Project interface {
 	ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (*db.Project, error)
 	ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (*db.Project, error)
+	IsTeamInProject(ctx context.Context, db db.DBTX, arg db.IsTeamInProjectParams) (bool, error)
 }
 
 // Team defines the datastore/repository handling persisting Team records.

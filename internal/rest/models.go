@@ -44,11 +44,11 @@ type User struct {
 }
 
 type SharedWorkItemFields struct {
-	TimeEntries      *[]db.TimeEntry       `json:"timeEntries"`
-	WorkItemComments *[]db.WorkItemComment `json:"workItemComments"`
-	Members          *[]db.User            `json:"members"`
-	WorkItemTags     *[]db.WorkItemTag     `json:"workItemTags"`
-	WorkItemType     *db.WorkItemType      `json:"workItemType"`
+	TimeEntries      *[]db.TimeEntry           `json:"timeEntries"`
+	WorkItemComments *[]db.WorkItemComment     `json:"workItemComments"`
+	Members          *[]db.User__WIAU_WorkItem `json:"members"`
+	WorkItemTags     *[]db.WorkItemTag         `json:"workItemTags"`
+	WorkItemType     *db.WorkItemType          `json:"workItemType"`
 }
 
 // DemoWorkItems represents an OpenAPI schema response for a ProjectBoard.
