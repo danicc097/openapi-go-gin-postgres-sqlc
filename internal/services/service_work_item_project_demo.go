@@ -66,7 +66,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs"}, "could not assign tags")
 	}
 
-	err = w.wiSvc.AssignUsers(ctx, d, demoWi, params.Members)
+	err = w.wiSvc.AssignUsers(ctx, d, demoWi.WorkItemID, params.Members)
 	if err != nil {
 		return nil, internal.WrapErrorWithLocf(err, "", []string{"members"}, "could not assign members")
 	}

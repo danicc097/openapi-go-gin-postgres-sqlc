@@ -30,7 +30,12 @@ func NewWorkItem(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItem {
 	}
 }
 
-func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItem *db.WorkItem, members []Member) error {
+func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItemID db.WorkItemID, members []Member) error {
+	wi, err := w.repos.WorkItem.ByID(ctx, d, workItemID)
+	if err != nil {
+		return fmt.Errorf("repos.WorkItem.ByID: %w", err)
+	}
+
 	for idx, member := range members {
 		user, err := w.repos.User.ByID(ctx, d, member.UserID, db.WithUserJoin(db.UserJoins{TeamsMember: true}))
 		if err != nil {
@@ -39,17 +44,17 @@ func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItem *db.Work
 
 		var userInTeam bool
 		for _, team := range *user.MemberTeamsJoin {
-			if team.TeamID == workItem.TeamID {
+			if team.TeamID == wi.TeamID {
 				userInTeam = true
 			}
 		}
 		if !userInTeam {
-			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "user %q does not belong to team %q", user.Email, workItem.TeamID)
+			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "user %q does not belong to team %q", user.Email, wi.TeamID)
 		}
 
 		err = w.repos.WorkItem.AssignUser(ctx, d, &db.WorkItemAssignedUserCreateParams{
 			AssignedUser: member.UserID,
-			WorkItemID:   workItem.WorkItemID,
+			WorkItemID:   wi.WorkItemID,
 			Role:         member.Role,
 		})
 		var ierr *internal.Error
@@ -65,11 +70,11 @@ func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItem *db.Work
 	return nil
 }
 
-func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItem *db.WorkItem, members []db.UserID) error {
+func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItemID db.WorkItemID, members []db.UserID) error {
 	for idx, member := range members {
 		lookup := &db.WorkItemAssignedUser{
 			AssignedUser: member,
-			WorkItemID:   workItem.WorkItemID,
+			WorkItemID:   workItemID,
 		}
 
 		err := lookup.Delete(ctx, d)
@@ -82,6 +87,8 @@ func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItem 
 }
 
 func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, workItemID db.WorkItemID, tagIDs []db.WorkItemTagID) error {
+	// IMPORTANT: using IDs for services allows each method to grab necessary joins, etc. as needed instead of relying on a passed db entity
+	// to hold them.
 	wi, err := w.repos.WorkItem.ByID(ctx, d, workItemID, db.WithWorkItemJoin(db.WorkItemJoins{Team: true}))
 	if err != nil {
 		return fmt.Errorf("repos.WorkItem.ByID: %w", err)
@@ -114,11 +121,11 @@ func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, workItemID db.Work
 	return nil
 }
 
-func (w *WorkItem) RemoveTags(ctx context.Context, d db.DBTX, workItem *db.WorkItem, tagIDs []db.WorkItemTagID) error {
+func (w *WorkItem) RemoveTags(ctx context.Context, d db.DBTX, workItemID db.WorkItemID, tagIDs []db.WorkItemTagID) error {
 	for idx, tagID := range tagIDs {
 		lookup := &db.WorkItemWorkItemTag{
 			WorkItemTagID: tagID,
-			WorkItemID:    workItem.WorkItemID,
+			WorkItemID:    workItemID,
 		}
 
 		err := lookup.Delete(ctx, d)
