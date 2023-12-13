@@ -1,12 +1,9 @@
 package rest
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 )
 
-// AdminPing ping pongs.
-func (h *Handlers) AdminPing(c *gin.Context) {
-	c.String(http.StatusOK, "pong")
+func (h *StrictHandlers) AdminPing(c *gin.Context, request AdminPingRequestObject) (AdminPingResponseObject, error) {
+	return AdminPing200TextResponse("pong"), nil
 }

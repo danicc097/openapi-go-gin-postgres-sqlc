@@ -4,14 +4,14 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
-  WorkItemTagCreateRequest,
-  WorkItemTagUpdateRequest,
+  CreateWorkItemTagRequest,
+  UpdateWorkItemTagRequest,
   WorkItemTag,
-  WorkItemTypeCreateRequest,
-  WorkItemTypeUpdateRequest,
+  CreateWorkItemTypeRequest,
+  UpdateWorkItemTypeRequest,
   WorkItemType,
-  TeamCreateRequest,
-  TeamUpdateRequest,
+  CreateTeamRequest,
+  UpdateTeamRequest,
   Team,
   Direction,
   PaginatedNotificationsResponse,
@@ -45,11 +45,11 @@ import {
   UpdateUserAuthRequest,
   ValidationError,
   UuidUUID,
-  WorkItemCreateRequest,
+  CreateWorkItemRequest,
   DbWorkItem,
-  DemoTwoWorkItemCreateRequest,
-  DemoWorkItemCreateRequest,
-  WorkItemCommentCreateRequest,
+  CreateDemoTwoWorkItemRequest,
+  CreateDemoWorkItemRequest,
+  CreateWorkItemCommentRequest,
   Project,
   DbActivityCreateParams,
   DbTeamCreateParams,
@@ -77,29 +77,30 @@ import {
   DbUserNotification,
   RestPaginationPage,
   RestNotification,
+  DbUserWIAUWorkItem,
 } from './models'
 
 export const schemaDefinitions = {
-  WorkItemTagCreateRequest: info<WorkItemTagCreateRequest>(
-    'WorkItemTagCreateRequest',
-    '#/definitions/WorkItemTagCreateRequest',
+  CreateWorkItemTagRequest: info<CreateWorkItemTagRequest>(
+    'CreateWorkItemTagRequest',
+    '#/definitions/CreateWorkItemTagRequest',
   ),
-  WorkItemTagUpdateRequest: info<WorkItemTagUpdateRequest>(
-    'WorkItemTagUpdateRequest',
-    '#/definitions/WorkItemTagUpdateRequest',
+  UpdateWorkItemTagRequest: info<UpdateWorkItemTagRequest>(
+    'UpdateWorkItemTagRequest',
+    '#/definitions/UpdateWorkItemTagRequest',
   ),
   WorkItemTag: info<WorkItemTag>('WorkItemTag', '#/definitions/WorkItemTag'),
-  WorkItemTypeCreateRequest: info<WorkItemTypeCreateRequest>(
-    'WorkItemTypeCreateRequest',
-    '#/definitions/WorkItemTypeCreateRequest',
+  CreateWorkItemTypeRequest: info<CreateWorkItemTypeRequest>(
+    'CreateWorkItemTypeRequest',
+    '#/definitions/CreateWorkItemTypeRequest',
   ),
-  WorkItemTypeUpdateRequest: info<WorkItemTypeUpdateRequest>(
-    'WorkItemTypeUpdateRequest',
-    '#/definitions/WorkItemTypeUpdateRequest',
+  UpdateWorkItemTypeRequest: info<UpdateWorkItemTypeRequest>(
+    'UpdateWorkItemTypeRequest',
+    '#/definitions/UpdateWorkItemTypeRequest',
   ),
   WorkItemType: info<WorkItemType>('WorkItemType', '#/definitions/WorkItemType'),
-  TeamCreateRequest: info<TeamCreateRequest>('TeamCreateRequest', '#/definitions/TeamCreateRequest'),
-  TeamUpdateRequest: info<TeamUpdateRequest>('TeamUpdateRequest', '#/definitions/TeamUpdateRequest'),
+  CreateTeamRequest: info<CreateTeamRequest>('CreateTeamRequest', '#/definitions/CreateTeamRequest'),
+  UpdateTeamRequest: info<UpdateTeamRequest>('UpdateTeamRequest', '#/definitions/UpdateTeamRequest'),
   Team: info<Team>('Team', '#/definitions/Team'),
   Direction: info<Direction>('Direction', '#/definitions/Direction'),
   PaginatedNotificationsResponse: info<PaginatedNotificationsResponse>(
@@ -139,19 +140,19 @@ export const schemaDefinitions = {
   UpdateUserAuthRequest: info<UpdateUserAuthRequest>('UpdateUserAuthRequest', '#/definitions/UpdateUserAuthRequest'),
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
-  WorkItemCreateRequest: info<WorkItemCreateRequest>('WorkItemCreateRequest', '#/definitions/WorkItemCreateRequest'),
+  CreateWorkItemRequest: info<CreateWorkItemRequest>('CreateWorkItemRequest', '#/definitions/CreateWorkItemRequest'),
   DbWorkItem: info<DbWorkItem>('DbWorkItem', '#/definitions/DbWorkItem'),
-  DemoTwoWorkItemCreateRequest: info<DemoTwoWorkItemCreateRequest>(
-    'DemoTwoWorkItemCreateRequest',
-    '#/definitions/DemoTwoWorkItemCreateRequest',
+  CreateDemoTwoWorkItemRequest: info<CreateDemoTwoWorkItemRequest>(
+    'CreateDemoTwoWorkItemRequest',
+    '#/definitions/CreateDemoTwoWorkItemRequest',
   ),
-  DemoWorkItemCreateRequest: info<DemoWorkItemCreateRequest>(
-    'DemoWorkItemCreateRequest',
-    '#/definitions/DemoWorkItemCreateRequest',
+  CreateDemoWorkItemRequest: info<CreateDemoWorkItemRequest>(
+    'CreateDemoWorkItemRequest',
+    '#/definitions/CreateDemoWorkItemRequest',
   ),
-  WorkItemCommentCreateRequest: info<WorkItemCommentCreateRequest>(
-    'WorkItemCommentCreateRequest',
-    '#/definitions/WorkItemCommentCreateRequest',
+  CreateWorkItemCommentRequest: info<CreateWorkItemCommentRequest>(
+    'CreateWorkItemCommentRequest',
+    '#/definitions/CreateWorkItemCommentRequest',
   ),
   Project: info<Project>('Project', '#/definitions/Project'),
   DbActivityCreateParams: info<DbActivityCreateParams>(
@@ -201,6 +202,7 @@ export const schemaDefinitions = {
   DbUserNotification: info<DbUserNotification>('DbUserNotification', '#/definitions/DbUserNotification'),
   RestPaginationPage: info<RestPaginationPage>('RestPaginationPage', '#/definitions/RestPaginationPage'),
   RestNotification: info<RestNotification>('RestNotification', '#/definitions/RestNotification'),
+  DbUserWIAUWorkItem: info<DbUserWIAUWorkItem>('DbUserWIAUWorkItem', '#/definitions/DbUserWIAUWorkItem'),
 }
 
 export interface SchemaInfo<T> {

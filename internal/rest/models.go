@@ -5,7 +5,6 @@ package rest
  */
 
 import (
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 )
@@ -37,7 +36,7 @@ type Notification struct {
 // User represents an OpenAPI schema response for a User.
 type User struct {
 	db.User
-	Role models.Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
+	Role Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 
 	APIKey   *db.UserAPIKey `json:"apiKey,omitempty"`
 	Teams    *[]db.Team     `json:"teams"`
@@ -45,11 +44,11 @@ type User struct {
 }
 
 type SharedWorkItemFields struct {
-	TimeEntries      *[]db.TimeEntry       `json:"timeEntries"`
-	WorkItemComments *[]db.WorkItemComment `json:"workItemComments"`
-	Members          *[]db.User            `json:"members"`
-	WorkItemTags     *[]db.WorkItemTag     `json:"workItemTags"`
-	WorkItemType     *db.WorkItemType      `json:"workItemType"`
+	TimeEntries      *[]db.TimeEntry           `json:"timeEntries"`
+	WorkItemComments *[]db.WorkItemComment     `json:"workItemComments"`
+	Members          *[]db.User__WIAU_WorkItem `json:"members"`
+	WorkItemTags     *[]db.WorkItemTag         `json:"workItemTags"`
+	WorkItemType     *db.WorkItemType          `json:"workItemType"`
 }
 
 // DemoWorkItems represents an OpenAPI schema response for a ProjectBoard.
@@ -68,10 +67,10 @@ type DemoTwoWorkItems struct {
 
 // ProjectBoard represents an OpenAPI schema response for a ProjectBoard.
 type ProjectBoard struct {
-	ProjectName
+	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 }
 
-type ProjectBoardCreateRequest struct {
+type CreateProjectBoardRequest struct {
 	// services models not needed yet, projectId is trivial to include in every request...
 	// if services use db CreateParams as is we can also have specific per-project logic
 	// anyway
@@ -79,20 +78,20 @@ type ProjectBoardCreateRequest struct {
 	Tags  *[]db.WorkItemTagCreateParams `json:"tags"`
 }
 
-type WorkItemTagCreateRequest struct {
+type CreateWorkItemTagRequest struct {
 	db.WorkItemTagCreateParams
 }
-type WorkItemTagUpdateRequest struct {
+type UpdateWorkItemTagRequest struct {
 	db.WorkItemTagUpdateParams
 }
 type WorkItemTag struct {
 	db.WorkItemTag
 	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
-type WorkItemTypeCreateRequest struct {
+type CreateWorkItemTypeRequest struct {
 	db.WorkItemTypeCreateParams
 }
-type WorkItemTypeUpdateRequest struct {
+type UpdateWorkItemTypeRequest struct {
 	db.WorkItemTypeUpdateParams
 }
 type WorkItemType struct {
@@ -104,28 +103,24 @@ type Team struct {
 	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
 
-type TeamCreateRequest struct {
+type CreateTeamRequest struct {
 	db.TeamCreateParams
 }
 
-type TeamUpdateRequest struct {
+type UpdateTeamRequest struct {
 	db.TeamUpdateParams
 }
 
-type DemoWorkItemCreateRequest struct {
-	ProjectName
+type CreateDemoWorkItemRequest struct {
+	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 	services.DemoWorkItemCreateParams
 }
 
-type DemoTwoWorkItemCreateRequest struct {
-	ProjectName
+type CreateDemoTwoWorkItemRequest struct {
+	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 	services.DemoTwoWorkItemCreateParams
 }
 
-type WorkItemCommentCreateRequest struct {
+type CreateWorkItemCommentRequest struct {
 	db.WorkItemCommentCreateParams
-}
-
-type ProjectName struct {
-	ProjectName models.Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 }

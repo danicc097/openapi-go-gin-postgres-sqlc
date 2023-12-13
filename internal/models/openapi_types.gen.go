@@ -8,7 +8,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	uuid "github.com/google/uuid"
 )
 
@@ -279,6 +278,57 @@ func AllWorkItemRoleValues() []WorkItemRole {
 	}
 }
 
+// CreateDemoTwoWorkItemRequest defines the model for CreateDemoTwoWorkItemRequest.
+type CreateDemoTwoWorkItemRequest struct {
+	Base           DbWorkItemCreateParams        `json:"base"`
+	DemoTwoProject DbDemoTwoWorkItemCreateParams `json:"demoTwoProject"`
+	Members        []ServicesMember              `json:"members"`
+	ProjectName    Project                       `json:"projectName"`
+	TagIDs         []int                         `json:"tagIDs"`
+}
+
+// CreateDemoWorkItemRequest defines the model for CreateDemoWorkItemRequest.
+type CreateDemoWorkItemRequest struct {
+	Base        DbWorkItemCreateParams     `json:"base"`
+	DemoProject DbDemoWorkItemCreateParams `json:"demoProject"`
+	Members     []ServicesMember           `json:"members"`
+	ProjectName Project                    `json:"projectName"`
+	TagIDs      []int                      `json:"tagIDs"`
+}
+
+// CreateTeamRequest defines the model for CreateTeamRequest.
+type CreateTeamRequest struct {
+	Description string `json:"description"`
+	Name        string `json:"name"`
+	ProjectID   int    `json:"projectID"`
+}
+
+// CreateWorkItemCommentRequest defines the model for CreateWorkItemCommentRequest.
+type CreateWorkItemCommentRequest struct {
+	Message    string   `json:"message"`
+	UserID     DbUserID `json:"userID"`
+	WorkItemID int      `json:"workItemID"`
+}
+
+// CreateWorkItemRequest defines the model for CreateWorkItemRequest.
+type CreateWorkItemRequest struct {
+	union json.RawMessage
+}
+
+// CreateWorkItemTagRequest defines the model for CreateWorkItemTagRequest.
+type CreateWorkItemTagRequest struct {
+	Color       string `json:"color"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+}
+
+// CreateWorkItemTypeRequest defines the model for CreateWorkItemTypeRequest.
+type CreateWorkItemTypeRequest struct {
+	Color       string `json:"color"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+}
+
 // DbActivity defines the model for DbActivity.
 type DbActivity struct {
 	ActivityID   int    `json:"activityID"`
@@ -428,6 +478,13 @@ type DbUserNotification struct {
 	UserNotificationID int      `json:"userNotificationID"`
 }
 
+// DbUserWIAUWorkItem defines the model for DbUserWIAUWorkItem.
+type DbUserWIAUWorkItem struct {
+	// Role represents a database 'work_item_role'
+	Role WorkItemRole `json:"role"`
+	User DbUser       `json:"user"`
+}
+
 // DbWorkItem defines the model for DbWorkItem.
 type DbWorkItem struct {
 	ClosedAt       *time.Time             `json:"closedAt"`
@@ -515,15 +572,6 @@ type DemoProjectKanbanSteps string
 // DemoTwoKanbanSteps defines the model for DemoTwoKanbanSteps.
 type DemoTwoKanbanSteps string
 
-// DemoTwoWorkItemCreateRequest defines the model for DemoTwoWorkItemCreateRequest.
-type DemoTwoWorkItemCreateRequest struct {
-	Base           DbWorkItemCreateParams        `json:"base"`
-	DemoTwoProject DbDemoTwoWorkItemCreateParams `json:"demoTwoProject"`
-	Members        []ServicesMember              `json:"members"`
-	ProjectName    Project                       `json:"projectName"`
-	TagIDs         []int                         `json:"tagIDs"`
-}
-
 // DemoTwoWorkItemTypes defines the model for DemoTwoWorkItemTypes.
 type DemoTwoWorkItemTypes string
 
@@ -535,7 +583,7 @@ type DemoTwoWorkItems struct {
 	DemoTwoWorkItem  DbDemoTwoWorkItem      `json:"demoTwoWorkItem"`
 	Description      string                 `json:"description"`
 	KanbanStepID     int                    `json:"kanbanStepID"`
-	Members          *[]DbUser              `json:"members"`
+	Members          *[]DbUserWIAUWorkItem  `json:"members"`
 	Metadata         map[string]interface{} `json:"metadata"`
 	TargetDate       time.Time              `json:"targetDate"`
 	TeamID           int                    `json:"teamID"`
@@ -549,15 +597,6 @@ type DemoTwoWorkItems struct {
 	WorkItemTypeID   int                    `json:"workItemTypeID"`
 }
 
-// DemoWorkItemCreateRequest defines the model for DemoWorkItemCreateRequest.
-type DemoWorkItemCreateRequest struct {
-	Base        DbWorkItemCreateParams     `json:"base"`
-	DemoProject DbDemoWorkItemCreateParams `json:"demoProject"`
-	Members     []ServicesMember           `json:"members"`
-	ProjectName Project                    `json:"projectName"`
-	TagIDs      []int                      `json:"tagIDs"`
-}
-
 // DemoWorkItemTypes defines the model for DemoWorkItemTypes.
 type DemoWorkItemTypes string
 
@@ -569,7 +608,7 @@ type DemoWorkItems struct {
 	DemoWorkItem     DbDemoWorkItem         `json:"demoWorkItem"`
 	Description      string                 `json:"description"`
 	KanbanStepID     int                    `json:"kanbanStepID"`
-	Members          *[]DbUser              `json:"members"`
+	Members          *[]DbUserWIAUWorkItem  `json:"members"`
 	Metadata         map[string]interface{} `json:"metadata"`
 	TargetDate       time.Time              `json:"targetDate"`
 	TeamID           int                    `json:"teamID"`
@@ -696,22 +735,15 @@ type Team struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
-// TeamCreateRequest defines the model for TeamCreateRequest.
-type TeamCreateRequest struct {
-	Description string `json:"description"`
-	Name        string `json:"name"`
-	ProjectID   int    `json:"projectID"`
-}
+// Topics string identifiers for SSE event listeners.
+type Topics string
 
-// TeamUpdateRequest defines the model for TeamUpdateRequest.
-type TeamUpdateRequest struct {
+// UpdateTeamRequest defines the model for UpdateTeamRequest.
+type UpdateTeamRequest struct {
 	Description *string `json:"description,omitempty"`
 	Name        *string `json:"name,omitempty"`
 	ProjectID   *int    `json:"projectID,omitempty"`
 }
-
-// Topics string identifiers for SSE event listeners.
-type Topics string
 
 // UpdateUserAuthRequest represents User authorization data to update
 type UpdateUserAuthRequest struct {
@@ -726,6 +758,20 @@ type UpdateUserRequest struct {
 
 	// LastName originally from auth server but updatable
 	LastName *string `json:"lastName,omitempty"`
+}
+
+// UpdateWorkItemTagRequest defines the model for UpdateWorkItemTagRequest.
+type UpdateWorkItemTagRequest struct {
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+}
+
+// UpdateWorkItemTypeRequest defines the model for UpdateWorkItemTypeRequest.
+type UpdateWorkItemTypeRequest struct {
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
 }
 
 // User defines the model for User.
@@ -767,18 +813,6 @@ type ValidationError struct {
 	Msg string `json:"msg"`
 }
 
-// WorkItemCommentCreateRequest defines the model for WorkItemCommentCreateRequest.
-type WorkItemCommentCreateRequest struct {
-	Message    string   `json:"message"`
-	UserID     DbUserID `json:"userID"`
-	WorkItemID int      `json:"workItemID"`
-}
-
-// WorkItemCreateRequest defines the model for WorkItemCreateRequest.
-type WorkItemCreateRequest struct {
-	union json.RawMessage
-}
-
 // WorkItemRole represents a database 'work_item_role'
 type WorkItemRole string
 
@@ -791,20 +825,6 @@ type WorkItemTag struct {
 	WorkItemTagID int    `json:"workItemTagID"`
 }
 
-// WorkItemTagCreateRequest defines the model for WorkItemTagCreateRequest.
-type WorkItemTagCreateRequest struct {
-	Color       string `json:"color"`
-	Description string `json:"description"`
-	Name        string `json:"name"`
-}
-
-// WorkItemTagUpdateRequest defines the model for WorkItemTagUpdateRequest.
-type WorkItemTagUpdateRequest struct {
-	Color       *string `json:"color,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-}
-
 // WorkItemType defines the model for WorkItemType.
 type WorkItemType struct {
 	Color          string `json:"color"`
@@ -812,20 +832,6 @@ type WorkItemType struct {
 	Name           string `json:"name"`
 	ProjectID      int    `json:"projectID"`
 	WorkItemTypeID int    `json:"workItemTypeID"`
-}
-
-// WorkItemTypeCreateRequest defines the model for WorkItemTypeCreateRequest.
-type WorkItemTypeCreateRequest struct {
-	Color       string `json:"color"`
-	Description string `json:"description"`
-	Name        string `json:"name"`
-}
-
-// WorkItemTypeUpdateRequest defines the model for WorkItemTypeUpdateRequest.
-type WorkItemTypeUpdateRequest struct {
-	Color       *string `json:"color,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
 }
 
 // ProjectName defines the model for ProjectName.
@@ -856,98 +862,68 @@ type GetProjectWorkitemsParams struct {
 }
 
 // UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
+
 type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
+
 type InitializeProjectJSONRequestBody = InitializeProjectRequest
 
 // CreateTeamJSONRequestBody defines body for CreateTeam for application/json ContentType.
-type CreateTeamJSONRequestBody = TeamCreateRequest
+
+type CreateTeamJSONRequestBody = CreateTeamRequest
 
 // UpdateTeamJSONRequestBody defines body for UpdateTeam for application/json ContentType.
-type UpdateTeamJSONRequestBody = TeamUpdateRequest
+
+type UpdateTeamJSONRequestBody = UpdateTeamRequest
 
 // CreateWorkItemTagJSONRequestBody defines body for CreateWorkItemTag for application/json ContentType.
-type CreateWorkItemTagJSONRequestBody = WorkItemTagCreateRequest
+
+type CreateWorkItemTagJSONRequestBody = CreateWorkItemTagRequest
 
 // UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
-type UpdateWorkItemTagJSONRequestBody = WorkItemTagUpdateRequest
+
+type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
 
 // CreateWorkItemTypeJSONRequestBody defines body for CreateWorkItemType for application/json ContentType.
-type CreateWorkItemTypeJSONRequestBody = WorkItemTypeCreateRequest
+
+type CreateWorkItemTypeJSONRequestBody = CreateWorkItemTypeRequest
 
 // UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
-type UpdateWorkItemTypeJSONRequestBody = WorkItemTypeUpdateRequest
+
+type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
+
 type UpdateUserJSONRequestBody = UpdateUserRequest
 
 // UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
+
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
 // CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
-type CreateWorkitemJSONRequestBody = WorkItemCreateRequest
+
+type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
 
 // CreateWorkitemCommentJSONRequestBody defines body for CreateWorkitemComment for application/json ContentType.
-type CreateWorkitemCommentJSONRequestBody = WorkItemCommentCreateRequest
 
-// AsDemoWorkItemCreateRequest returns the union data inside the WorkItemCreateRequest as a DemoWorkItemCreateRequest
-func (t WorkItemCreateRequest) AsDemoWorkItemCreateRequest() (DemoWorkItemCreateRequest, error) {
-	var body DemoWorkItemCreateRequest
+type CreateWorkitemCommentJSONRequestBody = CreateWorkItemCommentRequest
+
+// AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
+func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {
+	var body CreateDemoWorkItemRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromDemoWorkItemCreateRequest overwrites any union data inside the WorkItemCreateRequest as the provided DemoWorkItemCreateRequest
-func (t *WorkItemCreateRequest) FromDemoWorkItemCreateRequest(v DemoWorkItemCreateRequest) error {
-	v.ProjectName = "demo"
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeDemoWorkItemCreateRequest performs a merge with any union data inside the WorkItemCreateRequest, using the provided DemoWorkItemCreateRequest
-func (t *WorkItemCreateRequest) MergeDemoWorkItemCreateRequest(v DemoWorkItemCreateRequest) error {
-	v.ProjectName = "demo"
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JsonMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsDemoTwoWorkItemCreateRequest returns the union data inside the WorkItemCreateRequest as a DemoTwoWorkItemCreateRequest
-func (t WorkItemCreateRequest) AsDemoTwoWorkItemCreateRequest() (DemoTwoWorkItemCreateRequest, error) {
-	var body DemoTwoWorkItemCreateRequest
+// AsCreateDemoTwoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoTwoWorkItemRequest
+func (t CreateWorkItemRequest) AsCreateDemoTwoWorkItemRequest() (CreateDemoTwoWorkItemRequest, error) {
+	var body CreateDemoTwoWorkItemRequest
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromDemoTwoWorkItemCreateRequest overwrites any union data inside the WorkItemCreateRequest as the provided DemoTwoWorkItemCreateRequest
-func (t *WorkItemCreateRequest) FromDemoTwoWorkItemCreateRequest(v DemoTwoWorkItemCreateRequest) error {
-	v.ProjectName = "demo_two"
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeDemoTwoWorkItemCreateRequest performs a merge with any union data inside the WorkItemCreateRequest, using the provided DemoTwoWorkItemCreateRequest
-func (t *WorkItemCreateRequest) MergeDemoTwoWorkItemCreateRequest(v DemoTwoWorkItemCreateRequest) error {
-	v.ProjectName = "demo_two"
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JsonMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t WorkItemCreateRequest) Discriminator() (string, error) {
+func (t CreateWorkItemRequest) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"projectName"`
 	}
@@ -955,27 +931,27 @@ func (t WorkItemCreateRequest) Discriminator() (string, error) {
 	return discriminator.Discriminator, err
 }
 
-func (t WorkItemCreateRequest) ValueByDiscriminator() (interface{}, error) {
+func (t CreateWorkItemRequest) ValueByDiscriminator() (interface{}, error) {
 	discriminator, err := t.Discriminator()
 	if err != nil {
 		return nil, err
 	}
 	switch discriminator {
 	case "demo":
-		return t.AsDemoWorkItemCreateRequest()
+		return t.AsCreateDemoWorkItemRequest()
 	case "demo_two":
-		return t.AsDemoTwoWorkItemCreateRequest()
+		return t.AsCreateDemoTwoWorkItemRequest()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
 	}
 }
 
-func (t WorkItemCreateRequest) MarshalJSON() ([]byte, error) {
+func (t CreateWorkItemRequest) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *WorkItemCreateRequest) UnmarshalJSON(b []byte) error {
+func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

@@ -2,109 +2,110 @@ package rest
 
 import (
 	"bytes"
-	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
 )
 
-// create workitem comment.
-func (h *Handlers) CreateWorkitemComment(c *gin.Context, id models.SerialID) {
-	ctx := c.Request.Context()
-
-	defer newOTelSpanWithUser(c).End()
-
+func (h *StrictHandlers) CreateWorkitemComment(c *gin.Context, request CreateWorkitemCommentRequestObject) (CreateWorkitemCommentResponseObject, error) {
 	// caller := getUserFromCtx(c)
-	tx := getTxFromCtx(c)
-	defer tx.Rollback(ctx)
+	tx := GetTxFromCtx(c)
+	_ = tx
 
 	c.JSON(http.StatusNotImplemented, "not implemented")
+	return nil, nil
 }
 
-func (h *Handlers) CreateWorkitem(c *gin.Context) {
+func (h *StrictHandlers) UpdateWorkitem(c *gin.Context, request UpdateWorkitemRequestObject) (UpdateWorkitemResponseObject, error) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
+}
+
+func (h *StrictHandlers) DeleteWorkitem(c *gin.Context, request DeleteWorkitemRequestObject) (DeleteWorkitemResponseObject, error) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
+}
+
+func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRequestObject) (CreateWorkitemResponseObject, error) {
 	ctx := c.Request.Context()
 
-	span := newOTelSpanWithUser(c)
-	defer span.End()
+	span := GetSpanFromCtx(c)
 
 	// caller := getUserFromCtx(c)
-	tx := getTxFromCtx(c)
-	defer tx.Rollback(ctx)
+	tx := GetTxFromCtx(c)
 
 	jsonBody, err := io.ReadAll(c.Request.Body)
 	if err != nil {
 		renderErrorResponse(c, "Failed to read request body", err)
 
-		return
+		return nil, nil
 	}
 	span.SetAttributes(tracing.MetadataAttribute(jsonBody))
 	c.Request.Body = io.NopCloser(bytes.NewBuffer(jsonBody))
 
-	body := &models.WorkItemCreateRequest{}
-	if err := json.Unmarshal(jsonBody, body); err != nil {
-		return
-	}
+	// body := &models.CreateWorkItemRequest{}
+	// if err := json.Unmarshal(jsonBody, body); err != nil {
+	// 	return nil, nil
+	// }
 
 	var res any // depends on project
+	b, err := request.Body.ValueByDiscriminator()
+	if err != nil {
+		renderErrorResponse(c, "Failed to read discriminator", err)
 
-	switch disc, _ := body.Discriminator(); models.Project(disc) {
-	case models.ProjectDemo:
-		body := &DemoWorkItemCreateRequest{}
-		if shouldReturn := parseBody(c, body); shouldReturn {
-			return
-		}
+		return nil, nil
+	}
 
+	switch body := b.(type) {
+	case CreateDemoWorkItemRequest:
 		workItem, err := h.svc.DemoWorkItem.Create(ctx, tx, body.DemoWorkItemCreateParams)
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
 
-			return
+			return nil, nil
 		}
 
 		res = DemoWorkItems{
-			WorkItem:             *workItem,
-			SharedWorkItemFields: SharedWorkItemFields{},
-			DemoWorkItem:         *workItem.DemoWorkItemJoin,
+			WorkItem: *workItem,
+			SharedWorkItemFields: SharedWorkItemFields{
+				Members:      workItem.WorkItemAssignedUsersJoin,
+				WorkItemTags: workItem.WorkItemWorkItemTagsJoin,
+			},
+			DemoWorkItem: *workItem.DemoWorkItemJoin,
 		}
-	case models.ProjectDemoTwo:
-		body := &DemoTwoWorkItemCreateRequest{}
-		if shouldReturn := parseBody(c, body); shouldReturn {
-			return
-		}
-
+	case CreateDemoTwoWorkItemRequest:
 		workItem, err := h.svc.DemoTwoWorkItem.Create(ctx, tx, body.DemoTwoWorkItemCreateParams)
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
 
-			return
+			return nil, nil
 		}
 
 		res = DemoTwoWorkItems{
-			WorkItem:             *workItem,
-			SharedWorkItemFields: SharedWorkItemFields{},
-			DemoTwoWorkItem:      *workItem.DemoTwoWorkItemJoin,
+			WorkItem: *workItem,
+			SharedWorkItemFields: SharedWorkItemFields{
+				Members:      workItem.WorkItemAssignedUsersJoin,
+				WorkItemTags: workItem.WorkItemWorkItemTagsJoin,
+			},
+			DemoTwoWorkItem: *workItem.DemoTwoWorkItemJoin,
 		}
 	default:
-		renderErrorResponse(c, fmt.Sprintf("Unknown project %q", disc), nil)
+		renderErrorResponse(c, "Unknown body", internal.NewErrorf(models.ErrorCodeUnknown, "%+v", b))
 
-		return
+		return nil, nil
 	}
 
-	c.JSON(http.StatusCreated, res)
+	return CreateWorkitem201JSONResponse{union: rawMessage(res)}, nil
 }
 
-func (h *Handlers) DeleteWorkitem(c *gin.Context, id models.SerialID) {
+func (h *StrictHandlers) GetWorkItem(c *gin.Context, request GetWorkItemRequestObject) (GetWorkItemResponseObject, error) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
-}
 
-func (h *Handlers) UpdateWorkitem(c *gin.Context, id models.SerialID) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
-}
-
-func (h *Handlers) GetWorkItem(c *gin.Context, id models.SerialID) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	return nil, nil
 }

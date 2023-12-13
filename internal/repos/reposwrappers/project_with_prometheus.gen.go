@@ -66,3 +66,17 @@ func (_d ProjectWithPrometheus) ByName(ctx context.Context, d db.DBTX, name mode
 	}()
 	return _d.base.ByName(ctx, d, name, opts...)
 }
+
+// IsTeamInProject implements repos.Project
+func (_d ProjectWithPrometheus) IsTeamInProject(ctx context.Context, db db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		projectDurationSummaryVec.WithLabelValues(_d.instanceName, "IsTeamInProject", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.IsTeamInProject(ctx, db, arg)
+}

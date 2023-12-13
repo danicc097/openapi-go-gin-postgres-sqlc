@@ -79,13 +79,13 @@ func TestGetHandlersMethods(t *testing.T) {
 	source := `
 package rest
 
-type Handlers struct{}
+type StrictHandlers struct{}
 
-func (h *Handlers) MyFunction1(c *gin.Context) {}
+func (h *StrictHandlers) MyFunction1(c *gin.Context) {}
 
-func (h *Handlers) MyFunction2(c *gin.Context) {}
+func (h *StrictHandlers) MyFunction2(c *gin.Context) {}
 
-func (h *Handlers) UnrelatedFunction(c *gin.Context) {}
+func (h *StrictHandlers) UnrelatedFunction(c *gin.Context) {}
 
 func MyFunction3(c *gin.Context) {}
 
@@ -93,10 +93,10 @@ func (h *SomeOtherStruct) NotHandlersMethod() {}
 `
 
 	file, err := parseAST(strings.NewReader(source))
-	assert.NoError(t, err)
+	require.NoError(t, err)
 
 	functions := getHandlersMethods(file)
-	assert.ElementsMatch(t, []string{"MyFunction1", "MyFunction2", "UnrelatedFunction"}, functions)
+	assert.ElementsMatch(t, []any{"MyFunction1", "MyFunction2", "UnrelatedFunction"}, functions)
 }
 
 func TestEnsureFunctionMethods_MisplacedMethod(t *testing.T) {
@@ -129,25 +129,25 @@ func TestEnsureFunctionMethods_MisplacedMethod(t *testing.T) {
 				foo: {
 					content: `package rest
 
-func (h *Handlers) Foo()             {}
-func (h *Handlers) UnrelatedMethod() {}
+func (h *StrictHandlers) Foo()             {}
+func (h *StrictHandlers) UnrelatedMethod() {}
 `,
 					newContent: `package rest
 
-func (h *Handlers) Foo()             {}
-func (h *Handlers) UnrelatedMethod() {}
-func (h *Handlers) Bar()             {}
+func (h *StrictHandlers) Foo()             {}
+func (h *StrictHandlers) UnrelatedMethod() {}
+func (h *StrictHandlers) Bar()             {}
 `,
 				},
 				bar: {
 					content: `package rest
 
-func (h *Handlers) Baz() {}
-func (h *Handlers) Bar() {}
+func (h *StrictHandlers) Baz() {}
+func (h *StrictHandlers) Bar() {}
 `,
 					newContent: `package rest
 
-func (h *Handlers) Baz() {}
+func (h *StrictHandlers) Baz() {}
 `,
 				},
 			},
@@ -158,12 +158,12 @@ func (h *Handlers) Baz() {}
 			files: func() handlerFiles {
 				fooContent := `package rest
 
-				func (h *Handlers) Foo() {}
-				func (h *Handlers) Bar() {}
+				func (h *StrictHandlers) Foo() {}
+				func (h *StrictHandlers) Bar() {}
 				`
 				barContent := `package rest
 
-				func (h *Handlers) Baz() {}
+				func (h *StrictHandlers) Baz() {}
 				`
 
 				return handlerFiles{
@@ -179,7 +179,7 @@ func (h *Handlers) Baz() {}
 			files: func() handlerFiles {
 				content := `package rest
 
-				func (h *Handlers) Foo() {}
+				func (h *StrictHandlers) Foo() {}
 				`
 
 				return handlerFiles{
@@ -194,8 +194,8 @@ func (h *Handlers) Baz() {}
 			files: func() handlerFiles {
 				content := `package rest
 
-				func (h *Handlers) Foo() {}
-				func (h *Handlers) Bar() {}
+				func (h *StrictHandlers) Foo() {}
+				func (h *StrictHandlers) Bar() {}
 				`
 
 				return handlerFiles{
@@ -211,7 +211,7 @@ func (h *Handlers) Baz() {}
 		// 	files: func() handlerFiles {
 		// 		content := `package rest
 
-		// 		func (h *Handlers) Foo() {}
+		// 		func (h *StrictHandlers) Foo() {}
 		// 		`
 
 		// 		return handlerFiles{
@@ -270,13 +270,13 @@ func TestRemoveAndAppendHandlersMethod(t *testing.T) {
 	sourceCode := `
 package main
 
-type Handlers struct{}
+type StrictHandlers struct{}
 
-func (h *Handlers) GetSomething() {
+func (h *StrictHandlers) GetSomething() {
 	return "GetSomething"
 }
 
-func (h *Handlers) UpdateSomething() {
+func (h *StrictHandlers) UpdateSomething() {
 	return "UpdateSomething"
 }
 
@@ -299,7 +299,7 @@ func main() {}
 	for _, decl := range file.Decls {
 		if fd, ok := decl.(*dst.FuncDecl); ok {
 			if fd.Name.Name == methodNameToRemove {
-				t.Errorf("Handlers method '%s' still found in the first file after removal.", methodNameToRemove)
+				t.Errorf("StrictHandlers method '%s' still found in the first file after removal.", methodNameToRemove)
 				break
 			}
 		}
@@ -323,6 +323,6 @@ func main() {}
 	fmt.Printf("buf.String(): %v\n", buf.String())
 
 	if !found {
-		t.Errorf("Handlers method '%s' not found in the second file after appending.", methodNameToRemove)
+		t.Errorf("StrictHandlers method '%s' not found in the second file after appending.", methodNameToRemove)
 	}
 }

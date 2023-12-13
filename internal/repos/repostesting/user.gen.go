@@ -179,6 +179,21 @@ type FakeUser struct {
 		result1 *db.UserAPIKey
 		result2 error
 	}
+	IsUserInProjectStub        func(context.Context, db.DBTX, db.IsUserInProjectParams) (bool, error)
+	isUserInProjectMutex       sync.RWMutex
+	isUserInProjectArgsForCall []struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 db.IsUserInProjectParams
+	}
+	isUserInProjectReturns struct {
+		result1 bool
+		result2 error
+	}
+	isUserInProjectReturnsOnCall map[int]struct {
+		result1 bool
+		result2 error
+	}
 	UpdateStub        func(context.Context, db.DBTX, db.UserID, *db.UserUpdateParams) (*db.User, error)
 	updateMutex       sync.RWMutex
 	updateArgsForCall []struct {
@@ -929,6 +944,72 @@ func (fake *FakeUser) DeleteAPIKeyReturnsOnCall(i int, result1 *db.UserAPIKey, r
 	}{result1, result2}
 }
 
+func (fake *FakeUser) IsUserInProject(arg1 context.Context, arg2 db.DBTX, arg3 db.IsUserInProjectParams) (bool, error) {
+	fake.isUserInProjectMutex.Lock()
+	ret, specificReturn := fake.isUserInProjectReturnsOnCall[len(fake.isUserInProjectArgsForCall)]
+	fake.isUserInProjectArgsForCall = append(fake.isUserInProjectArgsForCall, struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 db.IsUserInProjectParams
+	}{arg1, arg2, arg3})
+	stub := fake.IsUserInProjectStub
+	fakeReturns := fake.isUserInProjectReturns
+	fake.recordInvocation("IsUserInProject", []interface{}{arg1, arg2, arg3})
+	fake.isUserInProjectMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUser) IsUserInProjectCallCount() int {
+	fake.isUserInProjectMutex.RLock()
+	defer fake.isUserInProjectMutex.RUnlock()
+	return len(fake.isUserInProjectArgsForCall)
+}
+
+func (fake *FakeUser) IsUserInProjectCalls(stub func(context.Context, db.DBTX, db.IsUserInProjectParams) (bool, error)) {
+	fake.isUserInProjectMutex.Lock()
+	defer fake.isUserInProjectMutex.Unlock()
+	fake.IsUserInProjectStub = stub
+}
+
+func (fake *FakeUser) IsUserInProjectArgsForCall(i int) (context.Context, db.DBTX, db.IsUserInProjectParams) {
+	fake.isUserInProjectMutex.RLock()
+	defer fake.isUserInProjectMutex.RUnlock()
+	argsForCall := fake.isUserInProjectArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeUser) IsUserInProjectReturns(result1 bool, result2 error) {
+	fake.isUserInProjectMutex.Lock()
+	defer fake.isUserInProjectMutex.Unlock()
+	fake.IsUserInProjectStub = nil
+	fake.isUserInProjectReturns = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUser) IsUserInProjectReturnsOnCall(i int, result1 bool, result2 error) {
+	fake.isUserInProjectMutex.Lock()
+	defer fake.isUserInProjectMutex.Unlock()
+	fake.IsUserInProjectStub = nil
+	if fake.isUserInProjectReturnsOnCall == nil {
+		fake.isUserInProjectReturnsOnCall = make(map[int]struct {
+			result1 bool
+			result2 error
+		})
+	}
+	fake.isUserInProjectReturnsOnCall[i] = struct {
+		result1 bool
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeUser) Update(arg1 context.Context, arg2 db.DBTX, arg3 db.UserID, arg4 *db.UserUpdateParams) (*db.User, error) {
 	fake.updateMutex.Lock()
 	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
@@ -1021,6 +1102,8 @@ func (fake *FakeUser) Invocations() map[string][][]interface{} {
 	defer fake.deleteMutex.RUnlock()
 	fake.deleteAPIKeyMutex.RLock()
 	defer fake.deleteAPIKeyMutex.RUnlock()
+	fake.isUserInProjectMutex.RLock()
+	defer fake.isUserInProjectMutex.RUnlock()
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

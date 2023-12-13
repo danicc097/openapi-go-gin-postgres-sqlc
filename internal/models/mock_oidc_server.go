@@ -1,8 +1,11 @@
 package models
 
-import "golang.org/x/text/language"
+import (
+	"github.com/danicc097/oidc-server/v3/storage"
+	"golang.org/x/text/language"
+)
 
-// User implements oidc-server storage.User.
+// AuthServerUser implements oidc-server storage.User.
 // It is used for development and testing purposes only.
 // nolint: revive
 // Still cannot access common interface fields:
@@ -37,3 +40,5 @@ func (u AuthServerUser) IsAdmin() bool {
 func (u AuthServerUser) Password() string {
 	return u.Password_
 }
+
+var _ storage.User = (*AuthServerUser)(nil)

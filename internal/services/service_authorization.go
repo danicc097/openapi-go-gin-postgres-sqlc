@@ -30,12 +30,27 @@ type (
 
 // nolint:gochecknoglobals
 // NOTE: ensure any changes are followed by an appropriate migration.
+//
+// (1) append scopes:
+//
+//	update users
+//	set    scopes = (select array_agg(distinct e) from unnest(scopes || '{"newscope-1","newscope-2"}') e)
+//	where  not scopes @> '{"newscope-1","newscope-2"}' and role_rank >= @minimum_role_rank
+//
+// (2) add a new role:
+//
+//	update ... set rank = rank +1 where rank >= @new_role_rank
 var (
 	userScopes = models.Scopes{
 		models.ScopeUsersRead,
 	}
-	managerScopes = append(userScopes, models.ScopeWorkItemReview)
-	adminScopes   = append(managerScopes, models.ScopeUsersWrite)
+	managerScopes = append(
+		userScopes,
+		models.ScopeWorkItemReview,
+		models.ScopeWorkItemTagCreate,
+		models.ScopeWorkItemTagDelete,
+		models.ScopeWorkItemTagEdit)
+	adminScopes = append(managerScopes, models.ScopeUsersWrite)
 
 	// scopesByRole represents user scopes by role.
 	scopesByRole = map[models.Role]models.Scopes{

@@ -15,7 +15,7 @@ func (siw *ServerInterfaceWrapper) {{$opid}}(c *gin.Context) {
   {{end}}
 
   {{range .PathParams}}// ------------- Path parameter "{{.ParamName}}" -------------
-  var {{$varName := .GoVariableName}}{{$varName}} {{.TypeDef}}
+  var {{$varName := .GoVariableName}}{{$varName}} {{ if not (is_rest_type .TypeDef)}}{{.TypeDef}}{{else}}{{rest_type .TypeDef}}{{end}}  //{{ rest_type .TypeDef}}
 
   {{if .IsPassThrough}}
   {{$varName}} = c.Query("{{.ParamName}}")

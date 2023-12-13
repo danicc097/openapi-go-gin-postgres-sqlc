@@ -1,4 +1,4 @@
-FROM golang:1.19-alpine AS build
+FROM golang:1.20.12-alpine3.18 AS build
 
 WORKDIR /go/src
 COPY ./vendor/ ./vendor/
@@ -9,7 +9,7 @@ ENV CGO_ENABLED=0
 RUN --mount=type=cache,target=/root/.cache/go-build \
   GOWORK=off go build -mod=vendor -o oidc-server ./main.go
 
-FROM alpine:3.15 AS runtime
+FROM alpine:3.18 AS runtime
 
 # requires mounting /etc/ssl/certs/ca-certificates.crt:/etc/ssl/certs/ca-certificates.crt:ro
 RUN apk --no-cache add ca-certificates

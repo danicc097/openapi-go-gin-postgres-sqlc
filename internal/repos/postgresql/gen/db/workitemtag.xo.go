@@ -40,7 +40,7 @@ type WorkItemTagCreateParams struct {
 	Color       string    `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	Description string    `json:"description" required:"true" nullable:"false"`                                        // description
 	Name        string    `json:"name" required:"true" nullable:"false"`                                               // name
-	ProjectID   ProjectID `json:"projectID" openapi-go:"ignore" required:"true" nullable:"false"`                      // project_id
+	ProjectID   ProjectID `json:"projectID" openapi-go:"ignore" nullable:"false"`                                      // project_id
 }
 
 type WorkItemTagID int

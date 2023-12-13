@@ -1,6 +1,6 @@
 //go:build !race
 
-package rest
+package rest_test
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,8 +20,8 @@ import (
 // also see sse test: https://github.com/prysmaticlabs/prysm/blob/f7cecf9f8a6dca95e021bab2fc30dd7c6d6ce760/beacon-chain/rpc/apimiddleware/custom_handlers_test.go#LL250C10-L250C10
 // complete implementation and tests: https://github.com/MarinX/go/blob/06804256ef814c8381e3f54b1c89a8c95cabb300/services/horizon/internal/render/sse/main.go
 func TestHandlers_Events(t *testing.T) {
-	// resp := httptest.NewRecorder()
-	// _, engine := gin.CreateTestContext(resp)
+	// res := httptest.NewRecorder()
+	// _, engine := gin.CreateTestContext(res)
 
 	// req, _ := http.NewRequest(http.MethodGet, "/", nil)
 
@@ -31,10 +30,10 @@ func TestHandlers_Events(t *testing.T) {
 	// engine.GET("/", func(c *gin.Context) {
 	// 	c.String(http.StatusOK, "ok")
 	// })
-	// engine.ServeHTTP(resp, req)
+	// engine.ServeHTTP(res, req)
 
-	// assert.Equal(t, tc.status, resp.Code)
-	// assert.Contains(t, resp.Body.String(), tc.body)
+	// assert.Equal(t, tc.status, res.Code)
+	// assert.Contains(t, res.Body.String(), tc.body)
 }
 
 type StreamRecorder struct {
@@ -65,7 +64,7 @@ func TestSSEStream(t *testing.T) {
 	t.Parallel()
 
 	res := NewStreamRecorder()
-	req := httptest.NewRequest(http.MethodGet, resttestutil.MustConstructInternalPath("/events", resttestutil.WithQueryParams(models.EventsParams{ProjectName: models.ProjectDemo})), nil)
+	req := httptest.NewRequest(http.MethodGet, MustConstructInternalPath("/events", WithQueryParams(models.EventsParams{ProjectName: models.ProjectDemo})), nil)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	req = req.WithContext(ctx)

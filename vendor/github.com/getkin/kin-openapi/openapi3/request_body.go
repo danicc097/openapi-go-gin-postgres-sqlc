@@ -4,27 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
-
-	"github.com/go-openapi/jsonpointer"
 )
-
-type RequestBodies map[string]*RequestBodyRef
-
-var _ jsonpointer.JSONPointable = (*RequestBodyRef)(nil)
-
-// JSONLookup implements https://pkg.go.dev/github.com/go-openapi/jsonpointer#JSONPointable
-func (r RequestBodies) JSONLookup(token string) (interface{}, error) {
-	ref, ok := r[token]
-	if !ok {
-		return nil, fmt.Errorf("object has no field %q", token)
-	}
-
-	if ref != nil && ref.Ref != "" {
-		return &Ref{Ref: ref.Ref}, nil
-	}
-	return ref.Value, nil
-}
 
 // RequestBody is specified by OpenAPI/Swagger 3.0 standard.
 // See https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#request-body-object
@@ -116,12 +96,15 @@ func (requestBody *RequestBody) UnmarshalJSON(data []byte) error {
 	type RequestBodyBis RequestBody
 	var x RequestBodyBis
 	if err := json.Unmarshal(data, &x); err != nil {
-		return err
+		return unmarshalError(err)
 	}
 	_ = json.Unmarshal(data, &x.Extensions)
 	delete(x.Extensions, "description")
 	delete(x.Extensions, "required")
 	delete(x.Extensions, "content")
+	if len(x.Extensions) == 0 {
+		x.Extensions = nil
+	}
 	*requestBody = RequestBody(x)
 	return nil
 }

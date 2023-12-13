@@ -1,23 +1,23 @@
 package rest
 
 import (
-	"net/http"
+	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/gin-gonic/gin"
 )
 
-// OpenapiYamlGet returns this very openapi spec.
-func (h *Handlers) OpenapiYamlGet(c *gin.Context) {
+func (h *StrictHandlers) OpenapiYamlGet(c *gin.Context, request OpenapiYamlGetRequestObject) (OpenapiYamlGetResponseObject, error) {
 	oas, err := static.SwaggerUI.ReadFile("swagger-ui/openapi.yaml")
 	if err != nil {
 		panic("openapi spec not found")
 	}
 
-	c.String(http.StatusOK, string(oas))
+	return OpenapiYamlGet200ApplicationxYamlResponse{
+		Body: strings.NewReader(string(oas)),
+	}, nil
 }
 
-// Ping ping pongs.
-func (h *Handlers) Ping(c *gin.Context) {
-	c.String(http.StatusOK, "pong")
+func (h *StrictHandlers) Ping(c *gin.Context, request PingRequestObject) (PingResponseObject, error) {
+	return Ping200TextResponse("pong"), nil
 }

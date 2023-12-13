@@ -23,6 +23,8 @@ type ProjectWithTimeoutConfig struct {
 	ByIDTimeout time.Duration
 
 	ByNameTimeout time.Duration
+
+	IsTeamInProjectTimeout time.Duration
 }
 
 // NewProjectWithTimeout returns ProjectWithTimeout
@@ -51,4 +53,14 @@ func (_d ProjectWithTimeout) ByName(ctx context.Context, d db.DBTX, name models.
 		defer cancelFunc()
 	}
 	return _d.Project.ByName(ctx, d, name, opts...)
+}
+
+// IsTeamInProject implements repos.Project
+func (_d ProjectWithTimeout) IsTeamInProject(ctx context.Context, db db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
+	var cancelFunc func()
+	if _d.config.IsTeamInProjectTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.IsTeamInProjectTimeout)
+		defer cancelFunc()
+	}
+	return _d.Project.IsTeamInProject(ctx, db, arg)
 }

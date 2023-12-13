@@ -110,7 +110,7 @@ xsetup.build-tools() {
 
   xsetup_tools_built="${FUNCNAME[1]}"
 
-  x.gen.build-tools
+  x.gen.build-tools || err Could not rebuild gen tools
 }
 
 gen_backup_branch="backup-gen-$(uuidgen)"
@@ -237,8 +237,7 @@ x.install-tools() {
     echo "Installing tools..."
 
     go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 &
-    # go install github.com/kyleconroy/sqlc/cmd/sqlc@v1.16.0 &
-    go install github.com/danicc097/sqlc/cmd/sqlc@custom &
+    go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.24.0 &
     # for easier test search.
     # NOTE: unrelated run test broken discovery: https://github.com/golang/vscode-go/issues/2719
     # go install github.com/danicc097/go-test-renamer@v0.2.0 &
@@ -260,7 +259,7 @@ x.install-tools() {
     # install node libs with --prefix $TOOLS_DIR, if any
     # ...
 
-    wait
+    wait_without_error || err Could not install all tools
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -269,8 +268,8 @@ x.setup.swagger-ui() {
   { { {
     local name
 
-    name="$(curl --silent "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
-    curl -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
+    name="$(curl --retry 10 -fsSL "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
+    curl --retry 10 -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
     tar xf swagger-ui.tar.gz swagger-ui-"${name#*v}"/dist --one-top-level=swagger-ui --strip-components=2
     rm swagger-ui.tar.gz
     mkdir -p $SWAGGER_UI_DIR
@@ -290,6 +289,7 @@ x.gen.pregen() {
     echo "Running generation"
 
     codegen validate-spec -env=".env.$X_ENV"
+    ast-parser verify-no-import --imports "$GOMOD_PKG/internal/models" internal/rest/models.go || err Please use generated rest package OpenAPI types instead.
 
     sync_spec_with_db
 
@@ -594,6 +594,7 @@ x.gen.sqlc() {
   { { {
     echo "Running generation"
     rm -f "$PG_REPO_GEN"/db/*.sqlc.go
+    x.lint.sql
     sqlc generate --experimental -f "$PG_REPO_DIR"/sqlc.yaml || err "Failed sqlc generation"
     rm -f "$PG_REPO_GEN"/db/models.go # sqlc enums
     gowrap gen \
@@ -714,7 +715,7 @@ x.gen.gowrap() {
       updated_ifaces+=("$iface")
     done
 
-    wait_without_error
+    wait_without_error || err Failed jobs
 
     if [[ ${#updated_ifaces[@]} -gt 0 ]]; then
       echo "Updated repo interfaces: ${updated_ifaces[*]}"
@@ -727,18 +728,28 @@ x.gen.gowrap() {
 x.gen.client-server() {
   { { {
     echo "Running generation"
-    paths=".openapi.paths.yaml"
+    paths_file=".openapi.paths.yaml"
 
+    local all_types=()
+    mapfile -t all_types < <(ast-parser find-types --exclude-generics --public-only "internal/rest/models.go")
+    all_types_list=$(join_by "," ${all_types[*]})
+
+    types_list=$(join_by "," ${all_types[*]})
     # hack to get separate types generation
-    sed "s/\$ref: '\#\//\$ref: '$SPEC_PATH\#\//g" $SPEC_PATH >"$paths"
-    # yq e 'del(.components)' -i "$paths" # dont delete since recent oapi-codegen does some checks even if we are not generating types
+    sed "s/\$ref: '\#\//\$ref: '$SPEC_PATH\#\//g" $SPEC_PATH >"$paths_file"
+    # yq e 'del(.components)' -i "$paths_file" # dont delete since recent oapi-codegen does some checks even if we are not generating types
     go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # templates are embedded, required rebuild
 
+    # Generated types in models pkg will be used in services, repos, db, but rest package must use original
+    # models from rest/models.go (source of generated spec schemas)
+    # and not the generated ones to avoid (a lot of) unnecessary conversions.
     oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed types generation"
-    oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models "$paths" || err "Failed server generation"
+    oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models --types "$types_list" "$paths_file" || err "Failed server generation"
+    oapi-codegen --config internal/rest/oapi-codegen-test-client.yaml "$SPEC_PATH" || err "Failed client generation"
     oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation"
 
-    codegen implement-server # based on oapi gen
+    ast-parser find-redeclared --delete internal/rest/models.go # for duplicates in rest
+    codegen implement-server                                    # based on oapi gen
 
     files=$(find "internal/rest/" -name "*.go")
     goimports -w $files
@@ -786,7 +797,7 @@ x.gen.counterfeiter() {
       updated_ifaces+=("$key")
     done
 
-    wait_without_error
+    wait_without_error || err Failed jobs
 
     # counterfeiter is unaware of grpc's obscure mustEmbedUnimplemented***() for forward server compatibility
     if ! grep -q 'v1\.UnimplementedMovieGenreServer' $tfidfpb_dir/v1testing/movie_genre_server.gen.go; then
@@ -855,7 +866,7 @@ export type schemas = components['schemas']
     } &
     orval --config $orval_config &
 
-    wait_without_error
+    wait_without_error || err Failed jobs
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup-gen.cleanup
 }
@@ -904,7 +915,7 @@ x.gen() {
     x.gen.jet &
     generate_repo_constructor &
 
-    wait_without_error
+    wait_without_error || err Failed jobs
 
     {
       x.gen.pregen
@@ -912,7 +923,7 @@ x.gen() {
     } &
     x.gen.counterfeiter & # delay since it depends on generated output (xo, proto...)
 
-    wait_without_error
+    wait_without_error || err Failed jobs
 
     x.gen.postgen
 
@@ -925,7 +936,7 @@ x.gen() {
     x.gen.frontend &
     x.gen.e2e &
 
-    wait_without_error
+    wait_without_error || err Failed jobs
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup-gen.cleanup
 }
@@ -938,12 +949,12 @@ x.gen.build-tools() {
     out_dir=$BUILD_DIR
 
     mkdir -p $out_dir
-    for cmd in jet oapi-codegen codegen; do
+    for cmd in jet oapi-codegen codegen ast-parser; do
       echo "Building $cmd..."
       { go build -o $out_dir/$cmd cmd/$cmd/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]; } &
     done
 
-    wait
+    wait_without_error || err Could not rebuild all gen tools
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1032,11 +1043,13 @@ x.test.backend() {
   { { {
     x.test.xo
 
-    yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true
-    POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # for post-migration scripts
+    yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true # nochange exits
+    # POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # post-migration scripts now run automatically in testutil db setup
 
     local cache_opt="-count=1"
     cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
+
+    rm -f /tmp/migration_marker
 
     set -x
     APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo $cache_opt "$@" ./...
@@ -1086,7 +1099,7 @@ x.test.xo() {
     xo_schema -o "$test_dir/got" --debug \
       --schema xo_tests \
       --ignore "*.created_at" \
-      --ignore "*.updated_at" || err "Failed xo xo_tests schema generation"
+      --ignore "*.updated_at" >/dev/null || err "Failed xo xo_tests schema generation"
 
     files=$(find "$test_dir/got" \
       -name "*.go")
@@ -1229,7 +1242,7 @@ x.release() {
     search_stopship "STOPSHIP" &
     GOWORK=off go mod verify & # (https://github.com/golang/go/issues/54372)
 
-    wait_without_error
+    wait_without_error || err Failed jobs
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1332,12 +1345,12 @@ x.migrate.create() {
 
 # psql session for the current environment.
 x.db.psql() {
-  x.db.psql-db $POSTGRES_DB
+  x.db.psql-with-db $POSTGRES_DB
 }
 
 # psql session for `database`.
 # Args: database
-x.db.psql-db() {
+x.db.psql-with-db() {
   docker exec -it postgres_db_"$PROJECT_PREFIX" psql -d $1
 }
 
@@ -1514,8 +1527,7 @@ x.diff-oas() {
     if oasdiff $args -base "$base_spec" -revision $SPEC_PATH; then
       echo "${GREEN}No breaking changes found in $SPEC_PATH${OFF}"
     else
-      echo "${RED}Breaking changes found in $SPEC_PATH${OFF}"
-      return 1
+      err "${RED}Breaking changes found in $SPEC_PATH${OFF}"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1562,7 +1574,7 @@ generate_structs_map() {
   go-utils.find_structs structs "$path" # faster. we know no generics structs exist in gen pkg
   go-utils.find_enums enums "$path"
   go-utils.find_all_types all_types "$path"
-  find_deleted_pkg_schemas all_types Db
+  # find_deleted_pkg_schemas all_types Db
   for struct in ${structs[@]}; do
     map_fields+=("\"Db$struct\": new(db.$struct),") # swaggest requires pointer to struct
   done
@@ -1580,7 +1592,7 @@ generate_structs_map() {
   mapfile -t structs < <(ast-parser find-structs --exclude-generics --public-only "$path")
   go-utils.find_enums enums "$path"
   go-utils.find_all_types all_types "$path"
-  find_deleted_pkg_schemas all_types Rest
+  # find_deleted_pkg_schemas all_types Rest
   for struct in ${structs[@]}; do
     map_fields+=("\"Rest$struct\": new(rest.$struct),")
   done
@@ -1705,7 +1717,8 @@ update_spec_with_structs() {
   struct_names_list=$(join_by "," ${struct_names[*]})
   ((${#struct_names_list} == 0)) && return
 
-  # NOTE: maybe https://github.com/pkujhd/goloader allows reloading packages at runtime
+  # NOTE: https://github.com/pkujhd/goloader allows reloading packages at runtime
+  # NOTE: yaegi extraction doesn't work with generics and is slow. See failed-yaegi* branches
   # otherwise maybe yaegi can be used for openapi-go without much fuzz
   # Only implement the above if there are cases where we cant have compilable state when
   # building gen-schema at this step, or the workaround is too tedious
@@ -1728,10 +1741,11 @@ update_spec_with_structs() {
         | (.components.schemas.$schema_name | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
       " "$SPEC_PATH" $gen_schema_spec >/tmp/final-spec
 
-    if [[ "$schema_name" != "$schema" ]]; then
-      echo "Deleting schema \"$schema\". Replace references with \"$schema_name\""
-      yq e "del(.components.schemas.$schema)" -i /tmp/final-spec
-    fi
+    # TODO: better handle in gen_schema if possible to not generate at all in the first place
+    # if [[ "$schema_name" != "$schema" ]]; then
+    #   echo "Deleting schema \"$schema\". Replace references with \"$schema_name\""
+    #   # yq e "del(.components.schemas.$schema)" -i /tmp/final-spec
+    # fi
 
     mv /tmp/final-spec "$SPEC_PATH" # need to update at each iteration since next depends on it
   done
@@ -1967,7 +1981,7 @@ exit-cleanup() {
 }
 
 killgroup() {
-  printf "\nKilling spawned processes...\n\n"
+  printf "Killing spawned processes...\n\n"
   # kill $(jobs -p) 2>/dev/null # doesn't really kill all children, just process group leaders
   kill_descendants 2>/dev/null || true
   pgrep -P $PROC | xargs kill || true
@@ -1975,11 +1989,11 @@ killgroup() {
 }
 
 errtrap() {
-  printf "\nExiting due to propagated error...\n"
+  printf "Exiting due to propagated error...\n"
   killgroup
 }
 
-source ".envrc"
+source .envrc
 
 pids=""
 
@@ -1992,7 +2006,7 @@ if [[ -n "$1" ]]; then
     if [[ $c == "$CMD" && -n "$cmd" ]]; then
       "x.$CMD" "$@"
       if [[ -n $X_IGNORE_BUILD_ERRORS ]]; then
-        echo "${YELLOW}[WARNING] A rerun without ignoring build errors is required" && continue
+        echo "${YELLOW}[WARNING] A rerun without ignoring build errors is required"
       fi
       exit $?
     fi

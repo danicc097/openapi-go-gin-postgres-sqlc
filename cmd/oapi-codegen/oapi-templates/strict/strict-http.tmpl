@@ -7,7 +7,7 @@ type StrictHTTPServerOptions struct {
 }
 
 func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc) ServerInterface {
-    return &strictHandler{ssi: ssi, middlewares: middlewares, options: StrictHTTPServerOptions {
+    return &strictHandlers{ssi: ssi, middlewares: middlewares, options: StrictHTTPServerOptions {
         RequestErrorHandlerFunc: func(w http.ResponseWriter, r *http.Request, err error) {
             http.Error(w, err.Error(), http.StatusBadRequest)
         },
@@ -18,10 +18,10 @@ func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareF
 }
 
 func NewStrictHandlerWithOptions(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc, options StrictHTTPServerOptions) ServerInterface {
-    return &strictHandler{ssi: ssi, middlewares: middlewares, options: options}
+    return &strictHandlers{ssi: ssi, middlewares: middlewares, options: options}
 }
 
-type strictHandler struct {
+type strictHandlers struct {
     ssi StrictServerInterface
     middlewares []StrictMiddlewareFunc
     options StrictHTTPServerOptions
@@ -30,7 +30,7 @@ type strictHandler struct {
 {{range .}}
     {{$opid := .OperationId}}
     // {{$opid}} operation middleware
-    func (sh *strictHandler) {{.OperationId}}(w http.ResponseWriter, r *http.Request{{genParamArgs .PathParams}}{{if .RequiresParamObject}}, params {{.OperationId}}Params{{end}}) {
+    func (sh *strictHandlers) {{.OperationId}}(w http.ResponseWriter, r *http.Request{{genParamArgs .PathParams}}{{if .RequiresParamObject}}, params {{.OperationId}}Params{{end}}) {
         var request {{$opid | ucFirst}}RequestObject
 
         {{range .PathParams -}}

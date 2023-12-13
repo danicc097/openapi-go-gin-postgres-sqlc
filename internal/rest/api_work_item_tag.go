@@ -3,22 +3,43 @@ package rest
 import (
 	"net/http"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handlers) UpdateWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+func (h *StrictHandlers) CreateWorkItemTag(c *gin.Context, request CreateWorkItemTagRequestObject) (CreateWorkItemTagResponseObject, error) {
+	ctx := c.Request.Context()
+	tx := GetTxFromCtx(c)
+	u := getUserFromCtx(c)
+
+	body := request.Body
+	body.WorkItemTagCreateParams.ProjectID = internal.ProjectIDByName[request.ProjectName]
+
+	wit, err := h.svc.WorkItemTag.Create(ctx, tx, u, &body.WorkItemTagCreateParams)
+	if err != nil {
+		renderErrorResponse(c, "Could not create work item tag", err)
+
+		return nil, nil
+	}
+
+	renderResponse(c, wit, http.StatusCreated)
+	return nil, nil
 }
 
-func (h *Handlers) CreateWorkItemTag(c *gin.Context, projectName models.ProjectName) {
+func (h *StrictHandlers) GetWorkItemTag(c *gin.Context, request GetWorkItemTagRequestObject) (GetWorkItemTagResponseObject, error) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
 }
 
-func (h *Handlers) GetWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *StrictHandlers) DeleteWorkItemTag(c *gin.Context, request DeleteWorkItemTagRequestObject) (DeleteWorkItemTagResponseObject, error) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
 }
 
-func (h *Handlers) DeleteWorkItemTag(c *gin.Context, projectName models.ProjectName, id models.SerialID) {
+func (h *StrictHandlers) UpdateWorkItemTag(c *gin.Context, request UpdateWorkItemTagRequestObject) (UpdateWorkItemTagResponseObject, error) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
 }

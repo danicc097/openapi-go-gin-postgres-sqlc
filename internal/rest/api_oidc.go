@@ -14,7 +14,55 @@ import (
 	"github.com/zitadel/oidc/v2/pkg/oidc"
 )
 
-func (h *Handlers) MyProviderLogin(c *gin.Context) {
+func state() string {
+	return uuid.New().String()
+}
+
+func (h *StrictHandlers) marshalUserinfo(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
+	data, err := json.Marshal(info)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("could not marshal userinfo: %s", err.Error()), http.StatusInternalServerError)
+
+		return
+	}
+	_, err = w.Write(data)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("could not write userinfo: %s", err.Error()), http.StatusInternalServerError)
+
+		return
+	}
+}
+
+func (h *StrictHandlers) codeExchange() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		rbw := &responseBodyWriter{body: &bytes.Buffer{}, ResponseWriter: c.Writer}
+		c.Writer = rbw
+		rp.CodeExchangeHandler(rp.UserinfoCallback(h.marshalUserinfo), h.provider).ServeHTTP(rbw, c.Request)
+		CtxWithUserInfo(c, rbw.body.Bytes())
+		rbw.body = &bytes.Buffer{}
+		c.Next()
+		rbw.ResponseWriter.Write(rbw.body.Bytes())
+	}
+}
+
+func (h *StrictHandlers) MyProviderCallback(c *gin.Context, request MyProviderCallbackRequestObject) (MyProviderCallbackResponseObject, error) {
+	c.Set(skipRequestValidationCtxKey, true)
+	userinfo := GetUserInfoFromCtx(c)
+	if userinfo == nil {
+		renderErrorResponse(c, "OIDC authentication error", internal.NewErrorf(models.ErrorCodeOIDC, "could not get OIDC userinfo from context"))
+	}
+	fmt.Printf("userinfo in MyProviderCallback: %v\n", string(userinfo))
+	// {"email":"admin@admin.com","email_verified":true,"family_name":"Admin","given_name":"Mr","locale":"de","name":"Mr Admin","preferred_username":"admin","sub":"id1"}
+
+	// GetOrRegisterUserFromUserInfo
+	// CreateAccessTokenForUser
+	// get "auth:redirect-uri" cookie
+
+	c.String(200, "would have been redirected to app frontend with actual user and logged in with JWT")
+	return nil, nil
+}
+
+func (h *StrictHandlers) MyProviderLogin(c *gin.Context, request MyProviderLoginRequestObject) (MyProviderLoginResponseObject, error) {
 	c.Set(skipRequestValidationCtxKey, true)
 
 	gin.WrapH(rp.AuthURLHandler(state, h.provider))(c)
@@ -34,52 +82,5 @@ func (h *Handlers) MyProviderLogin(c *gin.Context) {
 	// that needs to have remove Authorization header removed. (or could fallthrough if auth header check failed so both can be used at the same time)
 	// its the same we do to test out swagger ui.
 	// initial-data for dev can create api keys for every user.
-}
-
-func (h *Handlers) MyProviderCallback(c *gin.Context) {
-	c.Set(skipRequestValidationCtxKey, true)
-
-	userinfo := getUserInfoFromCtx(c)
-	if userinfo == nil {
-		renderErrorResponse(c, "OIDC authentication error", internal.NewErrorf(models.ErrorCodeOIDC, "could not get OIDC userinfo from context"))
-	}
-	fmt.Printf("userinfo in MyProviderCallback: %v\n", string(userinfo))
-	// {"email":"admin@admin.com","email_verified":true,"family_name":"Admin","given_name":"Mr","locale":"de","name":"Mr Admin","preferred_username":"admin","sub":"id1"}
-
-	// GetOrRegisterUserFromUserInfo
-	// CreateAccessTokenForUser
-	// get "auth:redirect-uri" cookie
-
-	c.String(200, "would have been redirected to app frontend with actual user and logged in with JWT")
-}
-
-func state() string {
-	return uuid.New().String()
-}
-
-func (h *Handlers) marshalUserinfo(w http.ResponseWriter, r *http.Request, tokens *oidc.Tokens[*oidc.IDTokenClaims], state string, rp rp.RelyingParty, info *oidc.UserInfo) {
-	data, err := json.Marshal(info)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("could not marshal userinfo: %s", err.Error()), http.StatusInternalServerError)
-
-		return
-	}
-	_, err = w.Write(data)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("could not write userinfo: %s", err.Error()), http.StatusInternalServerError)
-
-		return
-	}
-}
-
-func (h *Handlers) codeExchange() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		rbw := &responseBodyWriter{body: &bytes.Buffer{}, ResponseWriter: c.Writer}
-		c.Writer = rbw
-		rp.CodeExchangeHandler(rp.UserinfoCallback(h.marshalUserinfo), h.provider).ServeHTTP(rbw, c.Request)
-		ctxWithUserInfo(c, rbw.body.Bytes())
-		rbw.body = &bytes.Buffer{}
-		c.Next()
-		rbw.ResponseWriter.Write(rbw.body.Bytes())
-	}
+	return nil, nil
 }

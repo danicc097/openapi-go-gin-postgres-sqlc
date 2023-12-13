@@ -5,26 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
-	"github.com/go-openapi/jsonpointer"
 )
-
-type Links map[string]*LinkRef
-
-// JSONLookup implements https://pkg.go.dev/github.com/go-openapi/jsonpointer#JSONPointable
-func (links Links) JSONLookup(token string) (interface{}, error) {
-	ref, ok := links[token]
-	if !ok {
-		return nil, fmt.Errorf("object has no field %q", token)
-	}
-
-	if ref != nil && ref.Ref != "" {
-		return &Ref{Ref: ref.Ref}, nil
-	}
-	return ref.Value, nil
-}
-
-var _ jsonpointer.JSONPointable = (*Links)(nil)
 
 // Link is specified by OpenAPI/Swagger standard version 3.
 // See https://github.com/OAI/OpenAPI-Specification/blob/main/versions/3.0.3.md#link-object
@@ -73,7 +54,7 @@ func (link *Link) UnmarshalJSON(data []byte) error {
 	type LinkBis Link
 	var x LinkBis
 	if err := json.Unmarshal(data, &x); err != nil {
-		return err
+		return unmarshalError(err)
 	}
 	_ = json.Unmarshal(data, &x.Extensions)
 	delete(x.Extensions, "operationRef")
@@ -82,6 +63,9 @@ func (link *Link) UnmarshalJSON(data []byte) error {
 	delete(x.Extensions, "parameters")
 	delete(x.Extensions, "server")
 	delete(x.Extensions, "requestBody")
+	if len(x.Extensions) == 0 {
+		x.Extensions = nil
+	}
 	*link = Link(x)
 	return nil
 }

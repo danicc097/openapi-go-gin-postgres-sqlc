@@ -61,7 +61,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		return nil, fmt.Errorf("repos.DemoWorkItem.Create: %w", err)
 	}
 
-	err = w.wiSvc.AssignTags(ctx, d, models.ProjectDemo, demoWi, params.TagIDs)
+	err = w.wiSvc.AssignTags(ctx, d, demoWi.WorkItemID, params.TagIDs)
 	if err != nil {
 		return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs"}, "could not assign tags")
 	}
@@ -71,11 +71,8 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		return nil, internal.WrapErrorWithLocf(err, "", []string{"members"}, "could not assign members")
 	}
 
-	// TODO rest response with non pointer required joins as usual, so that it is always up to date
-	// (else tests - with response validation - will fail)
-	// response validation could be disabled in prod for better availability in place of strictness
-	opts := db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true, AssignedUsers: true, WorkItemTags: true})
-	wi, err := w.repos.DemoWorkItem.ByID(ctx, d, demoWi.WorkItemID, opts)
+	opts := append(w.wiSvc.sharedDBOpts, db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
+	wi, err := w.repos.DemoWorkItem.ByID(ctx, d, demoWi.WorkItemID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.DemoWorkItem.ByID: %w", err)
 	}
@@ -105,23 +102,6 @@ func (w *DemoWorkItem) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) 
 	}
 
 	return wi, nil
-}
-
-// TODO: same as assign/remove members.
-func (w *DemoWorkItem) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) error {
-	_, err := db.CreateWorkItemWorkItemTag(ctx, d, params)
-
-	return err
-}
-
-// TODO: same as assign/remove members.
-func (w *DemoWorkItem) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) error {
-	wiwit := &db.WorkItemWorkItemTag{
-		WorkItemTagID: tagID,
-		WorkItemID:    workItemID,
-	}
-
-	return wiwit.Delete(ctx, d)
 }
 
 // repo has Update only, then service has Close() (Update with closed=True), Move() (Update with kanban step change), ...)

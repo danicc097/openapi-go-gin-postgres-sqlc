@@ -23,7 +23,7 @@ type authMiddleware struct {
 	svc    *services.Services
 }
 
-func newAuthMiddleware(
+func NewAuthMiddleware(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,
 	svcs *services.Services,
 ) *authMiddleware {
@@ -39,8 +39,8 @@ func newAuthMiddleware(
 // else redirect to /auth/{provider}/login (no auth middleware here or in */callback).
 func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		apiKey := c.Request.Header.Get(apiKeyHeaderKey)
-		auth := c.Request.Header.Get("Authorization")
+		apiKey := c.Request.Header.Get(ApiKeyHeaderKey)
+		auth := c.Request.Header.Get(AuthorizationHeaderKey)
 		if apiKey != "" {
 			u, err := m.svc.Authentication.GetUserFromAPIKey(c.Request.Context(), apiKey)
 			if err != nil || u == nil {
@@ -50,7 +50,7 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 				return
 			}
 
-			ctxWithUser(c, u)
+			CtxWithUser(c, u)
 
 			c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
 
@@ -64,7 +64,9 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 
 				return
 			}
-			ctxWithUser(c, u)
+
+			CtxWithUser(c, u)
+
 			c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
 
 			return
@@ -139,7 +141,7 @@ func verifyAuthentication(c context.Context, input *openapi3filter.Authenticatio
 			return fmt.Errorf("http security scheme only supports 'bearer' scheme")
 		}
 
-		authHeader, found := input.RequestValidationInput.Request.Header[http.CanonicalHeaderKey("Authorization")]
+		authHeader, found := input.RequestValidationInput.Request.Header[http.CanonicalHeaderKey(AuthorizationHeaderKey)]
 		if !found {
 			return fmt.Errorf("authorization header missing")
 		}

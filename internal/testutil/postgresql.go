@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"os"
 	"path"
 	"runtime"
+	"sync"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/golang-migrate/migrate/v4"
@@ -14,6 +16,11 @@ import (
 	"go.uber.org/zap"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+)
+
+var (
+	once           sync.Once
+	markerFilePath = "/tmp/migration_marker"
 )
 
 // NewDB returns a new (shared) testing Postgres pool with up-to-date migrations.
@@ -37,18 +44,60 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		panic("No caller information")
 	}
 
-	m, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/migrations/"), "postgres", instance)
-	if err != nil {
-		fmt.Printf("Couldn't migrate (2): %s\n", err)
-		return nil, nil, err
-	}
+	once.Do(func() {
+		m, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/migrations/"), "postgres", instance)
+		if err != nil {
+			fmt.Printf("Couldn't migrate (2): %s\n", err)
+			return
+		}
 
-	// migrate down before tests externally if needed. This function will be called
-	// by any test package that needs a db and `up` will be a no-op.
-	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		fmt.Printf("Couldnt' migrate (3): %s\n", err)
-		return nil, nil, err
-	}
+		// NOTE: migrate down before tests only externally.
+		if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+			fmt.Printf("Couldnt' migrate (3): %s\n", err)
+			return
+		}
+
+		// post-migration scripts not idempotent like up migration
+		if _, err := os.Stat(markerFilePath); os.IsExist(err) {
+			fmt.Println("Marker file exists, skipping post-migrations.")
+			return
+		}
+
+		markerFile, err := os.Create(markerFilePath)
+		if err != nil {
+			fmt.Printf("Error creating marker file: %s\n", err)
+			return
+		}
+		defer markerFile.Close()
+
+		postMigrationPath := path.Join(path.Dir(src), "../../db/post-migration/")
+		files, err := os.ReadDir(postMigrationPath)
+		if err != nil {
+			fmt.Printf("Error reading post-migration directory: %s\n", err)
+			return
+		}
+
+		for _, file := range files {
+			if file.IsDir() {
+				continue
+			}
+
+			filePath := path.Join(postMigrationPath, file.Name())
+			script, err := os.ReadFile(filePath)
+			if err != nil {
+				fmt.Printf("Error reading post-migration script %s: %s\n", file.Name(), err)
+				return
+			}
+
+			_, err = sqlpool.Exec(string(script))
+			if err != nil {
+				fmt.Printf("Error executing post-migration script %s: %s\n", file.Name(), err)
+				return
+			}
+
+			fmt.Printf("Run post-migration script: %s\n", file.Name())
+		}
+	})
 
 	return pool, sqlpool, nil
 }

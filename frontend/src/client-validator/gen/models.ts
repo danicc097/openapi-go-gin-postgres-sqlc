@@ -25,6 +25,10 @@ export type Scope =
   | 'work-item-tag:delete'
   | 'work-item:review'
 export type Scopes = Scope[]
+/**
+ * represents a database 'work_item_role'
+ */
+export type WorkItemRole = 'preparer' | 'reviewer'
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 /**
  * location in body path, if any
@@ -70,12 +74,8 @@ export type Location1 = string[]
  * string identifiers for SSE event listeners.
  */
 export type Topics = 'GlobalAlerts'
-/**
- * represents a database 'work_item_role'
- */
-export type WorkItemRole = 'preparer' | 'reviewer'
 export type UuidUUID = string
-export type WorkItemCreateRequest = DemoWorkItemCreateRequest | DemoTwoWorkItemCreateRequest
+export type CreateWorkItemRequest = CreateDemoWorkItemRequest | CreateDemoTwoWorkItemRequest
 export type DbWorkItemRole = string
 export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
 export type DemoProject2KanbanSteps = 'Received'
@@ -85,12 +85,12 @@ export type DemoTwoKanbanSteps = 'Received'
 export type DemoTwoWorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
 export type DemoWorkItemTypes = 'Type 1'
 
-export interface WorkItemTagCreateRequest {
+export interface CreateWorkItemTagRequest {
   color: string
   description: string
   name: string
 }
-export interface WorkItemTagUpdateRequest {
+export interface UpdateWorkItemTagRequest {
   color?: string
   description?: string
   name?: string
@@ -102,12 +102,12 @@ export interface WorkItemTag {
   projectID: number
   workItemTagID: number
 }
-export interface WorkItemTypeCreateRequest {
+export interface CreateWorkItemTypeRequest {
   color: string
   description: string
   name: string
 }
-export interface WorkItemTypeUpdateRequest {
+export interface UpdateWorkItemTypeRequest {
   color?: string
   description?: string
   name?: string
@@ -119,12 +119,12 @@ export interface WorkItemType {
   projectID: number
   workItemTypeID: number
 }
-export interface TeamCreateRequest {
+export interface CreateTeamRequest {
   description: string
   name: string
   projectID: number
 }
-export interface TeamUpdateRequest {
+export interface UpdateTeamRequest {
   description?: string
   name?: string
   projectID?: number
@@ -271,7 +271,7 @@ export interface DemoWorkItems {
   demoWorkItem: DbDemoWorkItem
   description: string
   kanbanStepID: number
-  members?: DbUser[] | null
+  members?: DbUserWIAUWorkItem[] | null
   metadata: {}
   targetDate: string
   teamID: number
@@ -284,6 +284,10 @@ export interface DemoWorkItems {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
+export interface DbUserWIAUWorkItem {
+  role: WorkItemRole
+  user: DbUser
+}
 export interface DemoTwoWorkItems {
   closedAt?: string | null
   createdAt: string
@@ -291,7 +295,7 @@ export interface DemoTwoWorkItems {
   demoTwoWorkItem: DbDemoTwoWorkItem
   description: string
   kanbanStepID: number
-  members?: DbUser[] | null
+  members?: DbUserWIAUWorkItem[] | null
   metadata: {}
   targetDate: string
   teamID: number
@@ -393,7 +397,7 @@ export interface UpdateUserAuthRequest {
   role?: Role
   scopes?: Scopes
 }
-export interface DemoWorkItemCreateRequest {
+export interface CreateDemoWorkItemRequest {
   base: DbWorkItemCreateParams
   demoProject: DbDemoWorkItemCreateParams
   members: ServicesMember[]
@@ -420,7 +424,7 @@ export interface ServicesMember {
   role: WorkItemRole
   userID: DbUserID
 }
-export interface DemoTwoWorkItemCreateRequest {
+export interface CreateDemoTwoWorkItemRequest {
   base: DbWorkItemCreateParams
   demoTwoProject: DbDemoTwoWorkItemCreateParams
   members: ServicesMember[]
@@ -444,7 +448,7 @@ export interface DbWorkItem {
   workItemID: number
   workItemTypeID: number
 }
-export interface WorkItemCommentCreateRequest {
+export interface CreateWorkItemCommentRequest {
   message: string
   userID: DbUserID
   workItemID: number

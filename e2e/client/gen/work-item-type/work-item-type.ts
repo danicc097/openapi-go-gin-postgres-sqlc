@@ -5,7 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { WorkItemType, WorkItemTypeCreateRequest, WorkItemTypeUpdateRequest } from '.././model'
+import type { WorkItemType, CreateWorkItemTypeRequest, UpdateWorkItemTypeRequest } from '.././model'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -16,7 +16,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  */
 export const createWorkItemType = (
   projectName: 'demo' | 'demo_two',
-  workItemTypeCreateRequest: WorkItemTypeCreateRequest,
+  createWorkItemTypeRequest: CreateWorkItemTypeRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemType>(
@@ -24,7 +24,7 @@ export const createWorkItemType = (
       url: `/project/${projectName}/workItemType/`,
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
-      data: workItemTypeCreateRequest,
+      data: createWorkItemTypeRequest,
     },
     options,
   )
@@ -45,7 +45,7 @@ export const getWorkItemType = (
 export const updateWorkItemType = (
   projectName: 'demo' | 'demo_two',
   id: number,
-  workItemTypeUpdateRequest: WorkItemTypeUpdateRequest,
+  updateWorkItemTypeRequest: UpdateWorkItemTypeRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemType>(
@@ -53,7 +53,7 @@ export const updateWorkItemType = (
       url: `/project/${projectName}/workItemType/${id}/`,
       method: 'patch',
       headers: { 'Content-Type': 'application/json' },
-      data: workItemTypeUpdateRequest,
+      data: updateWorkItemTypeRequest,
     },
     options,
   )

@@ -19,26 +19,22 @@ import (
 )
 
 type Project struct {
-	logger      *zap.SugaredLogger
-	projectRepo repos.Project
-	teamRepo    repos.Team
+	logger *zap.SugaredLogger
+	repos  *repos.Repos
 }
 
 // NewProject returns a new Project service.
-func NewProject(logger *zap.SugaredLogger, projectRepo repos.Project,
-	teamRepo repos.Team,
-) *Project {
+func NewProject(logger *zap.SugaredLogger, repos *repos.Repos) *Project {
 	return &Project{
-		logger:      logger,
-		projectRepo: projectRepo,
-		teamRepo:    teamRepo,
+		logger: logger,
+		repos:  repos,
 	}
 }
 
 func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID db.ProjectID) (*db.Project, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	project, err := p.projectRepo.ByID(ctx, d, projectID)
+	project, err := p.repos.Project.ByID(ctx, d, projectID)
 	if err != nil {
 		return nil, internal.NewErrorf(models.ErrorCodeNotFound, "project not found")
 	}
@@ -49,7 +45,7 @@ func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID db.ProjectID) (
 func (p *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*db.Project, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	project, err := p.projectRepo.ByName(ctx, d, name)
+	project, err := p.repos.Project.ByName(ctx, d, name)
 	if err != nil {
 		return nil, internal.NewErrorf(models.ErrorCodeNotFound, "project not found")
 	}
@@ -68,7 +64,7 @@ func (p *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*
 // the endpoint to update it will be validated by openapi libs as usual.
 // Deprecated: will use frontend config per user + admin config is stored raw in db.
 func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectName models.Project, update map[string]any) (*models.ProjectConfig, error) {
-	project, err := p.projectRepo.ByName(ctx, d, projectName)
+	project, err := p.repos.Project.ByName(ctx, d, projectName)
 	if err != nil {
 		return nil, internal.NewErrorf(models.ErrorCodeNotFound, "project not found")
 	}

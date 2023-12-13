@@ -319,7 +319,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 {{- end }}
 {{- if .hidden }} openapi-go:"ignore"
 {{- end }}
-{{- if .required }} required:"true"
+{{- if and (.required) (not .hidden)}} required:"true"
 {{- end }}
 {{- if not .nullable }} nullable:"false"
 {{- end }}
@@ -4462,7 +4462,6 @@ func addInitialisms(ctx context.Context) error {
 }
 
 // contains determines if v contains s.
-// NOTE: yaegi not supporting generics yet
 func contains(v []string, s string) bool {
 	for _, z := range v {
 		if z == s {

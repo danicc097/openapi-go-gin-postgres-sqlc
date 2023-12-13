@@ -55,8 +55,10 @@
     "requiresAuthentication": true
   },
   "CreateWorkItemTag": {
-    "scopes": null,
-    "role": null,
+    "scopes": [
+      "work-item-tag:create"
+    ],
+    "role": "manager",
     "requiresAuthentication": true
   },
   "GetWorkItemTag": {
@@ -103,7 +105,7 @@
     "scopes": [
       "scopes:write"
     ],
-    "role": null,
+    "role": "admin",
     "requiresAuthentication": true
   },
   "DeleteUser": {

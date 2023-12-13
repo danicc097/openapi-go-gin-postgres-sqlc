@@ -5,7 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { WorkItemTag, WorkItemTagCreateRequest, WorkItemTagUpdateRequest } from '.././model'
+import type { WorkItemTag, CreateWorkItemTagRequest, UpdateWorkItemTagRequest } from '.././model'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -16,7 +16,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  */
 export const createWorkItemTag = (
   projectName: 'demo' | 'demo_two',
-  workItemTagCreateRequest: WorkItemTagCreateRequest,
+  createWorkItemTagRequest: CreateWorkItemTagRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemTag>(
@@ -24,7 +24,7 @@ export const createWorkItemTag = (
       url: `/project/${projectName}/workItemTag/`,
       method: 'post',
       headers: { 'Content-Type': 'application/json' },
-      data: workItemTagCreateRequest,
+      data: createWorkItemTagRequest,
     },
     options,
   )
@@ -45,7 +45,7 @@ export const getWorkItemTag = (
 export const updateWorkItemTag = (
   projectName: 'demo' | 'demo_two',
   id: number,
-  workItemTagUpdateRequest: WorkItemTagUpdateRequest,
+  updateWorkItemTagRequest: UpdateWorkItemTagRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemTag>(
@@ -53,7 +53,7 @@ export const updateWorkItemTag = (
       url: `/project/${projectName}/workItemTag/${id}/`,
       method: 'patch',
       headers: { 'Content-Type': 'application/json' },
-      data: workItemTagUpdateRequest,
+      data: updateWorkItemTagRequest,
     },
     options,
   )

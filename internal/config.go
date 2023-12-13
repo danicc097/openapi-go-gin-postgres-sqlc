@@ -46,6 +46,16 @@ type SuperAdminConfig struct {
 	DefaultEmail string `env:"DEFAULT_SUPERADMIN_EMAIL"`
 }
 
+// TODO: handle actual custom types in config.
+type AppEnv = string
+
+const (
+	AppEnvDev  AppEnv = "dev"
+	AppEnvProd AppEnv = "prod"
+	AppEnvCI   AppEnv = "ci"
+	AppEnvE2E  AppEnv = "e2e"
+)
+
 // AppConfig contains app settings.
 type AppConfig struct {
 	Postgres   PostgresConfig
@@ -57,7 +67,7 @@ type AppConfig struct {
 	APIPort      string `env:"API_PORT"`
 	APIVersion   string `env:"API_VERSION"`
 	APIPrefix    string `env:"API_PREFIX"`
-	AppEnv       string `env:"APP_ENV"`
+	AppEnv       AppEnv `env:"APP_ENV"`
 	SigningKey   string `env:"SIGNING_KEY"`
 	BuildVersion string `env:"BUILD_VERSION,-"`
 

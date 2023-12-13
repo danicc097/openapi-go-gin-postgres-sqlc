@@ -113,7 +113,7 @@ func newSpecReflector() *openapi3.Reflector {
 			return defaultDefName
 		}),
 		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
-			if params.Field.Tag.Get("openapi-go") == "ignore" {
+			if params.Field.Tag.Get("openapi-go") == "ignore" { // does not ignore completely, it still sets as required. Probably a bug
 				return jsonschema.ErrSkipProperty
 			}
 
@@ -170,14 +170,24 @@ func newSpecReflector() *openapi3.Reflector {
 				}
 			}
 
-			var isCustomUUID bool
 			if t.Kind() == reflect.Ptr {
 				t = t.Elem()
 			}
+
 			if t.Kind() == reflect.Struct {
-				if t.Field(0).Type == reflect.TypeOf(uuid.New()) {
-					isCustomUUID = true
+				for i := 0; i < t.NumField(); i++ {
+					field := t.Field(i)
+					openapiGoTag := field.Tag.Get("openapi-go")
+					if openapiGoTag == "ignore" {
+						tag := reflect.StructTag(`openapi-go:"ignore"`)
+						field.Tag = tag
+					}
 				}
+			}
+
+			var isCustomUUID bool
+			if t.Kind() == reflect.Struct && t.Field(0).Type == reflect.TypeOf(uuid.New()) {
+				isCustomUUID = true
 			}
 
 			// TODO: also if type script and has a field UUID

@@ -81,6 +81,7 @@ type User interface {
 	// CreateAPIKey requires an existing user.
 	CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error)
 	DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.UserAPIKey, error)
+	IsUserInProject(ctx context.Context, db db.DBTX, arg db.IsUserInProjectParams) (bool, error)
 }
 
 // Project defines the datastore/repository handling persisting Project records.
@@ -89,6 +90,7 @@ type User interface {
 type Project interface {
 	ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (*db.Project, error)
 	ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (*db.Project, error)
+	IsTeamInProject(ctx context.Context, db db.DBTX, arg db.IsTeamInProjectParams) (bool, error)
 }
 
 // Team defines the datastore/repository handling persisting Team records.

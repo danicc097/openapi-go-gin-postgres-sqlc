@@ -1,4 +1,4 @@
-package rest
+package rest_test
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/stretchr/testify/assert"
@@ -37,7 +36,7 @@ func TestAdminPingRoute(t *testing.T) {
 	t.Run("authorized", func(t *testing.T) {
 		t.Parallel()
 
-		res, err := srv.client.AdminPingWithResponse(context.Background(), resttestutil.ReqWithAPIKey(ufixture.APIKey.APIKey))
+		res, err := srv.client.AdminPingWithResponse(context.Background(), ReqWithAPIKey(ufixture.APIKey.APIKey))
 		require.NoError(t, err)
 
 		assert.Equal(t, http.StatusOK, res.StatusCode())
@@ -50,6 +49,6 @@ func TestAdminPingRoute(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, http.StatusBadRequest, res.StatusCode())
-		assert.Equal(t, models.ErrorCodeRequestValidation, res.JSON4XX.Type)
+		assert.EqualValues(t, models.ErrorCodeRequestValidation, res.JSON4XX.Type)
 	})
 }

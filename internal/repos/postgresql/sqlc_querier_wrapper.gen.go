@@ -41,20 +41,20 @@ func (w QuerierWrapper) GetUserNotifications(ctx context.Context, db db.DBTX, ar
 	return
 }
 
-func (w QuerierWrapper) RegisterNewUser(ctx context.Context, db db.DBTX, arg db.RegisterNewUserParams) (r1 db.RegisterNewUserRow, err error) {
+func (w QuerierWrapper) IsTeamInProject(ctx context.Context, db db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
 	/* defer newOTelSpan().Build(ctx).End() */
 
-	r1, err = w.Querier.RegisterNewUser(ctx, db, arg)
+	b1, err = w.Querier.IsTeamInProject(ctx, db, arg)
 	if err != nil {
 		err = fmt.Errorf("Querier: %w", parseDBErrorDetail(err))
 	}
 	return
 }
 
-func (w QuerierWrapper) Test(ctx context.Context, db db.DBTX) (err error) {
+func (w QuerierWrapper) IsUserInProject(ctx context.Context, db db.DBTX, arg db.IsUserInProjectParams) (b1 bool, err error) {
 	/* defer newOTelSpan().Build(ctx).End() */
 
-	err = w.Querier.Test(ctx, db)
+	b1, err = w.Querier.IsUserInProject(ctx, db, arg)
 	if err != nil {
 		err = fmt.Errorf("Querier: %w", parseDBErrorDetail(err))
 	}

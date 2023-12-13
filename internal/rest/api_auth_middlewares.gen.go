@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
+func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 	switch opID {
 	case AdminPing:
 		return []gin.HandlerFunc{
@@ -24,6 +24,13 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 	case CreateWorkItemTag:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					MinimumRole: models.Role("manager"),
+					RequiredScopes: models.Scopes{
+						models.Scope("work-item-tag:create"),
+					},
+				}),
 		}
 	case CreateWorkItemType:
 		return []gin.HandlerFunc{
@@ -151,6 +158,7 @@ func (h *Handlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthenticated(),
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
+					MinimumRole: models.Role("admin"),
 					RequiredScopes: models.Scopes{
 						models.Scope("scopes:write"),
 					},

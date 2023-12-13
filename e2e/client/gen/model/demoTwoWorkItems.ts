@@ -6,7 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { DbDemoTwoWorkItem } from './dbDemoTwoWorkItem'
-import type { DbUser } from './dbUser'
+import type { DbUserWIAUWorkItem } from './dbUserWIAUWorkItem'
 import type { DemoTwoWorkItemsMetadata } from './demoTwoWorkItemsMetadata'
 import type { DbTimeEntry } from './dbTimeEntry'
 import type { DbWorkItemComment } from './dbWorkItemComment'
@@ -20,7 +20,7 @@ export interface DemoTwoWorkItems {
   demoTwoWorkItem: DbDemoTwoWorkItem
   description: string
   kanbanStepID: number
-  members?: DbUser[] | null
+  members?: DbUserWIAUWorkItem[] | null
   metadata: DemoTwoWorkItemsMetadata
   targetDate: Date
   teamID: number

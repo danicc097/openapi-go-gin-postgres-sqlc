@@ -94,9 +94,9 @@ wait_without_error() {
   done
   #trap 'wait || :' EXIT # wait for all jobs before exiting (regardless of handling above)
   if ((err != 0)); then
-    echo "A job failed"
+    echo "A job failed" >&2
     kill -s SIGUSR1 $PROC
-    exit 1
+    return 1
   fi
 }
 
@@ -439,6 +439,7 @@ AWK_REMOVE_GO_COMMENTS='
 '
 
 # Stores go structs in package to a given array.
+# Deprecated: use `ast-parser find-structs` and calculate difference
 # Parameters:
 #    Struct array (nameref)
 #    Package directory
@@ -454,6 +455,7 @@ go-utils.find_structs() {
 }
 
 # Stores go generic structs in package to a given array.
+# Deprecated: use `ast-parser find-structs [--exclude-generics]` and calculate difference
 # Parameters:
 #    Struct array (nameref)
 #    Package directory
@@ -511,6 +513,7 @@ go-utils.get_interface_methods() {
 }
 
 # Stores go custom types in package to a given array.
+# Deprecated: use `ast-parser find-types`
 # Parameters:
 #    Custom types array (nameref)
 #    Package directory
