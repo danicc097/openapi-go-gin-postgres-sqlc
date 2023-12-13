@@ -422,14 +422,20 @@ export interface components {
      * @enum {string}
      */
     Topics: "GlobalAlerts";
-    /** @enum {string} */
+    /**
+     * @description is generated from scopes.json keys.
+     * @enum {string}
+     */
     Scope: "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review";
     Scopes: components["schemas"]["Scope"][];
-    /** @enum {string} */
+    /**
+     * @description is generated from roles.json keys.
+     * @enum {string}
+     */
     Role: "guest" | "user" | "advancedUser" | "manager" | "admin" | "superAdmin";
     /**
      * WorkItem role
-     * @description represents a database 'work_item_role'
+     * @description is generated from database enum 'work_item_role'.
      * @enum {string}
      */
     WorkItemRole: "preparer" | "reviewer";
@@ -524,7 +530,10 @@ export interface components {
       userID: components["schemas"]["DbUserID"];
       workItemID: number;
     };
-    /** @enum {string} */
+    /**
+     * @description is generated from projects table.
+     * @enum {string}
+     */
     Project: "demo" | "demo_two";
     DbActivityCreateParams: {
       description: string;
@@ -544,23 +553,19 @@ export interface components {
     };
     DbWorkItemRole: string;
     /**
-     * @description represents a database 'notification_type'
+     * @description is generated from database enum 'notification_type'.
      * @enum {string}
      */
     NotificationType: "personal" | "global";
-    /** @enum {string} */
-    DemoProjectKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
-    /** @enum {string} */
-    DemoProject2KanbanSteps: "Received";
-    /** @enum {string} */
-    Demo2WorkItemTypes: "Type 1" | "Type 2" | "Another type";
-    /** @enum {string} */
-    DemoKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
-    /** @enum {string} */
-    DemoTwoKanbanSteps: "Received";
-    /** @enum {string} */
+    /**
+     * @description is generated from work_item_types table.
+     * @enum {string}
+     */
     DemoTwoWorkItemTypes: "Type 1" | "Type 2" | "Another type";
-    /** @enum {string} */
+    /**
+     * @description is generated from work_item_types table.
+     * @enum {string}
+     */
     DemoWorkItemTypes: "Type 1";
     DbDemoWorkItemCreateParams: {
       /** Format: date-time */
@@ -633,6 +638,16 @@ export interface components {
       role: components["schemas"]["WorkItemRole"];
       user: components["schemas"]["DbUser"];
     };
+    /**
+     * @description is generated from kanban_steps table.
+     * @enum {string}
+     */
+    DemoKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
+    /**
+     * @description is generated from kanban_steps table.
+     * @enum {string}
+     */
+    DemoTwoKanbanSteps: "Received";
   };
   responses: never;
   parameters: {

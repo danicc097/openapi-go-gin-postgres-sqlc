@@ -6,6 +6,9 @@
  * OpenAPI spec version: 2.0.0
  */
 
+/**
+ * is generated from scopes.json keys.
+ */
 export type Scope = typeof Scope[keyof typeof Scope]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare

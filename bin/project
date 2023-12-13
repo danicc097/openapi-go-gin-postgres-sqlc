@@ -1678,6 +1678,7 @@ replace_enum_in_spec() {
     $schema_path.type = \"string\" |
     $schema_path.enum = env(__enums) |
     $schema_path.x-generated = \"-\" |
+    $schema_path.description = \"is generated from $src_comment.\" |
     ($schema_path | key) line_comment=\"Generated from $src_comment. DO NOT EDIT.\"" -i $SPEC_PATH
 }
 

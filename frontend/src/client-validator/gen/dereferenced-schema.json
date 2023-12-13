@@ -274,7 +274,7 @@
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "notificationType": {
-                    "description": "represents a database 'notification_type'",
+                    "description": "is generated from database enum 'notification_type'.",
                     "type": "string",
                     "x-generated": "-",
                     "enum": [
@@ -516,6 +516,7 @@
           ],
           "type": "string",
           "x-generated": "-",
+          "description": "is generated from projects table.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "projectID": {
@@ -772,6 +773,7 @@
               "work-item:review"
             ],
             "x-generated": "-",
+            "description": "is generated from scopes.json keys.",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
           "$schema": "http://json-schema.org/draft-04/schema#"
@@ -1065,7 +1067,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
+                "description": "is generated from database enum 'work_item_role'.",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "user": {
@@ -1127,6 +1129,7 @@
                         "work-item:review"
                       ],
                       "x-generated": "-",
+                      "description": "is generated from scopes.json keys.",
                       "$schema": "http://json-schema.org/draft-04/schema#"
                     },
                     "$schema": "http://json-schema.org/draft-04/schema#"
@@ -1464,7 +1467,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
+                "description": "is generated from database enum 'work_item_role'.",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "user": {
@@ -1526,6 +1529,7 @@
                         "work-item:review"
                       ],
                       "x-generated": "-",
+                      "description": "is generated from scopes.json keys.",
                       "$schema": "http://json-schema.org/draft-04/schema#"
                     },
                     "$schema": "http://json-schema.org/draft-04/schema#"
@@ -1881,6 +1885,7 @@
           ],
           "type": "string",
           "x-generated": "-",
+          "description": "is generated from projects table.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
@@ -2038,6 +2043,7 @@
                 ],
                 "type": "string",
                 "x-generated": "-",
+                "description": "is generated from projects table.",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "projectID": {
@@ -2078,6 +2084,7 @@
             "superAdmin"
           ],
           "x-generated": "-",
+          "description": "is generated from roles.json keys.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "scopes": {
@@ -2097,6 +2104,7 @@
               "work-item:review"
             ],
             "x-generated": "-",
+            "description": "is generated from scopes.json keys.",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
           "$schema": "http://json-schema.org/draft-04/schema#"
@@ -2422,6 +2430,7 @@
         "work-item:review"
       ],
       "x-generated": "-",
+      "description": "is generated from scopes.json keys.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Scopes": {
@@ -2441,6 +2450,7 @@
           "work-item:review"
         ],
         "x-generated": "-",
+        "description": "is generated from scopes.json keys.",
         "$schema": "http://json-schema.org/draft-04/schema#"
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -2456,6 +2466,7 @@
         "superAdmin"
       ],
       "x-generated": "-",
+      "description": "is generated from roles.json keys.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "WorkItemRole": {
@@ -2466,7 +2477,7 @@
         "preparer",
         "reviewer"
       ],
-      "description": "represents a database 'work_item_role'",
+      "description": "is generated from database enum 'work_item_role'.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "UpdateUserRequest": {
@@ -2500,6 +2511,7 @@
             "superAdmin"
           ],
           "x-generated": "-",
+          "description": "is generated from roles.json keys.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "scopes": {
@@ -2519,6 +2531,7 @@
               "work-item:review"
             ],
             "x-generated": "-",
+            "description": "is generated from scopes.json keys.",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
           "$schema": "http://json-schema.org/draft-04/schema#"
@@ -2679,7 +2692,7 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "represents a database 'work_item_role'",
+                    "description": "is generated from database enum 'work_item_role'.",
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "userID": {
@@ -2709,6 +2722,7 @@
               ],
               "type": "string",
               "x-generated": "-",
+              "description": "is generated from projects table.",
               "$schema": "http://json-schema.org/draft-04/schema#"
             },
             "tagIDs": {
@@ -2802,7 +2816,7 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "represents a database 'work_item_role'",
+                    "description": "is generated from database enum 'work_item_role'.",
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "userID": {
@@ -2832,6 +2846,7 @@
               ],
               "type": "string",
               "x-generated": "-",
+              "description": "is generated from projects table.",
               "$schema": "http://json-schema.org/draft-04/schema#"
             },
             "tagIDs": {
@@ -3001,7 +3016,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
+                "description": "is generated from database enum 'work_item_role'.",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
@@ -3031,6 +3046,7 @@
           ],
           "type": "string",
           "x-generated": "-",
+          "description": "is generated from projects table.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "tagIDs": {
@@ -3142,7 +3158,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
+                "description": "is generated from database enum 'work_item_role'.",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
@@ -3172,6 +3188,7 @@
           ],
           "type": "string",
           "x-generated": "-",
+          "description": "is generated from projects table.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "tagIDs": {
@@ -3228,6 +3245,7 @@
       ],
       "type": "string",
       "x-generated": "-",
+      "description": "is generated from projects table.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbActivityCreateParams": {
@@ -3306,61 +3324,13 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "NotificationType": {
-      "description": "represents a database 'notification_type'",
+      "description": "is generated from database enum 'notification_type'.",
       "type": "string",
       "x-generated": "-",
       "enum": [
         "personal",
         "global"
       ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoProjectKanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Disabled",
-        "Received",
-        "Under review",
-        "Work in progress"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoProject2KanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Received"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "Demo2WorkItemTypes": {
-      "type": "string",
-      "enum": [
-        "Type 1",
-        "Type 2",
-        "Another type"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoKanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Disabled",
-        "Received",
-        "Under review",
-        "Work in progress"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoTwoKanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Received"
-      ],
-      "x-generated": "-",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DemoTwoWorkItemTypes": {
@@ -3371,6 +3341,7 @@
         "Another type"
       ],
       "x-generated": "-",
+      "description": "is generated from work_item_types table.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DemoWorkItemTypes": {
@@ -3379,6 +3350,7 @@
         "Type 1"
       ],
       "x-generated": "-",
+      "description": "is generated from work_item_types table.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbDemoWorkItemCreateParams": {
@@ -3469,7 +3441,7 @@
             "preparer",
             "reviewer"
           ],
-          "description": "represents a database 'work_item_role'",
+          "description": "is generated from database enum 'work_item_role'.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "userID": {
@@ -3571,7 +3543,7 @@
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "notificationType": {
-          "description": "represents a database 'notification_type'",
+          "description": "is generated from database enum 'notification_type'.",
           "type": "string",
           "x-generated": "-",
           "enum": [
@@ -3688,7 +3660,7 @@
               "$schema": "http://json-schema.org/draft-04/schema#"
             },
             "notificationType": {
-              "description": "represents a database 'notification_type'",
+              "description": "is generated from database enum 'notification_type'.",
               "type": "string",
               "x-generated": "-",
               "enum": [
@@ -3774,7 +3746,7 @@
             "preparer",
             "reviewer"
           ],
-          "description": "represents a database 'work_item_role'",
+          "description": "is generated from database enum 'work_item_role'.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "user": {
@@ -3836,6 +3808,7 @@
                   "work-item:review"
                 ],
                 "x-generated": "-",
+                "description": "is generated from scopes.json keys.",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "$schema": "http://json-schema.org/draft-04/schema#"
@@ -3874,6 +3847,27 @@
         "role"
       ],
       "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Disabled",
+        "Received",
+        "Under review",
+        "Work in progress"
+      ],
+      "x-generated": "-",
+      "description": "is generated from kanban_steps table.",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoTwoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Received"
+      ],
+      "x-generated": "-",
+      "description": "is generated from kanban_steps table.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   },
@@ -4150,7 +4144,7 @@
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "notificationType": {
-                    "description": "represents a database 'notification_type'",
+                    "description": "is generated from database enum 'notification_type'.",
                     "type": "string",
                     "x-generated": "-",
                     "enum": [
@@ -4392,6 +4386,7 @@
           ],
           "type": "string",
           "x-generated": "-",
+          "description": "is generated from projects table.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "projectID": {
@@ -4648,6 +4643,7 @@
               "work-item:review"
             ],
             "x-generated": "-",
+            "description": "is generated from scopes.json keys.",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
           "$schema": "http://json-schema.org/draft-04/schema#"
@@ -4941,7 +4937,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
+                "description": "is generated from database enum 'work_item_role'.",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "user": {
@@ -5003,6 +4999,7 @@
                         "work-item:review"
                       ],
                       "x-generated": "-",
+                      "description": "is generated from scopes.json keys.",
                       "$schema": "http://json-schema.org/draft-04/schema#"
                     },
                     "$schema": "http://json-schema.org/draft-04/schema#"
@@ -5340,7 +5337,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
+                "description": "is generated from database enum 'work_item_role'.",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "user": {
@@ -5402,6 +5399,7 @@
                         "work-item:review"
                       ],
                       "x-generated": "-",
+                      "description": "is generated from scopes.json keys.",
                       "$schema": "http://json-schema.org/draft-04/schema#"
                     },
                     "$schema": "http://json-schema.org/draft-04/schema#"
@@ -5757,6 +5755,7 @@
           ],
           "type": "string",
           "x-generated": "-",
+          "description": "is generated from projects table.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         }
       },
@@ -5914,6 +5913,7 @@
                 ],
                 "type": "string",
                 "x-generated": "-",
+                "description": "is generated from projects table.",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "projectID": {
@@ -5954,6 +5954,7 @@
             "superAdmin"
           ],
           "x-generated": "-",
+          "description": "is generated from roles.json keys.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "scopes": {
@@ -5973,6 +5974,7 @@
               "work-item:review"
             ],
             "x-generated": "-",
+            "description": "is generated from scopes.json keys.",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
           "$schema": "http://json-schema.org/draft-04/schema#"
@@ -6298,6 +6300,7 @@
         "work-item:review"
       ],
       "x-generated": "-",
+      "description": "is generated from scopes.json keys.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "Scopes": {
@@ -6317,6 +6320,7 @@
           "work-item:review"
         ],
         "x-generated": "-",
+        "description": "is generated from scopes.json keys.",
         "$schema": "http://json-schema.org/draft-04/schema#"
       },
       "$schema": "http://json-schema.org/draft-04/schema#"
@@ -6332,6 +6336,7 @@
         "superAdmin"
       ],
       "x-generated": "-",
+      "description": "is generated from roles.json keys.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "WorkItemRole": {
@@ -6342,7 +6347,7 @@
         "preparer",
         "reviewer"
       ],
-      "description": "represents a database 'work_item_role'",
+      "description": "is generated from database enum 'work_item_role'.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "UpdateUserRequest": {
@@ -6376,6 +6381,7 @@
             "superAdmin"
           ],
           "x-generated": "-",
+          "description": "is generated from roles.json keys.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "scopes": {
@@ -6395,6 +6401,7 @@
               "work-item:review"
             ],
             "x-generated": "-",
+            "description": "is generated from scopes.json keys.",
             "$schema": "http://json-schema.org/draft-04/schema#"
           },
           "$schema": "http://json-schema.org/draft-04/schema#"
@@ -6555,7 +6562,7 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "represents a database 'work_item_role'",
+                    "description": "is generated from database enum 'work_item_role'.",
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "userID": {
@@ -6585,6 +6592,7 @@
               ],
               "type": "string",
               "x-generated": "-",
+              "description": "is generated from projects table.",
               "$schema": "http://json-schema.org/draft-04/schema#"
             },
             "tagIDs": {
@@ -6678,7 +6686,7 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "represents a database 'work_item_role'",
+                    "description": "is generated from database enum 'work_item_role'.",
                     "$schema": "http://json-schema.org/draft-04/schema#"
                   },
                   "userID": {
@@ -6708,6 +6716,7 @@
               ],
               "type": "string",
               "x-generated": "-",
+              "description": "is generated from projects table.",
               "$schema": "http://json-schema.org/draft-04/schema#"
             },
             "tagIDs": {
@@ -6877,7 +6886,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
+                "description": "is generated from database enum 'work_item_role'.",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
@@ -6907,6 +6916,7 @@
           ],
           "type": "string",
           "x-generated": "-",
+          "description": "is generated from projects table.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "tagIDs": {
@@ -7018,7 +7028,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
+                "description": "is generated from database enum 'work_item_role'.",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "userID": {
@@ -7048,6 +7058,7 @@
           ],
           "type": "string",
           "x-generated": "-",
+          "description": "is generated from projects table.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "tagIDs": {
@@ -7104,6 +7115,7 @@
       ],
       "type": "string",
       "x-generated": "-",
+      "description": "is generated from projects table.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbActivityCreateParams": {
@@ -7182,61 +7194,13 @@
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "NotificationType": {
-      "description": "represents a database 'notification_type'",
+      "description": "is generated from database enum 'notification_type'.",
       "type": "string",
       "x-generated": "-",
       "enum": [
         "personal",
         "global"
       ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoProjectKanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Disabled",
-        "Received",
-        "Under review",
-        "Work in progress"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoProject2KanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Received"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "Demo2WorkItemTypes": {
-      "type": "string",
-      "enum": [
-        "Type 1",
-        "Type 2",
-        "Another type"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoKanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Disabled",
-        "Received",
-        "Under review",
-        "Work in progress"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoTwoKanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Received"
-      ],
-      "x-generated": "-",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DemoTwoWorkItemTypes": {
@@ -7247,6 +7211,7 @@
         "Another type"
       ],
       "x-generated": "-",
+      "description": "is generated from work_item_types table.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DemoWorkItemTypes": {
@@ -7255,6 +7220,7 @@
         "Type 1"
       ],
       "x-generated": "-",
+      "description": "is generated from work_item_types table.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     },
     "DbDemoWorkItemCreateParams": {
@@ -7345,7 +7311,7 @@
             "preparer",
             "reviewer"
           ],
-          "description": "represents a database 'work_item_role'",
+          "description": "is generated from database enum 'work_item_role'.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "userID": {
@@ -7447,7 +7413,7 @@
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "notificationType": {
-          "description": "represents a database 'notification_type'",
+          "description": "is generated from database enum 'notification_type'.",
           "type": "string",
           "x-generated": "-",
           "enum": [
@@ -7564,7 +7530,7 @@
               "$schema": "http://json-schema.org/draft-04/schema#"
             },
             "notificationType": {
-              "description": "represents a database 'notification_type'",
+              "description": "is generated from database enum 'notification_type'.",
               "type": "string",
               "x-generated": "-",
               "enum": [
@@ -7650,7 +7616,7 @@
             "preparer",
             "reviewer"
           ],
-          "description": "represents a database 'work_item_role'",
+          "description": "is generated from database enum 'work_item_role'.",
           "$schema": "http://json-schema.org/draft-04/schema#"
         },
         "user": {
@@ -7712,6 +7678,7 @@
                   "work-item:review"
                 ],
                 "x-generated": "-",
+                "description": "is generated from scopes.json keys.",
                 "$schema": "http://json-schema.org/draft-04/schema#"
               },
               "$schema": "http://json-schema.org/draft-04/schema#"
@@ -7750,6 +7717,27 @@
         "role"
       ],
       "type": "object",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Disabled",
+        "Received",
+        "Under review",
+        "Work in progress"
+      ],
+      "x-generated": "-",
+      "description": "is generated from kanban_steps table.",
+      "$schema": "http://json-schema.org/draft-04/schema#"
+    },
+    "DemoTwoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Received"
+      ],
+      "x-generated": "-",
+      "description": "is generated from kanban_steps table.",
       "$schema": "http://json-schema.org/draft-04/schema#"
     }
   }

@@ -8,11 +8,17 @@
 
 export type Direction = 'asc' | 'desc'
 /**
- * represents a database 'notification_type'
+ * is generated from database enum 'notification_type'.
  */
 export type NotificationType = 'personal' | 'global'
 export type DbUserID = string
+/**
+ * is generated from projects table.
+ */
 export type Project = 'demo' | 'demo_two'
+/**
+ * is generated from scopes.json keys.
+ */
 export type Scope =
   | 'users:read'
   | 'users:write'
@@ -26,9 +32,12 @@ export type Scope =
   | 'work-item:review'
 export type Scopes = Scope[]
 /**
- * represents a database 'work_item_role'
+ * is generated from database enum 'work_item_role'.
  */
 export type WorkItemRole = 'preparer' | 'reviewer'
+/**
+ * is generated from roles.json keys.
+ */
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
 /**
  * location in body path, if any
@@ -77,13 +86,22 @@ export type Topics = 'GlobalAlerts'
 export type UuidUUID = string
 export type CreateWorkItemRequest = CreateDemoWorkItemRequest | CreateDemoTwoWorkItemRequest
 export type DbWorkItemRole = string
-export type DemoProjectKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
-export type DemoProject2KanbanSteps = 'Received'
-export type Demo2WorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
-export type DemoKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
-export type DemoTwoKanbanSteps = 'Received'
+/**
+ * is generated from work_item_types table.
+ */
 export type DemoTwoWorkItemTypes = 'Type 1' | 'Type 2' | 'Another type'
+/**
+ * is generated from work_item_types table.
+ */
 export type DemoWorkItemTypes = 'Type 1'
+/**
+ * is generated from kanban_steps table.
+ */
+export type DemoKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work in progress'
+/**
+ * is generated from kanban_steps table.
+ */
+export type DemoTwoKanbanSteps = 'Received'
 
 export interface CreateWorkItemTagRequest {
   color: string

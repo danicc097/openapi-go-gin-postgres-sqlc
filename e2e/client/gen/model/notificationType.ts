@@ -7,7 +7,7 @@
  */
 
 /**
- * represents a database 'notification_type'
+ * is generated from database enum 'notification_type'.
  */
 export type NotificationType = typeof NotificationType[keyof typeof NotificationType]
 

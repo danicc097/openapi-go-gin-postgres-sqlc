@@ -60,11 +60,6 @@ import {
   DbWorkItemTagCreateParams,
   DbWorkItemRole,
   NotificationType,
-  DemoProjectKanbanSteps,
-  DemoProject2KanbanSteps,
-  Demo2WorkItemTypes,
-  DemoKanbanSteps,
-  DemoTwoKanbanSteps,
   DemoTwoWorkItemTypes,
   DemoWorkItemTypes,
   DbDemoWorkItemCreateParams,
@@ -82,6 +77,8 @@ import {
   RestPaginationPage,
   RestNotification,
   DbUserWIAUWorkItem,
+  DemoKanbanSteps,
+  DemoTwoKanbanSteps,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -714,66 +711,6 @@ export const NotificationTypeDecoder: Decoder<NotificationType> = {
     return validateJson(json, schema, NotificationTypeDecoder.definitionName)
   },
 }
-export const DemoProjectKanbanStepsDecoder: Decoder<DemoProjectKanbanSteps> = {
-  definitionName: 'DemoProjectKanbanSteps',
-  schemaRef: '#/definitions/DemoProjectKanbanSteps',
-
-  decode(json: unknown): DemoProjectKanbanSteps {
-    const schema = ajv.getSchema(DemoProjectKanbanStepsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${DemoProjectKanbanStepsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, DemoProjectKanbanStepsDecoder.definitionName)
-  },
-}
-export const DemoProject2KanbanStepsDecoder: Decoder<DemoProject2KanbanSteps> = {
-  definitionName: 'DemoProject2KanbanSteps',
-  schemaRef: '#/definitions/DemoProject2KanbanSteps',
-
-  decode(json: unknown): DemoProject2KanbanSteps {
-    const schema = ajv.getSchema(DemoProject2KanbanStepsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${DemoProject2KanbanStepsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, DemoProject2KanbanStepsDecoder.definitionName)
-  },
-}
-export const Demo2WorkItemTypesDecoder: Decoder<Demo2WorkItemTypes> = {
-  definitionName: 'Demo2WorkItemTypes',
-  schemaRef: '#/definitions/Demo2WorkItemTypes',
-
-  decode(json: unknown): Demo2WorkItemTypes {
-    const schema = ajv.getSchema(Demo2WorkItemTypesDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${Demo2WorkItemTypesDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, Demo2WorkItemTypesDecoder.definitionName)
-  },
-}
-export const DemoKanbanStepsDecoder: Decoder<DemoKanbanSteps> = {
-  definitionName: 'DemoKanbanSteps',
-  schemaRef: '#/definitions/DemoKanbanSteps',
-
-  decode(json: unknown): DemoKanbanSteps {
-    const schema = ajv.getSchema(DemoKanbanStepsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${DemoKanbanStepsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, DemoKanbanStepsDecoder.definitionName)
-  },
-}
-export const DemoTwoKanbanStepsDecoder: Decoder<DemoTwoKanbanSteps> = {
-  definitionName: 'DemoTwoKanbanSteps',
-  schemaRef: '#/definitions/DemoTwoKanbanSteps',
-
-  decode(json: unknown): DemoTwoKanbanSteps {
-    const schema = ajv.getSchema(DemoTwoKanbanStepsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${DemoTwoKanbanStepsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, DemoTwoKanbanStepsDecoder.definitionName)
-  },
-}
 export const DemoTwoWorkItemTypesDecoder: Decoder<DemoTwoWorkItemTypes> = {
   definitionName: 'DemoTwoWorkItemTypes',
   schemaRef: '#/definitions/DemoTwoWorkItemTypes',
@@ -976,5 +913,29 @@ export const DbUserWIAUWorkItemDecoder: Decoder<DbUserWIAUWorkItem> = {
       throw new Error(`Schema ${DbUserWIAUWorkItemDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbUserWIAUWorkItemDecoder.definitionName)
+  },
+}
+export const DemoKanbanStepsDecoder: Decoder<DemoKanbanSteps> = {
+  definitionName: 'DemoKanbanSteps',
+  schemaRef: '#/definitions/DemoKanbanSteps',
+
+  decode(json: unknown): DemoKanbanSteps {
+    const schema = ajv.getSchema(DemoKanbanStepsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DemoKanbanStepsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DemoKanbanStepsDecoder.definitionName)
+  },
+}
+export const DemoTwoKanbanStepsDecoder: Decoder<DemoTwoKanbanSteps> = {
+  definitionName: 'DemoTwoKanbanSteps',
+  schemaRef: '#/definitions/DemoTwoKanbanSteps',
+
+  decode(json: unknown): DemoTwoKanbanSteps {
+    const schema = ajv.getSchema(DemoTwoKanbanStepsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DemoTwoKanbanStepsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DemoTwoKanbanStepsDecoder.definitionName)
   },
 }

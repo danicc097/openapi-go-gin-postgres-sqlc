@@ -6,6 +6,9 @@
  * OpenAPI spec version: 2.0.0
  */
 
+/**
+ * is generated from work_item_types table.
+ */
 export type DemoTwoWorkItemTypes = typeof DemoTwoWorkItemTypes[keyof typeof DemoTwoWorkItemTypes]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare

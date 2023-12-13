@@ -6,6 +6,9 @@
  * OpenAPI spec version: 2.0.0
  */
 
+/**
+ * is generated from roles.json keys.
+ */
 export type Role = typeof Role[keyof typeof Role]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare

@@ -23,23 +23,7 @@ const (
 	Bearer_authScopes = "bearer_auth.Scopes"
 )
 
-// Defines values for Demo2WorkItemTypes.
-const (
-	Demo2WorkItemTypesAnotherType Demo2WorkItemTypes = "Another type"
-	Demo2WorkItemTypesType1       Demo2WorkItemTypes = "Type 1"
-	Demo2WorkItemTypesType2       Demo2WorkItemTypes = "Type 2"
-)
-
-// AllDemo2WorkItemTypesValues returns all possible values for Demo2WorkItemTypes.
-func AllDemo2WorkItemTypesValues() []Demo2WorkItemTypes {
-	return []Demo2WorkItemTypes{
-		Demo2WorkItemTypesAnotherType,
-		Demo2WorkItemTypesType1,
-		Demo2WorkItemTypesType2,
-	}
-}
-
-// Defines values for DemoKanbanSteps.
+// DemoKanbanSteps is generated from kanban_steps table.
 const (
 	DemoKanbanStepsDisabled       DemoKanbanSteps = "Disabled"
 	DemoKanbanStepsReceived       DemoKanbanSteps = "Received"
@@ -57,37 +41,7 @@ func AllDemoKanbanStepsValues() []DemoKanbanSteps {
 	}
 }
 
-// Defines values for DemoProject2KanbanSteps.
-const (
-	DemoProject2KanbanStepsReceived DemoProject2KanbanSteps = "Received"
-)
-
-// AllDemoProject2KanbanStepsValues returns all possible values for DemoProject2KanbanSteps.
-func AllDemoProject2KanbanStepsValues() []DemoProject2KanbanSteps {
-	return []DemoProject2KanbanSteps{
-		DemoProject2KanbanStepsReceived,
-	}
-}
-
-// Defines values for DemoProjectKanbanSteps.
-const (
-	DemoProjectKanbanStepsDisabled       DemoProjectKanbanSteps = "Disabled"
-	DemoProjectKanbanStepsReceived       DemoProjectKanbanSteps = "Received"
-	DemoProjectKanbanStepsUnderReview    DemoProjectKanbanSteps = "Under review"
-	DemoProjectKanbanStepsWorkInProgress DemoProjectKanbanSteps = "Work in progress"
-)
-
-// AllDemoProjectKanbanStepsValues returns all possible values for DemoProjectKanbanSteps.
-func AllDemoProjectKanbanStepsValues() []DemoProjectKanbanSteps {
-	return []DemoProjectKanbanSteps{
-		DemoProjectKanbanStepsDisabled,
-		DemoProjectKanbanStepsReceived,
-		DemoProjectKanbanStepsUnderReview,
-		DemoProjectKanbanStepsWorkInProgress,
-	}
-}
-
-// Defines values for DemoTwoKanbanSteps.
+// DemoTwoKanbanSteps is generated from kanban_steps table.
 const (
 	DemoTwoKanbanStepsReceived DemoTwoKanbanSteps = "Received"
 )
@@ -99,7 +53,7 @@ func AllDemoTwoKanbanStepsValues() []DemoTwoKanbanSteps {
 	}
 }
 
-// Defines values for DemoTwoWorkItemTypes.
+// DemoTwoWorkItemTypes is generated from work_item_types table.
 const (
 	DemoTwoWorkItemTypesAnotherType DemoTwoWorkItemTypes = "Another type"
 	DemoTwoWorkItemTypesType1       DemoTwoWorkItemTypes = "Type 1"
@@ -115,7 +69,7 @@ func AllDemoTwoWorkItemTypesValues() []DemoTwoWorkItemTypes {
 	}
 }
 
-// Defines values for DemoWorkItemTypes.
+// DemoWorkItemTypes is generated from work_item_types table.
 const (
 	DemoWorkItemTypesType1 DemoWorkItemTypes = "Type 1"
 )
@@ -179,7 +133,7 @@ func AllErrorCodeValues() []ErrorCode {
 	}
 }
 
-// NotificationType represents a database 'notification_type'
+// NotificationType is generated from database enum 'notification_type'.
 const (
 	NotificationTypeGlobal   NotificationType = "global"
 	NotificationTypePersonal NotificationType = "personal"
@@ -193,7 +147,7 @@ func AllNotificationTypeValues() []NotificationType {
 	}
 }
 
-// Defines values for Project.
+// Project is generated from projects table.
 const (
 	ProjectDemo    Project = "demo"
 	ProjectDemoTwo Project = "demo_two"
@@ -207,7 +161,7 @@ func AllProjectValues() []Project {
 	}
 }
 
-// Defines values for Role.
+// Role is generated from roles.json keys.
 const (
 	RoleAdmin        Role = "admin"
 	RoleAdvancedUser Role = "advancedUser"
@@ -229,7 +183,7 @@ func AllRoleValues() []Role {
 	}
 }
 
-// Defines values for Scope.
+// Scope is generated from scopes.json keys.
 const (
 	ScopeProjectSettingsWrite Scope = "project-settings:write"
 	ScopeScopesWrite          Scope = "scopes:write"
@@ -271,7 +225,7 @@ func AllTopicsValues() []Topics {
 	}
 }
 
-// WorkItemRole represents a database 'work_item_role'
+// WorkItemRole is generated from database enum 'work_item_role'.
 const (
 	WorkItemRolePreparer WorkItemRole = "preparer"
 	WorkItemRoleReviewer WorkItemRole = "reviewer"
@@ -291,6 +245,8 @@ type CreateDemoTwoWorkItemRequest  struct {
     Base externalRef0.DbWorkItemCreateParams`json:"base"`
     DemoTwoProject externalRef0.DbDemoTwoWorkItemCreateParams`json:"demoTwoProject"`
     Members []externalRef0.ServicesMember`json:"members"`
+
+// ProjectName is generated from projects table.
     ProjectName externalRef0.Project`json:"projectName"`
     TagIDs []int`json:"tagIDs"`
 }
@@ -302,6 +258,8 @@ type CreateDemoWorkItemRequest  struct {
     Base externalRef0.DbWorkItemCreateParams`json:"base"`
     DemoProject externalRef0.DbDemoWorkItemCreateParams`json:"demoProject"`
     Members []externalRef0.ServicesMember`json:"members"`
+
+// ProjectName is generated from projects table.
     ProjectName externalRef0.Project`json:"projectName"`
     TagIDs []int`json:"tagIDs"`
 }
@@ -412,7 +370,7 @@ type DbNotification struct {
 	Link           *string                       `json:"link"`
 	NotificationID externalRef0.DbNotificationID `json:"notificationID"`
 
-	// NotificationType represents a database 'notification_type'
+	// NotificationType is generated from database enum 'notification_type'.
 	NotificationType externalRef0.NotificationType `json:"notificationType"`
 	Receiver         *externalRef0.DbUserID        `json:"receiver,omitempty"`
 	Sender           externalRef0.DbUserID         `json:"sender"`
@@ -427,9 +385,11 @@ type DbProject struct {
 	BoardConfig externalRef0.ProjectConfig `json:"boardConfig"`
 	CreatedAt   time.Time                  `json:"createdAt"`
 	Description string                     `json:"description"`
-	Name        externalRef0.Project       `json:"name"`
-	ProjectID   int                        `json:"projectID"`
-	UpdatedAt   time.Time                  `json:"updatedAt"`
+
+	// Name is generated from projects table.
+	Name      externalRef0.Project `json:"name"`
+	ProjectID int                  `json:"projectID"`
+	UpdatedAt time.Time            `json:"updatedAt"`
 }
 
 // DbProjectID defines the model for DbProjectID.
@@ -499,7 +459,7 @@ type DbUserNotification struct {
 
 // DbUserWIAUWorkItem defines the model for DbUserWIAUWorkItem.
 type DbUserWIAUWorkItem struct {
-	// Role represents a database 'work_item_role'
+	// Role is generated from database enum 'work_item_role'.
 	Role externalRef0.WorkItemRole `json:"role"`
 	User externalRef0.DbUser       `json:"user"`
 }
@@ -576,22 +536,13 @@ type DbWorkItemType struct {
 // DbWorkItemTypeID defines the model for DbWorkItemTypeID.
 type DbWorkItemTypeID = interface{}
 
-// Demo2WorkItemTypes defines the model for Demo2WorkItemTypes.
-type Demo2WorkItemTypes string
-
-// DemoKanbanSteps defines the model for DemoKanbanSteps.
+// DemoKanbanSteps is generated from kanban_steps table.
 type DemoKanbanSteps string
 
-// DemoProject2KanbanSteps defines the model for DemoProject2KanbanSteps.
-type DemoProject2KanbanSteps string
-
-// DemoProjectKanbanSteps defines the model for DemoProjectKanbanSteps.
-type DemoProjectKanbanSteps string
-
-// DemoTwoKanbanSteps defines the model for DemoTwoKanbanSteps.
+// DemoTwoKanbanSteps is generated from kanban_steps table.
 type DemoTwoKanbanSteps string
 
-// DemoTwoWorkItemTypes defines the model for DemoTwoWorkItemTypes.
+// DemoTwoWorkItemTypes is generated from work_item_types table.
 type DemoTwoWorkItemTypes string
 
 /* Ignoring existing rest struct
@@ -618,7 +569,7 @@ type DemoTwoWorkItems  struct {
 }
 */
 
-// DemoWorkItemTypes defines the model for DemoWorkItemTypes.
+// DemoWorkItemTypes is generated from work_item_types table.
 type DemoWorkItemTypes string
 
 /* Ignoring existing rest struct
@@ -685,7 +636,7 @@ type InitializeProjectRequest struct {
 	Teams *[]externalRef0.DbTeamCreateParams        `json:"teams"`
 }
 
-// NotificationType represents a database 'notification_type'
+// NotificationType is generated from database enum 'notification_type'.
 type NotificationType string
 
 /* Ignoring existing rest struct
@@ -696,12 +647,13 @@ type PaginatedNotificationsResponse  struct {
 }
 */
 
-// Project defines the model for Project.
+// Project is generated from projects table.
 type Project string
 
 /* Ignoring existing rest struct
 // ProjectBoard defines the model for ProjectBoard.
 type ProjectBoard  struct {
+// ProjectName is generated from projects table.
     ProjectName externalRef0.Project`json:"projectName"`
 }
 */
@@ -736,10 +688,10 @@ type RestPaginationPage struct {
 	NextCursor *string `json:"nextCursor,omitempty"`
 }
 
-// Role defines the model for Role.
+// Role is generated from roles.json keys.
 type Role string
 
-// Scope defines the model for Scope.
+// Scope is generated from scopes.json keys.
 type Scope string
 
 // Scopes defines the model for Scopes.
@@ -747,7 +699,7 @@ type Scopes = []externalRef0.Scope
 
 // ServicesMember defines the model for ServicesMember.
 type ServicesMember struct {
-	// Role represents a database 'work_item_role'
+	// Role is generated from database enum 'work_item_role'.
 	Role   externalRef0.WorkItemRole `json:"role"`
 	UserID externalRef0.DbUserID     `json:"userID"`
 }
@@ -778,6 +730,7 @@ type UpdateTeamRequest  struct {
 
 // UpdateUserAuthRequest represents User authorization data to update
 type UpdateUserAuthRequest struct {
+	// Role is generated from roles.json keys.
 	Role   *externalRef0.Role   `json:"role,omitempty"`
 	Scopes *externalRef0.Scopes `json:"scopes,omitempty"`
 }
@@ -822,6 +775,8 @@ type User  struct {
     HasPersonalNotifications bool`json:"hasPersonalNotifications"`
     LastName *string`json:"lastName"`
     Projects *[]externalRef0.DbProject`json:"projects"`
+
+// Role is generated from roles.json keys.
     Role externalRef0.Role`json:"role"`
     Scopes externalRef0.Scopes`json:"scopes"`
     Teams *[]externalRef0.DbTeam`json:"teams"`
@@ -850,7 +805,7 @@ type ValidationError struct {
 	Msg string `json:"msg"`
 }
 
-// WorkItemRole represents a database 'work_item_role'
+// WorkItemRole is generated from database enum 'work_item_role'.
 type WorkItemRole string
 
 /* Ignoring existing rest struct
@@ -875,7 +830,7 @@ type WorkItemType  struct {
 }
 */
 
-// ProjectName defines the model for ProjectName.
+// ProjectName is generated from projects table.
 type ProjectName = externalRef0.Project
 
 // SerialID defines the model for SerialID.
