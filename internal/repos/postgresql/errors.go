@@ -43,20 +43,20 @@ func parseDBErrorDetail(err error) error {
 
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
-		fmt.Printf("ColumnName: %+v\n", pgErr.ColumnName)
-		fmt.Printf("Hint: %+v\n", pgErr.Hint)
-		fmt.Printf("TableName: %+v\n", pgErr.TableName)
-		fmt.Printf("SchemaName: %+v\n", pgErr.SchemaName)
-		fmt.Printf("Where: %+v\n", pgErr.Where)
-		fmt.Printf("DataTypeName: %+v\n", pgErr.DataTypeName)
-		fmt.Printf("pgErr err: %+v\n", pgErr.Error())
+		// fmt.Printf("ColumnName: %+v\n", pgErr.ColumnName)
+		// fmt.Printf("Hint: %+v\n", pgErr.Hint)
+		// fmt.Printf("TableName: %+v\n", pgErr.TableName)
+		// fmt.Printf("SchemaName: %+v\n", pgErr.SchemaName)
+		// fmt.Printf("Where: %+v\n", pgErr.Where)
+		// fmt.Printf("DataTypeName: %+v\n", pgErr.DataTypeName)
+		// fmt.Printf("pgErr err: %+v\n", pgErr.Error())
 
 		var column, value string
 		switch pgErr.Code {
 		// TODO: better error detail message, e.g. trim id and if idTrimmed then build message
 		// with "invalid <prefix> ID (<val>)", or "<prefix>" not found.
 		// where prefix is trimmed _id and sentence case -> workItemTag=>work item tag
-		case pgerrcode.UniqueViolation:
+		case pgerrcode.UniqueViolation, pgerrcode.ForeignKeyViolation:
 			matches := errorUniqueViolationRegex.FindStringSubmatch(pgErr.Detail)
 			if len(matches) == 0 {
 				break
@@ -67,13 +67,13 @@ func parseDBErrorDetail(err error) error {
 			column, value = matches[1], matches[2]
 			loc := []string{snaker.ForceLowerCamelIdentifier(column)}
 			msg := fmt.Sprintf("%s %q", loc[0], value)
-			if strings.Contains(column, ",") {
+			if strings.Contains(column, ", ") {
 				loc = []string{} // ignore loc for multicolumn constraint error
 				columns := strings.Split(column, ", ")
 				values := strings.Split(value, ", ")
 				multierr := []string{}
 				for i := 0; i < len(columns); i++ {
-					multierr = append(multierr, fmt.Sprintf("%s=%s", columns[i], values[i]))
+					multierr = append(multierr, fmt.Sprintf("%s=%s", snaker.ForceLowerCamelIdentifier(columns[i]), values[i]))
 				}
 				msg = fmt.Sprintf("combination of %s", slices.JoinWithAnd(multierr))
 			}

@@ -75,7 +75,7 @@ func TestWorkItemTag_Create(t *testing.T) {
 		params db.WorkItemTagCreateParams
 	}
 
-	t.Run("error on constraints", func(t *testing.T) {
+	t.Run("unique and foreign key violations show user-friendly errors", func(t *testing.T) {
 		t.Parallel()
 
 		ucp := postgresqltestutil.RandomWorkItemTagCreateParams(t, internal.ProjectIDByName[models.ProjectDemo])
@@ -100,6 +100,13 @@ func TestWorkItemTag_Create(t *testing.T) {
 		require.Error(t, err)
 		require.Error(t, err)
 
-		assert.ErrorContains(t, err, fmt.Sprintf("combination of name=%s and project_id=%d already exists", want.Name, want.ProjectID))
+		assert.ErrorContains(t, err, fmt.Sprintf("combination of name=%s and projectID=%d already exists", want.Name, want.ProjectID))
+
+		args.params.ProjectID = -999
+		_, err = witRepo.Create(context.Background(), testPool, &args.params)
+		require.Error(t, err)
+		require.Error(t, err)
+
+		assert.ErrorContains(t, err, fmt.Sprintf("projectID \"%d\" is invalid", args.params.ProjectID))
 	})
 }
