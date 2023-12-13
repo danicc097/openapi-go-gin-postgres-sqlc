@@ -71,7 +71,7 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		return nil, internal.WrapErrorWithLocf(err, "", []string{"members"}, "could not assign members")
 	}
 
-	opts := append(w.wiSvc.sharedDBOpts, db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
+	opts := append(w.wiSvc.getSharedDBOpts(), db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
 	wi, err := w.repos.DemoWorkItem.ByID(ctx, d, demoWi.WorkItemID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.DemoWorkItem.ByID: %w", err)

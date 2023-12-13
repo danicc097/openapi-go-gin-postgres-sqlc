@@ -18,15 +18,17 @@ type WorkItem struct {
 	repos  *repos.Repos
 	// sharedDBOpts represents shared db select options for all work item entities
 	// for returned values
-	sharedDBOpts []db.WorkItemSelectConfigOption
+	getSharedDBOpts func() []db.WorkItemSelectConfigOption
 }
 
 // NewWorkItem returns a new WorkItem service with common logic for all project worki tems.
 func NewWorkItem(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItem {
 	return &WorkItem{
-		logger:       logger,
-		repos:        repos,
-		sharedDBOpts: []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, WorkItemTags: true})},
+		logger: logger,
+		repos:  repos,
+		getSharedDBOpts: func() []db.WorkItemSelectConfigOption {
+			return []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, WorkItemTags: true})}
+		},
 	}
 }
 
