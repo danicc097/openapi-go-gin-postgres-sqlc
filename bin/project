@@ -246,7 +246,7 @@ x.install-tools() {
     go install golang.org/x/tools/cmd/goimports@latest &
     go install mvdan.cc/gofumpt@latest &
     go install github.com/danicc097/air@latest &
-    go install github.com/danicc097/xo/v5@v5.1.0 &
+    go install github.com/danicc097/xo/v5@v5.2.0 &
     go install github.com/mikefarah/yq/v4@v4.34.2 &
     go install github.com/hexdigest/gowrap/cmd/gowrap@latest &
     go install golang.org/x/tools/cmd/stringer@latest &
@@ -624,11 +624,13 @@ x.gen.xo() {
       --ignore "*.created_at" \
       --ignore "*.updated_at" || err "Failed xo public schema generation" &
 
-    mkdir -p "$PG_REPO_GEN"/db/v
-    xo_schema -o "$PG_REPO_GEN"/db/v \
-      --schema v \
+    mkdir -p "$PG_REPO_GEN"/db/schema_extra_schema
+    xo_schema -o "$PG_REPO_GEN"/db/schema_extra_schema --debug \
+      --schema extra_schema \
+      --ignore "*.created_at" \
+      --ignore "*.updated_at" \
       --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
-      err "Failed xo v schema generation" &
+      err "Failed xo extra_schema schema generation" &
 
     mkdir -p "$PG_REPO_GEN"/db/cache
     xo_schema -o "$PG_REPO_GEN"/db/cache \
@@ -954,7 +956,7 @@ x.gen.build-tools() {
       { go build -o $out_dir/$cmd cmd/$cmd/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]; } &
     done
 
-    wait_without_error || err Could not rebuild all gen tools
+    wait_without_error || err Could not rebuild all gen tools. Rerun with --x-ignore-build errors.
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
