@@ -27,7 +27,7 @@ type ExtraSchemaDemoWorkItem struct {
 	WorkItemID WorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
 	Checked    bool       `json:"checked" db:"checked" required:"true" nullable:"false"`         // checked
 
-	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
+	WorkItemJoin *ExtraSchemaWorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
 
 }
 
@@ -203,7 +203,7 @@ func (esdwi *ExtraSchemaDemoWorkItem) Delete(ctx context.Context, db DB) error {
 }
 
 // ExtraSchemaDemoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of ExtraSchemaDemoWorkItem.
-func ExtraSchemaDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...ExtraSchemaDemoWorkItemSelectConfigOption) ([]ExtraSchemaDemoWorkItem, error) {
+func ExtraSchemaDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID ExtraSchemaWorkItemID, direction models.Direction, opts ...ExtraSchemaDemoWorkItemSelectConfigOption) ([]ExtraSchemaDemoWorkItem, error) {
 	c := &ExtraSchemaDemoWorkItemSelectConfig{joins: ExtraSchemaDemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -284,7 +284,7 @@ func ExtraSchemaDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, wo
 // ExtraSchemaDemoWorkItemByWorkItemID retrieves a row from 'extra_schema.demo_work_items' as a ExtraSchemaDemoWorkItem.
 //
 // Generated from index 'demo_work_items_pkey'.
-func ExtraSchemaDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...ExtraSchemaDemoWorkItemSelectConfigOption) (*ExtraSchemaDemoWorkItem, error) {
+func ExtraSchemaDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID ExtraSchemaWorkItemID, opts ...ExtraSchemaDemoWorkItemSelectConfigOption) (*ExtraSchemaDemoWorkItem, error) {
 	c := &ExtraSchemaDemoWorkItemSelectConfig{joins: ExtraSchemaDemoWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

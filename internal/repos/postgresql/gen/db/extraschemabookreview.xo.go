@@ -25,18 +25,18 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type ExtraSchemaBookReview struct {
 	BookReviewID ExtraSchemaBookReviewID `json:"bookReviewID" db:"book_review_id" required:"true" nullable:"false"` // book_review_id
-	BookID       BookID                  `json:"bookID" db:"book_id" required:"true" nullable:"false"`              // book_id
-	Reviewer     UserID                  `json:"reviewer" db:"reviewer" required:"true" nullable:"false"`           // reviewer
+	BookID       ExtraSchemaBookID       `json:"bookID" db:"book_id" required:"true" nullable:"false"`              // book_id
+	Reviewer     ExtraSchemaUserID       `json:"reviewer" db:"reviewer" required:"true" nullable:"false"`           // reviewer
 
-	BookJoin     *Book `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O books (generated from M2O)
-	ReviewerJoin *User `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O users (generated from M2O)
+	BookJoin     *ExtraSchemaBook `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O books (generated from M2O)
+	ReviewerJoin *ExtraSchemaUser `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O users (generated from M2O)
 
 }
 
 // ExtraSchemaBookReviewCreateParams represents insert params for 'extra_schema.book_reviews'.
 type ExtraSchemaBookReviewCreateParams struct {
-	BookID   BookID `json:"bookID" required:"true" nullable:"false"`   // book_id
-	Reviewer UserID `json:"reviewer" required:"true" nullable:"false"` // reviewer
+	BookID   ExtraSchemaBookID `json:"bookID" required:"true" nullable:"false"`   // book_id
+	Reviewer ExtraSchemaUserID `json:"reviewer" required:"true" nullable:"false"` // reviewer
 }
 
 type ExtraSchemaBookReviewID int
@@ -53,8 +53,8 @@ func CreateExtraSchemaBookReview(ctx context.Context, db DB, params *ExtraSchema
 
 // ExtraSchemaBookReviewUpdateParams represents update params for 'extra_schema.book_reviews'.
 type ExtraSchemaBookReviewUpdateParams struct {
-	BookID   *BookID `json:"bookID" nullable:"false"`   // book_id
-	Reviewer *UserID `json:"reviewer" nullable:"false"` // reviewer
+	BookID   *ExtraSchemaBookID `json:"bookID" nullable:"false"`   // book_id
+	Reviewer *ExtraSchemaUserID `json:"reviewer" nullable:"false"` // reviewer
 }
 
 // SetUpdateParams updates extra_schema.book_reviews struct fields with the specified params.
@@ -310,7 +310,7 @@ func ExtraSchemaBookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bo
 }
 
 // ExtraSchemaBookReviewPaginatedByBookID returns a cursor-paginated list of ExtraSchemaBookReview.
-func ExtraSchemaBookReviewPaginatedByBookID(ctx context.Context, db DB, bookID BookID, direction models.Direction, opts ...ExtraSchemaBookReviewSelectConfigOption) ([]ExtraSchemaBookReview, error) {
+func ExtraSchemaBookReviewPaginatedByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookID, direction models.Direction, opts ...ExtraSchemaBookReviewSelectConfigOption) ([]ExtraSchemaBookReview, error) {
 	c := &ExtraSchemaBookReviewSelectConfig{joins: ExtraSchemaBookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -482,7 +482,7 @@ func ExtraSchemaBookReviewByBookReviewID(ctx context.Context, db DB, bookReviewI
 // ExtraSchemaBookReviewByReviewerBookID retrieves a row from 'extra_schema.book_reviews' as a ExtraSchemaBookReview.
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
-func ExtraSchemaBookReviewByReviewerBookID(ctx context.Context, db DB, reviewer UserID, bookID BookID, opts ...ExtraSchemaBookReviewSelectConfigOption) (*ExtraSchemaBookReview, error) {
+func ExtraSchemaBookReviewByReviewerBookID(ctx context.Context, db DB, reviewer ExtraSchemaUserID, bookID ExtraSchemaBookID, opts ...ExtraSchemaBookReviewSelectConfigOption) (*ExtraSchemaBookReview, error) {
 	c := &ExtraSchemaBookReviewSelectConfig{joins: ExtraSchemaBookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -566,7 +566,7 @@ func ExtraSchemaBookReviewByReviewerBookID(ctx context.Context, db DB, reviewer 
 // ExtraSchemaBookReviewsByReviewer retrieves a row from 'extra_schema.book_reviews' as a ExtraSchemaBookReview.
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
-func ExtraSchemaBookReviewsByReviewer(ctx context.Context, db DB, reviewer UserID, opts ...ExtraSchemaBookReviewSelectConfigOption) ([]ExtraSchemaBookReview, error) {
+func ExtraSchemaBookReviewsByReviewer(ctx context.Context, db DB, reviewer ExtraSchemaUserID, opts ...ExtraSchemaBookReviewSelectConfigOption) ([]ExtraSchemaBookReview, error) {
 	c := &ExtraSchemaBookReviewSelectConfig{joins: ExtraSchemaBookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -652,7 +652,7 @@ func ExtraSchemaBookReviewsByReviewer(ctx context.Context, db DB, reviewer UserI
 // ExtraSchemaBookReviewsByBookID retrieves a row from 'extra_schema.book_reviews' as a ExtraSchemaBookReview.
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
-func ExtraSchemaBookReviewsByBookID(ctx context.Context, db DB, bookID BookID, opts ...ExtraSchemaBookReviewSelectConfigOption) ([]ExtraSchemaBookReview, error) {
+func ExtraSchemaBookReviewsByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookID, opts ...ExtraSchemaBookReviewSelectConfigOption) ([]ExtraSchemaBookReview, error) {
 	c := &ExtraSchemaBookReviewSelectConfig{joins: ExtraSchemaBookReviewJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

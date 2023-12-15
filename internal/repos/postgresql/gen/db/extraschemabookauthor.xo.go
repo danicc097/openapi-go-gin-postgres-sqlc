@@ -23,20 +23,20 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type ExtraSchemaBookAuthor struct {
-	BookID    BookID  `json:"bookID" db:"book_id" required:"true" nullable:"false"`     // book_id
-	AuthorID  UserID  `json:"authorID" db:"author_id" required:"true" nullable:"false"` // author_id
-	Pseudonym *string `json:"pseudonym" db:"pseudonym"`                                 // pseudonym
+	BookID    ExtraSchemaBookID `json:"bookID" db:"book_id" required:"true" nullable:"false"`     // book_id
+	AuthorID  ExtraSchemaUserID `json:"authorID" db:"author_id" required:"true" nullable:"false"` // author_id
+	Pseudonym *string           `json:"pseudonym" db:"pseudonym"`                                 // pseudonym
 
-	AuthorBooksJoin *[]Book__BA_BookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
-	BookAuthorsJoin *[]User__BA_BookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
+	AuthorBooksJoin *[]Book__BA_ExtraSchemaBookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
+	BookAuthorsJoin *[]User__BA_ExtraSchemaBookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
 
 }
 
 // ExtraSchemaBookAuthorCreateParams represents insert params for 'extra_schema.book_authors'.
 type ExtraSchemaBookAuthorCreateParams struct {
-	AuthorID  UserID  `json:"authorID" required:"true" nullable:"false"` // author_id
-	BookID    BookID  `json:"bookID" required:"true" nullable:"false"`   // book_id
-	Pseudonym *string `json:"pseudonym"`                                 // pseudonym
+	AuthorID  ExtraSchemaUserID `json:"authorID" required:"true" nullable:"false"` // author_id
+	BookID    ExtraSchemaBookID `json:"bookID" required:"true" nullable:"false"`   // book_id
+	Pseudonym *string           `json:"pseudonym"`                                 // pseudonym
 }
 
 // CreateExtraSchemaBookAuthor creates a new ExtraSchemaBookAuthor in the database with the given params.
@@ -52,9 +52,9 @@ func CreateExtraSchemaBookAuthor(ctx context.Context, db DB, params *ExtraSchema
 
 // ExtraSchemaBookAuthorUpdateParams represents update params for 'extra_schema.book_authors'.
 type ExtraSchemaBookAuthorUpdateParams struct {
-	AuthorID  *UserID  `json:"authorID" nullable:"false"` // author_id
-	BookID    *BookID  `json:"bookID" nullable:"false"`   // book_id
-	Pseudonym **string `json:"pseudonym"`                 // pseudonym
+	AuthorID  *ExtraSchemaUserID `json:"authorID" nullable:"false"` // author_id
+	BookID    *ExtraSchemaBookID `json:"bookID" nullable:"false"`   // book_id
+	Pseudonym **string           `json:"pseudonym"`                 // pseudonym
 }
 
 // SetUpdateParams updates extra_schema.book_authors struct fields with the specified params.
@@ -108,14 +108,14 @@ func WithExtraSchemaBookAuthorJoin(joins ExtraSchemaBookAuthorJoins) ExtraSchema
 
 // Book__BA_ExtraSchemaBookAuthor represents a M2M join against "extra_schema.book_authors"
 type Book__BA_ExtraSchemaBookAuthor struct {
-	Book      Book    `json:"book" db:"books" required:"true"`
-	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+	Book      ExtraSchemaBook `json:"book" db:"books" required:"true"`
+	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
 // User__BA_ExtraSchemaBookAuthor represents a M2M join against "extra_schema.book_authors"
 type User__BA_ExtraSchemaBookAuthor struct {
-	User      User    `json:"user" db:"users" required:"true"`
-	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+	User      ExtraSchemaUser `json:"user" db:"users" required:"true"`
+	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
 // WithExtraSchemaBookAuthorFilters adds the given filters, which can be dynamically parameterized
@@ -271,7 +271,7 @@ func (esba *ExtraSchemaBookAuthor) Delete(ctx context.Context, db DB) error {
 // ExtraSchemaBookAuthorByBookIDAuthorID retrieves a row from 'extra_schema.book_authors' as a ExtraSchemaBookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
-func ExtraSchemaBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID BookID, authorID UserID, opts ...ExtraSchemaBookAuthorSelectConfigOption) (*ExtraSchemaBookAuthor, error) {
+func ExtraSchemaBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID ExtraSchemaBookID, authorID ExtraSchemaUserID, opts ...ExtraSchemaBookAuthorSelectConfigOption) (*ExtraSchemaBookAuthor, error) {
 	c := &ExtraSchemaBookAuthorSelectConfig{joins: ExtraSchemaBookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -355,7 +355,7 @@ func ExtraSchemaBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID Bo
 // ExtraSchemaBookAuthorsByBookID retrieves a row from 'extra_schema.book_authors' as a ExtraSchemaBookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
-func ExtraSchemaBookAuthorsByBookID(ctx context.Context, db DB, bookID BookID, opts ...ExtraSchemaBookAuthorSelectConfigOption) ([]ExtraSchemaBookAuthor, error) {
+func ExtraSchemaBookAuthorsByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookID, opts ...ExtraSchemaBookAuthorSelectConfigOption) ([]ExtraSchemaBookAuthor, error) {
 	c := &ExtraSchemaBookAuthorSelectConfig{joins: ExtraSchemaBookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -441,7 +441,7 @@ func ExtraSchemaBookAuthorsByBookID(ctx context.Context, db DB, bookID BookID, o
 // ExtraSchemaBookAuthorsByAuthorID retrieves a row from 'extra_schema.book_authors' as a ExtraSchemaBookAuthor.
 //
 // Generated from index 'book_authors_pkey'.
-func ExtraSchemaBookAuthorsByAuthorID(ctx context.Context, db DB, authorID UserID, opts ...ExtraSchemaBookAuthorSelectConfigOption) ([]ExtraSchemaBookAuthor, error) {
+func ExtraSchemaBookAuthorsByAuthorID(ctx context.Context, db DB, authorID ExtraSchemaUserID, opts ...ExtraSchemaBookAuthorSelectConfigOption) ([]ExtraSchemaBookAuthor, error) {
 	c := &ExtraSchemaBookAuthorSelectConfig{joins: ExtraSchemaBookAuthorJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

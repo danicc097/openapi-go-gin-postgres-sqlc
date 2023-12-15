@@ -28,8 +28,8 @@ type ExtraSchemaWorkItem struct {
 	Title       *string               `json:"title" db:"title"`                                              // title
 	Description *string               `json:"description" db:"description"`                                  // description
 
-	DemoWorkItemJoin          *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
-	WorkItemAssignedUsersJoin *[]User__WIAU_WorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	DemoWorkItemJoin          *ExtraSchemaDemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
+	WorkItemAssignedUsersJoin *[]User__WIAU_ExtraSchemaWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
 
 }
 
@@ -105,7 +105,7 @@ func WithExtraSchemaWorkItemJoin(joins ExtraSchemaWorkItemJoins) ExtraSchemaWork
 
 // User__WIAU_ExtraSchemaWorkItem represents a M2M join against "extra_schema.work_item_assigned_user"
 type User__WIAU_ExtraSchemaWorkItem struct {
-	User User             `json:"user" db:"users" required:"true"`
+	User ExtraSchemaUser  `json:"user" db:"users" required:"true"`
 	Role NullWorkItemRole `json:"role" db:"role" required:"true" `
 }
 

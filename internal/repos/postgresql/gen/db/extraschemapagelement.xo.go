@@ -30,16 +30,16 @@ type ExtraSchemaPagElement struct {
 	PaginatedElementID ExtraSchemaPagElementID `json:"paginatedElementID" db:"paginated_element_id" required:"true" nullable:"false"` // paginated_element_id
 	Name               string                  `json:"name" db:"name" required:"true" nullable:"false"`                               // name
 	CreatedAt          time.Time               `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                    // created_at
-	Dummy              *DummyJoinID            `json:"dummy" db:"dummy"`                                                              // dummy
+	Dummy              *ExtraSchemaDummyJoinID `json:"dummy" db:"dummy"`                                                              // dummy
 
-	DummyJoin *DummyJoin `json:"-" db:"dummy_join_dummy" openapi-go:"ignore"` // O2O dummy_join (inferred)
+	DummyJoin *ExtraSchemaDummyJoin `json:"-" db:"dummy_join_dummy" openapi-go:"ignore"` // O2O dummy_join (inferred)
 
 }
 
 // ExtraSchemaPagElementCreateParams represents insert params for 'extra_schema.pag_element'.
 type ExtraSchemaPagElementCreateParams struct {
-	Dummy *DummyJoinID `json:"dummy"`                                 // dummy
-	Name  string       `json:"name" required:"true" nullable:"false"` // name
+	Dummy *ExtraSchemaDummyJoinID `json:"dummy"`                                 // dummy
+	Name  string                  `json:"name" required:"true" nullable:"false"` // name
 }
 
 type ExtraSchemaPagElementID struct {
@@ -64,8 +64,8 @@ func CreateExtraSchemaPagElement(ctx context.Context, db DB, params *ExtraSchema
 
 // ExtraSchemaPagElementUpdateParams represents update params for 'extra_schema.pag_element'.
 type ExtraSchemaPagElementUpdateParams struct {
-	Dummy **DummyJoinID `json:"dummy"`                 // dummy
-	Name  *string       `json:"name" nullable:"false"` // name
+	Dummy **ExtraSchemaDummyJoinID `json:"dummy"`                 // dummy
+	Name  *string                  `json:"name" nullable:"false"` // name
 }
 
 // SetUpdateParams updates extra_schema.pag_element struct fields with the specified params.

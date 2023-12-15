@@ -23,20 +23,20 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type ExtraSchemaWorkItemAssignedUser struct {
-	WorkItemID   WorkItemID       `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`    // work_item_id
-	AssignedUser UserID           `json:"assignedUser" db:"assigned_user" required:"true" nullable:"false"` // assigned_user
-	Role         NullWorkItemRole `json:"role" db:"role" required:"true" nullable:"false"`                  // role
+	WorkItemID   ExtraSchemaWorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`    // work_item_id
+	AssignedUser ExtraSchemaUserID     `json:"assignedUser" db:"assigned_user" required:"true" nullable:"false"` // assigned_user
+	Role         NullWorkItemRole      `json:"role" db:"role" required:"true" nullable:"false"`                  // role
 
-	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_WorkItemAssignedUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"`     // M2M work_item_assigned_user
-	WorkItemAssignedUsersJoin *[]User__WIAU_WorkItemAssignedUser     `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_ExtraSchemaWorkItemAssignedUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"`     // M2M work_item_assigned_user
+	WorkItemAssignedUsersJoin *[]User__WIAU_ExtraSchemaWorkItemAssignedUser     `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
 
 }
 
 // ExtraSchemaWorkItemAssignedUserCreateParams represents insert params for 'extra_schema.work_item_assigned_user'.
 type ExtraSchemaWorkItemAssignedUserCreateParams struct {
-	AssignedUser UserID           `json:"assignedUser" required:"true" nullable:"false"` // assigned_user
-	Role         NullWorkItemRole `json:"role" required:"true" nullable:"false"`         // role
-	WorkItemID   WorkItemID       `json:"workItemID" required:"true" nullable:"false"`   // work_item_id
+	AssignedUser ExtraSchemaUserID     `json:"assignedUser" required:"true" nullable:"false"` // assigned_user
+	Role         NullWorkItemRole      `json:"role" required:"true" nullable:"false"`         // role
+	WorkItemID   ExtraSchemaWorkItemID `json:"workItemID" required:"true" nullable:"false"`   // work_item_id
 }
 
 // CreateExtraSchemaWorkItemAssignedUser creates a new ExtraSchemaWorkItemAssignedUser in the database with the given params.
@@ -52,9 +52,9 @@ func CreateExtraSchemaWorkItemAssignedUser(ctx context.Context, db DB, params *E
 
 // ExtraSchemaWorkItemAssignedUserUpdateParams represents update params for 'extra_schema.work_item_assigned_user'.
 type ExtraSchemaWorkItemAssignedUserUpdateParams struct {
-	AssignedUser *UserID           `json:"assignedUser" nullable:"false"` // assigned_user
-	Role         *NullWorkItemRole `json:"role" nullable:"false"`         // role
-	WorkItemID   *WorkItemID       `json:"workItemID" nullable:"false"`   // work_item_id
+	AssignedUser *ExtraSchemaUserID     `json:"assignedUser" nullable:"false"` // assigned_user
+	Role         *NullWorkItemRole      `json:"role" nullable:"false"`         // role
+	WorkItemID   *ExtraSchemaWorkItemID `json:"workItemID" nullable:"false"`   // work_item_id
 }
 
 // SetUpdateParams updates extra_schema.work_item_assigned_user struct fields with the specified params.
@@ -108,13 +108,13 @@ func WithExtraSchemaWorkItemAssignedUserJoin(joins ExtraSchemaWorkItemAssignedUs
 
 // WorkItem__WIAU_ExtraSchemaWorkItemAssignedUser represents a M2M join against "extra_schema.work_item_assigned_user"
 type WorkItem__WIAU_ExtraSchemaWorkItemAssignedUser struct {
-	WorkItem WorkItem         `json:"workItem" db:"work_items" required:"true"`
-	Role     NullWorkItemRole `json:"role" db:"role" required:"true" `
+	WorkItem ExtraSchemaWorkItem `json:"workItem" db:"work_items" required:"true"`
+	Role     NullWorkItemRole    `json:"role" db:"role" required:"true" `
 }
 
 // User__WIAU_ExtraSchemaWorkItemAssignedUser represents a M2M join against "extra_schema.work_item_assigned_user"
 type User__WIAU_ExtraSchemaWorkItemAssignedUser struct {
-	User User             `json:"user" db:"users" required:"true"`
+	User ExtraSchemaUser  `json:"user" db:"users" required:"true"`
 	Role NullWorkItemRole `json:"role" db:"role" required:"true" `
 }
 
@@ -271,7 +271,7 @@ func (eswiau *ExtraSchemaWorkItemAssignedUser) Delete(ctx context.Context, db DB
 // ExtraSchemaWorkItemAssignedUsersByAssignedUserWorkItemID retrieves a row from 'extra_schema.work_item_assigned_user' as a ExtraSchemaWorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_assigned_user_work_item_id_idx'.
-func ExtraSchemaWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser UserID, workItemID WorkItemID, opts ...ExtraSchemaWorkItemAssignedUserSelectConfigOption) ([]ExtraSchemaWorkItemAssignedUser, error) {
+func ExtraSchemaWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser ExtraSchemaUserID, workItemID ExtraSchemaWorkItemID, opts ...ExtraSchemaWorkItemAssignedUserSelectConfigOption) ([]ExtraSchemaWorkItemAssignedUser, error) {
 	c := &ExtraSchemaWorkItemAssignedUserSelectConfig{joins: ExtraSchemaWorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -357,7 +357,7 @@ func ExtraSchemaWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Contex
 // ExtraSchemaWorkItemAssignedUserByWorkItemIDAssignedUser retrieves a row from 'extra_schema.work_item_assigned_user' as a ExtraSchemaWorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_pkey'.
-func ExtraSchemaWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID WorkItemID, assignedUser UserID, opts ...ExtraSchemaWorkItemAssignedUserSelectConfigOption) (*ExtraSchemaWorkItemAssignedUser, error) {
+func ExtraSchemaWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID ExtraSchemaWorkItemID, assignedUser ExtraSchemaUserID, opts ...ExtraSchemaWorkItemAssignedUserSelectConfigOption) (*ExtraSchemaWorkItemAssignedUser, error) {
 	c := &ExtraSchemaWorkItemAssignedUserSelectConfig{joins: ExtraSchemaWorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -441,7 +441,7 @@ func ExtraSchemaWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context
 // ExtraSchemaWorkItemAssignedUsersByWorkItemID retrieves a row from 'extra_schema.work_item_assigned_user' as a ExtraSchemaWorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_pkey'.
-func ExtraSchemaWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...ExtraSchemaWorkItemAssignedUserSelectConfigOption) ([]ExtraSchemaWorkItemAssignedUser, error) {
+func ExtraSchemaWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID ExtraSchemaWorkItemID, opts ...ExtraSchemaWorkItemAssignedUserSelectConfigOption) ([]ExtraSchemaWorkItemAssignedUser, error) {
 	c := &ExtraSchemaWorkItemAssignedUserSelectConfig{joins: ExtraSchemaWorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -527,7 +527,7 @@ func ExtraSchemaWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, wo
 // ExtraSchemaWorkItemAssignedUsersByAssignedUser retrieves a row from 'extra_schema.work_item_assigned_user' as a ExtraSchemaWorkItemAssignedUser.
 //
 // Generated from index 'work_item_assigned_user_pkey'.
-func ExtraSchemaWorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUser UserID, opts ...ExtraSchemaWorkItemAssignedUserSelectConfigOption) ([]ExtraSchemaWorkItemAssignedUser, error) {
+func ExtraSchemaWorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUser ExtraSchemaUserID, opts ...ExtraSchemaWorkItemAssignedUserSelectConfigOption) ([]ExtraSchemaWorkItemAssignedUser, error) {
 	c := &ExtraSchemaWorkItemAssignedUserSelectConfig{joins: ExtraSchemaWorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

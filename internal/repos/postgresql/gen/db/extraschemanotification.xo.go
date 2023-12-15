@@ -26,21 +26,21 @@ import (
 type ExtraSchemaNotification struct {
 	NotificationID   ExtraSchemaNotificationID `json:"notificationID" db:"notification_id" required:"true" nullable:"false"`     // notification_id
 	Body             string                    `json:"-" db:"body" nullable:"false" pattern:"^[A-Za-z0-9]*$"`                    // body
-	Sender           UserID                    `json:"sender" db:"sender" required:"true" nullable:"false"`                      // sender
-	Receiver         *UserID                   `json:"receiver" db:"receiver"`                                                   // receiver
+	Sender           ExtraSchemaUserID         `json:"sender" db:"sender" required:"true" nullable:"false"`                      // sender
+	Receiver         *ExtraSchemaUserID        `json:"receiver" db:"receiver"`                                                   // receiver
 	NotificationType NotificationType          `json:"notificationType" db:"notification_type" required:"true" nullable:"false"` // notification_type
 
-	ReceiverJoin *User `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
-	SenderJoin   *User `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
+	ReceiverJoin *ExtraSchemaUser `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
+	SenderJoin   *ExtraSchemaUser `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
 
 }
 
 // ExtraSchemaNotificationCreateParams represents insert params for 'extra_schema.notifications'.
 type ExtraSchemaNotificationCreateParams struct {
-	Body             string           `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"`       // body
-	NotificationType NotificationType `json:"notificationType" required:"true" nullable:"false"` // notification_type
-	Receiver         *UserID          `json:"receiver"`                                          // receiver
-	Sender           UserID           `json:"sender" required:"true" nullable:"false"`           // sender
+	Body             string             `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"`       // body
+	NotificationType NotificationType   `json:"notificationType" required:"true" nullable:"false"` // notification_type
+	Receiver         *ExtraSchemaUserID `json:"receiver"`                                          // receiver
+	Sender           ExtraSchemaUserID  `json:"sender" required:"true" nullable:"false"`           // sender
 }
 
 type ExtraSchemaNotificationID int
@@ -59,10 +59,10 @@ func CreateExtraSchemaNotification(ctx context.Context, db DB, params *ExtraSche
 
 // ExtraSchemaNotificationUpdateParams represents update params for 'extra_schema.notifications'.
 type ExtraSchemaNotificationUpdateParams struct {
-	Body             *string           `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"` // body
-	NotificationType *NotificationType `json:"notificationType" nullable:"false"`           // notification_type
-	Receiver         **UserID          `json:"receiver"`                                    // receiver
-	Sender           *UserID           `json:"sender" nullable:"false"`                     // sender
+	Body             *string             `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"` // body
+	NotificationType *NotificationType   `json:"notificationType" nullable:"false"`           // notification_type
+	Receiver         **ExtraSchemaUserID `json:"receiver"`                                    // receiver
+	Sender           *ExtraSchemaUserID  `json:"sender" nullable:"false"`                     // sender
 }
 
 // SetUpdateParams updates extra_schema.notifications struct fields with the specified params.
@@ -416,7 +416,7 @@ func ExtraSchemaNotificationByNotificationID(ctx context.Context, db DB, notific
 // ExtraSchemaNotificationsBySender retrieves a row from 'extra_schema.notifications' as a ExtraSchemaNotification.
 //
 // Generated from index 'notifications_sender_idx'.
-func ExtraSchemaNotificationsBySender(ctx context.Context, db DB, sender UserID, opts ...ExtraSchemaNotificationSelectConfigOption) ([]ExtraSchemaNotification, error) {
+func ExtraSchemaNotificationsBySender(ctx context.Context, db DB, sender ExtraSchemaUserID, opts ...ExtraSchemaNotificationSelectConfigOption) ([]ExtraSchemaNotification, error) {
 	c := &ExtraSchemaNotificationSelectConfig{joins: ExtraSchemaNotificationJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

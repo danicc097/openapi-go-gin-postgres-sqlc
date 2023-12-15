@@ -27,28 +27,28 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type ExtraSchemaUser struct {
-	UserID    ExtraSchemaUserID `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
-	Name      string            `json:"name" db:"name" required:"true" nullable:"false"`            // name
-	APIKeyID  *UserAPIKeyID     `json:"apiKeyID" db:"api_key_id"`                                   // api_key_id
-	CreatedAt time.Time         `json:"createdAt" db:"created_at" required:"true" nullable:"false"` // created_at
-	DeletedAt *time.Time        `json:"deletedAt" db:"deleted_at"`                                  // deleted_at
+	UserID    ExtraSchemaUserID        `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
+	Name      string                   `json:"name" db:"name" required:"true" nullable:"false"`            // name
+	APIKeyID  *ExtraSchemaUserAPIKeyID `json:"apiKeyID" db:"api_key_id"`                                   // api_key_id
+	CreatedAt time.Time                `json:"createdAt" db:"created_at" required:"true" nullable:"false"` // created_at
+	DeletedAt *time.Time               `json:"deletedAt" db:"deleted_at"`                                  // deleted_at
 
-	AuthorBooksJoin           *[]Book__BA_User       `json:"-" db:"book_authors_books" openapi-go:"ignore"`                 // M2M book_authors
-	AuthorBooksJoinBASK       *[]Book__BASK_User     `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
-	ReviewerBookReviewsJoin   *[]BookReview          `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O users
-	SellerBooksJoin           *[]Book                `json:"-" db:"book_sellers_books" openapi-go:"ignore"`                 // M2M book_sellers
-	ReceiverNotificationsJoin *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
-	SenderNotificationsJoin   *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
-	APIKeyJoin                *UserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
-	APIKeyJoinAKI             *UserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
-	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_User `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
+	AuthorBooksJoin           *[]Book__BA_ExtraSchemaUser       `json:"-" db:"book_authors_books" openapi-go:"ignore"`                 // M2M book_authors
+	AuthorBooksJoinBASK       *[]Book__BASK_ExtraSchemaUser     `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
+	ReviewerBookReviewsJoin   *[]ExtraSchemaBookReview          `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O users
+	SellerBooksJoin           *[]ExtraSchemaBook                `json:"-" db:"book_sellers_books" openapi-go:"ignore"`                 // M2M book_sellers
+	ReceiverNotificationsJoin *[]ExtraSchemaNotification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
+	SenderNotificationsJoin   *[]ExtraSchemaNotification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
+	APIKeyJoin                *ExtraSchemaUserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
+	APIKeyJoinAKI             *ExtraSchemaUserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
+	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_ExtraSchemaUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
 
 }
 
 // ExtraSchemaUserCreateParams represents insert params for 'extra_schema.users'.
 type ExtraSchemaUserCreateParams struct {
-	APIKeyID *UserAPIKeyID `json:"apiKeyID"`                              // api_key_id
-	Name     string        `json:"name" required:"true" nullable:"false"` // name
+	APIKeyID *ExtraSchemaUserAPIKeyID `json:"apiKeyID"`                              // api_key_id
+	Name     string                   `json:"name" required:"true" nullable:"false"` // name
 }
 
 type ExtraSchemaUserID struct {
@@ -73,8 +73,8 @@ func CreateExtraSchemaUser(ctx context.Context, db DB, params *ExtraSchemaUserCr
 
 // ExtraSchemaUserUpdateParams represents update params for 'extra_schema.users'.
 type ExtraSchemaUserUpdateParams struct {
-	APIKeyID **UserAPIKeyID `json:"apiKeyID"`              // api_key_id
-	Name     *string        `json:"name" nullable:"false"` // name
+	APIKeyID **ExtraSchemaUserAPIKeyID `json:"apiKeyID"`              // api_key_id
+	Name     *string                   `json:"name" nullable:"false"` // name
 }
 
 // SetUpdateParams updates extra_schema.users struct fields with the specified params.
@@ -170,20 +170,20 @@ func WithExtraSchemaUserJoin(joins ExtraSchemaUserJoins) ExtraSchemaUserSelectCo
 
 // Book__BA_ExtraSchemaUser represents a M2M join against "extra_schema.book_authors"
 type Book__BA_ExtraSchemaUser struct {
-	Book      Book    `json:"book" db:"books" required:"true"`
-	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+	Book      ExtraSchemaBook `json:"book" db:"books" required:"true"`
+	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
 // Book__BASK_ExtraSchemaUser represents a M2M join against "extra_schema.book_authors_surrogate_key"
 type Book__BASK_ExtraSchemaUser struct {
-	Book      Book    `json:"book" db:"books" required:"true"`
-	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+	Book      ExtraSchemaBook `json:"book" db:"books" required:"true"`
+	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
 // WorkItem__WIAU_ExtraSchemaUser represents a M2M join against "extra_schema.work_item_assigned_user"
 type WorkItem__WIAU_ExtraSchemaUser struct {
-	WorkItem WorkItem         `json:"workItem" db:"work_items" required:"true"`
-	Role     NullWorkItemRole `json:"role" db:"role" required:"true" `
+	WorkItem ExtraSchemaWorkItem `json:"workItem" db:"work_items" required:"true"`
+	Role     NullWorkItemRole    `json:"role" db:"role" required:"true" `
 }
 
 // WithExtraSchemaUserFilters adds the given filters, which can be dynamically parameterized

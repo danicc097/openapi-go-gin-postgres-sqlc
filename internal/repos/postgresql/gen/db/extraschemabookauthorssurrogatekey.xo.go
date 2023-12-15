@@ -25,20 +25,20 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type ExtraSchemaBookAuthorsSurrogateKey struct {
 	BookAuthorsSurrogateKeyID ExtraSchemaBookAuthorsSurrogateKeyID `json:"bookAuthorsSurrogateKeyID" db:"book_authors_surrogate_key_id" required:"true" nullable:"false"` // book_authors_surrogate_key_id
-	BookID                    BookID                               `json:"bookID" db:"book_id" required:"true" nullable:"false"`                                          // book_id
-	AuthorID                  UserID                               `json:"authorID" db:"author_id" required:"true" nullable:"false"`                                      // author_id
+	BookID                    ExtraSchemaBookID                    `json:"bookID" db:"book_id" required:"true" nullable:"false"`                                          // book_id
+	AuthorID                  ExtraSchemaUserID                    `json:"authorID" db:"author_id" required:"true" nullable:"false"`                                      // author_id
 	Pseudonym                 *string                              `json:"pseudonym" db:"pseudonym"`                                                                      // pseudonym
 
-	AuthorBooksJoin *[]Book__BASK_BookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
-	BookAuthorsJoin *[]User__BASK_BookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
+	AuthorBooksJoin *[]Book__BASK_ExtraSchemaBookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
+	BookAuthorsJoin *[]User__BASK_ExtraSchemaBookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
 
 }
 
 // ExtraSchemaBookAuthorsSurrogateKeyCreateParams represents insert params for 'extra_schema.book_authors_surrogate_key'.
 type ExtraSchemaBookAuthorsSurrogateKeyCreateParams struct {
-	AuthorID  UserID  `json:"authorID" required:"true" nullable:"false"` // author_id
-	BookID    BookID  `json:"bookID" required:"true" nullable:"false"`   // book_id
-	Pseudonym *string `json:"pseudonym"`                                 // pseudonym
+	AuthorID  ExtraSchemaUserID `json:"authorID" required:"true" nullable:"false"` // author_id
+	BookID    ExtraSchemaBookID `json:"bookID" required:"true" nullable:"false"`   // book_id
+	Pseudonym *string           `json:"pseudonym"`                                 // pseudonym
 }
 
 type ExtraSchemaBookAuthorsSurrogateKeyID int
@@ -56,9 +56,9 @@ func CreateExtraSchemaBookAuthorsSurrogateKey(ctx context.Context, db DB, params
 
 // ExtraSchemaBookAuthorsSurrogateKeyUpdateParams represents update params for 'extra_schema.book_authors_surrogate_key'.
 type ExtraSchemaBookAuthorsSurrogateKeyUpdateParams struct {
-	AuthorID  *UserID  `json:"authorID" nullable:"false"` // author_id
-	BookID    *BookID  `json:"bookID" nullable:"false"`   // book_id
-	Pseudonym **string `json:"pseudonym"`                 // pseudonym
+	AuthorID  *ExtraSchemaUserID `json:"authorID" nullable:"false"` // author_id
+	BookID    *ExtraSchemaBookID `json:"bookID" nullable:"false"`   // book_id
+	Pseudonym **string           `json:"pseudonym"`                 // pseudonym
 }
 
 // SetUpdateParams updates extra_schema.book_authors_surrogate_key struct fields with the specified params.
@@ -112,14 +112,14 @@ func WithExtraSchemaBookAuthorsSurrogateKeyJoin(joins ExtraSchemaBookAuthorsSurr
 
 // Book__BASK_ExtraSchemaBookAuthorsSurrogateKey represents a M2M join against "extra_schema.book_authors_surrogate_key"
 type Book__BASK_ExtraSchemaBookAuthorsSurrogateKey struct {
-	Book      Book    `json:"book" db:"books" required:"true"`
-	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+	Book      ExtraSchemaBook `json:"book" db:"books" required:"true"`
+	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
 // User__BASK_ExtraSchemaBookAuthorsSurrogateKey represents a M2M join against "extra_schema.book_authors_surrogate_key"
 type User__BASK_ExtraSchemaBookAuthorsSurrogateKey struct {
-	User      User    `json:"user" db:"users" required:"true"`
-	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+	User      ExtraSchemaUser `json:"user" db:"users" required:"true"`
+	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
 // WithExtraSchemaBookAuthorsSurrogateKeyFilters adds the given filters, which can be dynamically parameterized
@@ -363,7 +363,7 @@ func ExtraSchemaBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx 
 // ExtraSchemaBookAuthorsSurrogateKeyByBookIDAuthorID retrieves a row from 'extra_schema.book_authors_surrogate_key' as a ExtraSchemaBookAuthorsSurrogateKey.
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
-func ExtraSchemaBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID BookID, authorID UserID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) (*ExtraSchemaBookAuthorsSurrogateKey, error) {
+func ExtraSchemaBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID ExtraSchemaBookID, authorID ExtraSchemaUserID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) (*ExtraSchemaBookAuthorsSurrogateKey, error) {
 	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -448,7 +448,7 @@ func ExtraSchemaBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db 
 // ExtraSchemaBookAuthorsSurrogateKeysByBookID retrieves a row from 'extra_schema.book_authors_surrogate_key' as a ExtraSchemaBookAuthorsSurrogateKey.
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
-func ExtraSchemaBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID BookID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
+func ExtraSchemaBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
 	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -535,7 +535,7 @@ func ExtraSchemaBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, boo
 // ExtraSchemaBookAuthorsSurrogateKeysByAuthorID retrieves a row from 'extra_schema.book_authors_surrogate_key' as a ExtraSchemaBookAuthorsSurrogateKey.
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
-func ExtraSchemaBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID UserID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
+func ExtraSchemaBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID ExtraSchemaUserID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
 	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

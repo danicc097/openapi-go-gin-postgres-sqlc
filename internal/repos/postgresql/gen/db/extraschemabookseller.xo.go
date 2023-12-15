@@ -20,18 +20,18 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type ExtraSchemaBookSeller struct {
-	BookID BookID `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
-	Seller UserID `json:"seller" db:"seller" required:"true" nullable:"false"`  // seller
+	BookID ExtraSchemaBookID `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
+	Seller ExtraSchemaUserID `json:"seller" db:"seller" required:"true" nullable:"false"`  // seller
 
-	BookSellersJoin *[]User `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"` // M2M book_sellers
-	SellerBooksJoin *[]Book `json:"-" db:"book_sellers_books" openapi-go:"ignore"`   // M2M book_sellers
+	BookSellersJoin *[]ExtraSchemaUser `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"` // M2M book_sellers
+	SellerBooksJoin *[]ExtraSchemaBook `json:"-" db:"book_sellers_books" openapi-go:"ignore"`   // M2M book_sellers
 
 }
 
 // ExtraSchemaBookSellerCreateParams represents insert params for 'extra_schema.book_sellers'.
 type ExtraSchemaBookSellerCreateParams struct {
-	BookID BookID `json:"bookID" required:"true" nullable:"false"` // book_id
-	Seller UserID `json:"seller" required:"true" nullable:"false"` // seller
+	BookID ExtraSchemaBookID `json:"bookID" required:"true" nullable:"false"` // book_id
+	Seller ExtraSchemaUserID `json:"seller" required:"true" nullable:"false"` // seller
 }
 
 // CreateExtraSchemaBookSeller creates a new ExtraSchemaBookSeller in the database with the given params.
@@ -46,8 +46,8 @@ func CreateExtraSchemaBookSeller(ctx context.Context, db DB, params *ExtraSchema
 
 // ExtraSchemaBookSellerUpdateParams represents update params for 'extra_schema.book_sellers'.
 type ExtraSchemaBookSellerUpdateParams struct {
-	BookID *BookID `json:"bookID" nullable:"false"` // book_id
-	Seller *UserID `json:"seller" nullable:"false"` // seller
+	BookID *ExtraSchemaBookID `json:"bookID" nullable:"false"` // book_id
+	Seller *ExtraSchemaUserID `json:"seller" nullable:"false"` // seller
 }
 
 // SetUpdateParams updates extra_schema.book_sellers struct fields with the specified params.
@@ -196,7 +196,7 @@ func (esbs *ExtraSchemaBookSeller) Delete(ctx context.Context, db DB) error {
 // ExtraSchemaBookSellersByBookIDSeller retrieves a row from 'extra_schema.book_sellers' as a ExtraSchemaBookSeller.
 //
 // Generated from index 'book_sellers_book_id_seller_idx'.
-func ExtraSchemaBookSellersByBookIDSeller(ctx context.Context, db DB, bookID BookID, seller UserID, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
+func ExtraSchemaBookSellersByBookIDSeller(ctx context.Context, db DB, bookID ExtraSchemaBookID, seller ExtraSchemaUserID, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
 	c := &ExtraSchemaBookSellerSelectConfig{joins: ExtraSchemaBookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -281,7 +281,7 @@ func ExtraSchemaBookSellersByBookIDSeller(ctx context.Context, db DB, bookID Boo
 // ExtraSchemaBookSellersByBookID retrieves a row from 'extra_schema.book_sellers' as a ExtraSchemaBookSeller.
 //
 // Generated from index 'book_sellers_pkey'.
-func ExtraSchemaBookSellersByBookID(ctx context.Context, db DB, bookID BookID, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
+func ExtraSchemaBookSellersByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookID, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
 	c := &ExtraSchemaBookSellerSelectConfig{joins: ExtraSchemaBookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -366,7 +366,7 @@ func ExtraSchemaBookSellersByBookID(ctx context.Context, db DB, bookID BookID, o
 // ExtraSchemaBookSellersBySeller retrieves a row from 'extra_schema.book_sellers' as a ExtraSchemaBookSeller.
 //
 // Generated from index 'book_sellers_pkey'.
-func ExtraSchemaBookSellersBySeller(ctx context.Context, db DB, seller UserID, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
+func ExtraSchemaBookSellersBySeller(ctx context.Context, db DB, seller ExtraSchemaUserID, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
 	c := &ExtraSchemaBookSellerSelectConfig{joins: ExtraSchemaBookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -451,7 +451,7 @@ func ExtraSchemaBookSellersBySeller(ctx context.Context, db DB, seller UserID, o
 // ExtraSchemaBookSellersBySellerBookID retrieves a row from 'extra_schema.book_sellers' as a ExtraSchemaBookSeller.
 //
 // Generated from index 'book_sellers_seller_book_id_idx'.
-func ExtraSchemaBookSellersBySellerBookID(ctx context.Context, db DB, seller UserID, bookID BookID, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
+func ExtraSchemaBookSellersBySellerBookID(ctx context.Context, db DB, seller ExtraSchemaUserID, bookID ExtraSchemaBookID, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
 	c := &ExtraSchemaBookSellerSelectConfig{joins: ExtraSchemaBookSellerJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {

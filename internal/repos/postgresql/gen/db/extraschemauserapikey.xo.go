@@ -28,17 +28,17 @@ type ExtraSchemaUserAPIKey struct {
 	UserAPIKeyID ExtraSchemaUserAPIKeyID `json:"-" db:"user_api_key_id" nullable:"false"`                    // user_api_key_id
 	APIKey       string                  `json:"apiKey" db:"api_key" required:"true" nullable:"false"`       // api_key
 	ExpiresOn    time.Time               `json:"expiresOn" db:"expires_on" required:"true" nullable:"false"` // expires_on
-	UserID       UserID                  `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
+	UserID       ExtraSchemaUserID       `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
 
-	UserJoin *User `json:"-" db:"user_user_id" openapi-go:"ignore"` // O2O users (inferred)
+	UserJoin *ExtraSchemaUser `json:"-" db:"user_user_id" openapi-go:"ignore"` // O2O users (inferred)
 
 }
 
 // ExtraSchemaUserAPIKeyCreateParams represents insert params for 'extra_schema.user_api_keys'.
 type ExtraSchemaUserAPIKeyCreateParams struct {
-	APIKey    string    `json:"apiKey" required:"true" nullable:"false"`    // api_key
-	ExpiresOn time.Time `json:"expiresOn" required:"true" nullable:"false"` // expires_on
-	UserID    UserID    `json:"userID" required:"true" nullable:"false"`    // user_id
+	APIKey    string            `json:"apiKey" required:"true" nullable:"false"`    // api_key
+	ExpiresOn time.Time         `json:"expiresOn" required:"true" nullable:"false"` // expires_on
+	UserID    ExtraSchemaUserID `json:"userID" required:"true" nullable:"false"`    // user_id
 }
 
 type ExtraSchemaUserAPIKeyID int
@@ -56,9 +56,9 @@ func CreateExtraSchemaUserAPIKey(ctx context.Context, db DB, params *ExtraSchema
 
 // ExtraSchemaUserAPIKeyUpdateParams represents update params for 'extra_schema.user_api_keys'.
 type ExtraSchemaUserAPIKeyUpdateParams struct {
-	APIKey    *string    `json:"apiKey" nullable:"false"`    // api_key
-	ExpiresOn *time.Time `json:"expiresOn" nullable:"false"` // expires_on
-	UserID    *UserID    `json:"userID" nullable:"false"`    // user_id
+	APIKey    *string            `json:"apiKey" nullable:"false"`    // api_key
+	ExpiresOn *time.Time         `json:"expiresOn" nullable:"false"` // expires_on
+	UserID    *ExtraSchemaUserID `json:"userID" nullable:"false"`    // user_id
 }
 
 // SetUpdateParams updates extra_schema.user_api_keys struct fields with the specified params.
@@ -480,7 +480,7 @@ func ExtraSchemaUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyI
 // ExtraSchemaUserAPIKeyByUserID retrieves a row from 'extra_schema.user_api_keys' as a ExtraSchemaUserAPIKey.
 //
 // Generated from index 'user_api_keys_user_id_key'.
-func ExtraSchemaUserAPIKeyByUserID(ctx context.Context, db DB, userID UserID, opts ...ExtraSchemaUserAPIKeySelectConfigOption) (*ExtraSchemaUserAPIKey, error) {
+func ExtraSchemaUserAPIKeyByUserID(ctx context.Context, db DB, userID ExtraSchemaUserID, opts ...ExtraSchemaUserAPIKeySelectConfigOption) (*ExtraSchemaUserAPIKey, error) {
 	c := &ExtraSchemaUserAPIKeySelectConfig{joins: ExtraSchemaUserAPIKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
