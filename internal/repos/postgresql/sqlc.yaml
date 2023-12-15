@@ -54,9 +54,9 @@ sql:
           # also accepts patterns, see internal/endtoend/testdata/overrides_go_types/postgresql/pgx/v5/sqlc.json
           # by default sqlc prepends the schema name to enums but in case of clash use this:
           # TODO: just have xo gen mimic sqlc output (prefixes enums and tables with camel schema)
-          - db_type: "extra_schema.notification_type" # | "schema.table.column"
-            go_type:
-              import: "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db/extra_schema"
-              type: "NotificationType"
+          # - db_type: "extra_schema.notification_type" # | "schema.table.column"
+          #   go_type:
+          #     import: "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db/extra_schema"
+          #     type: "NotificationType"
         # It is a collection of definitions that dictates which types are used to map a database types.
         # https://docs.sqlc.dev/en/stable/reference/config.html?highlight=Renaming%20fields#renaming-fields

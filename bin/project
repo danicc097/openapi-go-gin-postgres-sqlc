@@ -612,7 +612,7 @@ x.gen.xo() {
   xsetup.backup-gen
   xsetup.drop-and-migrate-gen-db
   { { {
-    cache_all "$CACHE/xo.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/ && return 0
+    cache_all "$CACHE/xo.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/* && return 0
 
     echo "Running generation"
 

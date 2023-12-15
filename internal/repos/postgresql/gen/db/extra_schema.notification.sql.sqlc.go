@@ -8,7 +8,6 @@ package db
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db/extra_schema"
 	"github.com/google/uuid"
 )
 
@@ -24,13 +23,13 @@ where
 `
 
 type GetExtraSchemaNotificationsParams struct {
-	UserID           uuid.UUID                     `db:"user_id" json:"user_id"`
-	NotificationType extra_schema.NotificationType `db:"notification_type" json:"notification_type"`
+	UserID           uuid.UUID                   `db:"user_id" json:"user_id"`
+	NotificationType ExtraSchemaNotificationType `db:"notification_type" json:"notification_type"`
 }
 
 type GetExtraSchemaNotificationsRow struct {
-	NotificationType extra_schema.NotificationType `db:"notification_type" json:"notification_type"`
-	Sender           uuid.UUID                     `db:"sender" json:"sender"`
+	NotificationType ExtraSchemaNotificationType `db:"notification_type" json:"notification_type"`
+	Sender           uuid.UUID                   `db:"sender" json:"sender"`
 }
 
 // plpgsql-language-server:use-keyword-query-parameter

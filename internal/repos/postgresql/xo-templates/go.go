@@ -528,10 +528,14 @@ func fileNames(ctx context.Context, mode string, set *xo.Set) (map[string]bool, 
 	case "schema":
 		for _, schema := range set.Schemas {
 			for _, e := range schema.Enums {
-				if e.EnumPkg != "" || (e.Schema == "public" && schema.Name != "public") {
-					continue // will share enums with public, no need to emit
+				// NOTE: we will generate enums and tables from other schemas in the same manner as sqlc
+				// for full compat out of the box
+				_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
+				filename := camelExport(e.Name)
+				if schemaOpt != "public" && e.Schema == schemaOpt {
+					filename = strings.ToLower(schema.Name) + "_" + filename
 				}
-				addFile(camelExport(e.Name))
+				addFile(filename)
 			}
 			for _, p := range schema.Procs {
 				goName := camelExport(p.Name)
@@ -1374,9 +1378,10 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	if err != nil {
 		return Field{}, err
 	}
-	var enumPkg, openAPISchema string
+	var enumPkg, enumSchema, openAPISchema string
 	if f.Type.Enum != nil {
 		enumPkg = f.Type.Enum.EnumPkg
+		enumSchema = f.Type.Enum.Schema
 		openAPISchema = camelExport(f.Type.Enum.Name)
 	}
 
@@ -1424,6 +1429,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		IsSequence:    f.IsSequence,
 		IsIgnored:     f.IsIgnored,
 		EnumPkg:       enumPkg,
+		EnumSchema:    enumSchema,
 		Comment:       f.Comment,
 		IsDateOrTime:  f.IsDateOrTime,
 		TypeOverride:  typeOverride,
@@ -3827,9 +3833,17 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		fieldType = "*" + fieldType // we do want **<field> and *<field>
 	}
 	if field.EnumPkg != "" {
-		p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]
-		fieldType = p + "." + fieldType // assumes no pointers
-		fmt.Printf("enum %q using shared package %q\n", field.GoName, p)
+		// p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]
+		// fieldType = p + "." + fieldType // assumes no pointers
+	}
+
+	// TODO: handle cases:
+	// - public schema table has a column referencing <custom schema>.<enum>
+	// - custom schema table has a column referencing <custom schema>.<enum>
+	// - custom schema table has a column referencing public <enum>
+	if field.EnumSchema != "" && field.EnumSchema != "public" {
+		fieldType = snaker.ForceCamelIdentifier(table.Schema + " " + fieldType) // assumes no pointers
+		fmt.Printf("enum %q using shared package %q\n", field.GoName, field.EnumSchema)
 	}
 
 	if mode == "IDTypes" {
@@ -4588,6 +4602,7 @@ type Field struct {
 	Comment       string
 	IsGenerated   bool
 	EnumPkg       string
+	EnumSchema    string
 	TypeOverride  string
 	IsDateOrTime  bool
 	Properties    []string
