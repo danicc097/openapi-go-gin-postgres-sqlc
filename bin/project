@@ -624,18 +624,16 @@ x.gen.xo() {
       --ignore "*.created_at" \
       --ignore "*.updated_at" || err "Failed xo public schema generation" &
 
-    mkdir -p "$PG_REPO_GEN"/db/schema_extra_schema
-    xo_schema -o "$PG_REPO_GEN"/db/schema_extra_schema --debug \
+    mkdir -p "$PG_REPO_GEN"/db/extra_schema
+    xo_schema -o "$PG_REPO_GEN"/db/extra_schema --debug \
       --schema extra_schema \
       --ignore "*.created_at" \
-      --ignore "*.updated_at" \
-      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
+      --ignore "*.updated_at" ||
       err "Failed xo extra_schema schema generation" &
 
     mkdir -p "$PG_REPO_GEN"/db/cache
     xo_schema -o "$PG_REPO_GEN"/db/cache \
-      --schema cache \
-      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
+      --schema cache ||
       err "Failed xo cache schema generation" &
 
     wait
@@ -956,7 +954,7 @@ x.gen.build-tools() {
       { go build -o $out_dir/$cmd cmd/$cmd/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]; } &
     done
 
-    wait_without_error || err Could not rebuild all gen tools. Rerun with --x-ignore-build errors.
+    wait_without_error || err Could not rebuild all gen tools. Rerun with --x-ignore-build-errors.
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

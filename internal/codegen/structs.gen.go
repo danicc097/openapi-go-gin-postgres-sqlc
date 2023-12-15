@@ -31,6 +31,8 @@ var PublicStructs = map[string]any{
 	"DbErrInsertFailed":                     new(db.ErrInsertFailed),
 	"DbErrUpdateFailed":                     new(db.ErrUpdateFailed),
 	"DbErrUpsertFailed":                     new(db.ErrUpsertFailed),
+	"DbGetExtraSchemaNotificationsParams":   new(db.GetExtraSchemaNotificationsParams),
+	"DbGetExtraSchemaNotificationsRow":      new(db.GetExtraSchemaNotificationsRow),
 	"DbGetUserNotificationsParams":          new(db.GetUserNotificationsParams),
 	"DbGetUserNotificationsRow":             new(db.GetUserNotificationsRow),
 	"DbGetUserParams":                       new(db.GetUserParams),

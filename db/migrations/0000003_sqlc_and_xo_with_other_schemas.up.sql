@@ -89,11 +89,17 @@ comment on column extra_schema.book_reviews.reviewer is '"cardinality":M2O';
 
 comment on column extra_schema.book_reviews.book_id is '"cardinality":M2O';
 
+create type extra_schema.notification_type as ENUM (
+  'personal'
+  , 'global'
+);
+
 create table extra_schema.notifications (
   notification_id serial primary key
   , body text not null
   , sender uuid not null
   , receiver uuid
+  , notification_type extra_schema.notification_type not null
   , foreign key (sender) references extra_schema.users (user_id) on delete cascade
   , foreign key (receiver) references extra_schema.users (user_id) on delete cascade
 );
