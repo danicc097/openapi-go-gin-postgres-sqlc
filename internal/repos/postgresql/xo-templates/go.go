@@ -461,6 +461,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				}
 			}
 			for filename := range files {
+				fmt.Printf("filename: %v\n", filename)
 				emit(xo.Template{
 					Partial: "header",
 					Dest:    filename,
@@ -522,7 +523,11 @@ func fileNames(ctx context.Context, mode string, set *xo.Set) (map[string]bool, 
 
 	addFile := func(filename, schema string) {
 		// Filenames are always lowercase.
-		filename = strings.ToLower(filename)
+		var prefix string
+		if schema != "public" {
+			prefix = camel(schema)
+		}
+		filename = strings.ToLower(prefix+ filename)
 		files[filename+ext] = true
 	}
 	switch mode {
@@ -704,10 +709,6 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 	_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
 
 	for _, e := range schema.Enums {
-		var destPrefix string
-		if e.Schema != "" && schemaOpt != "public" && e.Schema == schemaOpt {
-			destPrefix = strings.ToLower(e.Schema) + "_"
-		}
 		if e.EnumPkg != "" || (e.Schema == "public" && schemaOpt != "public") {
 			continue // will generate all other schemas alongside public, do not emit again
 		}
@@ -715,7 +716,7 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		enum := convertEnum(ctx, e)
 		emit(xo.Template{
 			Partial:  "enum",
-			Dest:     destPrefix + strings.ToLower(enum.GoName) + ext,
+			Dest:     strings.ToLower(enum.GoName) + ext,
 			SortName: enum.GoName,
 			Data:     enum,
 		})
@@ -760,13 +761,8 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		if err != nil {
 			return err
 		}
-		var destPrefix string
-		_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
-		if table.Schema != "" && schemaOpt != "public" && table.Schema == schemaOpt {
-			destPrefix = strings.ToLower(table.Schema) + "_"
-		}
 		emit(xo.Template{
-			Dest:     destPrefix + strings.ToLower(table.GoName) + ext,
+			Dest:     strings.ToLower(table.GoName) + ext,
 			Partial:  "typedef",
 			SortType: table.Type,
 			SortName: table.GoName,
@@ -800,7 +796,7 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 
 			// emit normal index
 			emit(xo.Template{
-				Dest:     destPrefix + strings.ToLower(table.GoName) + ext,
+				Dest:     strings.ToLower(table.GoName) + ext,
 				Partial:  "index",
 				SortType: table.Type,
 				SortName: index.SQLName,
@@ -846,7 +842,7 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 					}
 
 					emit(xo.Template{
-						Dest:     destPrefix + strings.ToLower(table.GoName) + ext,
+						Dest:     strings.ToLower(table.GoName) + ext,
 						Partial:  "index",
 						SortType: table.Type,
 						SortName: index.SQLName,
@@ -869,7 +865,7 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				return err
 			}
 			emit(xo.Template{
-				Dest:     destPrefix + strings.ToLower(table.GoName) + ext,
+				Dest:     strings.ToLower(table.GoName) + ext,
 				Partial:  "foreignkey",
 				SortType: table.Type,
 				SortName: fkey.SQLName,
