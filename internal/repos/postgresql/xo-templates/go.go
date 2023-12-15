@@ -400,7 +400,8 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 			}
 			// If -2 is provided, skip package template outputs as requested.
 			// If -a is provided, skip to avoid duplicating the template.
-			if !NotFirst(ctx) && !Append(ctx) {
+			_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
+			if !NotFirst(ctx) && !Append(ctx) && schemaOpt == "public" {
 				emit(xo.Template{
 					Partial: "db",
 					Dest:    "db.xo.go",
@@ -409,9 +410,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				if xo.Single(ctx) == "" {
 					files["db.xo.go"] = true
 				}
-			}
 
-			if !NotFirst(ctx) && !Append(ctx) {
 				tables := make(Tables)
 				for _, schema := range set.Schemas {
 					tcc := append(schema.Tables, schema.Views...)
@@ -519,7 +518,9 @@ func fileNames(ctx context.Context, mode string, set *xo.Set) (map[string]bool, 
 	}
 	// Otherwise, infer filenames from set.
 	files := make(map[string]bool)
-	addFile := func(filename string) {
+	_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
+
+	addFile := func(filename, schema string) {
 		// Filenames are always lowercase.
 		filename = strings.ToLower(filename)
 		files[filename+ext] = true
@@ -530,34 +531,33 @@ func fileNames(ctx context.Context, mode string, set *xo.Set) (map[string]bool, 
 			for _, e := range schema.Enums {
 				// NOTE: we will generate enums and tables from other schemas in the same manner as sqlc
 				// for full compat out of the box
-				_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
-				filename := camelExport(e.Name)
-				if schemaOpt != "public" && e.Schema == schemaOpt {
-					filename = strings.ToLower(schema.Name) + "_" + filename
+				if e.EnumPkg != "" || (e.Schema == "public" && schemaOpt != "public") {
+					continue // will generate all other schemas alongside public, do not emit again
 				}
-				addFile(filename)
+
+				addFile(camelExport(e.Name), schema.Name)
 			}
 			for _, p := range schema.Procs {
 				goName := camelExport(p.Name)
 				if p.Type == "function" {
-					addFile("sf_" + goName)
+					addFile("sf_"+goName, schema.Name)
 				} else {
-					addFile("sp_" + goName)
+					addFile("sp_"+goName, schema.Name)
 				}
 			}
 			for _, t := range schema.Tables {
-				addFile(camelExport(singularize(t.Name)))
+				addFile(camelExport(singularize(t.Name)), schema.Name)
 			}
 			for _, v := range schema.Views {
-				addFile(camelExport(singularize(v.Name)))
+				addFile(camelExport(singularize(v.Name)), schema.Name)
 			}
 			for _, v := range schema.MatViews {
-				addFile(camelExport(singularize(v.Name)))
+				addFile(camelExport(singularize(v.Name)), schema.Name)
 			}
 		}
 	case "query":
 		for _, query := range set.Queries {
-			addFile(query.Type)
+			addFile(query.Type, "")
 			if query.Exec {
 				// Single mode is handled at the start of the function but it
 				// must be used for Exec queries.
@@ -701,11 +701,14 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 	if err != nil {
 		return err
 	}
+	_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
+
 	for _, e := range schema.Enums {
-		if e.EnumPkg != "" || (e.Schema == "public" && schema.Name != "public") {
-			continue // will share enums with public, no need to emit
+		if e.EnumPkg != "" || (e.Schema == "public" && schemaOpt != "public") {
+			continue // will generate all other schemas alongside public, do not emit again
 		}
-		enum := convertEnum(e)
+
+		enum := convertEnum(ctx, e)
 		emit(xo.Template{
 			Partial:  "enum",
 			Dest:     strings.ToLower(enum.GoName) + ext,
@@ -948,7 +951,7 @@ func extractIndexIdentifier(i Index) string {
 }
 
 // convertEnum converts a xo.Enum.
-func convertEnum(e xo.Enum) Enum {
+func convertEnum(ctx context.Context, e xo.Enum) Enum {
 	var vals []EnumValue
 	goName := camelExport(e.Name)
 	for _, v := range e.Values {
@@ -963,8 +966,14 @@ func convertEnum(e xo.Enum) Enum {
 		})
 	}
 
+	var prefix string
+	_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
+	if schemaOpt != "public" {
+		prefix = camelExport(schemaOpt)
+	}
+
 	return Enum{
-		GoName:  goName,
+		GoName:  prefix + goName,
 		SQLName: e.Name,
 		Values:  vals,
 	}
@@ -1050,9 +1059,14 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 			break
 		}
 	}
+	var prefix string
+	_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
+	if schemaOpt != "public" {
+		prefix = camelExport(schemaOpt)
+	}
 
 	table := Table{
-		GoName:      camelExport(singularize(t.Name)),
+		GoName:      prefix + camelExport(singularize(t.Name)),
 		SQLName:     t.Name,
 		Fields:      cols,
 		PrimaryKeys: pkCols,
@@ -3841,11 +3855,12 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	// - public schema table has a column referencing <custom schema>.<enum>
 	// - custom schema table has a column referencing <custom schema>.<enum>
 	// - custom schema table has a column referencing public <enum>
-	if field.EnumSchema != "" && field.EnumSchema != "public" {
+	referencesCustomSchemaEnum := field.EnumSchema != "" && field.EnumSchema != "public"
+	if referencesCustomSchemaEnum {
 		fieldType = snaker.ForceCamelIdentifier(table.Schema + " " + fieldType) // assumes no pointers
-		fmt.Printf("enum %q using shared package %q\n", field.GoName, field.EnumSchema)
+	} else if !referencesCustomSchemaEnum && table.Schema != "public" {
+		// we generate all schemas in same package from now on
 	}
-
 	if mode == "IDTypes" {
 		if af.isSingleFK && af.isSinglePK {
 			return "", nil

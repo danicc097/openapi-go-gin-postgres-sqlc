@@ -1,0 +1,364 @@
+
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"strconv"
+	"strings"
+
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
+)
+
+// ExtraSchemaDemoWorkItem represents a row from 'extra_schema.demo_work_items'.
+// Change properties via SQL column comments, joined with " && ":
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
+//   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
+//   - "tags":<tags> to append literal struct tag strings.
+type ExtraSchemaDemoWorkItem struct {
+	WorkItemID WorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
+	Checked    bool       `json:"checked" db:"checked" required:"true" nullable:"false"`         // checked
+
+	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
+
+}
+
+// ExtraSchemaDemoWorkItemCreateParams represents insert params for 'extra_schema.demo_work_items'.
+type ExtraSchemaDemoWorkItemCreateParams struct {
+	Checked    bool       `json:"checked" required:"true" nullable:"false"` // checked
+	WorkItemID WorkItemID `json:"-" required:"true" nullable:"false"`       // work_item_id
+}
+
+// CreateExtraSchemaDemoWorkItem creates a new ExtraSchemaDemoWorkItem in the database with the given params.
+func CreateExtraSchemaDemoWorkItem(ctx context.Context, db DB, params *ExtraSchemaDemoWorkItemCreateParams) (*ExtraSchemaDemoWorkItem, error) {
+	esdwi := &ExtraSchemaDemoWorkItem{
+		Checked:    params.Checked,
+		WorkItemID: params.WorkItemID,
+	}
+
+	return esdwi.Insert(ctx, db)
+}
+
+// ExtraSchemaDemoWorkItemUpdateParams represents update params for 'extra_schema.demo_work_items'.
+type ExtraSchemaDemoWorkItemUpdateParams struct {
+	Checked *bool `json:"checked" nullable:"false"` // checked
+}
+
+// SetUpdateParams updates extra_schema.demo_work_items struct fields with the specified params.
+func (esdwi *ExtraSchemaDemoWorkItem) SetUpdateParams(params *ExtraSchemaDemoWorkItemUpdateParams) {
+	if params.Checked != nil {
+		esdwi.Checked = *params.Checked
+	}
+}
+
+type ExtraSchemaDemoWorkItemSelectConfig struct {
+	limit   string
+	orderBy string
+	joins   ExtraSchemaDemoWorkItemJoins
+	filters map[string][]any
+}
+type ExtraSchemaDemoWorkItemSelectConfigOption func(*ExtraSchemaDemoWorkItemSelectConfig)
+
+// WithExtraSchemaDemoWorkItemLimit limits row selection.
+func WithExtraSchemaDemoWorkItemLimit(limit int) ExtraSchemaDemoWorkItemSelectConfigOption {
+	return func(s *ExtraSchemaDemoWorkItemSelectConfig) {
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
+	}
+}
+
+type ExtraSchemaDemoWorkItemOrderBy string
+
+const ()
+
+type ExtraSchemaDemoWorkItemJoins struct {
+	WorkItem bool // O2O work_items
+}
+
+// WithExtraSchemaDemoWorkItemJoin joins with the given tables.
+func WithExtraSchemaDemoWorkItemJoin(joins ExtraSchemaDemoWorkItemJoins) ExtraSchemaDemoWorkItemSelectConfigOption {
+	return func(s *ExtraSchemaDemoWorkItemSelectConfig) {
+		s.joins = ExtraSchemaDemoWorkItemJoins{
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
+		}
+	}
+}
+
+// WithExtraSchemaDemoWorkItemFilters adds the given filters, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithExtraSchemaDemoWorkItemFilters(filters map[string][]any) ExtraSchemaDemoWorkItemSelectConfigOption {
+	return func(s *ExtraSchemaDemoWorkItemSelectConfig) {
+		s.filters = filters
+	}
+}
+
+const extraSchemaDemoWorkItemTableWorkItemJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join extra_schema.work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id
+`
+
+const extraSchemaDemoWorkItemTableWorkItemSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id`
+
+const extraSchemaDemoWorkItemTableWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
+      _demo_work_items_work_item_id.work_item_id,
+	demo_work_items.work_item_id`
+
+// Insert inserts the ExtraSchemaDemoWorkItem to the database.
+func (esdwi *ExtraSchemaDemoWorkItem) Insert(ctx context.Context, db DB) (*ExtraSchemaDemoWorkItem, error) {
+	// insert (manual)
+	sqlstr := `INSERT INTO extra_schema.demo_work_items (
+	checked, work_item_id
+	) VALUES (
+	$1, $2
+	)
+	 RETURNING * `
+	// run
+	logf(sqlstr, esdwi.Checked, esdwi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, esdwi.Checked, esdwi.WorkItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaDemoWorkItem/Insert/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
+	}
+	newesdwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[ExtraSchemaDemoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaDemoWorkItem/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Demo work item", Err: err}))
+	}
+	*esdwi = newesdwi
+
+	return esdwi, nil
+}
+
+// Update updates a ExtraSchemaDemoWorkItem in the database.
+func (esdwi *ExtraSchemaDemoWorkItem) Update(ctx context.Context, db DB) (*ExtraSchemaDemoWorkItem, error) {
+	// update with composite primary key
+	sqlstr := `UPDATE extra_schema.demo_work_items SET 
+	checked = $1 
+	WHERE work_item_id = $2 
+	RETURNING * `
+	// run
+	logf(sqlstr, esdwi.Checked, esdwi.WorkItemID)
+
+	rows, err := db.Query(ctx, sqlstr, esdwi.Checked, esdwi.WorkItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaDemoWorkItem/Update/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
+	}
+	newesdwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[ExtraSchemaDemoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaDemoWorkItem/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Demo work item", Err: err}))
+	}
+	*esdwi = newesdwi
+
+	return esdwi, nil
+}
+
+// Upsert upserts a ExtraSchemaDemoWorkItem in the database.
+// Requires appropriate PK(s) to be set beforehand.
+func (esdwi *ExtraSchemaDemoWorkItem) Upsert(ctx context.Context, db DB, params *ExtraSchemaDemoWorkItemCreateParams) (*ExtraSchemaDemoWorkItem, error) {
+	var err error
+
+	esdwi.Checked = params.Checked
+	esdwi.WorkItemID = params.WorkItemID
+
+	esdwi, err = esdwi.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Demo work item", Err: err})
+			}
+			esdwi, err = esdwi.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Demo work item", Err: err})
+			}
+		}
+	}
+
+	return esdwi, err
+}
+
+// Delete deletes the ExtraSchemaDemoWorkItem from the database.
+func (esdwi *ExtraSchemaDemoWorkItem) Delete(ctx context.Context, db DB) error {
+	// delete with single primary key
+	sqlstr := `DELETE FROM extra_schema.demo_work_items 
+	WHERE work_item_id = $1 `
+	// run
+	if _, err := db.Exec(ctx, sqlstr, esdwi.WorkItemID); err != nil {
+		return logerror(err)
+	}
+	return nil
+}
+
+// ExtraSchemaDemoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of ExtraSchemaDemoWorkItem.
+func ExtraSchemaDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...ExtraSchemaDemoWorkItemSelectConfigOption) ([]ExtraSchemaDemoWorkItem, error) {
+	c := &ExtraSchemaDemoWorkItemSelectConfig{joins: ExtraSchemaDemoWorkItemJoins{}, filters: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, extraSchemaDemoWorkItemTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaDemoWorkItemTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaDemoWorkItemTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	demo_work_items.checked,
+	demo_work_items.work_item_id %s 
+	 FROM extra_schema.demo_work_items %s 
+	 WHERE demo_work_items.work_item_id %s $1
+	 %s   %s 
+  ORDER BY 
+		work_item_id %s `, selects, joins, operator, filters, groupbys, direction)
+	sqlstr += c.limit
+	sqlstr = "/* ExtraSchemaDemoWorkItemPaginatedByWorkItemID */\n" + sqlstr
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaDemoWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[ExtraSchemaDemoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaDemoWorkItem/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Demo work item", Err: err}))
+	}
+	return res, nil
+}
+
+// ExtraSchemaDemoWorkItemByWorkItemID retrieves a row from 'extra_schema.demo_work_items' as a ExtraSchemaDemoWorkItem.
+//
+// Generated from index 'demo_work_items_pkey'.
+func ExtraSchemaDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...ExtraSchemaDemoWorkItemSelectConfigOption) (*ExtraSchemaDemoWorkItem, error) {
+	c := &ExtraSchemaDemoWorkItemSelectConfig{joins: ExtraSchemaDemoWorkItemJoins{}, filters: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItem {
+		selectClauses = append(selectClauses, extraSchemaDemoWorkItemTableWorkItemSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaDemoWorkItemTableWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaDemoWorkItemTableWorkItemGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	demo_work_items.checked,
+	demo_work_items.work_item_id %s 
+	 FROM extra_schema.demo_work_items %s 
+	 WHERE demo_work_items.work_item_id = $1
+	 %s   %s 
+`, selects, joins, filters, groupbys)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+	sqlstr = "/* ExtraSchemaDemoWorkItemByWorkItemID */\n" + sqlstr
+
+	// run
+	// logf(sqlstr, workItemID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
+	}
+	esdwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[ExtraSchemaDemoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/pgx.CollectOneRow: %w", &XoError{Entity: "Demo work item", Err: err}))
+	}
+
+	return &esdwi, nil
+}
+
+// FKWorkItem_WorkItemID returns the WorkItem associated with the ExtraSchemaDemoWorkItem's (WorkItemID).
+//
+// Generated from foreign key 'demo_work_items_work_item_id_fkey'.
+func (esdwi *ExtraSchemaDemoWorkItem) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
+	return WorkItemByWorkItemID(ctx, db, esdwi.WorkItemID)
+}

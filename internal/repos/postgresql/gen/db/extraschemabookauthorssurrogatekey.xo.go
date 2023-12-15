@@ -1,0 +1,717 @@
+
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"strconv"
+	"strings"
+
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
+)
+
+// ExtraSchemaBookAuthorsSurrogateKey represents a row from 'extra_schema.book_authors_surrogate_key'.
+// Change properties via SQL column comments, joined with " && ":
+//   - "properties":<p1>,<p2>,...
+//   - private to exclude a field from JSON.
+//   - not-required to make a schema field not required.
+//   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
+//   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
+//   - "tags":<tags> to append literal struct tag strings.
+type ExtraSchemaBookAuthorsSurrogateKey struct {
+	BookAuthorsSurrogateKeyID ExtraSchemaBookAuthorsSurrogateKeyID `json:"bookAuthorsSurrogateKeyID" db:"book_authors_surrogate_key_id" required:"true" nullable:"false"` // book_authors_surrogate_key_id
+	BookID                    BookID                               `json:"bookID" db:"book_id" required:"true" nullable:"false"`                                          // book_id
+	AuthorID                  UserID                               `json:"authorID" db:"author_id" required:"true" nullable:"false"`                                      // author_id
+	Pseudonym                 *string                              `json:"pseudonym" db:"pseudonym"`                                                                      // pseudonym
+
+	AuthorBooksJoin *[]Book__BASK_BookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
+	BookAuthorsJoin *[]User__BASK_BookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
+
+}
+
+// ExtraSchemaBookAuthorsSurrogateKeyCreateParams represents insert params for 'extra_schema.book_authors_surrogate_key'.
+type ExtraSchemaBookAuthorsSurrogateKeyCreateParams struct {
+	AuthorID  UserID  `json:"authorID" required:"true" nullable:"false"` // author_id
+	BookID    BookID  `json:"bookID" required:"true" nullable:"false"`   // book_id
+	Pseudonym *string `json:"pseudonym"`                                 // pseudonym
+}
+
+type ExtraSchemaBookAuthorsSurrogateKeyID int
+
+// CreateExtraSchemaBookAuthorsSurrogateKey creates a new ExtraSchemaBookAuthorsSurrogateKey in the database with the given params.
+func CreateExtraSchemaBookAuthorsSurrogateKey(ctx context.Context, db DB, params *ExtraSchemaBookAuthorsSurrogateKeyCreateParams) (*ExtraSchemaBookAuthorsSurrogateKey, error) {
+	esbask := &ExtraSchemaBookAuthorsSurrogateKey{
+		AuthorID:  params.AuthorID,
+		BookID:    params.BookID,
+		Pseudonym: params.Pseudonym,
+	}
+
+	return esbask.Insert(ctx, db)
+}
+
+// ExtraSchemaBookAuthorsSurrogateKeyUpdateParams represents update params for 'extra_schema.book_authors_surrogate_key'.
+type ExtraSchemaBookAuthorsSurrogateKeyUpdateParams struct {
+	AuthorID  *UserID  `json:"authorID" nullable:"false"` // author_id
+	BookID    *BookID  `json:"bookID" nullable:"false"`   // book_id
+	Pseudonym **string `json:"pseudonym"`                 // pseudonym
+}
+
+// SetUpdateParams updates extra_schema.book_authors_surrogate_key struct fields with the specified params.
+func (esbask *ExtraSchemaBookAuthorsSurrogateKey) SetUpdateParams(params *ExtraSchemaBookAuthorsSurrogateKeyUpdateParams) {
+	if params.AuthorID != nil {
+		esbask.AuthorID = *params.AuthorID
+	}
+	if params.BookID != nil {
+		esbask.BookID = *params.BookID
+	}
+	if params.Pseudonym != nil {
+		esbask.Pseudonym = *params.Pseudonym
+	}
+}
+
+type ExtraSchemaBookAuthorsSurrogateKeySelectConfig struct {
+	limit   string
+	orderBy string
+	joins   ExtraSchemaBookAuthorsSurrogateKeyJoins
+	filters map[string][]any
+}
+type ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption func(*ExtraSchemaBookAuthorsSurrogateKeySelectConfig)
+
+// WithExtraSchemaBookAuthorsSurrogateKeyLimit limits row selection.
+func WithExtraSchemaBookAuthorsSurrogateKeyLimit(limit int) ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption {
+	return func(s *ExtraSchemaBookAuthorsSurrogateKeySelectConfig) {
+		if limit > 0 {
+			s.limit = fmt.Sprintf(" limit %d ", limit)
+		}
+	}
+}
+
+type ExtraSchemaBookAuthorsSurrogateKeyOrderBy string
+
+const ()
+
+type ExtraSchemaBookAuthorsSurrogateKeyJoins struct {
+	BooksAuthor bool // M2M book_authors_surrogate_key
+	AuthorsBook bool // M2M book_authors_surrogate_key
+}
+
+// WithExtraSchemaBookAuthorsSurrogateKeyJoin joins with the given tables.
+func WithExtraSchemaBookAuthorsSurrogateKeyJoin(joins ExtraSchemaBookAuthorsSurrogateKeyJoins) ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption {
+	return func(s *ExtraSchemaBookAuthorsSurrogateKeySelectConfig) {
+		s.joins = ExtraSchemaBookAuthorsSurrogateKeyJoins{
+			BooksAuthor: s.joins.BooksAuthor || joins.BooksAuthor,
+			AuthorsBook: s.joins.AuthorsBook || joins.AuthorsBook,
+		}
+	}
+}
+
+// Book__BASK_ExtraSchemaBookAuthorsSurrogateKey represents a M2M join against "extra_schema.book_authors_surrogate_key"
+type Book__BASK_ExtraSchemaBookAuthorsSurrogateKey struct {
+	Book      Book    `json:"book" db:"books" required:"true"`
+	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+}
+
+// User__BASK_ExtraSchemaBookAuthorsSurrogateKey represents a M2M join against "extra_schema.book_authors_surrogate_key"
+type User__BASK_ExtraSchemaBookAuthorsSurrogateKey struct {
+	User      User    `json:"user" db:"users" required:"true"`
+	Pseudonym *string `json:"pseudonym" db:"pseudonym" required:"true" `
+}
+
+// WithExtraSchemaBookAuthorsSurrogateKeyFilters adds the given filters, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	filters := map[string][]any{
+//		"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
+//		`(col.created_at > $i OR
+//		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
+//	}
+func WithExtraSchemaBookAuthorsSurrogateKeyFilters(filters map[string][]any) ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption {
+	return func(s *ExtraSchemaBookAuthorsSurrogateKeySelectConfig) {
+		s.filters = filters
+	}
+}
+
+const extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
+left join (
+	select
+		book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
+		, book_authors_surrogate_key.pseudonym as pseudonym
+		, books.book_id as __books_book_id
+		, row(books.*) as __books
+	from
+		extra_schema.book_authors_surrogate_key
+	join extra_schema.books on books.book_id = book_authors_surrogate_key.book_id
+	group by
+		book_authors_surrogate_key_author_id
+		, books.book_id
+		, pseudonym
+) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = book_authors_surrogate_key.author_id
+`
+
+const extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_surrogate_key_books.__books
+		, joined_book_authors_surrogate_key_books.pseudonym
+		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') as book_authors_surrogate_key_books`
+
+const extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL = `book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id`
+
+const extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
+left join (
+	select
+		book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
+		, book_authors_surrogate_key.pseudonym as pseudonym
+		, users.user_id as __users_user_id
+		, row(users.*) as __users
+	from
+		extra_schema.book_authors_surrogate_key
+	join extra_schema.users on users.user_id = book_authors_surrogate_key.author_id
+	group by
+		book_authors_surrogate_key_book_id
+		, users.user_id
+		, pseudonym
+) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
+`
+
+const extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_book_authors_surrogate_key_authors.__users
+		, joined_book_authors_surrogate_key_authors.pseudonym
+		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') as book_authors_surrogate_key_authors`
+
+const extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL = `book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id`
+
+// Insert inserts the ExtraSchemaBookAuthorsSurrogateKey to the database.
+func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Insert(ctx context.Context, db DB) (*ExtraSchemaBookAuthorsSurrogateKey, error) {
+	// insert (primary key generated and returned by database)
+	sqlstr := `INSERT INTO extra_schema.book_authors_surrogate_key (
+	author_id, book_id, pseudonym
+	) VALUES (
+	$1, $2, $3
+	) RETURNING * `
+	// run
+	logf(sqlstr, esbask.AuthorID, esbask.BookID, esbask.Pseudonym)
+
+	rows, err := db.Query(ctx, sqlstr, esbask.AuthorID, esbask.BookID, esbask.Pseudonym)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/Insert/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+	newesbask, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[ExtraSchemaBookAuthorsSurrogateKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+
+	*esbask = newesbask
+
+	return esbask, nil
+}
+
+// Update updates a ExtraSchemaBookAuthorsSurrogateKey in the database.
+func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Update(ctx context.Context, db DB) (*ExtraSchemaBookAuthorsSurrogateKey, error) {
+	// update with composite primary key
+	sqlstr := `UPDATE extra_schema.book_authors_surrogate_key SET 
+	author_id = $1, book_id = $2, pseudonym = $3 
+	WHERE book_authors_surrogate_key_id = $4 
+	RETURNING * `
+	// run
+	logf(sqlstr, esbask.AuthorID, esbask.BookID, esbask.Pseudonym, esbask.BookAuthorsSurrogateKeyID)
+
+	rows, err := db.Query(ctx, sqlstr, esbask.AuthorID, esbask.BookID, esbask.Pseudonym, esbask.BookAuthorsSurrogateKeyID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/Update/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+	newesbask, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[ExtraSchemaBookAuthorsSurrogateKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+	*esbask = newesbask
+
+	return esbask, nil
+}
+
+// Upsert upserts a ExtraSchemaBookAuthorsSurrogateKey in the database.
+// Requires appropriate PK(s) to be set beforehand.
+func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Upsert(ctx context.Context, db DB, params *ExtraSchemaBookAuthorsSurrogateKeyCreateParams) (*ExtraSchemaBookAuthorsSurrogateKey, error) {
+	var err error
+
+	esbask.AuthorID = params.AuthorID
+	esbask.BookID = params.BookID
+	esbask.Pseudonym = params.Pseudonym
+
+	esbask, err = esbask.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Book authors surrogate key", Err: err})
+			}
+			esbask, err = esbask.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Book authors surrogate key", Err: err})
+			}
+		}
+	}
+
+	return esbask, err
+}
+
+// Delete deletes the ExtraSchemaBookAuthorsSurrogateKey from the database.
+func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Delete(ctx context.Context, db DB) error {
+	// delete with single primary key
+	sqlstr := `DELETE FROM extra_schema.book_authors_surrogate_key 
+	WHERE book_authors_surrogate_key_id = $1 `
+	// run
+	if _, err := db.Exec(ctx, sqlstr, esbask.BookAuthorsSurrogateKeyID); err != nil {
+		return logerror(err)
+	}
+	return nil
+}
+
+// ExtraSchemaBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID returns a cursor-paginated list of ExtraSchemaBookAuthorsSurrogateKey.
+func ExtraSchemaBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx context.Context, db DB, bookAuthorsSurrogateKeyID ExtraSchemaBookAuthorsSurrogateKeyID, direction models.Direction, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
+	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM extra_schema.book_authors_surrogate_key %s 
+	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id %s $1
+	 %s   %s 
+  ORDER BY 
+		book_authors_surrogate_key_id %s `, selects, joins, operator, filters, groupbys, direction)
+	sqlstr += c.limit
+	sqlstr = "/* ExtraSchemaBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID */\n" + sqlstr
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/Paginated/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[ExtraSchemaBookAuthorsSurrogateKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+	return res, nil
+}
+
+// ExtraSchemaBookAuthorsSurrogateKeyByBookIDAuthorID retrieves a row from 'extra_schema.book_authors_surrogate_key' as a ExtraSchemaBookAuthorsSurrogateKey.
+//
+// Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
+func ExtraSchemaBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID BookID, authorID UserID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) (*ExtraSchemaBookAuthorsSurrogateKey, error) {
+	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 2
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM extra_schema.book_authors_surrogate_key %s 
+	 WHERE book_authors_surrogate_key.book_id = $1 AND book_authors_surrogate_key.author_id = $2
+	 %s   %s 
+`, selects, joins, filters, groupbys)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+	sqlstr = "/* ExtraSchemaBookAuthorsSurrogateKeyByBookIDAuthorID */\n" + sqlstr
+
+	// run
+	// logf(sqlstr, bookID, authorID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, filterParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookIDAuthorID/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+	esbask, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[ExtraSchemaBookAuthorsSurrogateKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookIDAuthorID/pgx.CollectOneRow: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+
+	return &esbask, nil
+}
+
+// ExtraSchemaBookAuthorsSurrogateKeysByBookID retrieves a row from 'extra_schema.book_authors_surrogate_key' as a ExtraSchemaBookAuthorsSurrogateKey.
+//
+// Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
+func ExtraSchemaBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID BookID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
+	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM extra_schema.book_authors_surrogate_key %s 
+	 WHERE book_authors_surrogate_key.book_id = $1
+	 %s   %s 
+`, selects, joins, filters, groupbys)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+	sqlstr = "/* ExtraSchemaBookAuthorsSurrogateKeysByBookID */\n" + sqlstr
+
+	// run
+	// logf(sqlstr, bookID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[ExtraSchemaBookAuthorsSurrogateKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/pgx.CollectRows: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+	return res, nil
+}
+
+// ExtraSchemaBookAuthorsSurrogateKeysByAuthorID retrieves a row from 'extra_schema.book_authors_surrogate_key' as a ExtraSchemaBookAuthorsSurrogateKey.
+//
+// Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
+func ExtraSchemaBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID UserID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
+	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM extra_schema.book_authors_surrogate_key %s 
+	 WHERE book_authors_surrogate_key.author_id = $1
+	 %s   %s 
+`, selects, joins, filters, groupbys)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+	sqlstr = "/* ExtraSchemaBookAuthorsSurrogateKeysByAuthorID */\n" + sqlstr
+
+	// run
+	// logf(sqlstr, authorID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, filterParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[ExtraSchemaBookAuthorsSurrogateKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/pgx.CollectRows: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+	return res, nil
+}
+
+// ExtraSchemaBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID retrieves a row from 'extra_schema.book_authors_surrogate_key' as a ExtraSchemaBookAuthorsSurrogateKey.
+//
+// Generated from index 'book_authors_surrogate_key_pkey'.
+func ExtraSchemaBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Context, db DB, bookAuthorsSurrogateKeyID ExtraSchemaBookAuthorsSurrogateKeyID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) (*ExtraSchemaBookAuthorsSurrogateKey, error) {
+	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.BooksAuthor {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	}
+
+	if c.joins.AuthorsBook {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors_surrogate_key.author_id,
+	book_authors_surrogate_key.book_authors_surrogate_key_id,
+	book_authors_surrogate_key.book_id,
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM extra_schema.book_authors_surrogate_key %s 
+	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $1
+	 %s   %s 
+`, selects, joins, filters, groupbys)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+	sqlstr = "/* ExtraSchemaBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID */\n" + sqlstr
+
+	// run
+	// logf(sqlstr, bookAuthorsSurrogateKeyID)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+	esbask, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[ExtraSchemaBookAuthorsSurrogateKey])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID/pgx.CollectOneRow: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
+	}
+
+	return &esbask, nil
+}
+
+// FKUser_AuthorID returns the User associated with the ExtraSchemaBookAuthorsSurrogateKey's (AuthorID).
+//
+// Generated from foreign key 'book_authors_surrogate_key_author_id_fkey'.
+func (esbask *ExtraSchemaBookAuthorsSurrogateKey) FKUser_AuthorID(ctx context.Context, db DB) (*User, error) {
+	return UserByUserID(ctx, db, esbask.AuthorID)
+}
+
+// FKBook_BookID returns the Book associated with the ExtraSchemaBookAuthorsSurrogateKey's (BookID).
+//
+// Generated from foreign key 'book_authors_surrogate_key_book_id_fkey'.
+func (esbask *ExtraSchemaBookAuthorsSurrogateKey) FKBook_BookID(ctx context.Context, db DB) (*Book, error) {
+	return BookByBookID(ctx, db, esbask.BookID)
+}
