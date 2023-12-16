@@ -461,7 +461,6 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				}
 			}
 			for filename := range files {
-				fmt.Printf("filename: %v\n", filename)
 				emit(xo.Template{
 					Partial: "header",
 					Dest:    filename,
@@ -536,7 +535,7 @@ func fileNames(ctx context.Context, mode string, set *xo.Set) (map[string]bool, 
 			for _, e := range schema.Enums {
 				// NOTE: we will generate enums and tables from other schemas in the same manner as sqlc
 				// for full compat out of the box
-				if e.EnumPkg != "" || (e.Schema == "public" && schemaOpt != "public") {
+				if e.Schema == "public" && schemaOpt != "public" {
 					continue // will generate all other schemas alongside public, do not emit again
 				}
 
@@ -709,9 +708,10 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 	_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
 
 	for _, e := range schema.Enums {
-		if e.EnumPkg != "" || (e.Schema == "public" && schemaOpt != "public") {
+		if e.Schema == "public" && schemaOpt != "public" {
 			continue // will generate all other schemas alongside public, do not emit again
 		}
+		fmt.Printf("GOOD ENUMS IN TEMPLATE: %+v\n", e)
 
 		enum := convertEnum(ctx, e)
 		emit(xo.Template{
@@ -1400,6 +1400,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	}
 	var enumPkg, enumSchema, openAPISchema string
 	if f.Type.Enum != nil {
+		fmt.Printf("f.Type.Enum: %+v\n", f.Type.Enum)
 		enumPkg = f.Type.Enum.EnumPkg
 		enumSchema = f.Type.Enum.Schema
 		openAPISchema = camelExport(f.Type.Enum.Name)
@@ -3877,6 +3878,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	} else if !referencesCustomSchemaEnum && table.Schema != "public" {
 		// we generate all schemas in same package from now on
 	}
+
 	if mode == "IDTypes" {
 		if af.isSingleFK && af.isSinglePK {
 			return "", nil
@@ -3905,7 +3907,15 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		}
 	}
 
-	return fmt.Sprintf("\t%s %s%s // %s\n", field.GoName, fieldType, tag, field.SQLName), nil
+	goName := field.GoName
+	// FIXME: field.EnumSchema badly set somewhere, see GOOD ENUMS IN TEMPLATE
+	// which comes from empty f.Type.Enum in custom schema enums
+	if referencesCustomSchemaEnum {
+		goName = camelExport(f.schemaPrefix) + goName
+		fmt.Printf("goName: %v\n", goName)
+	}
+
+	return fmt.Sprintf("\t%s %s%s // %s\n", goName, fieldType, tag, field.SQLName), nil
 }
 
 func (f *Funcs) sort_fields(fields []Field) []Field {
