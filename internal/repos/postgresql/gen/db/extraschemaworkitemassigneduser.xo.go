@@ -42,9 +42,9 @@ type ExtraSchemaWorkItemAssignedUserCreateParams struct {
 // CreateExtraSchemaWorkItemAssignedUser creates a new ExtraSchemaWorkItemAssignedUser in the database with the given params.
 func CreateExtraSchemaWorkItemAssignedUser(ctx context.Context, db DB, params *ExtraSchemaWorkItemAssignedUserCreateParams) (*ExtraSchemaWorkItemAssignedUser, error) {
 	eswiau := &ExtraSchemaWorkItemAssignedUser{
-		AssignedUser: params.AssignedUser,
-		Role:         params.Role,
-		WorkItemID:   params.WorkItemID,
+		AssignedUser:    params.AssignedUser,
+		ExtraSchemaRole: params.ExtraSchemaRole,
+		WorkItemID:      params.WorkItemID,
 	}
 
 	return eswiau.Insert(ctx, db)
@@ -52,9 +52,9 @@ func CreateExtraSchemaWorkItemAssignedUser(ctx context.Context, db DB, params *E
 
 // ExtraSchemaWorkItemAssignedUserUpdateParams represents update params for 'extra_schema.work_item_assigned_user'.
 type ExtraSchemaWorkItemAssignedUserUpdateParams struct {
-	AssignedUser    *ExtraSchemaUserID          `json:"assignedUser" nullable:"false"`                                 // assigned_user
-	ExtraSchemaRole ExtraSchemaNullWorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID      *ExtraSchemaWorkItemID      `json:"workItemID" nullable:"false"`                                   // work_item_id
+	AssignedUser    *ExtraSchemaUserID           `json:"assignedUser" nullable:"false"`                                 // assigned_user
+	ExtraSchemaRole *ExtraSchemaNullWorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
+	WorkItemID      *ExtraSchemaWorkItemID       `json:"workItemID" nullable:"false"`                                   // work_item_id
 }
 
 // SetUpdateParams updates extra_schema.work_item_assigned_user struct fields with the specified params.
@@ -62,8 +62,8 @@ func (eswiau *ExtraSchemaWorkItemAssignedUser) SetUpdateParams(params *ExtraSche
 	if params.AssignedUser != nil {
 		eswiau.AssignedUser = *params.AssignedUser
 	}
-	if params.Role != nil {
-		eswiau.Role = *params.Role
+	if params.ExtraSchemaRole != nil {
+		eswiau.ExtraSchemaRole = *params.ExtraSchemaRole
 	}
 	if params.WorkItemID != nil {
 		eswiau.WorkItemID = *params.WorkItemID
@@ -236,7 +236,7 @@ func (eswiau *ExtraSchemaWorkItemAssignedUser) Upsert(ctx context.Context, db DB
 	var err error
 
 	eswiau.AssignedUser = params.AssignedUser
-	eswiau.Role = params.Role
+	eswiau.ExtraSchemaRole = params.ExtraSchemaRole
 	eswiau.WorkItemID = params.WorkItemID
 
 	eswiau, err = eswiau.Insert(ctx, db)

@@ -36,29 +36,29 @@ func (eswir *ExtraSchemaWorkItemRole) Scan(src interface{}) error {
 	return nil
 }
 
-// NullExtraSchemaWorkItemRole represents a null 'work_item_role' enum for schema 'extra_schema'.
-type NullExtraSchemaWorkItemRole struct {
+// ExtraSchemaNullWorkItemRole represents a null 'work_item_role' enum for schema 'extra_schema'.
+type ExtraSchemaNullWorkItemRole struct {
 	ExtraSchemaWorkItemRole ExtraSchemaWorkItemRole
 	// Valid is true if ExtraSchemaWorkItemRole is not null.
 	Valid bool
 }
 
 // Value satisfies the driver.Valuer interface.
-func (neswir NullExtraSchemaWorkItemRole) Value() (driver.Value, error) {
-	if !neswir.Valid {
+func (esnwir ExtraSchemaNullWorkItemRole) Value() (driver.Value, error) {
+	if !esnwir.Valid {
 		return nil, nil
 	}
-	return neswir.ExtraSchemaWorkItemRole.Value()
+	return esnwir.ExtraSchemaWorkItemRole.Value()
 }
 
 // Scan satisfies the sql.Scanner interface.
-func (neswir *NullExtraSchemaWorkItemRole) Scan(v interface{}) error {
+func (esnwir *ExtraSchemaNullWorkItemRole) Scan(v interface{}) error {
 	if v == nil {
-		neswir.ExtraSchemaWorkItemRole, neswir.Valid = "", false
+		esnwir.ExtraSchemaWorkItemRole, esnwir.Valid = "", false
 		return nil
 	}
-	err := neswir.ExtraSchemaWorkItemRole.Scan(v)
-	neswir.Valid = err == nil
+	err := esnwir.ExtraSchemaWorkItemRole.Scan(v)
+	esnwir.Valid = err == nil
 	return err
 }
 

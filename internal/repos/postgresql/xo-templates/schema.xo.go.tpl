@@ -30,7 +30,7 @@ func ({{ short $e.GoName }} *{{ $e.GoName }}) Scan(src interface{}) error {
 	return nil
 }
 
-{{ $nullName := (printf "%s%s" "Null" $e.GoName) -}}
+{{ $nullName := (nullable_enum $e.GoName) -}}
 {{- $nullShort := (short $nullName) -}}
 // {{ $nullName }} represents a null '{{ $e.SQLName }}' enum for schema '{{ schema }}'.
 type {{ $nullName }} struct {

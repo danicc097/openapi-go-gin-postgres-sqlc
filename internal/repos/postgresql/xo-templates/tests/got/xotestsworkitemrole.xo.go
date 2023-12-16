@@ -36,29 +36,29 @@ func (xtwir *XoTestsWorkItemRole) Scan(src interface{}) error {
 	return nil
 }
 
-// NullXoTestsWorkItemRole represents a null 'work_item_role' enum for schema 'xo_tests'.
-type NullXoTestsWorkItemRole struct {
+// XoTestsNullWorkItemRole represents a null 'work_item_role' enum for schema 'xo_tests'.
+type XoTestsNullWorkItemRole struct {
 	XoTestsWorkItemRole XoTestsWorkItemRole
 	// Valid is true if XoTestsWorkItemRole is not null.
 	Valid bool
 }
 
 // Value satisfies the driver.Valuer interface.
-func (nxtwir NullXoTestsWorkItemRole) Value() (driver.Value, error) {
-	if !nxtwir.Valid {
+func (xtnwir XoTestsNullWorkItemRole) Value() (driver.Value, error) {
+	if !xtnwir.Valid {
 		return nil, nil
 	}
-	return nxtwir.XoTestsWorkItemRole.Value()
+	return xtnwir.XoTestsWorkItemRole.Value()
 }
 
 // Scan satisfies the sql.Scanner interface.
-func (nxtwir *NullXoTestsWorkItemRole) Scan(v interface{}) error {
+func (xtnwir *XoTestsNullWorkItemRole) Scan(v interface{}) error {
 	if v == nil {
-		nxtwir.XoTestsWorkItemRole, nxtwir.Valid = "", false
+		xtnwir.XoTestsWorkItemRole, xtnwir.Valid = "", false
 		return nil
 	}
-	err := nxtwir.XoTestsWorkItemRole.Scan(v)
-	nxtwir.Valid = err == nil
+	err := xtnwir.XoTestsWorkItemRole.Scan(v)
+	xtnwir.Valid = err == nil
 	return err
 }
 

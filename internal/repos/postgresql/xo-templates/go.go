@@ -1647,6 +1647,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"zero":                   f.zero,
 		"type":                   f.typefn,
 		"field":                  f.field,
+		"nullable_enum":          f.nullable_enum,
 		"set_field":              f.set_field,
 		"sort_fields":            f.sort_fields,
 		"fieldmapping":           f.fieldmapping,
@@ -1694,6 +1695,10 @@ func (f *Funcs) entities(tables Tables) string {
 	b.WriteString(")")
 
 	return b.String()
+}
+
+func (f *Funcs) nullable_enum(s string) string {
+	return camelExport(f.schemaPrefix) + "Null" + strings.TrimPrefix(s, camelExport(f.schemaPrefix))
 }
 
 // last_nth returns the last hardcoded nth param for sqlstr
@@ -3859,21 +3864,9 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		fieldType = strings.Repeat("*", pc) + constraintTyp
 	}
 
-	if mode == "UpdateParams" {
-		fieldType = "*" + fieldType // we do want **<field> and *<field>
-	}
-	if field.EnumPkg != "" {
-		// p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]
-		// fieldType = p + "." + fieldType // assumes no pointers
-	}
-
-	// TODO: handle cases:
-	// - public schema table has a column referencing <custom schema>.<enum>
-	// - custom schema table has a column referencing <custom schema>.<enum>
-	// - custom schema table has a column referencing public <enum>
 	referencesCustomSchemaEnum := field.EnumSchema != "" && field.EnumSchema != "public"
 	if referencesCustomSchemaEnum {
-		fieldType = snaker.ForceCamelIdentifier(table.Schema + " " + fieldType) // assumes no pointers
+		fieldType = camelExport(table.Schema) + fieldType // assumes no pointers
 	} else if !referencesCustomSchemaEnum && table.Schema != "public" {
 		// we generate all schemas in same package from now on
 	}
@@ -3907,13 +3900,14 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	}
 
 	goName := field.GoName
-	// FIXME: update structs, etc. to include prefix when referencesCustomSchemaEnum
-	// not a good idea to instead remove schema prefix for same schema enums and use Public<...>
-	// when we generate other schema tables
 	if referencesCustomSchemaEnum {
 		goName = camelExport(f.schemaPrefix) + goName
 		// fieldType = camelExport(f.schemaPrefix) + fieldType
 		fmt.Printf("goName: %v\n", goName)
+	}
+
+	if mode == "UpdateParams" {
+		fieldType = "*" + fieldType // we do want **<field> and *<field>
 	}
 
 	return fmt.Sprintf("\t%s %s%s // %s\n", goName, fieldType, tag, field.SQLName), nil
@@ -3945,16 +3939,21 @@ func (f *Funcs) set_field(field Field, typ string, table Table) (string, error) 
 		}
 	}
 
+	goName := field.GoName
+	if field.EnumSchema != "" {
+		goName = camelExport(f.schemaPrefix) + goName
+	}
+
 	switch typ {
 	case "UpsertParams":
-		return fmt.Sprintf("\t%[1]s.%[2]s = params.%[2]s\n", f.short(table), field.GoName), nil
+		return fmt.Sprintf("\t%[1]s.%[2]s = params.%[2]s\n", f.short(table), goName), nil
 	case "CreateParams":
-		return fmt.Sprintf("\t%[1]s: params.%[1]s,\n", field.GoName), nil
+		return fmt.Sprintf("\t%[1]s: params.%[1]s,\n", goName), nil
 	case "UpdateParams":
 		return fmt.Sprintf(`if params.%[2]s != nil {
 	%[1]s.%[2]s = *params.%[2]s
 }
-`, f.short(table), field.GoName), nil
+`, f.short(table), goName), nil
 	}
 
 	return "", fmt.Errorf("invalid typ: %s", typ)
@@ -4002,7 +4001,12 @@ func (f *Funcs) fieldmapping(field Field, recv string, public bool) (string, err
 			return "", nil
 		}
 	}
-	return fmt.Sprintf("\t%s: %s.%s,", field.GoName, recv, field.GoName), nil
+	goName := field.GoName
+	if field.EnumSchema != "" {
+		goName = camelExport(f.schemaPrefix) + goName
+	}
+
+	return fmt.Sprintf("\t%s: %s.%s,", goName, recv, goName), nil
 }
 
 // join_fields generates a struct field definition from join constraints
