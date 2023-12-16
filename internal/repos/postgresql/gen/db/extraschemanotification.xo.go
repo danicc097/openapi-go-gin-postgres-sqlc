@@ -24,11 +24,11 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type ExtraSchemaNotification struct {
-	NotificationID   ExtraSchemaNotificationID `json:"notificationID" db:"notification_id" required:"true" nullable:"false"`     // notification_id
-	Body             string                    `json:"-" db:"body" nullable:"false" pattern:"^[A-Za-z0-9]*$"`                    // body
-	Sender           ExtraSchemaUserID         `json:"sender" db:"sender" required:"true" nullable:"false"`                      // sender
-	Receiver         *ExtraSchemaUserID        `json:"receiver" db:"receiver"`                                                   // receiver
-	NotificationType NotificationType          `json:"notificationType" db:"notification_type" required:"true" nullable:"false"` // notification_type
+	NotificationID              ExtraSchemaNotificationID   `json:"notificationID" db:"notification_id" required:"true" nullable:"false"`                                                 // notification_id
+	Body                        string                      `json:"-" db:"body" nullable:"false" pattern:"^[A-Za-z0-9]*$"`                                                                // body
+	Sender                      ExtraSchemaUserID           `json:"sender" db:"sender" required:"true" nullable:"false"`                                                                  // sender
+	Receiver                    *ExtraSchemaUserID          `json:"receiver" db:"receiver"`                                                                                               // receiver
+	ExtraSchemaNotificationType ExtraSchemaNotificationType `json:"notificationType" db:"notification_type" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 
 	ReceiverJoin *ExtraSchemaUser `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
 	SenderJoin   *ExtraSchemaUser `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
@@ -37,10 +37,10 @@ type ExtraSchemaNotification struct {
 
 // ExtraSchemaNotificationCreateParams represents insert params for 'extra_schema.notifications'.
 type ExtraSchemaNotificationCreateParams struct {
-	Body             string             `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"`       // body
-	NotificationType NotificationType   `json:"notificationType" required:"true" nullable:"false"` // notification_type
-	Receiver         *ExtraSchemaUserID `json:"receiver"`                                          // receiver
-	Sender           ExtraSchemaUserID  `json:"sender" required:"true" nullable:"false"`           // sender
+	Body                        string                      `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"`                                                   // body
+	ExtraSchemaNotificationType ExtraSchemaNotificationType `json:"notificationType" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
+	Receiver                    *ExtraSchemaUserID          `json:"receiver"`                                                                                      // receiver
+	Sender                      ExtraSchemaUserID           `json:"sender" required:"true" nullable:"false"`                                                       // sender
 }
 
 type ExtraSchemaNotificationID int
@@ -59,10 +59,10 @@ func CreateExtraSchemaNotification(ctx context.Context, db DB, params *ExtraSche
 
 // ExtraSchemaNotificationUpdateParams represents update params for 'extra_schema.notifications'.
 type ExtraSchemaNotificationUpdateParams struct {
-	Body             *string             `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"` // body
-	NotificationType *NotificationType   `json:"notificationType" nullable:"false"`           // notification_type
-	Receiver         **ExtraSchemaUserID `json:"receiver"`                                    // receiver
-	Sender           *ExtraSchemaUserID  `json:"sender" nullable:"false"`                     // sender
+	Body                        *string                     `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"`                                   // body
+	ExtraSchemaNotificationType ExtraSchemaNotificationType `json:"notificationType" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
+	Receiver                    **ExtraSchemaUserID         `json:"receiver"`                                                                      // receiver
+	Sender                      *ExtraSchemaUserID          `json:"sender" nullable:"false"`                                                       // sender
 }
 
 // SetUpdateParams updates extra_schema.notifications struct fields with the specified params.

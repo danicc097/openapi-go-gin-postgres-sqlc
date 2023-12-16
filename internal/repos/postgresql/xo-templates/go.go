@@ -711,7 +711,6 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 		if e.Schema == "public" && schemaOpt != "public" {
 			continue // will generate all other schemas alongside public, do not emit again
 		}
-		fmt.Printf("GOOD ENUMS IN TEMPLATE: %+v\n", e)
 
 		enum := convertEnum(ctx, e)
 		emit(xo.Template{
@@ -3908,8 +3907,9 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	}
 
 	goName := field.GoName
-	// FIXME: field.EnumSchema badly set somewhere, see GOOD ENUMS IN TEMPLATE
-	// which comes from empty f.Type.Enum in custom schema enums
+	// FIXME: update structs, etc. to include prefix when referencesCustomSchemaEnum
+	// not a good idea to instead remove schema prefix for same schema enums and use Public<...>
+	// when we generate other schema tables
 	if referencesCustomSchemaEnum {
 		goName = camelExport(f.schemaPrefix) + goName
 		fmt.Printf("goName: %v\n", goName)

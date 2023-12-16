@@ -127,8 +127,8 @@ create index on extra_schema.work_items using gin (title extensions.gin_trgm_ops
 create index on extra_schema.work_items using gin (title , description extensions.gin_trgm_ops);
 
 create type extra_schema.work_item_role as ENUM (
-  'preparer'
-  , 'reviewer'
+  'extra_preparer'
+  , 'extra_reviewer'
 );
 
 create table extra_schema.work_item_assigned_user (
