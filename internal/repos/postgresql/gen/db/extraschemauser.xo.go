@@ -994,6 +994,6 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 // FKUserAPIKey_APIKeyID returns the UserAPIKey associated with the ExtraSchemaUser's (APIKeyID).
 //
 // Generated from foreign key 'users_api_key_id_fkey'.
-func (esu *ExtraSchemaUser) FKUserAPIKey_APIKeyID(ctx context.Context, db DB) (*UserAPIKey, error) {
-	return UserAPIKeyByUserAPIKeyID(ctx, db, *esu.APIKeyID)
+func (esu *ExtraSchemaUser) FKUserAPIKey_APIKeyID(ctx context.Context, db DB) (*ExtraSchemaUserAPIKey, error) {
+	return ExtraSchemaUserAPIKeyByUserAPIKeyID(ctx, db, *esu.APIKeyID)
 }

@@ -738,13 +738,13 @@ func ExtraSchemaBookReviewsByBookID(ctx context.Context, db DB, bookID ExtraSche
 // FKBook_BookID returns the Book associated with the ExtraSchemaBookReview's (BookID).
 //
 // Generated from foreign key 'book_reviews_book_id_fkey'.
-func (esbr *ExtraSchemaBookReview) FKBook_BookID(ctx context.Context, db DB) (*Book, error) {
-	return BookByBookID(ctx, db, esbr.BookID)
+func (esbr *ExtraSchemaBookReview) FKBook_BookID(ctx context.Context, db DB) (*ExtraSchemaBook, error) {
+	return ExtraSchemaBookByBookID(ctx, db, esbr.BookID)
 }
 
 // FKUser_Reviewer returns the User associated with the ExtraSchemaBookReview's (Reviewer).
 //
 // Generated from foreign key 'book_reviews_reviewer_fkey'.
-func (esbr *ExtraSchemaBookReview) FKUser_Reviewer(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, esbr.Reviewer)
+func (esbr *ExtraSchemaBookReview) FKUser_Reviewer(ctx context.Context, db DB) (*ExtraSchemaUser, error) {
+	return ExtraSchemaUserByUserID(ctx, db, esbr.Reviewer)
 }

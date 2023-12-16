@@ -527,13 +527,13 @@ func ExtraSchemaBookAuthorsByAuthorID(ctx context.Context, db DB, authorID Extra
 // FKUser_AuthorID returns the User associated with the ExtraSchemaBookAuthor's (AuthorID).
 //
 // Generated from foreign key 'book_authors_author_id_fkey'.
-func (esba *ExtraSchemaBookAuthor) FKUser_AuthorID(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, esba.AuthorID)
+func (esba *ExtraSchemaBookAuthor) FKUser_AuthorID(ctx context.Context, db DB) (*ExtraSchemaUser, error) {
+	return ExtraSchemaUserByUserID(ctx, db, esba.AuthorID)
 }
 
 // FKBook_BookID returns the Book associated with the ExtraSchemaBookAuthor's (BookID).
 //
 // Generated from foreign key 'book_authors_book_id_fkey'.
-func (esba *ExtraSchemaBookAuthor) FKBook_BookID(ctx context.Context, db DB) (*Book, error) {
-	return BookByBookID(ctx, db, esba.BookID)
+func (esba *ExtraSchemaBookAuthor) FKBook_BookID(ctx context.Context, db DB) (*ExtraSchemaBook, error) {
+	return ExtraSchemaBookByBookID(ctx, db, esba.BookID)
 }

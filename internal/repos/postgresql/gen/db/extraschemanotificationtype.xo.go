@@ -12,10 +12,10 @@ type ExtraSchemaNotificationType string
 
 // ExtraSchemaNotificationType values.
 const (
-	// ExtraSchemaNotificationTypePersonal is the 'personal' notification_type.
-	ExtraSchemaNotificationTypePersonal ExtraSchemaNotificationType = "personal"
-	// ExtraSchemaNotificationTypeGlobal is the 'global' notification_type.
-	ExtraSchemaNotificationTypeGlobal ExtraSchemaNotificationType = "global"
+	// ExtraSchemaNotificationTypeExtraSchemaPersonal is the 'personal' notification_type.
+	ExtraSchemaNotificationTypeExtraSchemaPersonal ExtraSchemaNotificationType = "personal"
+	// ExtraSchemaNotificationTypeExtraSchemaGlobal is the 'global' notification_type.
+	ExtraSchemaNotificationTypeExtraSchemaGlobal ExtraSchemaNotificationType = "global"
 )
 
 // Value satisfies the driver.Valuer interface.
@@ -72,7 +72,7 @@ func (err ErrInvalidExtraSchemaNotificationType) Error() string {
 
 func AllExtraSchemaNotificationTypeValues() []ExtraSchemaNotificationType {
 	return []ExtraSchemaNotificationType{
-		ExtraSchemaNotificationTypePersonal,
-		ExtraSchemaNotificationTypeGlobal,
+		ExtraSchemaNotificationTypeExtraSchemaPersonal,
+		ExtraSchemaNotificationTypeExtraSchemaGlobal,
 	}
 }

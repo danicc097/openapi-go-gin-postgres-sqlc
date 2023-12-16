@@ -12,10 +12,10 @@ type ExtraSchemaWorkItemRole string
 
 // ExtraSchemaWorkItemRole values.
 const (
-	// ExtraSchemaWorkItemRolePreparer is the 'preparer' work_item_role.
-	ExtraSchemaWorkItemRolePreparer ExtraSchemaWorkItemRole = "preparer"
-	// ExtraSchemaWorkItemRoleReviewer is the 'reviewer' work_item_role.
-	ExtraSchemaWorkItemRoleReviewer ExtraSchemaWorkItemRole = "reviewer"
+	// ExtraSchemaWorkItemRoleExtraSchemaPreparer is the 'preparer' work_item_role.
+	ExtraSchemaWorkItemRoleExtraSchemaPreparer ExtraSchemaWorkItemRole = "preparer"
+	// ExtraSchemaWorkItemRoleExtraSchemaReviewer is the 'reviewer' work_item_role.
+	ExtraSchemaWorkItemRoleExtraSchemaReviewer ExtraSchemaWorkItemRole = "reviewer"
 )
 
 // Value satisfies the driver.Valuer interface.
@@ -72,7 +72,7 @@ func (err ErrInvalidExtraSchemaWorkItemRole) Error() string {
 
 func AllExtraSchemaWorkItemRoleValues() []ExtraSchemaWorkItemRole {
 	return []ExtraSchemaWorkItemRole{
-		ExtraSchemaWorkItemRolePreparer,
-		ExtraSchemaWorkItemRoleReviewer,
+		ExtraSchemaWorkItemRoleExtraSchemaPreparer,
+		ExtraSchemaWorkItemRoleExtraSchemaReviewer,
 	}
 }

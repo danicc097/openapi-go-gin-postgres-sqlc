@@ -707,13 +707,13 @@ func ExtraSchemaBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.C
 // FKUser_AuthorID returns the User associated with the ExtraSchemaBookAuthorsSurrogateKey's (AuthorID).
 //
 // Generated from foreign key 'book_authors_surrogate_key_author_id_fkey'.
-func (esbask *ExtraSchemaBookAuthorsSurrogateKey) FKUser_AuthorID(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, esbask.AuthorID)
+func (esbask *ExtraSchemaBookAuthorsSurrogateKey) FKUser_AuthorID(ctx context.Context, db DB) (*ExtraSchemaUser, error) {
+	return ExtraSchemaUserByUserID(ctx, db, esbask.AuthorID)
 }
 
 // FKBook_BookID returns the Book associated with the ExtraSchemaBookAuthorsSurrogateKey's (BookID).
 //
 // Generated from foreign key 'book_authors_surrogate_key_book_id_fkey'.
-func (esbask *ExtraSchemaBookAuthorsSurrogateKey) FKBook_BookID(ctx context.Context, db DB) (*Book, error) {
-	return BookByBookID(ctx, db, esbask.BookID)
+func (esbask *ExtraSchemaBookAuthorsSurrogateKey) FKBook_BookID(ctx context.Context, db DB) (*ExtraSchemaBook, error) {
+	return ExtraSchemaBookByBookID(ctx, db, esbask.BookID)
 }

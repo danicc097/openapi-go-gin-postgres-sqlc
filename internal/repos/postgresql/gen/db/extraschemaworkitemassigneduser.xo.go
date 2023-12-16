@@ -613,13 +613,13 @@ func ExtraSchemaWorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, 
 // FKUser_AssignedUser returns the User associated with the ExtraSchemaWorkItemAssignedUser's (AssignedUser).
 //
 // Generated from foreign key 'work_item_assigned_user_assigned_user_fkey'.
-func (eswiau *ExtraSchemaWorkItemAssignedUser) FKUser_AssignedUser(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, eswiau.AssignedUser)
+func (eswiau *ExtraSchemaWorkItemAssignedUser) FKUser_AssignedUser(ctx context.Context, db DB) (*ExtraSchemaUser, error) {
+	return ExtraSchemaUserByUserID(ctx, db, eswiau.AssignedUser)
 }
 
 // FKWorkItem_WorkItemID returns the WorkItem associated with the ExtraSchemaWorkItemAssignedUser's (WorkItemID).
 //
 // Generated from foreign key 'work_item_assigned_user_work_item_id_fkey'.
-func (eswiau *ExtraSchemaWorkItemAssignedUser) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
-	return WorkItemByWorkItemID(ctx, db, eswiau.WorkItemID)
+func (eswiau *ExtraSchemaWorkItemAssignedUser) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*ExtraSchemaWorkItem, error) {
+	return ExtraSchemaWorkItemByWorkItemID(ctx, db, eswiau.WorkItemID)
 }

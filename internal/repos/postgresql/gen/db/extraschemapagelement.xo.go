@@ -483,6 +483,6 @@ func ExtraSchemaPagElementByPaginatedElementID(ctx context.Context, db DB, pagin
 // FKDummyJoin_Dummy returns the DummyJoin associated with the ExtraSchemaPagElement's (Dummy).
 //
 // Generated from foreign key 'pag_element_dummy_fkey'.
-func (espe *ExtraSchemaPagElement) FKDummyJoin_Dummy(ctx context.Context, db DB) (*DummyJoin, error) {
-	return DummyJoinByDummyJoinID(ctx, db, *espe.Dummy)
+func (espe *ExtraSchemaPagElement) FKDummyJoin_Dummy(ctx context.Context, db DB) (*ExtraSchemaDummyJoin, error) {
+	return ExtraSchemaDummyJoinByDummyJoinID(ctx, db, *espe.Dummy)
 }

@@ -959,22 +959,22 @@ func extractIndexIdentifier(i Index) string {
 func convertEnum(ctx context.Context, e xo.Enum) Enum {
 	var vals []EnumValue
 	goName := camelExport(e.Name)
+	var prefix string
+	_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
+	if schemaOpt != "public" {
+		prefix = camelExport(schemaOpt)
+	}
+
 	for _, v := range e.Values {
 		name := camelExport(strings.ToLower(v.Name))
 		if strings.HasSuffix(name, goName) && goName != name {
 			name = strings.TrimSuffix(name, goName)
 		}
 		vals = append(vals, EnumValue{
-			GoName:     name,
+			GoName:     prefix + name,
 			SQLName:    v.Name,
 			ConstValue: fmt.Sprintf(`"%s"`, v.Name),
 		})
-	}
-
-	var prefix string
-	_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
-	if schemaOpt != "public" {
-		prefix = camelExport(schemaOpt)
 	}
 
 	return Enum{
@@ -1503,6 +1503,7 @@ const ext = ".xo.go"
 type Funcs struct {
 	driver           string
 	schema           string
+	schemaPrefix     string
 	nth              func(int) string
 	first            bool
 	pkg              string
@@ -1552,6 +1553,11 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 		inject = string(buf)
 	}
 	driver, _, schema := xo.DriverDbSchema(ctx)
+
+	var schemaPrefix string
+	if schema != "public" {
+		schemaPrefix = schema
+	}
 	nth, err := loader.NthParam(ctx)
 	if err != nil {
 		return nil, err
@@ -1561,6 +1567,7 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 		first:            first,
 		driver:           driver,
 		schema:           schema,
+		schemaPrefix:     schemaPrefix,
 		nth:              nth,
 		pkg:              Pkg(ctx),
 		tags:             Tags(ctx),
@@ -1882,12 +1889,12 @@ func (f *Funcs) func_name_context(v any, suffix string) string {
 		return x.Name + suffix
 	case Table:
 		return x.GoName + suffix
-		// TODO: ExtraSchema
 	case ForeignKey:
 		var fields []string
 		for _, f := range x.Fields {
 			fields = append(fields, f.GoName)
 		}
+
 		return "FK" + x.GoName + "_" + strings.Join(fields, "") // else clash with join fields in struct
 	case Proc:
 		n := x.GoName
@@ -1948,9 +1955,9 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field, table 
 				returns = append(returns, f.typefn(z.Type))
 			}
 		case x.One:
-			returns = append(returns, "*"+x.Type.GoName)
+			returns = append(returns, "*"+camelExport(f.schemaPrefix)+x.Type.GoName)
 		default:
-			returns = append(returns, "[]*"+x.Type.GoName)
+			returns = append(returns, "[]*"+camelExport(f.schemaPrefix)+x.Type.GoName)
 		}
 	case Proc:
 		params = append(params, f.params(x.Params, true, table))
@@ -2056,11 +2063,6 @@ func (f *Funcs) initial_opts(v any) string {
 
 // funcfn builds a type definition.
 func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constraint, t Table, tables Tables) string {
-	var schemaPrefix string
-	if f.schema != "public" {
-		schemaPrefix = f.schema
-	}
-	_ = schemaPrefix
 	if len(constraints) > 0 {
 		// always run
 		f.loadConstraints(constraints, sqlname)
@@ -2178,10 +2180,6 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 		var joinName string
 		notes := "// "
 
-		var schemaPrefix string
-		if f.schema != "public" {
-			schemaPrefix = f.schema
-		}
 		switch c.Cardinality {
 		case M2M:
 			notes += string(c.Cardinality) + " " + c.TableName
@@ -2214,7 +2212,7 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 					tag = tag + " " + col.ExtraTags + "`"
 					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), f.typefn(col.Type), tag))
 				}
-				joinField := originalStruct + " " + camelExport(schemaPrefix) + originalStruct + " " + tag
+				joinField := originalStruct + " " + camelExport(f.schemaPrefix) + originalStruct + " " + tag
 				typ := camelExport(singularize(c.RefTableName))           // same typ as in struct
 				st := typ + "__" + toAcronym(c.TableName) + "_" + tGoName // unique suffixes
 				lookupTableSQLName := f.schema + "." + c.TableName
@@ -2373,7 +2371,7 @@ func (f *Funcs) recv(name string, context bool, t Table, v any) string {
 	p = append(p, "db DB")
 	switch x := v.(type) {
 	case ForeignKey:
-		r = append(r, "*"+x.RefTable)
+		r = append(r, "*"+camelExport(f.schemaPrefix)+x.RefTable)
 	case string:
 		if x == "Delete" || x == "SoftDelete" { // only exec
 			break
@@ -2443,7 +2441,7 @@ func (f *Funcs) foreign_key_context(v any) string {
 	}
 	switch x := v.(type) {
 	case ForeignKey:
-		name = x.RefFunc
+		name = camelExport(f.schemaPrefix) + x.RefFunc
 		// add params
 		p = append(p, "db", f.convertTypes(x))
 	default:
@@ -3668,10 +3666,6 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 	if r, ok := goReservedNames[strings.ToLower(s)]; ok {
 		s = r
 	}
-	var schemaPrefix string
-	if f.schema != "public" {
-		schemaPrefix = f.schema
-	}
 
 	// add the go type
 	if addType {
@@ -3685,21 +3679,21 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 					switch c.Cardinality {
 					case M2M:
 						if c.ColumnName == field.SQLName {
-							field.Type = camelExport(schemaPrefix) + camelExport(singularize(c.RefTableName)) + "ID"
+							field.Type = camelExport(f.schemaPrefix) + camelExport(singularize(c.RefTableName)) + "ID"
 							break
 						}
 					case M2O:
 						if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
-							field.Type = camelExport(schemaPrefix) + camelExport(c.TableName) + "ID"
+							field.Type = camelExport(f.schemaPrefix) + camelExport(c.TableName) + "ID"
 							break
 						}
 						if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
-							field.Type = camelExport(schemaPrefix) + camelExport(c.RefTableName) + "ID"
+							field.Type = camelExport(f.schemaPrefix) + camelExport(c.RefTableName) + "ID"
 							break
 						}
 					case O2O:
 						if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
-							field.Type = camelExport(schemaPrefix) + camelExport(singularize(c.RefTableName)) + "ID"
+							field.Type = camelExport(f.schemaPrefix) + camelExport(singularize(c.RefTableName)) + "ID"
 							break
 						}
 					default:
@@ -3831,31 +3825,27 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 			if c.Type != "foreign_key" {
 				continue
 			}
-			var schemaPrefix string
-			if f.schema != "public" {
-				schemaPrefix = f.schema
-			}
 			switch c.Cardinality {
 			case M2M:
 				if mode == "IDTypes" {
 					return "", nil
 				}
 				if c.ColumnName == field.SQLName {
-					constraintTyp = camelExport(schemaPrefix) + camelExport(singularize(c.RefTableName)) + "ID"
+					constraintTyp = camelExport(f.schemaPrefix) + camelExport(singularize(c.RefTableName)) + "ID"
 					break
 				}
 			case M2O:
 				if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
-					constraintTyp = camelExport(schemaPrefix) + camelExport(c.TableName) + "ID"
+					constraintTyp = camelExport(f.schemaPrefix) + camelExport(c.TableName) + "ID"
 					break
 				}
 				if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
-					constraintTyp = camelExport(schemaPrefix) + camelExport(c.RefTableName) + "ID"
+					constraintTyp = camelExport(f.schemaPrefix) + camelExport(c.RefTableName) + "ID"
 					break
 				}
 			case O2O:
 				if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
-					constraintTyp = camelExport(schemaPrefix) + camelExport(singularize(c.RefTableName)) + "ID"
+					constraintTyp = camelExport(f.schemaPrefix) + camelExport(singularize(c.RefTableName)) + "ID"
 					break
 				}
 
@@ -4036,10 +4026,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 		}
 		var notes, joinName string
 		// sync with extratypes
-		var schemaPrefix string
-		if f.schema != "public" {
-			schemaPrefix = f.schema
-		}
+
 		switch c.Cardinality {
 		case M2M:
 			notes += " " + c.TableName
@@ -4055,9 +4042,9 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			lookupTable := tables[c.TableName]
 			m2mExtraCols := getTableRegularFields(lookupTable)
 			if len(m2mExtraCols) > 0 {
-				typ = typ + "__" + toAcronym(c.TableName) + "_" + camelExport(schemaPrefix) + camelExport(singularize(t.SQLName))
+				typ = typ + "__" + toAcronym(c.TableName) + "_" + camelExport(f.schemaPrefix) + camelExport(singularize(t.SQLName))
 			} else {
-				typ = camelExport(schemaPrefix) + typ
+				typ = camelExport(f.schemaPrefix) + typ
 			}
 
 			if !structFieldIsUnique(structFields, goName) {
@@ -4100,7 +4087,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				continue
 			}
 
-			typ = camelExport(schemaPrefix) + typ
+			typ = camelExport(f.schemaPrefix) + typ
 
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
@@ -4126,13 +4113,13 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				}
 
 				t := tables[c.RefTableName]
-				var f Field
+				var fd Field
 				for _, tf := range t.Fields {
 					if tf.SQLName == c.ColumnName {
-						f = tf
+						fd = tf
 					}
 				}
-				af := analyzeField(t, f)
+				af := analyzeField(t, fd)
 				if af.isSingleFK && af.isSinglePK || c.RefPKisFK {
 					goName = camelExport(singularize(c.RefTableName)) + "Join"
 				}
@@ -4142,7 +4129,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				if !structFieldIsUnique(structFields, goName) {
 					goName = goName + toAcronym(c.ColumnName)
 				}
-				typ = camelExport(schemaPrefix) + typ
+				typ = camelExport(f.schemaPrefix) + typ
 
 				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
 				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))

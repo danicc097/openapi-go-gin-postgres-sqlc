@@ -536,13 +536,13 @@ func ExtraSchemaBookSellersBySellerBookID(ctx context.Context, db DB, seller Ext
 // FKBook_BookID returns the Book associated with the ExtraSchemaBookSeller's (BookID).
 //
 // Generated from foreign key 'book_sellers_book_id_fkey'.
-func (esbs *ExtraSchemaBookSeller) FKBook_BookID(ctx context.Context, db DB) (*Book, error) {
-	return BookByBookID(ctx, db, esbs.BookID)
+func (esbs *ExtraSchemaBookSeller) FKBook_BookID(ctx context.Context, db DB) (*ExtraSchemaBook, error) {
+	return ExtraSchemaBookByBookID(ctx, db, esbs.BookID)
 }
 
 // FKUser_Seller returns the User associated with the ExtraSchemaBookSeller's (Seller).
 //
 // Generated from foreign key 'book_sellers_seller_fkey'.
-func (esbs *ExtraSchemaBookSeller) FKUser_Seller(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, esbs.Seller)
+func (esbs *ExtraSchemaBookSeller) FKUser_Seller(ctx context.Context, db DB) (*ExtraSchemaUser, error) {
+	return ExtraSchemaUserByUserID(ctx, db, esbs.Seller)
 }

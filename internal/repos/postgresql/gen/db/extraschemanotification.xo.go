@@ -504,13 +504,13 @@ func ExtraSchemaNotificationsBySender(ctx context.Context, db DB, sender ExtraSc
 // FKUser_Receiver returns the User associated with the ExtraSchemaNotification's (Receiver).
 //
 // Generated from foreign key 'notifications_receiver_fkey'.
-func (esn *ExtraSchemaNotification) FKUser_Receiver(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, *esn.Receiver)
+func (esn *ExtraSchemaNotification) FKUser_Receiver(ctx context.Context, db DB) (*ExtraSchemaUser, error) {
+	return ExtraSchemaUserByUserID(ctx, db, *esn.Receiver)
 }
 
 // FKUser_Sender returns the User associated with the ExtraSchemaNotification's (Sender).
 //
 // Generated from foreign key 'notifications_sender_fkey'.
-func (esn *ExtraSchemaNotification) FKUser_Sender(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, esn.Sender)
+func (esn *ExtraSchemaNotification) FKUser_Sender(ctx context.Context, db DB) (*ExtraSchemaUser, error) {
+	return ExtraSchemaUserByUserID(ctx, db, esn.Sender)
 }
