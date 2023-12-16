@@ -3897,7 +3897,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		if af.isSingleFK && af.isSinglePK {
 			for _, tfk := range table.ForeignKeys {
 				if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {
-					fieldType = camelExport(singularize(tfk.RefTable)) + "ID"
+					fieldType = camelExport(f.schemaPrefix) + camelExport(singularize(tfk.RefTable)) + "ID"
 					break
 				}
 			}
