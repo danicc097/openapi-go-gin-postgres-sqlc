@@ -3912,6 +3912,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	// when we generate other schema tables
 	if referencesCustomSchemaEnum {
 		goName = camelExport(f.schemaPrefix) + goName
+		// fieldType = camelExport(f.schemaPrefix) + fieldType
 		fmt.Printf("goName: %v\n", goName)
 	}
 
