@@ -2649,7 +2649,11 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 			}
 		case []Field:
 			for _, p := range x {
-				names = append(names, prefix+checkName(p.GoName))
+				var pre string
+				if p.EnumSchema != "" && f.schemaPrefix != "public" {
+					pre = camelExport(f.schemaPrefix)
+				}
+				names = append(names, prefix+pre+checkName(p.GoName))
 			}
 		case Proc:
 			if params := f.params(x.Params, false, nil); params != "" {

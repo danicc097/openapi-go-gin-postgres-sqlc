@@ -161,9 +161,9 @@ func (esn *ExtraSchemaNotification) Insert(ctx context.Context, db DB) (*ExtraSc
 	$1, $2, $3, $4
 	) RETURNING * `
 	// run
-	logf(sqlstr, esn.Body, esn.NotificationType, esn.Receiver, esn.Sender)
+	logf(sqlstr, esn.Body, esn.ExtraSchemaNotificationType, esn.Receiver, esn.Sender)
 
-	rows, err := db.Query(ctx, sqlstr, esn.Body, esn.NotificationType, esn.Receiver, esn.Sender)
+	rows, err := db.Query(ctx, sqlstr, esn.Body, esn.ExtraSchemaNotificationType, esn.Receiver, esn.Sender)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaNotification/Insert/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -185,9 +185,9 @@ func (esn *ExtraSchemaNotification) Update(ctx context.Context, db DB) (*ExtraSc
 	WHERE notification_id = $5 
 	RETURNING * `
 	// run
-	logf(sqlstr, esn.Body, esn.NotificationType, esn.Receiver, esn.Sender, esn.NotificationID)
+	logf(sqlstr, esn.Body, esn.ExtraSchemaNotificationType, esn.Receiver, esn.Sender, esn.NotificationID)
 
-	rows, err := db.Query(ctx, sqlstr, esn.Body, esn.NotificationType, esn.Receiver, esn.Sender, esn.NotificationID)
+	rows, err := db.Query(ctx, sqlstr, esn.Body, esn.ExtraSchemaNotificationType, esn.Receiver, esn.Sender, esn.NotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaNotification/Update/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}

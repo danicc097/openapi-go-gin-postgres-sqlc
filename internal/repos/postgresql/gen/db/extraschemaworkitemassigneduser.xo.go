@@ -193,8 +193,8 @@ func (eswiau *ExtraSchemaWorkItemAssignedUser) Insert(ctx context.Context, db DB
 	)
 	 RETURNING * `
 	// run
-	logf(sqlstr, eswiau.AssignedUser, eswiau.Role, eswiau.WorkItemID)
-	rows, err := db.Query(ctx, sqlstr, eswiau.AssignedUser, eswiau.Role, eswiau.WorkItemID)
+	logf(sqlstr, eswiau.AssignedUser, eswiau.ExtraSchemaRole, eswiau.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, eswiau.AssignedUser, eswiau.ExtraSchemaRole, eswiau.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItemAssignedUser/Insert/db.Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
@@ -215,9 +215,9 @@ func (eswiau *ExtraSchemaWorkItemAssignedUser) Update(ctx context.Context, db DB
 	WHERE work_item_id = $2  AND assigned_user = $3 
 	RETURNING * `
 	// run
-	logf(sqlstr, eswiau.Role, eswiau.WorkItemID, eswiau.AssignedUser)
+	logf(sqlstr, eswiau.ExtraSchemaRole, eswiau.WorkItemID, eswiau.AssignedUser)
 
-	rows, err := db.Query(ctx, sqlstr, eswiau.Role, eswiau.WorkItemID, eswiau.AssignedUser)
+	rows, err := db.Query(ctx, sqlstr, eswiau.ExtraSchemaRole, eswiau.WorkItemID, eswiau.AssignedUser)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItemAssignedUser/Update/db.Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
