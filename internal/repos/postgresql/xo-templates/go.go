@@ -971,16 +971,17 @@ func convertEnum(ctx context.Context, e xo.Enum) Enum {
 			name = strings.TrimSuffix(name, goName)
 		}
 		vals = append(vals, EnumValue{
-			GoName:     prefix + name,
+			GoName:     name, // no prefix here, enough just for goname
 			SQLName:    v.Name,
 			ConstValue: fmt.Sprintf(`"%s"`, v.Name),
 		})
 	}
 
 	return Enum{
-		GoName:  prefix + goName,
-		SQLName: e.Name,
-		Values:  vals,
+		GoName:       prefix + goName,
+		GoNamePrefix: prefix, // for template gen
+		SQLName:      e.Name,
+		Values:       vals,
 	}
 }
 
@@ -4537,11 +4538,12 @@ type EnumValue struct {
 
 // Enum is a enum type template.
 type Enum struct {
-	GoName  string
-	SQLName string
-	Values  []EnumValue
-	Comment string
-	Pkg     string
+	GoName       string
+	SQLName      string
+	Values       []EnumValue
+	Comment      string
+	Pkg          string
+	GoNamePrefix string
 }
 
 // Proc is a stored procedure template.

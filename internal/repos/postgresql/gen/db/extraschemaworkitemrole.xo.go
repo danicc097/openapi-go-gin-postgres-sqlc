@@ -12,10 +12,10 @@ type ExtraSchemaWorkItemRole string
 
 // ExtraSchemaWorkItemRole values.
 const (
-	// ExtraSchemaWorkItemRoleExtraSchemaPreparer is the 'preparer' work_item_role.
-	ExtraSchemaWorkItemRoleExtraSchemaPreparer ExtraSchemaWorkItemRole = "preparer"
-	// ExtraSchemaWorkItemRoleExtraSchemaReviewer is the 'reviewer' work_item_role.
-	ExtraSchemaWorkItemRoleExtraSchemaReviewer ExtraSchemaWorkItemRole = "reviewer"
+	// ExtraSchemaWorkItemRolePreparer is the 'preparer' work_item_role.
+	ExtraSchemaWorkItemRolePreparer ExtraSchemaWorkItemRole = "preparer"
+	// ExtraSchemaWorkItemRoleReviewer is the 'reviewer' work_item_role.
+	ExtraSchemaWorkItemRoleReviewer ExtraSchemaWorkItemRole = "reviewer"
 )
 
 // Value satisfies the driver.Valuer interface.
@@ -36,29 +36,29 @@ func (eswir *ExtraSchemaWorkItemRole) Scan(src interface{}) error {
 	return nil
 }
 
-// NullExtraSchemaWorkItemRole represents a null 'work_item_role' enum for schema 'extra_schema'.
-type NullExtraSchemaWorkItemRole struct {
+// NullExtraSchemaExtraSchemaWorkItemRole represents a null 'work_item_role' enum for schema 'extra_schema'.
+type NullExtraSchemaExtraSchemaWorkItemRole struct {
 	ExtraSchemaWorkItemRole ExtraSchemaWorkItemRole
 	// Valid is true if ExtraSchemaWorkItemRole is not null.
 	Valid bool
 }
 
 // Value satisfies the driver.Valuer interface.
-func (neswir NullExtraSchemaWorkItemRole) Value() (driver.Value, error) {
-	if !neswir.Valid {
+func (neseswir NullExtraSchemaExtraSchemaWorkItemRole) Value() (driver.Value, error) {
+	if !neseswir.Valid {
 		return nil, nil
 	}
-	return neswir.ExtraSchemaWorkItemRole.Value()
+	return neseswir.ExtraSchemaWorkItemRole.Value()
 }
 
 // Scan satisfies the sql.Scanner interface.
-func (neswir *NullExtraSchemaWorkItemRole) Scan(v interface{}) error {
+func (neseswir *NullExtraSchemaExtraSchemaWorkItemRole) Scan(v interface{}) error {
 	if v == nil {
-		neswir.ExtraSchemaWorkItemRole, neswir.Valid = "", false
+		neseswir.ExtraSchemaWorkItemRole, neseswir.Valid = "", false
 		return nil
 	}
-	err := neswir.ExtraSchemaWorkItemRole.Scan(v)
-	neswir.Valid = err == nil
+	err := neseswir.ExtraSchemaWorkItemRole.Scan(v)
+	neseswir.Valid = err == nil
 	return err
 }
 
@@ -72,7 +72,7 @@ func (err ErrInvalidExtraSchemaWorkItemRole) Error() string {
 
 func AllExtraSchemaWorkItemRoleValues() []ExtraSchemaWorkItemRole {
 	return []ExtraSchemaWorkItemRole{
-		ExtraSchemaWorkItemRoleExtraSchemaPreparer,
-		ExtraSchemaWorkItemRoleExtraSchemaReviewer,
+		ExtraSchemaWorkItemRolePreparer,
+		ExtraSchemaWorkItemRoleReviewer,
 	}
 }

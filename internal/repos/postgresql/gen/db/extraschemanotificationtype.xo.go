@@ -12,10 +12,10 @@ type ExtraSchemaNotificationType string
 
 // ExtraSchemaNotificationType values.
 const (
-	// ExtraSchemaNotificationTypeExtraSchemaPersonal is the 'personal' notification_type.
-	ExtraSchemaNotificationTypeExtraSchemaPersonal ExtraSchemaNotificationType = "personal"
-	// ExtraSchemaNotificationTypeExtraSchemaGlobal is the 'global' notification_type.
-	ExtraSchemaNotificationTypeExtraSchemaGlobal ExtraSchemaNotificationType = "global"
+	// ExtraSchemaNotificationTypePersonal is the 'personal' notification_type.
+	ExtraSchemaNotificationTypePersonal ExtraSchemaNotificationType = "personal"
+	// ExtraSchemaNotificationTypeGlobal is the 'global' notification_type.
+	ExtraSchemaNotificationTypeGlobal ExtraSchemaNotificationType = "global"
 )
 
 // Value satisfies the driver.Valuer interface.
@@ -36,29 +36,29 @@ func (esnt *ExtraSchemaNotificationType) Scan(src interface{}) error {
 	return nil
 }
 
-// NullExtraSchemaNotificationType represents a null 'notification_type' enum for schema 'extra_schema'.
-type NullExtraSchemaNotificationType struct {
+// NullExtraSchemaExtraSchemaNotificationType represents a null 'notification_type' enum for schema 'extra_schema'.
+type NullExtraSchemaExtraSchemaNotificationType struct {
 	ExtraSchemaNotificationType ExtraSchemaNotificationType
 	// Valid is true if ExtraSchemaNotificationType is not null.
 	Valid bool
 }
 
 // Value satisfies the driver.Valuer interface.
-func (nesnt NullExtraSchemaNotificationType) Value() (driver.Value, error) {
-	if !nesnt.Valid {
+func (nesesnt NullExtraSchemaExtraSchemaNotificationType) Value() (driver.Value, error) {
+	if !nesesnt.Valid {
 		return nil, nil
 	}
-	return nesnt.ExtraSchemaNotificationType.Value()
+	return nesesnt.ExtraSchemaNotificationType.Value()
 }
 
 // Scan satisfies the sql.Scanner interface.
-func (nesnt *NullExtraSchemaNotificationType) Scan(v interface{}) error {
+func (nesesnt *NullExtraSchemaExtraSchemaNotificationType) Scan(v interface{}) error {
 	if v == nil {
-		nesnt.ExtraSchemaNotificationType, nesnt.Valid = "", false
+		nesesnt.ExtraSchemaNotificationType, nesesnt.Valid = "", false
 		return nil
 	}
-	err := nesnt.ExtraSchemaNotificationType.Scan(v)
-	nesnt.Valid = err == nil
+	err := nesesnt.ExtraSchemaNotificationType.Scan(v)
+	nesesnt.Valid = err == nil
 	return err
 }
 
@@ -72,7 +72,7 @@ func (err ErrInvalidExtraSchemaNotificationType) Error() string {
 
 func AllExtraSchemaNotificationTypeValues() []ExtraSchemaNotificationType {
 	return []ExtraSchemaNotificationType{
-		ExtraSchemaNotificationTypeExtraSchemaPersonal,
-		ExtraSchemaNotificationTypeExtraSchemaGlobal,
+		ExtraSchemaNotificationTypePersonal,
+		ExtraSchemaNotificationTypeGlobal,
 	}
 }
