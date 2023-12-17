@@ -20,6 +20,8 @@ import JSON_SCHEMA from 'src/client-validator/gen/dereferenced-schema.json'
 import { fullFormats } from 'ajv-formats/dist/formats'
 import { parseSchemaFields } from 'src/utils/jsonSchema'
 import { colorSwatchComponentInputOption } from 'src/components/formGeneration/components'
+import OPERATION_AUTH from 'src/operationAuth'
+import { CodeHighlight } from '@mantine/code-highlight'
 
 export default function LandingPage() {
   const createWorkItemTagRequestSchema = JSON_SCHEMA.definitions.CreateWorkItemTagRequest
@@ -34,40 +36,47 @@ export default function LandingPage() {
   const { register, handleSubmit, control, formState } = createWorkItemTagForm
   const errors = formState.errors
 
-  return (
-    <FormProvider {...createWorkItemTagForm}>
-      <DynamicForm<CreateWorkItemTagRequest>
-        onSubmit={(e) => {
-          e.preventDefault()
-          createWorkItemTagForm.handleSubmit(
-            (data) => {
-              console.log({ data })
-            },
-            (errors) => {
-              console.log({ errors })
-            },
-          )(e)
-        }}
-        formName="createWorkItemTagForm"
-        schemaFields={parseSchemaFields(createWorkItemTagRequestSchema as any)}
-        options={{
-          labels: {
-            color: 'Color',
-            description: 'Description',
-            name: 'Name',
-          },
+  const authorization = OPERATION_AUTH.CreateWorkItemTag
 
-          input: {
-            description: {
-              // FIXME: Allow Enter when focusing on component.
-              component: <Textarea styles={{ root: { width: '100%' } }} />,
+  return (
+    <>
+      <h3>Authorization:</h3>
+      <CodeHighlight code={JSON.stringify(authorization, null, '  ')} language="json" />
+      <h3>Form:</h3>
+      <FormProvider {...createWorkItemTagForm}>
+        <DynamicForm<CreateWorkItemTagRequest>
+          onSubmit={(e) => {
+            e.preventDefault()
+            createWorkItemTagForm.handleSubmit(
+              (data) => {
+                console.log({ data })
+              },
+              (errors) => {
+                console.log({ errors })
+              },
+            )(e)
+          }}
+          formName="createWorkItemTagForm"
+          schemaFields={parseSchemaFields(createWorkItemTagRequestSchema as any)}
+          options={{
+            labels: {
+              color: 'Color',
+              description: 'Description',
+              name: 'Name',
             },
-            color: {
-              component: colorSwatchComponentInputOption,
+
+            input: {
+              description: {
+                // FIXME: Allow Enter when focusing on component.
+                component: <Textarea styles={{ root: { width: '100%' } }} />,
+              },
+              color: {
+                component: colorSwatchComponentInputOption,
+              },
             },
-          },
-        }}
-      ></DynamicForm>
-    </FormProvider>
+          }}
+        ></DynamicForm>
+      </FormProvider>
+    </>
   )
 }
