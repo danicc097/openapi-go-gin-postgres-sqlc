@@ -23,7 +23,6 @@ import { colorSwatchComponentInputOption } from 'src/components/formGeneration/c
 
 export default function LandingPage() {
   const createWorkItemTagRequestSchema = JSON_SCHEMA.definitions.CreateWorkItemTagRequest
-  console.log({ createWorkItemTagRequestSchema })
   const createWorkItemTagForm = useForm<CreateWorkItemTagRequest>({
     resolver: ajvResolver(createWorkItemTagRequestSchema as any, {
       strict: false,
@@ -60,13 +59,8 @@ export default function LandingPage() {
 
           input: {
             description: {
-              // FIXME: broken textarea
+              // FIXME: Allow Enter when focusing on component.
               component: <Textarea styles={{ root: { width: '100%' } }} />,
-              propsFn(registerOnChange) {
-                return {
-                  placeholder: 'A new placeholder',
-                }
-              },
             },
             color: {
               component: colorSwatchComponentInputOption,

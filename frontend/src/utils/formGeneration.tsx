@@ -741,7 +741,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     // explicit component given
     formFieldComponent = React.cloneElement(component, {
       ..._props,
-      onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
+      // IMPORTANT: some mantine components require e, others e.target.value
+      onChange: (e) => registerOnChange({ target: { name: formField, value: e.target?.value ?? e } }),
       ...component.props, // allow user override
       ...(componentPropsFn && componentPropsFn(registerOnChange)), // allow user override
     })
