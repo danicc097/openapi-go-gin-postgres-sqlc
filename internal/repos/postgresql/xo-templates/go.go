@@ -1401,7 +1401,6 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	}
 	var enumPkg, enumSchema, openAPISchema string
 	if f.Type.Enum != nil {
-		fmt.Printf("f.Type.Enum: %+v\n", f.Type.Enum)
 		enumPkg = f.Type.Enum.EnumPkg
 		enumSchema = f.Type.Enum.Schema
 		openAPISchema = camelExport(f.Type.Enum.Name)
@@ -3721,7 +3720,6 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 				field.Type = table.GoName + "ID"
 			}
 
-			fmt.Printf("field.Type: %v\n", field.Type)
 			if strings.HasPrefix(field.Type, "Null") && f.schemaPrefix != "public" && field.EnumSchema != "public" {
 				field.Type = camelExport(f.schemaPrefix) + "Null" + strings.TrimPrefix(field.Type, "Null")
 			}
@@ -3920,7 +3918,6 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	if referencesCustomSchemaEnum {
 		goName = camelExport(f.schemaPrefix) + goName
 		// fieldType = camelExport(f.schemaPrefix) + fieldType
-		fmt.Printf("goName: %v\n", goName)
 	}
 
 	if mode == "UpdateParams" {

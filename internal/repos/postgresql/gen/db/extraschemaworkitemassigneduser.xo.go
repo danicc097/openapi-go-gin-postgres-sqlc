@@ -17,8 +17,9 @@ import (
 // ExtraSchemaWorkItemAssignedUser represents a row from 'extra_schema.work_item_assigned_user'.
 // Change properties via SQL column comments, joined with " && ":
 //   - "properties":<p1>,<p2>,...
-//   - private to exclude a field from JSON.
-//   - not-required to make a schema field not required.
+//     -- private to exclude a field from JSON.
+//     -- not-required to make a schema field not required.
+//     -- hidden to exclude field from OpenAPI generation.
 //   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
@@ -108,14 +109,14 @@ func WithExtraSchemaWorkItemAssignedUserJoin(joins ExtraSchemaWorkItemAssignedUs
 
 // WorkItem__WIAU_ExtraSchemaWorkItemAssignedUser represents a M2M join against "extra_schema.work_item_assigned_user"
 type WorkItem__WIAU_ExtraSchemaWorkItemAssignedUser struct {
-	WorkItem ExtraSchemaWorkItem `json:"workItem" db:"work_items" required:"true"`
-	Role     NullWorkItemRole    `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+	WorkItem ExtraSchemaWorkItem         `json:"workItem" db:"work_items" required:"true"`
+	Role     ExtraSchemaNullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // User__WIAU_ExtraSchemaWorkItemAssignedUser represents a M2M join against "extra_schema.work_item_assigned_user"
 type User__WIAU_ExtraSchemaWorkItemAssignedUser struct {
-	User ExtraSchemaUser  `json:"user" db:"users" required:"true"`
-	Role NullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+	User ExtraSchemaUser             `json:"user" db:"users" required:"true"`
+	Role ExtraSchemaNullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // WithExtraSchemaWorkItemAssignedUserFilters adds the given filters, which can be dynamically parameterized
