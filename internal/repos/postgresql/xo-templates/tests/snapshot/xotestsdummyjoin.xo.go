@@ -15,7 +15,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// DummyJoin represents a row from 'xo_tests.dummy_join'.
+// XoTestsDummyJoin represents a row from 'xo_tests.dummy_join'.
 // Change properties via SQL column comments, joined with " && ":
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
@@ -23,68 +23,68 @@ import (
 //   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
-type DummyJoin struct {
-	DummyJoinID DummyJoinID `json:"dummyJoinID" db:"dummy_join_id" required:"true" nullable:"false"` // dummy_join_id
-	Name        *string     `json:"name" db:"name"`                                                  // name
+type XoTestsDummyJoin struct {
+	DummyJoinID XoTestsDummyJoinID `json:"dummyJoinID" db:"dummy_join_id" required:"true" nullable:"false"` // dummy_join_id
+	Name        *string            `json:"name" db:"name"`                                                  // name
 }
 
-// DummyJoinCreateParams represents insert params for 'xo_tests.dummy_join'.
-type DummyJoinCreateParams struct {
+// XoTestsDummyJoinCreateParams represents insert params for 'xo_tests.dummy_join'.
+type XoTestsDummyJoinCreateParams struct {
 	Name *string `json:"name"` // name
 }
 
-type DummyJoinID int
+type XoTestsDummyJoinID int
 
-// CreateDummyJoin creates a new DummyJoin in the database with the given params.
-func CreateDummyJoin(ctx context.Context, db DB, params *DummyJoinCreateParams) (*DummyJoin, error) {
-	dj := &DummyJoin{
+// CreateXoTestsDummyJoin creates a new XoTestsDummyJoin in the database with the given params.
+func CreateXoTestsDummyJoin(ctx context.Context, db DB, params *XoTestsDummyJoinCreateParams) (*XoTestsDummyJoin, error) {
+	xtdj := &XoTestsDummyJoin{
 		Name: params.Name,
 	}
 
-	return dj.Insert(ctx, db)
+	return xtdj.Insert(ctx, db)
 }
 
-// DummyJoinUpdateParams represents update params for 'xo_tests.dummy_join'.
-type DummyJoinUpdateParams struct {
+// XoTestsDummyJoinUpdateParams represents update params for 'xo_tests.dummy_join'.
+type XoTestsDummyJoinUpdateParams struct {
 	Name **string `json:"name"` // name
 }
 
 // SetUpdateParams updates xo_tests.dummy_join struct fields with the specified params.
-func (dj *DummyJoin) SetUpdateParams(params *DummyJoinUpdateParams) {
+func (xtdj *XoTestsDummyJoin) SetUpdateParams(params *XoTestsDummyJoinUpdateParams) {
 	if params.Name != nil {
-		dj.Name = *params.Name
+		xtdj.Name = *params.Name
 	}
 }
 
-type DummyJoinSelectConfig struct {
+type XoTestsDummyJoinSelectConfig struct {
 	limit   string
 	orderBy string
-	joins   DummyJoinJoins
+	joins   XoTestsDummyJoinJoins
 	filters map[string][]any
 }
-type DummyJoinSelectConfigOption func(*DummyJoinSelectConfig)
+type XoTestsDummyJoinSelectConfigOption func(*XoTestsDummyJoinSelectConfig)
 
-// WithDummyJoinLimit limits row selection.
-func WithDummyJoinLimit(limit int) DummyJoinSelectConfigOption {
-	return func(s *DummyJoinSelectConfig) {
+// WithXoTestsDummyJoinLimit limits row selection.
+func WithXoTestsDummyJoinLimit(limit int) XoTestsDummyJoinSelectConfigOption {
+	return func(s *XoTestsDummyJoinSelectConfig) {
 		if limit > 0 {
 			s.limit = fmt.Sprintf(" limit %d ", limit)
 		}
 	}
 }
 
-type DummyJoinOrderBy string
+type XoTestsDummyJoinOrderBy string
 
-type DummyJoinJoins struct{}
+type XoTestsDummyJoinJoins struct{}
 
-// WithDummyJoinJoin joins with the given tables.
-func WithDummyJoinJoin(joins DummyJoinJoins) DummyJoinSelectConfigOption {
-	return func(s *DummyJoinSelectConfig) {
-		s.joins = DummyJoinJoins{}
+// WithXoTestsDummyJoinJoin joins with the given tables.
+func WithXoTestsDummyJoinJoin(joins XoTestsDummyJoinJoins) XoTestsDummyJoinSelectConfigOption {
+	return func(s *XoTestsDummyJoinSelectConfig) {
+		s.joins = XoTestsDummyJoinJoins{}
 	}
 }
 
-// WithDummyJoinFilters adds the given filters, which can be dynamically parameterized
+// WithXoTestsDummyJoinFilters adds the given filters, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -93,14 +93,14 @@ func WithDummyJoinJoin(joins DummyJoinJoins) DummyJoinSelectConfigOption {
 //		`(col.created_at > $i OR
 //		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
 //	}
-func WithDummyJoinFilters(filters map[string][]any) DummyJoinSelectConfigOption {
-	return func(s *DummyJoinSelectConfig) {
+func WithXoTestsDummyJoinFilters(filters map[string][]any) XoTestsDummyJoinSelectConfigOption {
+	return func(s *XoTestsDummyJoinSelectConfig) {
 		s.filters = filters
 	}
 }
 
-// Insert inserts the DummyJoin to the database.
-func (dj *DummyJoin) Insert(ctx context.Context, db DB) (*DummyJoin, error) {
+// Insert inserts the XoTestsDummyJoin to the database.
+func (xtdj *XoTestsDummyJoin) Insert(ctx context.Context, db DB) (*XoTestsDummyJoin, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO xo_tests.dummy_join (
 	name
@@ -108,84 +108,84 @@ func (dj *DummyJoin) Insert(ctx context.Context, db DB) (*DummyJoin, error) {
 	$1
 	) RETURNING * `
 	// run
-	logf(sqlstr, dj.Name)
+	logf(sqlstr, xtdj.Name)
 
-	rows, err := db.Query(ctx, sqlstr, dj.Name)
+	rows, err := db.Query(ctx, sqlstr, xtdj.Name)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Insert/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsDummyJoin/Insert/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
-	newdj, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DummyJoin])
+	newxtdj, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[XoTestsDummyJoin])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Dummy join", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsDummyJoin/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 
-	*dj = newdj
+	*xtdj = newxtdj
 
-	return dj, nil
+	return xtdj, nil
 }
 
-// Update updates a DummyJoin in the database.
-func (dj *DummyJoin) Update(ctx context.Context, db DB) (*DummyJoin, error) {
+// Update updates a XoTestsDummyJoin in the database.
+func (xtdj *XoTestsDummyJoin) Update(ctx context.Context, db DB) (*XoTestsDummyJoin, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.dummy_join SET 
 	name = $1 
 	WHERE dummy_join_id = $2 
 	RETURNING * `
 	// run
-	logf(sqlstr, dj.Name, dj.DummyJoinID)
+	logf(sqlstr, xtdj.Name, xtdj.DummyJoinID)
 
-	rows, err := db.Query(ctx, sqlstr, dj.Name, dj.DummyJoinID)
+	rows, err := db.Query(ctx, sqlstr, xtdj.Name, xtdj.DummyJoinID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Update/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsDummyJoin/Update/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
-	newdj, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DummyJoin])
+	newxtdj, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[XoTestsDummyJoin])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Dummy join", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsDummyJoin/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
-	*dj = newdj
+	*xtdj = newxtdj
 
-	return dj, nil
+	return xtdj, nil
 }
 
-// Upsert upserts a DummyJoin in the database.
+// Upsert upserts a XoTestsDummyJoin in the database.
 // Requires appropriate PK(s) to be set beforehand.
-func (dj *DummyJoin) Upsert(ctx context.Context, db DB, params *DummyJoinCreateParams) (*DummyJoin, error) {
+func (xtdj *XoTestsDummyJoin) Upsert(ctx context.Context, db DB, params *XoTestsDummyJoinCreateParams) (*XoTestsDummyJoin, error) {
 	var err error
 
-	dj.Name = params.Name
+	xtdj.Name = params.Name
 
-	dj, err = dj.Insert(ctx, db)
+	xtdj, err = xtdj.Insert(ctx, db)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Dummy join", Err: err})
 			}
-			dj, err = dj.Update(ctx, db)
+			xtdj, err = xtdj.Update(ctx, db)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Dummy join", Err: err})
 			}
 		}
 	}
 
-	return dj, err
+	return xtdj, err
 }
 
-// Delete deletes the DummyJoin from the database.
-func (dj *DummyJoin) Delete(ctx context.Context, db DB) error {
+// Delete deletes the XoTestsDummyJoin from the database.
+func (xtdj *XoTestsDummyJoin) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
 	sqlstr := `DELETE FROM xo_tests.dummy_join 
 	WHERE dummy_join_id = $1 `
 	// run
-	if _, err := db.Exec(ctx, sqlstr, dj.DummyJoinID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, xtdj.DummyJoinID); err != nil {
 		return logerror(err)
 	}
 	return nil
 }
 
-// DummyJoinPaginatedByDummyJoinID returns a cursor-paginated list of DummyJoin.
-func DummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID DummyJoinID, direction models.Direction, opts ...DummyJoinSelectConfigOption) ([]DummyJoin, error) {
-	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
+// XoTestsDummyJoinPaginatedByDummyJoinID returns a cursor-paginated list of XoTestsDummyJoin.
+func XoTestsDummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID XoTestsDummyJoinID, direction models.Direction, opts ...XoTestsDummyJoinSelectConfigOption) ([]XoTestsDummyJoin, error) {
+	c := &XoTestsDummyJoinSelectConfig{joins: XoTestsDummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -241,26 +241,26 @@ func DummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID Dum
   ORDER BY 
 		dummy_join_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* DummyJoinPaginatedByDummyJoinID */\n" + sqlstr
+	sqlstr = "/* XoTestsDummyJoinPaginatedByDummyJoinID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsDummyJoin/Paginated/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[DummyJoin])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[XoTestsDummyJoin])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("DummyJoin/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Dummy join", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsDummyJoin/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 	return res, nil
 }
 
-// DummyJoinByDummyJoinID retrieves a row from 'xo_tests.dummy_join' as a DummyJoin.
+// XoTestsDummyJoinByDummyJoinID retrieves a row from 'xo_tests.dummy_join' as a XoTestsDummyJoin.
 //
 // Generated from index 'dummy_join_pkey'.
-func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID DummyJoinID, opts ...DummyJoinSelectConfigOption) (*DummyJoin, error) {
-	c := &DummyJoinSelectConfig{joins: DummyJoinJoins{}, filters: make(map[string][]any)}
+func XoTestsDummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID XoTestsDummyJoinID, opts ...XoTestsDummyJoinSelectConfigOption) (*XoTestsDummyJoin, error) {
+	c := &XoTestsDummyJoinSelectConfig{joins: XoTestsDummyJoinJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -311,7 +311,7 @@ func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID DummyJoinID,
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
-	sqlstr = "/* DummyJoinByDummyJoinID */\n" + sqlstr
+	sqlstr = "/* XoTestsDummyJoinByDummyJoinID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, dummyJoinID)
@@ -319,10 +319,10 @@ func DummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID DummyJoinID,
 	if err != nil {
 		return nil, logerror(fmt.Errorf("dummy_join/DummyJoinByDummyJoinID/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
-	dj, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[DummyJoin])
+	xtdj, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[XoTestsDummyJoin])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("dummy_join/DummyJoinByDummyJoinID/pgx.CollectOneRow: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
 
-	return &dj, nil
+	return &xtdj, nil
 }

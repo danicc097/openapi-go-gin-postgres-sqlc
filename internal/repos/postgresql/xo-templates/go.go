@@ -401,6 +401,8 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 			// If -2 is provided, skip package template outputs as requested.
 			// If -a is provided, skip to avoid duplicating the template.
 			_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
+			// TODO: we should merge public and custom schemas generation in one with comma separated list.
+			// so we can generate f.entities properly
 			if !NotFirst(ctx) && !Append(ctx) && schemaOpt == "public" {
 				emit(xo.Template{
 					Partial: "db",
@@ -2219,7 +2221,7 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 					// FIXME:
 					typ := f.typefn(col.Type)
 					if strings.HasPrefix(typ, "Null") && f.schemaPrefix != "public" && col.EnumSchema != "public" {
-						typ = camelExport(f.schemaPrefix) + "Null" +  strings.TrimPrefix(typ, "Null")
+						typ = camelExport(f.schemaPrefix) + "Null" + strings.TrimPrefix(typ, "Null")
 					}
 
 					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), typ, tag))
@@ -3721,7 +3723,7 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 
 			fmt.Printf("field.Type: %v\n", field.Type)
 			if strings.HasPrefix(field.Type, "Null") && f.schemaPrefix != "public" && field.EnumSchema != "public" {
-				field.Type = camelExport(f.schemaPrefix) + "Null" +  strings.TrimPrefix(field.Type, "Null")
+				field.Type = camelExport(f.schemaPrefix) + "Null" + strings.TrimPrefix(field.Type, "Null")
 			}
 
 			s += " " + f.typefn(field.Type)

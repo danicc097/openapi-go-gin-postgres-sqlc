@@ -16,7 +16,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// UserAPIKey represents a row from 'xo_tests.user_api_keys'.
+// XoTestsUserAPIKey represents a row from 'xo_tests.user_api_keys'.
 // Change properties via SQL column comments, joined with " && ":
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
@@ -24,84 +24,84 @@ import (
 //   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
-type UserAPIKey struct {
-	UserAPIKeyID UserAPIKeyID `json:"-" db:"user_api_key_id" nullable:"false"`                    // user_api_key_id
-	APIKey       string       `json:"apiKey" db:"api_key" required:"true" nullable:"false"`       // api_key
-	ExpiresOn    time.Time    `json:"expiresOn" db:"expires_on" required:"true" nullable:"false"` // expires_on
-	UserID       UserID       `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
+type XoTestsUserAPIKey struct {
+	UserAPIKeyID XoTestsUserAPIKeyID `json:"-" db:"user_api_key_id" nullable:"false"`                    // user_api_key_id
+	APIKey       string              `json:"apiKey" db:"api_key" required:"true" nullable:"false"`       // api_key
+	ExpiresOn    time.Time           `json:"expiresOn" db:"expires_on" required:"true" nullable:"false"` // expires_on
+	UserID       XoTestsUserID       `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
 
-	UserJoin *User `json:"-" db:"user_user_id" openapi-go:"ignore"` // O2O users (inferred)
+	UserJoin *XoTestsUser `json:"-" db:"user_user_id" openapi-go:"ignore"` // O2O users (inferred)
 }
 
-// UserAPIKeyCreateParams represents insert params for 'xo_tests.user_api_keys'.
-type UserAPIKeyCreateParams struct {
-	APIKey    string    `json:"apiKey" required:"true" nullable:"false"`    // api_key
-	ExpiresOn time.Time `json:"expiresOn" required:"true" nullable:"false"` // expires_on
-	UserID    UserID    `json:"userID" required:"true" nullable:"false"`    // user_id
+// XoTestsUserAPIKeyCreateParams represents insert params for 'xo_tests.user_api_keys'.
+type XoTestsUserAPIKeyCreateParams struct {
+	APIKey    string        `json:"apiKey" required:"true" nullable:"false"`    // api_key
+	ExpiresOn time.Time     `json:"expiresOn" required:"true" nullable:"false"` // expires_on
+	UserID    XoTestsUserID `json:"userID" required:"true" nullable:"false"`    // user_id
 }
 
-type UserAPIKeyID int
+type XoTestsUserAPIKeyID int
 
-// CreateUserAPIKey creates a new UserAPIKey in the database with the given params.
-func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams) (*UserAPIKey, error) {
-	uak := &UserAPIKey{
+// CreateXoTestsUserAPIKey creates a new XoTestsUserAPIKey in the database with the given params.
+func CreateXoTestsUserAPIKey(ctx context.Context, db DB, params *XoTestsUserAPIKeyCreateParams) (*XoTestsUserAPIKey, error) {
+	xtuak := &XoTestsUserAPIKey{
 		APIKey:    params.APIKey,
 		ExpiresOn: params.ExpiresOn,
 		UserID:    params.UserID,
 	}
 
-	return uak.Insert(ctx, db)
+	return xtuak.Insert(ctx, db)
 }
 
-// UserAPIKeyUpdateParams represents update params for 'xo_tests.user_api_keys'.
-type UserAPIKeyUpdateParams struct {
-	APIKey    *string    `json:"apiKey" nullable:"false"`    // api_key
-	ExpiresOn *time.Time `json:"expiresOn" nullable:"false"` // expires_on
-	UserID    *UserID    `json:"userID" nullable:"false"`    // user_id
+// XoTestsUserAPIKeyUpdateParams represents update params for 'xo_tests.user_api_keys'.
+type XoTestsUserAPIKeyUpdateParams struct {
+	APIKey    *string        `json:"apiKey" nullable:"false"`    // api_key
+	ExpiresOn *time.Time     `json:"expiresOn" nullable:"false"` // expires_on
+	UserID    *XoTestsUserID `json:"userID" nullable:"false"`    // user_id
 }
 
 // SetUpdateParams updates xo_tests.user_api_keys struct fields with the specified params.
-func (uak *UserAPIKey) SetUpdateParams(params *UserAPIKeyUpdateParams) {
+func (xtuak *XoTestsUserAPIKey) SetUpdateParams(params *XoTestsUserAPIKeyUpdateParams) {
 	if params.APIKey != nil {
-		uak.APIKey = *params.APIKey
+		xtuak.APIKey = *params.APIKey
 	}
 	if params.ExpiresOn != nil {
-		uak.ExpiresOn = *params.ExpiresOn
+		xtuak.ExpiresOn = *params.ExpiresOn
 	}
 	if params.UserID != nil {
-		uak.UserID = *params.UserID
+		xtuak.UserID = *params.UserID
 	}
 }
 
-type UserAPIKeySelectConfig struct {
+type XoTestsUserAPIKeySelectConfig struct {
 	limit   string
 	orderBy string
-	joins   UserAPIKeyJoins
+	joins   XoTestsUserAPIKeyJoins
 	filters map[string][]any
 }
-type UserAPIKeySelectConfigOption func(*UserAPIKeySelectConfig)
+type XoTestsUserAPIKeySelectConfigOption func(*XoTestsUserAPIKeySelectConfig)
 
-// WithUserAPIKeyLimit limits row selection.
-func WithUserAPIKeyLimit(limit int) UserAPIKeySelectConfigOption {
-	return func(s *UserAPIKeySelectConfig) {
+// WithXoTestsUserAPIKeyLimit limits row selection.
+func WithXoTestsUserAPIKeyLimit(limit int) XoTestsUserAPIKeySelectConfigOption {
+	return func(s *XoTestsUserAPIKeySelectConfig) {
 		if limit > 0 {
 			s.limit = fmt.Sprintf(" limit %d ", limit)
 		}
 	}
 }
 
-type UserAPIKeyOrderBy string
+type XoTestsUserAPIKeyOrderBy string
 
 const (
-	UserAPIKeyExpiresOnDescNullsFirst UserAPIKeyOrderBy = " expires_on DESC NULLS FIRST "
-	UserAPIKeyExpiresOnDescNullsLast  UserAPIKeyOrderBy = " expires_on DESC NULLS LAST "
-	UserAPIKeyExpiresOnAscNullsFirst  UserAPIKeyOrderBy = " expires_on ASC NULLS FIRST "
-	UserAPIKeyExpiresOnAscNullsLast   UserAPIKeyOrderBy = " expires_on ASC NULLS LAST "
+	XoTestsUserAPIKeyExpiresOnDescNullsFirst XoTestsUserAPIKeyOrderBy = " expires_on DESC NULLS FIRST "
+	XoTestsUserAPIKeyExpiresOnDescNullsLast  XoTestsUserAPIKeyOrderBy = " expires_on DESC NULLS LAST "
+	XoTestsUserAPIKeyExpiresOnAscNullsFirst  XoTestsUserAPIKeyOrderBy = " expires_on ASC NULLS FIRST "
+	XoTestsUserAPIKeyExpiresOnAscNullsLast   XoTestsUserAPIKeyOrderBy = " expires_on ASC NULLS LAST "
 )
 
-// WithUserAPIKeyOrderBy orders results by the given columns.
-func WithUserAPIKeyOrderBy(rows ...UserAPIKeyOrderBy) UserAPIKeySelectConfigOption {
-	return func(s *UserAPIKeySelectConfig) {
+// WithXoTestsUserAPIKeyOrderBy orders results by the given columns.
+func WithXoTestsUserAPIKeyOrderBy(rows ...XoTestsUserAPIKeyOrderBy) XoTestsUserAPIKeySelectConfigOption {
+	return func(s *XoTestsUserAPIKeySelectConfig) {
 		if len(rows) > 0 {
 			orderStrings := make([]string, len(rows))
 			for i, row := range rows {
@@ -113,20 +113,20 @@ func WithUserAPIKeyOrderBy(rows ...UserAPIKeyOrderBy) UserAPIKeySelectConfigOpti
 	}
 }
 
-type UserAPIKeyJoins struct {
+type XoTestsUserAPIKeyJoins struct {
 	User bool // O2O users
 }
 
-// WithUserAPIKeyJoin joins with the given tables.
-func WithUserAPIKeyJoin(joins UserAPIKeyJoins) UserAPIKeySelectConfigOption {
-	return func(s *UserAPIKeySelectConfig) {
-		s.joins = UserAPIKeyJoins{
+// WithXoTestsUserAPIKeyJoin joins with the given tables.
+func WithXoTestsUserAPIKeyJoin(joins XoTestsUserAPIKeyJoins) XoTestsUserAPIKeySelectConfigOption {
+	return func(s *XoTestsUserAPIKeySelectConfig) {
+		s.joins = XoTestsUserAPIKeyJoins{
 			User: s.joins.User || joins.User,
 		}
 	}
 }
 
-// WithUserAPIKeyFilters adds the given filters, which can be dynamically parameterized
+// WithXoTestsUserAPIKeyFilters adds the given filters, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -135,24 +135,24 @@ func WithUserAPIKeyJoin(joins UserAPIKeyJoins) UserAPIKeySelectConfigOption {
 //		`(col.created_at > $i OR
 //		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
 //	}
-func WithUserAPIKeyFilters(filters map[string][]any) UserAPIKeySelectConfigOption {
-	return func(s *UserAPIKeySelectConfig) {
+func WithXoTestsUserAPIKeyFilters(filters map[string][]any) XoTestsUserAPIKeySelectConfigOption {
+	return func(s *XoTestsUserAPIKeySelectConfig) {
 		s.filters = filters
 	}
 }
 
-const userAPIKeyTableUserJoinSQL = `-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
+const xoTestsUserAPIKeyTableUserJoinSQL = `-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join xo_tests.users as _user_api_keys_user_id on _user_api_keys_user_id.user_id = user_api_keys.user_id
 `
 
-const userAPIKeyTableUserSelectSQL = `(case when _user_api_keys_user_id.user_id is not null then row(_user_api_keys_user_id.*) end) as user_user_id`
+const xoTestsUserAPIKeyTableUserSelectSQL = `(case when _user_api_keys_user_id.user_id is not null then row(_user_api_keys_user_id.*) end) as user_user_id`
 
-const userAPIKeyTableUserGroupBySQL = `_user_api_keys_user_id.user_id,
+const xoTestsUserAPIKeyTableUserGroupBySQL = `_user_api_keys_user_id.user_id,
       _user_api_keys_user_id.user_id,
 	user_api_keys.user_api_key_id`
 
-// Insert inserts the UserAPIKey to the database.
-func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
+// Insert inserts the XoTestsUserAPIKey to the database.
+func (xtuak *XoTestsUserAPIKey) Insert(ctx context.Context, db DB) (*XoTestsUserAPIKey, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO xo_tests.user_api_keys (
 	api_key, expires_on, user_id
@@ -160,86 +160,86 @@ func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 	$1, $2, $3
 	) RETURNING * `
 	// run
-	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID)
+	logf(sqlstr, xtuak.APIKey, xtuak.ExpiresOn, xtuak.UserID)
 
-	rows, err := db.Query(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID)
+	rows, err := db.Query(ctx, sqlstr, xtuak.APIKey, xtuak.ExpiresOn, xtuak.UserID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsUserAPIKey/Insert/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
-	newuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	newxtuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[XoTestsUserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "User api key", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsUserAPIKey/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 
-	*uak = newuak
+	*xtuak = newxtuak
 
-	return uak, nil
+	return xtuak, nil
 }
 
-// Update updates a UserAPIKey in the database.
-func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
+// Update updates a XoTestsUserAPIKey in the database.
+func (xtuak *XoTestsUserAPIKey) Update(ctx context.Context, db DB) (*XoTestsUserAPIKey, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.user_api_keys SET 
 	api_key = $1, expires_on = $2, user_id = $3 
 	WHERE user_api_key_id = $4 
 	RETURNING * `
 	// run
-	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
+	logf(sqlstr, xtuak.APIKey, xtuak.ExpiresOn, xtuak.UserID, xtuak.UserAPIKeyID)
 
-	rows, err := db.Query(ctx, sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
+	rows, err := db.Query(ctx, sqlstr, xtuak.APIKey, xtuak.ExpiresOn, xtuak.UserID, xtuak.UserAPIKeyID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Update/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsUserAPIKey/Update/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
-	newuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	newxtuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[XoTestsUserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Update/pgx.CollectOneRow: %w", &XoError{Entity: "User api key", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsUserAPIKey/Update/pgx.CollectOneRow: %w", &XoError{Entity: "User api key", Err: err}))
 	}
-	*uak = newuak
+	*xtuak = newxtuak
 
-	return uak, nil
+	return xtuak, nil
 }
 
-// Upsert upserts a UserAPIKey in the database.
+// Upsert upserts a XoTestsUserAPIKey in the database.
 // Requires appropriate PK(s) to be set beforehand.
-func (uak *UserAPIKey) Upsert(ctx context.Context, db DB, params *UserAPIKeyCreateParams) (*UserAPIKey, error) {
+func (xtuak *XoTestsUserAPIKey) Upsert(ctx context.Context, db DB, params *XoTestsUserAPIKeyCreateParams) (*XoTestsUserAPIKey, error) {
 	var err error
 
-	uak.APIKey = params.APIKey
-	uak.ExpiresOn = params.ExpiresOn
-	uak.UserID = params.UserID
+	xtuak.APIKey = params.APIKey
+	xtuak.ExpiresOn = params.ExpiresOn
+	xtuak.UserID = params.UserID
 
-	uak, err = uak.Insert(ctx, db)
+	xtuak, err = xtuak.Insert(ctx, db)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "User api key", Err: err})
 			}
-			uak, err = uak.Update(ctx, db)
+			xtuak, err = xtuak.Update(ctx, db)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "User api key", Err: err})
 			}
 		}
 	}
 
-	return uak, err
+	return xtuak, err
 }
 
-// Delete deletes the UserAPIKey from the database.
-func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
+// Delete deletes the XoTestsUserAPIKey from the database.
+func (xtuak *XoTestsUserAPIKey) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
 	sqlstr := `DELETE FROM xo_tests.user_api_keys 
 	WHERE user_api_key_id = $1 `
 	// run
-	if _, err := db.Exec(ctx, sqlstr, uak.UserAPIKeyID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, xtuak.UserAPIKeyID); err != nil {
 		return logerror(err)
 	}
 	return nil
 }
 
-// UserAPIKeyPaginatedByUserAPIKeyID returns a cursor-paginated list of UserAPIKey.
-func UserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKeyID, direction models.Direction, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
-	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
+// XoTestsUserAPIKeyPaginatedByUserAPIKeyID returns a cursor-paginated list of XoTestsUserAPIKey.
+func XoTestsUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID XoTestsUserAPIKeyID, direction models.Direction, opts ...XoTestsUserAPIKeySelectConfigOption) ([]XoTestsUserAPIKey, error) {
+	c := &XoTestsUserAPIKeySelectConfig{joins: XoTestsUserAPIKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -272,9 +272,9 @@ func UserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID 
 	var groupByClauses []string
 
 	if c.joins.User {
-		selectClauses = append(selectClauses, userAPIKeyTableUserSelectSQL)
-		joinClauses = append(joinClauses, userAPIKeyTableUserJoinSQL)
-		groupByClauses = append(groupByClauses, userAPIKeyTableUserGroupBySQL)
+		selectClauses = append(selectClauses, xoTestsUserAPIKeyTableUserSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserAPIKeyTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserAPIKeyTableUserGroupBySQL)
 	}
 
 	selects := ""
@@ -303,26 +303,26 @@ func UserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID 
   ORDER BY 
 		user_api_key_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* UserAPIKeyPaginatedByUserAPIKeyID */\n" + sqlstr
+	sqlstr = "/* XoTestsUserAPIKeyPaginatedByUserAPIKeyID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsUserAPIKey/Paginated/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[XoTestsUserAPIKey])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/pgx.CollectRows: %w", &XoError{Entity: "User api key", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsUserAPIKey/Paginated/pgx.CollectRows: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 	return res, nil
 }
 
-// UserAPIKeyByAPIKey retrieves a row from 'xo_tests.user_api_keys' as a UserAPIKey.
+// XoTestsUserAPIKeyByAPIKey retrieves a row from 'xo_tests.user_api_keys' as a XoTestsUserAPIKey.
 //
 // Generated from index 'user_api_keys_api_key_key'.
-func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
-	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
+func XoTestsUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...XoTestsUserAPIKeySelectConfigOption) (*XoTestsUserAPIKey, error) {
+	c := &XoTestsUserAPIKeySelectConfig{joins: XoTestsUserAPIKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -355,9 +355,9 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 	var groupByClauses []string
 
 	if c.joins.User {
-		selectClauses = append(selectClauses, userAPIKeyTableUserSelectSQL)
-		joinClauses = append(joinClauses, userAPIKeyTableUserJoinSQL)
-		groupByClauses = append(groupByClauses, userAPIKeyTableUserGroupBySQL)
+		selectClauses = append(selectClauses, xoTestsUserAPIKeyTableUserSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserAPIKeyTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserAPIKeyTableUserGroupBySQL)
 	}
 
 	selects := ""
@@ -381,7 +381,7 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
-	sqlstr = "/* UserAPIKeyByAPIKey */\n" + sqlstr
+	sqlstr = "/* XoTestsUserAPIKeyByAPIKey */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, apiKey)
@@ -389,19 +389,19 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
-	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	xtuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[XoTestsUserAPIKey])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/pgx.CollectOneRow: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 
-	return &uak, nil
+	return &xtuak, nil
 }
 
-// UserAPIKeyByUserAPIKeyID retrieves a row from 'xo_tests.user_api_keys' as a UserAPIKey.
+// XoTestsUserAPIKeyByUserAPIKeyID retrieves a row from 'xo_tests.user_api_keys' as a XoTestsUserAPIKey.
 //
 // Generated from index 'user_api_keys_pkey'.
-func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKeyID, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
-	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
+func XoTestsUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID XoTestsUserAPIKeyID, opts ...XoTestsUserAPIKeySelectConfigOption) (*XoTestsUserAPIKey, error) {
+	c := &XoTestsUserAPIKeySelectConfig{joins: XoTestsUserAPIKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -434,9 +434,9 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKe
 	var groupByClauses []string
 
 	if c.joins.User {
-		selectClauses = append(selectClauses, userAPIKeyTableUserSelectSQL)
-		joinClauses = append(joinClauses, userAPIKeyTableUserJoinSQL)
-		groupByClauses = append(groupByClauses, userAPIKeyTableUserGroupBySQL)
+		selectClauses = append(selectClauses, xoTestsUserAPIKeyTableUserSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserAPIKeyTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserAPIKeyTableUserGroupBySQL)
 	}
 
 	selects := ""
@@ -460,7 +460,7 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKe
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
-	sqlstr = "/* UserAPIKeyByUserAPIKeyID */\n" + sqlstr
+	sqlstr = "/* XoTestsUserAPIKeyByUserAPIKeyID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userAPIKeyID)
@@ -468,19 +468,19 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKe
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
-	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	xtuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[XoTestsUserAPIKey])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/pgx.CollectOneRow: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 
-	return &uak, nil
+	return &xtuak, nil
 }
 
-// UserAPIKeyByUserID retrieves a row from 'xo_tests.user_api_keys' as a UserAPIKey.
+// XoTestsUserAPIKeyByUserID retrieves a row from 'xo_tests.user_api_keys' as a XoTestsUserAPIKey.
 //
 // Generated from index 'user_api_keys_user_id_key'.
-func UserAPIKeyByUserID(ctx context.Context, db DB, userID UserID, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
-	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
+func XoTestsUserAPIKeyByUserID(ctx context.Context, db DB, userID XoTestsUserID, opts ...XoTestsUserAPIKeySelectConfigOption) (*XoTestsUserAPIKey, error) {
+	c := &XoTestsUserAPIKeySelectConfig{joins: XoTestsUserAPIKeyJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -513,9 +513,9 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID UserID, opts ...UserA
 	var groupByClauses []string
 
 	if c.joins.User {
-		selectClauses = append(selectClauses, userAPIKeyTableUserSelectSQL)
-		joinClauses = append(joinClauses, userAPIKeyTableUserJoinSQL)
-		groupByClauses = append(groupByClauses, userAPIKeyTableUserGroupBySQL)
+		selectClauses = append(selectClauses, xoTestsUserAPIKeyTableUserSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserAPIKeyTableUserJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserAPIKeyTableUserGroupBySQL)
 	}
 
 	selects := ""
@@ -539,7 +539,7 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID UserID, opts ...UserA
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
-	sqlstr = "/* UserAPIKeyByUserID */\n" + sqlstr
+	sqlstr = "/* XoTestsUserAPIKeyByUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID)
@@ -547,17 +547,17 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID UserID, opts ...UserA
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
-	uak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[UserAPIKey])
+	xtuak, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[XoTestsUserAPIKey])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/pgx.CollectOneRow: %w", &XoError{Entity: "User api key", Err: err}))
 	}
 
-	return &uak, nil
+	return &xtuak, nil
 }
 
-// FKUser_UserID returns the User associated with the UserAPIKey's (UserID).
+// FKUser_UserID returns the User associated with the XoTestsUserAPIKey's (UserID).
 //
 // Generated from foreign key 'user_api_keys_user_id_fkey'.
-func (uak *UserAPIKey) FKUser_UserID(ctx context.Context, db DB) (*User, error) {
-	return UserByUserID(ctx, db, uak.UserID)
+func (xtuak *XoTestsUserAPIKey) FKUser_UserID(ctx context.Context, db DB) (*XoTestsUser, error) {
+	return XoTestsUserByUserID(ctx, db, xtuak.UserID)
 }

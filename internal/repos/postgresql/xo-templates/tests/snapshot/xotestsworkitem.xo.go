@@ -15,7 +15,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-// WorkItem represents a row from 'xo_tests.work_items'.
+// XoTestsWorkItem represents a row from 'xo_tests.work_items'.
 // Change properties via SQL column comments, joined with " && ":
 //   - "properties":<p1>,<p2>,...
 //   - private to exclude a field from JSON.
@@ -23,90 +23,90 @@ import (
 //   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
-type WorkItem struct {
-	WorkItemID  WorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
-	Title       *string    `json:"title" db:"title"`                                              // title
-	Description *string    `json:"description" db:"description"`                                  // description
+type XoTestsWorkItem struct {
+	WorkItemID  XoTestsWorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
+	Title       *string           `json:"title" db:"title"`                                              // title
+	Description *string           `json:"description" db:"description"`                                  // description
 
-	DemoWorkItemJoin          *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
-	WorkItemAssignedUsersJoin *[]User__WIAU_WorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	DemoWorkItemJoin          *XoTestsDemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
+	WorkItemAssignedUsersJoin *[]User__WIAU_XoTestsWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
 }
 
-// WorkItemCreateParams represents insert params for 'xo_tests.work_items'.
-type WorkItemCreateParams struct {
+// XoTestsWorkItemCreateParams represents insert params for 'xo_tests.work_items'.
+type XoTestsWorkItemCreateParams struct {
 	Description *string `json:"description"` // description
 	Title       *string `json:"title"`       // title
 }
 
-type WorkItemID int
+type XoTestsWorkItemID int
 
-// CreateWorkItem creates a new WorkItem in the database with the given params.
-func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
-	wi := &WorkItem{
+// CreateXoTestsWorkItem creates a new XoTestsWorkItem in the database with the given params.
+func CreateXoTestsWorkItem(ctx context.Context, db DB, params *XoTestsWorkItemCreateParams) (*XoTestsWorkItem, error) {
+	xtwi := &XoTestsWorkItem{
 		Description: params.Description,
 		Title:       params.Title,
 	}
 
-	return wi.Insert(ctx, db)
+	return xtwi.Insert(ctx, db)
 }
 
-// WorkItemUpdateParams represents update params for 'xo_tests.work_items'.
-type WorkItemUpdateParams struct {
+// XoTestsWorkItemUpdateParams represents update params for 'xo_tests.work_items'.
+type XoTestsWorkItemUpdateParams struct {
 	Description **string `json:"description"` // description
 	Title       **string `json:"title"`       // title
 }
 
 // SetUpdateParams updates xo_tests.work_items struct fields with the specified params.
-func (wi *WorkItem) SetUpdateParams(params *WorkItemUpdateParams) {
+func (xtwi *XoTestsWorkItem) SetUpdateParams(params *XoTestsWorkItemUpdateParams) {
 	if params.Description != nil {
-		wi.Description = *params.Description
+		xtwi.Description = *params.Description
 	}
 	if params.Title != nil {
-		wi.Title = *params.Title
+		xtwi.Title = *params.Title
 	}
 }
 
-type WorkItemSelectConfig struct {
+type XoTestsWorkItemSelectConfig struct {
 	limit   string
 	orderBy string
-	joins   WorkItemJoins
+	joins   XoTestsWorkItemJoins
 	filters map[string][]any
 }
-type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
+type XoTestsWorkItemSelectConfigOption func(*XoTestsWorkItemSelectConfig)
 
-// WithWorkItemLimit limits row selection.
-func WithWorkItemLimit(limit int) WorkItemSelectConfigOption {
-	return func(s *WorkItemSelectConfig) {
+// WithXoTestsWorkItemLimit limits row selection.
+func WithXoTestsWorkItemLimit(limit int) XoTestsWorkItemSelectConfigOption {
+	return func(s *XoTestsWorkItemSelectConfig) {
 		if limit > 0 {
 			s.limit = fmt.Sprintf(" limit %d ", limit)
 		}
 	}
 }
 
-type WorkItemOrderBy string
+type XoTestsWorkItemOrderBy string
 
-type WorkItemJoins struct {
+type XoTestsWorkItemJoins struct {
 	DemoWorkItem  bool // O2O demo_work_items
 	AssignedUsers bool // M2M work_item_assigned_user
 }
 
-// WithWorkItemJoin joins with the given tables.
-func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
-	return func(s *WorkItemSelectConfig) {
-		s.joins = WorkItemJoins{
+// WithXoTestsWorkItemJoin joins with the given tables.
+func WithXoTestsWorkItemJoin(joins XoTestsWorkItemJoins) XoTestsWorkItemSelectConfigOption {
+	return func(s *XoTestsWorkItemSelectConfig) {
+		s.joins = XoTestsWorkItemJoins{
 			DemoWorkItem:  s.joins.DemoWorkItem || joins.DemoWorkItem,
 			AssignedUsers: s.joins.AssignedUsers || joins.AssignedUsers,
 		}
 	}
 }
 
-// User__WIAU_WorkItem represents a M2M join against "xo_tests.work_item_assigned_user"
-type User__WIAU_WorkItem struct {
-	User User             `json:"user" db:"users" required:"true"`
-	Role NullWorkItemRole `json:"role" db:"role" required:"true" `
+// User__WIAU_XoTestsWorkItem represents a M2M join against "xo_tests.work_item_assigned_user"
+type User__WIAU_XoTestsWorkItem struct {
+	User XoTestsUser             `json:"user" db:"users" required:"true"`
+	Role XoTestsNullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
-// WithWorkItemFilters adds the given filters, which can be dynamically parameterized
+// WithXoTestsWorkItemFilters adds the given filters, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -115,22 +115,22 @@ type User__WIAU_WorkItem struct {
 //		`(col.created_at > $i OR
 //		col.is_closed = $i)`: {time.Now().Add(-24 * time.Hour), true},
 //	}
-func WithWorkItemFilters(filters map[string][]any) WorkItemSelectConfigOption {
-	return func(s *WorkItemSelectConfig) {
+func WithXoTestsWorkItemFilters(filters map[string][]any) XoTestsWorkItemSelectConfigOption {
+	return func(s *XoTestsWorkItemSelectConfig) {
 		s.filters = filters
 	}
 }
 
-const workItemTableDemoWorkItemJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
+const xoTestsWorkItemTableDemoWorkItemJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join xo_tests.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id
 `
 
-const workItemTableDemoWorkItemSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id`
+const xoTestsWorkItemTableDemoWorkItemSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id`
 
-const workItemTableDemoWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
+const xoTestsWorkItemTableDemoWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id`
 
-const workItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
+const xoTestsWorkItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
 left join (
 	select
 		work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
@@ -147,16 +147,16 @@ left join (
 ) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
 `
 
-const workItemTableAssignedUsersSelectSQL = `COALESCE(
+const xoTestsWorkItemTableAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_work_item_assigned_user_assigned_users.__users
 		, joined_work_item_assigned_user_assigned_users.role
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
-const workItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
+const xoTestsWorkItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
 
-// Insert inserts the WorkItem to the database.
-func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
+// Insert inserts the XoTestsWorkItem to the database.
+func (xtwi *XoTestsWorkItem) Insert(ctx context.Context, db DB) (*XoTestsWorkItem, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO xo_tests.work_items (
 	description, title
@@ -164,85 +164,85 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 	$1, $2
 	) RETURNING * `
 	// run
-	logf(sqlstr, wi.Description, wi.Title)
+	logf(sqlstr, xtwi.Description, xtwi.Title)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Description, wi.Title)
+	rows, err := db.Query(ctx, sqlstr, xtwi.Description, xtwi.Title)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Insert/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsWorkItem/Insert/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
-	newwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
+	newxtwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[XoTestsWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Work item", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsWorkItem/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 
-	*wi = newwi
+	*xtwi = newxtwi
 
-	return wi, nil
+	return xtwi, nil
 }
 
-// Update updates a WorkItem in the database.
-func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
+// Update updates a XoTestsWorkItem in the database.
+func (xtwi *XoTestsWorkItem) Update(ctx context.Context, db DB) (*XoTestsWorkItem, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.work_items SET 
 	description = $1, title = $2 
 	WHERE work_item_id = $3 
 	RETURNING * `
 	// run
-	logf(sqlstr, wi.Description, wi.Title, wi.WorkItemID)
+	logf(sqlstr, xtwi.Description, xtwi.Title, xtwi.WorkItemID)
 
-	rows, err := db.Query(ctx, sqlstr, wi.Description, wi.Title, wi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, xtwi.Description, xtwi.Title, xtwi.WorkItemID)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Update/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsWorkItem/Update/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
-	newwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
+	newxtwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[XoTestsWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Work item", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsWorkItem/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Work item", Err: err}))
 	}
-	*wi = newwi
+	*xtwi = newxtwi
 
-	return wi, nil
+	return xtwi, nil
 }
 
-// Upsert upserts a WorkItem in the database.
+// Upsert upserts a XoTestsWorkItem in the database.
 // Requires appropriate PK(s) to be set beforehand.
-func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreateParams) (*WorkItem, error) {
+func (xtwi *XoTestsWorkItem) Upsert(ctx context.Context, db DB, params *XoTestsWorkItemCreateParams) (*XoTestsWorkItem, error) {
 	var err error
 
-	wi.Description = params.Description
-	wi.Title = params.Title
+	xtwi.Description = params.Description
+	xtwi.Title = params.Title
 
-	wi, err = wi.Insert(ctx, db)
+	xtwi, err = xtwi.Insert(ctx, db)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
 				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Work item", Err: err})
 			}
-			wi, err = wi.Update(ctx, db)
+			xtwi, err = xtwi.Update(ctx, db)
 			if err != nil {
 				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Work item", Err: err})
 			}
 		}
 	}
 
-	return wi, err
+	return xtwi, err
 }
 
-// Delete deletes the WorkItem from the database.
-func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
+// Delete deletes the XoTestsWorkItem from the database.
+func (xtwi *XoTestsWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
 	sqlstr := `DELETE FROM xo_tests.work_items 
 	WHERE work_item_id = $1 `
 	// run
-	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID); err != nil {
+	if _, err := db.Exec(ctx, sqlstr, xtwi.WorkItemID); err != nil {
 		return logerror(err)
 	}
 	return nil
 }
 
-// WorkItemPaginatedByWorkItemID returns a cursor-paginated list of WorkItem.
-func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
+// XoTestsWorkItemPaginatedByWorkItemID returns a cursor-paginated list of XoTestsWorkItem.
+func XoTestsWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID XoTestsWorkItemID, direction models.Direction, opts ...XoTestsWorkItemSelectConfigOption) ([]XoTestsWorkItem, error) {
+	c := &XoTestsWorkItemSelectConfig{joins: XoTestsWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -275,15 +275,15 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 	var groupByClauses []string
 
 	if c.joins.DemoWorkItem {
-		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+		selectClauses = append(selectClauses, xoTestsWorkItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
 	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+		selectClauses = append(selectClauses, xoTestsWorkItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssignedUsersGroupBySQL)
 	}
 
 	selects := ""
@@ -311,26 +311,26 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
   ORDER BY 
 		work_item_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
-	sqlstr = "/* WorkItemPaginatedByWorkItemID */\n" + sqlstr
+	sqlstr = "/* XoTestsWorkItemPaginatedByWorkItemID */\n" + sqlstr
 
 	// run
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[XoTestsWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsWorkItem/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	return res, nil
 }
 
-// WorkItems retrieves a row from 'xo_tests.work_items' as a WorkItem.
+// XoTestsWorkItems retrieves a row from 'xo_tests.work_items' as a XoTestsWorkItem.
 //
 // Generated from index '[xo] base filter query'.
-func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
+func XoTestsWorkItems(ctx context.Context, db DB, opts ...XoTestsWorkItemSelectConfigOption) ([]XoTestsWorkItem, error) {
+	c := &XoTestsWorkItemSelectConfig{joins: XoTestsWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -363,15 +363,15 @@ func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) (
 	var groupByClauses []string
 
 	if c.joins.DemoWorkItem {
-		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+		selectClauses = append(selectClauses, xoTestsWorkItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
 	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+		selectClauses = append(selectClauses, xoTestsWorkItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssignedUsersGroupBySQL)
 	}
 
 	selects := ""
@@ -394,29 +394,29 @@ func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) (
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
-	sqlstr = "/* WorkItems */\n" + sqlstr
+	sqlstr = "/* XoTestsWorkItems */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, )
 	rows, err := db.Query(ctx, sqlstr, append([]any{}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsWorkItem/WorkItemsByDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[XoTestsWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDescription/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsWorkItem/WorkItemsByDescription/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	return res, nil
 }
 
-// WorkItemByWorkItemID retrieves a row from 'xo_tests.work_items' as a WorkItem.
+// XoTestsWorkItemByWorkItemID retrieves a row from 'xo_tests.work_items' as a XoTestsWorkItem.
 //
 // Generated from index 'work_items_pkey'.
-func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
-	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
+func XoTestsWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTestsWorkItemID, opts ...XoTestsWorkItemSelectConfigOption) (*XoTestsWorkItem, error) {
+	c := &XoTestsWorkItemSelectConfig{joins: XoTestsWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -449,15 +449,15 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 	var groupByClauses []string
 
 	if c.joins.DemoWorkItem {
-		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+		selectClauses = append(selectClauses, xoTestsWorkItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
 	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+		selectClauses = append(selectClauses, xoTestsWorkItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssignedUsersGroupBySQL)
 	}
 
 	selects := ""
@@ -480,7 +480,7 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
-	sqlstr = "/* WorkItemByWorkItemID */\n" + sqlstr
+	sqlstr = "/* XoTestsWorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
@@ -488,19 +488,19 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
-	wi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[WorkItem])
+	xtwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[XoTestsWorkItem])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/pgx.CollectOneRow: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 
-	return &wi, nil
+	return &xtwi, nil
 }
 
-// WorkItemsByTitle retrieves a row from 'xo_tests.work_items' as a WorkItem.
+// XoTestsWorkItemsByTitle retrieves a row from 'xo_tests.work_items' as a XoTestsWorkItem.
 //
 // Generated from index 'work_items_title_description_idx1'.
-func WorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{joins: WorkItemJoins{}, filters: make(map[string][]any)}
+func XoTestsWorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...XoTestsWorkItemSelectConfigOption) ([]XoTestsWorkItem, error) {
+	c := &XoTestsWorkItemSelectConfig{joins: XoTestsWorkItemJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -533,15 +533,15 @@ func WorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...WorkIte
 	var groupByClauses []string
 
 	if c.joins.DemoWorkItem {
-		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
+		selectClauses = append(selectClauses, xoTestsWorkItemTableDemoWorkItemSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableDemoWorkItemJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
 	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+		selectClauses = append(selectClauses, xoTestsWorkItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssignedUsersGroupBySQL)
 	}
 
 	selects := ""
@@ -564,20 +564,20 @@ func WorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...WorkIte
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
-	sqlstr = "/* WorkItemsByTitle */\n" + sqlstr
+	sqlstr = "/* XoTestsWorkItemsByTitle */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, title)
 	rows, err := db.Query(ctx, sqlstr, append([]any{title}, filterParams...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTitleDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsWorkItem/WorkItemsByTitleDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItem])
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[XoTestsWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTitleDescription/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
+		return nil, logerror(fmt.Errorf("XoTestsWorkItem/WorkItemsByTitleDescription/pgx.CollectRows: %w", &XoError{Entity: "Work item", Err: err}))
 	}
 	return res, nil
 }
