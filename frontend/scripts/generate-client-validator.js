@@ -31,6 +31,7 @@ const jsonSchemaFilePath = join(root, 'src/client-validator/gen/schema.json')
 const schema = readSchemaFromFile(jsonSchemaFilePath)
 modifyDateFormats(schema)
 modifyStringValidation(schema)
+deleteNestedKeys(schema, '$schema') // breaks ajv since it tries to resolve it
 saveSchemaToFile(schema, jsonSchemaFilePath)
 
 const outputFilePath = join(root, 'src/client-validator/gen/dereferenced-schema.json')
@@ -166,5 +167,17 @@ function readSchemaFromFile(filePath) {
     console.error(`Error reading schema from file: ${absolutePath}`)
     console.error(error)
     return null
+  }
+}
+
+function deleteNestedKeys(obj, key) {
+  for (const prop in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+      if (typeof obj[prop] === 'object') {
+        deleteNestedKeys(obj[prop], key)
+      } else if (prop === key) {
+        delete obj[prop]
+      }
+    }
   }
 }

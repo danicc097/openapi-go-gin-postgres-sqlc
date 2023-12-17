@@ -71,7 +71,6 @@ import { json } from 'react-router-dom'
 import { ApiError } from 'src/api/mutator'
 import DynamicFormErrorCallout from 'src/components/Callout/DynamicFormErrorCallout'
 import PageTemplate from 'src/components/PageTemplate'
-import type { DemoWorkItemCreateRequest } from 'src/gen/model'
 import useRenders from 'src/hooks/utils/useRenders'
 import type {
   DeepPartial,
@@ -365,6 +364,7 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
       ...(!field.isArray && { label: options.labels[schemaKey] }),
       required: field.required,
       id: `${formName}-${formField}`,
+      // FIXME: breaks literal Enter in textareas, etc. should allow when focused
       onKeyPress: (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         e.key === 'Enter' && e.preventDefault()
       },
@@ -623,12 +623,18 @@ function FormData() {
   console.log(myFormState.errors)
   console.log(`form has errors: ${hasNonEmptyValue(myFormState.errors)}`)
 
+  let code = ''
+  try {
+    code = JSON.stringify(myFormData, null, 2)
+  } catch (error) {
+    console.error(error)
+  }
   return (
     <Accordion>
       <Accordion.Item value="form">
         <Accordion.Control>{`See form`}</Accordion.Control>
         <Accordion.Panel>
-          <CodeHighlight language="json" code={JSON.stringify(myFormData, null, 2)}></CodeHighlight>
+          <CodeHighlight language="json" code={code}></CodeHighlight>
         </Accordion.Panel>
       </Accordion.Item>
     </Accordion>
