@@ -183,8 +183,8 @@ type Book__BASK_ExtraSchemaUser struct {
 
 // WorkItem__WIAU_ExtraSchemaUser represents a M2M join against "extra_schema.work_item_assigned_user"
 type WorkItem__WIAU_ExtraSchemaUser struct {
-	WorkItem ExtraSchemaWorkItem         `json:"workItem" db:"work_items" required:"true"`
-	Role     ExtraSchemaNullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+	WorkItem ExtraSchemaWorkItem      `json:"workItem" db:"work_items" required:"true"`
+	Role     *ExtraSchemaWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // WithExtraSchemaUserFilters adds the given filters, which can be dynamically parameterized

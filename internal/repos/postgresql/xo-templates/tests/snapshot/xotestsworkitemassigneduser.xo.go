@@ -24,9 +24,9 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsWorkItemAssignedUser struct {
-	WorkItemID   XoTestsWorkItemID       `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                           // work_item_id
-	AssignedUser XoTestsUserID           `json:"assignedUser" db:"assigned_user" required:"true" nullable:"false"`                        // assigned_user
-	XoTestsRole  XoTestsNullWorkItemRole `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
+	WorkItemID   XoTestsWorkItemID    `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                           // work_item_id
+	AssignedUser XoTestsUserID        `json:"assignedUser" db:"assigned_user" required:"true" nullable:"false"`                        // assigned_user
+	XoTestsRole  *XoTestsWorkItemRole `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 
 	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_XoTestsWorkItemAssignedUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"`     // M2M work_item_assigned_user
 	WorkItemAssignedUsersJoin *[]User__WIAU_XoTestsWorkItemAssignedUser     `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
@@ -34,9 +34,9 @@ type XoTestsWorkItemAssignedUser struct {
 
 // XoTestsWorkItemAssignedUserCreateParams represents insert params for 'xo_tests.work_item_assigned_user'.
 type XoTestsWorkItemAssignedUserCreateParams struct {
-	AssignedUser XoTestsUserID           `json:"assignedUser" required:"true" nullable:"false"`                                 // assigned_user
-	XoTestsRole  XoTestsNullWorkItemRole `json:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID   XoTestsWorkItemID       `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
+	AssignedUser XoTestsUserID        `json:"assignedUser" required:"true" nullable:"false"`                                 // assigned_user
+	XoTestsRole  *XoTestsWorkItemRole `json:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
+	WorkItemID   XoTestsWorkItemID    `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
 }
 
 // CreateXoTestsWorkItemAssignedUser creates a new XoTestsWorkItemAssignedUser in the database with the given params.
@@ -52,9 +52,9 @@ func CreateXoTestsWorkItemAssignedUser(ctx context.Context, db DB, params *XoTes
 
 // XoTestsWorkItemAssignedUserUpdateParams represents update params for 'xo_tests.work_item_assigned_user'.
 type XoTestsWorkItemAssignedUserUpdateParams struct {
-	AssignedUser *XoTestsUserID           `json:"assignedUser" nullable:"false"`                                 // assigned_user
-	XoTestsRole  *XoTestsNullWorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID   *XoTestsWorkItemID       `json:"workItemID" nullable:"false"`                                   // work_item_id
+	AssignedUser *XoTestsUserID        `json:"assignedUser" nullable:"false"`                                 // assigned_user
+	XoTestsRole  **XoTestsWorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
+	WorkItemID   *XoTestsWorkItemID    `json:"workItemID" nullable:"false"`                                   // work_item_id
 }
 
 // SetUpdateParams updates xo_tests.work_item_assigned_user struct fields with the specified params.
@@ -106,14 +106,14 @@ func WithXoTestsWorkItemAssignedUserJoin(joins XoTestsWorkItemAssignedUserJoins)
 
 // WorkItem__WIAU_XoTestsWorkItemAssignedUser represents a M2M join against "xo_tests.work_item_assigned_user"
 type WorkItem__WIAU_XoTestsWorkItemAssignedUser struct {
-	WorkItem XoTestsWorkItem         `json:"workItem" db:"work_items" required:"true"`
-	Role     XoTestsNullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+	WorkItem XoTestsWorkItem      `json:"workItem" db:"work_items" required:"true"`
+	Role     *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // User__WIAU_XoTestsWorkItemAssignedUser represents a M2M join against "xo_tests.work_item_assigned_user"
 type User__WIAU_XoTestsWorkItemAssignedUser struct {
-	User XoTestsUser             `json:"user" db:"users" required:"true"`
-	Role XoTestsNullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+	User XoTestsUser          `json:"user" db:"users" required:"true"`
+	Role *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // WithXoTestsWorkItemAssignedUserFilters adds the given filters, which can be dynamically parameterized

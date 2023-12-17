@@ -87,7 +87,7 @@ func TestM2M_SelectFilter(t *testing.T) {
 		uid := db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
 		if member.User.UserID == uid {
 			assert.Nil(t, member.User.DeletedAt) // ensure proper filter clause used. e.g. filter where record is not null will exclude the whole record if just one element is null, see https://github.com/danicc097/openapi-go-gin-postgres-sqlc/blob/7a9affbccc9738e728ba5532d055230f4668034c/FIXME.md#L44
-			assert.Equal(t, db.XoTestsWorkItemRolePreparer, member.Role.XoTestsWorkItemRole)
+			assert.True(t, db.XoTestsWorkItemRolePreparer == *member.Role)
 		}
 	}
 }

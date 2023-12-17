@@ -1648,7 +1648,6 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"zero":                   f.zero,
 		"type":                   f.typefn,
 		"field":                  f.field,
-		"nullable_enum":          f.nullable_enum,
 		"set_field":              f.set_field,
 		"sort_fields":            f.sort_fields,
 		"fieldmapping":           f.fieldmapping,
@@ -1696,10 +1695,6 @@ func (f *Funcs) entities(tables Tables) string {
 	b.WriteString(")")
 
 	return b.String()
-}
-
-func (f *Funcs) nullable_enum(s string) string {
-	return camelExport(f.schemaPrefix) + "Null" + strings.TrimPrefix(s, camelExport(f.schemaPrefix))
 }
 
 // last_nth returns the last hardcoded nth param for sqlstr
@@ -2217,10 +2212,9 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 						tag = tag + ` ref:"#/components/schemas/` + col.OpenAPISchema + `"`
 					}
 					tag = tag + " " + col.ExtraTags + "`"
-					// FIXME:
 					typ := f.typefn(col.Type)
 					if strings.HasPrefix(typ, "Null") && f.schemaPrefix != "public" && col.EnumSchema != "public" {
-						typ = camelExport(f.schemaPrefix) + "Null" + strings.TrimPrefix(typ, "Null")
+						typ = "*" + camelExport(f.schemaPrefix) + strings.TrimPrefix(typ, "Null")
 					}
 
 					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), typ, tag))
@@ -3721,7 +3715,7 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 			}
 
 			if strings.HasPrefix(field.Type, "Null") && f.schemaPrefix != "public" && field.EnumSchema != "public" {
-				field.Type = camelExport(f.schemaPrefix) + "Null" + strings.TrimPrefix(field.Type, "Null")
+				field.Type = "*" + strings.TrimPrefix(field.Type, "Null")
 			}
 
 			s += " " + f.typefn(field.Type)
@@ -3879,13 +3873,6 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		fieldType = strings.Repeat("*", pc) + constraintTyp
 	}
 
-	referencesCustomSchemaEnum := field.EnumSchema != "" && field.EnumSchema != "public"
-	if referencesCustomSchemaEnum {
-		fieldType = camelExport(table.Schema) + fieldType // assumes no pointers
-	} else if !referencesCustomSchemaEnum && table.Schema != "public" {
-		// we generate all schemas in same package from now on
-	}
-
 	if mode == "IDTypes" {
 		if af.isSingleFK && af.isSinglePK {
 			return "", nil
@@ -3915,7 +3902,12 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	}
 
 	goName := field.GoName
-	if referencesCustomSchemaEnum {
+	referencesCustomSchemaEnum := field.EnumSchema != "" && field.EnumSchema != "public"
+	if strings.HasPrefix(fieldType, "Null") && f.schemaPrefix != "public" && referencesCustomSchemaEnum {
+		fieldType = "*" + camelExport(f.schemaPrefix) + strings.TrimPrefix(fieldType, "Null")
+		goName = camelExport(f.schemaPrefix) + goName
+	} else if referencesCustomSchemaEnum {
+		fieldType = camelExport(table.Schema) + fieldType // assumes no pointers
 		goName = camelExport(f.schemaPrefix) + goName
 		// fieldType = camelExport(f.schemaPrefix) + fieldType
 	}

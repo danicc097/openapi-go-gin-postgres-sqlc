@@ -36,32 +36,6 @@ func (esnt *ExtraSchemaNotificationType) Scan(src interface{}) error {
 	return nil
 }
 
-// ExtraSchemaNullNotificationType represents a null 'notification_type' enum for schema 'extra_schema'.
-type ExtraSchemaNullNotificationType struct {
-	ExtraSchemaNotificationType ExtraSchemaNotificationType
-	// Valid is true if ExtraSchemaNotificationType is not null.
-	Valid bool
-}
-
-// Value satisfies the driver.Valuer interface.
-func (esnnt ExtraSchemaNullNotificationType) Value() (driver.Value, error) {
-	if !esnnt.Valid {
-		return nil, nil
-	}
-	return esnnt.ExtraSchemaNotificationType.Value()
-}
-
-// Scan satisfies the sql.Scanner interface.
-func (esnnt *ExtraSchemaNullNotificationType) Scan(v interface{}) error {
-	if v == nil {
-		esnnt.ExtraSchemaNotificationType, esnnt.Valid = "", false
-		return nil
-	}
-	err := esnnt.ExtraSchemaNotificationType.Scan(v)
-	esnnt.Valid = err == nil
-	return err
-}
-
 // ErrInvalidExtraSchemaNotificationType is the invalid ExtraSchemaNotificationType error.
 type ErrInvalidExtraSchemaNotificationType string
 

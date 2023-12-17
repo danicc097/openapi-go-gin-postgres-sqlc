@@ -30,34 +30,6 @@ func ({{ short $e.GoName }} *{{ $e.GoName }}) Scan(src interface{}) error {
 	return nil
 }
 
-{{ $nullName := (nullable_enum $e.GoName) -}}
-{{- $nullShort := (short $nullName) -}}
-// {{ $nullName }} represents a null '{{ $e.SQLName }}' enum for schema '{{ schema }}'.
-type {{ $nullName }} struct {
-	{{ $e.GoName }} {{ $e.GoName }}
-	// Valid is true if {{ $e.GoName }} is not null.
-	Valid bool
-}
-
-// Value satisfies the driver.Valuer interface.
-func ({{ $nullShort }} {{ $nullName }}) Value() (driver.Value, error) {
-	if !{{ $nullShort }}.Valid {
-		return nil, nil
-	}
-	return {{ $nullShort }}.{{ $e.GoName }}.Value()
-}
-
-// Scan satisfies the sql.Scanner interface.
-func ({{ $nullShort }} *{{ $nullName }}) Scan(v interface{}) error {
-	if v == nil {
-		{{ $nullShort }}.{{ $e.GoName }}, {{ $nullShort }}.Valid = "", false
-		return nil
-	}
-	err := {{ $nullShort }}.{{ $e.GoName }}.Scan(v)
-	{{ $nullShort }}.Valid = err == nil
-	return err
-}
-
 // ErrInvalid{{ $e.GoName }} is the invalid {{ $e.GoName }} error.
 type ErrInvalid{{ $e.GoName }} string
 

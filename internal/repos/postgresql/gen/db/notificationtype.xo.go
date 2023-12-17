@@ -36,32 +36,6 @@ func (nt *NotificationType) Scan(src interface{}) error {
 	return nil
 }
 
-// NullNotificationType represents a null 'notification_type' enum for schema 'public'.
-type NullNotificationType struct {
-	NotificationType NotificationType
-	// Valid is true if NotificationType is not null.
-	Valid bool
-}
-
-// Value satisfies the driver.Valuer interface.
-func (nnt NullNotificationType) Value() (driver.Value, error) {
-	if !nnt.Valid {
-		return nil, nil
-	}
-	return nnt.NotificationType.Value()
-}
-
-// Scan satisfies the sql.Scanner interface.
-func (nnt *NullNotificationType) Scan(v interface{}) error {
-	if v == nil {
-		nnt.NotificationType, nnt.Valid = "", false
-		return nil
-	}
-	err := nnt.NotificationType.Scan(v)
-	nnt.Valid = err == nil
-	return err
-}
-
 // ErrInvalidNotificationType is the invalid NotificationType error.
 type ErrInvalidNotificationType string
 

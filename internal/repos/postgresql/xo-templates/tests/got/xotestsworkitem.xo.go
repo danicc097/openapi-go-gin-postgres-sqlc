@@ -103,8 +103,8 @@ func WithXoTestsWorkItemJoin(joins XoTestsWorkItemJoins) XoTestsWorkItemSelectCo
 
 // User__WIAU_XoTestsWorkItem represents a M2M join against "xo_tests.work_item_assigned_user"
 type User__WIAU_XoTestsWorkItem struct {
-	User XoTestsUser             `json:"user" db:"users" required:"true"`
-	Role XoTestsNullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+	User XoTestsUser          `json:"user" db:"users" required:"true"`
+	Role *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // WithXoTestsWorkItemFilters adds the given filters, which can be dynamically parameterized

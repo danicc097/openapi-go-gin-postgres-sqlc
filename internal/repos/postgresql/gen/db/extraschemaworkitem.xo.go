@@ -106,8 +106,8 @@ func WithExtraSchemaWorkItemJoin(joins ExtraSchemaWorkItemJoins) ExtraSchemaWork
 
 // User__WIAU_ExtraSchemaWorkItem represents a M2M join against "extra_schema.work_item_assigned_user"
 type User__WIAU_ExtraSchemaWorkItem struct {
-	User ExtraSchemaUser             `json:"user" db:"users" required:"true"`
-	Role ExtraSchemaNullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+	User ExtraSchemaUser          `json:"user" db:"users" required:"true"`
+	Role *ExtraSchemaWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // WithExtraSchemaWorkItemFilters adds the given filters, which can be dynamically parameterized
