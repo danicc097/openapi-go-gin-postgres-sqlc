@@ -154,6 +154,9 @@ export type DynamicFormOptions<
   IgnoredFormKeys extends U | null,
   U extends PropertyKey = GetKeys<T>,
 > = {
+  /**
+   * Label mapping for fields. Use null to skip rendering field entirely.
+   */
   labels: {
     [key in Exclude<U, IgnoredFormKeys>]: string | null
   }
@@ -1153,6 +1156,7 @@ type CustomSelectProps = {
 function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inputProps }: CustomSelectProps) {
   const form = useFormContext()
   const { formName, options, schemaFields } = useDynamicFormContext()
+  const formSlice = useFormSlice()
 
   const selectOptions = options.selectOptions![schemaKey]!
   const formValues = (form.getValues(formField) as any[]) || []
@@ -1209,7 +1213,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
           if (!option) {
             // in form gen we do want to concatenate errors, to be shown upon submit clicked.
             // react hook form will show input errors as well on registered components
-            setCalloutErrors([...(calloutErrors || []), `${value} is not a valid ${itemName}`])
+            formSlice.setCustomError(formName, formField, `${value} is not a valid ${itemName}`)
             return
           }
           await registerOnChange({

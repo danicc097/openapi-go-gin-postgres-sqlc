@@ -22,8 +22,12 @@ import { parseSchemaFields } from 'src/utils/jsonSchema'
 import { colorSwatchComponentInputOption } from 'src/components/formGeneration/components'
 import OPERATION_AUTH from 'src/operationAuth'
 import { CodeHighlight } from '@mantine/code-highlight'
+import { useFormSlice } from 'src/slices/form'
+import { entries } from 'src/utils/object'
 
 export default function Project() {
+  const formSlice = useFormSlice()
+
   const createWorkItemTagRequestSchema = JSON_SCHEMA.definitions.CreateWorkItemTagRequest
   const createWorkItemTagForm = useForm<CreateWorkItemTagRequest>({
     resolver: ajvResolver(createWorkItemTagRequestSchema as any, {
@@ -33,8 +37,17 @@ export default function Project() {
     mode: 'all',
     reValidateMode: 'onChange',
   })
+  const formName = 'createWorkItemTagForm'
   const { register, handleSubmit, control, formState } = createWorkItemTagForm
   const errors = formState.errors
+
+  useEffect(() => {
+    // TODO: move to util hook useDynamicForm(formName)
+    formSlice.resetCustomErrors(formName)
+    entries(errors).map(([k, v]) => {
+      formSlice.setCustomError(formName, k, v.message ?? '')
+    })
+  }, [errors])
 
   const authorization = OPERATION_AUTH.CreateWorkItemTag
 
@@ -56,7 +69,7 @@ export default function Project() {
               },
             )(e)
           }}
-          formName="createWorkItemTagForm"
+          formName={formName}
           schemaFields={parseSchemaFields(createWorkItemTagRequestSchema as any)}
           options={{
             labels: {
