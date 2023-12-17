@@ -21,6 +21,16 @@ func NewQuerierWrapper(base db.Querier) QuerierWrapper {
 	}
 }
 
+func (w QuerierWrapper) GetExtraSchemaNotifications(ctx context.Context, db db.DBTX, arg db.GetExtraSchemaNotificationsParams) (ga1 []db.GetExtraSchemaNotificationsRow, err error) {
+	/* defer newOTelSpan().Build(ctx).End() */
+
+	ga1, err = w.Querier.GetExtraSchemaNotifications(ctx, db, arg)
+	if err != nil {
+		err = fmt.Errorf("Querier: %w", parseDBErrorDetail(err))
+	}
+	return
+}
+
 func (w QuerierWrapper) GetUser(ctx context.Context, db db.DBTX, arg db.GetUserParams) (g1 db.GetUserRow, err error) {
 	/* defer newOTelSpan().Build(ctx).End() */
 
