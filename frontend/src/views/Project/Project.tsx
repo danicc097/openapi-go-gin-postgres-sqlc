@@ -23,7 +23,7 @@ import { colorSwatchComponentInputOption } from 'src/components/formGeneration/c
 import OPERATION_AUTH from 'src/operationAuth'
 import { CodeHighlight } from '@mantine/code-highlight'
 
-export default function LandingPage() {
+export default function Project() {
   const createWorkItemTagRequestSchema = JSON_SCHEMA.definitions.CreateWorkItemTagRequest
   const createWorkItemTagForm = useForm<CreateWorkItemTagRequest>({
     resolver: ajvResolver(createWorkItemTagRequestSchema as any, {
@@ -67,7 +67,6 @@ export default function LandingPage() {
 
             input: {
               description: {
-                // FIXME: Allow Enter when focusing on component.
                 component: <Textarea styles={{ root: { width: '100%' } }} />,
               },
               color: {
