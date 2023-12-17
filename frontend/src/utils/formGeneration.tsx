@@ -364,9 +364,15 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
       ...(!field.isArray && { label: options.labels[schemaKey] }),
       required: field.required,
       id: `${formName}-${formField}`,
-      // FIXME: breaks literal Enter in textareas, etc. should allow when focused
       onKeyPress: (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        e.key === 'Enter' && e.preventDefault()
+        if (e.key !== 'Enter') {
+          return
+        }
+        if (document.activeElement?.tagName.toLowerCase() === 'textarea') {
+          console.log('Enter key pressed in textarea')
+        } else {
+          e.preventDefault()
+        }
       },
     }
 
