@@ -178,8 +178,8 @@ type Book__BASK_XoTestsUser struct {
 
 // WorkItem__WIAU_XoTestsUser represents a M2M join against "xo_tests.work_item_assigned_user"
 type WorkItem__WIAU_XoTestsUser struct {
-	WorkItem XoTestsWorkItem  `json:"workItem" db:"work_items" required:"true"`
-	Role     NullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+	WorkItem XoTestsWorkItem         `json:"workItem" db:"work_items" required:"true"`
+	Role     XoTestsNullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // WithXoTestsUserFilters adds the given filters, which can be dynamically parameterized

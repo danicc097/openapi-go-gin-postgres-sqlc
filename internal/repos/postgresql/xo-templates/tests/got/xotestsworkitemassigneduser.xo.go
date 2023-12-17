@@ -51,9 +51,9 @@ func CreateXoTestsWorkItemAssignedUser(ctx context.Context, db DB, params *XoTes
 
 // XoTestsWorkItemAssignedUserUpdateParams represents update params for 'xo_tests.work_item_assigned_user'.
 type XoTestsWorkItemAssignedUserUpdateParams struct {
-	AssignedUser *XoTestsUserID          `json:"assignedUser" nullable:"false"`                                 // assigned_user
-	XoTestsRole  XoTestsNullWorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID   *XoTestsWorkItemID      `json:"workItemID" nullable:"false"`                                   // work_item_id
+	AssignedUser *XoTestsUserID           `json:"assignedUser" nullable:"false"`                                 // assigned_user
+	XoTestsRole  *XoTestsNullWorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
+	WorkItemID   *XoTestsWorkItemID       `json:"workItemID" nullable:"false"`                                   // work_item_id
 }
 
 // SetUpdateParams updates xo_tests.work_item_assigned_user struct fields with the specified params.
@@ -105,14 +105,14 @@ func WithXoTestsWorkItemAssignedUserJoin(joins XoTestsWorkItemAssignedUserJoins)
 
 // WorkItem__WIAU_XoTestsWorkItemAssignedUser represents a M2M join against "xo_tests.work_item_assigned_user"
 type WorkItem__WIAU_XoTestsWorkItemAssignedUser struct {
-	WorkItem XoTestsWorkItem  `json:"workItem" db:"work_items" required:"true"`
-	Role     NullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+	WorkItem XoTestsWorkItem         `json:"workItem" db:"work_items" required:"true"`
+	Role     XoTestsNullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // User__WIAU_XoTestsWorkItemAssignedUser represents a M2M join against "xo_tests.work_item_assigned_user"
 type User__WIAU_XoTestsWorkItemAssignedUser struct {
-	User XoTestsUser      `json:"user" db:"users" required:"true"`
-	Role NullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+	User XoTestsUser             `json:"user" db:"users" required:"true"`
+	Role XoTestsNullWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // WithXoTestsWorkItemAssignedUserFilters adds the given filters, which can be dynamically parameterized
@@ -190,8 +190,8 @@ func (xtwiau *XoTestsWorkItemAssignedUser) Insert(ctx context.Context, db DB) (*
 	)
 	 RETURNING * `
 	// run
-	logf(sqlstr, xtwiau.AssignedUser, xtwiau.Role, xtwiau.WorkItemID)
-	rows, err := db.Query(ctx, sqlstr, xtwiau.AssignedUser, xtwiau.Role, xtwiau.WorkItemID)
+	logf(sqlstr, xtwiau.AssignedUser, xtwiau.XoTestsRole, xtwiau.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, xtwiau.AssignedUser, xtwiau.XoTestsRole, xtwiau.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsWorkItemAssignedUser/Insert/db.Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
@@ -212,9 +212,9 @@ func (xtwiau *XoTestsWorkItemAssignedUser) Update(ctx context.Context, db DB) (*
 	WHERE work_item_id = $2  AND assigned_user = $3 
 	RETURNING * `
 	// run
-	logf(sqlstr, xtwiau.Role, xtwiau.WorkItemID, xtwiau.AssignedUser)
+	logf(sqlstr, xtwiau.XoTestsRole, xtwiau.WorkItemID, xtwiau.AssignedUser)
 
-	rows, err := db.Query(ctx, sqlstr, xtwiau.Role, xtwiau.WorkItemID, xtwiau.AssignedUser)
+	rows, err := db.Query(ctx, sqlstr, xtwiau.XoTestsRole, xtwiau.WorkItemID, xtwiau.AssignedUser)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsWorkItemAssignedUser/Update/db.Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}

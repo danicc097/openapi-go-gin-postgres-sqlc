@@ -2216,7 +2216,13 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 						tag = tag + ` ref:"#/components/schemas/` + col.OpenAPISchema + `"`
 					}
 					tag = tag + " " + col.ExtraTags + "`"
-					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), f.typefn(col.Type), tag))
+					// FIXME:
+					typ := f.typefn(col.Type)
+					if strings.HasPrefix(typ, "Null") && f.schemaPrefix != "public" && col.EnumSchema != "public" {
+						typ = camelExport(f.schemaPrefix) + "Null" +  strings.TrimPrefix(typ, "Null")
+					}
+
+					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), typ, tag))
 				}
 				joinField := originalStruct + " " + camelExport(f.schemaPrefix) + originalStruct + " " + tag
 				typ := camelExport(singularize(c.RefTableName))           // same typ as in struct
@@ -3711,6 +3717,11 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 				}
 			} else if field.IsPrimary {
 				field.Type = table.GoName + "ID"
+			}
+
+			fmt.Printf("field.Type: %v\n", field.Type)
+			if strings.HasPrefix(field.Type, "Null") && f.schemaPrefix != "public" && field.EnumSchema != "public" {
+				field.Type = camelExport(f.schemaPrefix) + "Null" +  strings.TrimPrefix(field.Type, "Null")
 			}
 
 			s += " " + f.typefn(field.Type)
