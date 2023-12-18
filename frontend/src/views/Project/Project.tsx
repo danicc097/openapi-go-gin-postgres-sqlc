@@ -16,7 +16,6 @@ import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { validateField } from 'src/utils/validation'
 import { FormProvider, useForm, useFormState, useWatch } from 'react-hook-form'
 import { ajvResolver } from '@hookform/resolvers/ajv'
-import JSON_SCHEMA from 'src/client-validator/gen/dereferenced-schema.json'
 import { fullFormats } from 'ajv-formats/dist/formats'
 import { parseSchemaFields } from 'src/utils/jsonSchema'
 import { colorSwatchComponentInputOption } from 'src/components/formGeneration/components'
@@ -24,13 +23,15 @@ import OPERATION_AUTH from 'src/operationAuth'
 import { CodeHighlight } from '@mantine/code-highlight'
 import { useFormSlice } from 'src/slices/form'
 import { entries } from 'src/utils/object'
+import { JSONSchemaType } from 'ajv'
+import JSON_SCHEMA from 'src/jsonSchema'
 
 export default function Project() {
   const formSlice = useFormSlice()
 
   const createWorkItemTagRequestSchema = JSON_SCHEMA.definitions.CreateWorkItemTagRequest
   const createWorkItemTagForm = useForm<CreateWorkItemTagRequest>({
-    resolver: ajvResolver(createWorkItemTagRequestSchema as any, {
+    resolver: ajvResolver(createWorkItemTagRequestSchema, {
       strict: false,
       formats: fullFormats,
     }),
@@ -70,7 +71,7 @@ export default function Project() {
             )(e)
           }}
           formName={formName}
-          schemaFields={parseSchemaFields(createWorkItemTagRequestSchema as any)}
+          schemaFields={parseSchemaFields(createWorkItemTagRequestSchema)}
           options={{
             labels: {
               color: 'Color',
