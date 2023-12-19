@@ -667,6 +667,8 @@ type Role string
 // Scope is generated from scopes.json keys.
 type Scope string
 
+
+
 // Scopes defines the model for Scopes.
 type Scopes = []Scope
 
