@@ -19,12 +19,11 @@ import { ajvResolver } from '@hookform/resolvers/ajv'
 import { fullFormats } from 'ajv-formats/dist/formats'
 import { parseSchemaFields } from 'src/utils/jsonSchema'
 import { colorSwatchComponentInputOption } from 'src/components/formGeneration/components'
-import OPERATION_AUTH from 'src/operationAuth'
 import { CodeHighlight } from '@mantine/code-highlight'
 import { useFormSlice } from 'src/slices/form'
 import { entries } from 'src/utils/object'
 import { JSONSchemaType } from 'ajv'
-import JSON_SCHEMA from 'src/jsonSchema'
+import { JSON_SCHEMA, OPERATION_AUTH } from 'src/config'
 
 export default function Project() {
   const formSlice = useFormSlice()

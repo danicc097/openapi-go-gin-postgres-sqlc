@@ -3,7 +3,6 @@ import React, { Fragment, forwardRef, memo, useEffect, useReducer, useState } fr
 import type { Scope, Scopes, UpdateUserAuthRequest, User } from 'src/gen/model'
 import { getContrastYIQ, roleColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
-import SCOPES from 'src/scopes'
 
 import type { Role } from 'src/client-validator/gen/models'
 import PageTemplate from 'src/components/PageTemplate'
@@ -16,7 +15,6 @@ import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import type { PathType, RecursiveKeyOf, RequiredKeys } from 'src/types/utils'
-import jsonSchema from 'src/client-validator/gen/dereferenced-schema.json'
 import {
   Avatar,
   Badge,
@@ -48,7 +46,6 @@ import { IconCheck, IconCircle } from '@tabler/icons'
 import RoleBadge from 'src/components/Badges/RoleBadge'
 import { entries, keys } from 'src/utils/object'
 import { css } from '@emotion/css'
-import ROLES from 'src/roles'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import ErrorCallout, { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
 import { ApiError } from 'src/api/mutator'
@@ -62,6 +59,7 @@ import type { AppError } from 'src/types/ui'
 import classes from './UserPermissionsPage.module.css'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { useFormSlice } from 'src/slices/form'
+import { JSON_SCHEMA, ROLES, SCOPES } from 'src/config'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -223,8 +221,6 @@ export default function UserPermissionsPage() {
   const onRoleUpdateSubmit = async () => {
     showModal()
   }
-
-  const demoWorkItemCreateSchema = asConst(jsonSchema.definitions.DemoWorkItemCreateRequest)
 
   const registerProps = form.register('role')
 
