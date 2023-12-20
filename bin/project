@@ -320,58 +320,7 @@ x.gen.pregen() {
     spec_content=$(yq e "$yq_op" < <(echo "$spec_content"))
     echo "$spec_content" >$SPEC_PATH
 
-    echo "Updating roles and scopes in $SPEC_PATH"
-    ######## Sync spec enums with external policy sources and validate existing schema enums.
-    ######## External json files are the source of truth, indexed by enum name
-    # arrays can't be nested
-    declare -A enum_src_files=(
-      [Scope]="scopes.json"
-      [Role]="roles.json"
-    )
-    declare -A enum_vext=(
-      [Scope]="x-required-scopes"
-      [Role]="x-required-role"
-    )
-    declare -A enum_values=()
-    for enum in ${!enum_src_files[@]}; do
-      [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC_PATH) = "false" ]] &&
-        yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC_PATH
-
-      local src_file="${enum_src_files[$enum]}"
-      vendor_ext="${enum_vext[$enum]}"
-
-      enums=$(yq -P --output-format=yaml '.[] | key' $src_file)
-      mapfile -t enums <<<$enums
-
-      src_comment="$src_file keys"
-      replace_enum_in_spec "$enum" enums "$src_comment"
-
-      mapfile spec_enums < <(yq e ".paths[][].$vendor_ext | select(length > 0)" $SPEC_PATH)
-      spec_enums=("${spec_enums[*]//- /}")
-      mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
-      mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
-      # ensure only existing enums from src_file are used
-      for spec_enum in "${spec_enums[@]}"; do
-        [[ ! " ${clean_enums[*]} " =~ " ${spec_enum} " ]] && err "$spec_enum is not a valid '$enum'"
-      done
-
-      enum_list=$(printf ",\"%s\"" "${enums[@]}")
-      enum_list="[${enum_list:1}]"
-      enum_values[$enum]=$enum_list
-    done
-
-    ######## IDE intellisense/validation
-    yq -e ".definitions.Operation.properties +=
-        {
-          \"${enum_vext[Role]}\": {
-            \"type\": \"string\",
-            \"enum\": ${enum_values[Role]}
-          },
-          \"${enum_vext[Scope]}\": {
-            \"type\": \"array\",
-            \"items\": {\"enum\": ${enum_values[Scope]}}
-          }
-        }" -i -oj .vscode/openapi-schema.json
+    update_roles_and_scopes
 
     ######## Generate shared policies once the spec has been validated
     echo "Writing shared auth policies"
@@ -396,6 +345,61 @@ x.gen.pregen() {
     remove_schemas_marked_to_delete
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup-gen.cleanup
+}
+
+update_roles_and_scopes() {
+  echo "Updating roles and scopes in $SPEC_PATH"
+  ######## Sync spec enums with external policy sources and validate existing schema enums.
+  ######## External json files are the source of truth, indexed by enum name
+  # arrays can't be nested in bash
+  declare -A enum_src_files=(
+    [Scope]="$SCOPE_POLICY_PATH"
+    [Role]="$ROLE_POLICY_PATH"
+  )
+  declare -A enum_vext=(
+    [Scope]="x-required-scopes"
+    [Role]="x-required-role"
+  )
+  declare -A enum_values=()
+  for enum in ${!enum_src_files[@]}; do
+    [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC_PATH) = "false" ]] &&
+      yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC_PATH
+
+    local src_file="${enum_src_files[$enum]}"
+    vendor_ext="${enum_vext[$enum]}"
+
+    enums=$(yq -P --output-format=yaml '.[] | key' $src_file)
+    mapfile -t enums <<<$enums
+
+    src_comment="$src_file keys"
+    replace_enum_in_spec "$enum" enums "$src_comment"
+
+    mapfile spec_enums < <(yq e ".paths[][].$vendor_ext | select(length > 0)" $SPEC_PATH)
+    spec_enums=("${spec_enums[*]//- /}")
+    mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
+    mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
+    # ensure only existing enums from src_file are used
+    for spec_enum in "${spec_enums[@]}"; do
+      [[ ! " ${clean_enums[*]} " =~ " ${spec_enum} " ]] && err "$spec_enum is not a valid '$enum'"
+    done
+
+    enum_list=$(printf ",\"%s\"" "${enums[@]}")
+    enum_list="[${enum_list:1}]"
+    enum_values[$enum]=$enum_list
+  done
+
+  ######## IDE intellisense/validation
+  yq -e ".definitions.Operation.properties +=
+        {
+          \"${enum_vext[Role]}\": {
+            \"type\": \"string\",
+            \"enum\": ${enum_values[Role]}
+          },
+          \"${enum_vext[Scope]}\": {
+            \"type\": \"array\",
+            \"items\": {\"enum\": ${enum_values[Scope]}}
+          }
+        }" -i -oj .vscode/openapi-schema.json
 }
 
 sync_spec_with_db() {
@@ -1364,7 +1368,8 @@ components:
     ${pascal_name}:
       x-postgen-struct: Rest${pascal_name}
 "
-  yq eval-all 'select(fileIndex == 0) *=+ select(fileIndex == 1) | select(fileIndex == 0)' "$SPEC_PATH" <(echo "$new_crud_schema") | sponge "$SPEC_PATH"
+  # order matters. we dont want to override dummy anchors, etc.
+  yq eval-all 'select(fileIndex == 1) *=+ select(fileIndex == 0) | select(fileIndex == 0)' "$SPEC_PATH" <(echo "$new_crud_schema") | sponge "$SPEC_PATH"
 
   echo "
 type ${pascal_name} struct {
@@ -1381,6 +1386,21 @@ type Update${pascal_name}Request struct {
 " >>internal/rest/models.go
 
   echo "package rest" >"internal/rest/api_${snake_name}.go"
+
+  yq eval-all \
+    ". += {
+    \"${kebab_name}:create\": {
+      \"description\": \"Can create ${sentence_name}s.\"
+    },
+    \"${kebab_name}:edit\": {
+      \"description\": \"Can edit ${sentence_name}s.\"
+    },
+    \"${kebab_name}:delete\": {
+      \"description\": \"Can delete ${sentence_name}s.\"
+    }
+  }" -i -o=json "$SCOPE_POLICY_PATH"
+
+  update_roles_and_scopes
 }
 
 # Shows existing user api keys.
