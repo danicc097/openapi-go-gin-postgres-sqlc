@@ -1,12 +1,12 @@
-package services
+echo "package services
 
 import (
-	"context"
-	"fmt"
+	\"context\"
+	\"fmt\"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"go.uber.org/zap"
+	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos\"
+	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
+	\"go.uber.org/zap\"
 )
 
 type ${pascal_name} struct {
@@ -28,7 +28,7 @@ func (t *${pascal_name}) ByID(ctx context.Context, d db.DBTX, id db.${pascal_nam
 
 	${camel_name}, err := t.repos.${pascal_name}.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("repos.${pascal_name}.ByID: %w", err)
+		return nil, fmt.Errorf(\"repos.${pascal_name}.ByID: %w\", err)
 	}
 
 	return ${camel_name}, nil
@@ -40,7 +40,7 @@ func (t *${pascal_name}) Create(ctx context.Context, d db.DBTX, params *db.${pas
 
 	${camel_name}, err := t.repos.${pascal_name}.Create(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("repos.${pascal_name}.Create: %w", err)
+		return nil, fmt.Errorf(\"repos.${pascal_name}.Create: %w\", err)
 	}
 
 	return ${camel_name}, nil
@@ -52,7 +52,7 @@ func (t *${pascal_name}) Update(ctx context.Context, d db.DBTX, id db.${pascal_n
 
 	${camel_name}, err := t.repos.${pascal_name}.Update(ctx, d, id, params)
 	if err != nil {
-		return nil, fmt.Errorf("repos.${pascal_name}.Update: %w", err)
+		return nil, fmt.Errorf(\"repos.${pascal_name}.Update: %w\", err)
 	}
 
 	return ${camel_name}, nil
@@ -64,8 +64,9 @@ func (t *${pascal_name}) Delete(ctx context.Context, d db.DBTX, id db.${pascal_n
 
 	${camel_name}, err := t.repos.${pascal_name}.Delete(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("repos.${pascal_name}.Delete: %w", err)
+		return nil, fmt.Errorf(\"repos.${pascal_name}.Delete: %w\", err)
 	}
 
 	return ${camel_name}, nil
 }
+"

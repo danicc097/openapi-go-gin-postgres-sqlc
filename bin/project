@@ -27,6 +27,7 @@ readonly GOWRAP_TEMPLATES_DIR="internal/gowrap-templates"
 readonly REPOS_DIR="internal/repos"
 readonly PG_REPO_DIR="$REPOS_DIR/postgresql"
 readonly XO_TEMPLATES_DIR="$PG_REPO_DIR/xo-templates"
+readonly BIN_TEMPLATES_DIR="bin/templates"
 
 readonly POSTGRES_TEST_DB="postgres_test"
 readonly DUMPS_DIR="$HOME/openapi_go_gin_postgres_dumps"
@@ -1263,108 +1264,17 @@ x.release() {
 # Creates a generic CRUD endpoint in the OpenAPI spec and generates related files.
 # Args: name
 x.dev-utils.create-crud() {
-  # TODO:
-  # 6. generate services, repos and repo test utils
   local name="$1"
-  local pascal_name="$(to_pascal $name)"
-  local camel_name="$(to_camel $name)"
-  local kebab_name="$(to_kebab $name)"
-  local sentence_name="$(to_lower_sentence $name)"
-  local snake_name="$(to_snake $name)"
+  (
+    export pascal_name="$(to_pascal $name)"
+    export camel_name="$(to_camel $name)"
+    export kebab_name="$(to_kebab $name)"
+    export sentence_name="$(to_lower_sentence $name)"
+    export snake_name="$(to_snake $name)"
 
-  local new_crud_schema="
-x-require-authenticated: &x-require-authenticated
-x-error-response: &x-error-response
-paths:
-  /${kebab_name}/:
-    post:
-      summary: create ${sentence_name}.
-      !!merge <<: *x-require-authenticated
-      operationId: Create${pascal_name}
-      x-required-scopes:
-        - ${kebab_name}:create
-      requestBody:
-        content:
-          application/json:
-            schema:
-              \$ref: '#/components/schemas/Create${pascal_name}Request'
-        required: true
-      responses:
-        201:
-          description: Success.
-          content:
-            application/json:
-              schema:
-                \$ref: '#/components/schemas/${pascal_name}'
-        !!merge <<: *x-error-response
-      tags:
-        - ${camel_name}
-  /${kebab_name}/{id}/:
-    get:
-      summary: get ${sentence_name}.
-      !!merge <<: *x-require-authenticated
-      operationId: Get${pascal_name}
-      parameters:
-        - \$ref: '#/components/parameters/SerialID'
-      responses:
-        200:
-          description: Success.
-          content:
-            application/json:
-              schema:
-                \$ref: '#/components/schemas/${pascal_name}'
-        !!merge <<: *x-error-response
-      tags:
-        - ${camel_name}
-    patch:
-      summary: update ${sentence_name}.
-      !!merge <<: *x-require-authenticated
-      operationId: Update${pascal_name}
-      x-required-scopes:
-        - ${kebab_name}:edit
-      parameters:
-        - \$ref: '#/components/parameters/SerialID'
-      requestBody:
-        content:
-          application/json:
-            schema:
-              \$ref: '#/components/schemas/Update${pascal_name}Request'
-        required: true
-      responses:
-        200:
-          description: Success.
-          content:
-            application/json:
-              schema:
-                \$ref: '#/components/schemas/${pascal_name}'
-        !!merge <<: *x-error-response
-      tags:
-        - ${camel_name}
-    delete:
-      summary: delete $name.
-      !!merge <<: *x-require-authenticated
-      operationId: Delete${pascal_name}
-      x-required-scopes:
-        - ${kebab_name}:delete
-      parameters:
-        - \$ref: '#/components/parameters/SerialID'
-      responses:
-        204:
-          description: Success.
-        !!merge <<: *x-error-response
-      tags:
-        - ${camel_name}
-components:
-  schemas:
-    Create${pascal_name}Request:
-      x-postgen-struct: RestCreate${pascal_name}Request
-    Update${pascal_name}Request:
-      x-postgen-struct: RestUpdate${pascal_name}Request
-    ${pascal_name}:
-      x-postgen-struct: Rest${pascal_name}
-"
+    local new_crud_schema="$(bash "$BIN_TEMPLATES_DIR"/crud-openapi.yaml.tmpl.bash)"
 
-  yq eval-all "(
+    yq eval-all "(
         select(fi == 1).paths
         ) as \$paths
         | (
@@ -1375,7 +1285,7 @@ components:
         | .components.schemas += \$schemas
         " "$SPEC_PATH" <(echo "$new_crud_schema") | sponge "$SPEC_PATH"
 
-  echo "
+    echo "
 type ${pascal_name} struct {
 	db.${pascal_name}
 }
@@ -1389,10 +1299,10 @@ type Update${pascal_name}Request struct {
 }
 " >>"$REST_MODELS"
 
-  echo "package rest" >"internal/rest/api_${snake_name}.go"
+    echo "package rest" >"internal/rest/api_${snake_name}.go"
 
-  yq eval-all \
-    ". += {
+    yq eval-all \
+      ". += {
     \"${kebab_name}:create\": {
       \"description\": \"Can create ${sentence_name}s.\"
     },
@@ -1404,14 +1314,12 @@ type Update${pascal_name}Request struct {
     }
   }" -i -o=json "$SCOPE_POLICY_PATH"
 
-  update_roles_and_scopes
+    update_roles_and_scopes
 
-  service_tmpl=$(<internal/services/service.go.bash-tmpl)
-  echo "$service_tmpl" | sed "
-  s/\${pascal_name}/$pascal_name/g;
-  s/\${camel_name}/$camel_name/g
-  s/\${sentence_name}/$sentence_name/g
-  " >"internal/services/service_${snake_name}.go"
+    # TODO:
+    # 6. generate services, repos and repo test utils
+    bash "$BIN_TEMPLATES_DIR"/crud-service.go.tmpl.bash >"internal/services/service_${snake_name}.go"
+  )
 }
 
 # Shows existing user api keys.
