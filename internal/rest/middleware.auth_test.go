@@ -72,7 +72,16 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			scopes:         []models.Scope{models.ScopeUsersWrite},
 			requiredScopes: []models.Scope{models.ScopeUsersWrite, models.ScopeScopesWrite},
 			status:         http.StatusForbidden,
-			body:           "Unauthorized",
+			body:           "unauthorized: scope(s) users:write and scopes:write is required",
+		},
+		{
+			name:           "unauthorized_with_missing_scopes_and_role",
+			scopes:         []models.Scope{models.ScopeUsersWrite},
+			requiredScopes: []models.Scope{models.ScopeUsersWrite, models.ScopeScopesWrite},
+			role:           models.RoleUser,
+			requiredRole:   models.RoleAdmin,
+			status:         http.StatusForbidden,
+			body:           "unauthorized: either role admin or scope(s) users:write and scopes:write are required",
 		},
 		{
 			name:        "unauthorized_if_no_user",

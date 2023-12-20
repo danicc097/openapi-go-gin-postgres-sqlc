@@ -130,6 +130,22 @@ type ClientInterface interface {
 	// GetProject request
 	GetProject(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateActivity request with any body
+	CreateActivityWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateActivity(ctx context.Context, projectName ProjectName, body CreateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteActivity request
+	DeleteActivity(ctx context.Context, projectName ProjectName, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetActivity request
+	GetActivity(ctx context.Context, projectName ProjectName, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateActivity request with any body
+	UpdateActivityWithBody(ctx context.Context, projectName ProjectName, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateActivity(ctx context.Context, projectName ProjectName, id SerialID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetProjectBoard request
 	GetProjectBoard(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -368,6 +384,120 @@ func (c *Client) Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http
 
 func (c *Client) GetProject(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetProjectRequest(c.Server, projectName)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) CreateActivityWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateActivityRequestWithBody(c.Server, projectName, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) CreateActivity(ctx context.Context, projectName ProjectName, body CreateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateActivityRequest(c.Server, projectName, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) DeleteActivity(ctx context.Context, projectName ProjectName, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteActivityRequest(c.Server, projectName, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) GetActivity(ctx context.Context, projectName ProjectName, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetActivityRequest(c.Server, projectName, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) UpdateActivityWithBody(ctx context.Context, projectName ProjectName, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateActivityRequestWithBody(c.Server, projectName, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) UpdateActivity(ctx context.Context, projectName ProjectName, id SerialID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateActivityRequest(c.Server, projectName, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1386,6 +1516,189 @@ func NewGetProjectRequest(server string, projectName ProjectName) (*http.Request
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewCreateActivityRequest calls the generic CreateActivity builder with application/json body
+func NewCreateActivityRequest(server string, projectName ProjectName, body CreateActivityJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateActivityRequestWithBody(server, projectName, "application/json", bodyReader)
+}
+
+// NewCreateActivityRequestWithBody generates requests for CreateActivity with any type of body
+func NewCreateActivityRequestWithBody(server string, projectName ProjectName, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "projectName", runtime.ParamLocationPath, projectName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/activity/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteActivityRequest generates requests for DeleteActivity
+func NewDeleteActivityRequest(server string, projectName ProjectName, id SerialID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "projectName", runtime.ParamLocationPath, projectName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/activity/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetActivityRequest generates requests for GetActivity
+func NewGetActivityRequest(server string, projectName ProjectName, id SerialID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "projectName", runtime.ParamLocationPath, projectName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/activity/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateActivityRequest calls the generic UpdateActivity builder with application/json body
+func NewUpdateActivityRequest(server string, projectName ProjectName, id SerialID, body UpdateActivityJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateActivityRequestWithBody(server, projectName, id, "application/json", bodyReader)
+}
+
+// NewUpdateActivityRequestWithBody generates requests for UpdateActivity with any type of body
+func NewUpdateActivityRequestWithBody(server string, projectName ProjectName, id SerialID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "projectName", runtime.ParamLocationPath, projectName)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/activity/%s/", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -2580,6 +2893,22 @@ type ClientWithResponsesInterface interface {
 	// GetProject request
 	GetProjectWithResponse(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*GetProjectResponse, error)
 
+	// CreateActivity request with any body
+	CreateActivityWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateActivityResponse, error)
+
+	CreateActivityWithResponse(ctx context.Context, projectName ProjectName, body CreateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateActivityResponse, error)
+
+	// DeleteActivity request
+	DeleteActivityWithResponse(ctx context.Context, projectName ProjectName, id SerialID, reqEditors ...RequestEditorFn) (*DeleteActivityResponse, error)
+
+	// GetActivity request
+	GetActivityWithResponse(ctx context.Context, projectName ProjectName, id SerialID, reqEditors ...RequestEditorFn) (*GetActivityResponse, error)
+
+	// UpdateActivity request with any body
+	UpdateActivityWithBodyWithResponse(ctx context.Context, projectName ProjectName, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error)
+
+	UpdateActivityWithResponse(ctx context.Context, projectName ProjectName, id SerialID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error)
+
 	// GetProjectBoard request
 	GetProjectBoardWithResponse(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error)
 
@@ -2851,6 +3180,97 @@ func (r GetProjectResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetProjectResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateActivityResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *Activity
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateActivityResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateActivityResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteActivityResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteActivityResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteActivityResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetActivityResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Activity
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetActivityResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetActivityResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateActivityResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Activity
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateActivityResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateActivityResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3516,6 +3936,58 @@ func (c *ClientWithResponses) GetProjectWithResponse(ctx context.Context, projec
 	return ParseGetProjectResponse(rsp)
 }
 
+// CreateActivityWithBodyWithResponse request with arbitrary body returning *CreateActivityResponse
+func (c *ClientWithResponses) CreateActivityWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateActivityResponse, error) {
+	rsp, err := c.CreateActivityWithBody(ctx, projectName, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateActivityResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateActivityWithResponse(ctx context.Context, projectName ProjectName, body CreateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateActivityResponse, error) {
+	rsp, err := c.CreateActivity(ctx, projectName, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateActivityResponse(rsp)
+}
+
+// DeleteActivityWithResponse request returning *DeleteActivityResponse
+func (c *ClientWithResponses) DeleteActivityWithResponse(ctx context.Context, projectName ProjectName, id SerialID, reqEditors ...RequestEditorFn) (*DeleteActivityResponse, error) {
+	rsp, err := c.DeleteActivity(ctx, projectName, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteActivityResponse(rsp)
+}
+
+// GetActivityWithResponse request returning *GetActivityResponse
+func (c *ClientWithResponses) GetActivityWithResponse(ctx context.Context, projectName ProjectName, id SerialID, reqEditors ...RequestEditorFn) (*GetActivityResponse, error) {
+	rsp, err := c.GetActivity(ctx, projectName, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetActivityResponse(rsp)
+}
+
+// UpdateActivityWithBodyWithResponse request with arbitrary body returning *UpdateActivityResponse
+func (c *ClientWithResponses) UpdateActivityWithBodyWithResponse(ctx context.Context, projectName ProjectName, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error) {
+	rsp, err := c.UpdateActivityWithBody(ctx, projectName, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateActivityResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateActivityWithResponse(ctx context.Context, projectName ProjectName, id SerialID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error) {
+	rsp, err := c.UpdateActivity(ctx, projectName, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateActivityResponse(rsp)
+}
+
 // GetProjectBoardWithResponse request returning *GetProjectBoardResponse
 func (c *ClientWithResponses) GetProjectBoardWithResponse(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*GetProjectBoardResponse, error) {
 	rsp, err := c.GetProjectBoard(ctx, projectName, reqEditors...)
@@ -4022,6 +4494,130 @@ func ParseGetProjectResponse(rsp *http.Response) (*GetProjectResponse, error) {
 			return nil, err
 		}
 		response.JSON200 = &dest
+	}
+
+	return response, nil
+}
+
+// ParseCreateActivityResponse parses an HTTP response from a CreateActivityWithResponse call
+func ParseCreateActivityResponse(rsp *http.Response) (*CreateActivityResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateActivityResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest Activity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteActivityResponse parses an HTTP response from a DeleteActivityWithResponse call
+func ParseDeleteActivityResponse(rsp *http.Response) (*DeleteActivityResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteActivityResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+	}
+
+	return response, nil
+}
+
+// ParseGetActivityResponse parses an HTTP response from a GetActivityWithResponse call
+func ParseGetActivityResponse(rsp *http.Response) (*GetActivityResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetActivityResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Activity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateActivityResponse parses an HTTP response from a UpdateActivityWithResponse call
+func ParseUpdateActivityResponse(rsp *http.Response) (*UpdateActivityResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateActivityResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Activity
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
 	}
 
 	return response, nil

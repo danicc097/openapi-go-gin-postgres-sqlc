@@ -6,6 +6,9 @@
  * OpenAPI spec version: 2.0.0
  */
 
+/**
+ * is generated from projects table.
+ */
 export type Project = typeof Project[keyof typeof Project]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare

@@ -20,6 +20,7 @@ import {
   Box,
   createTheme,
   localStorageColorSchemeManager,
+  Textarea,
 } from '@mantine/core'
 import { QueryClient } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient } from '@tanstack/react-query-persist-client'
@@ -36,8 +37,9 @@ import DynamicForm, {
   selectOptionsBuilder,
   type SelectOptions,
   type DynamicFormOptions,
+  InputOptions,
 } from 'src/utils/formGeneration'
-import type { DbWorkItemTag, User, WorkItemRole } from 'src/gen/model'
+import type { CreateWorkItemTagRequest, DbWorkItemTag, User, WorkItemRole } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { validateField } from 'src/utils/validation'
 import { FormProvider, useForm, useFormState, useWatch } from 'react-hook-form'
@@ -52,7 +54,6 @@ import { validateJson } from 'src/client-validator/validate'
 import Ajv from 'ajv'
 import addFormats from 'ajv-formats'
 import { IconCircle, IconTag } from '@tabler/icons'
-import JSON_SCHEMA from 'src/client-validator/gen/dereferenced-schema.json'
 import useRenders from 'src/hooks/utils/useRenders'
 import { fullFormats } from 'ajv-formats/dist/formats'
 import { nameInitials } from 'src/utils/strings'
@@ -69,6 +70,10 @@ import { useFormSlice } from 'src/slices/form'
 import { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
 import { persister } from 'src/idb'
 import { queryClient } from 'src/react-query'
+import { parseSchemaFields } from 'src/utils/jsonSchema'
+import { schemaDefinitions } from 'src/client-validator/gen/meta'
+import Project from 'src/views/Project/Project'
+import { colorSwatchComponentInputOption } from 'src/components/formGeneration/components'
 
 const schema = {
   properties: {
@@ -256,6 +261,7 @@ const userIdSelectOption = selectOptionsBuilder({
     return `${el.email} ${el.fullName} ${el.username}`
   },
 })
+
 export default function App() {
   useEffect(() => {
     document.body.style.background = 'none !important'
@@ -319,7 +325,14 @@ export default function App() {
     defaultValues: formInitialValues ?? {},
     // shouldUnregister: true, // defaultValues will not be merged against submission result.
   })
-
+  const createWorkItemTagForm = useForm<CreateWorkItemTagRequest>({
+    resolver: ajvResolver(schema as any, {
+      strict: false,
+      formats: fullFormats,
+    }),
+    mode: 'all',
+    reValidateMode: 'onChange',
+  })
   const { register, handleSubmit, control, formState } = form
   const errors = formState.errors
   const formSLice = useFormSlice()
@@ -377,6 +390,7 @@ export default function App() {
             >
               <Layout>
                 <Routes>
+                  <Route path="/project" element={<Project />} />
                   <Route
                     path="/"
                     element={
@@ -526,18 +540,7 @@ export default function App() {
                               },
                               input: {
                                 'demoProject.line': {
-                                  component: (
-                                    <ColorInput
-                                      placeholder="Pick color"
-                                      disallowInput
-                                      withPicker={false}
-                                      swatches={colorBlindPalette}
-                                      styles={{ root: { width: '100%' } }}
-                                    />
-                                  ),
-                                  propsFn(registerOnChange) {
-                                    return {}
-                                  },
+                                  component: colorSwatchComponentInputOption,
                                 },
                               },
                               // these should probably be all required later, to ensure formField is never used.

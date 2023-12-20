@@ -161,7 +161,7 @@ func newSpecReflector() *openapi3.Reflector {
 					t = t.Elem()
 				}
 				if t.Kind() == reflect.Struct {
-					// will generate duplicate models otherwise, exiting only simple makes exit early it and output an empty schema
+					// will generate duplicate models otherwise
 					params.Schema.ExtraProperties = map[string]any{
 						"x-TO-BE-DELETED": true,
 					}

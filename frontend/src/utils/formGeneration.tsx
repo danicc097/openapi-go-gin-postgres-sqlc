@@ -71,7 +71,6 @@ import { json } from 'react-router-dom'
 import { ApiError } from 'src/api/mutator'
 import DynamicFormErrorCallout from 'src/components/Callout/DynamicFormErrorCallout'
 import PageTemplate from 'src/components/PageTemplate'
-import type { DemoWorkItemCreateRequest } from 'src/gen/model'
 import useRenders from 'src/hooks/utils/useRenders'
 import type {
   DeepPartial,
@@ -155,6 +154,9 @@ export type DynamicFormOptions<
   IgnoredFormKeys extends U | null,
   U extends PropertyKey = GetKeys<T>,
 > = {
+  /**
+   * Label mapping for fields. Use null to skip rendering field entirely.
+   */
   labels: {
     [key in Exclude<U, IgnoredFormKeys>]: string | null
   }
@@ -366,7 +368,14 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
       required: field.required,
       id: `${formName}-${formField}`,
       onKeyPress: (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        e.key === 'Enter' && e.preventDefault()
+        if (e.key !== 'Enter') {
+          return
+        }
+        if (document.activeElement?.tagName.toLowerCase() === 'textarea') {
+          console.log('Enter key pressed in textarea')
+        } else {
+          e.preventDefault()
+        }
       },
     }
 
@@ -623,12 +632,18 @@ function FormData() {
   console.log(myFormState.errors)
   console.log(`form has errors: ${hasNonEmptyValue(myFormState.errors)}`)
 
+  let code = ''
+  try {
+    code = JSON.stringify(myFormData, null, 2)
+  } catch (error) {
+    console.error(error)
+  }
   return (
     <Accordion>
       <Accordion.Item value="form">
         <Accordion.Control>{`See form`}</Accordion.Control>
         <Accordion.Panel>
-          <CodeHighlight language="json" code={JSON.stringify(myFormData, null, 2)}></CodeHighlight>
+          <CodeHighlight language="json" code={code}></CodeHighlight>
         </Accordion.Panel>
       </Accordion.Item>
     </Accordion>
@@ -735,7 +750,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     // explicit component given
     formFieldComponent = React.cloneElement(component, {
       ..._props,
-      onChange: (e) => registerOnChange({ target: { name: formField, value: e } }),
+      // IMPORTANT: some mantine components require e, others e.target.value
+      onChange: (e) => registerOnChange({ target: { name: formField, value: e.target?.value ?? e } }),
       ...component.props, // allow user override
       ...(componentPropsFn && componentPropsFn(registerOnChange)), // allow user override
     })
@@ -1140,6 +1156,7 @@ type CustomSelectProps = {
 function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inputProps }: CustomSelectProps) {
   const form = useFormContext()
   const { formName, options, schemaFields } = useDynamicFormContext()
+  const formSlice = useFormSlice()
 
   const selectOptions = options.selectOptions![schemaKey]!
   const formValues = (form.getValues(formField) as any[]) || []
@@ -1196,7 +1213,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
           if (!option) {
             // in form gen we do want to concatenate errors, to be shown upon submit clicked.
             // react hook form will show input errors as well on registered components
-            setCalloutErrors([...(calloutErrors || []), `${value} is not a valid ${itemName}`])
+            formSlice.setCustomError(formName, formField, `${value} is not a valid ${itemName}`)
             return
           }
           await registerOnChange({

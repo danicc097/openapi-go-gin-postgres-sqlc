@@ -300,6 +300,97 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - workItemTag
+  # Make sure to include new scopes in scopes.json
+  # recommended schemas for activity:
+  # CreateActivityRequest:
+  #   x-postgen-struct: RestCreateActivityRequest
+  # UpdateActivityRequest:
+  #   x-postgen-struct: RestUpdateActivityRequest
+  # Activity:
+  #   x-postgen-struct: RestActivity
+  /project/{projectName}/activity/:
+    post:
+      summary: create activity.
+      !!merge <<: *x-require-authenticated
+      operationId: CreateActivity
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      x-required-scopes:
+        - activity:create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateActivityRequest'
+        required: true
+      responses:
+        201:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        !!merge <<: *x-error-response
+      tags:
+        - activity
+  /project/{projectName}/activity/{id}/:
+    get:
+      summary: get activity.
+      !!merge <<: *x-require-authenticated
+      operationId: GetActivity
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/SerialID'
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        !!merge <<: *x-error-response
+      tags:
+        - activity
+    patch:
+      summary: update activity.
+      !!merge <<: *x-require-authenticated
+      operationId: UpdateActivity
+      x-required-scopes:
+        - activity:edit
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/SerialID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateActivityRequest'
+        required: true
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        !!merge <<: *x-error-response
+      tags:
+        - activity
+    delete:
+      summary: delete activity.
+      !!merge <<: *x-require-authenticated
+      operationId: DeleteActivity
+      x-required-scopes:
+        - activity:delete
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+        - $ref: '#/components/parameters/SerialID'
+      responses:
+        204:
+          description: Success.
+        !!merge <<: *x-error-response
+      tags:
+        - activity
   /project/{projectName}/workItemTag/{id}/:
     get:
       summary: get workitemtag.
@@ -746,6 +837,50 @@ components:
       example: 41131
       style: simple
   schemas:
+    CreateActivityRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        description:
+          type: string
+        isProductive:
+          type: boolean
+        name:
+          type: string
+      required:
+        - description
+        - isProductive
+        - name
+      type: object
+      x-postgen-struct: RestCreateActivityRequest
+    UpdateActivityRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        description:
+          type: string
+        isProductive:
+          type: boolean
+        name:
+          type: string
+      type: object
+      x-postgen-struct: RestUpdateActivityRequest
+    Activity: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        activityID:
+          type: integer
+        description:
+          type: string
+        isProductive:
+          type: boolean
+        name:
+          type: string
+        projectID:
+          type: integer
+      required:
+        - activityID
+        - projectID
+        - name
+        - description
+        - isProductive
+      type: object
+      x-postgen-struct: RestActivity
     CreateWorkItemTagRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
@@ -1519,8 +1654,9 @@ components:
         - GlobalAlerts
     Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string
-      enum: ["users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review"]
+      enum: ["users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review"]
       x-generated: '-'
+      description: is generated from scopes.json keys.
     Scopes: # workaround for openapi-go gen
       type: array
       items:
@@ -1529,12 +1665,13 @@ components:
       type: string
       enum: ["guest", "user", "advancedUser", "manager", "admin", "superAdmin"]
       x-generated: '-'
+      description: is generated from roles.json keys.
     WorkItemRole: # Generated from database enum 'work_item_role'. DO NOT EDIT.
       title: WorkItem role
       type: string
       x-generated: '-'
       enum: ["preparer", "reviewer"]
-      description: represents a database 'work_item_role'
+      description: is generated from database enum 'work_item_role'.
     UpdateUserRequest:
       description: represents User data to update
       example:
@@ -1758,6 +1895,7 @@ components:
       enum: ["demo", "demo_two"]
       type: string
       x-generated: '-'
+      description: is generated from projects table.
     DbActivityCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         description:
@@ -1803,46 +1941,20 @@ components:
     DbWorkItemRole: # Generated from internal structs. DO NOT EDIT.
       type: string
     NotificationType: # Generated from database enum 'notification_type'. DO NOT EDIT.
-      description: represents a database 'notification_type'
+      description: is generated from database enum 'notification_type'.
       type: string
       x-generated: '-'
       enum: ["personal", "global"]
-    DemoProjectKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
-      type: string
-      enum:
-        - Disabled
-        - Received
-        - Under review
-        - Work in progress
-      x-generated: '-'
-    DemoProject2KanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
-      type: string
-      enum:
-        - Received
-      x-generated: '-'
-    Demo2WorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
-      type: string
-      enum:
-        - Type 1
-        - Type 2
-        - Another type
-      x-generated: '-'
-    DemoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
-      type: string
-      enum: ["Disabled", "Received", "Under review", "Work in progress"]
-      x-generated: '-'
-    DemoTwoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
-      type: string
-      enum: ["Received"]
-      x-generated: '-'
     DemoTwoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
       type: string
       enum: ["Type 1", "Type 2", "Another type"]
       x-generated: '-'
+      description: is generated from work_item_types table.
     DemoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
       type: string
       enum: ["Type 1"]
       x-generated: '-'
+      description: is generated from work_item_types table.
     DbDemoWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
         lastMessageAt:
@@ -2028,6 +2140,16 @@ components:
         - user
         - role
       type: object
+    DemoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
+      type: string
+      enum: ["Disabled", "Received", "Under review", "Work in progress"]
+      x-generated: '-'
+      description: is generated from kanban_steps table.
+    DemoTwoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
+      type: string
+      enum: ["Received"]
+      x-generated: '-'
+      description: is generated from kanban_steps table.
   examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:

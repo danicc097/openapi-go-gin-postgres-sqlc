@@ -2,6 +2,73 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
+    "CreateActivityRequest": {
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "description",
+        "isProductive",
+        "name"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateActivityRequest"
+    },
+    "UpdateActivityRequest": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateActivityRequest"
+    },
+    "Activity": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activityID",
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestActivity"
+    },
     "CreateWorkItemTagRequest": {
       "properties": {
         "color": {
@@ -24,8 +91,7 @@
         "name"
       ],
       "type": "object",
-      "x-postgen-struct": "RestCreateWorkItemTagRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateWorkItemTagRequest"
     },
     "UpdateWorkItemTagRequest": {
       "properties": {
@@ -41,8 +107,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestUpdateWorkItemTagRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestUpdateWorkItemTagRequest"
     },
     "WorkItemTag": {
       "properties": {
@@ -74,8 +139,7 @@
         "color"
       ],
       "type": "object",
-      "x-postgen-struct": "RestWorkItemTag",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestWorkItemTag"
     },
     "CreateWorkItemTypeRequest": {
       "properties": {
@@ -99,8 +163,7 @@
         "name"
       ],
       "type": "object",
-      "x-postgen-struct": "RestCreateWorkItemTypeRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateWorkItemTypeRequest"
     },
     "UpdateWorkItemTypeRequest": {
       "properties": {
@@ -116,8 +179,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestUpdateWorkItemTypeRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestUpdateWorkItemTypeRequest"
     },
     "WorkItemType": {
       "properties": {
@@ -149,8 +211,7 @@
         "color"
       ],
       "type": "object",
-      "x-postgen-struct": "RestWorkItemType",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestWorkItemType"
     },
     "CreateTeamRequest": {
       "properties": {
@@ -172,8 +233,7 @@
         "projectID"
       ],
       "type": "object",
-      "x-postgen-struct": "RestCreateTeamRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateTeamRequest"
     },
     "UpdateTeamRequest": {
       "properties": {
@@ -188,8 +248,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestUpdateTeamRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestUpdateTeamRequest"
     },
     "Team": {
       "properties": {
@@ -229,16 +288,14 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "RestTeam",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestTeam"
     },
     "Direction": {
       "type": "string",
       "enum": [
         "asc",
         "desc"
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      ]
     },
     "PaginatedNotificationsResponse": {
       "properties": {
@@ -270,18 +327,15 @@
                       "null"
                     ]
                   },
-                  "notificationID": {
-                    "$schema": "http://json-schema.org/draft-04/schema#"
-                  },
+                  "notificationID": {},
                   "notificationType": {
-                    "description": "represents a database 'notification_type'",
+                    "description": "is generated from database enum 'notification_type'.",
                     "type": "string",
                     "x-generated": "-",
                     "enum": [
                       "personal",
                       "global"
-                    ],
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    ]
                   },
                   "receiver": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -290,8 +344,7 @@
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    }
                   },
                   "sender": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -300,8 +353,7 @@
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    }
                   },
                   "title": {
                     "type": "string",
@@ -317,8 +369,7 @@
                   "sender",
                   "notificationType"
                 ],
-                "type": "object",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "type": "object"
               },
               "notificationID": {
                 "type": "integer"
@@ -333,8 +384,7 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               },
               "userNotificationID": {
                 "type": "integer"
@@ -347,8 +397,7 @@
               "userID",
               "notification"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": [
             "array",
@@ -361,8 +410,7 @@
               "type": "string"
             }
           },
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         }
       },
       "required": [
@@ -370,8 +418,7 @@
         "items"
       ],
       "type": "object",
-      "x-postgen-struct": "RestPaginatedNotificationsResponse",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestPaginatedNotificationsResponse"
     },
     "DbActivity": {
       "properties": {
@@ -400,8 +447,7 @@
         "description",
         "isProductive"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbKanbanStep": {
       "properties": {
@@ -441,8 +487,7 @@
         "timeTrackable"
       ],
       "type": "object",
-      "x-postgen-struct": "DbKanbanStep",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbKanbanStep"
     },
     "DbProject": {
       "properties": {
@@ -476,8 +521,7 @@
                   "path",
                   "name"
                 ],
-                "type": "object",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "type": "object"
               },
               "type": "array"
             },
@@ -496,8 +540,7 @@
             "header",
             "fields"
           ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "createdAt": {
           "format": "date-time",
@@ -516,7 +559,7 @@
           ],
           "type": "string",
           "x-generated": "-",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from projects table."
         },
         "projectID": {
           "type": "integer"
@@ -537,8 +580,7 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbProject",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbProject"
     },
     "DbTeam": {
       "properties": {
@@ -577,8 +619,7 @@
         "createdAt",
         "updatedAt"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbWorkItemTag": {
       "properties": {
@@ -610,8 +651,7 @@
         "color"
       ],
       "type": "object",
-      "x-postgen-struct": "DbWorkItemTag",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbWorkItemTag"
     },
     "DbWorkItemType": {
       "properties": {
@@ -643,8 +683,7 @@
         "color"
       ],
       "type": "object",
-      "x-postgen-struct": "DbWorkItemType",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbWorkItemType"
     },
     "DbDemoWorkItem": {
       "properties": {
@@ -678,8 +717,7 @@
         "reopened"
       ],
       "type": "object",
-      "x-postgen-struct": "DbDemoWorkItem",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbDemoWorkItem"
     },
     "DbUserAPIKey": {
       "properties": {
@@ -700,8 +738,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         }
       },
       "required": [
@@ -710,8 +747,7 @@
         "userID"
       ],
       "type": "object",
-      "x-postgen-struct": "DbUserAPIKey",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbUserAPIKey"
     },
     "DbUser": {
       "properties": {
@@ -766,15 +802,17 @@
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
               "work-item:review"
             ],
             "x-generated": "-",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+            "description": "is generated from scopes.json keys."
+          }
         },
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -783,8 +821,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "username": {
           "type": "string",
@@ -801,8 +838,7 @@
         "createdAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbUser",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbUser"
     },
     "DbTimeEntry": {
       "properties": {
@@ -841,8 +877,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "workItemID": {
           "type": [
@@ -859,8 +894,7 @@
         "start"
       ],
       "type": "object",
-      "x-postgen-struct": "DbTimeEntry",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbTimeEntry"
     },
     "DbWorkItemComment": {
       "properties": {
@@ -887,8 +921,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "workItemCommentID": {
           "type": "integer"
@@ -906,8 +939,7 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbWorkItemComment",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbWorkItemComment"
     },
     "ProjectConfig": {
       "properties": {
@@ -939,8 +971,7 @@
               "path",
               "name"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": "array"
         },
@@ -959,8 +990,7 @@
         "header",
         "fields"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "ProjectConfigField": {
       "properties": {
@@ -989,8 +1019,7 @@
         "path",
         "name"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DemoWorkItems": {
       "properties": {
@@ -1044,8 +1073,7 @@
             "reopened"
           ],
           "type": "object",
-          "x-postgen-struct": "DbDemoWorkItem",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "DbDemoWorkItem"
         },
         "description": {
           "type": "string",
@@ -1065,8 +1093,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "description": "is generated from database enum 'work_item_role'."
               },
               "user": {
                 "properties": {
@@ -1121,15 +1148,17 @@
                         "scopes:write",
                         "team-settings:write",
                         "project-settings:write",
+                        "activity:create",
+                        "activity:edit",
+                        "activity:delete",
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
                         "work-item:review"
                       ],
                       "x-generated": "-",
-                      "$schema": "http://json-schema.org/draft-04/schema#"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                      "description": "is generated from scopes.json keys."
+                    }
                   },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -1138,8 +1167,7 @@
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    }
                   },
                   "username": {
                     "type": "string",
@@ -1156,16 +1184,14 @@
                   "createdAt"
                 ],
                 "type": "object",
-                "x-postgen-struct": "DbUser",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "x-postgen-struct": "DbUser"
               }
             },
             "required": [
               "user",
               "role"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": [
             "array",
@@ -1223,8 +1249,7 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               },
               "workItemID": {
                 "type": [
@@ -1241,8 +1266,7 @@
               "start"
             ],
             "type": "object",
-            "x-postgen-struct": "DbTimeEntry",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbTimeEntry"
           },
           "type": [
             "array",
@@ -1285,8 +1309,7 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               },
               "workItemCommentID": {
                 "type": "integer"
@@ -1304,8 +1327,7 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-postgen-struct": "DbWorkItemComment",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbWorkItemComment"
           },
           "type": [
             "array",
@@ -1346,8 +1368,7 @@
               "color"
             ],
             "type": "object",
-            "x-postgen-struct": "DbWorkItemTag",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbWorkItemTag"
           },
           "type": [
             "array",
@@ -1384,8 +1405,7 @@
             "color"
           ],
           "type": "object",
-          "x-postgen-struct": "DbWorkItemType",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "DbWorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -1405,8 +1425,7 @@
         "demoWorkItem"
       ],
       "type": "object",
-      "x-postgen-struct": "RestDemoWorkItems",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestDemoWorkItems"
     },
     "DemoTwoWorkItems": {
       "properties": {
@@ -1436,15 +1455,12 @@
                 "object"
               ]
             },
-            "workItemID": {
-              "$schema": "http://json-schema.org/draft-04/schema#"
-            }
+            "workItemID": {}
           },
           "required": [
             "workItemID"
           ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "description": {
           "type": "string",
@@ -1464,8 +1480,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "description": "is generated from database enum 'work_item_role'."
               },
               "user": {
                 "properties": {
@@ -1520,15 +1535,17 @@
                         "scopes:write",
                         "team-settings:write",
                         "project-settings:write",
+                        "activity:create",
+                        "activity:edit",
+                        "activity:delete",
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
                         "work-item:review"
                       ],
                       "x-generated": "-",
-                      "$schema": "http://json-schema.org/draft-04/schema#"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                      "description": "is generated from scopes.json keys."
+                    }
                   },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -1537,8 +1554,7 @@
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    }
                   },
                   "username": {
                     "type": "string",
@@ -1555,16 +1571,14 @@
                   "createdAt"
                 ],
                 "type": "object",
-                "x-postgen-struct": "DbUser",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "x-postgen-struct": "DbUser"
               }
             },
             "required": [
               "user",
               "role"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": [
             "array",
@@ -1622,8 +1636,7 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               },
               "workItemID": {
                 "type": [
@@ -1640,8 +1653,7 @@
               "start"
             ],
             "type": "object",
-            "x-postgen-struct": "DbTimeEntry",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbTimeEntry"
           },
           "type": [
             "array",
@@ -1684,8 +1696,7 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               },
               "workItemCommentID": {
                 "type": "integer"
@@ -1703,8 +1714,7 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-postgen-struct": "DbWorkItemComment",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbWorkItemComment"
           },
           "type": [
             "array",
@@ -1745,8 +1755,7 @@
               "color"
             ],
             "type": "object",
-            "x-postgen-struct": "DbWorkItemTag",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbWorkItemTag"
           },
           "type": [
             "array",
@@ -1783,8 +1792,7 @@
             "color"
           ],
           "type": "object",
-          "x-postgen-struct": "DbWorkItemType",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "DbWorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -1804,8 +1812,7 @@
         "demoTwoWorkItem"
       ],
       "type": "object",
-      "x-postgen-struct": "RestDemoTwoWorkItems",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestDemoTwoWorkItems"
     },
     "InitializeProjectRequest": {
       "properties": {
@@ -1831,8 +1838,7 @@
               "description",
               "name"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": [
             "array",
@@ -1859,8 +1865,7 @@
               "name",
               "projectID"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": [
             "array",
@@ -1869,8 +1874,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestCreateProjectBoardRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateProjectBoardRequest"
     },
     "ProjectBoard": {
       "properties": {
@@ -1881,15 +1885,14 @@
           ],
           "type": "string",
           "x-generated": "-",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from projects table."
         }
       },
       "required": [
         "projectName"
       ],
       "type": "object",
-      "x-postgen-struct": "RestProjectBoard",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestProjectBoard"
     },
     "User": {
       "properties": {
@@ -1912,8 +1915,7 @@
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
-              },
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              }
             }
           },
           "required": [
@@ -1922,8 +1924,7 @@
             "userID"
           ],
           "type": "object",
-          "x-postgen-struct": "DbUserAPIKey",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "DbUserAPIKey"
         },
         "createdAt": {
           "format": "date-time",
@@ -1998,8 +1999,7 @@
                         "path",
                         "name"
                       ],
-                      "type": "object",
-                      "$schema": "http://json-schema.org/draft-04/schema#"
+                      "type": "object"
                     },
                     "type": "array"
                   },
@@ -2018,8 +2018,7 @@
                   "header",
                   "fields"
                 ],
-                "type": "object",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "type": "object"
               },
               "createdAt": {
                 "format": "date-time",
@@ -2038,7 +2037,7 @@
                 ],
                 "type": "string",
                 "x-generated": "-",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "description": "is generated from projects table."
               },
               "projectID": {
                 "type": "integer"
@@ -2059,8 +2058,7 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-postgen-struct": "DbProject",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbProject"
           },
           "type": [
             "array",
@@ -2078,7 +2076,7 @@
             "superAdmin"
           ],
           "x-generated": "-",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from roles.json keys."
         },
         "scopes": {
           "type": "array",
@@ -2091,15 +2089,17 @@
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
               "work-item:review"
             ],
             "x-generated": "-",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+            "description": "is generated from scopes.json keys."
+          }
         },
         "teams": {
           "items": {
@@ -2139,8 +2139,7 @@
               "createdAt",
               "updatedAt"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": [
             "array",
@@ -2154,8 +2153,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "username": {
           "type": "string",
@@ -2173,8 +2171,7 @@
         "role"
       ],
       "type": "object",
-      "x-postgen-struct": "RestUser",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestUser"
     },
     "HTTPValidationError": {
       "title": "HTTPValidationError",
@@ -2233,8 +2230,7 @@
                 "title": "Contextual information",
                 "type": "object"
               }
-            },
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            }
           }
         },
         "messages": {
@@ -2246,8 +2242,7 @@
           },
           "minLength": 1
         }
-      },
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      }
     },
     "ErrorCode": {
       "description": "Represents standardized HTTP error types.\nNotes:\n- 'Private' marks an error to be hidden in response.\n",
@@ -2266,8 +2261,7 @@
         "InvalidRole",
         "InvalidScope",
         "InvalidUUID"
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      ]
     },
     "HTTPError": {
       "description": "represents an error message response.",
@@ -2313,8 +2307,7 @@
             "InvalidRole",
             "InvalidScope",
             "InvalidUUID"
-          ],
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          ]
         },
         "validationError": {
           "title": "HTTPValidationError",
@@ -2373,8 +2366,7 @@
                     "title": "Contextual information",
                     "type": "object"
                   }
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               }
             },
             "messages": {
@@ -2386,8 +2378,7 @@
               },
               "minLength": 1
             }
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         }
       },
       "required": [
@@ -2396,16 +2387,14 @@
         "status",
         "error",
         "type"
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      ]
     },
     "Topics": {
       "description": "string identifiers for SSE event listeners.",
       "type": "string",
       "enum": [
         "GlobalAlerts"
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      ]
     },
     "Scope": {
       "type": "string",
@@ -2416,13 +2405,16 @@
         "scopes:write",
         "team-settings:write",
         "project-settings:write",
+        "activity:create",
+        "activity:edit",
+        "activity:delete",
         "work-item-tag:create",
         "work-item-tag:edit",
         "work-item-tag:delete",
         "work-item:review"
       ],
       "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "description": "is generated from scopes.json keys."
     },
     "Scopes": {
       "type": "array",
@@ -2435,15 +2427,17 @@
           "scopes:write",
           "team-settings:write",
           "project-settings:write",
+          "activity:create",
+          "activity:edit",
+          "activity:delete",
           "work-item-tag:create",
           "work-item-tag:edit",
           "work-item-tag:delete",
           "work-item:review"
         ],
         "x-generated": "-",
-        "$schema": "http://json-schema.org/draft-04/schema#"
-      },
-      "$schema": "http://json-schema.org/draft-04/schema#"
+        "description": "is generated from scopes.json keys."
+      }
     },
     "Role": {
       "type": "string",
@@ -2456,7 +2450,7 @@
         "superAdmin"
       ],
       "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "description": "is generated from roles.json keys."
     },
     "WorkItemRole": {
       "title": "WorkItem role",
@@ -2466,8 +2460,7 @@
         "preparer",
         "reviewer"
       ],
-      "description": "represents a database 'work_item_role'",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "description": "is generated from database enum 'work_item_role'."
     },
     "UpdateUserRequest": {
       "description": "represents User data to update",
@@ -2483,8 +2476,7 @@
           "pattern": "^[\\p{L} '-]+$"
         }
       },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "UpdateUserAuthRequest": {
       "description": "represents User authorization data to update",
@@ -2500,7 +2492,7 @@
             "superAdmin"
           ],
           "x-generated": "-",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from roles.json keys."
         },
         "scopes": {
           "type": "array",
@@ -2513,19 +2505,20 @@
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
               "work-item:review"
             ],
             "x-generated": "-",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+            "description": "is generated from scopes.json keys."
+          }
         }
       },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "ValidationError": {
       "title": "ValidationError",
@@ -2573,8 +2566,7 @@
           "title": "Contextual information",
           "type": "object"
         }
-      },
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      }
     },
     "UuidUUID": {
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -2583,8 +2575,7 @@
       "x-go-type-import": {
         "name": "uuid",
         "path": "github.com/google/uuid"
-      },
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      }
     },
     "CreateWorkItemRequest": {
       "oneOf": [
@@ -2635,8 +2626,7 @@
                 "title",
                 "workItemTypeID"
               ],
-              "type": "object",
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              "type": "object"
             },
             "demoProject": {
               "properties": {
@@ -2665,8 +2655,7 @@
                 "ref",
                 "reopened"
               ],
-              "type": "object",
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              "type": "object"
             },
             "members": {
               "items": {
@@ -2679,8 +2668,7 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "represents a database 'work_item_role'",
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    "description": "is generated from database enum 'work_item_role'."
                   },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -2689,16 +2677,14 @@
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    }
                   }
                 },
                 "required": [
                   "role",
                   "userID"
                 ],
-                "type": "object",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "type": "object"
               },
               "type": "array"
             },
@@ -2709,7 +2695,7 @@
               ],
               "type": "string",
               "x-generated": "-",
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              "description": "is generated from projects table."
             },
             "tagIDs": {
               "items": {
@@ -2726,8 +2712,7 @@
             "members"
           ],
           "type": "object",
-          "x-postgen-struct": "RestCreateDemoWorkItemRequest",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "RestCreateDemoWorkItemRequest"
         },
         {
           "properties": {
@@ -2776,8 +2761,7 @@
                 "title",
                 "workItemTypeID"
               ],
-              "type": "object",
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              "type": "object"
             },
             "demoTwoProject": {
               "properties": {
@@ -2788,8 +2772,7 @@
                   ]
                 }
               },
-              "type": "object",
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              "type": "object"
             },
             "members": {
               "items": {
@@ -2802,8 +2785,7 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "represents a database 'work_item_role'",
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    "description": "is generated from database enum 'work_item_role'."
                   },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -2812,16 +2794,14 @@
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    }
                   }
                 },
                 "required": [
                   "role",
                   "userID"
                 ],
-                "type": "object",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "type": "object"
               },
               "type": "array"
             },
@@ -2832,7 +2812,7 @@
               ],
               "type": "string",
               "x-generated": "-",
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              "description": "is generated from projects table."
             },
             "tagIDs": {
               "items": {
@@ -2849,11 +2829,9 @@
             "members"
           ],
           "type": "object",
-          "x-postgen-struct": "RestCreateDemoTwoWorkItemRequest",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "RestCreateDemoTwoWorkItemRequest"
         }
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      ]
     },
     "DbWorkItem": {
       "properties": {
@@ -2925,8 +2903,7 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbWorkItem",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbWorkItem"
     },
     "CreateDemoTwoWorkItemRequest": {
       "properties": {
@@ -2975,8 +2952,7 @@
             "title",
             "workItemTypeID"
           ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "demoTwoProject": {
           "properties": {
@@ -2987,8 +2963,7 @@
               ]
             }
           },
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "members": {
           "items": {
@@ -3001,8 +2976,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "description": "is generated from database enum 'work_item_role'."
               },
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -3011,16 +2985,14 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               }
             },
             "required": [
               "role",
               "userID"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": "array"
         },
@@ -3031,7 +3003,7 @@
           ],
           "type": "string",
           "x-generated": "-",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from projects table."
         },
         "tagIDs": {
           "items": {
@@ -3048,8 +3020,7 @@
         "members"
       ],
       "type": "object",
-      "x-postgen-struct": "RestCreateDemoTwoWorkItemRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateDemoTwoWorkItemRequest"
     },
     "CreateDemoWorkItemRequest": {
       "properties": {
@@ -3098,8 +3069,7 @@
             "title",
             "workItemTypeID"
           ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "demoProject": {
           "properties": {
@@ -3128,8 +3098,7 @@
             "ref",
             "reopened"
           ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "members": {
           "items": {
@@ -3142,8 +3111,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "description": "is generated from database enum 'work_item_role'."
               },
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -3152,16 +3120,14 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               }
             },
             "required": [
               "role",
               "userID"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": "array"
         },
@@ -3172,7 +3138,7 @@
           ],
           "type": "string",
           "x-generated": "-",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from projects table."
         },
         "tagIDs": {
           "items": {
@@ -3189,8 +3155,7 @@
         "members"
       ],
       "type": "object",
-      "x-postgen-struct": "RestCreateDemoWorkItemRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateDemoWorkItemRequest"
     },
     "CreateWorkItemCommentRequest": {
       "properties": {
@@ -3205,8 +3170,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "workItemID": {
           "type": "integer"
@@ -3218,8 +3182,7 @@
         "workItemID"
       ],
       "type": "object",
-      "x-postgen-struct": "RestCreateWorkItemCommentRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateWorkItemCommentRequest"
     },
     "Project": {
       "enum": [
@@ -3228,7 +3191,7 @@
       ],
       "type": "string",
       "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "description": "is generated from projects table."
     },
     "DbActivityCreateParams": {
       "properties": {
@@ -3252,8 +3215,7 @@
         "isProductive",
         "name"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbTeamCreateParams": {
       "properties": {
@@ -3274,8 +3236,7 @@
         "name",
         "projectID"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbWorkItemTagCreateParams": {
       "properties": {
@@ -3298,70 +3259,19 @@
         "description",
         "name"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbWorkItemRole": {
-      "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "string"
     },
     "NotificationType": {
-      "description": "represents a database 'notification_type'",
+      "description": "is generated from database enum 'notification_type'.",
       "type": "string",
       "x-generated": "-",
       "enum": [
         "personal",
         "global"
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoProjectKanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Disabled",
-        "Received",
-        "Under review",
-        "Work in progress"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoProject2KanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Received"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "Demo2WorkItemTypes": {
-      "type": "string",
-      "enum": [
-        "Type 1",
-        "Type 2",
-        "Another type"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoKanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Disabled",
-        "Received",
-        "Under review",
-        "Work in progress"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoTwoKanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Received"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      ]
     },
     "DemoTwoWorkItemTypes": {
       "type": "string",
@@ -3371,7 +3281,7 @@
         "Another type"
       ],
       "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "description": "is generated from work_item_types table."
     },
     "DemoWorkItemTypes": {
       "type": "string",
@@ -3379,7 +3289,7 @@
         "Type 1"
       ],
       "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "description": "is generated from work_item_types table."
     },
     "DbDemoWorkItemCreateParams": {
       "properties": {
@@ -3408,8 +3318,7 @@
         "ref",
         "reopened"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbWorkItemCreateParams": {
       "properties": {
@@ -3456,8 +3365,7 @@
         "title",
         "workItemTypeID"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "ServicesMember": {
       "properties": {
@@ -3469,8 +3377,7 @@
             "preparer",
             "reviewer"
           ],
-          "description": "represents a database 'work_item_role'",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from database enum 'work_item_role'."
         },
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -3479,16 +3386,14 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         }
       },
       "required": [
         "role",
         "userID"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbDemoTwoWorkItem": {
       "properties": {
@@ -3498,15 +3403,12 @@
             "object"
           ]
         },
-        "workItemID": {
-          "$schema": "http://json-schema.org/draft-04/schema#"
-        }
+        "workItemID": {}
       },
       "required": [
         "workItemID"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbDemoTwoWorkItemCreateParams": {
       "properties": {
@@ -3517,15 +3419,10 @@
           ]
         }
       },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
-    "DbWorkItemID": {
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DbProjectID": {
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
+    "DbWorkItemID": {},
+    "DbProjectID": {},
     "DbUserID": {
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
       "type": "string",
@@ -3533,15 +3430,10 @@
       "x-go-type-import": {
         "name": "uuid",
         "path": "github.com/google/uuid"
-      },
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      }
     },
-    "DbWorkItemTypeID": {
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DbNotificationID": {
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
+    "DbWorkItemTypeID": {},
+    "DbNotificationID": {},
     "DbNotification": {
       "properties": {
         "body": {
@@ -3567,18 +3459,15 @@
             "null"
           ]
         },
-        "notificationID": {
-          "$schema": "http://json-schema.org/draft-04/schema#"
-        },
+        "notificationID": {},
         "notificationType": {
-          "description": "represents a database 'notification_type'",
+          "description": "is generated from database enum 'notification_type'.",
           "type": "string",
           "x-generated": "-",
           "enum": [
             "personal",
             "global"
-          ],
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          ]
         },
         "receiver": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -3587,8 +3476,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "sender": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -3597,8 +3485,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "title": {
           "type": "string",
@@ -3614,8 +3501,7 @@
         "sender",
         "notificationType"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbUserNotification": {
       "properties": {
@@ -3632,8 +3518,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "userNotificationID": {
           "type": "integer"
@@ -3645,8 +3530,7 @@
         "read",
         "userID"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "RestPaginationPage": {
       "properties": {
@@ -3654,8 +3538,7 @@
           "type": "string"
         }
       },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "RestNotification": {
       "properties": {
@@ -3684,18 +3567,15 @@
                 "null"
               ]
             },
-            "notificationID": {
-              "$schema": "http://json-schema.org/draft-04/schema#"
-            },
+            "notificationID": {},
             "notificationType": {
-              "description": "represents a database 'notification_type'",
+              "description": "is generated from database enum 'notification_type'.",
               "type": "string",
               "x-generated": "-",
               "enum": [
                 "personal",
                 "global"
-              ],
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              ]
             },
             "receiver": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -3704,8 +3584,7 @@
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
-              },
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              }
             },
             "sender": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -3714,8 +3593,7 @@
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
-              },
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              }
             },
             "title": {
               "type": "string",
@@ -3731,8 +3609,7 @@
             "sender",
             "notificationType"
           ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "notificationID": {
           "type": "integer"
@@ -3747,8 +3624,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "userNotificationID": {
           "type": "integer"
@@ -3761,8 +3637,7 @@
         "userID",
         "notification"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbUserWIAUWorkItem": {
       "properties": {
@@ -3774,8 +3649,7 @@
             "preparer",
             "reviewer"
           ],
-          "description": "represents a database 'work_item_role'",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from database enum 'work_item_role'."
         },
         "user": {
           "properties": {
@@ -3830,15 +3704,17 @@
                   "scopes:write",
                   "team-settings:write",
                   "project-settings:write",
+                  "activity:create",
+                  "activity:edit",
+                  "activity:delete",
                   "work-item-tag:create",
                   "work-item-tag:edit",
                   "work-item-tag:delete",
                   "work-item:review"
                 ],
                 "x-generated": "-",
-                "$schema": "http://json-schema.org/draft-04/schema#"
-              },
-              "$schema": "http://json-schema.org/draft-04/schema#"
+                "description": "is generated from scopes.json keys."
+              }
             },
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -3847,8 +3723,7 @@
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
-              },
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              }
             },
             "username": {
               "type": "string",
@@ -3865,19 +3740,103 @@
             "createdAt"
           ],
           "type": "object",
-          "x-postgen-struct": "DbUser",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "DbUser"
         }
       },
       "required": [
         "user",
         "role"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
+    },
+    "DemoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Disabled",
+        "Received",
+        "Under review",
+        "Work in progress"
+      ],
+      "x-generated": "-",
+      "description": "is generated from kanban_steps table."
+    },
+    "DemoTwoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Received"
+      ],
+      "x-generated": "-",
+      "description": "is generated from kanban_steps table."
     }
   },
   "properties": {
+    "CreateActivityRequest": {
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "description",
+        "isProductive",
+        "name"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateActivityRequest"
+    },
+    "UpdateActivityRequest": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateActivityRequest"
+    },
+    "Activity": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activityID",
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestActivity"
+    },
     "CreateWorkItemTagRequest": {
       "properties": {
         "color": {
@@ -3900,8 +3859,7 @@
         "name"
       ],
       "type": "object",
-      "x-postgen-struct": "RestCreateWorkItemTagRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateWorkItemTagRequest"
     },
     "UpdateWorkItemTagRequest": {
       "properties": {
@@ -3917,8 +3875,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestUpdateWorkItemTagRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestUpdateWorkItemTagRequest"
     },
     "WorkItemTag": {
       "properties": {
@@ -3950,8 +3907,7 @@
         "color"
       ],
       "type": "object",
-      "x-postgen-struct": "RestWorkItemTag",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestWorkItemTag"
     },
     "CreateWorkItemTypeRequest": {
       "properties": {
@@ -3975,8 +3931,7 @@
         "name"
       ],
       "type": "object",
-      "x-postgen-struct": "RestCreateWorkItemTypeRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateWorkItemTypeRequest"
     },
     "UpdateWorkItemTypeRequest": {
       "properties": {
@@ -3992,8 +3947,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestUpdateWorkItemTypeRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestUpdateWorkItemTypeRequest"
     },
     "WorkItemType": {
       "properties": {
@@ -4025,8 +3979,7 @@
         "color"
       ],
       "type": "object",
-      "x-postgen-struct": "RestWorkItemType",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestWorkItemType"
     },
     "CreateTeamRequest": {
       "properties": {
@@ -4048,8 +4001,7 @@
         "projectID"
       ],
       "type": "object",
-      "x-postgen-struct": "RestCreateTeamRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateTeamRequest"
     },
     "UpdateTeamRequest": {
       "properties": {
@@ -4064,8 +4016,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestUpdateTeamRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestUpdateTeamRequest"
     },
     "Team": {
       "properties": {
@@ -4105,16 +4056,14 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "RestTeam",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestTeam"
     },
     "Direction": {
       "type": "string",
       "enum": [
         "asc",
         "desc"
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      ]
     },
     "PaginatedNotificationsResponse": {
       "properties": {
@@ -4146,18 +4095,15 @@
                       "null"
                     ]
                   },
-                  "notificationID": {
-                    "$schema": "http://json-schema.org/draft-04/schema#"
-                  },
+                  "notificationID": {},
                   "notificationType": {
-                    "description": "represents a database 'notification_type'",
+                    "description": "is generated from database enum 'notification_type'.",
                     "type": "string",
                     "x-generated": "-",
                     "enum": [
                       "personal",
                       "global"
-                    ],
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    ]
                   },
                   "receiver": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -4166,8 +4112,7 @@
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    }
                   },
                   "sender": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -4176,8 +4121,7 @@
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    }
                   },
                   "title": {
                     "type": "string",
@@ -4193,8 +4137,7 @@
                   "sender",
                   "notificationType"
                 ],
-                "type": "object",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "type": "object"
               },
               "notificationID": {
                 "type": "integer"
@@ -4209,8 +4152,7 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               },
               "userNotificationID": {
                 "type": "integer"
@@ -4223,8 +4165,7 @@
               "userID",
               "notification"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": [
             "array",
@@ -4237,8 +4178,7 @@
               "type": "string"
             }
           },
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         }
       },
       "required": [
@@ -4246,8 +4186,7 @@
         "items"
       ],
       "type": "object",
-      "x-postgen-struct": "RestPaginatedNotificationsResponse",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestPaginatedNotificationsResponse"
     },
     "DbActivity": {
       "properties": {
@@ -4276,8 +4215,7 @@
         "description",
         "isProductive"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbKanbanStep": {
       "properties": {
@@ -4317,8 +4255,7 @@
         "timeTrackable"
       ],
       "type": "object",
-      "x-postgen-struct": "DbKanbanStep",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbKanbanStep"
     },
     "DbProject": {
       "properties": {
@@ -4352,8 +4289,7 @@
                   "path",
                   "name"
                 ],
-                "type": "object",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "type": "object"
               },
               "type": "array"
             },
@@ -4372,8 +4308,7 @@
             "header",
             "fields"
           ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "createdAt": {
           "format": "date-time",
@@ -4392,7 +4327,7 @@
           ],
           "type": "string",
           "x-generated": "-",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from projects table."
         },
         "projectID": {
           "type": "integer"
@@ -4413,8 +4348,7 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbProject",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbProject"
     },
     "DbTeam": {
       "properties": {
@@ -4453,8 +4387,7 @@
         "createdAt",
         "updatedAt"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbWorkItemTag": {
       "properties": {
@@ -4486,8 +4419,7 @@
         "color"
       ],
       "type": "object",
-      "x-postgen-struct": "DbWorkItemTag",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbWorkItemTag"
     },
     "DbWorkItemType": {
       "properties": {
@@ -4519,8 +4451,7 @@
         "color"
       ],
       "type": "object",
-      "x-postgen-struct": "DbWorkItemType",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbWorkItemType"
     },
     "DbDemoWorkItem": {
       "properties": {
@@ -4554,8 +4485,7 @@
         "reopened"
       ],
       "type": "object",
-      "x-postgen-struct": "DbDemoWorkItem",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbDemoWorkItem"
     },
     "DbUserAPIKey": {
       "properties": {
@@ -4576,8 +4506,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         }
       },
       "required": [
@@ -4586,8 +4515,7 @@
         "userID"
       ],
       "type": "object",
-      "x-postgen-struct": "DbUserAPIKey",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbUserAPIKey"
     },
     "DbUser": {
       "properties": {
@@ -4642,15 +4570,17 @@
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
               "work-item:review"
             ],
             "x-generated": "-",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+            "description": "is generated from scopes.json keys."
+          }
         },
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -4659,8 +4589,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "username": {
           "type": "string",
@@ -4677,8 +4606,7 @@
         "createdAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbUser",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbUser"
     },
     "DbTimeEntry": {
       "properties": {
@@ -4717,8 +4645,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "workItemID": {
           "type": [
@@ -4735,8 +4662,7 @@
         "start"
       ],
       "type": "object",
-      "x-postgen-struct": "DbTimeEntry",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbTimeEntry"
     },
     "DbWorkItemComment": {
       "properties": {
@@ -4763,8 +4689,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "workItemCommentID": {
           "type": "integer"
@@ -4782,8 +4707,7 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbWorkItemComment",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbWorkItemComment"
     },
     "ProjectConfig": {
       "properties": {
@@ -4815,8 +4739,7 @@
               "path",
               "name"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": "array"
         },
@@ -4835,8 +4758,7 @@
         "header",
         "fields"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "ProjectConfigField": {
       "properties": {
@@ -4865,8 +4787,7 @@
         "path",
         "name"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DemoWorkItems": {
       "properties": {
@@ -4920,8 +4841,7 @@
             "reopened"
           ],
           "type": "object",
-          "x-postgen-struct": "DbDemoWorkItem",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "DbDemoWorkItem"
         },
         "description": {
           "type": "string",
@@ -4941,8 +4861,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "description": "is generated from database enum 'work_item_role'."
               },
               "user": {
                 "properties": {
@@ -4997,15 +4916,17 @@
                         "scopes:write",
                         "team-settings:write",
                         "project-settings:write",
+                        "activity:create",
+                        "activity:edit",
+                        "activity:delete",
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
                         "work-item:review"
                       ],
                       "x-generated": "-",
-                      "$schema": "http://json-schema.org/draft-04/schema#"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                      "description": "is generated from scopes.json keys."
+                    }
                   },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -5014,8 +4935,7 @@
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    }
                   },
                   "username": {
                     "type": "string",
@@ -5032,16 +4952,14 @@
                   "createdAt"
                 ],
                 "type": "object",
-                "x-postgen-struct": "DbUser",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "x-postgen-struct": "DbUser"
               }
             },
             "required": [
               "user",
               "role"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": [
             "array",
@@ -5099,8 +5017,7 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               },
               "workItemID": {
                 "type": [
@@ -5117,8 +5034,7 @@
               "start"
             ],
             "type": "object",
-            "x-postgen-struct": "DbTimeEntry",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbTimeEntry"
           },
           "type": [
             "array",
@@ -5161,8 +5077,7 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               },
               "workItemCommentID": {
                 "type": "integer"
@@ -5180,8 +5095,7 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-postgen-struct": "DbWorkItemComment",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbWorkItemComment"
           },
           "type": [
             "array",
@@ -5222,8 +5136,7 @@
               "color"
             ],
             "type": "object",
-            "x-postgen-struct": "DbWorkItemTag",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbWorkItemTag"
           },
           "type": [
             "array",
@@ -5260,8 +5173,7 @@
             "color"
           ],
           "type": "object",
-          "x-postgen-struct": "DbWorkItemType",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "DbWorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -5281,8 +5193,7 @@
         "demoWorkItem"
       ],
       "type": "object",
-      "x-postgen-struct": "RestDemoWorkItems",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestDemoWorkItems"
     },
     "DemoTwoWorkItems": {
       "properties": {
@@ -5312,15 +5223,12 @@
                 "object"
               ]
             },
-            "workItemID": {
-              "$schema": "http://json-schema.org/draft-04/schema#"
-            }
+            "workItemID": {}
           },
           "required": [
             "workItemID"
           ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "description": {
           "type": "string",
@@ -5340,8 +5248,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "description": "is generated from database enum 'work_item_role'."
               },
               "user": {
                 "properties": {
@@ -5396,15 +5303,17 @@
                         "scopes:write",
                         "team-settings:write",
                         "project-settings:write",
+                        "activity:create",
+                        "activity:edit",
+                        "activity:delete",
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
                         "work-item:review"
                       ],
                       "x-generated": "-",
-                      "$schema": "http://json-schema.org/draft-04/schema#"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                      "description": "is generated from scopes.json keys."
+                    }
                   },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -5413,8 +5322,7 @@
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    }
                   },
                   "username": {
                     "type": "string",
@@ -5431,16 +5339,14 @@
                   "createdAt"
                 ],
                 "type": "object",
-                "x-postgen-struct": "DbUser",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "x-postgen-struct": "DbUser"
               }
             },
             "required": [
               "user",
               "role"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": [
             "array",
@@ -5498,8 +5404,7 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               },
               "workItemID": {
                 "type": [
@@ -5516,8 +5421,7 @@
               "start"
             ],
             "type": "object",
-            "x-postgen-struct": "DbTimeEntry",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbTimeEntry"
           },
           "type": [
             "array",
@@ -5560,8 +5464,7 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               },
               "workItemCommentID": {
                 "type": "integer"
@@ -5579,8 +5482,7 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-postgen-struct": "DbWorkItemComment",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbWorkItemComment"
           },
           "type": [
             "array",
@@ -5621,8 +5523,7 @@
               "color"
             ],
             "type": "object",
-            "x-postgen-struct": "DbWorkItemTag",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbWorkItemTag"
           },
           "type": [
             "array",
@@ -5659,8 +5560,7 @@
             "color"
           ],
           "type": "object",
-          "x-postgen-struct": "DbWorkItemType",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "DbWorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -5680,8 +5580,7 @@
         "demoTwoWorkItem"
       ],
       "type": "object",
-      "x-postgen-struct": "RestDemoTwoWorkItems",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestDemoTwoWorkItems"
     },
     "InitializeProjectRequest": {
       "properties": {
@@ -5707,8 +5606,7 @@
               "description",
               "name"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": [
             "array",
@@ -5735,8 +5633,7 @@
               "name",
               "projectID"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": [
             "array",
@@ -5745,8 +5642,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "RestCreateProjectBoardRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateProjectBoardRequest"
     },
     "ProjectBoard": {
       "properties": {
@@ -5757,15 +5653,14 @@
           ],
           "type": "string",
           "x-generated": "-",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from projects table."
         }
       },
       "required": [
         "projectName"
       ],
       "type": "object",
-      "x-postgen-struct": "RestProjectBoard",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestProjectBoard"
     },
     "User": {
       "properties": {
@@ -5788,8 +5683,7 @@
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
-              },
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              }
             }
           },
           "required": [
@@ -5798,8 +5692,7 @@
             "userID"
           ],
           "type": "object",
-          "x-postgen-struct": "DbUserAPIKey",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "DbUserAPIKey"
         },
         "createdAt": {
           "format": "date-time",
@@ -5874,8 +5767,7 @@
                         "path",
                         "name"
                       ],
-                      "type": "object",
-                      "$schema": "http://json-schema.org/draft-04/schema#"
+                      "type": "object"
                     },
                     "type": "array"
                   },
@@ -5894,8 +5786,7 @@
                   "header",
                   "fields"
                 ],
-                "type": "object",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "type": "object"
               },
               "createdAt": {
                 "format": "date-time",
@@ -5914,7 +5805,7 @@
                 ],
                 "type": "string",
                 "x-generated": "-",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "description": "is generated from projects table."
               },
               "projectID": {
                 "type": "integer"
@@ -5935,8 +5826,7 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-postgen-struct": "DbProject",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "x-postgen-struct": "DbProject"
           },
           "type": [
             "array",
@@ -5954,7 +5844,7 @@
             "superAdmin"
           ],
           "x-generated": "-",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from roles.json keys."
         },
         "scopes": {
           "type": "array",
@@ -5967,15 +5857,17 @@
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
               "work-item:review"
             ],
             "x-generated": "-",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+            "description": "is generated from scopes.json keys."
+          }
         },
         "teams": {
           "items": {
@@ -6015,8 +5907,7 @@
               "createdAt",
               "updatedAt"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": [
             "array",
@@ -6030,8 +5921,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "username": {
           "type": "string",
@@ -6049,8 +5939,7 @@
         "role"
       ],
       "type": "object",
-      "x-postgen-struct": "RestUser",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestUser"
     },
     "HTTPValidationError": {
       "title": "HTTPValidationError",
@@ -6109,8 +5998,7 @@
                 "title": "Contextual information",
                 "type": "object"
               }
-            },
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            }
           }
         },
         "messages": {
@@ -6122,8 +6010,7 @@
           },
           "minLength": 1
         }
-      },
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      }
     },
     "ErrorCode": {
       "description": "Represents standardized HTTP error types.\nNotes:\n- 'Private' marks an error to be hidden in response.\n",
@@ -6142,8 +6029,7 @@
         "InvalidRole",
         "InvalidScope",
         "InvalidUUID"
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      ]
     },
     "HTTPError": {
       "description": "represents an error message response.",
@@ -6189,8 +6075,7 @@
             "InvalidRole",
             "InvalidScope",
             "InvalidUUID"
-          ],
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          ]
         },
         "validationError": {
           "title": "HTTPValidationError",
@@ -6249,8 +6134,7 @@
                     "title": "Contextual information",
                     "type": "object"
                   }
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               }
             },
             "messages": {
@@ -6262,8 +6146,7 @@
               },
               "minLength": 1
             }
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         }
       },
       "required": [
@@ -6272,16 +6155,14 @@
         "status",
         "error",
         "type"
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      ]
     },
     "Topics": {
       "description": "string identifiers for SSE event listeners.",
       "type": "string",
       "enum": [
         "GlobalAlerts"
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      ]
     },
     "Scope": {
       "type": "string",
@@ -6292,13 +6173,16 @@
         "scopes:write",
         "team-settings:write",
         "project-settings:write",
+        "activity:create",
+        "activity:edit",
+        "activity:delete",
         "work-item-tag:create",
         "work-item-tag:edit",
         "work-item-tag:delete",
         "work-item:review"
       ],
       "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "description": "is generated from scopes.json keys."
     },
     "Scopes": {
       "type": "array",
@@ -6311,15 +6195,17 @@
           "scopes:write",
           "team-settings:write",
           "project-settings:write",
+          "activity:create",
+          "activity:edit",
+          "activity:delete",
           "work-item-tag:create",
           "work-item-tag:edit",
           "work-item-tag:delete",
           "work-item:review"
         ],
         "x-generated": "-",
-        "$schema": "http://json-schema.org/draft-04/schema#"
-      },
-      "$schema": "http://json-schema.org/draft-04/schema#"
+        "description": "is generated from scopes.json keys."
+      }
     },
     "Role": {
       "type": "string",
@@ -6332,7 +6218,7 @@
         "superAdmin"
       ],
       "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "description": "is generated from roles.json keys."
     },
     "WorkItemRole": {
       "title": "WorkItem role",
@@ -6342,8 +6228,7 @@
         "preparer",
         "reviewer"
       ],
-      "description": "represents a database 'work_item_role'",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "description": "is generated from database enum 'work_item_role'."
     },
     "UpdateUserRequest": {
       "description": "represents User data to update",
@@ -6359,8 +6244,7 @@
           "pattern": "^[\\p{L} '-]+$"
         }
       },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "UpdateUserAuthRequest": {
       "description": "represents User authorization data to update",
@@ -6376,7 +6260,7 @@
             "superAdmin"
           ],
           "x-generated": "-",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from roles.json keys."
         },
         "scopes": {
           "type": "array",
@@ -6389,19 +6273,20 @@
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
               "work-item:review"
             ],
             "x-generated": "-",
-            "$schema": "http://json-schema.org/draft-04/schema#"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+            "description": "is generated from scopes.json keys."
+          }
         }
       },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "ValidationError": {
       "title": "ValidationError",
@@ -6449,8 +6334,7 @@
           "title": "Contextual information",
           "type": "object"
         }
-      },
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      }
     },
     "UuidUUID": {
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -6459,8 +6343,7 @@
       "x-go-type-import": {
         "name": "uuid",
         "path": "github.com/google/uuid"
-      },
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      }
     },
     "CreateWorkItemRequest": {
       "oneOf": [
@@ -6511,8 +6394,7 @@
                 "title",
                 "workItemTypeID"
               ],
-              "type": "object",
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              "type": "object"
             },
             "demoProject": {
               "properties": {
@@ -6541,8 +6423,7 @@
                 "ref",
                 "reopened"
               ],
-              "type": "object",
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              "type": "object"
             },
             "members": {
               "items": {
@@ -6555,8 +6436,7 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "represents a database 'work_item_role'",
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    "description": "is generated from database enum 'work_item_role'."
                   },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -6565,16 +6445,14 @@
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    }
                   }
                 },
                 "required": [
                   "role",
                   "userID"
                 ],
-                "type": "object",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "type": "object"
               },
               "type": "array"
             },
@@ -6585,7 +6463,7 @@
               ],
               "type": "string",
               "x-generated": "-",
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              "description": "is generated from projects table."
             },
             "tagIDs": {
               "items": {
@@ -6602,8 +6480,7 @@
             "members"
           ],
           "type": "object",
-          "x-postgen-struct": "RestCreateDemoWorkItemRequest",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "RestCreateDemoWorkItemRequest"
         },
         {
           "properties": {
@@ -6652,8 +6529,7 @@
                 "title",
                 "workItemTypeID"
               ],
-              "type": "object",
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              "type": "object"
             },
             "demoTwoProject": {
               "properties": {
@@ -6664,8 +6540,7 @@
                   ]
                 }
               },
-              "type": "object",
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              "type": "object"
             },
             "members": {
               "items": {
@@ -6678,8 +6553,7 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "represents a database 'work_item_role'",
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    "description": "is generated from database enum 'work_item_role'."
                   },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -6688,16 +6562,14 @@
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
-                    },
-                    "$schema": "http://json-schema.org/draft-04/schema#"
+                    }
                   }
                 },
                 "required": [
                   "role",
                   "userID"
                 ],
-                "type": "object",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "type": "object"
               },
               "type": "array"
             },
@@ -6708,7 +6580,7 @@
               ],
               "type": "string",
               "x-generated": "-",
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              "description": "is generated from projects table."
             },
             "tagIDs": {
               "items": {
@@ -6725,11 +6597,9 @@
             "members"
           ],
           "type": "object",
-          "x-postgen-struct": "RestCreateDemoTwoWorkItemRequest",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "RestCreateDemoTwoWorkItemRequest"
         }
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      ]
     },
     "DbWorkItem": {
       "properties": {
@@ -6801,8 +6671,7 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbWorkItem",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "DbWorkItem"
     },
     "CreateDemoTwoWorkItemRequest": {
       "properties": {
@@ -6851,8 +6720,7 @@
             "title",
             "workItemTypeID"
           ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "demoTwoProject": {
           "properties": {
@@ -6863,8 +6731,7 @@
               ]
             }
           },
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "members": {
           "items": {
@@ -6877,8 +6744,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "description": "is generated from database enum 'work_item_role'."
               },
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -6887,16 +6753,14 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               }
             },
             "required": [
               "role",
               "userID"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": "array"
         },
@@ -6907,7 +6771,7 @@
           ],
           "type": "string",
           "x-generated": "-",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from projects table."
         },
         "tagIDs": {
           "items": {
@@ -6924,8 +6788,7 @@
         "members"
       ],
       "type": "object",
-      "x-postgen-struct": "RestCreateDemoTwoWorkItemRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateDemoTwoWorkItemRequest"
     },
     "CreateDemoWorkItemRequest": {
       "properties": {
@@ -6974,8 +6837,7 @@
             "title",
             "workItemTypeID"
           ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "demoProject": {
           "properties": {
@@ -7004,8 +6866,7 @@
             "ref",
             "reopened"
           ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "members": {
           "items": {
@@ -7018,8 +6879,7 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "represents a database 'work_item_role'",
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                "description": "is generated from database enum 'work_item_role'."
               },
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -7028,16 +6888,14 @@
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
-                },
-                "$schema": "http://json-schema.org/draft-04/schema#"
+                }
               }
             },
             "required": [
               "role",
               "userID"
             ],
-            "type": "object",
-            "$schema": "http://json-schema.org/draft-04/schema#"
+            "type": "object"
           },
           "type": "array"
         },
@@ -7048,7 +6906,7 @@
           ],
           "type": "string",
           "x-generated": "-",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from projects table."
         },
         "tagIDs": {
           "items": {
@@ -7065,8 +6923,7 @@
         "members"
       ],
       "type": "object",
-      "x-postgen-struct": "RestCreateDemoWorkItemRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateDemoWorkItemRequest"
     },
     "CreateWorkItemCommentRequest": {
       "properties": {
@@ -7081,8 +6938,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "workItemID": {
           "type": "integer"
@@ -7094,8 +6950,7 @@
         "workItemID"
       ],
       "type": "object",
-      "x-postgen-struct": "RestCreateWorkItemCommentRequest",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "x-postgen-struct": "RestCreateWorkItemCommentRequest"
     },
     "Project": {
       "enum": [
@@ -7104,7 +6959,7 @@
       ],
       "type": "string",
       "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "description": "is generated from projects table."
     },
     "DbActivityCreateParams": {
       "properties": {
@@ -7128,8 +6983,7 @@
         "isProductive",
         "name"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbTeamCreateParams": {
       "properties": {
@@ -7150,8 +7004,7 @@
         "name",
         "projectID"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbWorkItemTagCreateParams": {
       "properties": {
@@ -7174,70 +7027,19 @@
         "description",
         "name"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbWorkItemRole": {
-      "type": "string",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "string"
     },
     "NotificationType": {
-      "description": "represents a database 'notification_type'",
+      "description": "is generated from database enum 'notification_type'.",
       "type": "string",
       "x-generated": "-",
       "enum": [
         "personal",
         "global"
-      ],
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoProjectKanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Disabled",
-        "Received",
-        "Under review",
-        "Work in progress"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoProject2KanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Received"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "Demo2WorkItemTypes": {
-      "type": "string",
-      "enum": [
-        "Type 1",
-        "Type 2",
-        "Another type"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoKanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Disabled",
-        "Received",
-        "Under review",
-        "Work in progress"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DemoTwoKanbanSteps": {
-      "type": "string",
-      "enum": [
-        "Received"
-      ],
-      "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      ]
     },
     "DemoTwoWorkItemTypes": {
       "type": "string",
@@ -7247,7 +7049,7 @@
         "Another type"
       ],
       "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "description": "is generated from work_item_types table."
     },
     "DemoWorkItemTypes": {
       "type": "string",
@@ -7255,7 +7057,7 @@
         "Type 1"
       ],
       "x-generated": "-",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "description": "is generated from work_item_types table."
     },
     "DbDemoWorkItemCreateParams": {
       "properties": {
@@ -7284,8 +7086,7 @@
         "ref",
         "reopened"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbWorkItemCreateParams": {
       "properties": {
@@ -7332,8 +7133,7 @@
         "title",
         "workItemTypeID"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "ServicesMember": {
       "properties": {
@@ -7345,8 +7145,7 @@
             "preparer",
             "reviewer"
           ],
-          "description": "represents a database 'work_item_role'",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from database enum 'work_item_role'."
         },
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -7355,16 +7154,14 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         }
       },
       "required": [
         "role",
         "userID"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbDemoTwoWorkItem": {
       "properties": {
@@ -7374,15 +7171,12 @@
             "object"
           ]
         },
-        "workItemID": {
-          "$schema": "http://json-schema.org/draft-04/schema#"
-        }
+        "workItemID": {}
       },
       "required": [
         "workItemID"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbDemoTwoWorkItemCreateParams": {
       "properties": {
@@ -7393,15 +7187,10 @@
           ]
         }
       },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
-    "DbWorkItemID": {
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DbProjectID": {
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
+    "DbWorkItemID": {},
+    "DbProjectID": {},
     "DbUserID": {
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
       "type": "string",
@@ -7409,15 +7198,10 @@
       "x-go-type-import": {
         "name": "uuid",
         "path": "github.com/google/uuid"
-      },
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      }
     },
-    "DbWorkItemTypeID": {
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
-    "DbNotificationID": {
-      "$schema": "http://json-schema.org/draft-04/schema#"
-    },
+    "DbWorkItemTypeID": {},
+    "DbNotificationID": {},
     "DbNotification": {
       "properties": {
         "body": {
@@ -7443,18 +7227,15 @@
             "null"
           ]
         },
-        "notificationID": {
-          "$schema": "http://json-schema.org/draft-04/schema#"
-        },
+        "notificationID": {},
         "notificationType": {
-          "description": "represents a database 'notification_type'",
+          "description": "is generated from database enum 'notification_type'.",
           "type": "string",
           "x-generated": "-",
           "enum": [
             "personal",
             "global"
-          ],
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          ]
         },
         "receiver": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -7463,8 +7244,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "sender": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -7473,8 +7253,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "title": {
           "type": "string",
@@ -7490,8 +7269,7 @@
         "sender",
         "notificationType"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbUserNotification": {
       "properties": {
@@ -7508,8 +7286,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "userNotificationID": {
           "type": "integer"
@@ -7521,8 +7298,7 @@
         "read",
         "userID"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "RestPaginationPage": {
       "properties": {
@@ -7530,8 +7306,7 @@
           "type": "string"
         }
       },
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "RestNotification": {
       "properties": {
@@ -7560,18 +7335,15 @@
                 "null"
               ]
             },
-            "notificationID": {
-              "$schema": "http://json-schema.org/draft-04/schema#"
-            },
+            "notificationID": {},
             "notificationType": {
-              "description": "represents a database 'notification_type'",
+              "description": "is generated from database enum 'notification_type'.",
               "type": "string",
               "x-generated": "-",
               "enum": [
                 "personal",
                 "global"
-              ],
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              ]
             },
             "receiver": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -7580,8 +7352,7 @@
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
-              },
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              }
             },
             "sender": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -7590,8 +7361,7 @@
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
-              },
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              }
             },
             "title": {
               "type": "string",
@@ -7607,8 +7377,7 @@
             "sender",
             "notificationType"
           ],
-          "type": "object",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "type": "object"
         },
         "notificationID": {
           "type": "integer"
@@ -7623,8 +7392,7 @@
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
-          },
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          }
         },
         "userNotificationID": {
           "type": "integer"
@@ -7637,8 +7405,7 @@
         "userID",
         "notification"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
     },
     "DbUserWIAUWorkItem": {
       "properties": {
@@ -7650,8 +7417,7 @@
             "preparer",
             "reviewer"
           ],
-          "description": "represents a database 'work_item_role'",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "description": "is generated from database enum 'work_item_role'."
         },
         "user": {
           "properties": {
@@ -7706,15 +7472,17 @@
                   "scopes:write",
                   "team-settings:write",
                   "project-settings:write",
+                  "activity:create",
+                  "activity:edit",
+                  "activity:delete",
                   "work-item-tag:create",
                   "work-item-tag:edit",
                   "work-item-tag:delete",
                   "work-item:review"
                 ],
                 "x-generated": "-",
-                "$schema": "http://json-schema.org/draft-04/schema#"
-              },
-              "$schema": "http://json-schema.org/draft-04/schema#"
+                "description": "is generated from scopes.json keys."
+              }
             },
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -7723,8 +7491,7 @@
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
-              },
-              "$schema": "http://json-schema.org/draft-04/schema#"
+              }
             },
             "username": {
               "type": "string",
@@ -7741,16 +7508,33 @@
             "createdAt"
           ],
           "type": "object",
-          "x-postgen-struct": "DbUser",
-          "$schema": "http://json-schema.org/draft-04/schema#"
+          "x-postgen-struct": "DbUser"
         }
       },
       "required": [
         "user",
         "role"
       ],
-      "type": "object",
-      "$schema": "http://json-schema.org/draft-04/schema#"
+      "type": "object"
+    },
+    "DemoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Disabled",
+        "Received",
+        "Under review",
+        "Work in progress"
+      ],
+      "x-generated": "-",
+      "description": "is generated from kanban_steps table."
+    },
+    "DemoTwoKanbanSteps": {
+      "type": "string",
+      "enum": [
+        "Received"
+      ],
+      "x-generated": "-",
+      "description": "is generated from kanban_steps table."
     }
   }
 }

@@ -139,6 +139,16 @@ join_by() {
 #   printf '%s\n' "$*"
 # }
 
+to_lower_sentence() {
+  local kebab=$(to_kebab "$1")
+  echo "${kebab/-/ }"
+}
+
+to_snake() {
+  local kebab=$(to_kebab "$1")
+  echo "${kebab/-/_}"
+}
+
 to_pascal() {
   local string=$1
   local pascal_case=""
@@ -146,15 +156,24 @@ to_pascal() {
   # Replace spaces with nothing and capitalize the following letter
   string=$(echo "$string" | sed 's/ \([a-z]\)/\U\1/g')
 
-  # Replace underscores and hyphens with spaces
   string=${string//[_-]/ }
 
-  # Split the string into words and capitalize the first letter of each word
   for word in $string; do
     pascal_case+="${word^}"
   done
 
   echo "$pascal_case"
+}
+
+to_camel() {
+  local pascal_case=$(to_pascal "$1")
+  echo "${pascal_case,}"
+}
+
+function to_kebab() {
+  echo -n "$1" |
+    sed 's/\([^A-Z+]\)\([A-Z0-9]\)/\1-\2/g; s/\([0-9]\)\([A-Z]\)/\1-\2/g; s/\([A-Z]\)\([0-9]\)/\1-\2/g; s/--/-/g; s/\([\/]\)-/\1/g' |
+    tr '[:upper:]' '[:lower:]'
 }
 
 to_lower() {

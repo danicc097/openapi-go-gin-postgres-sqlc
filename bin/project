@@ -246,7 +246,7 @@ x.install-tools() {
     go install golang.org/x/tools/cmd/goimports@latest &
     go install mvdan.cc/gofumpt@latest &
     go install github.com/danicc097/air@latest &
-    go install github.com/danicc097/xo/v5@v5.1.0 &
+    go install github.com/danicc097/xo/v5@v5.3.0 &
     go install github.com/mikefarah/yq/v4@v4.34.2 &
     go install github.com/hexdigest/gowrap/cmd/gowrap@latest &
     go install golang.org/x/tools/cmd/stringer@latest &
@@ -320,58 +320,7 @@ x.gen.pregen() {
     spec_content=$(yq e "$yq_op" < <(echo "$spec_content"))
     echo "$spec_content" >$SPEC_PATH
 
-    echo "Updating roles and scopes in $SPEC_PATH"
-    ######## Sync spec enums with external policy sources and validate existing schema enums.
-    ######## External json files are the source of truth, indexed by enum name
-    # arrays can't be nested
-    declare -A enum_src_files=(
-      [Scope]="scopes.json"
-      [Role]="roles.json"
-    )
-    declare -A enum_vext=(
-      [Scope]="x-required-scopes"
-      [Role]="x-required-role"
-    )
-    declare -A enum_values=()
-    for enum in ${!enum_src_files[@]}; do
-      [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC_PATH) = "false" ]] &&
-        yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC_PATH
-
-      local src_file="${enum_src_files[$enum]}"
-      vendor_ext="${enum_vext[$enum]}"
-
-      enums=$(yq -P --output-format=yaml '.[] | key' $src_file)
-      mapfile -t enums <<<$enums
-
-      src_comment="$src_file keys"
-      replace_enum_in_spec "$enum" enums "$src_comment"
-
-      mapfile spec_enums < <(yq e ".paths[][].$vendor_ext | select(length > 0)" $SPEC_PATH)
-      spec_enums=("${spec_enums[*]//- /}")
-      mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
-      mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
-      # ensure only existing enums from src_file are used
-      for spec_enum in "${spec_enums[@]}"; do
-        [[ ! " ${clean_enums[*]} " =~ " ${spec_enum} " ]] && err "$spec_enum is not a valid '$enum'"
-      done
-
-      enum_list=$(printf ",\"%s\"" "${enums[@]}")
-      enum_list="[${enum_list:1}]"
-      enum_values[$enum]=$enum_list
-    done
-
-    ######## IDE intellisense/validation
-    yq -e ".definitions.Operation.properties +=
-        {
-          \"${enum_vext[Role]}\": {
-            \"type\": \"string\",
-            \"enum\": ${enum_values[Role]}
-          },
-          \"${enum_vext[Scope]}\": {
-            \"type\": \"array\",
-            \"items\": {\"enum\": ${enum_values[Scope]}}
-          }
-        }" -i -oj .vscode/openapi-schema.json
+    update_roles_and_scopes
 
     ######## Generate shared policies once the spec has been validated
     echo "Writing shared auth policies"
@@ -396,6 +345,61 @@ x.gen.pregen() {
     remove_schemas_marked_to_delete
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup-gen.cleanup
+}
+
+update_roles_and_scopes() {
+  echo "Updating roles and scopes in $SPEC_PATH"
+  ######## Sync spec enums with external policy sources and validate existing schema enums.
+  ######## External json files are the source of truth, indexed by enum name
+  # arrays can't be nested in bash
+  declare -A enum_src_files=(
+    [Scope]="$SCOPE_POLICY_PATH"
+    [Role]="$ROLE_POLICY_PATH"
+  )
+  declare -A enum_vext=(
+    [Scope]="x-required-scopes"
+    [Role]="x-required-role"
+  )
+  declare -A enum_values=()
+  for enum in ${!enum_src_files[@]}; do
+    [[ $(yq e ".components.schemas | has(\"$enum\")" $SPEC_PATH) = "false" ]] &&
+      yq e ".components.schemas.$enum.type = \"string\"" -i $SPEC_PATH
+
+    local src_file="${enum_src_files[$enum]}"
+    vendor_ext="${enum_vext[$enum]}"
+
+    enums=$(yq -P --output-format=yaml '.[] | key' $src_file)
+    mapfile -t enums <<<$enums
+
+    src_comment="$src_file keys"
+    replace_enum_in_spec "$enum" enums "$src_comment"
+
+    mapfile spec_enums < <(yq e ".paths[][].$vendor_ext | select(length > 0)" $SPEC_PATH)
+    spec_enums=("${spec_enums[*]//- /}")
+    mapfile -t spec_enums < <(printf "\"%s\"\n" ${spec_enums[*]})
+    mapfile -t clean_enums < <(printf "\"%s\"\n" ${enums[*]})
+    # ensure only existing enums from src_file are used
+    for spec_enum in "${spec_enums[@]}"; do
+      [[ ! " ${clean_enums[*]} " =~ " ${spec_enum} " ]] && err "$spec_enum is not a valid '$enum'"
+    done
+
+    enum_list=$(printf ",\"%s\"" "${enums[@]}")
+    enum_list="[${enum_list:1}]"
+    enum_values[$enum]=$enum_list
+  done
+
+  ######## IDE intellisense/validation
+  yq -e ".definitions.Operation.properties +=
+        {
+          \"${enum_vext[Role]}\": {
+            \"type\": \"string\",
+            \"enum\": ${enum_values[Role]}
+          },
+          \"${enum_vext[Scope]}\": {
+            \"type\": \"array\",
+            \"items\": {\"enum\": ${enum_values[Scope]}}
+          }
+        }" -i -oj .vscode/openapi-schema.json
 }
 
 sync_spec_with_db() {
@@ -612,7 +616,7 @@ x.gen.xo() {
   xsetup.backup-gen
   xsetup.drop-and-migrate-gen-db
   { { {
-    cache_all "$CACHE/xo.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/ && return 0
+    cache_all "$CACHE/xo.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/* && return 0
 
     echo "Running generation"
 
@@ -624,16 +628,16 @@ x.gen.xo() {
       --ignore "*.created_at" \
       --ignore "*.updated_at" || err "Failed xo public schema generation" &
 
-    mkdir -p "$PG_REPO_GEN"/db/v
-    xo_schema -o "$PG_REPO_GEN"/db/v \
-      --schema v \
-      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
-      err "Failed xo v schema generation" &
+    xo_schema -o "$PG_REPO_GEN"/db --debug \
+      --schema extra_schema \
+      --ignore "*.created_at" \
+      --ignore "*.updated_at" ||
+      err "Failed xo extra_schema schema generation" &
 
+    rm -rf "$PG_REPO_GEN"/db/cache
     mkdir -p "$PG_REPO_GEN"/db/cache
     xo_schema -o "$PG_REPO_GEN"/db/cache \
-      --schema cache \
-      --main-schema-pkg $GOMOD_PKG/"$PG_REPO_GEN"/db ||
+      --schema cache ||
       err "Failed xo cache schema generation" &
 
     wait
@@ -954,7 +958,7 @@ x.gen.build-tools() {
       { go build -o $out_dir/$cmd cmd/$cmd/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]; } &
     done
 
-    wait_without_error || err Could not rebuild all gen tools
+    wait_without_error || err Could not rebuild all gen tools. Rerun with --x-ignore-build-errors.
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1041,6 +1045,10 @@ x.test.backend.setup() {
 # Args: [...]
 x.test.backend() {
   { { {
+    # ideally rest, service and repo tests use Random<...>CreateParams directly or indirectly
+    # via fixture factories, so we always want these up to date when a new field is added
+    golangci-lint run --no-config --disable-all --enable=exhaustruct internal/repos/postgresql/postgresqltestutil
+
     x.test.xo
 
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true # nochange exits
@@ -1096,6 +1104,11 @@ x.test.xo() {
 
     rm -rf "$test_dir/got"
     mkdir -p "$test_dir/got"
+
+    xo_schema -o "$test_dir/got" --debug \
+      --ignore "*.created_at" \
+      --ignore "*.updated_at" >/dev/null || err "Failed xo xo_tests schema generation"
+
     xo_schema -o "$test_dir/got" --debug \
       --schema xo_tests \
       --ignore "*.created_at" \
@@ -1244,6 +1257,158 @@ x.release() {
 
     wait_without_error || err Failed jobs
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+# Creates a generic CRUD endpoint in the OpenAPI spec and generates related files.
+# Args: name
+x.dev-utils.create-crud() {
+  # TODO:
+  # 1. append paths and schemas to spec with yq
+  # 2. update scopes.json with generic <name>:create|update|delete
+  # abstract away scope and role enum checks + vscode schema.json update
+  # 3. call that fn (now that both spec and scopes.json are up to date)
+  # 4. echo "package rest" > rest/api_<camel name>.go. methods will be generated in x.gen
+  # 5. add 3 generic structs to rest/models.go
+  # 6. generate services, repos and repo test utils
+  local name="$1"
+  local pascal_name="$(to_pascal $name)"
+  local camel_name="$(to_camel $name)"
+  local kebab_name="$(to_kebab $name)"
+  local sentence_name="$(to_lower_sentence $name)"
+  local snake_name="$(to_snake $name)"
+
+  new_crud_schema="
+x-require-authenticated: &x-require-authenticated
+x-error-response: &x-error-response
+paths:
+  /${kebab_name}/:
+    post:
+      summary: create $sentence_name.
+      !!merge <<: *x-require-authenticated
+      operationId: Create${pascal_name}
+      x-required-scopes:
+        - ${kebab_name}:create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              \$ref: '#/components/schemas/Create${pascal_name}Request'
+        required: true
+      responses:
+        201:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                \$ref: '#/components/schemas/${pascal_name}'
+        !!merge <<: *x-error-response
+      tags:
+        - ${camel_name}
+  /${kebab_name}/{id}/:
+    get:
+      summary: get $sentence_name.
+      !!merge <<: *x-require-authenticated
+      operationId: Get${pascal_name}
+      parameters:
+        - \$ref: '#/components/parameters/SerialID'
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                \$ref: '#/components/schemas/${pascal_name}'
+        !!merge <<: *x-error-response
+      tags:
+        - ${camel_name}
+    patch:
+      summary: update $sentence_name.
+      !!merge <<: *x-require-authenticated
+      operationId: Update${pascal_name}
+      x-required-scopes:
+        - ${kebab_name}:edit
+      parameters:
+        - \$ref: '#/components/parameters/SerialID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              \$ref: '#/components/schemas/Update${pascal_name}Request'
+        required: true
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                \$ref: '#/components/schemas/${pascal_name}'
+        !!merge <<: *x-error-response
+      tags:
+        - ${camel_name}
+    delete:
+      summary: delete $name.
+      !!merge <<: *x-require-authenticated
+      operationId: Delete${pascal_name}
+      x-required-scopes:
+        - ${kebab_name}:delete
+      parameters:
+        - \$ref: '#/components/parameters/SerialID'
+      responses:
+        204:
+          description: Success.
+        !!merge <<: *x-error-response
+      tags:
+        - ${camel_name}
+components:
+  schemas:
+    Create${pascal_name}Request:
+      x-postgen-struct: RestCreate${pascal_name}Request
+    Update${pascal_name}Request:
+      x-postgen-struct: RestUpdate${pascal_name}Request
+    ${pascal_name}:
+      x-postgen-struct: Rest${pascal_name}
+"
+  yq eval-all "(
+        select(fi == 1).paths
+        ) as \$paths
+        | (
+          select(fi == 1).components.schemas
+        ) as \$schemas
+        | select(fi == 0)
+        | .paths += \$paths
+        | .components.schemas += \$schemas
+        " "$SPEC_PATH" <(echo "$new_crud_schema") | sponge "$SPEC_PATH"
+
+  echo "
+type ${pascal_name} struct {
+	db.${pascal_name}
+}
+
+type Create${pascal_name}Request struct {
+	db.${pascal_name}CreateParams
+}
+
+type Update${pascal_name}Request struct {
+	db.${pascal_name}UpdateParams
+}
+" >>internal/rest/models.go
+
+  echo "package rest" >"internal/rest/api_${snake_name}.go"
+
+  yq eval-all \
+    ". += {
+    \"${kebab_name}:create\": {
+      \"description\": \"Can create ${sentence_name}s.\"
+    },
+    \"${kebab_name}:edit\": {
+      \"description\": \"Can edit ${sentence_name}s.\"
+    },
+    \"${kebab_name}:delete\": {
+      \"description\": \"Can delete ${sentence_name}s.\"
+    }
+  }" -i -o=json "$SCOPE_POLICY_PATH"
+
+  update_roles_and_scopes
 }
 
 # Shows existing user api keys.
@@ -1678,6 +1843,7 @@ replace_enum_in_spec() {
     $schema_path.type = \"string\" |
     $schema_path.enum = env(__enums) |
     $schema_path.x-generated = \"-\" |
+    $schema_path.description = \"is generated from $src_comment.\" |
     ($schema_path | key) line_comment=\"Generated from $src_comment. DO NOT EDIT.\"" -i $SPEC_PATH
 }
 

@@ -1,6 +1,9 @@
 package slices
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 func RemoveEmptyString(ss []string) []string {
 	var res []string
@@ -13,13 +16,23 @@ func RemoveEmptyString(ss []string) []string {
 	return res
 }
 
-func JoinWithAnd(elements []string) string {
+func JoinWithAnd[T any](elements []T) string {
 	switch len(elements) {
 	case 0:
 		return ""
 	case 1:
-		return elements[0]
+		return fmt.Sprint(elements[0])
 	default:
-		return strings.Join(elements[:len(elements)-1], ", ") + " and " + elements[len(elements)-1]
+		return Join(elements[:len(elements)-1], ", ") + " and " + fmt.Sprint(elements[len(elements)-1])
 	}
+}
+
+// Join concatenates elements of a slice into a single string using the specified separator.
+func Join[T any](elements []T, separator string) string {
+	stringArray := make([]string, len(elements))
+	for i, e := range elements {
+		stringArray[i] = fmt.Sprint(e)
+	}
+
+	return strings.Join(stringArray, separator)
 }

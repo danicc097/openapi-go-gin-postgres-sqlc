@@ -7,7 +7,7 @@
  */
 
 /**
- * represents a database 'work_item_role'
+ * is generated from database enum 'work_item_role'.
  */
 export type WorkItemRole = typeof WorkItemRole[keyof typeof WorkItemRole]
 

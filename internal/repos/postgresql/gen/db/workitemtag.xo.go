@@ -18,8 +18,9 @@ import (
 // WorkItemTag represents a row from 'public.work_item_tags'.
 // Change properties via SQL column comments, joined with " && ":
 //   - "properties":<p1>,<p2>,...
-//   - private to exclude a field from JSON.
-//   - not-required to make a schema field not required.
+//     -- private to exclude a field from JSON.
+//     -- not-required to make a schema field not required.
+//     -- hidden to exclude field from OpenAPI generation.
 //   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.

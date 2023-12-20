@@ -52,6 +52,18 @@ export interface paths {
     /** create workitemtag. */
     post: operations["CreateWorkItemTag"];
   };
+  "/project/{projectName}/activity/": {
+    /** create activity. */
+    post: operations["CreateActivity"];
+  };
+  "/project/{projectName}/activity/{id}/": {
+    /** get activity. */
+    get: operations["GetActivity"];
+    /** delete activity. */
+    delete: operations["DeleteActivity"];
+    /** update activity. */
+    patch: operations["UpdateActivity"];
+  };
   "/project/{projectName}/workItemTag/{id}/": {
     /** get workitemtag. */
     get: operations["GetWorkItemTag"];
@@ -130,6 +142,23 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
+    CreateActivityRequest: {
+      description: string;
+      isProductive: boolean;
+      name: string;
+    };
+    UpdateActivityRequest: {
+      description?: string;
+      isProductive?: boolean;
+      name?: string;
+    };
+    Activity: {
+      activityID: number;
+      description: string;
+      isProductive: boolean;
+      name: string;
+      projectID: number;
+    };
     CreateWorkItemTagRequest: {
       color: string;
       description: string;
@@ -422,14 +451,20 @@ export interface components {
      * @enum {string}
      */
     Topics: "GlobalAlerts";
-    /** @enum {string} */
-    Scope: "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review";
+    /**
+     * @description is generated from scopes.json keys.
+     * @enum {string}
+     */
+    Scope: "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "activity:create" | "activity:edit" | "activity:delete" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review";
     Scopes: components["schemas"]["Scope"][];
-    /** @enum {string} */
+    /**
+     * @description is generated from roles.json keys.
+     * @enum {string}
+     */
     Role: "guest" | "user" | "advancedUser" | "manager" | "admin" | "superAdmin";
     /**
      * WorkItem role
-     * @description represents a database 'work_item_role'
+     * @description is generated from database enum 'work_item_role'.
      * @enum {string}
      */
     WorkItemRole: "preparer" | "reviewer";
@@ -524,7 +559,10 @@ export interface components {
       userID: components["schemas"]["DbUserID"];
       workItemID: number;
     };
-    /** @enum {string} */
+    /**
+     * @description is generated from projects table.
+     * @enum {string}
+     */
     Project: "demo" | "demo_two";
     DbActivityCreateParams: {
       description: string;
@@ -544,23 +582,19 @@ export interface components {
     };
     DbWorkItemRole: string;
     /**
-     * @description represents a database 'notification_type'
+     * @description is generated from database enum 'notification_type'.
      * @enum {string}
      */
     NotificationType: "personal" | "global";
-    /** @enum {string} */
-    DemoProjectKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
-    /** @enum {string} */
-    DemoProject2KanbanSteps: "Received";
-    /** @enum {string} */
-    Demo2WorkItemTypes: "Type 1" | "Type 2" | "Another type";
-    /** @enum {string} */
-    DemoKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
-    /** @enum {string} */
-    DemoTwoKanbanSteps: "Received";
-    /** @enum {string} */
+    /**
+     * @description is generated from work_item_types table.
+     * @enum {string}
+     */
     DemoTwoWorkItemTypes: "Type 1" | "Type 2" | "Another type";
-    /** @enum {string} */
+    /**
+     * @description is generated from work_item_types table.
+     * @enum {string}
+     */
     DemoWorkItemTypes: "Type 1";
     DbDemoWorkItemCreateParams: {
       /** Format: date-time */
@@ -633,6 +667,16 @@ export interface components {
       role: components["schemas"]["WorkItemRole"];
       user: components["schemas"]["DbUser"];
     };
+    /**
+     * @description is generated from kanban_steps table.
+     * @enum {string}
+     */
+    DemoKanbanSteps: "Disabled" | "Received" | "Under review" | "Work in progress";
+    /**
+     * @description is generated from kanban_steps table.
+     * @enum {string}
+     */
+    DemoTwoKanbanSteps: "Received";
   };
   responses: never;
   parameters: {
@@ -899,6 +943,119 @@ export interface operations {
       201: {
         content: {
           "application/json": components["schemas"]["WorkItemTag"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** create activity. */
+  CreateActivity: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateActivityRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      201: {
+        content: {
+          "application/json": components["schemas"]["Activity"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** get activity. */
+  GetActivity: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Activity"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** delete activity. */
+  DeleteActivity: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      204: never;
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** update activity. */
+  UpdateActivity: {
+    parameters: {
+      path: {
+        projectName: components["parameters"]["ProjectName"];
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateActivityRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Activity"];
         };
       };
       /** @description Unauthenticated */

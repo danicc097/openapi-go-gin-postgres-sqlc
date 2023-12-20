@@ -16,23 +16,7 @@ const (
 	Bearer_authScopes = "bearer_auth.Scopes"
 )
 
-// Defines values for Demo2WorkItemTypes.
-const (
-	Demo2WorkItemTypesAnotherType Demo2WorkItemTypes = "Another type"
-	Demo2WorkItemTypesType1       Demo2WorkItemTypes = "Type 1"
-	Demo2WorkItemTypesType2       Demo2WorkItemTypes = "Type 2"
-)
-
-// AllDemo2WorkItemTypesValues returns all possible values for Demo2WorkItemTypes.
-func AllDemo2WorkItemTypesValues() []Demo2WorkItemTypes {
-	return []Demo2WorkItemTypes{
-		Demo2WorkItemTypesAnotherType,
-		Demo2WorkItemTypesType1,
-		Demo2WorkItemTypesType2,
-	}
-}
-
-// Defines values for DemoKanbanSteps.
+// DemoKanbanSteps is generated from kanban_steps table.
 const (
 	DemoKanbanStepsDisabled       DemoKanbanSteps = "Disabled"
 	DemoKanbanStepsReceived       DemoKanbanSteps = "Received"
@@ -50,37 +34,7 @@ func AllDemoKanbanStepsValues() []DemoKanbanSteps {
 	}
 }
 
-// Defines values for DemoProject2KanbanSteps.
-const (
-	DemoProject2KanbanStepsReceived DemoProject2KanbanSteps = "Received"
-)
-
-// AllDemoProject2KanbanStepsValues returns all possible values for DemoProject2KanbanSteps.
-func AllDemoProject2KanbanStepsValues() []DemoProject2KanbanSteps {
-	return []DemoProject2KanbanSteps{
-		DemoProject2KanbanStepsReceived,
-	}
-}
-
-// Defines values for DemoProjectKanbanSteps.
-const (
-	DemoProjectKanbanStepsDisabled       DemoProjectKanbanSteps = "Disabled"
-	DemoProjectKanbanStepsReceived       DemoProjectKanbanSteps = "Received"
-	DemoProjectKanbanStepsUnderReview    DemoProjectKanbanSteps = "Under review"
-	DemoProjectKanbanStepsWorkInProgress DemoProjectKanbanSteps = "Work in progress"
-)
-
-// AllDemoProjectKanbanStepsValues returns all possible values for DemoProjectKanbanSteps.
-func AllDemoProjectKanbanStepsValues() []DemoProjectKanbanSteps {
-	return []DemoProjectKanbanSteps{
-		DemoProjectKanbanStepsDisabled,
-		DemoProjectKanbanStepsReceived,
-		DemoProjectKanbanStepsUnderReview,
-		DemoProjectKanbanStepsWorkInProgress,
-	}
-}
-
-// Defines values for DemoTwoKanbanSteps.
+// DemoTwoKanbanSteps is generated from kanban_steps table.
 const (
 	DemoTwoKanbanStepsReceived DemoTwoKanbanSteps = "Received"
 )
@@ -92,7 +46,7 @@ func AllDemoTwoKanbanStepsValues() []DemoTwoKanbanSteps {
 	}
 }
 
-// Defines values for DemoTwoWorkItemTypes.
+// DemoTwoWorkItemTypes is generated from work_item_types table.
 const (
 	DemoTwoWorkItemTypesAnotherType DemoTwoWorkItemTypes = "Another type"
 	DemoTwoWorkItemTypesType1       DemoTwoWorkItemTypes = "Type 1"
@@ -108,7 +62,7 @@ func AllDemoTwoWorkItemTypesValues() []DemoTwoWorkItemTypes {
 	}
 }
 
-// Defines values for DemoWorkItemTypes.
+// DemoWorkItemTypes is generated from work_item_types table.
 const (
 	DemoWorkItemTypesType1 DemoWorkItemTypes = "Type 1"
 )
@@ -172,7 +126,7 @@ func AllErrorCodeValues() []ErrorCode {
 	}
 }
 
-// NotificationType represents a database 'notification_type'
+// NotificationType is generated from database enum 'notification_type'.
 const (
 	NotificationTypeGlobal   NotificationType = "global"
 	NotificationTypePersonal NotificationType = "personal"
@@ -186,7 +140,7 @@ func AllNotificationTypeValues() []NotificationType {
 	}
 }
 
-// Defines values for Project.
+// Project is generated from projects table.
 const (
 	ProjectDemo    Project = "demo"
 	ProjectDemoTwo Project = "demo_two"
@@ -200,7 +154,7 @@ func AllProjectValues() []Project {
 	}
 }
 
-// Defines values for Role.
+// Role is generated from roles.json keys.
 const (
 	RoleAdmin        Role = "admin"
 	RoleAdvancedUser Role = "advancedUser"
@@ -222,8 +176,11 @@ func AllRoleValues() []Role {
 	}
 }
 
-// Defines values for Scope.
+// Scope is generated from scopes.json keys.
 const (
+	ScopeActivityCreate       Scope = "activity:create"
+	ScopeActivityDelete       Scope = "activity:delete"
+	ScopeActivityEdit         Scope = "activity:edit"
 	ScopeProjectSettingsWrite Scope = "project-settings:write"
 	ScopeScopesWrite          Scope = "scopes:write"
 	ScopeTeamSettingsWrite    Scope = "team-settings:write"
@@ -239,6 +196,9 @@ const (
 // AllScopeValues returns all possible values for Scope.
 func AllScopeValues() []Scope {
 	return []Scope{
+		ScopeActivityCreate,
+		ScopeActivityDelete,
+		ScopeActivityEdit,
 		ScopeProjectSettingsWrite,
 		ScopeScopesWrite,
 		ScopeTeamSettingsWrite,
@@ -264,7 +224,7 @@ func AllTopicsValues() []Topics {
 	}
 }
 
-// WorkItemRole represents a database 'work_item_role'
+// WorkItemRole is generated from database enum 'work_item_role'.
 const (
 	WorkItemRolePreparer WorkItemRole = "preparer"
 	WorkItemRoleReviewer WorkItemRole = "reviewer"
@@ -278,13 +238,31 @@ func AllWorkItemRoleValues() []WorkItemRole {
 	}
 }
 
+// Activity defines the model for Activity.
+type Activity struct {
+	ActivityID   int    `json:"activityID"`
+	Description  string `json:"description"`
+	IsProductive bool   `json:"isProductive"`
+	Name         string `json:"name"`
+	ProjectID    int    `json:"projectID"`
+}
+
+// CreateActivityRequest defines the model for CreateActivityRequest.
+type CreateActivityRequest struct {
+	Description  string `json:"description"`
+	IsProductive bool   `json:"isProductive"`
+	Name         string `json:"name"`
+}
+
 // CreateDemoTwoWorkItemRequest defines the model for CreateDemoTwoWorkItemRequest.
 type CreateDemoTwoWorkItemRequest struct {
 	Base           DbWorkItemCreateParams        `json:"base"`
 	DemoTwoProject DbDemoTwoWorkItemCreateParams `json:"demoTwoProject"`
 	Members        []ServicesMember              `json:"members"`
-	ProjectName    Project                       `json:"projectName"`
-	TagIDs         []int                         `json:"tagIDs"`
+
+	// ProjectName is generated from projects table.
+	ProjectName Project `json:"projectName"`
+	TagIDs      []int   `json:"tagIDs"`
 }
 
 // CreateDemoWorkItemRequest defines the model for CreateDemoWorkItemRequest.
@@ -292,8 +270,10 @@ type CreateDemoWorkItemRequest struct {
 	Base        DbWorkItemCreateParams     `json:"base"`
 	DemoProject DbDemoWorkItemCreateParams `json:"demoProject"`
 	Members     []ServicesMember           `json:"members"`
-	ProjectName Project                    `json:"projectName"`
-	TagIDs      []int                      `json:"tagIDs"`
+
+	// ProjectName is generated from projects table.
+	ProjectName Project `json:"projectName"`
+	TagIDs      []int   `json:"tagIDs"`
 }
 
 // CreateTeamRequest defines the model for CreateTeamRequest.
@@ -393,7 +373,7 @@ type DbNotification struct {
 	Link           *string          `json:"link"`
 	NotificationID DbNotificationID `json:"notificationID"`
 
-	// NotificationType represents a database 'notification_type'
+	// NotificationType is generated from database enum 'notification_type'.
 	NotificationType NotificationType `json:"notificationType"`
 	Receiver         *DbUserID        `json:"receiver,omitempty"`
 	Sender           DbUserID         `json:"sender"`
@@ -408,9 +388,11 @@ type DbProject struct {
 	BoardConfig ProjectConfig `json:"boardConfig"`
 	CreatedAt   time.Time     `json:"createdAt"`
 	Description string        `json:"description"`
-	Name        Project       `json:"name"`
-	ProjectID   int           `json:"projectID"`
-	UpdatedAt   time.Time     `json:"updatedAt"`
+
+	// Name is generated from projects table.
+	Name      Project   `json:"name"`
+	ProjectID int       `json:"projectID"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // DbProjectID defines the model for DbProjectID.
@@ -480,7 +462,7 @@ type DbUserNotification struct {
 
 // DbUserWIAUWorkItem defines the model for DbUserWIAUWorkItem.
 type DbUserWIAUWorkItem struct {
-	// Role represents a database 'work_item_role'
+	// Role is generated from database enum 'work_item_role'.
 	Role WorkItemRole `json:"role"`
 	User DbUser       `json:"user"`
 }
@@ -557,22 +539,13 @@ type DbWorkItemType struct {
 // DbWorkItemTypeID defines the model for DbWorkItemTypeID.
 type DbWorkItemTypeID = interface{}
 
-// Demo2WorkItemTypes defines the model for Demo2WorkItemTypes.
-type Demo2WorkItemTypes string
-
-// DemoKanbanSteps defines the model for DemoKanbanSteps.
+// DemoKanbanSteps is generated from kanban_steps table.
 type DemoKanbanSteps string
 
-// DemoProject2KanbanSteps defines the model for DemoProject2KanbanSteps.
-type DemoProject2KanbanSteps string
-
-// DemoProjectKanbanSteps defines the model for DemoProjectKanbanSteps.
-type DemoProjectKanbanSteps string
-
-// DemoTwoKanbanSteps defines the model for DemoTwoKanbanSteps.
+// DemoTwoKanbanSteps is generated from kanban_steps table.
 type DemoTwoKanbanSteps string
 
-// DemoTwoWorkItemTypes defines the model for DemoTwoWorkItemTypes.
+// DemoTwoWorkItemTypes is generated from work_item_types table.
 type DemoTwoWorkItemTypes string
 
 // DemoTwoWorkItems defines the model for DemoTwoWorkItems.
@@ -597,7 +570,7 @@ type DemoTwoWorkItems struct {
 	WorkItemTypeID   int                    `json:"workItemTypeID"`
 }
 
-// DemoWorkItemTypes defines the model for DemoWorkItemTypes.
+// DemoWorkItemTypes is generated from work_item_types table.
 type DemoWorkItemTypes string
 
 // DemoWorkItems defines the model for DemoWorkItems.
@@ -662,7 +635,7 @@ type InitializeProjectRequest struct {
 	Teams *[]DbTeamCreateParams        `json:"teams"`
 }
 
-// NotificationType represents a database 'notification_type'
+// NotificationType is generated from database enum 'notification_type'.
 type NotificationType string
 
 // PaginatedNotificationsResponse defines the model for PaginatedNotificationsResponse.
@@ -671,11 +644,12 @@ type PaginatedNotificationsResponse struct {
 	Page  RestPaginationPage  `json:"page"`
 }
 
-// Project defines the model for Project.
+// Project is generated from projects table.
 type Project string
 
 // ProjectBoard defines the model for ProjectBoard.
 type ProjectBoard struct {
+	// ProjectName is generated from projects table.
 	ProjectName Project `json:"projectName"`
 }
 
@@ -709,10 +683,10 @@ type RestPaginationPage struct {
 	NextCursor *string `json:"nextCursor,omitempty"`
 }
 
-// Role defines the model for Role.
+// Role is generated from roles.json keys.
 type Role string
 
-// Scope defines the model for Scope.
+// Scope is generated from scopes.json keys.
 type Scope string
 
 // Scopes defines the model for Scopes.
@@ -720,7 +694,7 @@ type Scopes = []Scope
 
 // ServicesMember defines the model for ServicesMember.
 type ServicesMember struct {
-	// Role represents a database 'work_item_role'
+	// Role is generated from database enum 'work_item_role'.
 	Role   WorkItemRole `json:"role"`
 	UserID DbUserID     `json:"userID"`
 }
@@ -738,6 +712,13 @@ type Team struct {
 // Topics string identifiers for SSE event listeners.
 type Topics string
 
+// UpdateActivityRequest defines the model for UpdateActivityRequest.
+type UpdateActivityRequest struct {
+	Description  *string `json:"description,omitempty"`
+	IsProductive *bool   `json:"isProductive,omitempty"`
+	Name         *string `json:"name,omitempty"`
+}
+
 // UpdateTeamRequest defines the model for UpdateTeamRequest.
 type UpdateTeamRequest struct {
 	Description *string `json:"description,omitempty"`
@@ -747,6 +728,7 @@ type UpdateTeamRequest struct {
 
 // UpdateUserAuthRequest represents User authorization data to update
 type UpdateUserAuthRequest struct {
+	// Role is generated from roles.json keys.
 	Role   *Role   `json:"role,omitempty"`
 	Scopes *Scopes `json:"scopes,omitempty"`
 }
@@ -786,11 +768,13 @@ type User struct {
 	HasPersonalNotifications bool          `json:"hasPersonalNotifications"`
 	LastName                 *string       `json:"lastName"`
 	Projects                 *[]DbProject  `json:"projects"`
-	Role                     Role          `json:"role"`
-	Scopes                   Scopes        `json:"scopes"`
-	Teams                    *[]DbTeam     `json:"teams"`
-	UserID                   DbUserID      `json:"userID"`
-	Username                 string        `json:"username"`
+
+	// Role is generated from roles.json keys.
+	Role     Role      `json:"role"`
+	Scopes   Scopes    `json:"scopes"`
+	Teams    *[]DbTeam `json:"teams"`
+	UserID   DbUserID  `json:"userID"`
+	Username string    `json:"username"`
 }
 
 // UuidUUID defines the model for UuidUUID.
@@ -813,7 +797,7 @@ type ValidationError struct {
 	Msg string `json:"msg"`
 }
 
-// WorkItemRole represents a database 'work_item_role'
+// WorkItemRole is generated from database enum 'work_item_role'.
 type WorkItemRole string
 
 // WorkItemTag defines the model for WorkItemTag.
@@ -834,7 +818,7 @@ type WorkItemType struct {
 	WorkItemTypeID int    `json:"workItemTypeID"`
 }
 
-// ProjectName defines the model for ProjectName.
+// ProjectName is generated from projects table.
 type ProjectName = Project
 
 // SerialID defines the model for SerialID.
@@ -860,6 +844,14 @@ type GetProjectWorkitemsParams struct {
 	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
 	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 }
+
+// CreateActivityJSONRequestBody defines body for CreateActivity for application/json ContentType.
+
+type CreateActivityJSONRequestBody = CreateActivityRequest
+
+// UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
+
+type UpdateActivityJSONRequestBody = UpdateActivityRequest
 
 // UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
 

@@ -30,34 +30,6 @@ func ({{ short $e.GoName }} *{{ $e.GoName }}) Scan(src interface{}) error {
 	return nil
 }
 
-{{ $nullName := (printf "%s%s" "Null" $e.GoName) -}}
-{{- $nullShort := (short $nullName) -}}
-// {{ $nullName }} represents a null '{{ $e.SQLName }}' enum for schema '{{ schema }}'.
-type {{ $nullName }} struct {
-	{{ $e.GoName }} {{ $e.GoName }}
-	// Valid is true if {{ $e.GoName }} is not null.
-	Valid bool
-}
-
-// Value satisfies the driver.Valuer interface.
-func ({{ $nullShort }} {{ $nullName }}) Value() (driver.Value, error) {
-	if !{{ $nullShort }}.Valid {
-		return nil, nil
-	}
-	return {{ $nullShort }}.{{ $e.GoName }}.Value()
-}
-
-// Scan satisfies the sql.Scanner interface.
-func ({{ $nullShort }} *{{ $nullName }}) Scan(v interface{}) error {
-	if v == nil {
-		{{ $nullShort }}.{{ $e.GoName }}, {{ $nullShort }}.Valid = "", false
-		return nil
-	}
-	err := {{ $nullShort }}.{{ $e.GoName }}.Scan(v)
-	{{ $nullShort }}.Valid = err == nil
-	return err
-}
-
 // ErrInvalid{{ $e.GoName }} is the invalid {{ $e.GoName }} error.
 type ErrInvalid{{ $e.GoName }} string
 
@@ -228,8 +200,9 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 // {{ $t.GoName }} represents a row from '{{ schema $t.SQLName }}'.
 // Change properties via SQL column comments, joined with " && ":
 //     - "properties":<p1>,<p2>,...
-//       - private to exclude a field from JSON.
-//       - not-required to make a schema field not required.
+//         -- private to exclude a field from JSON.
+//         -- not-required to make a schema field not required.
+//         -- hidden to exclude field from OpenAPI generation.
 //     - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //     - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //     - "tags":<tags> to append literal struct tag strings.

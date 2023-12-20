@@ -36,32 +36,6 @@ func (wir *WorkItemRole) Scan(src interface{}) error {
 	return nil
 }
 
-// NullWorkItemRole represents a null 'work_item_role' enum for schema 'public'.
-type NullWorkItemRole struct {
-	WorkItemRole WorkItemRole
-	// Valid is true if WorkItemRole is not null.
-	Valid bool
-}
-
-// Value satisfies the driver.Valuer interface.
-func (nwir NullWorkItemRole) Value() (driver.Value, error) {
-	if !nwir.Valid {
-		return nil, nil
-	}
-	return nwir.WorkItemRole.Value()
-}
-
-// Scan satisfies the sql.Scanner interface.
-func (nwir *NullWorkItemRole) Scan(v interface{}) error {
-	if v == nil {
-		nwir.WorkItemRole, nwir.Valid = "", false
-		return nil
-	}
-	err := nwir.WorkItemRole.Scan(v)
-	nwir.Valid = err == nil
-	return err
-}
-
 // ErrInvalidWorkItemRole is the invalid WorkItemRole error.
 type ErrInvalidWorkItemRole string
 

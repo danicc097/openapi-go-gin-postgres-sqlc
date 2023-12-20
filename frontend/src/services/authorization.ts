@@ -1,5 +1,4 @@
-import ROLES from 'src/roles'
-import SCOPES from 'src/scopes'
+import { ROLES } from 'src/config'
 import { WorkItemRole, type Role, type Scopes, type User } from 'src/gen/model'
 import { keys } from 'src/utils/object'
 

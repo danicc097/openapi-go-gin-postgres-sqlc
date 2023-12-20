@@ -4,6 +4,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
+  CreateActivityRequest,
+  UpdateActivityRequest,
+  Activity,
   CreateWorkItemTagRequest,
   UpdateWorkItemTagRequest,
   WorkItemTag,
@@ -56,11 +59,6 @@ import {
   DbWorkItemTagCreateParams,
   DbWorkItemRole,
   NotificationType,
-  DemoProjectKanbanSteps,
-  DemoProject2KanbanSteps,
-  Demo2WorkItemTypes,
-  DemoKanbanSteps,
-  DemoTwoKanbanSteps,
   DemoTwoWorkItemTypes,
   DemoWorkItemTypes,
   DbDemoWorkItemCreateParams,
@@ -78,9 +76,14 @@ import {
   RestPaginationPage,
   RestNotification,
   DbUserWIAUWorkItem,
+  DemoKanbanSteps,
+  DemoTwoKanbanSteps,
 } from './models'
 
 export const schemaDefinitions = {
+  CreateActivityRequest: info<CreateActivityRequest>('CreateActivityRequest', '#/definitions/CreateActivityRequest'),
+  UpdateActivityRequest: info<UpdateActivityRequest>('UpdateActivityRequest', '#/definitions/UpdateActivityRequest'),
+  Activity: info<Activity>('Activity', '#/definitions/Activity'),
   CreateWorkItemTagRequest: info<CreateWorkItemTagRequest>(
     'CreateWorkItemTagRequest',
     '#/definitions/CreateWorkItemTagRequest',
@@ -166,17 +169,6 @@ export const schemaDefinitions = {
   ),
   DbWorkItemRole: info<DbWorkItemRole>('DbWorkItemRole', '#/definitions/DbWorkItemRole'),
   NotificationType: info<NotificationType>('NotificationType', '#/definitions/NotificationType'),
-  DemoProjectKanbanSteps: info<DemoProjectKanbanSteps>(
-    'DemoProjectKanbanSteps',
-    '#/definitions/DemoProjectKanbanSteps',
-  ),
-  DemoProject2KanbanSteps: info<DemoProject2KanbanSteps>(
-    'DemoProject2KanbanSteps',
-    '#/definitions/DemoProject2KanbanSteps',
-  ),
-  Demo2WorkItemTypes: info<Demo2WorkItemTypes>('Demo2WorkItemTypes', '#/definitions/Demo2WorkItemTypes'),
-  DemoKanbanSteps: info<DemoKanbanSteps>('DemoKanbanSteps', '#/definitions/DemoKanbanSteps'),
-  DemoTwoKanbanSteps: info<DemoTwoKanbanSteps>('DemoTwoKanbanSteps', '#/definitions/DemoTwoKanbanSteps'),
   DemoTwoWorkItemTypes: info<DemoTwoWorkItemTypes>('DemoTwoWorkItemTypes', '#/definitions/DemoTwoWorkItemTypes'),
   DemoWorkItemTypes: info<DemoWorkItemTypes>('DemoWorkItemTypes', '#/definitions/DemoWorkItemTypes'),
   DbDemoWorkItemCreateParams: info<DbDemoWorkItemCreateParams>(
@@ -203,6 +195,8 @@ export const schemaDefinitions = {
   RestPaginationPage: info<RestPaginationPage>('RestPaginationPage', '#/definitions/RestPaginationPage'),
   RestNotification: info<RestNotification>('RestNotification', '#/definitions/RestNotification'),
   DbUserWIAUWorkItem: info<DbUserWIAUWorkItem>('DbUserWIAUWorkItem', '#/definitions/DbUserWIAUWorkItem'),
+  DemoKanbanSteps: info<DemoKanbanSteps>('DemoKanbanSteps', '#/definitions/DemoKanbanSteps'),
+  DemoTwoKanbanSteps: info<DemoTwoKanbanSteps>('DemoTwoKanbanSteps', '#/definitions/DemoTwoKanbanSteps'),
 }
 
 export interface SchemaInfo<T> {

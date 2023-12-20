@@ -10,6 +10,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/getkin/kin-openapi/openapi3filter"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -87,6 +88,8 @@ type AuthRestriction struct {
 func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		user := getUserFromCtx(c)
+		errorMsg := ""
+		errs := []string{}
 		if user == nil {
 			renderErrorResponse(c, "Could not get current user.", nil)
 			c.Abort()
@@ -108,6 +111,7 @@ func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 
 				return
 			}
+			errs = append(errs, fmt.Sprintf("role %s", config.MinimumRole))
 		}
 
 		if len(config.RequiredScopes) > 0 {
@@ -116,9 +120,16 @@ func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 
 				return
 			}
+			errs = append(errs, fmt.Sprintf("scope(s) %s", slices.JoinWithAnd(config.RequiredScopes)))
 		}
 
-		renderErrorResponse(c, "Unauthorized", internal.NewErrorf(models.ErrorCodeUnauthorized, "unauthorized"))
+		if len(errs) == 1 {
+			errorMsg = errs[0] + " is required"
+		} else if len(errs) > 1 {
+			errorMsg = fmt.Sprintf("either %s are required", slices.Join(errs, " or "))
+		}
+
+		renderErrorResponse(c, "Unauthorized", internal.NewErrorf(models.ErrorCodeUnauthorized, "unauthorized: "+errorMsg))
 		c.Abort()
 	}
 }

@@ -23,23 +23,7 @@ const (
 	Bearer_authScopes = "bearer_auth.Scopes"
 )
 
-// Defines values for Demo2WorkItemTypes.
-const (
-	Demo2WorkItemTypesAnotherType Demo2WorkItemTypes = "Another type"
-	Demo2WorkItemTypesType1       Demo2WorkItemTypes = "Type 1"
-	Demo2WorkItemTypesType2       Demo2WorkItemTypes = "Type 2"
-)
-
-// AllDemo2WorkItemTypesValues returns all possible values for Demo2WorkItemTypes.
-func AllDemo2WorkItemTypesValues() []Demo2WorkItemTypes {
-	return []Demo2WorkItemTypes{
-		Demo2WorkItemTypesAnotherType,
-		Demo2WorkItemTypesType1,
-		Demo2WorkItemTypesType2,
-	}
-}
-
-// Defines values for DemoKanbanSteps.
+// DemoKanbanSteps is generated from kanban_steps table.
 const (
 	DemoKanbanStepsDisabled       DemoKanbanSteps = "Disabled"
 	DemoKanbanStepsReceived       DemoKanbanSteps = "Received"
@@ -57,37 +41,7 @@ func AllDemoKanbanStepsValues() []DemoKanbanSteps {
 	}
 }
 
-// Defines values for DemoProject2KanbanSteps.
-const (
-	DemoProject2KanbanStepsReceived DemoProject2KanbanSteps = "Received"
-)
-
-// AllDemoProject2KanbanStepsValues returns all possible values for DemoProject2KanbanSteps.
-func AllDemoProject2KanbanStepsValues() []DemoProject2KanbanSteps {
-	return []DemoProject2KanbanSteps{
-		DemoProject2KanbanStepsReceived,
-	}
-}
-
-// Defines values for DemoProjectKanbanSteps.
-const (
-	DemoProjectKanbanStepsDisabled       DemoProjectKanbanSteps = "Disabled"
-	DemoProjectKanbanStepsReceived       DemoProjectKanbanSteps = "Received"
-	DemoProjectKanbanStepsUnderReview    DemoProjectKanbanSteps = "Under review"
-	DemoProjectKanbanStepsWorkInProgress DemoProjectKanbanSteps = "Work in progress"
-)
-
-// AllDemoProjectKanbanStepsValues returns all possible values for DemoProjectKanbanSteps.
-func AllDemoProjectKanbanStepsValues() []DemoProjectKanbanSteps {
-	return []DemoProjectKanbanSteps{
-		DemoProjectKanbanStepsDisabled,
-		DemoProjectKanbanStepsReceived,
-		DemoProjectKanbanStepsUnderReview,
-		DemoProjectKanbanStepsWorkInProgress,
-	}
-}
-
-// Defines values for DemoTwoKanbanSteps.
+// DemoTwoKanbanSteps is generated from kanban_steps table.
 const (
 	DemoTwoKanbanStepsReceived DemoTwoKanbanSteps = "Received"
 )
@@ -99,7 +53,7 @@ func AllDemoTwoKanbanStepsValues() []DemoTwoKanbanSteps {
 	}
 }
 
-// Defines values for DemoTwoWorkItemTypes.
+// DemoTwoWorkItemTypes is generated from work_item_types table.
 const (
 	DemoTwoWorkItemTypesAnotherType DemoTwoWorkItemTypes = "Another type"
 	DemoTwoWorkItemTypesType1       DemoTwoWorkItemTypes = "Type 1"
@@ -115,7 +69,7 @@ func AllDemoTwoWorkItemTypesValues() []DemoTwoWorkItemTypes {
 	}
 }
 
-// Defines values for DemoWorkItemTypes.
+// DemoWorkItemTypes is generated from work_item_types table.
 const (
 	DemoWorkItemTypesType1 DemoWorkItemTypes = "Type 1"
 )
@@ -179,7 +133,7 @@ func AllErrorCodeValues() []ErrorCode {
 	}
 }
 
-// NotificationType represents a database 'notification_type'
+// NotificationType is generated from database enum 'notification_type'.
 const (
 	NotificationTypeGlobal   NotificationType = "global"
 	NotificationTypePersonal NotificationType = "personal"
@@ -193,7 +147,7 @@ func AllNotificationTypeValues() []NotificationType {
 	}
 }
 
-// Defines values for Project.
+// Project is generated from projects table.
 const (
 	ProjectDemo    Project = "demo"
 	ProjectDemoTwo Project = "demo_two"
@@ -207,7 +161,7 @@ func AllProjectValues() []Project {
 	}
 }
 
-// Defines values for Role.
+// Role is generated from roles.json keys.
 const (
 	RoleAdmin        Role = "admin"
 	RoleAdvancedUser Role = "advancedUser"
@@ -229,8 +183,11 @@ func AllRoleValues() []Role {
 	}
 }
 
-// Defines values for Scope.
+// Scope is generated from scopes.json keys.
 const (
+	ScopeActivityCreate       Scope = "activity:create"
+	ScopeActivityDelete       Scope = "activity:delete"
+	ScopeActivityEdit         Scope = "activity:edit"
 	ScopeProjectSettingsWrite Scope = "project-settings:write"
 	ScopeScopesWrite          Scope = "scopes:write"
 	ScopeTeamSettingsWrite    Scope = "team-settings:write"
@@ -246,6 +203,9 @@ const (
 // AllScopeValues returns all possible values for Scope.
 func AllScopeValues() []Scope {
 	return []Scope{
+		ScopeActivityCreate,
+		ScopeActivityDelete,
+		ScopeActivityEdit,
 		ScopeProjectSettingsWrite,
 		ScopeScopesWrite,
 		ScopeTeamSettingsWrite,
@@ -271,7 +231,7 @@ func AllTopicsValues() []Topics {
 	}
 }
 
-// WorkItemRole represents a database 'work_item_role'
+// WorkItemRole is generated from database enum 'work_item_role'.
 const (
 	WorkItemRolePreparer WorkItemRole = "preparer"
 	WorkItemRoleReviewer WorkItemRole = "reviewer"
@@ -286,11 +246,33 @@ func AllWorkItemRoleValues() []WorkItemRole {
 }
 
 /* Ignoring existing rest struct
+// Activity defines the model for Activity.
+type Activity  struct {
+    ActivityID int`json:"activityID"`
+    Description string`json:"description"`
+    IsProductive bool`json:"isProductive"`
+    Name string`json:"name"`
+    ProjectID int`json:"projectID"`
+}
+*/
+
+/* Ignoring existing rest struct
+// CreateActivityRequest defines the model for CreateActivityRequest.
+type CreateActivityRequest  struct {
+    Description string`json:"description"`
+    IsProductive bool`json:"isProductive"`
+    Name string`json:"name"`
+}
+*/
+
+/* Ignoring existing rest struct
 // CreateDemoTwoWorkItemRequest defines the model for CreateDemoTwoWorkItemRequest.
 type CreateDemoTwoWorkItemRequest  struct {
     Base externalRef0.DbWorkItemCreateParams`json:"base"`
     DemoTwoProject externalRef0.DbDemoTwoWorkItemCreateParams`json:"demoTwoProject"`
     Members []externalRef0.ServicesMember`json:"members"`
+
+// ProjectName is generated from projects table.
     ProjectName externalRef0.Project`json:"projectName"`
     TagIDs []int`json:"tagIDs"`
 }
@@ -302,6 +284,8 @@ type CreateDemoWorkItemRequest  struct {
     Base externalRef0.DbWorkItemCreateParams`json:"base"`
     DemoProject externalRef0.DbDemoWorkItemCreateParams`json:"demoProject"`
     Members []externalRef0.ServicesMember`json:"members"`
+
+// ProjectName is generated from projects table.
     ProjectName externalRef0.Project`json:"projectName"`
     TagIDs []int`json:"tagIDs"`
 }
@@ -412,7 +396,7 @@ type DbNotification struct {
 	Link           *string                       `json:"link"`
 	NotificationID externalRef0.DbNotificationID `json:"notificationID"`
 
-	// NotificationType represents a database 'notification_type'
+	// NotificationType is generated from database enum 'notification_type'.
 	NotificationType externalRef0.NotificationType `json:"notificationType"`
 	Receiver         *externalRef0.DbUserID        `json:"receiver,omitempty"`
 	Sender           externalRef0.DbUserID         `json:"sender"`
@@ -427,9 +411,11 @@ type DbProject struct {
 	BoardConfig externalRef0.ProjectConfig `json:"boardConfig"`
 	CreatedAt   time.Time                  `json:"createdAt"`
 	Description string                     `json:"description"`
-	Name        externalRef0.Project       `json:"name"`
-	ProjectID   int                        `json:"projectID"`
-	UpdatedAt   time.Time                  `json:"updatedAt"`
+
+	// Name is generated from projects table.
+	Name      externalRef0.Project `json:"name"`
+	ProjectID int                  `json:"projectID"`
+	UpdatedAt time.Time            `json:"updatedAt"`
 }
 
 // DbProjectID defines the model for DbProjectID.
@@ -499,7 +485,7 @@ type DbUserNotification struct {
 
 // DbUserWIAUWorkItem defines the model for DbUserWIAUWorkItem.
 type DbUserWIAUWorkItem struct {
-	// Role represents a database 'work_item_role'
+	// Role is generated from database enum 'work_item_role'.
 	Role externalRef0.WorkItemRole `json:"role"`
 	User externalRef0.DbUser       `json:"user"`
 }
@@ -576,22 +562,13 @@ type DbWorkItemType struct {
 // DbWorkItemTypeID defines the model for DbWorkItemTypeID.
 type DbWorkItemTypeID = interface{}
 
-// Demo2WorkItemTypes defines the model for Demo2WorkItemTypes.
-type Demo2WorkItemTypes string
-
-// DemoKanbanSteps defines the model for DemoKanbanSteps.
+// DemoKanbanSteps is generated from kanban_steps table.
 type DemoKanbanSteps string
 
-// DemoProject2KanbanSteps defines the model for DemoProject2KanbanSteps.
-type DemoProject2KanbanSteps string
-
-// DemoProjectKanbanSteps defines the model for DemoProjectKanbanSteps.
-type DemoProjectKanbanSteps string
-
-// DemoTwoKanbanSteps defines the model for DemoTwoKanbanSteps.
+// DemoTwoKanbanSteps is generated from kanban_steps table.
 type DemoTwoKanbanSteps string
 
-// DemoTwoWorkItemTypes defines the model for DemoTwoWorkItemTypes.
+// DemoTwoWorkItemTypes is generated from work_item_types table.
 type DemoTwoWorkItemTypes string
 
 /* Ignoring existing rest struct
@@ -618,7 +595,7 @@ type DemoTwoWorkItems  struct {
 }
 */
 
-// DemoWorkItemTypes defines the model for DemoWorkItemTypes.
+// DemoWorkItemTypes is generated from work_item_types table.
 type DemoWorkItemTypes string
 
 /* Ignoring existing rest struct
@@ -685,7 +662,7 @@ type InitializeProjectRequest struct {
 	Teams *[]externalRef0.DbTeamCreateParams        `json:"teams"`
 }
 
-// NotificationType represents a database 'notification_type'
+// NotificationType is generated from database enum 'notification_type'.
 type NotificationType string
 
 /* Ignoring existing rest struct
@@ -696,12 +673,13 @@ type PaginatedNotificationsResponse  struct {
 }
 */
 
-// Project defines the model for Project.
+// Project is generated from projects table.
 type Project string
 
 /* Ignoring existing rest struct
 // ProjectBoard defines the model for ProjectBoard.
 type ProjectBoard  struct {
+// ProjectName is generated from projects table.
     ProjectName externalRef0.Project`json:"projectName"`
 }
 */
@@ -736,10 +714,10 @@ type RestPaginationPage struct {
 	NextCursor *string `json:"nextCursor,omitempty"`
 }
 
-// Role defines the model for Role.
+// Role is generated from roles.json keys.
 type Role string
 
-// Scope defines the model for Scope.
+// Scope is generated from scopes.json keys.
 type Scope string
 
 // Scopes defines the model for Scopes.
@@ -747,7 +725,7 @@ type Scopes = []externalRef0.Scope
 
 // ServicesMember defines the model for ServicesMember.
 type ServicesMember struct {
-	// Role represents a database 'work_item_role'
+	// Role is generated from database enum 'work_item_role'.
 	Role   externalRef0.WorkItemRole `json:"role"`
 	UserID externalRef0.DbUserID     `json:"userID"`
 }
@@ -768,6 +746,15 @@ type Team  struct {
 type Topics string
 
 /* Ignoring existing rest struct
+// UpdateActivityRequest defines the model for UpdateActivityRequest.
+type UpdateActivityRequest  struct {
+    Description *string`json:"description,omitempty"`
+    IsProductive *bool`json:"isProductive,omitempty"`
+    Name *string`json:"name,omitempty"`
+}
+*/
+
+/* Ignoring existing rest struct
 // UpdateTeamRequest defines the model for UpdateTeamRequest.
 type UpdateTeamRequest  struct {
     Description *string`json:"description,omitempty"`
@@ -778,6 +765,7 @@ type UpdateTeamRequest  struct {
 
 // UpdateUserAuthRequest represents User authorization data to update
 type UpdateUserAuthRequest struct {
+	// Role is generated from roles.json keys.
 	Role   *externalRef0.Role   `json:"role,omitempty"`
 	Scopes *externalRef0.Scopes `json:"scopes,omitempty"`
 }
@@ -822,6 +810,8 @@ type User  struct {
     HasPersonalNotifications bool`json:"hasPersonalNotifications"`
     LastName *string`json:"lastName"`
     Projects *[]externalRef0.DbProject`json:"projects"`
+
+// Role is generated from roles.json keys.
     Role externalRef0.Role`json:"role"`
     Scopes externalRef0.Scopes`json:"scopes"`
     Teams *[]externalRef0.DbTeam`json:"teams"`
@@ -850,7 +840,7 @@ type ValidationError struct {
 	Msg string `json:"msg"`
 }
 
-// WorkItemRole represents a database 'work_item_role'
+// WorkItemRole is generated from database enum 'work_item_role'.
 type WorkItemRole string
 
 /* Ignoring existing rest struct
@@ -875,7 +865,7 @@ type WorkItemType  struct {
 }
 */
 
-// ProjectName defines the model for ProjectName.
+// ProjectName is generated from projects table.
 type ProjectName = externalRef0.Project
 
 // SerialID defines the model for SerialID.
@@ -901,6 +891,14 @@ type GetProjectWorkitemsParams struct {
 	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
 	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 }
+
+// CreateActivityJSONRequestBody defines body for CreateActivity for application/json ContentType.
+
+type CreateActivityJSONRequestBody = CreateActivityRequest
+
+// UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
+
+type UpdateActivityJSONRequestBody = UpdateActivityRequest
 
 // UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
 
@@ -1023,6 +1021,18 @@ type ServerInterface interface {
 	// returns board data for a project
 	// (GET /project/{projectName}/)
 	GetProject(c *gin.Context, projectName externalRef0.ProjectName)
+	// create activity.
+	// (POST /project/{projectName}/activity/)
+	CreateActivity(c *gin.Context, projectName externalRef0.ProjectName)
+	// delete activity.
+	// (DELETE /project/{projectName}/activity/{id}/)
+	DeleteActivity(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
+	// get activity.
+	// (GET /project/{projectName}/activity/{id}/)
+	GetActivity(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
+	// update activity.
+	// (PATCH /project/{projectName}/activity/{id}/)
+	UpdateActivity(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
 	// returns board data for a project
 	// (GET /project/{projectName}/board)
 	GetProjectBoard(c *gin.Context, projectName externalRef0.ProjectName)
@@ -1240,6 +1250,113 @@ func (siw *ServerInterfaceWrapper) GetProject(c *gin.Context) {
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.GetProject(c, projectName)
+}
+
+// CreateActivity operation with its own middleware.
+func (siw *ServerInterfaceWrapper) CreateActivity(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName // ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.CreateActivity(c, projectName)
+}
+
+// DeleteActivity operation with its own middleware.
+func (siw *ServerInterfaceWrapper) DeleteActivity(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName // ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID // SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.DeleteActivity(c, projectName, id)
+}
+
+// GetActivity operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetActivity(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName // ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID // SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.GetActivity(c, projectName, id)
+}
+
+// UpdateActivity operation with its own middleware.
+func (siw *ServerInterfaceWrapper) UpdateActivity(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName // ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID // SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.UpdateActivity(c, projectName, id)
 }
 
 // GetProjectBoard operation with its own middleware.
@@ -1897,6 +2014,26 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(GetProject), wrapper.GetProject)...,
 	)...)
 
+	router.POST(options.BaseURL+"/project/:projectName/activity/", append(
+		wrapper.Handler.authMiddlewares(CreateActivity),
+		append(wrapper.Handler.middlewares(CreateActivity), wrapper.CreateActivity)...,
+	)...)
+
+	router.DELETE(options.BaseURL+"/project/:projectName/activity/:id/", append(
+		wrapper.Handler.authMiddlewares(DeleteActivity),
+		append(wrapper.Handler.middlewares(DeleteActivity), wrapper.DeleteActivity)...,
+	)...)
+
+	router.GET(options.BaseURL+"/project/:projectName/activity/:id/", append(
+		wrapper.Handler.authMiddlewares(GetActivity),
+		append(wrapper.Handler.middlewares(GetActivity), wrapper.GetActivity)...,
+	)...)
+
+	router.PATCH(options.BaseURL+"/project/:projectName/activity/:id/", append(
+		wrapper.Handler.authMiddlewares(UpdateActivity),
+		append(wrapper.Handler.middlewares(UpdateActivity), wrapper.UpdateActivity)...,
+	)...)
+
 	router.GET(options.BaseURL+"/project/:projectName/board", append(
 		wrapper.Handler.authMiddlewares(GetProjectBoard),
 		append(wrapper.Handler.middlewares(GetProjectBoard), wrapper.GetProjectBoard)...,
@@ -2248,6 +2385,181 @@ func (response GetProject200JSONResponse) VisitGetProjectResponse(w http.Respons
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateActivityRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Body        *CreateActivityRequest
+}
+
+type CreateActivityResponseObject interface {
+	VisitCreateActivityResponse(w http.ResponseWriter) error
+}
+
+type CreateActivity201JSONResponse Activity
+
+func (response CreateActivity201JSONResponse) VisitCreateActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateActivity401Response struct{}
+
+func (response CreateActivity401Response) VisitCreateActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type CreateActivity403Response struct{}
+
+func (response CreateActivity403Response) VisitCreateActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type CreateActivity4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response CreateActivity4XXJSONResponse) VisitCreateActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeleteActivityRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type DeleteActivityResponseObject interface {
+	VisitDeleteActivityResponse(w http.ResponseWriter) error
+}
+
+type DeleteActivity204Response struct{}
+
+func (response DeleteActivity204Response) VisitDeleteActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteActivity401Response struct{}
+
+func (response DeleteActivity401Response) VisitDeleteActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteActivity403Response struct{}
+
+func (response DeleteActivity403Response) VisitDeleteActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteActivity4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteActivity4XXJSONResponse) VisitDeleteActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetActivityRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type GetActivityResponseObject interface {
+	VisitGetActivityResponse(w http.ResponseWriter) error
+}
+
+type GetActivity200JSONResponse Activity
+
+func (response GetActivity200JSONResponse) VisitGetActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetActivity401Response struct{}
+
+func (response GetActivity401Response) VisitGetActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetActivity403Response struct{}
+
+func (response GetActivity403Response) VisitGetActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetActivity4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetActivity4XXJSONResponse) VisitGetActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateActivityRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+	Body        *UpdateActivityRequest
+}
+
+type UpdateActivityResponseObject interface {
+	VisitUpdateActivityResponse(w http.ResponseWriter) error
+}
+
+type UpdateActivity200JSONResponse Activity
+
+func (response UpdateActivity200JSONResponse) VisitUpdateActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateActivity401Response struct{}
+
+func (response UpdateActivity401Response) VisitUpdateActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateActivity403Response struct{}
+
+func (response UpdateActivity403Response) VisitUpdateActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type UpdateActivity4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response UpdateActivity4XXJSONResponse) VisitUpdateActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
 type GetProjectBoardRequestObject struct {
@@ -3069,6 +3381,18 @@ type StrictServerInterface interface {
 	// returns board data for a project
 	// (GET /project/{projectName}/)
 	GetProject(c *gin.Context, request GetProjectRequestObject) (GetProjectResponseObject, error)
+	// create activity.
+	// (POST /project/{projectName}/activity/)
+	CreateActivity(c *gin.Context, request CreateActivityRequestObject) (CreateActivityResponseObject, error)
+	// delete activity.
+	// (DELETE /project/{projectName}/activity/{id}/)
+	DeleteActivity(c *gin.Context, request DeleteActivityRequestObject) (DeleteActivityResponseObject, error)
+	// get activity.
+	// (GET /project/{projectName}/activity/{id}/)
+	GetActivity(c *gin.Context, request GetActivityRequestObject) (GetActivityResponseObject, error)
+	// update activity.
+	// (PATCH /project/{projectName}/activity/{id}/)
+	UpdateActivity(c *gin.Context, request UpdateActivityRequestObject) (UpdateActivityResponseObject, error)
 	// returns board data for a project
 	// (GET /project/{projectName}/board)
 	GetProjectBoard(c *gin.Context, request GetProjectBoardRequestObject) (GetProjectBoardResponseObject, error)
@@ -3372,6 +3696,135 @@ func (sh *strictHandlers) GetProject(ctx *gin.Context, projectName externalRef0.
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetProjectResponseObject); ok {
 		if err := validResponse.VisitGetProjectResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateActivity operation middleware
+func (sh *strictHandlers) CreateActivity(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request CreateActivityRequestObject
+
+	request.ProjectName = projectName
+
+	// CreateActivityRequest
+	var body CreateActivityRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateActivity(ctx, request.(CreateActivityRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "CreateActivity")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateActivityResponseObject); ok {
+		if err := validResponse.VisitCreateActivityResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteActivity operation middleware
+func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request DeleteActivityRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteActivity(ctx, request.(DeleteActivityRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "DeleteActivity")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteActivityResponseObject); ok {
+		if err := validResponse.VisitDeleteActivityResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetActivity operation middleware
+func (sh *strictHandlers) GetActivity(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request GetActivityRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetActivity(ctx, request.(GetActivityRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetActivity")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetActivityResponseObject); ok {
+		if err := validResponse.VisitGetActivityResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateActivity operation middleware
+func (sh *strictHandlers) UpdateActivity(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request UpdateActivityRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	// UpdateActivityRequest
+	var body UpdateActivityRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateActivity(ctx, request.(UpdateActivityRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateActivity")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateActivityResponseObject); ok {
+		if err := validResponse.VisitUpdateActivityResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

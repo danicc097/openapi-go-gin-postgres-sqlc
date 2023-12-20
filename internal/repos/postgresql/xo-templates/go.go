@@ -400,7 +400,10 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 			}
 			// If -2 is provided, skip package template outputs as requested.
 			// If -a is provided, skip to avoid duplicating the template.
-			if !NotFirst(ctx) && !Append(ctx) {
+			_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
+			// TODO: we should merge public and custom schemas generation in one with comma separated list.
+			// so we can generate f.entities properly
+			if !NotFirst(ctx) && !Append(ctx) && schemaOpt == "public" {
 				emit(xo.Template{
 					Partial: "db",
 					Dest:    "db.xo.go",
@@ -409,9 +412,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				if xo.Single(ctx) == "" {
 					files["db.xo.go"] = true
 				}
-			}
 
-			if !NotFirst(ctx) && !Append(ctx) {
 				tables := make(Tables)
 				for _, schema := range set.Schemas {
 					tcc := append(schema.Tables, schema.Views...)
@@ -519,41 +520,50 @@ func fileNames(ctx context.Context, mode string, set *xo.Set) (map[string]bool, 
 	}
 	// Otherwise, infer filenames from set.
 	files := make(map[string]bool)
-	addFile := func(filename string) {
+	_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
+
+	addFile := func(filename, schema string) {
 		// Filenames are always lowercase.
-		filename = strings.ToLower(filename)
+		var prefix string
+		if schema != "public" {
+			prefix = camel(schema)
+		}
+		filename = strings.ToLower(prefix + filename)
 		files[filename+ext] = true
 	}
 	switch mode {
 	case "schema":
 		for _, schema := range set.Schemas {
 			for _, e := range schema.Enums {
-				if e.EnumPkg != "" || (e.Schema == "public" && schema.Name != "public") {
-					continue // will share enums with public, no need to emit
+				// NOTE: we will generate enums and tables from other schemas in the same manner as sqlc
+				// for full compat out of the box
+				if e.Schema == "public" && schemaOpt != "public" {
+					continue // will generate all other schemas alongside public, do not emit again
 				}
-				addFile(camelExport(e.Name))
+
+				addFile(camelExport(e.Name), schema.Name)
 			}
 			for _, p := range schema.Procs {
 				goName := camelExport(p.Name)
 				if p.Type == "function" {
-					addFile("sf_" + goName)
+					addFile("sf_"+goName, schema.Name)
 				} else {
-					addFile("sp_" + goName)
+					addFile("sp_"+goName, schema.Name)
 				}
 			}
 			for _, t := range schema.Tables {
-				addFile(camelExport(singularize(t.Name)))
+				addFile(camelExport(singularize(t.Name)), schema.Name)
 			}
 			for _, v := range schema.Views {
-				addFile(camelExport(singularize(v.Name)))
+				addFile(camelExport(singularize(v.Name)), schema.Name)
 			}
 			for _, v := range schema.MatViews {
-				addFile(camelExport(singularize(v.Name)))
+				addFile(camelExport(singularize(v.Name)), schema.Name)
 			}
 		}
 	case "query":
 		for _, query := range set.Queries {
-			addFile(query.Type)
+			addFile(query.Type, "")
 			if query.Exec {
 				// Single mode is handled at the start of the function but it
 				// must be used for Exec queries.
@@ -697,11 +707,14 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 	if err != nil {
 		return err
 	}
+	_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
+
 	for _, e := range schema.Enums {
-		if e.EnumPkg != "" || (e.Schema == "public" && schema.Name != "public") {
-			continue // will share enums with public, no need to emit
+		if e.Schema == "public" && schemaOpt != "public" {
+			continue // will generate all other schemas alongside public, do not emit again
 		}
-		enum := convertEnum(e)
+
+		enum := convertEnum(ctx, e)
 		emit(xo.Template{
 			Partial:  "enum",
 			Dest:     strings.ToLower(enum.GoName) + ext,
@@ -944,25 +957,32 @@ func extractIndexIdentifier(i Index) string {
 }
 
 // convertEnum converts a xo.Enum.
-func convertEnum(e xo.Enum) Enum {
+func convertEnum(ctx context.Context, e xo.Enum) Enum {
 	var vals []EnumValue
 	goName := camelExport(e.Name)
+	var prefix string
+	_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
+	if schemaOpt != "public" {
+		prefix = camelExport(schemaOpt)
+	}
+
 	for _, v := range e.Values {
 		name := camelExport(strings.ToLower(v.Name))
 		if strings.HasSuffix(name, goName) && goName != name {
 			name = strings.TrimSuffix(name, goName)
 		}
 		vals = append(vals, EnumValue{
-			GoName:     name,
+			GoName:     name, // no prefix here, enough just for goname
 			SQLName:    v.Name,
 			ConstValue: fmt.Sprintf(`"%s"`, v.Name),
 		})
 	}
 
 	return Enum{
-		GoName:  goName,
-		SQLName: e.Name,
-		Values:  vals,
+		GoName:       prefix + goName,
+		GoNamePrefix: prefix, // for template gen
+		SQLName:      e.Name,
+		Values:       vals,
 	}
 }
 
@@ -1046,9 +1066,14 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 			break
 		}
 	}
+	var prefix string
+	_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
+	if schemaOpt != "public" {
+		prefix = camelExport(schemaOpt)
+	}
 
 	table := Table{
-		GoName:      camelExport(singularize(t.Name)),
+		GoName:      prefix + camelExport(singularize(t.Name)),
 		SQLName:     t.Name,
 		Fields:      cols,
 		PrimaryKeys: pkCols,
@@ -1374,9 +1399,10 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	if err != nil {
 		return Field{}, err
 	}
-	var enumPkg, openAPISchema string
+	var enumPkg, enumSchema, openAPISchema string
 	if f.Type.Enum != nil {
 		enumPkg = f.Type.Enum.EnumPkg
+		enumSchema = f.Type.Enum.Schema
 		openAPISchema = camelExport(f.Type.Enum.Name)
 	}
 
@@ -1424,6 +1450,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		IsSequence:    f.IsSequence,
 		IsIgnored:     f.IsIgnored,
 		EnumPkg:       enumPkg,
+		EnumSchema:    enumSchema,
 		Comment:       f.Comment,
 		IsDateOrTime:  f.IsDateOrTime,
 		TypeOverride:  typeOverride,
@@ -1478,6 +1505,7 @@ const ext = ".xo.go"
 type Funcs struct {
 	driver           string
 	schema           string
+	schemaPrefix     string
 	nth              func(int) string
 	first            bool
 	pkg              string
@@ -1527,6 +1555,11 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 		inject = string(buf)
 	}
 	driver, _, schema := xo.DriverDbSchema(ctx)
+
+	var schemaPrefix string
+	if schema != "public" {
+		schemaPrefix = schema
+	}
 	nth, err := loader.NthParam(ctx)
 	if err != nil {
 		return nil, err
@@ -1536,6 +1569,7 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 		first:            first,
 		driver:           driver,
 		schema:           schema,
+		schemaPrefix:     schemaPrefix,
 		nth:              nth,
 		pkg:              Pkg(ctx),
 		tags:             Tags(ctx),
@@ -1862,6 +1896,7 @@ func (f *Funcs) func_name_context(v any, suffix string) string {
 		for _, f := range x.Fields {
 			fields = append(fields, f.GoName)
 		}
+
 		return "FK" + x.GoName + "_" + strings.Join(fields, "") // else clash with join fields in struct
 	case Proc:
 		n := x.GoName
@@ -1922,9 +1957,9 @@ func (f *Funcs) funcfn(name string, context bool, v any, columns []Field, table 
 				returns = append(returns, f.typefn(z.Type))
 			}
 		case x.One:
-			returns = append(returns, "*"+x.Type.GoName)
+			returns = append(returns, "*"+camelExport(f.schemaPrefix)+x.Type.GoName)
 		default:
-			returns = append(returns, "[]*"+x.Type.GoName)
+			returns = append(returns, "[]*"+camelExport(f.schemaPrefix)+x.Type.GoName)
 		}
 	case Proc:
 		params = append(params, f.params(x.Params, true, table))
@@ -2146,6 +2181,7 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 
 		var joinName string
 		notes := "// "
+
 		switch c.Cardinality {
 		case M2M:
 			notes += string(c.Cardinality) + " " + c.TableName
@@ -2176,9 +2212,14 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 						tag = tag + ` ref:"#/components/schemas/` + col.OpenAPISchema + `"`
 					}
 					tag = tag + " " + col.ExtraTags + "`"
-					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), f.typefn(col.Type), tag))
+					typ := f.typefn(col.Type)
+					if strings.HasPrefix(typ, "Null") && f.schemaPrefix != "public" && col.EnumSchema != "public" {
+						typ = "*" + camelExport(f.schemaPrefix) + strings.TrimPrefix(typ, "Null")
+					}
+
+					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), typ, tag))
 				}
-				joinField := originalStruct + " " + originalStruct + " " + tag
+				joinField := originalStruct + " " + camelExport(f.schemaPrefix) + originalStruct + " " + tag
 				typ := camelExport(singularize(c.RefTableName))           // same typ as in struct
 				st := typ + "__" + toAcronym(c.TableName) + "_" + tGoName // unique suffixes
 				lookupTableSQLName := f.schema + "." + c.TableName
@@ -2337,7 +2378,7 @@ func (f *Funcs) recv(name string, context bool, t Table, v any) string {
 	p = append(p, "db DB")
 	switch x := v.(type) {
 	case ForeignKey:
-		r = append(r, "*"+x.RefTable)
+		r = append(r, "*"+camelExport(f.schemaPrefix)+x.RefTable)
 	case string:
 		if x == "Delete" || x == "SoftDelete" { // only exec
 			break
@@ -2407,7 +2448,7 @@ func (f *Funcs) foreign_key_context(v any) string {
 	}
 	switch x := v.(type) {
 	case ForeignKey:
-		name = x.RefFunc
+		name = camelExport(f.schemaPrefix) + x.RefFunc
 		// add params
 		p = append(p, "db", f.convertTypes(x))
 	default:
@@ -2609,7 +2650,11 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 			}
 		case []Field:
 			for _, p := range x {
-				names = append(names, prefix+checkName(p.GoName))
+				var pre string
+				if p.EnumSchema != "" && f.schemaPrefix != "public" {
+					pre = camelExport(f.schemaPrefix)
+				}
+				names = append(names, prefix+pre+checkName(p.GoName))
 			}
 		case Proc:
 			if params := f.params(x.Params, false, nil); params != "" {
@@ -3632,6 +3677,7 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 	if r, ok := goReservedNames[strings.ToLower(s)]; ok {
 		s = r
 	}
+
 	// add the go type
 	if addType {
 		if table != nil {
@@ -3644,21 +3690,21 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 					switch c.Cardinality {
 					case M2M:
 						if c.ColumnName == field.SQLName {
-							field.Type = camelExport(singularize(c.RefTableName)) + "ID"
+							field.Type = camelExport(f.schemaPrefix) + camelExport(singularize(c.RefTableName)) + "ID"
 							break
 						}
 					case M2O:
 						if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
-							field.Type = camelExport(c.TableName) + "ID"
+							field.Type = camelExport(f.schemaPrefix) + camelExport(c.TableName) + "ID"
 							break
 						}
 						if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
-							field.Type = camelExport(c.RefTableName) + "ID"
+							field.Type = camelExport(f.schemaPrefix) + camelExport(c.RefTableName) + "ID"
 							break
 						}
 					case O2O:
 						if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
-							field.Type = camelExport(singularize(c.RefTableName)) + "ID"
+							field.Type = camelExport(f.schemaPrefix) + camelExport(singularize(c.RefTableName)) + "ID"
 							break
 						}
 					default:
@@ -3666,6 +3712,10 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 				}
 			} else if field.IsPrimary {
 				field.Type = table.GoName + "ID"
+			}
+
+			if strings.HasPrefix(field.Type, "Null") && f.schemaPrefix != "public" && field.EnumSchema != "public" {
+				field.Type = "*" + strings.TrimPrefix(field.Type, "Null")
 			}
 
 			s += " " + f.typefn(field.Type)
@@ -3796,21 +3846,21 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 					return "", nil
 				}
 				if c.ColumnName == field.SQLName {
-					constraintTyp = camelExport(singularize(c.RefTableName)) + "ID"
+					constraintTyp = camelExport(f.schemaPrefix) + camelExport(singularize(c.RefTableName)) + "ID"
 					break
 				}
 			case M2O:
 				if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
-					constraintTyp = camelExport(c.TableName) + "ID"
+					constraintTyp = camelExport(f.schemaPrefix) + camelExport(c.TableName) + "ID"
 					break
 				}
 				if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
-					constraintTyp = camelExport(c.RefTableName) + "ID"
+					constraintTyp = camelExport(f.schemaPrefix) + camelExport(c.RefTableName) + "ID"
 					break
 				}
 			case O2O:
 				if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
-					constraintTyp = camelExport(singularize(c.RefTableName)) + "ID"
+					constraintTyp = camelExport(f.schemaPrefix) + camelExport(singularize(c.RefTableName)) + "ID"
 					break
 				}
 
@@ -3821,15 +3871,6 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	if constraintTyp != "" && mode != "IDTypes" {
 		pc := strings.Count(fieldType, "*")
 		fieldType = strings.Repeat("*", pc) + constraintTyp
-	}
-
-	if mode == "UpdateParams" {
-		fieldType = "*" + fieldType // we do want **<field> and *<field>
-	}
-	if field.EnumPkg != "" {
-		p := field.EnumPkg[strings.LastIndex(field.EnumPkg, "/")+1:]
-		fieldType = p + "." + fieldType // assumes no pointers
-		fmt.Printf("enum %q using shared package %q\n", field.GoName, p)
 	}
 
 	if mode == "IDTypes" {
@@ -3853,14 +3894,29 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		if af.isSingleFK && af.isSinglePK {
 			for _, tfk := range table.ForeignKeys {
 				if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {
-					fieldType = camelExport(singularize(tfk.RefTable)) + "ID"
+					fieldType = camelExport(f.schemaPrefix) + camelExport(singularize(tfk.RefTable)) + "ID"
 					break
 				}
 			}
 		}
 	}
 
-	return fmt.Sprintf("\t%s %s%s // %s\n", field.GoName, fieldType, tag, field.SQLName), nil
+	goName := field.GoName
+	referencesCustomSchemaEnum := field.EnumSchema != "" && field.EnumSchema != "public"
+	if strings.HasPrefix(fieldType, "Null") && f.schemaPrefix != "public" && referencesCustomSchemaEnum {
+		fieldType = "*" + camelExport(f.schemaPrefix) + strings.TrimPrefix(fieldType, "Null")
+		goName = camelExport(f.schemaPrefix) + goName
+	} else if referencesCustomSchemaEnum {
+		fieldType = camelExport(table.Schema) + fieldType // assumes no pointers
+		goName = camelExport(f.schemaPrefix) + goName
+		// fieldType = camelExport(f.schemaPrefix) + fieldType
+	}
+
+	if mode == "UpdateParams" {
+		fieldType = "*" + fieldType // we do want **<field> and *<field>
+	}
+
+	return fmt.Sprintf("\t%s %s%s // %s\n", goName, fieldType, tag, field.SQLName), nil
 }
 
 func (f *Funcs) sort_fields(fields []Field) []Field {
@@ -3889,16 +3945,21 @@ func (f *Funcs) set_field(field Field, typ string, table Table) (string, error) 
 		}
 	}
 
+	goName := field.GoName
+	if field.EnumSchema != "" {
+		goName = camelExport(f.schemaPrefix) + goName
+	}
+
 	switch typ {
 	case "UpsertParams":
-		return fmt.Sprintf("\t%[1]s.%[2]s = params.%[2]s\n", f.short(table), field.GoName), nil
+		return fmt.Sprintf("\t%[1]s.%[2]s = params.%[2]s\n", f.short(table), goName), nil
 	case "CreateParams":
-		return fmt.Sprintf("\t%[1]s: params.%[1]s,\n", field.GoName), nil
+		return fmt.Sprintf("\t%[1]s: params.%[1]s,\n", goName), nil
 	case "UpdateParams":
 		return fmt.Sprintf(`if params.%[2]s != nil {
 	%[1]s.%[2]s = *params.%[2]s
 }
-`, f.short(table), field.GoName), nil
+`, f.short(table), goName), nil
 	}
 
 	return "", fmt.Errorf("invalid typ: %s", typ)
@@ -3946,7 +4007,12 @@ func (f *Funcs) fieldmapping(field Field, recv string, public bool) (string, err
 			return "", nil
 		}
 	}
-	return fmt.Sprintf("\t%s: %s.%s,", field.GoName, recv, field.GoName), nil
+	goName := field.GoName
+	if field.EnumSchema != "" {
+		goName = camelExport(f.schemaPrefix) + goName
+	}
+
+	return fmt.Sprintf("\t%s: %s.%s,", goName, recv, goName), nil
 }
 
 // join_fields generates a struct field definition from join constraints
@@ -3982,6 +4048,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 		}
 		var notes, joinName string
 		// sync with extratypes
+
 		switch c.Cardinality {
 		case M2M:
 			notes += " " + c.TableName
@@ -3997,13 +4064,14 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			lookupTable := tables[c.TableName]
 			m2mExtraCols := getTableRegularFields(lookupTable)
 			if len(m2mExtraCols) > 0 {
-				typ = typ + "__" + toAcronym(c.TableName) + "_" + camelExport(singularize(t.SQLName))
+				typ = typ + "__" + toAcronym(c.TableName) + "_" + camelExport(f.schemaPrefix) + camelExport(singularize(t.SQLName))
+			} else {
+				typ = camelExport(f.schemaPrefix) + typ
 			}
 
 			if !structFieldIsUnique(structFields, goName) {
 				goName = goName + toAcronym(c.TableName)
 			}
-
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 		case M2O:
@@ -4041,6 +4109,8 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				continue
 			}
 
+			typ = camelExport(f.schemaPrefix) + typ
+
 			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 		case O2O:
@@ -4065,13 +4135,13 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				}
 
 				t := tables[c.RefTableName]
-				var f Field
+				var fd Field
 				for _, tf := range t.Fields {
 					if tf.SQLName == c.ColumnName {
-						f = tf
+						fd = tf
 					}
 				}
-				af := analyzeField(t, f)
+				af := analyzeField(t, fd)
 				if af.isSingleFK && af.isSinglePK || c.RefPKisFK {
 					goName = camelExport(singularize(c.RefTableName)) + "Join"
 				}
@@ -4081,6 +4151,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				if !structFieldIsUnique(structFields, goName) {
 					goName = goName + toAcronym(c.ColumnName)
 				}
+				typ = camelExport(f.schemaPrefix) + typ
 
 				tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
 				buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
@@ -4488,11 +4559,12 @@ type EnumValue struct {
 
 // Enum is a enum type template.
 type Enum struct {
-	GoName  string
-	SQLName string
-	Values  []EnumValue
-	Comment string
-	Pkg     string
+	GoName       string
+	SQLName      string
+	Values       []EnumValue
+	Comment      string
+	Pkg          string
+	GoNamePrefix string
 }
 
 // Proc is a stored procedure template.
@@ -4588,6 +4660,7 @@ type Field struct {
 	Comment       string
 	IsGenerated   bool
 	EnumPkg       string
+	EnumSchema    string
 	TypeOverride  string
 	IsDateOrTime  bool
 	Properties    []string
