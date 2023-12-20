@@ -1265,6 +1265,8 @@ x.release() {
 # Args: name
 x.dev-utils.create-crud() {
   local name="$1"
+  test -z "$name" && err "A pascal cased name is required"
+
   (
     export pascal_name="$(to_pascal $name)"
     export camel_name="$(to_camel $name)"
@@ -1414,7 +1416,7 @@ x.migrate.create() {
     tmp="$*"
     tmp="${tmp// /_}"
     name="${tmp,,}"
-    [[ -z $name ]] && err "Please provide a migration name"
+    test -z $name && err "Please provide a migration name"
     x.migrate create -ext sql -dir $MIGRATIONS_DIR/ -seq -digits 7 "$name"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1532,6 +1534,8 @@ x.db.dump() {
 # Args: [file]
 x.db.restore() {
   dump_file="$1"
+  test -z $dump_file && err "A dump file path is required"
+
   local dump_prefix="dump_${X_ENV}_"
   if [[ -n $dump_file ]]; then
     [[ ! -f $dump_file ]] && err "$dump_file does not exist"
