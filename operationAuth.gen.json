@@ -61,6 +61,32 @@
     "role": "manager",
     "requiresAuthentication": true
   },
+  "CreateActivity": {
+    "scopes": [
+      "activity:create"
+    ],
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "GetActivity": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "UpdateActivity": {
+    "scopes": [
+      "activity:edit"
+    ],
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "DeleteActivity": {
+    "scopes": [
+      "activity:delete"
+    ],
+    "role": null,
+    "requiresAuthentication": true
+  },
   "GetWorkItemTag": {
     "scopes": null,
     "role": null,

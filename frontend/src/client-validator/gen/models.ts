@@ -26,6 +26,9 @@ export type Scope =
   | 'scopes:write'
   | 'team-settings:write'
   | 'project-settings:write'
+  | 'activity:create'
+  | 'activity:edit'
+  | 'activity:delete'
   | 'work-item-tag:create'
   | 'work-item-tag:edit'
   | 'work-item-tag:delete'
@@ -103,6 +106,23 @@ export type DemoKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work i
  */
 export type DemoTwoKanbanSteps = 'Received'
 
+export interface CreateActivityRequest {
+  description: string
+  isProductive: boolean
+  name: string
+}
+export interface UpdateActivityRequest {
+  description?: string
+  isProductive?: boolean
+  name?: string
+}
+export interface Activity {
+  activityID: number
+  description: string
+  isProductive: boolean
+  name: string
+  projectID: number
+}
 export interface CreateWorkItemTagRequest {
   color: string
   description: string

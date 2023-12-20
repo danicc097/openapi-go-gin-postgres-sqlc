@@ -5,6 +5,12 @@ package rest
 type OperationID string
 
 const (
+	// Operation IDs for the 'activity' tag.
+	CreateActivity OperationID = "CreateActivity"
+	DeleteActivity OperationID = "DeleteActivity"
+	GetActivity    OperationID = "GetActivity"
+	UpdateActivity OperationID = "UpdateActivity"
+
 	// Operation IDs for the 'admin' tag.
 	AdminPing OperationID = "AdminPing"
 

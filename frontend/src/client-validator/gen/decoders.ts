@@ -8,6 +8,9 @@ import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
 import { validateJson } from '../validate'
 import {
+  CreateActivityRequest,
+  UpdateActivityRequest,
+  Activity,
   CreateWorkItemTagRequest,
   UpdateWorkItemTagRequest,
   WorkItemTag,
@@ -87,6 +90,42 @@ addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time', 'date'] })
 ajv.compile(jsonSchema)
 
 // Decoders
+export const CreateActivityRequestDecoder: Decoder<CreateActivityRequest> = {
+  definitionName: 'CreateActivityRequest',
+  schemaRef: '#/definitions/CreateActivityRequest',
+
+  decode(json: unknown): CreateActivityRequest {
+    const schema = ajv.getSchema(CreateActivityRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${CreateActivityRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, CreateActivityRequestDecoder.definitionName)
+  },
+}
+export const UpdateActivityRequestDecoder: Decoder<UpdateActivityRequest> = {
+  definitionName: 'UpdateActivityRequest',
+  schemaRef: '#/definitions/UpdateActivityRequest',
+
+  decode(json: unknown): UpdateActivityRequest {
+    const schema = ajv.getSchema(UpdateActivityRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${UpdateActivityRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, UpdateActivityRequestDecoder.definitionName)
+  },
+}
+export const ActivityDecoder: Decoder<Activity> = {
+  definitionName: 'Activity',
+  schemaRef: '#/definitions/Activity',
+
+  decode(json: unknown): Activity {
+    const schema = ajv.getSchema(ActivityDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ActivityDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ActivityDecoder.definitionName)
+  },
+}
 export const CreateWorkItemTagRequestDecoder: Decoder<CreateWorkItemTagRequest> = {
   definitionName: 'CreateWorkItemTagRequest',
   schemaRef: '#/definitions/CreateWorkItemTagRequest',

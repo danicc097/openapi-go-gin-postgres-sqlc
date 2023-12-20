@@ -178,6 +178,9 @@ func AllRoleValues() []Role {
 
 // Scope is generated from scopes.json keys.
 const (
+	ScopeActivityCreate       Scope = "activity:create"
+	ScopeActivityDelete       Scope = "activity:delete"
+	ScopeActivityEdit         Scope = "activity:edit"
 	ScopeProjectSettingsWrite Scope = "project-settings:write"
 	ScopeScopesWrite          Scope = "scopes:write"
 	ScopeTeamSettingsWrite    Scope = "team-settings:write"
@@ -193,6 +196,9 @@ const (
 // AllScopeValues returns all possible values for Scope.
 func AllScopeValues() []Scope {
 	return []Scope{
+		ScopeActivityCreate,
+		ScopeActivityDelete,
+		ScopeActivityEdit,
 		ScopeProjectSettingsWrite,
 		ScopeScopesWrite,
 		ScopeTeamSettingsWrite,
@@ -230,6 +236,22 @@ func AllWorkItemRoleValues() []WorkItemRole {
 		WorkItemRolePreparer,
 		WorkItemRoleReviewer,
 	}
+}
+
+// Activity defines the model for Activity.
+type Activity struct {
+	ActivityID   int    `json:"activityID"`
+	Description  string `json:"description"`
+	IsProductive bool   `json:"isProductive"`
+	Name         string `json:"name"`
+	ProjectID    int    `json:"projectID"`
+}
+
+// CreateActivityRequest defines the model for CreateActivityRequest.
+type CreateActivityRequest struct {
+	Description  string `json:"description"`
+	IsProductive bool   `json:"isProductive"`
+	Name         string `json:"name"`
 }
 
 // CreateDemoTwoWorkItemRequest defines the model for CreateDemoTwoWorkItemRequest.
@@ -667,8 +689,6 @@ type Role string
 // Scope is generated from scopes.json keys.
 type Scope string
 
-
-
 // Scopes defines the model for Scopes.
 type Scopes = []Scope
 
@@ -691,6 +711,13 @@ type Team struct {
 
 // Topics string identifiers for SSE event listeners.
 type Topics string
+
+// UpdateActivityRequest defines the model for UpdateActivityRequest.
+type UpdateActivityRequest struct {
+	Description  *string `json:"description,omitempty"`
+	IsProductive *bool   `json:"isProductive,omitempty"`
+	Name         *string `json:"name,omitempty"`
+}
 
 // UpdateTeamRequest defines the model for UpdateTeamRequest.
 type UpdateTeamRequest struct {
@@ -817,6 +844,14 @@ type GetProjectWorkitemsParams struct {
 	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
 	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 }
+
+// CreateActivityJSONRequestBody defines body for CreateActivity for application/json ContentType.
+
+type CreateActivityJSONRequestBody = CreateActivityRequest
+
+// UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
+
+type UpdateActivityJSONRequestBody = UpdateActivityRequest
 
 // UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
 

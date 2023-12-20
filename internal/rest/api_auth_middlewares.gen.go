@@ -17,6 +17,16 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 					MinimumRole: models.Role("admin"),
 				}),
 		}
+	case CreateActivity:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					RequiredScopes: models.Scopes{
+						models.Scope("activity:create"),
+					},
+				}),
+		}
 	case CreateTeam:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
@@ -43,6 +53,16 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 	case CreateWorkitemComment:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
+		}
+	case DeleteActivity:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					RequiredScopes: models.Scopes{
+						models.Scope("activity:delete"),
+					},
+				}),
 		}
 	case DeleteTeam:
 		return []gin.HandlerFunc{
@@ -73,6 +93,10 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		}
 	case Events:
 		return []gin.HandlerFunc{}
+	case GetActivity:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
 	case GetCurrentUser:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
@@ -133,6 +157,16 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{}
 	case Ping:
 		return []gin.HandlerFunc{}
+	case UpdateActivity:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					RequiredScopes: models.Scopes{
+						models.Scope("activity:edit"),
+					},
+				}),
+		}
 	case UpdateProjectConfig:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),

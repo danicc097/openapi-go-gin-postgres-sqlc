@@ -6,6 +6,8 @@
  * OpenAPI spec version: 2.0.0
  */
 
+export * from './activity'
+export * from './createActivityRequest'
 export * from './createDemoTwoWorkItemRequest'
 export * from './createDemoTwoWorkItemRequestProjectName'
 export * from './createDemoWorkItemRequest'
@@ -77,6 +79,7 @@ export * from './scopes'
 export * from './servicesMember'
 export * from './team'
 export * from './topics'
+export * from './updateActivityRequest'
 export * from './updateTeamRequest'
 export * from './updateUserAuthRequest'
 export * from './updateUserRequest'

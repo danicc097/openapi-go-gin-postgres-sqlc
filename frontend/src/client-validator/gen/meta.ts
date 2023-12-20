@@ -4,6 +4,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import {
+  CreateActivityRequest,
+  UpdateActivityRequest,
+  Activity,
   CreateWorkItemTagRequest,
   UpdateWorkItemTagRequest,
   WorkItemTag,
@@ -78,6 +81,9 @@ import {
 } from './models'
 
 export const schemaDefinitions = {
+  CreateActivityRequest: info<CreateActivityRequest>('CreateActivityRequest', '#/definitions/CreateActivityRequest'),
+  UpdateActivityRequest: info<UpdateActivityRequest>('UpdateActivityRequest', '#/definitions/UpdateActivityRequest'),
+  Activity: info<Activity>('Activity', '#/definitions/Activity'),
   CreateWorkItemTagRequest: info<CreateWorkItemTagRequest>(
     'CreateWorkItemTagRequest',
     '#/definitions/CreateWorkItemTagRequest',

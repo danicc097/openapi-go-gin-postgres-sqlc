@@ -111,6 +111,19 @@ type UpdateTeamRequest struct {
 	db.TeamUpdateParams
 }
 
+type Activity struct {
+	db.Activity
+	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
+}
+
+type CreateActivityRequest struct {
+	db.ActivityCreateParams
+}
+
+type UpdateActivityRequest struct {
+	db.ActivityUpdateParams
+}
+
 type CreateDemoWorkItemRequest struct {
 	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 	services.DemoWorkItemCreateParams

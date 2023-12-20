@@ -2,6 +2,73 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
+    "CreateActivityRequest": {
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "description",
+        "isProductive",
+        "name"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateActivityRequest"
+    },
+    "UpdateActivityRequest": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateActivityRequest"
+    },
+    "Activity": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activityID",
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestActivity"
+    },
     "CreateWorkItemTagRequest": {
       "properties": {
         "color": {
@@ -735,6 +802,9 @@
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
@@ -1078,6 +1148,9 @@
                         "scopes:write",
                         "team-settings:write",
                         "project-settings:write",
+                        "activity:create",
+                        "activity:edit",
+                        "activity:delete",
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
@@ -1462,6 +1535,9 @@
                         "scopes:write",
                         "team-settings:write",
                         "project-settings:write",
+                        "activity:create",
+                        "activity:edit",
+                        "activity:delete",
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
@@ -2013,6 +2089,9 @@
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
@@ -2326,6 +2405,9 @@
         "scopes:write",
         "team-settings:write",
         "project-settings:write",
+        "activity:create",
+        "activity:edit",
+        "activity:delete",
         "work-item-tag:create",
         "work-item-tag:edit",
         "work-item-tag:delete",
@@ -2345,6 +2427,9 @@
           "scopes:write",
           "team-settings:write",
           "project-settings:write",
+          "activity:create",
+          "activity:edit",
+          "activity:delete",
           "work-item-tag:create",
           "work-item-tag:edit",
           "work-item-tag:delete",
@@ -2420,6 +2505,9 @@
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
@@ -3616,6 +3704,9 @@
                   "scopes:write",
                   "team-settings:write",
                   "project-settings:write",
+                  "activity:create",
+                  "activity:edit",
+                  "activity:delete",
                   "work-item-tag:create",
                   "work-item-tag:edit",
                   "work-item-tag:delete",
@@ -3679,6 +3770,73 @@
     }
   },
   "properties": {
+    "CreateActivityRequest": {
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "description",
+        "isProductive",
+        "name"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateActivityRequest"
+    },
+    "UpdateActivityRequest": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateActivityRequest"
+    },
+    "Activity": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activityID",
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestActivity"
+    },
     "CreateWorkItemTagRequest": {
       "properties": {
         "color": {
@@ -4412,6 +4570,9 @@
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
@@ -4755,6 +4916,9 @@
                         "scopes:write",
                         "team-settings:write",
                         "project-settings:write",
+                        "activity:create",
+                        "activity:edit",
+                        "activity:delete",
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
@@ -5139,6 +5303,9 @@
                         "scopes:write",
                         "team-settings:write",
                         "project-settings:write",
+                        "activity:create",
+                        "activity:edit",
+                        "activity:delete",
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
@@ -5690,6 +5857,9 @@
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
@@ -6003,6 +6173,9 @@
         "scopes:write",
         "team-settings:write",
         "project-settings:write",
+        "activity:create",
+        "activity:edit",
+        "activity:delete",
         "work-item-tag:create",
         "work-item-tag:edit",
         "work-item-tag:delete",
@@ -6022,6 +6195,9 @@
           "scopes:write",
           "team-settings:write",
           "project-settings:write",
+          "activity:create",
+          "activity:edit",
+          "activity:delete",
           "work-item-tag:create",
           "work-item-tag:edit",
           "work-item-tag:delete",
@@ -6097,6 +6273,9 @@
               "scopes:write",
               "team-settings:write",
               "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
@@ -7293,6 +7472,9 @@
                   "scopes:write",
                   "team-settings:write",
                   "project-settings:write",
+                  "activity:create",
+                  "activity:edit",
+                  "activity:delete",
                   "work-item-tag:create",
                   "work-item-tag:edit",
                   "work-item-tag:delete",

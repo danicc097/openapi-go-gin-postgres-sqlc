@@ -185,6 +185,9 @@ func AllRoleValues() []Role {
 
 // Scope is generated from scopes.json keys.
 const (
+	ScopeActivityCreate       Scope = "activity:create"
+	ScopeActivityDelete       Scope = "activity:delete"
+	ScopeActivityEdit         Scope = "activity:edit"
 	ScopeProjectSettingsWrite Scope = "project-settings:write"
 	ScopeScopesWrite          Scope = "scopes:write"
 	ScopeTeamSettingsWrite    Scope = "team-settings:write"
@@ -200,6 +203,9 @@ const (
 // AllScopeValues returns all possible values for Scope.
 func AllScopeValues() []Scope {
 	return []Scope{
+		ScopeActivityCreate,
+		ScopeActivityDelete,
+		ScopeActivityEdit,
 		ScopeProjectSettingsWrite,
 		ScopeScopesWrite,
 		ScopeTeamSettingsWrite,
@@ -238,6 +244,26 @@ func AllWorkItemRoleValues() []WorkItemRole {
 		WorkItemRoleReviewer,
 	}
 }
+
+/* Ignoring existing rest struct
+// Activity defines the model for Activity.
+type Activity  struct {
+    ActivityID int`json:"activityID"`
+    Description string`json:"description"`
+    IsProductive bool`json:"isProductive"`
+    Name string`json:"name"`
+    ProjectID int`json:"projectID"`
+}
+*/
+
+/* Ignoring existing rest struct
+// CreateActivityRequest defines the model for CreateActivityRequest.
+type CreateActivityRequest  struct {
+    Description string`json:"description"`
+    IsProductive bool`json:"isProductive"`
+    Name string`json:"name"`
+}
+*/
 
 /* Ignoring existing rest struct
 // CreateDemoTwoWorkItemRequest defines the model for CreateDemoTwoWorkItemRequest.
@@ -720,6 +746,15 @@ type Team  struct {
 type Topics string
 
 /* Ignoring existing rest struct
+// UpdateActivityRequest defines the model for UpdateActivityRequest.
+type UpdateActivityRequest  struct {
+    Description *string`json:"description,omitempty"`
+    IsProductive *bool`json:"isProductive,omitempty"`
+    Name *string`json:"name,omitempty"`
+}
+*/
+
+/* Ignoring existing rest struct
 // UpdateTeamRequest defines the model for UpdateTeamRequest.
 type UpdateTeamRequest  struct {
     Description *string`json:"description,omitempty"`
@@ -857,6 +892,14 @@ type GetProjectWorkitemsParams struct {
 	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 }
 
+// CreateActivityJSONRequestBody defines body for CreateActivity for application/json ContentType.
+
+type CreateActivityJSONRequestBody = CreateActivityRequest
+
+// UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
+
+type UpdateActivityJSONRequestBody = UpdateActivityRequest
+
 // UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
 
 type UpdateProjectConfigJSONRequestBody = ProjectConfig
@@ -978,6 +1021,18 @@ type ServerInterface interface {
 	// returns board data for a project
 	// (GET /project/{projectName}/)
 	GetProject(c *gin.Context, projectName externalRef0.ProjectName)
+	// create activity.
+	// (POST /project/{projectName}/activity/)
+	CreateActivity(c *gin.Context, projectName externalRef0.ProjectName)
+	// delete activity.
+	// (DELETE /project/{projectName}/activity/{id}/)
+	DeleteActivity(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
+	// get activity.
+	// (GET /project/{projectName}/activity/{id}/)
+	GetActivity(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
+	// update activity.
+	// (PATCH /project/{projectName}/activity/{id}/)
+	UpdateActivity(c *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID)
 	// returns board data for a project
 	// (GET /project/{projectName}/board)
 	GetProjectBoard(c *gin.Context, projectName externalRef0.ProjectName)
@@ -1195,6 +1250,113 @@ func (siw *ServerInterfaceWrapper) GetProject(c *gin.Context) {
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.GetProject(c, projectName)
+}
+
+// CreateActivity operation with its own middleware.
+func (siw *ServerInterfaceWrapper) CreateActivity(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName // ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.CreateActivity(c, projectName)
+}
+
+// DeleteActivity operation with its own middleware.
+func (siw *ServerInterfaceWrapper) DeleteActivity(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName // ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID // SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.DeleteActivity(c, projectName, id)
+}
+
+// GetActivity operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetActivity(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName // ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID // SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.GetActivity(c, projectName, id)
+}
+
+// UpdateActivity operation with its own middleware.
+func (siw *ServerInterfaceWrapper) UpdateActivity(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "projectName" -------------
+	var projectName externalRef0.ProjectName // ProjectName
+
+	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID // SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.UpdateActivity(c, projectName, id)
 }
 
 // GetProjectBoard operation with its own middleware.
@@ -1852,6 +2014,26 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(GetProject), wrapper.GetProject)...,
 	)...)
 
+	router.POST(options.BaseURL+"/project/:projectName/activity/", append(
+		wrapper.Handler.authMiddlewares(CreateActivity),
+		append(wrapper.Handler.middlewares(CreateActivity), wrapper.CreateActivity)...,
+	)...)
+
+	router.DELETE(options.BaseURL+"/project/:projectName/activity/:id/", append(
+		wrapper.Handler.authMiddlewares(DeleteActivity),
+		append(wrapper.Handler.middlewares(DeleteActivity), wrapper.DeleteActivity)...,
+	)...)
+
+	router.GET(options.BaseURL+"/project/:projectName/activity/:id/", append(
+		wrapper.Handler.authMiddlewares(GetActivity),
+		append(wrapper.Handler.middlewares(GetActivity), wrapper.GetActivity)...,
+	)...)
+
+	router.PATCH(options.BaseURL+"/project/:projectName/activity/:id/", append(
+		wrapper.Handler.authMiddlewares(UpdateActivity),
+		append(wrapper.Handler.middlewares(UpdateActivity), wrapper.UpdateActivity)...,
+	)...)
+
 	router.GET(options.BaseURL+"/project/:projectName/board", append(
 		wrapper.Handler.authMiddlewares(GetProjectBoard),
 		append(wrapper.Handler.middlewares(GetProjectBoard), wrapper.GetProjectBoard)...,
@@ -2203,6 +2385,181 @@ func (response GetProject200JSONResponse) VisitGetProjectResponse(w http.Respons
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateActivityRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Body        *CreateActivityRequest
+}
+
+type CreateActivityResponseObject interface {
+	VisitCreateActivityResponse(w http.ResponseWriter) error
+}
+
+type CreateActivity201JSONResponse Activity
+
+func (response CreateActivity201JSONResponse) VisitCreateActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateActivity401Response struct{}
+
+func (response CreateActivity401Response) VisitCreateActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type CreateActivity403Response struct{}
+
+func (response CreateActivity403Response) VisitCreateActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type CreateActivity4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response CreateActivity4XXJSONResponse) VisitCreateActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeleteActivityRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type DeleteActivityResponseObject interface {
+	VisitDeleteActivityResponse(w http.ResponseWriter) error
+}
+
+type DeleteActivity204Response struct{}
+
+func (response DeleteActivity204Response) VisitDeleteActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteActivity401Response struct{}
+
+func (response DeleteActivity401Response) VisitDeleteActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteActivity403Response struct{}
+
+func (response DeleteActivity403Response) VisitDeleteActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteActivity4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteActivity4XXJSONResponse) VisitDeleteActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetActivityRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+}
+
+type GetActivityResponseObject interface {
+	VisitGetActivityResponse(w http.ResponseWriter) error
+}
+
+type GetActivity200JSONResponse Activity
+
+func (response GetActivity200JSONResponse) VisitGetActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetActivity401Response struct{}
+
+func (response GetActivity401Response) VisitGetActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetActivity403Response struct{}
+
+func (response GetActivity403Response) VisitGetActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetActivity4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetActivity4XXJSONResponse) VisitGetActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateActivityRequestObject struct {
+	ProjectName externalRef0.ProjectName `json:"projectName"`
+	Id          externalRef0.SerialID    `json:"id"`
+	Body        *UpdateActivityRequest
+}
+
+type UpdateActivityResponseObject interface {
+	VisitUpdateActivityResponse(w http.ResponseWriter) error
+}
+
+type UpdateActivity200JSONResponse Activity
+
+func (response UpdateActivity200JSONResponse) VisitUpdateActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateActivity401Response struct{}
+
+func (response UpdateActivity401Response) VisitUpdateActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateActivity403Response struct{}
+
+func (response UpdateActivity403Response) VisitUpdateActivityResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type UpdateActivity4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response UpdateActivity4XXJSONResponse) VisitUpdateActivityResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
 type GetProjectBoardRequestObject struct {
@@ -3024,6 +3381,18 @@ type StrictServerInterface interface {
 	// returns board data for a project
 	// (GET /project/{projectName}/)
 	GetProject(c *gin.Context, request GetProjectRequestObject) (GetProjectResponseObject, error)
+	// create activity.
+	// (POST /project/{projectName}/activity/)
+	CreateActivity(c *gin.Context, request CreateActivityRequestObject) (CreateActivityResponseObject, error)
+	// delete activity.
+	// (DELETE /project/{projectName}/activity/{id}/)
+	DeleteActivity(c *gin.Context, request DeleteActivityRequestObject) (DeleteActivityResponseObject, error)
+	// get activity.
+	// (GET /project/{projectName}/activity/{id}/)
+	GetActivity(c *gin.Context, request GetActivityRequestObject) (GetActivityResponseObject, error)
+	// update activity.
+	// (PATCH /project/{projectName}/activity/{id}/)
+	UpdateActivity(c *gin.Context, request UpdateActivityRequestObject) (UpdateActivityResponseObject, error)
 	// returns board data for a project
 	// (GET /project/{projectName}/board)
 	GetProjectBoard(c *gin.Context, request GetProjectBoardRequestObject) (GetProjectBoardResponseObject, error)
@@ -3327,6 +3696,135 @@ func (sh *strictHandlers) GetProject(ctx *gin.Context, projectName externalRef0.
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetProjectResponseObject); ok {
 		if err := validResponse.VisitGetProjectResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateActivity operation middleware
+func (sh *strictHandlers) CreateActivity(ctx *gin.Context, projectName externalRef0.ProjectName) {
+	var request CreateActivityRequestObject
+
+	request.ProjectName = projectName
+
+	// CreateActivityRequest
+	var body CreateActivityRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateActivity(ctx, request.(CreateActivityRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "CreateActivity")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateActivityResponseObject); ok {
+		if err := validResponse.VisitCreateActivityResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteActivity operation middleware
+func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request DeleteActivityRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteActivity(ctx, request.(DeleteActivityRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "DeleteActivity")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteActivityResponseObject); ok {
+		if err := validResponse.VisitDeleteActivityResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetActivity operation middleware
+func (sh *strictHandlers) GetActivity(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request GetActivityRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetActivity(ctx, request.(GetActivityRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetActivity")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetActivityResponseObject); ok {
+		if err := validResponse.VisitGetActivityResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateActivity operation middleware
+func (sh *strictHandlers) UpdateActivity(ctx *gin.Context, projectName externalRef0.ProjectName, id externalRef0.SerialID) {
+	var request UpdateActivityRequestObject
+
+	request.ProjectName = projectName
+	request.Id = id
+
+	// UpdateActivityRequest
+	var body UpdateActivityRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateActivity(ctx, request.(UpdateActivityRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateActivity")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateActivityResponseObject); ok {
+		if err := validResponse.VisitUpdateActivityResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

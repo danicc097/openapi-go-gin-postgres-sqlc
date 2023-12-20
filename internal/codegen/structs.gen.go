@@ -214,6 +214,8 @@ var PublicStructs = map[string]any{
 
 	//
 
+	"RestActivity":                       new(rest.Activity),
+	"RestCreateActivityRequest":          new(rest.CreateActivityRequest),
 	"RestCreateDemoTwoWorkItemRequest":   new(rest.CreateDemoTwoWorkItemRequest),
 	"RestCreateDemoWorkItemRequest":      new(rest.CreateDemoWorkItemRequest),
 	"RestCreateProjectBoardRequest":      new(rest.CreateProjectBoardRequest),
@@ -229,6 +231,7 @@ var PublicStructs = map[string]any{
 	"RestProjectBoard":                   new(rest.ProjectBoard),
 	"RestSharedWorkItemFields":           new(rest.SharedWorkItemFields),
 	"RestTeam":                           new(rest.Team),
+	"RestUpdateActivityRequest":          new(rest.UpdateActivityRequest),
 	"RestUpdateTeamRequest":              new(rest.UpdateTeamRequest),
 	"RestUpdateWorkItemTagRequest":       new(rest.UpdateWorkItemTagRequest),
 	"RestUpdateWorkItemTypeRequest":      new(rest.UpdateWorkItemTypeRequest),
