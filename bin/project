@@ -1255,6 +1255,30 @@ x.release() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
+# Creates a generic CRUD endpoint in the OpenAPI spec and generates related files.
+# Args: name
+x.dev-utils.create-crud() {
+  # TODO:
+  # 1. append paths and schemas to spec with yq
+  # 2. update scopes.json with generic <name>:create|update|delete
+  # abstract away scope and role enum checks + vscode schema.json update
+  # 3. call that fn (now that both spec and scopes.json are up to date)
+  # 4. echo "package rest" > rest/api_<camel name>.go. methods will be generated in x.gen
+  # 5. add 3 generic structs to rest/models.go
+  # 6. generate services, repos and repo test utils
+
+  new_crud_schema="\
+paths:
+  /mything:
+      - something
+components:
+  schemas:
+    myschema:
+      - sometthing
+"
+  yq eval-all 'select(fileIndex == 0) *=+ select(fileIndex == 1) | select(fileIndex == 0)' $SPEC_PATH <(echo "$new_crud_schema") | sponge $SPEC_PATH
+}
+
 # Shows existing user api keys.
 x.dev-utils.api-keys() {
   docker.postgres psql --no-psqlrc -d $POSTGRES_DB -c "select email, api_key from user_api_keys left join users using (user_id);"
