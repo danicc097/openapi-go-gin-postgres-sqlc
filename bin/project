@@ -1266,17 +1266,121 @@ x.dev-utils.create-crud() {
   # 4. echo "package rest" > rest/api_<camel name>.go. methods will be generated in x.gen
   # 5. add 3 generic structs to rest/models.go
   # 6. generate services, repos and repo test utils
+  local name="$1"
+  local pascal_name="$(to_pascal $name)"
+  local camel_name="$(to_camel $name)"
+  local kebab_name="$(to_kebab $name)"
+  local sentence_name="$(to_lower_sentence $name)"
+  local snake_name="$(to_snake $name)"
 
-  new_crud_schema="\
+  new_crud_schema="
+x-require-authenticated: &x-require-authenticated
+x-error-response: &x-error-response
 paths:
-  /mything:
-      - something
+  /${kebab_name}/:
+    post:
+      summary: create $sentence_name.
+      !!merge <<: *x-require-authenticated
+      operationId: Create${pascal_name}
+      x-required-scopes:
+        - ${kebab_name}:create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              \$ref: '#/components/schemas/Create${pascal_name}Request'
+        required: true
+      responses:
+        201:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                \$ref: '#/components/schemas/${pascal_name}'
+        !!merge <<: *x-error-response
+      tags:
+        - ${camel_name}
+  /${kebab_name}/{id}/:
+    get:
+      summary: get $sentence_name.
+      !!merge <<: *x-require-authenticated
+      operationId: Get${pascal_name}
+      parameters:
+        - \$ref: '#/components/parameters/SerialID'
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                \$ref: '#/components/schemas/${pascal_name}'
+        !!merge <<: *x-error-response
+      tags:
+        - ${camel_name}
+    patch:
+      summary: update $sentence_name.
+      !!merge <<: *x-require-authenticated
+      operationId: Update${pascal_name}
+      x-required-scopes:
+        - ${kebab_name}:edit
+      parameters:
+        - \$ref: '#/components/parameters/SerialID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              \$ref: '#/components/schemas/Update${pascal_name}Request'
+        required: true
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                \$ref: '#/components/schemas/${pascal_name}'
+        !!merge <<: *x-error-response
+      tags:
+        - ${camel_name}
+    delete:
+      summary: delete $name.
+      !!merge <<: *x-require-authenticated
+      operationId: Delete${pascal_name}
+      x-required-scopes:
+        - ${kebab_name}:delete
+      parameters:
+        - \$ref: '#/components/parameters/SerialID'
+      responses:
+        204:
+          description: Success.
+        !!merge <<: *x-error-response
+      tags:
+        - ${camel_name}
 components:
   schemas:
-    myschema:
-      - sometthing
+    Create${pascal_name}Request:
+      x-postgen-struct: RestCreate${pascal_name}Request
+    Update${pascal_name}Request:
+      x-postgen-struct: RestUpdate${pascal_name}Request
+    ${pascal_name}:
+      x-postgen-struct: Rest${pascal_name}
 "
-  yq eval-all 'select(fileIndex == 0) *=+ select(fileIndex == 1) | select(fileIndex == 0)' $SPEC_PATH <(echo "$new_crud_schema") | sponge $SPEC_PATH
+  yq eval-all 'select(fileIndex == 0) *=+ select(fileIndex == 1) | select(fileIndex == 0)' "$SPEC_PATH" <(echo "$new_crud_schema") | sponge "$SPEC_PATH"
+
+  echo "
+type ${pascal_name} struct {
+	db.${pascal_name}
+}
+
+type Create${pascal_name}Request struct {
+	db.${pascal_name}CreateParams
+}
+
+type Update${pascal_name}Request struct {
+	db.${pascal_name}UpdateParams
+}
+" >>internal/rest/models.go
+
+  echo "package rest" >"internal/rest/api_${snake_name}.go"
 }
 
 # Shows existing user api keys.
