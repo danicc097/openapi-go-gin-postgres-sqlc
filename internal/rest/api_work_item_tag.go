@@ -22,8 +22,7 @@ func (h *StrictHandlers) CreateWorkItemTag(c *gin.Context, request CreateWorkIte
 		return nil, nil
 	}
 
-	renderResponse(c, wit, http.StatusCreated)
-	return nil, nil
+	return CreateWorkItemTag201JSONResponse{WorkItemTag: *wit}, nil
 }
 
 func (h *StrictHandlers) GetWorkItemTag(c *gin.Context, request GetWorkItemTagRequestObject) (GetWorkItemTagResponseObject, error) {

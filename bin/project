@@ -1041,6 +1041,10 @@ x.test.backend.setup() {
 # Args: [...]
 x.test.backend() {
   { { {
+    # ideally rest, service and repo tests use Random<...>CreateParams directly or indirectly
+    # via fixture factories, so we always want these up to date when a new field is added
+    golangci-lint run --no-config --disable-all --enable=exhaustruct internal/repos/postgresql/postgresqltestutil
+
     x.test.xo
 
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true # nochange exits

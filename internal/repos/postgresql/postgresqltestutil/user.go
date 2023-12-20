@@ -31,12 +31,15 @@ func RandomUserCreateParams(t *testing.T) *db.UserCreateParams {
 	t.Helper()
 
 	return &db.UserCreateParams{
-		Username:   testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
-		Email:      testutil.RandomEmail(),
-		FirstName:  pointers.New(testutil.RandomFirstName()),
-		LastName:   pointers.New(testutil.RandomLastName()),
-		ExternalID: testutil.RandomString(10),
-		Scopes:     models.Scopes{"scope1", "scope2"},
-		RoleRank:   testutil.RandomInt(2, 4),
+		Username:                 testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
+		Email:                    testutil.RandomEmail(),
+		FirstName:                pointers.New(testutil.RandomFirstName()),
+		LastName:                 pointers.New(testutil.RandomLastName()),
+		ExternalID:               testutil.RandomString(10),
+		Scopes:                   models.Scopes{"scope1", "scope2"},
+		RoleRank:                 testutil.RandomInt(2, 4),
+		APIKeyID:                 nil,
+		HasGlobalNotifications:   false,
+		HasPersonalNotifications: false,
 	}
 }
