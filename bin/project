@@ -1407,8 +1407,11 @@ type Update${pascal_name}Request struct {
   update_roles_and_scopes
 
   service_tmpl=$(<internal/services/service.go.bash-tmpl)
-  # ☢️
-  eval "echo \"$service_tmpl\" | envsubst" >"internal/services/service_${snake_name}.go"
+  echo "$service_tmpl" | sed "
+  s/\${pascal_name}/$pascal_name/g;
+  s/\${camel_name}/$camel_name/g
+  s/\${sentence_name}/$sentence_name/g
+  " >"internal/services/service_${snake_name}.go"
 }
 
 # Shows existing user api keys.
