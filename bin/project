@@ -1317,9 +1317,10 @@ type Update${pascal_name}Request struct {
     update_roles_and_scopes
 
     # TODO:
-    # 6. generate services, repos and repo test utils
+    # 6. generate services, repos, repo test utils, fixture factories in rest and services
     bash "$BIN_TEMPLATES_DIR"/crud-service.go.tmpl.bash >"internal/services/service_${snake_name}.go"
     bash "$BIN_TEMPLATES_DIR"/crud-repo.go.tmpl.bash >"internal/repos/postgresql/repo_${snake_name}.go"
+    bash "$BIN_TEMPLATES_DIR"/crud-postgresqltestutil.go.tmpl.bash >"internal/repos/postgresql/postgresqltestutil/${snake_name}.go"
   )
 }
 
