@@ -1368,8 +1368,16 @@ components:
     ${pascal_name}:
       x-postgen-struct: Rest${pascal_name}
 "
-  # order matters. we dont want to override dummy anchors, etc.
-  yq eval-all 'select(fileIndex == 1) *=+ select(fileIndex == 0) | select(fileIndex == 0)' "$SPEC_PATH" <(echo "$new_crud_schema") | sponge "$SPEC_PATH"
+  yq eval-all "(
+        select(fi == 1).paths
+        ) as \$paths
+        | (
+          select(fi == 1).components.schemas
+        ) as \$schemas
+        | select(fi == 0)
+        | .paths += \$paths
+        | .components.schemas += \$schemas
+        " "$SPEC_PATH" <(echo "$new_crud_schema") | sponge "$SPEC_PATH"
 
   echo "
 type ${pascal_name} struct {
