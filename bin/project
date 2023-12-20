@@ -34,7 +34,8 @@ pkg="$(head -1 go.mod)"
 readonly GOMOD_PKG="${pkg#module *}"
 # can only run with count=1 at most
 readonly XO_TESTS_PKG="$GOMOD_PKG/internal/repos/postgresql/xo-templates/tests"
-readonly OPID_AUTH="operationAuth.gen.json"
+readonly OPID_AUTH_PATH="operationAuth.gen.json"
+readonly REST_MODELS="internal/rest/models.go"
 readonly PG_REPO_GEN="$PG_REPO_DIR/gen"
 readonly CACHE=".generate.cache"
 readonly SWAGGER_UI_DIR="internal/static/swagger-ui"
@@ -289,7 +290,7 @@ x.gen.pregen() {
     echo "Running generation"
 
     codegen validate-spec -env=".env.$X_ENV"
-    ast-parser verify-no-import --imports "$GOMOD_PKG/internal/models" internal/rest/models.go || err Please use generated rest package OpenAPI types instead.
+    ast-parser verify-no-import --imports "$GOMOD_PKG/internal/models" "$REST_MODELS" || err Please use generated rest package OpenAPI types instead.
 
     sync_spec_with_db
 
@@ -336,9 +337,9 @@ x.gen.pregen() {
         }
       }
     | select(.[]) as \$i ireduce ({}; . + \$i)
-  " $SPEC_PATH >$OPID_AUTH
+  " $SPEC_PATH >$OPID_AUTH_PATH
 
-    codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH"
+    codegen pre -env=".env.$X_ENV" -op-id-auth="$OPID_AUTH_PATH"
 
     update_spec_with_structs
 
@@ -735,7 +736,7 @@ x.gen.client-server() {
     paths_file=".openapi.paths.yaml"
 
     local all_types=()
-    mapfile -t all_types < <(ast-parser find-types --exclude-generics --public-only "internal/rest/models.go")
+    mapfile -t all_types < <(ast-parser find-types --exclude-generics --public-only "$REST_MODELS")
     all_types_list=$(join_by "," ${all_types[*]})
 
     types_list=$(join_by "," ${all_types[*]})
@@ -752,7 +753,7 @@ x.gen.client-server() {
     oapi-codegen --config internal/rest/oapi-codegen-test-client.yaml "$SPEC_PATH" || err "Failed client generation"
     oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation"
 
-    ast-parser find-redeclared --delete internal/rest/models.go # for duplicates in rest
+    ast-parser find-redeclared --delete "$REST_MODELS" # for duplicates in rest
     codegen implement-server                                    # based on oapi gen
 
     files=$(find "internal/rest/" -name "*.go")
@@ -1263,12 +1264,6 @@ x.release() {
 # Args: name
 x.dev-utils.create-crud() {
   # TODO:
-  # 1. append paths and schemas to spec with yq
-  # 2. update scopes.json with generic <name>:create|update|delete
-  # abstract away scope and role enum checks + vscode schema.json update
-  # 3. call that fn (now that both spec and scopes.json are up to date)
-  # 4. echo "package rest" > rest/api_<camel name>.go. methods will be generated in x.gen
-  # 5. add 3 generic structs to rest/models.go
   # 6. generate services, repos and repo test utils
   local name="$1"
   local pascal_name="$(to_pascal $name)"
@@ -1277,7 +1272,7 @@ x.dev-utils.create-crud() {
   local sentence_name="$(to_lower_sentence $name)"
   local snake_name="$(to_snake $name)"
 
-  new_crud_schema="
+  local new_crud_schema="
 x-require-authenticated: &x-require-authenticated
 x-error-response: &x-error-response
 paths:
@@ -1391,7 +1386,7 @@ type Create${pascal_name}Request struct {
 type Update${pascal_name}Request struct {
 	db.${pascal_name}UpdateParams
 }
-" >>internal/rest/models.go
+" >>"$REST_MODELS"
 
   echo "package rest" >"internal/rest/api_${snake_name}.go"
 
@@ -1747,7 +1742,7 @@ generate_structs_map() {
   //
   ")
 
-  local path="internal/rest/models.go"
+  local path=$EST_MODELS"
   local structs=()
   local enums=()
   local all_types=()
