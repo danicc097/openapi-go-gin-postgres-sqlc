@@ -1319,6 +1319,7 @@ type Update${pascal_name}Request struct {
     # TODO:
     # 6. generate services, repos and repo test utils
     bash "$BIN_TEMPLATES_DIR"/crud-service.go.tmpl.bash >"internal/services/service_${snake_name}.go"
+    bash "$BIN_TEMPLATES_DIR"/crud-repo.go.tmpl.bash >"internal/repos/postgresql/repo_${snake_name}.go"
   )
 }
 
