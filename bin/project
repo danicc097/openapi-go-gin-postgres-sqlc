@@ -754,7 +754,7 @@ x.gen.client-server() {
     oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation"
 
     ast-parser find-redeclared --delete "$REST_MODELS" # for duplicates in rest
-    codegen implement-server                                    # based on oapi gen
+    codegen implement-server                           # based on oapi gen
 
     files=$(find "internal/rest/" -name "*.go")
     goimports -w $files
@@ -1278,7 +1278,7 @@ x-error-response: &x-error-response
 paths:
   /${kebab_name}/:
     post:
-      summary: create $sentence_name.
+      summary: create ${sentence_name}.
       !!merge <<: *x-require-authenticated
       operationId: Create${pascal_name}
       x-required-scopes:
@@ -1301,7 +1301,7 @@ paths:
         - ${camel_name}
   /${kebab_name}/{id}/:
     get:
-      summary: get $sentence_name.
+      summary: get ${sentence_name}.
       !!merge <<: *x-require-authenticated
       operationId: Get${pascal_name}
       parameters:
@@ -1317,7 +1317,7 @@ paths:
       tags:
         - ${camel_name}
     patch:
-      summary: update $sentence_name.
+      summary: update ${sentence_name}.
       !!merge <<: *x-require-authenticated
       operationId: Update${pascal_name}
       x-required-scopes:
@@ -1363,6 +1363,7 @@ components:
     ${pascal_name}:
       x-postgen-struct: Rest${pascal_name}
 "
+
   yq eval-all "(
         select(fi == 1).paths
         ) as \$paths
@@ -1404,6 +1405,10 @@ type Update${pascal_name}Request struct {
   }" -i -o=json "$SCOPE_POLICY_PATH"
 
   update_roles_and_scopes
+
+  service_tmpl=$(<internal/services/service.go.bash-tmpl)
+  # ☢️
+  eval "echo \"$service_tmpl\" | envsubst" >"internal/services/service_${snake_name}.go"
 }
 
 # Shows existing user api keys.
@@ -1742,7 +1747,7 @@ generate_structs_map() {
   //
   ")
 
-  local path=$EST_MODELS"
+  local path="$REST_MODELS"
   local structs=()
   local enums=()
   local all_types=()
