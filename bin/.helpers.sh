@@ -479,6 +479,35 @@ go-utils.find_structs() {
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
 }
 
+# Stores go struct fields to a given array.
+# Parameters:
+#    Struct name
+#    Filename
+#    Field array (nameref)
+go-utils.struct_fields() {
+  struct_name="$1"
+  file_name="$2"
+  local -n __arr="$3"
+
+  struct_definition=$(awk -v struct="$struct_name" '
+    $1 == "type" && $2 == struct {
+      in_struct = 1;
+      next;
+    }
+    in_struct {
+      if ($1 == "}") {
+        in_struct = 0;
+      } else if ($1 != "") {
+        print " " $1;
+      }
+    }
+  ' "$file_name")
+  while read -r line; do
+    field_value=$(awk -v field="$line" '$1 == field {print $3}' <<<"$struct_definition")
+    __arr+=("$field_value")
+  done < <(echo "$struct_definition")
+}
+
 # Stores go generic structs in package to a given array.
 # Deprecated: use `ast-parser find-structs [--exclude-generics]` and calculate difference
 # Parameters:

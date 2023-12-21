@@ -409,6 +409,8 @@ sync_spec_with_db() {
 
   sync_db_enums_with_spec
 
+  # TODO: repo specific changes should all be abstracted to their own standalone functions
+  # to be easily replaced in other repos
   ######## Sync projects and related project info
 
   mapfile -t db_projects < <(docker.postgres.psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
@@ -1264,15 +1266,17 @@ x.release() {
 # Creates a generic CRUD endpoint in the OpenAPI spec and generates related files.
 # Args: name
 x.dev-utils.create-crud() {
-  local name="$1"
-  test -z "$name" && err "A pascal cased name is required"
+  xsetup.backup-gen
+  { { {
+    local name="$1"
+    test -z "$name" && err "A pascal cased name is required"
 
-  (
     export pascal_name="$(to_pascal $name)"
     export camel_name="$(to_camel $name)"
     export kebab_name="$(to_kebab $name)"
     export sentence_name="$(to_lower_sentence $name)"
     export snake_name="$(to_snake $name)"
+    export lower_name="$(to_lower $name)"
 
     local new_crud_schema="$(bash "$BIN_TEMPLATES_DIR"/crud-openapi.yaml.tmpl.bash)"
 
@@ -1318,12 +1322,61 @@ type Update${pascal_name}Request struct {
 
     update_roles_and_scopes
 
-    # TODO:
-    # 6. generate services, repos, repo test utils, fixture factories in rest and services
-    bash "$BIN_TEMPLATES_DIR"/crud-service.go.tmpl.bash >"internal/services/service_${snake_name}.go"
-    bash "$BIN_TEMPLATES_DIR"/crud-repo.go.tmpl.bash >"internal/repos/postgresql/repo_${snake_name}.go"
-    bash "$BIN_TEMPLATES_DIR"/crud-postgresqltestutil.go.tmpl.bash >"internal/repos/postgresql/postgresqltestutil/${snake_name}.go"
-  )
+    # TODO: could quickly sed in "$PG_REPO_GEN"/db/$lower_name.xo.go for struct (with contents)
+    # and if DeletedAt exists generate tmpls with has_deleted_at to use SoftDelete and include DeletedAt servicetestutil field
+
+    db_struct_fields=()
+    go-utils.struct_fields "$pascal_name" "$PG_REPO_GEN/db/$lower_name.xo.go" db_struct_fields
+    has_deleted_at=false
+    if [[ " ${db_struct_fields[*]} " =~ " DeletedAt " ]]; then
+      has_deleted_at=true
+    fi
+
+    echo has_deleted_at: $has_deleted_at
+
+    local file="internal/services/service_${snake_name}.go"
+    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+    bash "$BIN_TEMPLATES_DIR"/crud-service.go.tmpl.bash >"$file"
+    file="internal/repos/postgresql/repo_${snake_name}.go"
+    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+    bash "$BIN_TEMPLATES_DIR"/crud-repo.go.tmpl.bash >"$file"
+    file="internal/repos/postgresql/postgresqltestutil/${snake_name}.go"
+    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+    bash "$BIN_TEMPLATES_DIR"/crud-postgresqltestutil.go.tmpl.bash >"$file"
+    file="internal/services/servicetestutil/${snake_name}.go"
+    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+    bash "$BIN_TEMPLATES_DIR"/crud-servicetestutil.go.tmpl.bash >"$file"
+
+    echo "
+// ${pascal_name} defines the datastore/repository handling persisting ${sentence_name} records.
+type ${pascal_name} interface {
+	ByID(ctx context.Context, d db.DBTX, id db.${pascal_name}ID, opts ...db.${pascal_name}SelectConfigOption) (*db.${pascal_name}, error)
+	Create(ctx context.Context, d db.DBTX, params *db.${pascal_name}CreateParams) (*db.${pascal_name}, error)
+	Update(ctx context.Context, d db.DBTX, id db.${pascal_name}ID, params *db.${pascal_name}UpdateParams) (*db.${pascal_name}, error)
+	Delete(ctx context.Context, d db.DBTX, id db.${pascal_name}ID) (*db.${pascal_name}, error)
+}
+" >>"$REPOS_DIR/repos.go"
+
+    local services_path="internal/services/services.go"
+    local line=$(awk '/return &Services/{print NR}' "$services_path")
+    test -z line && err "No Services line found"
+    sed -i "$((line - 2))a\\
+${lower_name}svc := New${pascal_name}(logger, repos)" "$services_path"
+    sed -i "$((line + 1))a\\
+${pascal_name}: ${lower_name}svc," "$services_path"
+
+    local line=$(awk '/type Services struct {/{print NR}' "$services_path")
+    test -z line && err "No Services line found"
+    sed -i "$((line))a\\
+${pascal_name} *${pascal_name}" "$services_path"
+
+    gofumpt -w "$services_path"
+
+    # TODO: create base for repo indexedqueries tests and api, service tests.
+
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  xsetup.backup-gen.cleanup
+
 }
 
 # Shows existing user api keys.

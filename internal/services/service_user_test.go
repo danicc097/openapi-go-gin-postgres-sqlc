@@ -298,7 +298,7 @@ func createTestUsers(t *testing.T) testUsers {
 
 	svc := services.New(logger, services.CreateTestRepos(), testPool)
 
-	ff := servicetestutil.NewFixtureFactory(testPool, svc)
+	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	guest, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleGuest,

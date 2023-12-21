@@ -19,7 +19,7 @@ func TestAdminPingRoute(t *testing.T) {
 	logger := zaptest.NewLogger(t).Sugar()
 
 	svc := services.New(logger, services.CreateTestRepos(), testPool)
-	ff := servicetestutil.NewFixtureFactory(testPool, svc)
+	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdmin,

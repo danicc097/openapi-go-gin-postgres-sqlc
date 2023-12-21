@@ -103,7 +103,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 
 			authMw := rest.NewAuthMiddleware(logger, testPool, svcs)
 
-			ff := servicetestutil.NewFixtureFactory(testPool, svcs)
+			ff := servicetestutil.NewFixtureFactory(t, testPool, svcs)
 			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				Scopes:     tc.scopes,

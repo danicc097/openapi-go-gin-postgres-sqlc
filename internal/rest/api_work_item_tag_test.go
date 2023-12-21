@@ -25,7 +25,7 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	svc := services.New(logger, services.CreateTestRepos(), testPool)
-	ff := servicetestutil.NewFixtureFactory(testPool, svc)
+	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	requiredProject := models.ProjectDemo
 

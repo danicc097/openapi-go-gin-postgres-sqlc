@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
@@ -30,6 +31,7 @@ type WorkItemTag struct {
 	Name          string        `json:"name" db:"name" required:"true" nullable:"false"`                                                // name
 	Description   string        `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
 	Color         string        `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	DeletedAt     *time.Time    `json:"deletedAt" db:"deleted_at"`                                                                      // deleted_at
 
 	ProjectJoin              *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"`                 // O2O projects (generated from M2O)
 	WorkItemTagWorkItemsJoin *[]WorkItem `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"` // M2M work_item_work_item_tag
@@ -83,10 +85,11 @@ func (wit *WorkItemTag) SetUpdateParams(params *WorkItemTagUpdateParams) {
 }
 
 type WorkItemTagSelectConfig struct {
-	limit   string
-	orderBy string
-	joins   WorkItemTagJoins
-	filters map[string][]any
+	limit     string
+	orderBy   string
+	joins     WorkItemTagJoins
+	filters   map[string][]any
+	deletedAt string
 }
 type WorkItemTagSelectConfigOption func(*WorkItemTagSelectConfig)
 
@@ -99,9 +102,35 @@ func WithWorkItemTagLimit(limit int) WorkItemTagSelectConfigOption {
 	}
 }
 
+// WithDeletedWorkItemTagOnly limits result to records marked as deleted.
+func WithDeletedWorkItemTagOnly() WorkItemTagSelectConfigOption {
+	return func(s *WorkItemTagSelectConfig) {
+		s.deletedAt = " not null "
+	}
+}
+
 type WorkItemTagOrderBy string
 
-const ()
+const (
+	WorkItemTagDeletedAtDescNullsFirst WorkItemTagOrderBy = " deleted_at DESC NULLS FIRST "
+	WorkItemTagDeletedAtDescNullsLast  WorkItemTagOrderBy = " deleted_at DESC NULLS LAST "
+	WorkItemTagDeletedAtAscNullsFirst  WorkItemTagOrderBy = " deleted_at ASC NULLS FIRST "
+	WorkItemTagDeletedAtAscNullsLast   WorkItemTagOrderBy = " deleted_at ASC NULLS LAST "
+)
+
+// WithWorkItemTagOrderBy orders results by the given columns.
+func WithWorkItemTagOrderBy(rows ...WorkItemTagOrderBy) WorkItemTagSelectConfigOption {
+	return func(s *WorkItemTagSelectConfig) {
+		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(orderStrings, ", ")
+		}
+	}
+}
 
 type WorkItemTagJoins struct {
 	Project              bool // O2O projects
@@ -169,14 +198,14 @@ const workItemTagTableWorkItemsWorkItemTagGroupBySQL = `work_item_tags.work_item
 func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.work_item_tags (
-	color, description, name, project_id
+	color, deleted_at, description, name, project_id
 	) VALUES (
-	$1, $2, $3, $4
+	$1, $2, $3, $4, $5
 	) RETURNING * `
 	// run
-	logf(sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID)
+	logf(sqlstr, wit.Color, wit.DeletedAt, wit.Description, wit.Name, wit.ProjectID)
 
-	rows, err := db.Query(ctx, sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID)
+	rows, err := db.Query(ctx, sqlstr, wit.Color, wit.DeletedAt, wit.Description, wit.Name, wit.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Insert/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
@@ -194,13 +223,13 @@ func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error)
 func (wit *WorkItemTag) Update(ctx context.Context, db DB) (*WorkItemTag, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.work_item_tags SET 
-	color = $1, description = $2, name = $3, project_id = $4 
-	WHERE work_item_tag_id = $5 
+	color = $1, deleted_at = $2, description = $3, name = $4, project_id = $5 
+	WHERE work_item_tag_id = $6 
 	RETURNING * `
 	// run
-	logf(sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID, wit.WorkItemTagID)
+	logf(sqlstr, wit.Color, wit.DeletedAt, wit.Description, wit.Name, wit.ProjectID, wit.WorkItemTagID)
 
-	rows, err := db.Query(ctx, sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID, wit.WorkItemTagID)
+	rows, err := db.Query(ctx, sqlstr, wit.Color, wit.DeletedAt, wit.Description, wit.Name, wit.ProjectID, wit.WorkItemTagID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Update/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
@@ -252,9 +281,35 @@ func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// SoftDelete soft deletes the WorkItemTag from the database via 'deleted_at'.
+func (wit *WorkItemTag) SoftDelete(ctx context.Context, db DB) error {
+	// delete with single primary key
+	sqlstr := `UPDATE public.work_item_tags 
+	SET deleted_at = NOW() 
+	WHERE work_item_tag_id = $1 `
+	// run
+	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTagID); err != nil {
+		return logerror(err)
+	}
+	// set deleted
+	wit.DeletedAt = newPointer(time.Now())
+
+	return nil
+}
+
+// Restore restores a soft deleted WorkItemTag from the database.
+func (wit *WorkItemTag) Restore(ctx context.Context, db DB) (*WorkItemTag, error) {
+	wit.DeletedAt = nil
+	newwit, err := wit.Update(ctx, db)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemTag/Restore/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
+	}
+	return newwit, nil
+}
+
 // WorkItemTagPaginatedByWorkItemTagID returns a cursor-paginated list of WorkItemTag.
 func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkItemTagID, direction models.Direction, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -315,15 +370,16 @@ func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTag
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
+	work_item_tags.deleted_at,
 	work_item_tags.description,
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.work_item_tag_id %s $1
-	 %s   %s 
+	 %s   AND work_item_tags.deleted_at is %s  %s 
   ORDER BY 
-		work_item_tag_id %s `, selects, joins, operator, filters, groupbys, direction)
+		work_item_tag_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagPaginatedByWorkItemTagID */\n" + sqlstr
 
@@ -342,7 +398,7 @@ func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTag
 
 // WorkItemTagPaginatedByProjectID returns a cursor-paginated list of WorkItemTag.
 func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -403,15 +459,16 @@ func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID Proje
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
+	work_item_tags.deleted_at,
 	work_item_tags.description,
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.project_id %s $1
-	 %s   %s 
+	 %s   AND work_item_tags.deleted_at is %s  %s 
   ORDER BY 
-		project_id %s `, selects, joins, operator, filters, groupbys, direction)
+		project_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagPaginatedByProjectID */\n" + sqlstr
 
@@ -432,7 +489,7 @@ func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID Proje
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
 func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, projectID ProjectID, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -488,14 +545,15 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
+	work_item_tags.deleted_at,
 	work_item_tags.description,
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.name = $1 AND work_item_tags.project_id = $2
-	 %s   %s 
-`, selects, joins, filters, groupbys)
+	 %s   AND work_item_tags.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagByNameProjectID */\n" + sqlstr
@@ -518,7 +576,7 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
 func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -574,14 +632,15 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
+	work_item_tags.deleted_at,
 	work_item_tags.description,
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.name = $1
-	 %s   %s 
-`, selects, joins, filters, groupbys)
+	 %s   AND work_item_tags.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagsByName */\n" + sqlstr
@@ -606,7 +665,7 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
 func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -662,14 +721,15 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
+	work_item_tags.deleted_at,
 	work_item_tags.description,
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.project_id = $1
-	 %s   %s 
-`, selects, joins, filters, groupbys)
+	 %s   AND work_item_tags.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagsByProjectID */\n" + sqlstr
@@ -694,7 +754,7 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 //
 // Generated from index 'work_item_tags_pkey'.
 func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkItemTagID, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -750,14 +810,15 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkIt
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
+	work_item_tags.deleted_at,
 	work_item_tags.description,
 	work_item_tags.name,
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.work_item_tag_id = $1
-	 %s   %s 
-`, selects, joins, filters, groupbys)
+	 %s   AND work_item_tags.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagByWorkItemTagID */\n" + sqlstr
