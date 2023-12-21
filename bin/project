@@ -1327,13 +1327,12 @@ type Update${pascal_name}Request struct {
 
     local db_struct_fields=()
     go-utils.struct_fields "$pascal_name" "$PG_REPO_GEN/db/$lower_name.xo.go" db_struct_fields
-    has_deleted_at=false
+    export has_deleted_at=false
     if [[ " ${db_struct_fields[*]} " =~ " DeletedAt " ]]; then
-      has_deleted_at=true
+      export has_deleted_at=true
     fi
 
-    echo "struct fields: ${db_struct_fields[*]}"
-    echo has_deleted_at: $has_deleted_at
+    echo db entity has deleted_at: $has_deleted_at
 
     local file="internal/services/service_${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"

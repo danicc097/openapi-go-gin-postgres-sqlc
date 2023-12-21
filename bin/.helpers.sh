@@ -511,7 +511,7 @@ go-utils.struct_fields() {
     }
   ' "$file_name")
   while read -r line; do
-    field_value=$(awk -v field="$line" '$1 == field {print $3}' <<<"$struct_definition")
+    field_value=$(awk -v field="$line" '$1 == field {print $1}' <<<"$struct_definition")
     __arr+=("$field_value")
   done < <(echo "$struct_definition")
 }
