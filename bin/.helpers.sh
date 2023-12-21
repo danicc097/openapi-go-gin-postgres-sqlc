@@ -141,12 +141,12 @@ join_by() {
 
 to_lower_sentence() {
   local kebab=$(to_kebab "$1")
-  echo "${kebab/-/ }"
+  echo "${kebab//-/ }"
 }
 
 to_snake() {
   local kebab=$(to_kebab "$1")
-  echo "${kebab/-/_}"
+  echo "${kebab//-/_}"
 }
 
 to_pascal() {
@@ -158,8 +158,14 @@ to_pascal() {
 
   string=${string//[_-]/ }
 
+  local exceptions=("ID" "API" "URL" "HTTP" "JSON" "HTML" "CSS")
+
   for word in $string; do
-    pascal_case+="${word^}"
+    if [[ " ${exceptions[@]} " =~ " $word " ]]; then
+      pascal_case+="${word^^}" # Uppercase the whole word
+    else
+      pascal_case+="${word^}" # Capitalize the first letter
+    fi
   done
 
   echo "$pascal_case"
