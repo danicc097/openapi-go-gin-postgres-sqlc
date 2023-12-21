@@ -155,13 +155,15 @@ to_pascal() {
 
   # Replace spaces with nothing and capitalize the following letter
   string=$(echo "$string" | sed 's/ \([a-z]\)/\U\1/g')
+  # Replace upper letters with space + lower
+  string=$(echo "$string" | sed 's/\([A-Z]\)/ \L\1/g')
 
   string=${string//[_-]/ }
 
-  local exceptions=("ID" "API" "URL" "HTTP" "JSON" "HTML" "CSS")
+  local exceptions=("id" "api" "url" "http" "json" "html" "css")
 
   for word in $string; do
-    if [[ " ${exceptions[@]} " =~ " $word " ]]; then
+    if [[ " ${exceptions[*]} " =~ " $word " ]]; then
       pascal_case+="${word^^}" # Uppercase the whole word
     else
       pascal_case+="${word^}" # Capitalize the first letter
