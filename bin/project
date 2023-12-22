@@ -1022,6 +1022,20 @@ EOF
   for package in ${packages[@]}; do
     LOG_LEVEL=error golangci-lint run --config <(echo "$lint_config") $package
   done
+
+  lint_config=$(
+    cat <<EOF
+linters:
+  disable-all: true
+  enable:
+    - exhaustruct
+linters-settings:
+  exhaustruct:
+    include:
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos\.Repos$'
+EOF
+  )
+  LOG_LEVEL=error golangci-lint run --config <(echo "$lint_config") # ensure repo initialization is complete on all pkgs
 }
 
 # Format frontend files.
@@ -1297,6 +1311,11 @@ x.dev-utils.create-crud() {
   # TODO: new command x.dev-utils.create-crud-tests
   # since we need to project gen with compilable state after this gen.
   # maybe we could x.gen right here once has_deleted_at is implemented.
+  # FIXME: openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db/extra.xo.go:28
+  # is not generated to spec, so DbEntity does not exist.
+  # can swaggest generate spec from subtype? no
+  # better create Entity directly in spec.
+
   xsetup.backup
   { { {
     local name="$1"
