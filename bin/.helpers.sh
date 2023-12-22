@@ -307,21 +307,20 @@ get_function_name_in_line_number() {
 }
 
 # Usage: trap 'show_tracebacks' ERR
-# FIXME: should handle xlog and xerr error traceback propagation
 show_tracebacks() {
   local err_code="$?"
   set +o xtrace
   local bash_command=${BASH_COMMAND}
-  echo
-  printf "${RED}%0.s-${OFF}" $(seq "80") >&2
-  echo
   function_name=$(get_function_name_in_line_number ${BASH_LINENO[0]} ${BASH_SOURCE[1]})
   if [[ -n $function_name ]]; then
     function_name="[$function_name]"
   fi
-  echo "${RED}Error in ${YELLOW}${BASH_SOURCE[1]##"$TOP_LEVEL_DIR/"}:${BASH_LINENO[0]}${OFF} ${CYAN}$function_name${OFF} (exited with status $err_code)${OFF}" >&2
 
   if [[ $bash_command != xlog* && $bash_command != xerr* && ${#FUNCNAME[@]} -gt 2 ]]; then
+    echo
+    printf "${RED}%0.s-${OFF}" $(seq "80") >&2
+    echo
+    echo "${RED}Error in ${YELLOW}${BASH_SOURCE[1]##"$TOP_LEVEL_DIR/"}:${BASH_LINENO[0]}${OFF} ${CYAN}$function_name${OFF} (exited with status $err_code)${OFF}" >&2
     echo "${RED}Traceback of ${BASH_SOURCE[1]} (most recent call last):${OFF}" >&2
     for ((i = 0; i < ${#FUNCNAME[@]} - 1; i++)); do
       local funcname="${FUNCNAME[$i]}"
