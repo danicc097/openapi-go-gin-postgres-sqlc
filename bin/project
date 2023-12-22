@@ -44,7 +44,8 @@ readonly MAX_FNAME_LOG_LEN=13
 
 GEN_POSTGRES_DB="gen_db"
 
-# determines if gen cache should be restore at program exit. 0|1
+# determines if gen cache should be restore at program exit, i.e. failed commands. 0|1
+# cache folder must be cleaned at exit if true.
 need_backup_restore=0
 # stores the first executing function of xsetup.backup to track if caching gen is already running,
 # to allow for nested xsetup.backup and cache-cleanup inside multiple functions.
@@ -1406,6 +1407,7 @@ type ${pascal_name} interface {
     test -z line && err "No Services line found"
     sed -i "$((line - 2))a\\
 ${lower_name}svc := New${pascal_name}(logger, repos)" "$services_path"
+    # 1 new line was just prepended
     sed -i "$((line + 1))a\\
 ${pascal_name}: ${lower_name}svc," "$services_path"
 
@@ -1414,10 +1416,34 @@ ${pascal_name}: ${lower_name}svc," "$services_path"
     sed -i "$((line))a\\
 ${pascal_name} *${pascal_name}" "$services_path"
 
+    local service_repos_path="internal/services/repos.go"
+    local line=$(awk '/return &repos.Repos/{print NR}' "$service_repos_path")
+    test -z line && err "No repos.Repos line found"
+    local string="${lower_name}repo := reposwrappers.New${pascal_name}WithTracing(
+		reposwrappers.New${pascal_name}WithTimeout(
+			postgresql.New${pascal_name}(),
+			reposwrappers.${pascal_name}WithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)"
+    modified_string="${string//$'\n'/}"
+    newline_count=$((${#string} - ${#modified_string}))
+    formatted_string=$(echo "$string" | sed ':a;N;$!ba;s/\n/\\n/g')
+
+    sed -i "$((line - 2))a\\
+$formatted_string" "$service_repos_path"
+    # 1 new line was just prepended
+    sed -i "$((line + newline_count + 1))a\\
+${pascal_name}: ${lower_name}repo," "$service_repos_path"
+
     generate_repo_constructor
+    x.gen.gowrap
 
     # TODO: create base for repo indexedqueries tests and api, service tests.
-    if gofumpt -w "$services_path" && golangci-lint run --no-config --disable-all --enable=typecheck; then
+    # can generate for create, indexed queries and delete easily.
+    # maybe update should just be tested in rest layer so its tested once and we see conditional struct filling works
+    if gofumpt -w "$services_path" "$service_repos_path" && golangci-lint run --no-config --disable-all --enable=typecheck; then
       x.gen
       x.dev-utils.create-crud-tests $name
     else
@@ -2162,8 +2188,10 @@ exit-cleanup() {
   [[ "$exit_cleanup_calls" -gt 0 ]] && return
   ((exit_cleanup_calls++)) || true
 
-  if [[ $need_backup_restore = 1 && -z $X_NO_BACKUP ]]; then
-    xsetup.backup.restore
+  if [[ $need_backup_restore = 1 ]]; then
+    test -z $X_NO_BACKUP && xsetup.backup.restore
+    # IMPORTANT: need to remove cache regardless because we have failed commands that led to restore needed
+    rm -rf "$CACHE"
   fi
 
   # shared cleanup regardless of gen success
