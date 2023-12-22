@@ -24,9 +24,9 @@ type Create${pascal_name}Fixture struct {
 func (ff *FixtureFactory) Create${pascal_name}(ctx context.Context, params Create${pascal_name}Params) (*Create${pascal_name}Fixture, error) {
 	randomRepoCreateParams := postgresqltestutil.Random${pascal_name}CreateParams(ff.t, params.ProjectID)
 	// don't use repos for tests
-	${camel_name}, err := ff.svc.${pascal_name}.Register(ctx, ff.db, randomRepoCreateParams)
+	${camel_name}, err := ff.svc.${pascal_name}.Create(ctx, ff.db, randomRepoCreateParams)
 	if err != nil {
-		return nil, fmt.Errorf(\"svc.${pascal_name}.Register: %w\", err)
+		return nil, fmt.Errorf(\"svc.${pascal_name}.Create: %w\", err)
 	}
 
 	if params.DeletedAt != nil {
