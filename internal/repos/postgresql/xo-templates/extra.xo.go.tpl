@@ -20,7 +20,7 @@ func (err *XoError) Unwrap() error {
 	return err.Err
 }
 
-{{ entities $tables }}
+{{/* entities $tables */}}
 
 {{- end }}
 

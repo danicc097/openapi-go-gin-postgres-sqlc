@@ -240,11 +240,12 @@ func AllWorkItemRoleValues() []WorkItemRole {
 
 // Activity defines the model for Activity.
 type Activity struct {
-	ActivityID   int    `json:"activityID"`
-	Description  string `json:"description"`
-	IsProductive bool   `json:"isProductive"`
-	Name         string `json:"name"`
-	ProjectID    int    `json:"projectID"`
+	ActivityID   int        `json:"activityID"`
+	DeletedAt    *time.Time `json:"deletedAt"`
+	Description  string     `json:"description"`
+	IsProductive bool       `json:"isProductive"`
+	Name         string     `json:"name"`
+	ProjectID    int        `json:"projectID"`
 }
 
 // CreateActivityRequest defines the model for CreateActivityRequest.
@@ -513,11 +514,12 @@ type DbWorkItemRole = string
 
 // DbWorkItemTag defines the model for DbWorkItemTag.
 type DbWorkItemTag struct {
-	Color         string `json:"color"`
-	Description   string `json:"description"`
-	Name          string `json:"name"`
-	ProjectID     int    `json:"projectID"`
-	WorkItemTagID int    `json:"workItemTagID"`
+	Color         string     `json:"color"`
+	DeletedAt     *time.Time `json:"deletedAt"`
+	Description   string     `json:"description"`
+	Name          string     `json:"name"`
+	ProjectID     int        `json:"projectID"`
+	WorkItemTagID int        `json:"workItemTagID"`
 }
 
 // DbWorkItemTagCreateParams defines the model for DbWorkItemTagCreateParams.
@@ -802,11 +804,12 @@ type WorkItemRole string
 
 // WorkItemTag defines the model for WorkItemTag.
 type WorkItemTag struct {
-	Color         string `json:"color"`
-	Description   string `json:"description"`
-	Name          string `json:"name"`
-	ProjectID     int    `json:"projectID"`
-	WorkItemTagID int    `json:"workItemTagID"`
+	Color         string     `json:"color"`
+	DeletedAt     *time.Time `json:"deletedAt"`
+	Description   string     `json:"description"`
+	Name          string     `json:"name"`
+	ProjectID     int        `json:"projectID"`
+	WorkItemTagID int        `json:"workItemTagID"`
 }
 
 // WorkItemType defines the model for WorkItemType.

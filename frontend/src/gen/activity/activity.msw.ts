@@ -10,6 +10,7 @@ import { rest } from 'msw'
 
 export const getCreateActivityMock = () => ({
   activityID: faker.number.int({ min: undefined, max: undefined }),
+  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
   description: faker.word.sample(),
   isProductive: faker.datatype.boolean(),
   name: faker.word.sample(),
@@ -18,6 +19,7 @@ export const getCreateActivityMock = () => ({
 
 export const getGetActivityMock = () => ({
   activityID: faker.number.int({ min: undefined, max: undefined }),
+  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
   description: faker.word.sample(),
   isProductive: faker.datatype.boolean(),
   name: faker.word.sample(),
@@ -26,6 +28,7 @@ export const getGetActivityMock = () => ({
 
 export const getUpdateActivityMock = () => ({
   activityID: faker.number.int({ min: undefined, max: undefined }),
+  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
   description: faker.word.sample(),
   isProductive: faker.datatype.boolean(),
   name: faker.word.sample(),

@@ -79,7 +79,7 @@ func (a *Activity) Delete(ctx context.Context, d db.DBTX, id db.ActivityID) (*db
 		ActivityID: id,
 	}
 
-	err := activity.Delete(ctx, d)
+	err := activity.SoftDelete(ctx, d)
 	if err != nil {
 		return nil, fmt.Errorf("could not delete activity: %w", parseDBErrorDetail(err))
 	}

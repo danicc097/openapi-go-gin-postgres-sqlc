@@ -154,6 +154,8 @@ export interface components {
     };
     Activity: {
       activityID: number;
+      /** Format: date-time */
+      deletedAt?: string | null;
       description: string;
       isProductive: boolean;
       name: string;
@@ -171,6 +173,8 @@ export interface components {
     };
     WorkItemTag: {
       color: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
       description: string;
       name: string;
       projectID: number;
@@ -257,6 +261,8 @@ export interface components {
     };
     DbWorkItemTag: {
       color: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
       description: string;
       name: string;
       projectID: number;

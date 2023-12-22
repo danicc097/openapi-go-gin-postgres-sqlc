@@ -10,6 +10,7 @@ import { rest } from 'msw'
 
 export const getCreateWorkItemTagMock = () => ({
   color: faker.word.sample(),
+  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
   description: faker.word.sample(),
   name: faker.word.sample(),
   projectID: faker.number.int({ min: undefined, max: undefined }),
@@ -18,6 +19,7 @@ export const getCreateWorkItemTagMock = () => ({
 
 export const getGetWorkItemTagMock = () => ({
   color: faker.word.sample(),
+  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
   description: faker.word.sample(),
   name: faker.word.sample(),
   projectID: faker.number.int({ min: undefined, max: undefined }),
@@ -26,6 +28,7 @@ export const getGetWorkItemTagMock = () => ({
 
 export const getUpdateWorkItemTagMock = () => ({
   color: faker.word.sample(),
+  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
   description: faker.word.sample(),
   name: faker.word.sample(),
   projectID: faker.number.int({ min: undefined, max: undefined }),

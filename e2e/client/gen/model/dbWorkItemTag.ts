@@ -8,6 +8,7 @@
 
 export interface DbWorkItemTag {
   color: string
+  deletedAt?: Date | null
   description: string
   name: string
   projectID: number

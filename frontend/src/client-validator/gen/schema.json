@@ -44,6 +44,12 @@
         "activityID": {
           "type": "integer"
         },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
         "description": {
           "type": "string",
           "minLength": 1
@@ -115,6 +121,12 @@
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
         },
         "description": {
           "type": "string",
@@ -472,6 +484,12 @@
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
         },
         "description": {
           "type": "string",

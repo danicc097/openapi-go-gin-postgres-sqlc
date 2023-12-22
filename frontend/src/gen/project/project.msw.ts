@@ -105,6 +105,7 @@ export const getGetProjectWorkitemsMock = () =>
       workItemID: faker.number.int({ min: undefined, max: undefined }),
       workItemTags: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
         color: faker.word.sample(),
+        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
         description: faker.word.sample(),
         name: faker.word.sample(),
         projectID: faker.number.int({ min: undefined, max: undefined }),
@@ -173,6 +174,7 @@ export const getGetProjectWorkitemsMock = () =>
       workItemID: faker.number.int({ min: undefined, max: undefined }),
       workItemTags: Array.from({ length: faker.datatype.number({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
         color: faker.word.sample(),
+        deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
         description: faker.word.sample(),
         name: faker.word.sample(),
         projectID: faker.number.int({ min: undefined, max: undefined }),

@@ -865,6 +865,10 @@ components:
       properties:
         activityID:
           type: integer
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
         description:
           type: string
         isProductive:
@@ -911,6 +915,10 @@ components:
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
           type: string
         description:
           type: string
@@ -1142,6 +1150,10 @@ components:
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
           type: string
         description:
           type: string

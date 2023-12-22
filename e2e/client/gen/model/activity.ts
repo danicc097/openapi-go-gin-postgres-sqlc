@@ -8,6 +8,7 @@
 
 export interface Activity {
   activityID: number
+  deletedAt?: Date | null
   description: string
   isProductive: boolean
   name: string

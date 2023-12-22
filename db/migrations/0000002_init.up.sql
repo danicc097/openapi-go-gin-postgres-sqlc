@@ -258,18 +258,13 @@ create trigger notifications_fan_out
 -- We will also reuse topics (used in SSE and notifications)
 create table entity_notifications (
   entity_notification_id serial primary key
-  , entity text not null
   , id text not null
   , message text not null
   , topic text not null
   , created_at timestamp with time zone default current_timestamp not null
 );
 
-comment on column entity_notifications.entity is '"type":Entity';
-
 comment on column entity_notifications.topic is '"type":models.Topics';
-
-create index on entity_notifications (entity , id);
 
 create table user_team (
   team_id int not null

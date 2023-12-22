@@ -8,6 +8,7 @@
 
 export interface WorkItemTag {
   color: string
+  deletedAt?: Date | null
   description: string
   name: string
   projectID: number
