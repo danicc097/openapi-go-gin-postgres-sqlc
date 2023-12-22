@@ -1,3 +1,5 @@
+delete_method=$([[ -n "$has_deleted_at" ]] && echo "SoftDelete" || echo "Delete")
+
 echo "package postgresql
 
 import (
@@ -61,7 +63,7 @@ func (t *${pascal_name}) Delete(ctx context.Context, d db.DBTX, id db.${pascal_n
 		${pascal_name}ID: id,
 	}
 
-	err := ${camel_name}.SoftDelete(ctx, d) // use Delete if no deleted_at column exists.
+	err := ${camel_name}.${delete_method}(ctx, d) // use SoftDelete if a deleted_at column exists.
 	if err != nil {
 		return nil, fmt.Errorf(\"could not delete ${sentence_name}: %w\", parseDBErrorDetail(err))
 	}

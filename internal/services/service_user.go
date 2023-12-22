@@ -60,13 +60,16 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	params.Scopes = append(params.Scopes, u.authzsvc.DefaultScopes(params.Role)...)
 
 	repoParams := db.UserCreateParams{
-		FirstName:  params.FirstName,
-		LastName:   params.LastName,
-		Username:   params.Username,
-		Email:      params.Email,
-		ExternalID: params.ExternalID,
-		RoleRank:   role.Rank,
-		Scopes:     params.Scopes,
+		FirstName:                params.FirstName,
+		LastName:                 params.LastName,
+		Username:                 params.Username,
+		Email:                    params.Email,
+		ExternalID:               params.ExternalID,
+		RoleRank:                 role.Rank,
+		Scopes:                   params.Scopes,
+		APIKeyID:                 nil,
+		HasGlobalNotifications:   false,
+		HasPersonalNotifications: false,
 	}
 
 	user, err := u.repos.User.Create(ctx, d, &repoParams)

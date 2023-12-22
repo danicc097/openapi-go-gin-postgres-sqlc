@@ -284,20 +284,49 @@ ensure_envvars_set() {
   { ((n_missing != 0)) && exit 1; } || true
 }
 
+get_function_name_in_line_number() {
+  local line_number="$1"
+  local script_file="$2"
+  local function_name
+
+  local function_name=$(awk -v line="$line_number" '
+    /^ *[a-zA-Z_][a-zA-Z0-9_]* *\(\) *{/,/}/ {
+      if ($0 ~ /^ *[a-zA-Z_][a-zA-Z0-9_]* *\(\) *{/) {
+        current_function = $1
+        gsub(/\(\)/, "", current_function)
+      }
+      if ($0 ~ /^}/) {
+        current_function = ""
+      }
+    }
+
+    NR == line { print current_function; exit }
+  ' "$script_file")
+
+  echo "$function_name"
+}
+
 # Usage: trap 'show_tracebacks' ERR
+# FIXME: should handle xlog and xerr error traceback propagation
 show_tracebacks() {
   local err_code="$?"
   set +o xtrace
   local bash_command=${BASH_COMMAND}
-  echo "${RED}Error in ${BASH_SOURCE[1]##"$TOP_LEVEL_DIR/"}:${BASH_LINENO[0]} ('$bash_command' exited with status $err_code)${OFF}" >&2
+  echo
+  printf "${RED}%0.s-${OFF}" $(seq "80") >&2
+  echo
+  function_name=$(get_function_name_in_line_number ${BASH_LINENO[0]} ${BASH_SOURCE[1]})
+  if [[ -n $function_name ]]; then
+    function_name="[$function_name]"
+  fi
+  echo "${RED}Error in ${YELLOW}${BASH_SOURCE[1]##"$TOP_LEVEL_DIR/"}:${BASH_LINENO[0]}${OFF} ${CYAN}$function_name${OFF} (exited with status $err_code)${OFF}" >&2
 
   if [[ $bash_command != xlog* && $bash_command != xerr* && ${#FUNCNAME[@]} -gt 2 ]]; then
-    # Print out the stack trace described by $function_stack
     echo "${RED}Traceback of ${BASH_SOURCE[1]} (most recent call last):${OFF}" >&2
     for ((i = 0; i < ${#FUNCNAME[@]} - 1; i++)); do
       local funcname="${FUNCNAME[$i]}"
       [ "$i" -eq "0" ] && funcname=$bash_command
-      echo -e "  ${MAGENTA}${BASH_SOURCE[$i + 1]##*\/}:${BASH_LINENO[$i]}${OFF}\\t$funcname" >&2
+      echo -e "  ${MAGENTA}${BASH_SOURCE[$i + 1]##"$TOP_LEVEL_DIR/"}:${BASH_LINENO[$i]}${OFF}\\t$funcname" >&2
     done
   fi
   exit 1
@@ -317,12 +346,10 @@ cache_all() {
     return 0
   fi
 
-  >"$output_file"
-
   for arg in "$@"; do
-    if [ -d "$arg" ]; then
+    if test -d "$arg"; then
       find "$arg" -type f -exec md5sum {} + >>"$output_file"
-    elif [ -f "$arg" ]; then
+    elif test -f "$arg"; then
       md5sum "$arg" >>"$output_file"
     else
       err "Invalid argument: $arg"

@@ -6,7 +6,6 @@ import (
 
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil\"
 	\"github.com/stretchr/testify/require\"
 )
 

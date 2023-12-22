@@ -11,7 +11,7 @@ source ".helpers.sh"
 starting_cwd=$(pwd)
 ensure_pwd_is_top_level
 
-declare X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_CACHE X_ENV
+declare X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV
 declare BUILD_VERSION
 
 readonly CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -45,9 +45,9 @@ readonly MAX_FNAME_LOG_LEN=13
 GEN_POSTGRES_DB="gen_db"
 
 # determines if gen cache should be restore at program exit. 0|1
-need_cache_restore=0
-# stores the first executing function of xsetup.backup-gen to track if caching gen is already running,
-# to allow for nested xsetup.backup-gen and cache-cleanup inside multiple functions.
+need_backup_restore=0
+# stores the first executing function of xsetup.backup to track if caching gen is already running,
+# to allow for nested xsetup.backup and cache-cleanup inside multiple functions.
 xsetup_backup_gen_caller=""
 
 # stores the first executing function to determine if a migration
@@ -115,42 +115,42 @@ xsetup.build-tools() {
   x.gen.build-tools || err Could not rebuild gen tools
 }
 
-gen_backup_branch="backup-gen-$(uuidgen)"
+backup_branch="backup-gen-$(uuidgen)"
 
-xsetup.backup-gen() {
+xsetup.backup() {
   test -n "$xsetup_backup_gen_caller" && return
 
   xsetup_backup_gen_caller="${FUNCNAME[1]}"
 
   mkdir -p "$CACHE"
 
-  gen_backup_stash_name="backup-stash-$gen_backup_branch"
+  backup_stash_name="backup-stash-$backup_branch"
 
-  echo "$gen_backup_branch" >backup-gen-stash-dummy.txt
+  echo "$backup_branch" >backup-gen-stash-dummy.txt
   cp .gitignore .gitignore.bak
   sed -i "s|^\*\.cache|#\*\.cache|" .gitignore # include cache in stash
-  git stash push -m "$gen_backup_stash_name" --include-untracked || err "Could not backup untracked changes before codegen"
-  git checkout -b "$gen_backup_branch" &>/dev/null
-  git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
+  git stash push -m "$backup_stash_name" --include-untracked || err "Could not backup untracked changes before codegen"
+  git checkout -b "$backup_branch" &>/dev/null
+  git stash apply "stash^{/$backup_stash_name}" &>/dev/null
 
-  need_cache_restore=1
+  need_backup_restore=1
 }
 
-xsetup.backup-gen.cleanup() {
+xsetup.backup.cleanup() {
   # only accept gen if the main function that backed it up in the first place
   # finishes successfully, i.e. this very function was called
   if [[ "$xsetup_backup_gen_caller" = "${FUNCNAME[1]}" ]]; then
-    need_cache_restore=0
+    need_backup_restore=0
   fi
 }
 
-xsetup.backup-gen.restore() {
-  echo "Restoring previously generated code (branch $gen_backup_branch)..."
+xsetup.backup.restore() {
+  echo "Restoring previous changes (branch $backup_branch)..."
   wait # for any pending job
 
   git reset --hard && git clean -df &>/dev/null
   rm -rf "$CACHE" # else `already exists, no checkout` upon stash apply since we have just reset gitignore
-  git stash apply "stash^{/$gen_backup_stash_name}" &>/dev/null
+  git stash apply "stash^{/$backup_stash_name}" &>/dev/null
 }
 
 xsetup.drop-and-migrate-gen-db() {
@@ -282,7 +282,7 @@ x.setup.swagger-ui() {
 
 # Run pre-generation scripts in the internal package.
 x.gen.pregen() {
-  xsetup.backup-gen
+  xsetup.backup
   xsetup.drop-and-migrate-gen-db
   xsetup.build-tools
   { { {
@@ -346,7 +346,7 @@ x.gen.pregen() {
 
     remove_schemas_marked_to_delete
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  xsetup.backup-gen.cleanup
+  xsetup.backup.cleanup
 }
 
 update_roles_and_scopes() {
@@ -583,7 +583,7 @@ clean_yq_array() {
 
 # Run post-generation scripts in the internal package.
 x.gen.postgen() {
-  xsetup.backup-gen
+  xsetup.backup
   xsetup.drop-and-migrate-gen-db
   xsetup.build-tools
   { { {
@@ -592,12 +592,12 @@ x.gen.postgen() {
     echo "Running generation"
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  xsetup.backup-gen.cleanup
+  xsetup.backup.cleanup
 }
 
 # Generate type-safe Go code from SQL.
 x.gen.sqlc() {
-  xsetup.backup-gen
+  xsetup.backup
   xsetup.drop-and-migrate-gen-db
   { { {
     echo "Running generation"
@@ -612,12 +612,12 @@ x.gen.sqlc() {
       -t "$GOWRAP_TEMPLATES_DIR/sqlc.tmpl" \
       -o "$PG_REPO_DIR/sqlc_querier_wrapper.gen.go"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  xsetup.backup-gen.cleanup
+  xsetup.backup.cleanup
 }
 
 # Automatically generate CRUD and index queries with joins based on existing indexes from a Postgres schema.
 x.gen.xo() {
-  xsetup.backup-gen
+  xsetup.backup
   xsetup.drop-and-migrate-gen-db
   { { {
     cache_all "$CACHE/xo.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/* && return 0
@@ -650,12 +650,12 @@ x.gen.xo() {
       -name "*.go")
     goimports -w $files
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  xsetup.backup-gen.cleanup
+  xsetup.backup.cleanup
 }
 
 # Generate a type-safe SQL builder.
 x.gen.jet() {
-  xsetup.backup-gen
+  xsetup.backup
   xsetup.drop-and-migrate-gen-db
   xsetup.build-tools
   { { {
@@ -674,12 +674,12 @@ x.gen.jet() {
       rm -r "./$gen_path/$GEN_POSTGRES_DB/"
     }
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  xsetup.backup-gen.cleanup
+  xsetup.backup.cleanup
 }
 
 # Generate interface wrappers with common logic: tracing, timeout...
 x.gen.gowrap() {
-  xsetup.backup-gen
+  xsetup.backup
   { { {
     local repos="$REPOS_DIR/repos.go"
 
@@ -729,7 +729,7 @@ x.gen.gowrap() {
       echo "Updated repo interfaces: ${updated_ifaces[*]}"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  xsetup.backup-gen.cleanup
+  xsetup.backup.cleanup
 }
 
 # Generate Go client and server from spec.
@@ -840,7 +840,7 @@ x.gen.proto() {
 
 # Run frontend code generation.
 x.gen.frontend() {
-  xsetup.backup-gen
+  xsetup.backup
   { { {
     export PATH=frontend/node_modules/.bin:$PATH
 
@@ -876,12 +876,12 @@ export type schemas = components['schemas']
 
     wait_without_error || err Failed jobs
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  xsetup.backup-gen.cleanup
+  xsetup.backup.cleanup
 }
 
 # Run e2e code generation.
 x.gen.e2e() {
-  xsetup.backup-gen
+  xsetup.backup
   { { {
     source .env.e2e
 
@@ -897,13 +897,13 @@ x.gen.e2e() {
 
     orval --config $orval_config
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  xsetup.backup-gen.cleanup
+  xsetup.backup.cleanup
 }
 
 # Run all codegen and postgen commands for the project.
 x.gen() {
   [[ -n $X_NO_GEN ]] && return
-  xsetup.backup-gen # Modification of vars inside would be local to subshell (caused by pipeline)
+  xsetup.backup # Modification of vars inside would be local to subshell (caused by pipeline)
   xsetup.drop-and-migrate-gen-db
   xsetup.build-tools
   { { {
@@ -946,7 +946,7 @@ x.gen() {
 
     wait_without_error || err Failed jobs
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  xsetup.backup-gen.cleanup
+  xsetup.backup.cleanup
 }
 
 # Build code generation custom tools.
@@ -996,6 +996,40 @@ x.lint.go() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
+exhaustruct_lint() {
+  lint_config=$(
+    cat <<EOF
+linters:
+  disable-all: true
+  enable:
+    - exhaustruct
+linters-settings:
+  exhaustruct:
+    # lint struct usage in all packages that use them
+    include:
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*CreateParams$'
+# in case we want to run a linter on test files only
+# issues:
+#   exclude-rules:
+#     - path-except: _test\.go
+#       linters:
+#         - exhaustruct
+EOF
+  )
+
+  # postgresqltestutil: ideally tests in rest, service and repo  use Random<...>CreateParams directly or indirectly
+  #                     via fixture factories, so we always want these up to date when a new field is added.
+  # services: may construct db createparams from specific service models
+  local packages=("
+  internal/services
+  internal/repos/postgresql/postgresqltestutil
+  ")
+
+  for package in ${packages[@]}; do
+    LOG_LEVEL=error golangci-lint run --config <(echo "$lint_config") $package
+  done
+}
+
 # Format frontend files.
 x.lint.frontend() {
   { { {
@@ -1033,7 +1067,7 @@ x.lint.sql() {
 # Run required backend pre-test setup: services, database cleanup, codegen...
 # Can be called independently, e.g. before running tests through an IDE.
 x.test.backend.setup() {
-  xsetup.backup-gen # Modification of vars inside would be local to subshell (caused by pipeline)
+  xsetup.backup # Modification of vars inside would be local to subshell (caused by pipeline)
   { { {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
@@ -1042,16 +1076,15 @@ x.test.backend.setup() {
     # no need to migrate, done on every test run internally
     docker.postgres.drop_and_recreate_db $POSTGRES_TEST_DB
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  xsetup.backup-gen.cleanup
+  xsetup.backup.cleanup
 }
 
 # Test backend. Accepts `go test` parameters.
 # Args: [...]
 x.test.backend() {
+  xsetup.backup
   { { {
-    # ideally rest, service and repo tests use Random<...>CreateParams directly or indirectly
-    # via fixture factories, so we always want these up to date when a new field is added
-    golangci-lint run --no-config --disable-all --enable=exhaustruct internal/repos/postgresql/postgresqltestutil
+    exhaustruct_lint
 
     x.test.xo
 
@@ -1068,6 +1101,7 @@ x.test.backend() {
     set +x
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  xsetup.backup.cleanup
 }
 
 # Test frontend.
@@ -1093,7 +1127,7 @@ x.test.frontend.watch() {
 # Run custom xo generation script tests. Accepts `go test` parameters.
 # Args: [...]
 x.test.xo() {
-  xsetup.backup-gen
+  xsetup.backup
   { { {
     POSTGRES_DB="$POSTGRES_TEST_DB"
     GEN_POSTGRES_DB="$POSTGRES_TEST_DB"
@@ -1133,7 +1167,7 @@ x.test.xo() {
       }
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  xsetup.backup-gen.cleanup
+  xsetup.backup.cleanup
 }
 
 # Test backend on file changes. Accepts `go test` parameters.
@@ -1266,7 +1300,10 @@ x.release() {
 # Creates a generic CRUD endpoint in the OpenAPI spec and generates related files.
 # Args: name
 x.dev-utils.create-crud() {
-  xsetup.backup-gen
+  # TODO: new command x.dev-utils.create-crud-tests
+  # since we need to project gen with compilable state after this gen.
+  # maybe we could x.gen right here once has_deleted_at is implemented.
+  xsetup.backup
   { { {
     local name="$1"
     test -z "$name" && err "A pascal cased name is required"
@@ -1322,17 +1359,11 @@ type Update${pascal_name}Request struct {
 
     update_roles_and_scopes
 
-    # TODO: could quickly sed in "$PG_REPO_GEN"/db/$lower_name.xo.go for struct (with contents)
-    # and if DeletedAt exists generate tmpls with has_deleted_at to use SoftDelete and include DeletedAt servicetestutil field
-
     local db_struct_fields=()
     go-utils.struct_fields "$pascal_name" "$PG_REPO_GEN/db/$lower_name.xo.go" db_struct_fields
-    export has_deleted_at=false
     if [[ " ${db_struct_fields[*]} " =~ " DeletedAt " ]]; then
-      export has_deleted_at=true
+      export has_deleted_at=1
     fi
-
-    echo db entity has deleted_at: $has_deleted_at
 
     local file="internal/services/service_${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
@@ -1375,7 +1406,7 @@ ${pascal_name} *${pascal_name}" "$services_path"
     # TODO: create base for repo indexedqueries tests and api, service tests.
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
-  xsetup.backup-gen.cleanup
+  xsetup.backup.cleanup
 
 }
 
@@ -2032,10 +2063,10 @@ while [[ "$#" -gt 0 ]]; do
     # Use in case of compilation errors that depend on generated code.
     # A clean gen run is required afterwards.
     export X_IGNORE_BUILD_ERRORS=1
-    # export X_NO_CACHE=1 # on failed gen $CACHE is cleared, shouldn't be necessary
+    # export X_NO_BACKUP=1 # on failed gen $CACHE is cleared, shouldn't be necessary
     ;;
   --x-force-regen)
-    # Removes generation cache, forcing a new run.
+    # Removes code generation cache, forcing a new run.
     export X_FORCE_REGEN=1
     ;;
   --x-no-confirmation)
@@ -2046,10 +2077,10 @@ while [[ "$#" -gt 0 ]]; do
     # Skips code generation steps.
     export X_NO_GEN=1
     ;;
-  --x-no-cache)
-    # Code generation backup is not restored on failure.
+  --x-no-backup)
+    # Backup stash is not restored on failure.
     # Please ensure there are no uncommitted changes in the current branch beforehand.
-    export X_NO_CACHE=1
+    export X_NO_BACKUP=1
     ;;
   --x-env=*)
     # Environment to run commands in. Defaults to "dev".
@@ -2074,7 +2105,7 @@ done
 
 export BUILD_VERSION="$X_ENV-$(git rev-parse --verify HEAD)"
 
-readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_CACHE X_ENV
+readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV
 
 ######################## INIT ########################
 
@@ -2103,15 +2134,15 @@ exit-cleanup() {
   [[ "$exit_cleanup_calls" -gt 0 ]] && return
   ((exit_cleanup_calls++)) || true
 
-  if [[ $need_cache_restore = 1 && -z $X_NO_CACHE ]]; then
-    xsetup.backup-gen.restore
+  if [[ $need_backup_restore = 1 && -z $X_NO_BACKUP ]]; then
+    xsetup.backup.restore
   fi
 
   # shared cleanup regardless of gen success
   git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
   rm -f backup-gen-stash-dummy.txt
   mv .gitignore.bak .gitignore &>/dev/null || true
-  git branch -D "$gen_backup_branch" &>/dev/null || true
+  git branch -D "$backup_branch" &>/dev/null || true
 
   cd "$starting_cwd" || true
 }
