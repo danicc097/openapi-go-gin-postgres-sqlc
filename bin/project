@@ -2191,6 +2191,10 @@ exit-cleanup() {
   if [[ $need_backup_restore = 1 ]]; then
     test -z $X_NO_BACKUP && xsetup.backup.restore
     # IMPORTANT: need to remove cache regardless because we have failed commands that led to restore needed
+    # TODO: should keep track of what changed during run, e.g. gowrap will have created x new structs already
+    # saved to updated_ifaces var. therefore just remove caches for those interfaces only.
+    # For counterfeiter, should check if index exists for "${interface}-$repos" (ie we are mocking that iface)
+    # and if so convert to base64 and remove that cache file
     rm -rf "$CACHE"
   fi
 
