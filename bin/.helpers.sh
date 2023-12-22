@@ -284,6 +284,7 @@ ensure_envvars_set() {
   { ((n_missing != 0)) && exit 1; } || true
 }
 
+# FIXME:
 get_function_name_in_line_number() {
   local line_number="$1"
   local script_file="$2"
@@ -311,15 +312,15 @@ show_tracebacks() {
   local err_code="$?"
   set +o xtrace
   local bash_command=${BASH_COMMAND}
-  function_name=$(get_function_name_in_line_number ${BASH_LINENO[0]} ${BASH_SOURCE[1]})
-  if [[ -n $function_name ]]; then
-    function_name="[$function_name]"
-  fi
+  # function_name=$(get_function_name_in_line_number ${BASH_LINENO[0]} ${BASH_SOURCE[1]})
+  # if [[ -n $function_name ]]; then
+  #   function_name="[$function_name]"
+  # fi
 
   if [[ $bash_command != xlog* && $bash_command != xerr* && ${#FUNCNAME[@]} -gt 2 ]]; then
-    echo
+    echo >&2
     printf "${RED}%0.s-${OFF}" $(seq "80") >&2
-    echo
+    echo >&2
     echo "${RED}Error in ${YELLOW}${BASH_SOURCE[1]##"$TOP_LEVEL_DIR/"}:${BASH_LINENO[0]}${OFF} ${CYAN}$function_name${OFF} (exited with status $err_code)${OFF}" >&2
     echo "${RED}Traceback of ${BASH_SOURCE[1]} (most recent call last):${OFF}" >&2
     for ((i = 0; i < ${#FUNCNAME[@]} - 1; i++)); do
@@ -344,6 +345,8 @@ cache_all() {
     echo "Skipping generation (cached). Force regen with --x-force-regen"
     return 0
   fi
+
+  true >"$output_file"
 
   for arg in "$@"; do
     if test -d "$arg"; then

@@ -118,6 +118,12 @@ xsetup.build-tools() {
 
 backup_branch="backup-gen-$(uuidgen)"
 
+invalidate_current_cache() {
+  rm -rf "$CACHE"
+}
+
+# Create a backup stash with current changes.
+# It is restored on error unless --x-no-backup flag is passed.
 xsetup.backup() {
   test -n "$xsetup_backup_gen_caller" && return
 
@@ -146,11 +152,14 @@ xsetup.backup.cleanup() {
 }
 
 xsetup.backup.restore() {
-  echo "Restoring previous changes (branch $backup_branch)..."
+  echo "
+Restoring previous changes (branch $backup_branch)..."
   wait # for any pending job
 
   git reset --hard && git clean -df &>/dev/null
-  rm -rf "$CACHE" # else `already exists, no checkout` upon stash apply since we have just reset gitignore
+  # FIXME: if not removing the whole cache folder we get `already exists, no checkout` upon stash apply since we have just reset gitignore
+  # invalidate_current_cache will not delete everything so we will get this error again.
+  invalidate_current_cache
   git stash apply "stash^{/$backup_stash_name}" &>/dev/null
 }
 
@@ -787,13 +796,14 @@ x.gen.counterfeiter() {
       iface="${key%%-*}"
       iface_content="$(go-utils.get_interface_methods $iface $input_path)"
 
-      cache_entry_path="$cache/$(echo "$key" | base64)"
-      if diff "$cache_entry_path" <(echo "$iface_content") &>/dev/null; then
+      cache_entry_dir="$cache/$(echo $input_path | base64)" # so we can rm -rf $CACHE/*/$interface only when invalidating on failed gen
+      mkdir -p "$cache_entry_dir"
+      if diff "$cache_entry_dir/$iface" <(echo "$iface_content") &>/dev/null; then
         [[ $X_FORCE_REGEN -eq 0 ]] && continue
       fi
 
       counterfeiter -o "${ifaces[$key]}" "$input_path" "$iface" 2>&1 &
-      echo "$iface_content" >"$cache_entry_path"
+      echo "$iface_content" >"$cache_entry_dir/$iface"
       updated_ifaces+=("$key")
     done
 
@@ -2191,11 +2201,11 @@ exit-cleanup() {
   if [[ $need_backup_restore = 1 ]]; then
     test -z $X_NO_BACKUP && xsetup.backup.restore
     # IMPORTANT: need to remove cache regardless because we have failed commands that led to restore needed
-    # TODO: should keep track of what changed during run, e.g. gowrap will have created x new structs already
-    # saved to updated_ifaces var. therefore just remove caches for those interfaces only.
-    # For counterfeiter, should check if index exists for "${interface}-$repos" (ie we are mocking that iface)
-    # and if so convert to base64 and remove that cache file
-    rm -rf "$CACHE"
+    # TODO: should keep track of what changed during run, e.g. gowrap/counterfeiter will have created x new structs already
+    # saved to updated_ifaces (append to .generate.cache/updated_ifaces since we have subshells all over. delete the file on backup.cleanup)
+    # TODO: make sure xsetup is run everywhere gen is run
+    # therefore just remove caches for those interfaces only `rm -rf $CACHE/**/$iface`
+    invalidate_current_cache
   fi
 
   # shared cleanup regardless of gen success
