@@ -1,4 +1,5 @@
 .direnv
+.generate.cache*
 .cache-stash
 __debug_bin*
 **/*.so
