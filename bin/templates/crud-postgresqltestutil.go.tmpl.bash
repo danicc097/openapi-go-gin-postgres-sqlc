@@ -9,12 +9,12 @@ import (
 	\"github.com/stretchr/testify/require\"
 )
 
-func NewRandom${pascal_name}(t *testing.T, d db.DBTX, projectID db.ProjectID) (*db.${pascal_name}, error) {
+func NewRandom${pascal_name}(t *testing.T, d db.DBTX) (*db.${pascal_name}, error) {
 	t.Helper()
 
 	${camel_name}Repo := postgresql.New${pascal_name}()
 
-	ucp := Random${pascal_name}CreateParams(t, projectID)
+	ucp := Random${pascal_name}CreateParams(t)
 
 	${camel_name}, err := ${camel_name}Repo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, \"failed to create random entity\") // IMPORTANT: must fail. If testing actual failures use random create params instead
@@ -22,7 +22,7 @@ func NewRandom${pascal_name}(t *testing.T, d db.DBTX, projectID db.ProjectID) (*
 	return ${camel_name}, nil
 }
 
-func Random${pascal_name}CreateParams(t *testing.T, projectID db.ProjectID) *db.${pascal_name}CreateParams {
+func Random${pascal_name}CreateParams(t *testing.T) *db.${pascal_name}CreateParams {
 	t.Helper()
 
 	return &db.${pascal_name}CreateParams{

@@ -687,7 +687,7 @@ x.gen.jet() {
   xsetup.backup.cleanup
 }
 
-# Generate interface wrappers with common logic: tracing, timeout...
+# Generate repo interface wrappers with common logic: tracing, timeout...
 x.gen.gowrap() {
   xsetup.backup
   { { {
@@ -1457,6 +1457,7 @@ $formatted_string" "$service_repos_path"
 ${pascal_name}: ${lower_name}repo," "$service_repos_path"
 
     generate_repo_constructor
+    # TODO: accept repo interface name to force gen on that one only instead of forcing regen
     x.gen.gowrap
 
     # TODO: create base for repo indexedqueries tests and api, service tests.
@@ -1479,8 +1480,19 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
 }
 
 x.dev-utils.create-crud-tests() {
-  echo Would have run x.dev-utils.create-crud-tests
-  :
+  local name="$1"
+  test -z "$name" && err "A pascal cased name is required"
+
+  export pascal_name="$(to_pascal $name)"
+  export camel_name="$(to_camel $name)"
+  export kebab_name="$(to_kebab $name)"
+  export sentence_name="$(to_lower_sentence $name)"
+  export snake_name="$(to_snake $name)"
+  export lower_name="$(to_lower $name)"
+
+  local file="internal/repos/postgresql/repo_${snake_name}_test.go"
+  test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+  bash "$BIN_TEMPLATES_DIR"/crud-repo-tests.go.tmpl.bash >"$file"
 }
 
 # Shows existing user api keys.

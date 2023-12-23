@@ -22,7 +22,7 @@ type Create${pascal_name}Fixture struct {
 
 // Create${pascal_name} creates a new random ${sentence_name} with the given configuration.
 func (ff *FixtureFactory) Create${pascal_name}(ctx context.Context, params Create${pascal_name}Params) (*Create${pascal_name}Fixture, error) {
-	randomRepoCreateParams := postgresqltestutil.Random${pascal_name}CreateParams(ff.t, params.ProjectID)
+	randomRepoCreateParams := postgresqltestutil.Random${pascal_name}CreateParams(ff.t) // , params.ProjectID
 	// don't use repos for tests
 	${camel_name}, err := ff.svc.${pascal_name}.Create(ctx, ff.db, randomRepoCreateParams)
 	if err != nil {
