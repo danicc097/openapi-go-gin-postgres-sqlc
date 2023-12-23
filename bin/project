@@ -39,6 +39,7 @@ readonly OPID_AUTH_PATH="operationAuth.gen.json"
 readonly REST_MODELS="internal/rest/models.go"
 readonly PG_REPO_GEN="$PG_REPO_DIR/gen"
 readonly CACHE=".generate.cache"
+readonly CACHE_BACKUP="$CACHE-backup"
 readonly SWAGGER_UI_DIR="internal/static/swagger-ui"
 readonly MAX_FNAME_LOG_LEN=13
 
@@ -118,16 +119,17 @@ xsetup.build-tools() {
 
 backup_branch="backup-gen-$(uuidgen)"
 
-invalidate_current_cache() {
+gen-cache.backup() {
+  cp -r "$CACHE" "$CACHE_BACKUP" || true
+}
+
+gen-cache.restore() {
   rm -rf "$CACHE"
+  mv "$CACHE_BACKUP" "$CACHE" || true
 }
 
 # Create a backup stash with current changes.
-# It is restored on error unless --x-no-backup flag is passed.
-# TODO: cache is always restored on error, failed runs should never update it.
-# TODO: instead of using branch for cache maybe creating a gitignored .cache-stash
-# is much easier, and we can simply `mv .cache-stash "$CACHE"` if need_backup_restore,
-# else remove it.
+# Uncommitted changes are restored on error unless --x-no-backup flag is passed.
 xsetup.backup() {
   test -n "$xsetup_backup_gen_caller" && return
 
@@ -138,8 +140,7 @@ xsetup.backup() {
   backup_stash_name="backup-stash-$backup_branch"
 
   echo "$backup_branch" >backup-gen-stash-dummy.txt
-  cp .gitignore .gitignore.bak
-  sed -i "s|^\*\.cache|#\*\.cache|" .gitignore # include "$CACHE" in stash
+  gen-cache.backup
   git stash push -m "$backup_stash_name" --include-untracked || err "Could not backup untracked changes before codegen"
   git checkout -b "$backup_branch" &>/dev/null
   git stash apply "stash^{/$backup_stash_name}" &>/dev/null
@@ -1458,7 +1459,7 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
     # TODO: create base for repo indexedqueries tests and api, service tests.
     # can generate for create, indexed queries and delete easily.
     # maybe update should just be tested in rest layer so its tested once and we see conditional struct filling works
-    if gofumpt -w "$services_path" "$service_repos_path" && golangci-lint run --no-config --disable-all --enable=typecheck; then
+    if gofumpt -w "$services_path" "$service_repos_path" && golangci-lint run --no-config --disable-all --enable=typecheck --timeout=10m; then
       x.gen
       x.dev-utils.create-crud-tests $name
     else
@@ -2205,21 +2206,13 @@ exit-cleanup() {
 
   if [[ $need_backup_restore = 1 ]]; then
     test -z $X_NO_BACKUP && xsetup.backup.restore
-    # IMPORTANT: need to remove cache regardless because we have failed commands that led to restore needed
-    # (!NOT NEEDED AT ALL)  should keep track of what changed during run, e.g. gowrap/counterfeiter will have created x new structs already
-    # saved to updated_ifaces (append to .generate.cache/updated_ifaces since we have subshells all over. delete the file on backup.cleanup)
-    # TODO: make sure xsetup is run everywhere gen is run
-    # therefore just remove caches for those interfaces only `rm -rf $CACHE/**/$iface`
-    # IMPORTANT UPDATE: ^ we are already restoring cache folder contents before gen... but only when backup.restore is called
-    # if backup.restore is not called, we want to restore that cache folder in backup branch regardless.
-    # maybe its easiest to forget about branches and create a gitignored zip for .cache which always gets restored when $need_backup_restore
-    invalidate_current_cache
+    # IMPORTANT: if any command failed always restore gen cache, regardless of flags passed.
+    gen-cache.restore
   fi
 
   # shared cleanup regardless of gen success
   git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
   rm -f backup-gen-stash-dummy.txt
-  mv .gitignore.bak .gitignore &>/dev/null || true
   git branch -D "$backup_branch" &>/dev/null || true
 
   cd "$starting_cwd" || true
