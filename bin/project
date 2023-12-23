@@ -120,6 +120,8 @@ xsetup.build-tools() {
 
 backup_branch="backup-gen-$(uuidgen)"
 
+# TODO: when running gen and then stashing changes, or switching branches,
+# cache should be removed.
 gen-cache.backup() {
   cp -r "$CACHE" "$CACHE_BACKUP" || true
 }
