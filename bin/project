@@ -2202,6 +2202,9 @@ trap 'exit-cleanup $LINENO' EXIT HUP INT TERM # EXIT (0) executed on exit from t
 exit_cleanup_calls=0
 
 exit-cleanup() {
+  # TODO: see https://stackoverflow.com/a/67498490/11995537
+  # we must block all user signals and let exit cleanup run completely
+  trap 'echo got SIGINT' SIGINT
   [[ "$exit_cleanup_calls" -gt 0 ]] && return
   ((exit_cleanup_calls++)) || true
 
@@ -2212,7 +2215,7 @@ exit-cleanup() {
   fi
 
   # shared cleanup regardless of gen success
-  git checkout "$CURRENT_BRANCH" || err "Could not checkout $CURRENT_BRANCH branch"
+  git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
   rm -f backup-gen-stash-dummy.txt
   git branch -D "$backup_branch" &>/dev/null || true
 
