@@ -2211,7 +2211,7 @@ trap 'show_tracebacks' ERR
 trap killgroup EXIT HUP INT TERM
 trap errtrap SIGUSR1
 # may get called multiple times
-trap 'exit-cleanup $LINENO' EXIT HUP INT TERM # EXIT (0) executed on exit from the shell
+trap 'exit-cleanup $LINENO & wait' EXIT HUP INT TERM # EXIT (0) executed on exit from the shell
 
 exit_cleanup_calls=0
 
