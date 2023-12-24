@@ -2235,6 +2235,7 @@ exit-cleanup() {
 
     cd "$starting_cwd" || true
   } & # ensure cleanup is always run at exit
+  wait
 }
 
 killgroup() {
