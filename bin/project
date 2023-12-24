@@ -2211,29 +2211,30 @@ trap 'show_tracebacks' ERR
 trap killgroup EXIT HUP INT TERM
 trap errtrap SIGUSR1
 # may get called multiple times
-trap 'exit-cleanup $LINENO & wait' EXIT HUP INT TERM # EXIT (0) executed on exit from the shell
+trap 'exit-cleanup $LINENO' EXIT HUP INT TERM # EXIT (0) executed on exit from the shell
 
 exit_cleanup_calls=0
 
 exit-cleanup() {
-  # TODO: see https://stackoverflow.com/a/67498490/11995537
-  # we must block all user signals and let exit cleanup run completely
-  trap 'echo got SIGINT' SIGINT
+  # prevent exiting in foreground while we check if we should run cleanup
+  trap 'echo ignoring SIGINT' SIGINT
   [[ "$exit_cleanup_calls" -gt 0 ]] && return
   ((exit_cleanup_calls++)) || true
 
-  if [[ $need_backup_restore = true ]]; then
-    test -z $X_NO_BACKUP && xsetup.backup.restore
-    # IMPORTANT: if any command failed always restore gen cache, regardless of flags passed.
-    gen-cache.restore
-  fi
+  {
+    if [[ $need_backup_restore = true ]]; then
+      test -z $X_NO_BACKUP && xsetup.backup.restore
+      # IMPORTANT: if any command failed always restore gen cache, regardless of flags passed.
+      gen-cache.restore
+    fi
 
-  # shared cleanup regardless of gen success
-  git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
-  rm -f backup-gen-stash-dummy.txt
-  git branch -D "$backup_branch" &>/dev/null || true
+    # shared cleanup regardless of gen success
+    git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
+    rm -f backup-gen-stash-dummy.txt
+    git branch -D "$backup_branch" &>/dev/null || true
 
-  cd "$starting_cwd" || true
+    cd "$starting_cwd" || true
+  } & # ensure cleanup is always run at exit
 }
 
 killgroup() {
