@@ -54,8 +54,8 @@ func Test${pascal_name}_Update(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			u := postgresql.New${pascal_name}()
-			got, err := u.Update(context.Background(), testPool, tc.args.id, &tc.args.params)
+			r := postgresql.New${pascal_name}()
+			got, err := r.Update(context.Background(), testPool, tc.args.id, &tc.args.params)
 			if err != nil && tc.errContains == \"\" {
 				t.Errorf(\"unexpected error: %v\", err)
 
@@ -73,7 +73,7 @@ func Test${pascal_name}_Update(t *testing.T) {
 			}
 
 			// NOTE: ignore unwanted fields
-			// got.UpdatedAt = ${lower_name}.UpdatedAt
+			// got.UpdatedAt = want.UpdatedAt
 
 			assert.Equal(t, tc.want, got)
 		})
@@ -177,10 +177,9 @@ func Test${pascal_name}_Create(t *testing.T) {
 		got, err := ${camel_name}Repo.Create(context.Background(), testPool, &args.params)
 		require.NoError(t, err)
 
-		// NOTE: ignore unwanted fields
-		// got.UpdatedAt = ${lower_name}.UpdatedAt
-
-		assert.Equal(t, want, got)
+$(for f in ${db_create_params_struct_fields[@]}; do
+  echo "		assert.Equal(t, want.$f, got.$f)"
+done)
 	})
 
 	// implement if needed
