@@ -1532,7 +1532,7 @@ x.setup.traefik() {
 
     x.setup.mkcert
 
-    git clone --depth=1 https://github.com/danicc097/traefik-bootstrap.git "$1"
+    git clone --depth=1 https://github.com/danicc097/traefik-bootstrap.git "$1" || confirm "$1 already exists. Continue?"
     docker network create traefik-net || true
     mkdir -p "$1"/traefik/certificates
     cp $CERTIFICATES_DIR/* "$1"/traefik/certificates
