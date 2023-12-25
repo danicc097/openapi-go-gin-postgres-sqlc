@@ -26,4 +26,7 @@ export const Scope = {
   'work-item-tag:edit': 'work-item-tag:edit',
   'work-item-tag:delete': 'work-item-tag:delete',
   'work-item:review': 'work-item:review',
+  'entity-notification:create': 'entity-notification:create',
+  'entity-notification:edit': 'entity-notification:edit',
+  'entity-notification:delete': 'entity-notification:delete',
 } as const

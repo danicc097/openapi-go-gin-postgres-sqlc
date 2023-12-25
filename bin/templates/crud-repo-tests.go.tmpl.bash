@@ -177,7 +177,7 @@ func Test${pascal_name}_Create(t *testing.T) {
 		got, err := ${camel_name}Repo.Create(context.Background(), testPool, &args.params)
 		require.NoError(t, err)
 
-    // ${db_struct_fields[*]}
+    // $(echo "filds: ${db_struct_fields[*]}")
 		$(for f in ${db_struct_fields[@]}; do
   echo "assert.Equal(t, want.$f, got.$f)"
 done)

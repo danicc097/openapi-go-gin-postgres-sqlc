@@ -1458,7 +1458,7 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
       2. Run $CMD again with --x-no-backup flag
       3. Fix typecheck errors manually
       4. Run 'project gen', fix errors if any
-      5. Run 'project dev-utils.create-crud-tests $name'"
+      5. Run 'project dev-utils.create-crud-tests $1'"
     fi
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

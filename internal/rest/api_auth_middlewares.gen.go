@@ -27,6 +27,16 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 					},
 				}),
 		}
+	case CreateEntityNotification:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					RequiredScopes: models.Scopes{
+						models.Scope("entity-notification:create"),
+					},
+				}),
+		}
 	case CreateTeam:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
@@ -64,6 +74,16 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 					},
 				}),
 		}
+	case DeleteEntityNotification:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					RequiredScopes: models.Scopes{
+						models.Scope("entity-notification:delete"),
+					},
+				}),
+		}
 	case DeleteTeam:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
@@ -98,6 +118,10 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthenticated(),
 		}
 	case GetCurrentUser:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case GetEntityNotification:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
@@ -164,6 +188,16 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 				AuthRestriction{
 					RequiredScopes: models.Scopes{
 						models.Scope("activity:edit"),
+					},
+				}),
+		}
+	case UpdateEntityNotification:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					RequiredScopes: models.Scopes{
+						models.Scope("entity-notification:edit"),
 					},
 				}),
 		}

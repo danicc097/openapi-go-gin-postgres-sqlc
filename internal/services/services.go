@@ -9,17 +9,18 @@ import (
 )
 
 type Services struct {
-	User            *User
-	Project         *Project
-	Team            *Team
-	DemoWorkItem    *DemoWorkItem
-	DemoTwoWorkItem *DemoTwoWorkItem
-	WorkItemTag     *WorkItemTag
-	Authorization   *Authorization
-	Authentication  *Authentication
-	Notification    *Notification
-	TimeEntry       *TimeEntry
-	WorkItemType    *WorkItemType
+	EntityNotification *EntityNotification
+	User               *User
+	Project            *Project
+	Team               *Team
+	DemoWorkItem       *DemoWorkItem
+	DemoTwoWorkItem    *DemoTwoWorkItem
+	WorkItemTag        *WorkItemTag
+	Authorization      *Authorization
+	Authentication     *Authentication
+	Notification       *Notification
+	TimeEntry          *TimeEntry
+	WorkItemType       *WorkItemType
 }
 
 func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Services {
@@ -37,18 +38,20 @@ func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Ser
 	if err != nil {
 		panic(fmt.Sprintf("NewAuthorization: %v", err))
 	}
+	entitynotificationsvc := NewEntityNotification(logger, repos)
 
 	return &Services{
-		User:            usersvc,
-		Team:            teamsvc,
-		Project:         projectsvc,
-		DemoWorkItem:    demoworkitemsvc,
-		DemoTwoWorkItem: demotwoworkitemsvc,
-		WorkItemTag:     workitemtagsvc,
-		Authorization:   authzsvc,
-		Authentication:  authnsvc,
-		Notification:    notificationsvc,
-		TimeEntry:       timeentrysvc,
-		WorkItemType:    workitemtypesvc,
+		EntityNotification: entitynotificationsvc,
+		User:               usersvc,
+		Team:               teamsvc,
+		Project:            projectsvc,
+		DemoWorkItem:       demoworkitemsvc,
+		DemoTwoWorkItem:    demotwoworkitemsvc,
+		WorkItemTag:        workitemtagsvc,
+		Authorization:      authzsvc,
+		Authentication:     authnsvc,
+		Notification:       notificationsvc,
+		TimeEntry:          timeentrysvc,
+		WorkItemType:       workitemtypesvc,
 	}
 }
