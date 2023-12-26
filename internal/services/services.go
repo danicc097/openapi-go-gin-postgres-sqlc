@@ -44,9 +44,9 @@ func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Ser
 	// FIXME: the only way is to have another service
 	// with the logic, which gets really ugly really quickly,
 	// dep injection (pass services within services as function params only when cyclic dep found, meanwhile pass
-	// to constructor)
-	usersvc.workitemtagsvc = workitemtagsvc
-	workitemtagsvc.usersvc = usersvc
+	// to constructor) - or create needed svcs within function
+	// usersvc.workitemtagsvc = workitemtagsvc
+	// workitemtagsvc.usersvc = usersvc
 
 	return &Services{
 		User:            usersvc,

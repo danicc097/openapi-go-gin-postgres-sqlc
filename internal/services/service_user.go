@@ -320,7 +320,10 @@ func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID db.UserID, team
 }
 
 func (u *User) UserInProject(ctx context.Context, d db.DBTX, userID db.UserID, projectID db.ProjectID) error {
-	// FIXME: u.workitemtagsvc.logger.Infof("this panics miserably when called from within wit svc")
+	witSvc := NewWorkItemTag(u.logger, u.repos) // can't be done in constructor, inf recursion if its for solving a cyclic dep
+	witSvc.SetUserService(u)
+	// FIXME:
+	witSvc.logger.Infof("this panics miserably when called from within wit svc")
 	userInProject, err := u.repos.User.IsUserInProject(ctx, d, db.IsUserInProjectParams{
 		UserID:    userID.UUID,
 		ProjectID: int32(projectID),
