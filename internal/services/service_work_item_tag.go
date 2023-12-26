@@ -12,8 +12,9 @@ import (
 )
 
 type WorkItemTag struct {
-	logger *zap.SugaredLogger
-	repos  *repos.Repos
+	logger  *zap.SugaredLogger
+	repos   *repos.Repos
+	usersvc *User
 }
 
 // NewWorkItemTag returns a new WorkItemTag service.
@@ -22,6 +23,10 @@ func NewWorkItemTag(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItemTag 
 		logger: logger,
 		repos:  repos,
 	}
+}
+
+func (wit *WorkItemTag) SetUserService(usersvc *User) {
+	wit.usersvc = usersvc
 }
 
 // ByID gets a work item tag by ID.
@@ -91,16 +96,8 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller *db.User, 
 		return nil, fmt.Errorf("work item tag not found: %w", err)
 	}
 
-	userInProject, err := wit.repos.User.IsUserInProject(ctx, d, db.IsUserInProjectParams{
-		UserID:    caller.UserID.UUID,
-		ProjectID: int32(witObj.ProjectID),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("repos.User.IsUserInProject: %w", err)
-	}
-
-	if !userInProject {
-		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "user is not a member of project %q", internal.ProjectNameByID[witObj.ProjectID])
+	if err := wit.usersvc.UserInProject(ctx, d, caller.UserID, witObj.ProjectID); err != nil {
+		return nil, fmt.Errorf("user project check: %w", err)
 	}
 
 	witObj, err = wit.repos.WorkItemTag.Update(ctx, d, id, params)

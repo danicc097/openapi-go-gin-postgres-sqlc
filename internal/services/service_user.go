@@ -15,9 +15,10 @@ import (
 )
 
 type User struct {
-	logger   *zap.SugaredLogger
-	repos    *repos.Repos
-	authzsvc *Authorization
+	logger         *zap.SugaredLogger
+	repos          *repos.Repos
+	authzsvc       *Authorization
+	workitemtagsvc *WorkItemTag
 }
 
 // NOTE: the most important distinction about repositories is that they represent collections of entities. They do not represent database storage or caching or any number of technical concerns. Repositories represent collections. How you hold those collections is simply an implementation detail.
@@ -45,6 +46,10 @@ func NewUser(logger *zap.SugaredLogger, repos *repos.Repos) *User {
 		repos:    repos,
 		authzsvc: authzsvc,
 	}
+}
+
+func (u *User) SetWorkItemTagService(workitemtagsvc *WorkItemTag) {
+	u.workitemtagsvc = workitemtagsvc
 }
 
 // Register registers a user.
@@ -310,6 +315,23 @@ func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID db.UserID, team
 	}
 
 	u.logger.Infof("user %q assigned to team %d", userID, teamID)
+
+	return nil
+}
+
+func (u *User) UserInProject(ctx context.Context, d db.DBTX, userID db.UserID, projectID db.ProjectID) error {
+	// FIXME: u.workitemtagsvc.logger.Infof("this panics miserably when called from within wit svc")
+	userInProject, err := u.repos.User.IsUserInProject(ctx, d, db.IsUserInProjectParams{
+		UserID:    userID.UUID,
+		ProjectID: int32(projectID),
+	})
+	if err != nil {
+		return fmt.Errorf("repos.User.IsUserInProject: %w", err)
+	}
+
+	if !userInProject {
+		return internal.NewErrorf(models.ErrorCodeUnauthorized, "user is not a member of project %q", internal.ProjectNameByID[projectID])
+	}
 
 	return nil
 }
