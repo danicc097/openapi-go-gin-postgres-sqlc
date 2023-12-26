@@ -200,5 +200,31 @@
     "scopes": null,
     "role": null,
     "requiresAuthentication": true
+  },
+  "CreateEntityNotification": {
+    "scopes": [
+      "entity-notification:create"
+    ],
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "GetEntityNotification": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "UpdateEntityNotification": {
+    "scopes": [
+      "entity-notification:edit"
+    ],
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "DeleteEntityNotification": {
+    "scopes": [
+      "entity-notification:delete"
+    ],
+    "role": null,
+    "requiresAuthentication": true
   }
 }

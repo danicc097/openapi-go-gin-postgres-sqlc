@@ -1279,7 +1279,10 @@
         "work-item-tag:create",
         "work-item-tag:edit",
         "work-item-tag:delete",
-        "work-item:review"
+        "work-item:review",
+        "entity-notification:create",
+        "entity-notification:edit",
+        "entity-notification:delete"
       ],
       "x-generated": "-",
       "description": "is generated from scopes.json keys."
@@ -1952,6 +1955,76 @@
       ],
       "x-generated": "-",
       "description": "is generated from kanban_steps table."
+    },
+    "CreateEntityNotificationRequest": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "topic": {
+          "$ref": "#/definitions/Topics"
+        }
+      },
+      "required": [
+        "id",
+        "message",
+        "topic"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateEntityNotificationRequest"
+    },
+    "UpdateEntityNotificationRequest": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "topic": {
+          "$ref": "#/definitions/Topics"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateEntityNotificationRequest"
+    },
+    "EntityNotification": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "entityNotificationID": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "topic": {
+          "$ref": "#/definitions/Topics"
+        }
+      },
+      "required": [
+        "entityNotificationID",
+        "id",
+        "message",
+        "topic",
+        "createdAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestEntityNotification"
     }
   },
   "properties": {
@@ -2176,6 +2249,15 @@
     },
     "DemoTwoKanbanSteps": {
       "$ref": "#/definitions/DemoTwoKanbanSteps"
+    },
+    "CreateEntityNotificationRequest": {
+      "$ref": "#/definitions/CreateEntityNotificationRequest"
+    },
+    "UpdateEntityNotificationRequest": {
+      "$ref": "#/definitions/UpdateEntityNotificationRequest"
+    },
+    "EntityNotification": {
+      "$ref": "#/definitions/EntityNotification"
     }
   }
 }

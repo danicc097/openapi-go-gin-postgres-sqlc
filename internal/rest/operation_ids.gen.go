@@ -18,6 +18,12 @@ const (
 	OpenapiYamlGet OperationID = "OpenapiYamlGet"
 	Ping           OperationID = "Ping"
 
+	// Operation IDs for the 'entityNotification' tag.
+	CreateEntityNotification OperationID = "CreateEntityNotification"
+	DeleteEntityNotification OperationID = "DeleteEntityNotification"
+	GetEntityNotification    OperationID = "GetEntityNotification"
+	UpdateEntityNotification OperationID = "UpdateEntityNotification"
+
 	// Operation IDs for the 'events' tag.
 	Events OperationID = "Events"
 

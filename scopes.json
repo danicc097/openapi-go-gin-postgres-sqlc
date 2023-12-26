@@ -37,5 +37,14 @@
   },
   "work-item:review": {
     "description": "Can be part of a work item with reviewer role."
+  },
+  "entity-notification:create": {
+    "description": "Can create entity notifications."
+  },
+  "entity-notification:edit": {
+    "description": "Can edit entity notifications."
+  },
+  "entity-notification:delete": {
+    "description": "Can delete entity notifications."
   }
 }
