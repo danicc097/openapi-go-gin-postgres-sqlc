@@ -1053,6 +1053,7 @@ linters-settings:
   exhaustruct:
     include:
       - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos\.Repos$'
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services\.Services$'
 EOF
   )
   LOG_LEVEL=error golangci-lint run --config <(echo "$lint_config") # ensure repo initialization is complete on all pkgs

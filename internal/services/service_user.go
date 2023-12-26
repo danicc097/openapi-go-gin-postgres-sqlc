@@ -15,10 +15,9 @@ import (
 )
 
 type User struct {
-	logger         *zap.SugaredLogger
-	repos          *repos.Repos
-	authzsvc       *Authorization
-	workitemtagsvc *WorkItemTag
+	logger   *zap.SugaredLogger
+	repos    *repos.Repos
+	authzsvc *Authorization
 }
 
 // NOTE: the most important distinction about repositories is that they represent collections of entities. They do not represent database storage or caching or any number of technical concerns. Repositories represent collections. How you hold those collections is simply an implementation detail.
@@ -46,10 +45,6 @@ func NewUser(logger *zap.SugaredLogger, repos *repos.Repos) *User {
 		repos:    repos,
 		authzsvc: authzsvc,
 	}
-}
-
-func (u *User) SetWorkItemTagService(workitemtagsvc *WorkItemTag) {
-	u.workitemtagsvc = workitemtagsvc
 }
 
 // Register registers a user.
@@ -320,10 +315,11 @@ func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID db.UserID, team
 }
 
 func (u *User) UserInProject(ctx context.Context, d db.DBTX, userID db.UserID, projectID db.ProjectID) error {
-	witSvc := NewWorkItemTag(u.logger, u.repos) // can't be done in constructor, inf recursion if its for solving a cyclic dep
-	witSvc.SetUserService(u)
+	// can't be done in constructor, inf recursion if its for solving a cyclic dep.
+	// if we need dep inj for some reason create service interface and pass as param
+	witSvc := NewWorkItemTag(u.logger, u.repos)
 	// FIXME:
-	witSvc.logger.Infof("this panics miserably when called from within wit svc")
+	witSvc.logger.Debug("this should not panic")
 	userInProject, err := u.repos.User.IsUserInProject(ctx, d, db.IsUserInProjectParams{
 		UserID:    userID.UUID,
 		ProjectID: int32(projectID),

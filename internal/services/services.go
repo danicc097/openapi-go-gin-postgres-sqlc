@@ -38,13 +38,9 @@ func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Ser
 		panic(fmt.Sprintf("NewAuthorization: %v", err))
 	}
 
-	// imagine cyclic dep between these 2, in which case this solves nothing.
-	// workitemtagsvc.usersvc may call a function that depends
+	// this would solve nothing. workitemtagsvc.usersvc may call a function that depends
 	// on workitemtagsvc.usersvc.workitemtagsvc being set.
-	// FIXME: the only way is to have another service
-	// with the logic, which gets really ugly really quickly,
-	// dep injection (pass services within services as function params only when cyclic dep found, meanwhile pass
-	// to constructor) - or create needed svcs within function
+	// Instead create needed svcs within the function that needs them.
 	// usersvc.workitemtagsvc = workitemtagsvc
 	// workitemtagsvc.usersvc = usersvc
 

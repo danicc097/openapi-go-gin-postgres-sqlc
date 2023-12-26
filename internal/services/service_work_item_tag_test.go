@@ -104,7 +104,6 @@ func TestWorkItemTag_Update(t *testing.T) {
 			}
 
 			w := services.NewWorkItemTag(logger, repos)
-			w.SetUserService(services.NewUser(logger, repos))
 			got, err := w.Update(ctx, tx, user.User, tc.args.id, tc.args.params)
 			if (err != nil) && tc.errorContains == "" {
 				t.Fatalf("unexpected error = %v", err)

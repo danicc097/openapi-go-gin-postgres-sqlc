@@ -12,9 +12,8 @@ import (
 )
 
 type WorkItemTag struct {
-	logger  *zap.SugaredLogger
-	repos   *repos.Repos
-	usersvc *User
+	logger *zap.SugaredLogger
+	repos  *repos.Repos
 }
 
 // NewWorkItemTag returns a new WorkItemTag service.
@@ -23,10 +22,6 @@ func NewWorkItemTag(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItemTag 
 		logger: logger,
 		repos:  repos,
 	}
-}
-
-func (wit *WorkItemTag) SetUserService(usersvc *User) {
-	wit.usersvc = usersvc
 }
 
 // ByID gets a work item tag by ID.
@@ -91,12 +86,14 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller *db.User, 
 func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller *db.User, id db.WorkItemTagID, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
+	usersvc := NewUser(wit.logger, wit.repos)
+
 	witObj, err := wit.repos.WorkItemTag.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("work item tag not found: %w", err)
 	}
 
-	if err := wit.usersvc.UserInProject(ctx, d, caller.UserID, witObj.ProjectID); err != nil {
+	if err := usersvc.UserInProject(ctx, d, caller.UserID, witObj.ProjectID); err != nil {
 		return nil, fmt.Errorf("user project check: %w", err)
 	}
 
