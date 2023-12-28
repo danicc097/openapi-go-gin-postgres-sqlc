@@ -11,7 +11,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -38,8 +37,8 @@ func TestEntityNotification_Update(t *testing.T) {
 	err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, team.TeamID)
 	require.NoError(t, err)
 
-	witCreateParams := postgresqltestutil.RandomEntityNotificationCreateParams(t)
-	wit, err := svc.EntityNotification.Create(context.Background(), testPool, witCreateParams)
+	entityNotificationCreateParams := postgresqltestutil.RandomEntityNotificationCreateParams(t)
+	wit, err := svc.EntityNotification.Create(context.Background(), testPool, entityNotificationCreateParams)
 	require.NoError(t, err)
 
 	type args struct {
@@ -48,7 +47,7 @@ func TestEntityNotification_Update(t *testing.T) {
 		withUserInProject bool
 	}
 
-	randomEntityNotificationCreateParams = postgresqltestutil.RandomEntityNotificationCreateParams(t)
+	randomEntityNotificationCreateParams := postgresqltestutil.RandomEntityNotificationCreateParams(t)
 
 	tests := []struct {
 		name          string
@@ -60,13 +59,18 @@ func TestEntityNotification_Update(t *testing.T) {
 			name: "updated correctly",
 			args: args{
 				params: &db.EntityNotificationUpdateParams{
-					Message: pointers.New("changed"),
+					ID:      &randomEntityNotificationCreateParams.ID,
+					Message: &randomEntityNotificationCreateParams.Message,
+					Topic:   &randomEntityNotificationCreateParams.Topic,
 				},
 				withUserInProject: false, //
 				id:                wit.EntityNotificationID,
 			},
 			want: db.EntityNotificationUpdateParams{
-				// TODO: generate by looping all fields from UpdateParams, with value pointers.New(randomEntityNotificationCreateParams.<field>) which is a superset of updateparams.
+				// generating fields based on randomized createparams since it's a superset of updateparams.
+				ID:      &randomEntityNotificationCreateParams.ID,
+				Message: &randomEntityNotificationCreateParams.Message,
+				Topic:   &randomEntityNotificationCreateParams.Topic,
 			},
 		},
 	}
@@ -77,7 +81,7 @@ func TestEntityNotification_Update(t *testing.T) {
 			t.Parallel()
 
 			repos := services.CreateTestRepos()
-			repos.Notification = repostesting.NewFakeNotification()
+			repos.Notification = repostesting.NewFakeNotification() // unless we want to test notification integration
 
 			ctx := context.Background()
 			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
@@ -107,7 +111,12 @@ func TestEntityNotification_Update(t *testing.T) {
 
 				return
 			}
-			// assert.Equal(t, *tc.want.Message, got.Message)
+
+			// loop all fields like in above
+			// assert.Equal(t, *tc.want.<Field>, got.<Field>)
+			assert.Equal(t, *tc.want.ID, got.ID)
+			assert.Equal(t, *tc.want.Message, got.Message)
+			assert.Equal(t, *tc.want.Topic, got.Topic)
 		})
 	}
 }

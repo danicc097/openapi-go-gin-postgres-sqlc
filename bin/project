@@ -1487,6 +1487,10 @@ load_exported_crud_gen_vars() {
   go-utils.struct_fields "${pascal_name}CreateParams" "$PG_REPO_GEN/db/$lower_name.xo.go" _db_create_params_struct_fields
   db_create_params_struct_fields="${_db_create_params_struct_fields[*]}"
   export db_create_params_struct_fields
+  _db_update_params_struct_fields=()
+  go-utils.struct_fields "${pascal_name}UpdateParams" "$PG_REPO_GEN/db/$lower_name.xo.go" _db_update_params_struct_fields
+  db_update_params_struct_fields="${_db_update_params_struct_fields[*]}"
+  export db_update_params_struct_fields
 }
 
 x.dev-utils.create-crud-tests() {
@@ -1496,6 +1500,9 @@ x.dev-utils.create-crud-tests() {
     local file="internal/repos/postgresql/repo_${snake_name}_test.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-repo-tests.go.tmpl.bash >"$file"
+    local file="internal/services/service_${snake_name}_test.go"
+    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+    bash "$BIN_TEMPLATES_DIR"/crud-service-tests.go.tmpl.bash >"$file"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

@@ -69,4 +69,3 @@ func (t *EntityNotification) Delete(ctx context.Context, d db.DBTX, id db.Entity
 
 	return entityNotification, nil
 }
-
