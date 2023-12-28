@@ -26,7 +26,7 @@ func Random${pascal_name}CreateParams(t *testing.T) *db.${pascal_name}CreatePara
 	t.Helper()
 
 	return &db.${pascal_name}CreateParams{
-		// TODO: fill in with testutil randomizer helpers
+		// TODO: fill in with testutil randomizer helpers or add parameters accordingly
 	}
 }
 "

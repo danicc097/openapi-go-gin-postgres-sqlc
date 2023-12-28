@@ -1385,18 +1385,18 @@ type Update${pascal_name}Request struct {
 
     update_roles_and_scopes
 
-    local file="internal/services/service_${snake_name}.go"
+    local file="internal/repos/postgresql/repo_${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
-    bash "$BIN_TEMPLATES_DIR"/crud-service.go.tmpl.bash >"$file"
-    file="internal/repos/postgresql/repo_${snake_name}.go"
+    bash "$BIN_TEMPLATES_DIR"/crud-repo.go.tmpl.bash >"$file" && gofumpt -w $file
+    file="internal/services/service_${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
-    bash "$BIN_TEMPLATES_DIR"/crud-repo.go.tmpl.bash >"$file"
+    bash "$BIN_TEMPLATES_DIR"/crud-service.go.tmpl.bash >"$file" && gofumpt -w $file
     file="internal/repos/postgresql/postgresqltestutil/${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
-    bash "$BIN_TEMPLATES_DIR"/crud-postgresqltestutil.go.tmpl.bash >"$file"
+    bash "$BIN_TEMPLATES_DIR"/crud-postgresqltestutil.go.tmpl.bash >"$file" && gofumpt -w $file
     file="internal/services/servicetestutil/${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
-    bash "$BIN_TEMPLATES_DIR"/crud-servicetestutil.go.tmpl.bash >"$file"
+    bash "$BIN_TEMPLATES_DIR"/crud-servicetestutil.go.tmpl.bash >"$file" && gofumpt -w $file
 
     echo "
 // ${pascal_name} defines the datastore/repository handling persisting ${sentence_name} records.
@@ -1487,6 +1487,10 @@ load_exported_crud_gen_vars() {
   go-utils.struct_fields "${pascal_name}CreateParams" "$PG_REPO_GEN/db/$lower_name.xo.go" _db_create_params_struct_fields
   db_create_params_struct_fields="${_db_create_params_struct_fields[*]}"
   export db_create_params_struct_fields
+  _db_update_params_struct_fields=()
+  go-utils.struct_fields "${pascal_name}UpdateParams" "$PG_REPO_GEN/db/$lower_name.xo.go" _db_update_params_struct_fields
+  db_update_params_struct_fields="${_db_update_params_struct_fields[*]}"
+  export db_update_params_struct_fields
 }
 
 x.dev-utils.create-crud-tests() {
@@ -1495,7 +1499,13 @@ x.dev-utils.create-crud-tests() {
 
     local file="internal/repos/postgresql/repo_${snake_name}_test.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
-    bash "$BIN_TEMPLATES_DIR"/crud-repo-tests.go.tmpl.bash >"$file"
+    bash "$BIN_TEMPLATES_DIR"/crud-repo-tests.go.tmpl.bash >"$file" && gofumpt -w $file
+    local file="internal/services/service_${snake_name}_test.go"
+    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+    bash "$BIN_TEMPLATES_DIR"/crud-service-tests.go.tmpl.bash >"$file" && gofumpt -w $file
+    local file="internal/rest/api_${snake_name}_test.go"
+    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+    bash "$BIN_TEMPLATES_DIR"/crud-api-tests.go.tmpl.bash >"$file" && gofumpt -w $file
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

@@ -1,3 +1,4 @@
+# shellcheck disable=SC2028,SC2154
 echo "package services
 
 import (

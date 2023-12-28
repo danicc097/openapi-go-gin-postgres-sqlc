@@ -11,9 +11,9 @@ import (
 
 type Create${pascal_name}Params struct {
 	ProjectID  db.ProjectID
-	// DeletedAt allows returning a soft deleted ${sentence_name} when a deleted_at column exists.
+	$([[ -z "$has_deleted_at" ]] && echo "// DeletedAt allows returning a soft deleted ${sentence_name} when a deleted_at column exists.
 	// Note that the service Delete call should make use of the SoftDelete method.
-	DeletedAt  *time.Time
+	DeletedAt  *time.Time")
 }
 
 type Create${pascal_name}Fixture struct {
@@ -29,12 +29,14 @@ func (ff *FixtureFactory) Create${pascal_name}(ctx context.Context, params Creat
 		return nil, fmt.Errorf(\"svc.${pascal_name}.Create: %w\", err)
 	}
 
+$([[ -z "$has_deleted_at" ]] && echo "
 	if params.DeletedAt != nil {
 		${camel_name}, err = ff.svc.${pascal_name}.Delete(ctx, ff.db, ${camel_name}.${pascal_name}ID)
 		if err != nil {
 			return nil, fmt.Errorf(\"svc.${pascal_name}.Delete: %w\", err)
 		}
 	}
+")
 
 	return &Create${pascal_name}Fixture{
 		${pascal_name}:   ${camel_name},

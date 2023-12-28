@@ -1,3 +1,4 @@
+# shellcheck disable=SC2028,SC2154
 echo "
 x-require-authenticated: &x-require-authenticated
 x-error-response: &x-error-response
