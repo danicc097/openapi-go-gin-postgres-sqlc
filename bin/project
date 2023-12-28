@@ -1391,12 +1391,6 @@ type Update${pascal_name}Request struct {
     file="internal/repos/postgresql/repo_${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-repo.go.tmpl.bash >"$file"
-    file="internal/repos/postgresql/postgresqltestutil/${snake_name}.go"
-    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
-    bash "$BIN_TEMPLATES_DIR"/crud-postgresqltestutil.go.tmpl.bash >"$file"
-    file="internal/services/servicetestutil/${snake_name}.go"
-    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
-    bash "$BIN_TEMPLATES_DIR"/crud-servicetestutil.go.tmpl.bash >"$file"
 
     echo "
 // ${pascal_name} defines the datastore/repository handling persisting ${sentence_name} records.
@@ -1503,6 +1497,12 @@ x.dev-utils.create-crud-tests() {
     local file="internal/services/service_${snake_name}_test.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-service-tests.go.tmpl.bash >"$file"
+    file="internal/repos/postgresql/postgresqltestutil/${snake_name}.go"
+    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+    bash "$BIN_TEMPLATES_DIR"/crud-postgresqltestutil.go.tmpl.bash >"$file"
+    file="internal/services/servicetestutil/${snake_name}.go"
+    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+    bash "$BIN_TEMPLATES_DIR"/crud-servicetestutil.go.tmpl.bash >"$file"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

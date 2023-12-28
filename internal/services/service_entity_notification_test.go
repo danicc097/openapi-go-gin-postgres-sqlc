@@ -59,18 +59,18 @@ func TestEntityNotification_Update(t *testing.T) {
 			name: "updated correctly",
 			args: args{
 				params: &db.EntityNotificationUpdateParams{
-					ID:      &randomEntityNotificationCreateParams.ID,
-					Message: &randomEntityNotificationCreateParams.Message,
-					Topic:   &randomEntityNotificationCreateParams.Topic,
+					ID: &randomEntityNotificationCreateParams.ID,
+		Message: &randomEntityNotificationCreateParams.Message,
+		Topic: &randomEntityNotificationCreateParams.Topic,
 				},
 				withUserInProject: false, //
 				id:                wit.EntityNotificationID,
 			},
 			want: db.EntityNotificationUpdateParams{
 				// generating fields based on randomized createparams since it's a superset of updateparams.
-				ID:      &randomEntityNotificationCreateParams.ID,
-				Message: &randomEntityNotificationCreateParams.Message,
-				Topic:   &randomEntityNotificationCreateParams.Topic,
+					ID: &randomEntityNotificationCreateParams.ID,
+		Message: &randomEntityNotificationCreateParams.Message,
+		Topic: &randomEntityNotificationCreateParams.Topic,
 			},
 		},
 	}
@@ -114,9 +114,10 @@ func TestEntityNotification_Update(t *testing.T) {
 
 			// loop all fields like in above
 			// assert.Equal(t, *tc.want.<Field>, got.<Field>)
-			assert.Equal(t, *tc.want.ID, got.ID)
-			assert.Equal(t, *tc.want.Message, got.Message)
-			assert.Equal(t, *tc.want.Topic, got.Topic)
+					assert.Equal(t, *tc.want.ID, got.ID)
+		assert.Equal(t, *tc.want.Message, got.Message)
+		assert.Equal(t, *tc.want.Topic, got.Topic)
 		})
 	}
 }
+

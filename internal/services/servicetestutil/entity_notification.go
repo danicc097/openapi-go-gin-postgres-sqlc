@@ -10,14 +10,14 @@ import (
 )
 
 type CreateEntityNotificationParams struct {
-	ProjectID db.ProjectID
+	ProjectID  db.ProjectID
 	// DeletedAt allows returning a soft deleted entity notification when a deleted_at column exists.
 	// Note that the service Delete call should make use of the SoftDelete method.
-	DeletedAt *time.Time
+	DeletedAt  *time.Time
 }
 
 type CreateEntityNotificationFixture struct {
-	EntityNotification *db.EntityNotification
+	EntityNotification   *db.EntityNotification
 }
 
 // CreateEntityNotification creates a new random entity notification with the given configuration.
@@ -29,6 +29,7 @@ func (ff *FixtureFactory) CreateEntityNotification(ctx context.Context, params C
 		return nil, fmt.Errorf("svc.EntityNotification.Create: %w", err)
 	}
 
+
 	if params.DeletedAt != nil {
 		entityNotification, err = ff.svc.EntityNotification.Delete(ctx, ff.db, entityNotification.EntityNotificationID)
 		if err != nil {
@@ -37,6 +38,8 @@ func (ff *FixtureFactory) CreateEntityNotification(ctx context.Context, params C
 	}
 
 	return &CreateEntityNotificationFixture{
-		EntityNotification: entityNotification,
+		EntityNotification:   entityNotification,
 	}, nil
 }
+
+
