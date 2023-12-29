@@ -1391,6 +1391,9 @@ type Update${pascal_name}Request struct {
     file="internal/services/service_${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-service.go.tmpl.bash >"$file" && gofumpt -w $file
+    file="internal/rest/api_${snake_name}.go"
+    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+    bash "$BIN_TEMPLATES_DIR"/crud-api.go.tmpl.bash >"$file" && gofumpt -w $file
     file="internal/repos/postgresql/postgresqltestutil/${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-postgresqltestutil.go.tmpl.bash >"$file" && gofumpt -w $file
