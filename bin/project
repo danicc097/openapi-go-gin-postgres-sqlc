@@ -688,9 +688,11 @@ x.gen.jet() {
 }
 
 # Generate repo interface wrappers with common logic: tracing, timeout...
+# Args: [name]
 x.gen.gowrap() {
   xsetup.backup
   { { {
+    name=$1 # optional to force regen on an interface
     local repos="$REPOS_DIR/repos.go"
 
     echo "Running generation"
@@ -708,10 +710,14 @@ x.gen.gowrap() {
 
     mkdir -p "$cache"
 
+    if test -n $name; then
+      repo_interfaces=("$name")
+    fi
+
     local updated_ifaces=()
     for iface in ${repo_interfaces[@]}; do
       iface_content="$(go-utils.get_interface_methods $iface $repos)"
-      if diff "$cache/$iface" <(echo "$iface_content") &>/dev/null; then
+      if diff "$cache/$iface" <(echo "$iface_content") &>/dev/null && [[ "$iface" != "$name" ]]; then
         [[ $X_FORCE_REGEN -eq 0 ]] && continue
       fi
 
@@ -1448,7 +1454,7 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
 
     generate_repo_constructor
     # TODO: accept repo interface name to force gen on that one only instead of forcing regen
-    x.gen.gowrap
+    x.gen.gowrap $pascal_name
 
     # TODO: create base for repo indexedqueries tests and api, service tests.
     # can generate for create, indexed queries and delete easily.
