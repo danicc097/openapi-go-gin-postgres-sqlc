@@ -9,5 +9,4 @@
 export interface DbTeamCreateParams {
   description: string
   name: string
-  projectID: number
 }

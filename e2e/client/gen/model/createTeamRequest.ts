@@ -9,5 +9,4 @@
 export interface CreateTeamRequest {
   description: string
   name: string
-  projectID: number
 }

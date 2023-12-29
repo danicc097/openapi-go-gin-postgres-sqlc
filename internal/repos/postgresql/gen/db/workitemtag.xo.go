@@ -43,7 +43,7 @@ type WorkItemTagCreateParams struct {
 	Color       string    `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	Description string    `json:"description" required:"true" nullable:"false"`                                        // description
 	Name        string    `json:"name" required:"true" nullable:"false"`                                               // name
-	ProjectID   ProjectID `json:"projectID" openapi-go:"ignore" nullable:"false"`                                      // project_id
+	ProjectID   ProjectID `json:"-" openapi-go:"ignore"`                                                               // project_id
 }
 
 type WorkItemTagID int
@@ -65,7 +65,7 @@ type WorkItemTagUpdateParams struct {
 	Color       *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	Description *string    `json:"description" nullable:"false"`                                        // description
 	Name        *string    `json:"name" nullable:"false"`                                               // name
-	ProjectID   *ProjectID `json:"projectID" openapi-go:"ignore" nullable:"false"`                      // project_id
+	ProjectID   *ProjectID `json:"-" openapi-go:"ignore"`                                               // project_id
 }
 
 // SetUpdateParams updates public.work_item_tags struct fields with the specified params.

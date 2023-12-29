@@ -162,12 +162,10 @@ export interface WorkItemType {
 export interface CreateTeamRequest {
   description: string
   name: string
-  projectID: number
 }
 export interface UpdateTeamRequest {
   description?: string
   name?: string
-  projectID?: number
 }
 export interface Team {
   createdAt: string
@@ -366,7 +364,6 @@ export interface DbWorkItemTagCreateParams {
 export interface DbTeamCreateParams {
   description: string
   name: string
-  projectID: number
 }
 export interface ProjectBoard {
   projectName: Project

@@ -234,15 +234,11 @@
         "name": {
           "type": "string",
           "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
         }
       },
       "required": [
         "description",
-        "name",
-        "projectID"
+        "name"
       ],
       "type": "object",
       "x-postgen-struct": "RestCreateTeamRequest"
@@ -254,9 +250,6 @@
         },
         "name": {
           "type": "string"
-        },
-        "projectID": {
-          "type": "integer"
         }
       },
       "type": "object",
@@ -1885,15 +1878,11 @@
               "name": {
                 "type": "string",
                 "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
               }
             },
             "required": [
               "description",
-              "name",
-              "projectID"
+              "name"
             ],
             "type": "object"
           },
@@ -3256,15 +3245,11 @@
         "name": {
           "type": "string",
           "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
         }
       },
       "required": [
         "description",
-        "name",
-        "projectID"
+        "name"
       ],
       "type": "object"
     },
@@ -4032,15 +4017,11 @@
         "name": {
           "type": "string",
           "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
         }
       },
       "required": [
         "description",
-        "name",
-        "projectID"
+        "name"
       ],
       "type": "object",
       "x-postgen-struct": "RestCreateTeamRequest"
@@ -4052,9 +4033,6 @@
         },
         "name": {
           "type": "string"
-        },
-        "projectID": {
-          "type": "integer"
         }
       },
       "type": "object",
@@ -5683,15 +5661,11 @@
               "name": {
                 "type": "string",
                 "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
               }
             },
             "required": [
               "description",
-              "name",
-              "projectID"
+              "name"
             ],
             "type": "object"
           },
@@ -7054,15 +7028,11 @@
         "name": {
           "type": "string",
           "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
         }
       },
       "required": [
         "description",
-        "name",
-        "projectID"
+        "name"
       ],
       "type": "object"
     },

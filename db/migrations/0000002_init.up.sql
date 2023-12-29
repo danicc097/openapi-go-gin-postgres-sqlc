@@ -505,6 +505,8 @@ comment on column kanban_steps.color is '"tags":pattern:"^#([A-Fa-f0-9]{6}|[A-Fa
 -- although it's probably easier to have projectID just be a body parameter as it was
 comment on column activities.project_id is '"cardinality":M2O && "properties":hidden';
 
+comment on column teams.project_id is '"cardinality":M2O && "properties":hidden';
+
 comment on column work_item_tags.project_id is '"cardinality":M2O && "properties":hidden';
 
 comment on column work_item_types.project_id is '"cardinality":M2O && "properties":hidden';

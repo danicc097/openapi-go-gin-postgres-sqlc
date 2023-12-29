@@ -297,7 +297,6 @@ type CreateDemoWorkItemRequest  struct {
 type CreateTeamRequest  struct {
     Description string`json:"description"`
     Name string`json:"name"`
-    ProjectID int`json:"projectID"`
 }
 */
 
@@ -436,7 +435,6 @@ type DbTeam struct {
 type DbTeamCreateParams struct {
 	Description string `json:"description"`
 	Name        string `json:"name"`
-	ProjectID   int    `json:"projectID"`
 }
 
 // DbTimeEntry defines the model for DbTimeEntry.
@@ -761,7 +759,6 @@ type UpdateActivityRequest  struct {
 type UpdateTeamRequest  struct {
     Description *string`json:"description,omitempty"`
     Name *string`json:"name,omitempty"`
-    ProjectID *int`json:"projectID,omitempty"`
 }
 */
 

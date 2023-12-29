@@ -309,6 +309,8 @@ x.gen.pregen() {
 
     echo "Running generation"
 
+    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # xo gen may create/update models.
+
     codegen validate-spec -env=".env.$X_ENV"
     ast-parser verify-no-import --imports "$GOMOD_PKG/internal/models" "$REST_MODELS" || err Please use generated rest package OpenAPI types instead.
 

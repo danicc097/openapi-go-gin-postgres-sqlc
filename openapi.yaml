@@ -989,12 +989,9 @@ components:
           type: string
         name:
           type: string
-        projectID:
-          type: integer
       required:
         - description
         - name
-        - projectID
       type: object
       x-postgen-struct: RestCreateTeamRequest
     UpdateTeamRequest: # Generated from internal structs. DO NOT EDIT.
@@ -1003,8 +1000,6 @@ components:
           type: string
         name:
           type: string
-        projectID:
-          type: integer
       type: object
       x-postgen-struct: RestUpdateTeamRequest
     Team: # Generated from internal structs. DO NOT EDIT.
@@ -1929,12 +1924,9 @@ components:
           type: string
         name:
           type: string
-        projectID:
-          type: integer
       required:
         - description
         - name
-        - projectID
       type: object
     DbWorkItemTagCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:

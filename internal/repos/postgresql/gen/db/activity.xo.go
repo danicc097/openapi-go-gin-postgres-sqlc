@@ -40,10 +40,10 @@ type Activity struct {
 
 // ActivityCreateParams represents insert params for 'public.activities'.
 type ActivityCreateParams struct {
-	Description  string    `json:"description" required:"true" nullable:"false"`   // description
-	IsProductive bool      `json:"isProductive" required:"true" nullable:"false"`  // is_productive
-	Name         string    `json:"name" required:"true" nullable:"false"`          // name
-	ProjectID    ProjectID `json:"projectID" openapi-go:"ignore" nullable:"false"` // project_id
+	Description  string    `json:"description" required:"true" nullable:"false"`  // description
+	IsProductive bool      `json:"isProductive" required:"true" nullable:"false"` // is_productive
+	Name         string    `json:"name" required:"true" nullable:"false"`         // name
+	ProjectID    ProjectID `json:"-" openapi-go:"ignore"`                         // project_id
 }
 
 type ActivityID int
@@ -62,10 +62,10 @@ func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*
 
 // ActivityUpdateParams represents update params for 'public.activities'.
 type ActivityUpdateParams struct {
-	Description  *string    `json:"description" nullable:"false"`                   // description
-	IsProductive *bool      `json:"isProductive" nullable:"false"`                  // is_productive
-	Name         *string    `json:"name" nullable:"false"`                          // name
-	ProjectID    *ProjectID `json:"projectID" openapi-go:"ignore" nullable:"false"` // project_id
+	Description  *string    `json:"description" nullable:"false"`  // description
+	IsProductive *bool      `json:"isProductive" nullable:"false"` // is_productive
+	Name         *string    `json:"name" nullable:"false"`         // name
+	ProjectID    *ProjectID `json:"-" openapi-go:"ignore"`         // project_id
 }
 
 // SetUpdateParams updates public.activities struct fields with the specified params.

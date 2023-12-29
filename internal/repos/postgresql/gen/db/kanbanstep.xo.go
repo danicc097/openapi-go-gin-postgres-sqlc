@@ -42,7 +42,7 @@ type KanbanStepCreateParams struct {
 	Color         string    `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	Description   string    `json:"description" required:"true" nullable:"false"`                                        // description
 	Name          string    `json:"name" required:"true" nullable:"false"`                                               // name
-	ProjectID     ProjectID `json:"projectID" openapi-go:"ignore" nullable:"false"`                                      // project_id
+	ProjectID     ProjectID `json:"-" openapi-go:"ignore"`                                                               // project_id
 	StepOrder     int       `json:"stepOrder" required:"true" nullable:"false"`                                          // step_order
 	TimeTrackable bool      `json:"timeTrackable" required:"true" nullable:"false"`                                      // time_trackable
 }
@@ -68,7 +68,7 @@ type KanbanStepUpdateParams struct {
 	Color         *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	Description   *string    `json:"description" nullable:"false"`                                        // description
 	Name          *string    `json:"name" nullable:"false"`                                               // name
-	ProjectID     *ProjectID `json:"projectID" openapi-go:"ignore" nullable:"false"`                      // project_id
+	ProjectID     *ProjectID `json:"-" openapi-go:"ignore"`                                               // project_id
 	StepOrder     *int       `json:"stepOrder" nullable:"false"`                                          // step_order
 	TimeTrackable *bool      `json:"timeTrackable" nullable:"false"`                                      // time_trackable
 }

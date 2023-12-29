@@ -314,16 +314,16 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Type:       "string",
 				Desc:       "field tag",
 				Short:      "g",
-				Default: `json:"{{ if .ignoreJSON }}-{{ else }}{{ camel .field.GoName }}{{end}}"
+				Default: `json:"{{ if or (.ignoreJSON) (.hidden) }}-{{ else }}{{ camel .field.GoName }}{{end}}"
 {{- if not .skipExtraTags }} db:"{{ .field.SQLName -}}"
 {{- end }}
 {{- if .hidden }} openapi-go:"ignore"
 {{- end }}
 {{- if and (.required) (not .hidden)}} required:"true"
 {{- end }}
-{{- if not .nullable }} nullable:"false"
+{{- if and (not .nullable) (not .hidden) }} nullable:"false"
 {{- end }}
-{{- if .field.OpenAPISchema }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"
+{{- if and (.field.OpenAPISchema) (not .hidden) }} ref:"#/components/schemas/{{ .field.OpenAPISchema }}"
 {{- end }}
 {{- .field.ExtraTags }}`,
 			},

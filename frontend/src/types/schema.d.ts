@@ -200,12 +200,10 @@ export interface components {
     CreateTeamRequest: {
       description: string;
       name: string;
-      projectID: number;
     };
     UpdateTeamRequest: {
       description?: string;
       name?: string;
-      projectID?: number;
     };
     Team: {
       /** Format: date-time */
@@ -579,7 +577,6 @@ export interface components {
     DbTeamCreateParams: {
       description: string;
       name: string;
-      projectID: number;
     };
     DbWorkItemTagCreateParams: {
       color: string;

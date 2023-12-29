@@ -9,5 +9,4 @@
 export interface UpdateTeamRequest {
   description?: string
   name?: string
-  projectID?: number
 }

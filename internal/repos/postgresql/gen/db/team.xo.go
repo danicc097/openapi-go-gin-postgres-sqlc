@@ -43,7 +43,7 @@ type Team struct {
 type TeamCreateParams struct {
 	Description string    `json:"description" required:"true" nullable:"false"` // description
 	Name        string    `json:"name" required:"true" nullable:"false"`        // name
-	ProjectID   ProjectID `json:"projectID" required:"true" nullable:"false"`   // project_id
+	ProjectID   ProjectID `json:"-" openapi-go:"ignore"`                        // project_id
 }
 
 type TeamID int
@@ -63,7 +63,7 @@ func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, er
 type TeamUpdateParams struct {
 	Description *string    `json:"description" nullable:"false"` // description
 	Name        *string    `json:"name" nullable:"false"`        // name
-	ProjectID   *ProjectID `json:"projectID" nullable:"false"`   // project_id
+	ProjectID   *ProjectID `json:"-" openapi-go:"ignore"`        // project_id
 }
 
 // SetUpdateParams updates public.teams struct fields with the specified params.
