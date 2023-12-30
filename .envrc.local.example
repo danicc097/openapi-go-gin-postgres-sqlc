@@ -1,3 +1,5 @@
+alias_dir=$PWD/.direnv/aliases
+rm -rf "$alias_dir"
 # export_alias docker-compose 'docker compose $@'
 export_alias greet 'echo Hello, $@'
 export_alias pr_status "gh pr status --repo danicc097/openapi-go-gin-postgres-sqlc"

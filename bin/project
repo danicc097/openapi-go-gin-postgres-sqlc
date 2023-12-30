@@ -1444,7 +1444,7 @@ ${pascal_name} *${pascal_name}" "$services_path"
 	)"
     modified_string="${string//$'\n'/}"
     newline_count=$((${#string} - ${#modified_string}))
-    formatted_string=$(echo "$string" | sed ':a;N;$!ba;s/\n/\\n/g')
+    formatted_string="${string//$'\n'/\\n}"
 
     sed -i "$((line - 2))a\\
 $formatted_string" "$service_repos_path"
@@ -1461,7 +1461,7 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
 
       # now that generated api models exist
       file="internal/rest/api_${snake_name}.go"
-      rm -f file
+      rm -f "$file"
       test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
       bash "$BIN_TEMPLATES_DIR"/crud-api.go.tmpl.bash >"$file" && gofumpt -w $file
     else
