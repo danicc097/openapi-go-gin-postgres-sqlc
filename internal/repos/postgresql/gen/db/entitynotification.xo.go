@@ -31,14 +31,18 @@ type EntityNotification struct {
 	Message              string               `json:"message" db:"message" required:"true" nullable:"false"`                               // message
 	Topic                models.Topics        `json:"topic" db:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"` // topic
 	CreatedAt            time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                          // created_at
+	ProjectID            ProjectID            `json:"projectID" db:"project_id" required:"true" nullable:"false"`                          // project_id
+
+	ProjectJoin *Project `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
 
 }
 
 // EntityNotificationCreateParams represents insert params for 'public.entity_notifications'.
 type EntityNotificationCreateParams struct {
-	ID      string        `json:"id" required:"true" nullable:"false"`                                      // id
-	Message string        `json:"message" required:"true" nullable:"false"`                                 // message
-	Topic   models.Topics `json:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"` // topic
+	ID        string        `json:"id" required:"true" nullable:"false"`                                      // id
+	Message   string        `json:"message" required:"true" nullable:"false"`                                 // message
+	ProjectID ProjectID     `json:"-" openapi-go:"ignore"`                                                    // project_id
+	Topic     models.Topics `json:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"` // topic
 }
 
 type EntityNotificationID int
@@ -46,9 +50,10 @@ type EntityNotificationID int
 // CreateEntityNotification creates a new EntityNotification in the database with the given params.
 func CreateEntityNotification(ctx context.Context, db DB, params *EntityNotificationCreateParams) (*EntityNotification, error) {
 	en := &EntityNotification{
-		ID:      params.ID,
-		Message: params.Message,
-		Topic:   params.Topic,
+		ID:        params.ID,
+		Message:   params.Message,
+		ProjectID: params.ProjectID,
+		Topic:     params.Topic,
 	}
 
 	return en.Insert(ctx, db)
@@ -56,9 +61,10 @@ func CreateEntityNotification(ctx context.Context, db DB, params *EntityNotifica
 
 // EntityNotificationUpdateParams represents update params for 'public.entity_notifications'.
 type EntityNotificationUpdateParams struct {
-	ID      *string        `json:"id" nullable:"false"`                                      // id
-	Message *string        `json:"message" nullable:"false"`                                 // message
-	Topic   *models.Topics `json:"topic" nullable:"false" ref:"#/components/schemas/Topics"` // topic
+	ID        *string        `json:"id" nullable:"false"`                                      // id
+	Message   *string        `json:"message" nullable:"false"`                                 // message
+	ProjectID *ProjectID     `json:"-" openapi-go:"ignore"`                                    // project_id
+	Topic     *models.Topics `json:"topic" nullable:"false" ref:"#/components/schemas/Topics"` // topic
 }
 
 // SetUpdateParams updates public.entity_notifications struct fields with the specified params.
@@ -68,6 +74,9 @@ func (en *EntityNotification) SetUpdateParams(params *EntityNotificationUpdatePa
 	}
 	if params.Message != nil {
 		en.Message = *params.Message
+	}
+	if params.ProjectID != nil {
+		en.ProjectID = *params.ProjectID
 	}
 	if params.Topic != nil {
 		en.Topic = *params.Topic
@@ -115,12 +124,15 @@ func WithEntityNotificationOrderBy(rows ...EntityNotificationOrderBy) EntityNoti
 }
 
 type EntityNotificationJoins struct {
+	Project bool // O2O projects
 }
 
 // WithEntityNotificationJoin joins with the given tables.
 func WithEntityNotificationJoin(joins EntityNotificationJoins) EntityNotificationSelectConfigOption {
 	return func(s *EntityNotificationSelectConfig) {
-		s.joins = EntityNotificationJoins{}
+		s.joins = EntityNotificationJoins{
+			Project: s.joins.Project || joins.Project,
+		}
 	}
 }
 
@@ -139,18 +151,28 @@ func WithEntityNotificationFilters(filters map[string][]any) EntityNotificationS
 	}
 }
 
+const entityNotificationTableProjectJoinSQL = `-- O2O join generated from "entity_notifications_project_id_fkey (Generated from M2O)"
+left join projects as _entity_notifications_project_id on _entity_notifications_project_id.project_id = entity_notifications.project_id
+`
+
+const entityNotificationTableProjectSelectSQL = `(case when _entity_notifications_project_id.project_id is not null then row(_entity_notifications_project_id.*) end) as project_project_id`
+
+const entityNotificationTableProjectGroupBySQL = `_entity_notifications_project_id.project_id,
+      _entity_notifications_project_id.project_id,
+	entity_notifications.entity_notification_id`
+
 // Insert inserts the EntityNotification to the database.
 func (en *EntityNotification) Insert(ctx context.Context, db DB) (*EntityNotification, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.entity_notifications (
-	id, message, topic
+	id, message, project_id, topic
 	) VALUES (
-	$1, $2, $3
+	$1, $2, $3, $4
 	) RETURNING * `
 	// run
-	logf(sqlstr, en.ID, en.Message, en.Topic)
+	logf(sqlstr, en.ID, en.Message, en.ProjectID, en.Topic)
 
-	rows, err := db.Query(ctx, sqlstr, en.ID, en.Message, en.Topic)
+	rows, err := db.Query(ctx, sqlstr, en.ID, en.Message, en.ProjectID, en.Topic)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("EntityNotification/Insert/db.Query: %w", &XoError{Entity: "Entity notification", Err: err}))
 	}
@@ -168,13 +190,13 @@ func (en *EntityNotification) Insert(ctx context.Context, db DB) (*EntityNotific
 func (en *EntityNotification) Update(ctx context.Context, db DB) (*EntityNotification, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.entity_notifications SET 
-	id = $1, message = $2, topic = $3 
-	WHERE entity_notification_id = $4 
+	id = $1, message = $2, project_id = $3, topic = $4 
+	WHERE entity_notification_id = $5 
 	RETURNING * `
 	// run
-	logf(sqlstr, en.CreatedAt, en.ID, en.Message, en.Topic, en.EntityNotificationID)
+	logf(sqlstr, en.CreatedAt, en.ID, en.Message, en.ProjectID, en.Topic, en.EntityNotificationID)
 
-	rows, err := db.Query(ctx, sqlstr, en.ID, en.Message, en.Topic, en.EntityNotificationID)
+	rows, err := db.Query(ctx, sqlstr, en.ID, en.Message, en.ProjectID, en.Topic, en.EntityNotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("EntityNotification/Update/db.Query: %w", &XoError{Entity: "Entity notification", Err: err}))
 	}
@@ -194,6 +216,7 @@ func (en *EntityNotification) Upsert(ctx context.Context, db DB, params *EntityN
 
 	en.ID = params.ID
 	en.Message = params.Message
+	en.ProjectID = params.ProjectID
 	en.Topic = params.Topic
 
 	en, err = en.Insert(ctx, db)
@@ -259,6 +282,12 @@ func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db D
 	var joinClauses []string
 	var groupByClauses []string
 
+	if c.joins.Project {
+		selectClauses = append(selectClauses, entityNotificationTableProjectSelectSQL)
+		joinClauses = append(joinClauses, entityNotificationTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, entityNotificationTableProjectGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -279,6 +308,7 @@ func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db D
 	entity_notifications.entity_notification_id,
 	entity_notifications.id,
 	entity_notifications.message,
+	entity_notifications.project_id,
 	entity_notifications.topic %s 
 	 FROM public.entity_notifications %s 
 	 WHERE entity_notifications.entity_notification_id %s $1
@@ -337,6 +367,12 @@ func EntityNotificationByEntityNotificationID(ctx context.Context, db DB, entity
 	var joinClauses []string
 	var groupByClauses []string
 
+	if c.joins.Project {
+		selectClauses = append(selectClauses, entityNotificationTableProjectSelectSQL)
+		joinClauses = append(joinClauses, entityNotificationTableProjectJoinSQL)
+		groupByClauses = append(groupByClauses, entityNotificationTableProjectGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -352,6 +388,7 @@ func EntityNotificationByEntityNotificationID(ctx context.Context, db DB, entity
 	entity_notifications.entity_notification_id,
 	entity_notifications.id,
 	entity_notifications.message,
+	entity_notifications.project_id,
 	entity_notifications.topic %s 
 	 FROM public.entity_notifications %s 
 	 WHERE entity_notifications.entity_notification_id = $1
@@ -373,4 +410,11 @@ func EntityNotificationByEntityNotificationID(ctx context.Context, db DB, entity
 	}
 
 	return &en, nil
+}
+
+// FKProject_ProjectID returns the Project associated with the EntityNotification's (ProjectID).
+//
+// Generated from foreign key 'entity_notifications_project_id_fkey'.
+func (en *EntityNotification) FKProject_ProjectID(ctx context.Context, db DB) (*Project, error) {
+	return ProjectByProjectID(ctx, db, en.ProjectID)
 }

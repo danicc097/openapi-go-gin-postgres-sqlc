@@ -34,11 +34,12 @@ type Project struct {
 	CreatedAt          time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                              // created_at
 	UpdatedAt          time.Time            `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                                              // updated_at
 
-	ProjectActivitiesJoin    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`      // M2O projects
-	ProjectKanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`    // M2O projects
-	ProjectTeamsJoin         *[]Team         `json:"-" db:"teams" openapi-go:"ignore"`           // M2O projects
-	ProjectWorkItemTagsJoin  *[]WorkItemTag  `json:"-" db:"work_item_tags" openapi-go:"ignore"`  // M2O projects
-	ProjectWorkItemTypesJoin *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"` // M2O projects
+	ProjectActivitiesJoin          *[]Activity           `json:"-" db:"activities" openapi-go:"ignore"`           // M2O projects
+	ProjectEntityNotificationsJoin *[]EntityNotification `json:"-" db:"entity_notifications" openapi-go:"ignore"` // M2O projects
+	ProjectKanbanStepsJoin         *[]KanbanStep         `json:"-" db:"kanban_steps" openapi-go:"ignore"`         // M2O projects
+	ProjectTeamsJoin               *[]Team               `json:"-" db:"teams" openapi-go:"ignore"`                // M2O projects
+	ProjectWorkItemTagsJoin        *[]WorkItemTag        `json:"-" db:"work_item_tags" openapi-go:"ignore"`       // M2O projects
+	ProjectWorkItemTypesJoin       *[]WorkItemType       `json:"-" db:"work_item_types" openapi-go:"ignore"`      // M2O projects
 
 }
 
@@ -133,22 +134,24 @@ func WithProjectOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 }
 
 type ProjectJoins struct {
-	Activities    bool // M2O activities
-	KanbanSteps   bool // M2O kanban_steps
-	Teams         bool // M2O teams
-	WorkItemTags  bool // M2O work_item_tags
-	WorkItemTypes bool // M2O work_item_types
+	Activities          bool // M2O activities
+	EntityNotifications bool // M2O entity_notifications
+	KanbanSteps         bool // M2O kanban_steps
+	Teams               bool // M2O teams
+	WorkItemTags        bool // M2O work_item_tags
+	WorkItemTypes       bool // M2O work_item_types
 }
 
 // WithProjectJoin joins with the given tables.
 func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		s.joins = ProjectJoins{
-			Activities:    s.joins.Activities || joins.Activities,
-			KanbanSteps:   s.joins.KanbanSteps || joins.KanbanSteps,
-			Teams:         s.joins.Teams || joins.Teams,
-			WorkItemTags:  s.joins.WorkItemTags || joins.WorkItemTags,
-			WorkItemTypes: s.joins.WorkItemTypes || joins.WorkItemTypes,
+			Activities:          s.joins.Activities || joins.Activities,
+			EntityNotifications: s.joins.EntityNotifications || joins.EntityNotifications,
+			KanbanSteps:         s.joins.KanbanSteps || joins.KanbanSteps,
+			Teams:               s.joins.Teams || joins.Teams,
+			WorkItemTags:        s.joins.WorkItemTags || joins.WorkItemTags,
+			WorkItemTypes:       s.joins.WorkItemTypes || joins.WorkItemTypes,
 		}
 	}
 }
@@ -183,6 +186,22 @@ left join (
 const projectTableActivitiesSelectSQL = `COALESCE(joined_activities.activities, '{}') as activities`
 
 const projectTableActivitiesGroupBySQL = `joined_activities.activities, projects.project_id`
+
+const projectTableEntityNotificationsJoinSQL = `-- M2O join generated from "entity_notifications_project_id_fkey"
+left join (
+  select
+  project_id as entity_notifications_project_id
+    , array_agg(entity_notifications.*) as entity_notifications
+  from
+    entity_notifications
+  group by
+        project_id
+) as joined_entity_notifications on joined_entity_notifications.entity_notifications_project_id = projects.project_id
+`
+
+const projectTableEntityNotificationsSelectSQL = `COALESCE(joined_entity_notifications.entity_notifications, '{}') as entity_notifications`
+
+const projectTableEntityNotificationsGroupBySQL = `joined_entity_notifications.entity_notifications, projects.project_id`
 
 const projectTableKanbanStepsJoinSQL = `-- M2O join generated from "kanban_steps_project_id_fkey"
 left join (
@@ -375,6 +394,12 @@ func ProjectPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID
 		groupByClauses = append(groupByClauses, projectTableActivitiesGroupBySQL)
 	}
 
+	if c.joins.EntityNotifications {
+		selectClauses = append(selectClauses, projectTableEntityNotificationsSelectSQL)
+		joinClauses = append(joinClauses, projectTableEntityNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableEntityNotificationsGroupBySQL)
+	}
+
 	if c.joins.KanbanSteps {
 		selectClauses = append(selectClauses, projectTableKanbanStepsSelectSQL)
 		joinClauses = append(joinClauses, projectTableKanbanStepsJoinSQL)
@@ -485,6 +510,12 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 		groupByClauses = append(groupByClauses, projectTableActivitiesGroupBySQL)
 	}
 
+	if c.joins.EntityNotifications {
+		selectClauses = append(selectClauses, projectTableEntityNotificationsSelectSQL)
+		joinClauses = append(joinClauses, projectTableEntityNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableEntityNotificationsGroupBySQL)
+	}
+
 	if c.joins.KanbanSteps {
 		selectClauses = append(selectClauses, projectTableKanbanStepsSelectSQL)
 		joinClauses = append(joinClauses, projectTableKanbanStepsJoinSQL)
@@ -591,6 +622,12 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ..
 		groupByClauses = append(groupByClauses, projectTableActivitiesGroupBySQL)
 	}
 
+	if c.joins.EntityNotifications {
+		selectClauses = append(selectClauses, projectTableEntityNotificationsSelectSQL)
+		joinClauses = append(joinClauses, projectTableEntityNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableEntityNotificationsGroupBySQL)
+	}
+
 	if c.joins.KanbanSteps {
 		selectClauses = append(selectClauses, projectTableKanbanStepsSelectSQL)
 		joinClauses = append(joinClauses, projectTableKanbanStepsJoinSQL)
@@ -695,6 +732,12 @@ func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName 
 		selectClauses = append(selectClauses, projectTableActivitiesSelectSQL)
 		joinClauses = append(joinClauses, projectTableActivitiesJoinSQL)
 		groupByClauses = append(groupByClauses, projectTableActivitiesGroupBySQL)
+	}
+
+	if c.joins.EntityNotifications {
+		selectClauses = append(selectClauses, projectTableEntityNotificationsSelectSQL)
+		joinClauses = append(joinClauses, projectTableEntityNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableEntityNotificationsGroupBySQL)
 	}
 
 	if c.joins.KanbanSteps {
