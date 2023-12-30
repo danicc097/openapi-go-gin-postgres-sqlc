@@ -95,6 +95,9 @@ func TestSSEStream(t *testing.T) {
 	// TODO also test 2 clients concurrently receive, and when one leaves, the other still receives.
 	// ff
 	if !assert.Eventually(t, func() bool {
+		if res.Body == nil {
+			return false
+		}
 		body := strings.ReplaceAll(res.Body.String(), " ", "")
 
 		return strings.Count(body, "event:"+string(models.TopicsGlobalAlerts)) == 1 &&

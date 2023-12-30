@@ -60,13 +60,16 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	params.Scopes = append(params.Scopes, u.authzsvc.DefaultScopes(params.Role)...)
 
 	repoParams := db.UserCreateParams{
-		FirstName:  params.FirstName,
-		LastName:   params.LastName,
-		Username:   params.Username,
-		Email:      params.Email,
-		ExternalID: params.ExternalID,
-		RoleRank:   role.Rank,
-		Scopes:     params.Scopes,
+		FirstName:                params.FirstName,
+		LastName:                 params.LastName,
+		Username:                 params.Username,
+		Email:                    params.Email,
+		ExternalID:               params.ExternalID,
+		RoleRank:                 role.Rank,
+		Scopes:                   params.Scopes,
+		APIKeyID:                 nil,
+		HasGlobalNotifications:   false,
+		HasPersonalNotifications: false,
 	}
 
 	user, err := u.repos.User.Create(ctx, d, &repoParams)
@@ -307,6 +310,27 @@ func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID db.UserID, team
 	}
 
 	u.logger.Infof("user %q assigned to team %d", userID, teamID)
+
+	return nil
+}
+
+func (u *User) UserInProject(ctx context.Context, d db.DBTX, userID db.UserID, projectID db.ProjectID) error {
+	// can't be done in constructor, inf recursion if its for solving a cyclic dep.
+	// if we need dep inj for some reason create service interface and pass as param
+	witSvc := NewWorkItemTag(u.logger, u.repos)
+	// FIXME:
+	witSvc.logger.Debug("this should not panic")
+	userInProject, err := u.repos.User.IsUserInProject(ctx, d, db.IsUserInProjectParams{
+		UserID:    userID.UUID,
+		ProjectID: int32(projectID),
+	})
+	if err != nil {
+		return fmt.Errorf("repos.User.IsUserInProject: %w", err)
+	}
+
+	if !userInProject {
+		return internal.NewErrorf(models.ErrorCodeUnauthorized, "user is not a member of project %q", internal.ProjectNameByID[projectID])
+	}
 
 	return nil
 }

@@ -27,10 +27,10 @@ func TestUser_Update(t *testing.T) {
 		params db.UserUpdateParams
 	}
 	type params struct {
-		name    string
-		args    args
-		want    *db.User
-		wantErr bool
+		name        string
+		args        args
+		want        *db.User
+		errContains string
 	}
 	tests := []params{
 		{
@@ -58,8 +58,18 @@ func TestUser_Update(t *testing.T) {
 
 			u := postgresql.NewUser()
 			got, err := u.Update(context.Background(), testPool, tc.args.id, &tc.args.params)
-			if (err != nil) != tc.wantErr {
-				t.Errorf("User.Update() error = %v, wantErr %v", err, tc.wantErr)
+			if err != nil && tc.errContains == "" {
+				t.Errorf("unexpected error: %v", err)
+
+				return
+			}
+			if tc.errContains != "" {
+				if err == nil {
+					t.Errorf("expected error but got nothing")
+
+					return
+				}
+				assert.ErrorContains(t, err, tc.errContains)
 
 				return
 			}
@@ -85,9 +95,9 @@ func TestUser_SoftDelete(t *testing.T) {
 		id db.UserID
 	}
 	type params struct {
-		name          string
-		args          args
-		errorContains string
+		name        string
+		args        args
+		errContains string
 	}
 	tests := []params{
 		{
@@ -95,7 +105,7 @@ func TestUser_SoftDelete(t *testing.T) {
 			args: args{
 				id: user.UserID,
 			},
-			errorContains: errNoRows,
+			errContains: errNoRows,
 		},
 	}
 	for _, tc := range tests {
@@ -103,21 +113,27 @@ func TestUser_SoftDelete(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			u := postgresql.NewUser()
-			_, err := u.Delete(context.Background(), testPool, tc.args.id)
-			if err != nil {
-				t.Errorf("User.Delete() unexpected error = %v", err)
+			userRepo := postgresql.NewUser()
+			_, err := userRepo.Delete(context.Background(), testPool, tc.args.id)
+			require.NoError(t, err)
+
+			_, err = userRepo.ByID(context.Background(), testPool, tc.args.id)
+			if err != nil && tc.errContains == "" {
+				t.Errorf("unexpected error: %v", err)
 
 				return
 			}
+			if tc.errContains != "" {
+				if err == nil {
+					t.Errorf("expected error but got nothing")
 
-			_, err = u.ByID(context.Background(), testPool, tc.args.id)
-			if err == nil {
-				t.Error("wanted error but got nothing", err)
+					return
+				}
+				assert.ErrorContains(t, err, tc.errContains)
 
 				return
 			}
-			assert.ErrorContains(t, err, tc.errorContains)
+			assert.ErrorContains(t, err, tc.errContains)
 		})
 	}
 }

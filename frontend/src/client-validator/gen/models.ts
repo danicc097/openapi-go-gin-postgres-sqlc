@@ -118,6 +118,7 @@ export interface UpdateActivityRequest {
 }
 export interface Activity {
   activityID: number
+  deletedAt?: string | null
   description: string
   isProductive: boolean
   name: string
@@ -135,6 +136,7 @@ export interface UpdateWorkItemTagRequest {
 }
 export interface WorkItemTag {
   color: string
+  deletedAt?: string | null
   description: string
   name: string
   projectID: number
@@ -160,12 +162,10 @@ export interface WorkItemType {
 export interface CreateTeamRequest {
   description: string
   name: string
-  projectID: number
 }
 export interface UpdateTeamRequest {
   description?: string
   name?: string
-  projectID?: number
 }
 export interface Team {
   createdAt: string
@@ -247,6 +247,7 @@ export interface DbTeam {
 }
 export interface DbWorkItemTag {
   color: string
+  deletedAt?: string | null
   description: string
   name: string
   projectID: number
@@ -363,7 +364,6 @@ export interface DbWorkItemTagCreateParams {
 export interface DbTeamCreateParams {
   description: string
   name: string
-  projectID: number
 }
 export interface ProjectBoard {
   projectName: Project

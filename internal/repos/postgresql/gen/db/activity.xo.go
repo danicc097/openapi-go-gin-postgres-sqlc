@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
@@ -30,6 +31,7 @@ type Activity struct {
 	Name         string     `json:"name" db:"name" required:"true" nullable:"false"`                  // name
 	Description  string     `json:"description" db:"description" required:"true" nullable:"false"`    // description
 	IsProductive bool       `json:"isProductive" db:"is_productive" required:"true" nullable:"false"` // is_productive
+	DeletedAt    *time.Time `json:"deletedAt" db:"deleted_at"`                                        // deleted_at
 
 	ProjectJoin             *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
 	ActivityTimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O activities
@@ -38,10 +40,10 @@ type Activity struct {
 
 // ActivityCreateParams represents insert params for 'public.activities'.
 type ActivityCreateParams struct {
-	Description  string    `json:"description" required:"true" nullable:"false"`   // description
-	IsProductive bool      `json:"isProductive" required:"true" nullable:"false"`  // is_productive
-	Name         string    `json:"name" required:"true" nullable:"false"`          // name
-	ProjectID    ProjectID `json:"projectID" openapi-go:"ignore" nullable:"false"` // project_id
+	Description  string    `json:"description" required:"true" nullable:"false"`  // description
+	IsProductive bool      `json:"isProductive" required:"true" nullable:"false"` // is_productive
+	Name         string    `json:"name" required:"true" nullable:"false"`         // name
+	ProjectID    ProjectID `json:"-" openapi-go:"ignore"`                         // project_id
 }
 
 type ActivityID int
@@ -60,10 +62,10 @@ func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*
 
 // ActivityUpdateParams represents update params for 'public.activities'.
 type ActivityUpdateParams struct {
-	Description  *string    `json:"description" nullable:"false"`                   // description
-	IsProductive *bool      `json:"isProductive" nullable:"false"`                  // is_productive
-	Name         *string    `json:"name" nullable:"false"`                          // name
-	ProjectID    *ProjectID `json:"projectID" openapi-go:"ignore" nullable:"false"` // project_id
+	Description  *string    `json:"description" nullable:"false"`  // description
+	IsProductive *bool      `json:"isProductive" nullable:"false"` // is_productive
+	Name         *string    `json:"name" nullable:"false"`         // name
+	ProjectID    *ProjectID `json:"-" openapi-go:"ignore"`         // project_id
 }
 
 // SetUpdateParams updates public.activities struct fields with the specified params.
@@ -83,10 +85,11 @@ func (a *Activity) SetUpdateParams(params *ActivityUpdateParams) {
 }
 
 type ActivitySelectConfig struct {
-	limit   string
-	orderBy string
-	joins   ActivityJoins
-	filters map[string][]any
+	limit     string
+	orderBy   string
+	joins     ActivityJoins
+	filters   map[string][]any
+	deletedAt string
 }
 type ActivitySelectConfigOption func(*ActivitySelectConfig)
 
@@ -99,9 +102,35 @@ func WithActivityLimit(limit int) ActivitySelectConfigOption {
 	}
 }
 
+// WithDeletedActivityOnly limits result to records marked as deleted.
+func WithDeletedActivityOnly() ActivitySelectConfigOption {
+	return func(s *ActivitySelectConfig) {
+		s.deletedAt = " not null "
+	}
+}
+
 type ActivityOrderBy string
 
-const ()
+const (
+	ActivityDeletedAtDescNullsFirst ActivityOrderBy = " deleted_at DESC NULLS FIRST "
+	ActivityDeletedAtDescNullsLast  ActivityOrderBy = " deleted_at DESC NULLS LAST "
+	ActivityDeletedAtAscNullsFirst  ActivityOrderBy = " deleted_at ASC NULLS FIRST "
+	ActivityDeletedAtAscNullsLast   ActivityOrderBy = " deleted_at ASC NULLS LAST "
+)
+
+// WithActivityOrderBy orders results by the given columns.
+func WithActivityOrderBy(rows ...ActivityOrderBy) ActivitySelectConfigOption {
+	return func(s *ActivitySelectConfig) {
+		if len(rows) > 0 {
+			orderStrings := make([]string, len(rows))
+			for i, row := range rows {
+				orderStrings[i] = string(row)
+			}
+			s.orderBy = " order by "
+			s.orderBy += strings.Join(orderStrings, ", ")
+		}
+	}
+}
 
 type ActivityJoins struct {
 	Project     bool // O2O projects
@@ -163,14 +192,14 @@ const activityTableTimeEntriesGroupBySQL = `joined_time_entries.time_entries, ac
 func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.activities (
-	description, is_productive, name, project_id
+	deleted_at, description, is_productive, name, project_id
 	) VALUES (
-	$1, $2, $3, $4
+	$1, $2, $3, $4, $5
 	) RETURNING * `
 	// run
-	logf(sqlstr, a.Description, a.IsProductive, a.Name, a.ProjectID)
+	logf(sqlstr, a.DeletedAt, a.Description, a.IsProductive, a.Name, a.ProjectID)
 
-	rows, err := db.Query(ctx, sqlstr, a.Description, a.IsProductive, a.Name, a.ProjectID)
+	rows, err := db.Query(ctx, sqlstr, a.DeletedAt, a.Description, a.IsProductive, a.Name, a.ProjectID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Insert/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
@@ -188,13 +217,13 @@ func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.activities SET 
-	description = $1, is_productive = $2, name = $3, project_id = $4 
-	WHERE activity_id = $5 
+	deleted_at = $1, description = $2, is_productive = $3, name = $4, project_id = $5 
+	WHERE activity_id = $6 
 	RETURNING * `
 	// run
-	logf(sqlstr, a.Description, a.IsProductive, a.Name, a.ProjectID, a.ActivityID)
+	logf(sqlstr, a.DeletedAt, a.Description, a.IsProductive, a.Name, a.ProjectID, a.ActivityID)
 
-	rows, err := db.Query(ctx, sqlstr, a.Description, a.IsProductive, a.Name, a.ProjectID, a.ActivityID)
+	rows, err := db.Query(ctx, sqlstr, a.DeletedAt, a.Description, a.IsProductive, a.Name, a.ProjectID, a.ActivityID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Update/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
@@ -246,9 +275,35 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// SoftDelete soft deletes the Activity from the database via 'deleted_at'.
+func (a *Activity) SoftDelete(ctx context.Context, db DB) error {
+	// delete with single primary key
+	sqlstr := `UPDATE public.activities 
+	SET deleted_at = NOW() 
+	WHERE activity_id = $1 `
+	// run
+	if _, err := db.Exec(ctx, sqlstr, a.ActivityID); err != nil {
+		return logerror(err)
+	}
+	// set deleted
+	a.DeletedAt = newPointer(time.Now())
+
+	return nil
+}
+
+// Restore restores a soft deleted Activity from the database.
+func (a *Activity) Restore(ctx context.Context, db DB) (*Activity, error) {
+	a.DeletedAt = nil
+	newa, err := a.Update(ctx, db)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("Activity/Restore/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
+	}
+	return newa, nil
+}
+
 // ActivityPaginatedByActivityID returns a cursor-paginated list of Activity.
 func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID ActivityID, direction models.Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -309,15 +364,16 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
+	activities.deleted_at,
 	activities.description,
 	activities.is_productive,
 	activities.name,
 	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.activity_id %s $1
-	 %s   %s 
+	 %s   AND activities.deleted_at is %s  %s 
   ORDER BY 
-		activity_id %s `, selects, joins, operator, filters, groupbys, direction)
+		activity_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ActivityPaginatedByActivityID */\n" + sqlstr
 
@@ -336,7 +392,7 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 
 // ActivityPaginatedByProjectID returns a cursor-paginated list of Activity.
 func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -397,15 +453,16 @@ func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectI
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
+	activities.deleted_at,
 	activities.description,
 	activities.is_productive,
 	activities.name,
 	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.project_id %s $1
-	 %s   %s 
+	 %s   AND activities.deleted_at is %s  %s 
   ORDER BY 
-		project_id %s `, selects, joins, operator, filters, groupbys, direction)
+		project_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ActivityPaginatedByProjectID */\n" + sqlstr
 
@@ -426,7 +483,7 @@ func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectI
 //
 // Generated from index 'activities_name_project_id_key'.
 func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID ProjectID, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -482,14 +539,15 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
+	activities.deleted_at,
 	activities.description,
 	activities.is_productive,
 	activities.name,
 	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.name = $1 AND activities.project_id = $2
-	 %s   %s 
-`, selects, joins, filters, groupbys)
+	 %s   AND activities.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivityByNameProjectID */\n" + sqlstr
@@ -512,7 +570,7 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 //
 // Generated from index 'activities_name_project_id_key'.
 func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -568,14 +626,15 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
+	activities.deleted_at,
 	activities.description,
 	activities.is_productive,
 	activities.name,
 	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.name = $1
-	 %s   %s 
-`, selects, joins, filters, groupbys)
+	 %s   AND activities.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivitiesByName */\n" + sqlstr
@@ -600,7 +659,7 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 //
 // Generated from index 'activities_name_project_id_key'.
 func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -656,14 +715,15 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
+	activities.deleted_at,
 	activities.description,
 	activities.is_productive,
 	activities.name,
 	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.project_id = $1
-	 %s   %s 
-`, selects, joins, filters, groupbys)
+	 %s   AND activities.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivitiesByProjectID */\n" + sqlstr
@@ -688,7 +748,7 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts
 //
 // Generated from index 'activities_pkey'.
 func ActivityByActivityID(ctx context.Context, db DB, activityID ActivityID, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{joins: ActivityJoins{}, filters: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -744,14 +804,15 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID ActivityID, opt
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	activities.activity_id,
+	activities.deleted_at,
 	activities.description,
 	activities.is_productive,
 	activities.name,
 	activities.project_id %s 
 	 FROM public.activities %s 
 	 WHERE activities.activity_id = $1
-	 %s   %s 
-`, selects, joins, filters, groupbys)
+	 %s   AND activities.deleted_at is %s  %s 
+`, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivityByActivityID */\n" + sqlstr

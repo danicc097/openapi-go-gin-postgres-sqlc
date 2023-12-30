@@ -86,21 +86,15 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller *db.User, 
 func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller *db.User, id db.WorkItemTagID, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
+	usersvc := NewUser(wit.logger, wit.repos)
+
 	witObj, err := wit.repos.WorkItemTag.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("work item tag not found: %w", err)
 	}
 
-	userInProject, err := wit.repos.User.IsUserInProject(ctx, d, db.IsUserInProjectParams{
-		UserID:    caller.UserID.UUID,
-		ProjectID: int32(witObj.ProjectID),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("repos.User.IsUserInProject: %w", err)
-	}
-
-	if !userInProject {
-		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "user is not a member of project %q", internal.ProjectNameByID[witObj.ProjectID])
+	if err := usersvc.UserInProject(ctx, d, caller.UserID, witObj.ProjectID); err != nil {
+		return nil, fmt.Errorf("user project check: %w", err)
 	}
 
 	witObj, err = wit.repos.WorkItemTag.Update(ctx, d, id, params)

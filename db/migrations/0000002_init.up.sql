@@ -258,18 +258,13 @@ create trigger notifications_fan_out
 -- We will also reuse topics (used in SSE and notifications)
 create table entity_notifications (
   entity_notification_id serial primary key
-  , entity text not null
   , id text not null
   , message text not null
   , topic text not null
   , created_at timestamp with time zone default current_timestamp not null
 );
 
-comment on column entity_notifications.entity is '"type":Entity';
-
 comment on column entity_notifications.topic is '"type":models.Topics';
-
-create index on entity_notifications (entity , id);
 
 create table user_team (
   team_id int not null
@@ -415,6 +410,7 @@ create table work_item_tags (
   , name text not null
   , description text not null
   , color text not null
+  , deleted_at timestamp with time zone
   , unique (name , project_id)
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
@@ -463,6 +459,7 @@ create table activities (
   , name text not null
   , description text not null
   , is_productive boolean default false not null
+  , deleted_at timestamp with time zone
   -- can't have multiple unrelated projects see each other's activities
   , unique (name , project_id)
   , foreign key (project_id) references projects (project_id) on delete cascade
@@ -507,6 +504,8 @@ comment on column kanban_steps.color is '"tags":pattern:"^#([A-Fa-f0-9]{6}|[A-Fa
 -- will use project name as path param. Simplifies frontend without the need for model mappings as well.
 -- although it's probably easier to have projectID just be a body parameter as it was
 comment on column activities.project_id is '"cardinality":M2O && "properties":hidden';
+
+comment on column teams.project_id is '"cardinality":M2O && "properties":hidden';
 
 comment on column work_item_tags.project_id is '"cardinality":M2O && "properties":hidden';
 

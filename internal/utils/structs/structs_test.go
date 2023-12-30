@@ -34,9 +34,9 @@ func TestGetKeys(t *testing.T) {
 		// we will want to explicitly initialize what we want, and ignore some fields for project config for instance
 		// this way it's clearer when something is missing for some reason since it won't compile.
 		ex.NestedStruct.NestedStructArray = append(ex.NestedStruct.NestedStructArray, struct {
-			NestedKey           string "json:\"nestedKey\""
+			NestedKey           string `json:"nestedKey"`
 			NestedStructInArray struct {
-				NestedKey string "json:\"nestedKey\""
+				NestedKey string `json:"nestedKey"`
 			} "json:\"nestedStructInArray\""
 		}{})
 		want := []string{
@@ -61,7 +61,7 @@ func TestGetKeys(t *testing.T) {
 
 		ex := Example{}
 		ex.NestedStructP = &struct {
-			NestedKey string "json:\"nestedKey\""
+			NestedKey string `json:"nestedKey"`
 		}{}
 		ex.NestedStringArrayP = &[]string{"test"}
 		ex.StringArray = []string{"test"}

@@ -3,7 +3,6 @@ package rest
 import (
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
@@ -35,8 +34,7 @@ func (h *StrictHandlers) UpdateUser(c *gin.Context, request UpdateUserRequestObj
 
 	res := User{User: *user, Role: Role(role.Name)}
 
-	renderResponse(c, res, http.StatusOK)
-	return nil, nil
+	return UpdateUser200JSONResponse(res), nil
 }
 
 func (h *StrictHandlers) DeleteUser(c *gin.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error) {
@@ -49,15 +47,11 @@ func (h *StrictHandlers) DeleteUser(c *gin.Context, request DeleteUserRequestObj
 		return nil, nil
 	}
 
-	c.Status(http.StatusNoContent)
-	return nil, nil
+	return DeleteUser204Response{}, nil
 }
 
 func (h *StrictHandlers) GetCurrentUser(c *gin.Context, request GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error) {
 	caller := getUserFromCtx(c)
-
-	span := GetSpanFromCtx(c)
-	span.AddEvent("get-current-user") // filterable with event="update-user"
 
 	role, ok := h.svc.Authorization.RoleByRank(caller.RoleRank)
 	if !ok {
@@ -69,8 +63,7 @@ func (h *StrictHandlers) GetCurrentUser(c *gin.Context, request GetCurrentUserRe
 
 	res := User{User: *caller, Role: Role(role.Name)}
 
-	c.JSON(http.StatusOK, res)
-	return nil, nil
+	return GetCurrentUser200JSONResponse(res), nil
 }
 
 func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateUserAuthorizationRequestObject) (UpdateUserAuthorizationResponseObject, error) {
@@ -87,6 +80,5 @@ func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateU
 		return nil, nil
 	}
 
-	c.Status(http.StatusNoContent)
-	return nil, nil
+	return UpdateUserAuthorization204Response{}, nil
 }

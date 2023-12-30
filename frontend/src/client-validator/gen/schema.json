@@ -44,6 +44,12 @@
         "activityID": {
           "type": "integer"
         },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
         "description": {
           "type": "string",
           "minLength": 1
@@ -115,6 +121,12 @@
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
         },
         "description": {
           "type": "string",
@@ -222,15 +234,11 @@
         "name": {
           "type": "string",
           "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
         }
       },
       "required": [
         "description",
-        "name",
-        "projectID"
+        "name"
       ],
       "type": "object",
       "x-postgen-struct": "RestCreateTeamRequest"
@@ -242,9 +250,6 @@
         },
         "name": {
           "type": "string"
-        },
-        "projectID": {
-          "type": "integer"
         }
       },
       "type": "object",
@@ -472,6 +477,12 @@
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
           "type": "string",
           "minLength": 1
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
         },
         "description": {
           "type": "string",
@@ -1593,15 +1604,11 @@
         "name": {
           "type": "string",
           "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
         }
       },
       "required": [
         "description",
-        "name",
-        "projectID"
+        "name"
       ],
       "type": "object"
     },

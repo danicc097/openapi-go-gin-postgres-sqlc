@@ -38,6 +38,12 @@ func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Ser
 		panic(fmt.Sprintf("NewAuthorization: %v", err))
 	}
 
+	// this would solve nothing. workitemtagsvc.usersvc may call a function that depends
+	// on workitemtagsvc.usersvc.workitemtagsvc being set.
+	// Instead create needed svcs within the function that needs them.
+	// usersvc.workitemtagsvc = workitemtagsvc
+	// workitemtagsvc.usersvc = usersvc
+
 	return &Services{
 		User:            usersvc,
 		Team:            teamsvc,

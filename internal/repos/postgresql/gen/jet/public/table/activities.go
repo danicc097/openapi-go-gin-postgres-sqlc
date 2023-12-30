@@ -22,6 +22,7 @@ type activitiesTable struct {
 	Name         postgres.ColumnString
 	Description  postgres.ColumnString
 	IsProductive postgres.ColumnBool
+	DeletedAt    postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -67,8 +68,9 @@ func newActivitiesTableImpl(schemaName, tableName, alias string) activitiesTable
 		NameColumn         = postgres.StringColumn("name")
 		DescriptionColumn  = postgres.StringColumn("description")
 		IsProductiveColumn = postgres.BoolColumn("is_productive")
-		allColumns         = postgres.ColumnList{ActivityIDColumn, ProjectIDColumn, NameColumn, DescriptionColumn, IsProductiveColumn}
-		mutableColumns     = postgres.ColumnList{ProjectIDColumn, NameColumn, DescriptionColumn, IsProductiveColumn}
+		DeletedAtColumn    = postgres.TimestampzColumn("deleted_at")
+		allColumns         = postgres.ColumnList{ActivityIDColumn, ProjectIDColumn, NameColumn, DescriptionColumn, IsProductiveColumn, DeletedAtColumn}
+		mutableColumns     = postgres.ColumnList{ProjectIDColumn, NameColumn, DescriptionColumn, IsProductiveColumn, DeletedAtColumn}
 	)
 
 	return activitiesTable{
@@ -80,6 +82,7 @@ func newActivitiesTableImpl(schemaName, tableName, alias string) activitiesTable
 		Name:         NameColumn,
 		Description:  DescriptionColumn,
 		IsProductive: IsProductiveColumn,
+		DeletedAt:    DeletedAtColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

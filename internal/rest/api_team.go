@@ -1,31 +1,68 @@
 package rest
 
 import (
-	"net/http"
-
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
 )
 
 func (h *StrictHandlers) CreateTeam(c *gin.Context, request CreateTeamRequestObject) (CreateTeamResponseObject, error) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	ctx := c.Request.Context()
+	tx := GetTxFromCtx(c)
 
-	return nil, nil
+	params := request.Body.TeamCreateParams
+	params.ProjectID = internal.ProjectIDByName[request.ProjectName]
+
+	team, err := h.svc.Team.Create(ctx, tx, &params)
+	if err != nil {
+		renderErrorResponse(c, "Could not create team", err)
+
+		return nil, nil
+	}
+
+	return CreateTeam201JSONResponse{Team: *team}, nil
 }
 
 func (h *StrictHandlers) UpdateTeam(c *gin.Context, request UpdateTeamRequestObject) (UpdateTeamResponseObject, error) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	ctx := c.Request.Context()
+	tx := GetTxFromCtx(c)
 
-	return nil, nil
+	params := request.Body.TeamUpdateParams
+
+	team, err := h.svc.Team.Update(ctx, tx, db.TeamID(request.Id), &params)
+	if err != nil {
+		renderErrorResponse(c, "Could not update team", err)
+
+		return nil, nil
+	}
+
+	return UpdateTeam200JSONResponse{Team: *team}, nil
 }
 
 func (h *StrictHandlers) GetTeam(c *gin.Context, request GetTeamRequestObject) (GetTeamResponseObject, error) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	ctx := c.Request.Context()
+	tx := GetTxFromCtx(c)
 
-	return nil, nil
+	team, err := h.svc.Team.ByID(ctx, tx, db.TeamID(request.Id))
+	if err != nil {
+		renderErrorResponse(c, "Could not get team", err)
+
+		return nil, nil
+	}
+
+	return GetTeam200JSONResponse{Team: *team}, nil
 }
 
 func (h *StrictHandlers) DeleteTeam(c *gin.Context, request DeleteTeamRequestObject) (DeleteTeamResponseObject, error) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	ctx := c.Request.Context()
+	tx := GetTxFromCtx(c)
 
-	return nil, nil
+	_, err := h.svc.Team.Delete(ctx, tx, db.TeamID(request.Id))
+	if err != nil {
+		renderErrorResponse(c, "Could not delete team", err)
+
+		return nil, nil
+	}
+
+	return DeleteTeam204Response{}, nil
 }

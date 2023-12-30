@@ -26,21 +26,19 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type EntityNotification struct {
-	EntityNotificationID EntityNotificationID `json:"entityNotificationID" db:"entity_notification_id" required:"true" nullable:"false"`       // entity_notification_id
-	Entity               Entity               `json:"entity" db:"entity" required:"true" nullable:"false" ref:"#/components/schemas/DbEntity"` // entity
-	ID                   string               `json:"id" db:"id" required:"true" nullable:"false"`                                             // id
-	Message              string               `json:"message" db:"message" required:"true" nullable:"false"`                                   // message
-	Topic                models.Topics        `json:"topic" db:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"`     // topic
-	CreatedAt            time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                              // created_at
+	EntityNotificationID EntityNotificationID `json:"entityNotificationID" db:"entity_notification_id" required:"true" nullable:"false"`   // entity_notification_id
+	ID                   string               `json:"id" db:"id" required:"true" nullable:"false"`                                         // id
+	Message              string               `json:"message" db:"message" required:"true" nullable:"false"`                               // message
+	Topic                models.Topics        `json:"topic" db:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"` // topic
+	CreatedAt            time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                          // created_at
 
 }
 
 // EntityNotificationCreateParams represents insert params for 'public.entity_notifications'.
 type EntityNotificationCreateParams struct {
-	Entity  Entity        `json:"entity" required:"true" nullable:"false" ref:"#/components/schemas/DbEntity"` // entity
-	ID      string        `json:"id" required:"true" nullable:"false"`                                         // id
-	Message string        `json:"message" required:"true" nullable:"false"`                                    // message
-	Topic   models.Topics `json:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"`    // topic
+	ID      string        `json:"id" required:"true" nullable:"false"`                                      // id
+	Message string        `json:"message" required:"true" nullable:"false"`                                 // message
+	Topic   models.Topics `json:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"` // topic
 }
 
 type EntityNotificationID int
@@ -48,7 +46,6 @@ type EntityNotificationID int
 // CreateEntityNotification creates a new EntityNotification in the database with the given params.
 func CreateEntityNotification(ctx context.Context, db DB, params *EntityNotificationCreateParams) (*EntityNotification, error) {
 	en := &EntityNotification{
-		Entity:  params.Entity,
 		ID:      params.ID,
 		Message: params.Message,
 		Topic:   params.Topic,
@@ -59,17 +56,13 @@ func CreateEntityNotification(ctx context.Context, db DB, params *EntityNotifica
 
 // EntityNotificationUpdateParams represents update params for 'public.entity_notifications'.
 type EntityNotificationUpdateParams struct {
-	Entity  *Entity        `json:"entity" nullable:"false" ref:"#/components/schemas/DbEntity"` // entity
-	ID      *string        `json:"id" nullable:"false"`                                         // id
-	Message *string        `json:"message" nullable:"false"`                                    // message
-	Topic   *models.Topics `json:"topic" nullable:"false" ref:"#/components/schemas/Topics"`    // topic
+	ID      *string        `json:"id" nullable:"false"`                                      // id
+	Message *string        `json:"message" nullable:"false"`                                 // message
+	Topic   *models.Topics `json:"topic" nullable:"false" ref:"#/components/schemas/Topics"` // topic
 }
 
 // SetUpdateParams updates public.entity_notifications struct fields with the specified params.
 func (en *EntityNotification) SetUpdateParams(params *EntityNotificationUpdateParams) {
-	if params.Entity != nil {
-		en.Entity = *params.Entity
-	}
 	if params.ID != nil {
 		en.ID = *params.ID
 	}
@@ -150,14 +143,14 @@ func WithEntityNotificationFilters(filters map[string][]any) EntityNotificationS
 func (en *EntityNotification) Insert(ctx context.Context, db DB) (*EntityNotification, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.entity_notifications (
-	entity, id, message, topic
+	id, message, topic
 	) VALUES (
-	$1, $2, $3, $4
+	$1, $2, $3
 	) RETURNING * `
 	// run
-	logf(sqlstr, en.Entity, en.ID, en.Message, en.Topic)
+	logf(sqlstr, en.ID, en.Message, en.Topic)
 
-	rows, err := db.Query(ctx, sqlstr, en.Entity, en.ID, en.Message, en.Topic)
+	rows, err := db.Query(ctx, sqlstr, en.ID, en.Message, en.Topic)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("EntityNotification/Insert/db.Query: %w", &XoError{Entity: "Entity notification", Err: err}))
 	}
@@ -175,13 +168,13 @@ func (en *EntityNotification) Insert(ctx context.Context, db DB) (*EntityNotific
 func (en *EntityNotification) Update(ctx context.Context, db DB) (*EntityNotification, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.entity_notifications SET 
-	entity = $1, id = $2, message = $3, topic = $4 
-	WHERE entity_notification_id = $5 
+	id = $1, message = $2, topic = $3 
+	WHERE entity_notification_id = $4 
 	RETURNING * `
 	// run
-	logf(sqlstr, en.CreatedAt, en.Entity, en.ID, en.Message, en.Topic, en.EntityNotificationID)
+	logf(sqlstr, en.CreatedAt, en.ID, en.Message, en.Topic, en.EntityNotificationID)
 
-	rows, err := db.Query(ctx, sqlstr, en.Entity, en.ID, en.Message, en.Topic, en.EntityNotificationID)
+	rows, err := db.Query(ctx, sqlstr, en.ID, en.Message, en.Topic, en.EntityNotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("EntityNotification/Update/db.Query: %w", &XoError{Entity: "Entity notification", Err: err}))
 	}
@@ -199,7 +192,6 @@ func (en *EntityNotification) Update(ctx context.Context, db DB) (*EntityNotific
 func (en *EntityNotification) Upsert(ctx context.Context, db DB, params *EntityNotificationCreateParams) (*EntityNotification, error) {
 	var err error
 
-	en.Entity = params.Entity
 	en.ID = params.ID
 	en.Message = params.Message
 	en.Topic = params.Topic
@@ -284,7 +276,6 @@ func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db D
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	entity_notifications.created_at,
-	entity_notifications.entity,
 	entity_notifications.entity_notification_id,
 	entity_notifications.id,
 	entity_notifications.message,
@@ -306,83 +297,6 @@ func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db D
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[EntityNotification])
 	if err != nil {
 		return nil, logerror(fmt.Errorf("EntityNotification/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Entity notification", Err: err}))
-	}
-	return res, nil
-}
-
-// EntityNotificationsByEntityID retrieves a row from 'public.entity_notifications' as a EntityNotification.
-//
-// Generated from index 'entity_notifications_entity_id_idx'.
-func EntityNotificationsByEntityID(ctx context.Context, db DB, entity Entity, id string, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
-	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{}, filters: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 2
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	sqlstr := fmt.Sprintf(`SELECT 
-	entity_notifications.created_at,
-	entity_notifications.entity,
-	entity_notifications.entity_notification_id,
-	entity_notifications.id,
-	entity_notifications.message,
-	entity_notifications.topic %s 
-	 FROM public.entity_notifications %s 
-	 WHERE entity_notifications.entity = $1 AND entity_notifications.id = $2
-	 %s   %s 
-`, selects, joins, filters, groupbys)
-	sqlstr += c.orderBy
-	sqlstr += c.limit
-	sqlstr = "/* EntityNotificationsByEntityID */\n" + sqlstr
-
-	// run
-	// logf(sqlstr, entity, id)
-	rows, err := db.Query(ctx, sqlstr, append([]any{entity, id}, filterParams...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("EntityNotification/EntityNotificationsByEntityID/Query: %w", &XoError{Entity: "Entity notification", Err: err}))
-	}
-	defer rows.Close()
-	// process
-
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[EntityNotification])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("EntityNotification/EntityNotificationsByEntityID/pgx.CollectRows: %w", &XoError{Entity: "Entity notification", Err: err}))
 	}
 	return res, nil
 }
@@ -435,7 +349,6 @@ func EntityNotificationByEntityNotificationID(ctx context.Context, db DB, entity
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	entity_notifications.created_at,
-	entity_notifications.entity,
 	entity_notifications.entity_notification_id,
 	entity_notifications.id,
 	entity_notifications.message,

@@ -141,12 +141,12 @@ join_by() {
 
 to_lower_sentence() {
   local kebab=$(to_kebab "$1")
-  echo "${kebab/-/ }"
+  echo "${kebab//-/ }"
 }
 
 to_snake() {
   local kebab=$(to_kebab "$1")
-  echo "${kebab/-/_}"
+  echo "${kebab//-/_}"
 }
 
 to_pascal() {
@@ -155,11 +155,19 @@ to_pascal() {
 
   # Replace spaces with nothing and capitalize the following letter
   string=$(echo "$string" | sed 's/ \([a-z]\)/\U\1/g')
+  # Replace upper letters with space + lower
+  string=$(echo "$string" | sed 's/\([A-Z]\)/ \L\1/g')
 
   string=${string//[_-]/ }
 
+  local exceptions=("id" "api" "url" "http" "json" "html" "css")
+
   for word in $string; do
-    pascal_case+="${word^}"
+    if [[ " ${exceptions[*]} " =~ " $word " ]]; then
+      pascal_case+="${word^^}" # Uppercase the whole word
+    else
+      pascal_case+="${word^}" # Capitalize the first letter
+    fi
   done
 
   echo "$pascal_case"
@@ -172,7 +180,13 @@ to_camel() {
 
 function to_kebab() {
   echo -n "$1" |
-    sed 's/\([^A-Z+]\)\([A-Z0-9]\)/\1-\2/g; s/\([0-9]\)\([A-Z]\)/\1-\2/g; s/\([A-Z]\)\([0-9]\)/\1-\2/g; s/--/-/g; s/\([\/]\)-/\1/g' |
+    sed '
+      s/\([^A-Z+]\)\([A-Z0-9]\)/\1-\2/g;
+      s/\([0-9]\)\([A-Z]\)/\1-\2/g;
+      s/\([A-Z]\)\([0-9]\)/\1-\2/g;
+      s/--/-/g;
+      s/\([\/]\)-/\1/g
+    ' |
     tr '[:upper:]' '[:lower:]'
 }
 
@@ -270,20 +284,49 @@ ensure_envvars_set() {
   { ((n_missing != 0)) && exit 1; } || true
 }
 
+# FIXME:
+get_function_name_in_line_number() {
+  local line_number="$1"
+  local script_file="$2"
+  local function_name
+
+  local function_name=$(awk -v line="$line_number" '
+    /^ *[a-zA-Z_][a-zA-Z0-9_]* *\(\) *{/,/}/ {
+      if ($0 ~ /^ *[a-zA-Z_][a-zA-Z0-9_]* *\(\) *{/) {
+        current_function = $1
+        gsub(/\(\)/, "", current_function)
+      }
+      if ($0 ~ /^}/) {
+        current_function = ""
+      }
+    }
+
+    NR == line { print current_function; exit }
+  ' "$script_file")
+
+  echo "$function_name"
+}
+
 # Usage: trap 'show_tracebacks' ERR
 show_tracebacks() {
   local err_code="$?"
   set +o xtrace
   local bash_command=${BASH_COMMAND}
-  echo "${RED}Error in ${BASH_SOURCE[1]##"$TOP_LEVEL_DIR/"}:${BASH_LINENO[0]} ('$bash_command' exited with status $err_code)${OFF}" >&2
+  # function_name=$(get_function_name_in_line_number ${BASH_LINENO[0]} ${BASH_SOURCE[1]})
+  # if [[ -n $function_name ]]; then
+  #   function_name="[$function_name]"
+  # fi
 
   if [[ $bash_command != xlog* && $bash_command != xerr* && ${#FUNCNAME[@]} -gt 2 ]]; then
-    # Print out the stack trace described by $function_stack
+    echo >&2
+    printf "${RED}%0.s-${OFF}" $(seq "80") >&2
+    echo >&2
+    echo "${RED}Error in ${YELLOW}${BASH_SOURCE[1]##"$TOP_LEVEL_DIR/"}:${BASH_LINENO[0]}${OFF} ${CYAN}$function_name${OFF} (exited with status $err_code)${OFF}" >&2
     echo "${RED}Traceback of ${BASH_SOURCE[1]} (most recent call last):${OFF}" >&2
     for ((i = 0; i < ${#FUNCNAME[@]} - 1; i++)); do
       local funcname="${FUNCNAME[$i]}"
       [ "$i" -eq "0" ] && funcname=$bash_command
-      echo -e "  ${MAGENTA}${BASH_SOURCE[$i + 1]##*\/}:${BASH_LINENO[$i]}${OFF}\\t$funcname" >&2
+      echo -e "  ${MAGENTA}${BASH_SOURCE[$i + 1]##"$TOP_LEVEL_DIR/"}:${BASH_LINENO[$i]}${OFF}\\t$funcname" >&2
     done
   fi
   exit 1
@@ -303,12 +346,12 @@ cache_all() {
     return 0
   fi
 
-  >"$output_file"
+  true >"$output_file"
 
   for arg in "$@"; do
-    if [ -d "$arg" ]; then
+    if test -d "$arg"; then
       find "$arg" -type f -exec md5sum {} + >>"$output_file"
-    elif [ -f "$arg" ]; then
+    elif test -f "$arg"; then
       md5sum "$arg" >>"$output_file"
     else
       err "Invalid argument: $arg"
@@ -471,6 +514,35 @@ go-utils.find_structs() {
     err "No structs found in package $pkg"
   fi
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+}
+
+# Stores go struct fields to a given array.
+# Parameters:
+#    Struct name
+#    Filename
+#    Field array (nameref)
+go-utils.struct_fields() {
+  struct_name="$1"
+  file_name="$2"
+  local -n __arr="$3"
+
+  struct_definition=$(awk -v struct="$struct_name" '
+    $1 == "type" && $2 == struct {
+      in_struct = 1;
+      next;
+    }
+    in_struct {
+      if ($1 == "}") {
+        in_struct = 0;
+      } else if ($1 != "") {
+        print " " $1;
+      }
+    }
+  ' "$file_name")
+  while read -r line; do
+    field_value=$(awk -v field="$line" '$1 == field {print $1}' <<<"$struct_definition")
+    __arr+=("$field_value")
+  done < <(echo "$struct_definition")
 }
 
 # Stores go generic structs in package to a given array.

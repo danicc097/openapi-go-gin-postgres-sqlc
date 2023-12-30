@@ -240,11 +240,12 @@ func AllWorkItemRoleValues() []WorkItemRole {
 
 // Activity defines the model for Activity.
 type Activity struct {
-	ActivityID   int    `json:"activityID"`
-	Description  string `json:"description"`
-	IsProductive bool   `json:"isProductive"`
-	Name         string `json:"name"`
-	ProjectID    int    `json:"projectID"`
+	ActivityID   int        `json:"activityID"`
+	DeletedAt    *time.Time `json:"deletedAt"`
+	Description  string     `json:"description"`
+	IsProductive bool       `json:"isProductive"`
+	Name         string     `json:"name"`
+	ProjectID    int        `json:"projectID"`
 }
 
 // CreateActivityRequest defines the model for CreateActivityRequest.
@@ -280,7 +281,6 @@ type CreateDemoWorkItemRequest struct {
 type CreateTeamRequest struct {
 	Description string `json:"description"`
 	Name        string `json:"name"`
-	ProjectID   int    `json:"projectID"`
 }
 
 // CreateWorkItemCommentRequest defines the model for CreateWorkItemCommentRequest.
@@ -412,7 +412,6 @@ type DbTeam struct {
 type DbTeamCreateParams struct {
 	Description string `json:"description"`
 	Name        string `json:"name"`
-	ProjectID   int    `json:"projectID"`
 }
 
 // DbTimeEntry defines the model for DbTimeEntry.
@@ -513,11 +512,12 @@ type DbWorkItemRole = string
 
 // DbWorkItemTag defines the model for DbWorkItemTag.
 type DbWorkItemTag struct {
-	Color         string `json:"color"`
-	Description   string `json:"description"`
-	Name          string `json:"name"`
-	ProjectID     int    `json:"projectID"`
-	WorkItemTagID int    `json:"workItemTagID"`
+	Color         string     `json:"color"`
+	DeletedAt     *time.Time `json:"deletedAt"`
+	Description   string     `json:"description"`
+	Name          string     `json:"name"`
+	ProjectID     int        `json:"projectID"`
+	WorkItemTagID int        `json:"workItemTagID"`
 }
 
 // DbWorkItemTagCreateParams defines the model for DbWorkItemTagCreateParams.
@@ -723,7 +723,6 @@ type UpdateActivityRequest struct {
 type UpdateTeamRequest struct {
 	Description *string `json:"description,omitempty"`
 	Name        *string `json:"name,omitempty"`
-	ProjectID   *int    `json:"projectID,omitempty"`
 }
 
 // UpdateUserAuthRequest represents User authorization data to update
@@ -802,11 +801,12 @@ type WorkItemRole string
 
 // WorkItemTag defines the model for WorkItemTag.
 type WorkItemTag struct {
-	Color         string `json:"color"`
-	Description   string `json:"description"`
-	Name          string `json:"name"`
-	ProjectID     int    `json:"projectID"`
-	WorkItemTagID int    `json:"workItemTagID"`
+	Color         string     `json:"color"`
+	DeletedAt     *time.Time `json:"deletedAt"`
+	Description   string     `json:"description"`
+	Name          string     `json:"name"`
+	ProjectID     int        `json:"projectID"`
+	WorkItemTagID int        `json:"workItemTagID"`
 }
 
 // WorkItemType defines the model for WorkItemType.
@@ -845,13 +845,13 @@ type GetProjectWorkitemsParams struct {
 	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 }
 
-// CreateActivityJSONRequestBody defines body for CreateActivity for application/json ContentType.
-
-type CreateActivityJSONRequestBody = CreateActivityRequest
-
 // UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
 
 type UpdateActivityJSONRequestBody = UpdateActivityRequest
+
+// CreateActivityJSONRequestBody defines body for CreateActivity for application/json ContentType.
+
+type CreateActivityJSONRequestBody = CreateActivityRequest
 
 // UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
 
@@ -865,25 +865,17 @@ type InitializeProjectJSONRequestBody = InitializeProjectRequest
 
 type CreateTeamJSONRequestBody = CreateTeamRequest
 
-// UpdateTeamJSONRequestBody defines body for UpdateTeam for application/json ContentType.
-
-type UpdateTeamJSONRequestBody = UpdateTeamRequest
-
 // CreateWorkItemTagJSONRequestBody defines body for CreateWorkItemTag for application/json ContentType.
 
 type CreateWorkItemTagJSONRequestBody = CreateWorkItemTagRequest
-
-// UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
-
-type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
 
 // CreateWorkItemTypeJSONRequestBody defines body for CreateWorkItemType for application/json ContentType.
 
 type CreateWorkItemTypeJSONRequestBody = CreateWorkItemTypeRequest
 
-// UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
+// UpdateTeamJSONRequestBody defines body for UpdateTeam for application/json ContentType.
 
-type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
+type UpdateTeamJSONRequestBody = UpdateTeamRequest
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 
@@ -892,6 +884,14 @@ type UpdateUserJSONRequestBody = UpdateUserRequest
 // UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
 
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
+
+// UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
+
+type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
+
+// UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
+
+type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
 
 // CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
 

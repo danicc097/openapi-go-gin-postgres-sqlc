@@ -115,21 +115,21 @@ func CreateRepos() *repos.Repos {
 		nil,
 	)
 
-	return repos.New(
-		activityrepo,
-		demotwoworkitemrepo,
-		demoworkitemrepo,
-		ksrepo,
-		notifrepo,
-		projectrepo,
-		teamrepo,
-		timeentryrepo,
-		urepo,
-		workitemrepo,
-		workitemcommentrepo,
-		workitemtagrepo,
-		workitemtyperepo,
-	)
+	return &repos.Repos{
+		Activity:        activityrepo,
+		DemoTwoWorkItem: demotwoworkitemrepo,
+		DemoWorkItem:    demoworkitemrepo,
+		KanbanStep:      ksrepo,
+		Notification:    notifrepo,
+		Project:         projectrepo,
+		Team:            teamrepo,
+		TimeEntry:       timeentryrepo,
+		User:            urepo,
+		WorkItem:        workitemrepo,
+		WorkItemComment: workitemcommentrepo,
+		WorkItemTag:     workitemtagrepo,
+		WorkItemType:    workitemtyperepo,
+	}
 }
 
 // CreateTestRepos creates repositories with convenient wrappers for testing.

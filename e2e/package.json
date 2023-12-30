@@ -17,6 +17,6 @@
   "dependencies": {
     "@playwright/test": "^1.35.0",
     "axios": "^1.4.0",
-    "orval": "^6.17.0"
+    "orval": "^6.23.0"
   }
 }

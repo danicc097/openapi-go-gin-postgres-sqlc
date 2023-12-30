@@ -40,7 +40,7 @@ export interface paths {
     /** create team. */
     post: operations["CreateTeam"];
   };
-  "/project/{projectName}/team/{id}/": {
+  "/team/{id}": {
     /** get team. */
     get: operations["GetTeam"];
     /** delete team. */
@@ -56,7 +56,7 @@ export interface paths {
     /** create activity. */
     post: operations["CreateActivity"];
   };
-  "/project/{projectName}/activity/{id}/": {
+  "/activity/{id}": {
     /** get activity. */
     get: operations["GetActivity"];
     /** delete activity. */
@@ -64,7 +64,7 @@ export interface paths {
     /** update activity. */
     patch: operations["UpdateActivity"];
   };
-  "/project/{projectName}/workItemTag/{id}/": {
+  "/workItemTag/{id}": {
     /** get workitemtag. */
     get: operations["GetWorkItemTag"];
     /** delete workitemtag. */
@@ -76,7 +76,7 @@ export interface paths {
     /** create workitemtype. */
     post: operations["CreateWorkItemType"];
   };
-  "/project/{projectName}/workItemType/{id}/": {
+  "/workItemType/{id}": {
     /** get workitemtype. */
     get: operations["GetWorkItemType"];
     /** delete workitemtype. */
@@ -154,6 +154,8 @@ export interface components {
     };
     Activity: {
       activityID: number;
+      /** Format: date-time */
+      deletedAt?: string | null;
       description: string;
       isProductive: boolean;
       name: string;
@@ -171,6 +173,8 @@ export interface components {
     };
     WorkItemTag: {
       color: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
       description: string;
       name: string;
       projectID: number;
@@ -196,12 +200,10 @@ export interface components {
     CreateTeamRequest: {
       description: string;
       name: string;
-      projectID: number;
     };
     UpdateTeamRequest: {
       description?: string;
       name?: string;
-      projectID?: number;
     };
     Team: {
       /** Format: date-time */
@@ -257,6 +259,8 @@ export interface components {
     };
     DbWorkItemTag: {
       color: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
       description: string;
       name: string;
       projectID: number;
@@ -573,7 +577,6 @@ export interface components {
     DbTeamCreateParams: {
       description: string;
       name: string;
-      projectID: number;
     };
     DbWorkItemTagCreateParams: {
       color: string;
@@ -848,7 +851,6 @@ export interface operations {
   GetTeam: {
     parameters: {
       path: {
-        projectName: components["parameters"]["ProjectName"];
         id: components["parameters"]["SerialID"];
       };
     };
@@ -875,7 +877,6 @@ export interface operations {
   DeleteTeam: {
     parameters: {
       path: {
-        projectName: components["parameters"]["ProjectName"];
         id: components["parameters"]["SerialID"];
       };
     };
@@ -898,7 +899,6 @@ export interface operations {
   UpdateTeam: {
     parameters: {
       path: {
-        projectName: components["parameters"]["ProjectName"];
         id: components["parameters"]["SerialID"];
       };
     };
@@ -992,7 +992,6 @@ export interface operations {
   GetActivity: {
     parameters: {
       path: {
-        projectName: components["parameters"]["ProjectName"];
         id: components["parameters"]["SerialID"];
       };
     };
@@ -1019,7 +1018,6 @@ export interface operations {
   DeleteActivity: {
     parameters: {
       path: {
-        projectName: components["parameters"]["ProjectName"];
         id: components["parameters"]["SerialID"];
       };
     };
@@ -1042,7 +1040,6 @@ export interface operations {
   UpdateActivity: {
     parameters: {
       path: {
-        projectName: components["parameters"]["ProjectName"];
         id: components["parameters"]["SerialID"];
       };
     };
@@ -1074,7 +1071,6 @@ export interface operations {
   GetWorkItemTag: {
     parameters: {
       path: {
-        projectName: components["parameters"]["ProjectName"];
         id: components["parameters"]["SerialID"];
       };
     };
@@ -1101,7 +1097,6 @@ export interface operations {
   DeleteWorkItemTag: {
     parameters: {
       path: {
-        projectName: components["parameters"]["ProjectName"];
         id: components["parameters"]["SerialID"];
       };
     };
@@ -1124,7 +1119,6 @@ export interface operations {
   UpdateWorkItemTag: {
     parameters: {
       path: {
-        projectName: components["parameters"]["ProjectName"];
         id: components["parameters"]["SerialID"];
       };
     };
@@ -1187,7 +1181,6 @@ export interface operations {
   GetWorkItemType: {
     parameters: {
       path: {
-        projectName: components["parameters"]["ProjectName"];
         id: components["parameters"]["SerialID"];
       };
     };
@@ -1214,7 +1207,6 @@ export interface operations {
   DeleteWorkItemType: {
     parameters: {
       path: {
-        projectName: components["parameters"]["ProjectName"];
         id: components["parameters"]["SerialID"];
       };
     };
@@ -1237,7 +1229,6 @@ export interface operations {
   UpdateWorkItemType: {
     parameters: {
       path: {
-        projectName: components["parameters"]["ProjectName"];
         id: components["parameters"]["SerialID"];
       };
     };

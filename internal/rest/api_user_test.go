@@ -27,7 +27,7 @@ func TestHandlers_DeleteUser(t *testing.T) {
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	svc := services.New(logger, services.CreateTestRepos(), testPool)
-	ff := servicetestutil.NewFixtureFactory(testPool, svc)
+	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	tests := []struct {
 		name   string
@@ -79,7 +79,7 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	svc := services.New(logger, services.CreateTestRepos(), testPool)
-	ff := servicetestutil.NewFixtureFactory(testPool, svc)
+	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	t.Run("authenticated_user", func(t *testing.T) {
 		t.Parallel()
@@ -118,7 +118,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	svc := services.New(logger, services.CreateTestRepos(), testPool)
-	ff := servicetestutil.NewFixtureFactory(testPool, svc)
+	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	// NOTE:
 	// scopes and roles part of rest layer. don't test any actual logic here, done in services

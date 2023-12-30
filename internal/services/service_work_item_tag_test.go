@@ -26,7 +26,7 @@ func TestWorkItemTag_Update(t *testing.T) {
 	requiredProject := models.ProjectDemo
 
 	svc := services.New(logger, services.CreateTestRepos(), testPool)
-	ff := servicetestutil.NewFixtureFactory(testPool, svc)
+	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	team, err := svc.Team.Create(context.Background(), testPool, postgresqltestutil.RandomTeamCreateParams(t, internal.ProjectIDByName[requiredProject]))
 	require.NoError(t, err)
@@ -58,7 +58,7 @@ func TestWorkItemTag_Update(t *testing.T) {
 		errorContains string
 	}{
 		{
-			name: "created",
+			name: "updated correctly",
 			args: args{
 				params: &db.WorkItemTagUpdateParams{
 					Name: pointers.New("changed"),

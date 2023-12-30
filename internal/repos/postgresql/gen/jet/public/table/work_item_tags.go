@@ -22,6 +22,7 @@ type workItemTagsTable struct {
 	Name          postgres.ColumnString
 	Description   postgres.ColumnString
 	Color         postgres.ColumnString
+	DeletedAt     postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -67,8 +68,9 @@ func newWorkItemTagsTableImpl(schemaName, tableName, alias string) workItemTagsT
 		NameColumn          = postgres.StringColumn("name")
 		DescriptionColumn   = postgres.StringColumn("description")
 		ColorColumn         = postgres.StringColumn("color")
-		allColumns          = postgres.ColumnList{WorkItemTagIDColumn, ProjectIDColumn, NameColumn, DescriptionColumn, ColorColumn}
-		mutableColumns      = postgres.ColumnList{ProjectIDColumn, NameColumn, DescriptionColumn, ColorColumn}
+		DeletedAtColumn     = postgres.TimestampzColumn("deleted_at")
+		allColumns          = postgres.ColumnList{WorkItemTagIDColumn, ProjectIDColumn, NameColumn, DescriptionColumn, ColorColumn, DeletedAtColumn}
+		mutableColumns      = postgres.ColumnList{ProjectIDColumn, NameColumn, DescriptionColumn, ColorColumn, DeletedAtColumn}
 	)
 
 	return workItemTagsTable{
@@ -80,6 +82,7 @@ func newWorkItemTagsTableImpl(schemaName, tableName, alias string) workItemTagsT
 		Name:          NameColumn,
 		Description:   DescriptionColumn,
 		Color:         ColorColumn,
+		DeletedAt:     DeletedAtColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

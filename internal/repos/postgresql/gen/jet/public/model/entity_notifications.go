@@ -13,7 +13,6 @@ import (
 
 type EntityNotifications struct {
 	EntityNotificationID int32     `sql:"primary_key" db:"entity_notification_id"`
-	Entity               string    `db:"entity"`
 	ID                   string    `db:"id"`
 	Message              string    `db:"message"`
 	Topic                string    `db:"topic"`
