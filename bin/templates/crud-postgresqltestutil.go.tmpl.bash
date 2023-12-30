@@ -18,9 +18,9 @@ func NewRandom${pascal_name}(t *testing.T, d db.DBTX $create_params) (*db.${pasc
 
 	${camel_name}Repo := postgresql.New${pascal_name}()
 
-	ucp := Random${pascal_name}CreateParams(t)
+	ucp := Random${pascal_name}CreateParams(t $create_args)
 
-	${camel_name}, err := ${camel_name}Repo.Create(context.Background(), d, ucp $create_args)
+	${camel_name}, err := ${camel_name}Repo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, \"failed to create random entity\") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
 	return ${camel_name}, nil

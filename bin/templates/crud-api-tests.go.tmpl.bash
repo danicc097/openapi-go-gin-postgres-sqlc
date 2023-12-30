@@ -1,3 +1,5 @@
+create_args="$(test -n "$with_project" && echo ", projectID")"
+
 # shellcheck disable=SC2028,SC2154
 echo "package rest_test
 
@@ -59,7 +61,10 @@ func TestHandlers_Delete${pascal_name}(t *testing.T) {
 			})
 			require.NoError(t, err, \"ff.CreateUser: %s\")
 
-			${camel_name}, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{})
+$(test -n "$with_project" && echo "		projectID := internal.ProjectIDByName[models.ProjectDemo]")
+			${camel_name}, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
+        $(test -n "$with_project" && echo "		ProjectID: projectID,")
+      })
 			require.NoError(t, err, \"ff.CreateUser: %s\")
 
 			id := ${camel_name}.${pascal_name}.${pascal_name}ID
@@ -96,7 +101,10 @@ func TestHandlers_Get${pascal_name}(t *testing.T) {
 		})
 		require.NoError(t, err, \"ff.CreateUser: %s\")
 
-		${camel_name}, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{})
+$(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models\"")
+		${camel_name}, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
+      $(test -n "$with_project" && echo "		ProjectID: projectID,")
+    })
 		require.NoError(t, err, \"ff.CreateUser: %s\")
 
 		id := ${camel_name}.${pascal_name}.${pascal_name}ID
@@ -126,6 +134,8 @@ func TestHandlers_Update${pascal_name}(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
+$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+
 	tests := []struct {
 		name                    string
 		status                  int
@@ -136,7 +146,7 @@ func TestHandlers_Update${pascal_name}(t *testing.T) {
 			name:   \"valid ${sentence_name} update\",
 			status: http.StatusOK,
 			body: func() rest.Update${pascal_name}Request {
-				random${pascal_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t)
+				random${pascal_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
 
 				return rest.Update${pascal_name}Request{
 					${pascal_name}UpdateParams: db.${pascal_name}UpdateParams{
@@ -168,7 +178,10 @@ done)
 			})
 			require.NoError(t, err, \"ff.CreateUser: %s\")
 
-			${camel_name}, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{})
+$(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models\"")
+			${camel_name}, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
+        $(test -n "$with_project" && echo "		ProjectID: projectID,")
+      })
 			require.NoError(t, err, \"ff.CreateUser: %s\")
 
 			id := ${camel_name}.${pascal_name}.${pascal_name}ID

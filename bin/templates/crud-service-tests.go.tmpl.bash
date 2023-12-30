@@ -1,3 +1,5 @@
+create_args="$(test -n "$with_project" && echo ", projectID")"
+
 # shellcheck disable=SC2028,SC2154
 echo "package services_test
 
@@ -38,8 +40,10 @@ func Test${pascal_name}_Update(t *testing.T) {
 	err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, team.TeamID)
 	require.NoError(t, err)
 
-	${camel_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t)
-	wit, err := svc.${pascal_name}.Create(context.Background(), testPool, ${camel_name}CreateParams)
+$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+
+	${camel_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
+	${lower_name}, err := svc.${pascal_name}.Create(context.Background(), testPool, ${camel_name}CreateParams)
 	require.NoError(t, err)
 
 	type args struct {
@@ -48,7 +52,7 @@ func Test${pascal_name}_Update(t *testing.T) {
 		withUserInProject bool
 	}
 
-	random${pascal_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t)
+	random${pascal_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
 
 	tests := []struct {
 		name          string
@@ -65,7 +69,7 @@ func Test${pascal_name}_Update(t *testing.T) {
 done)
 				},
 				withUserInProject: false, //
-				id:                wit.${pascal_name}ID,
+				id:                ${lower_name}.${pascal_name}ID,
 			},
 			want: db.${pascal_name}UpdateParams{
 				// generating fields based on randomized createparams since it's a superset of updateparams.

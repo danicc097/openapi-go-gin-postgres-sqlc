@@ -1,5 +1,6 @@
 # shellcheck disable=SC2028,SC2154
 delete_method=$(test -n "$has_deleted_at" && echo "SoftDelete" || echo "Delete")
+create_args="$(test -n "$with_project" && echo ", projectID")"
 
 echo "package postgresql_test
 
@@ -9,6 +10,9 @@ import (
 	\"testing\"
 	\"time\"
 
+
+$(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models\"")
+$(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal\"")
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil\"
@@ -20,7 +24,8 @@ import (
 func Test${pascal_name}_Update(t *testing.T) {
 	t.Parallel()
 
-	${lower_name}, _ := postgresqltestutil.NewRandom${pascal_name}(t, testPool)
+$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+	${lower_name}, _ := postgresqltestutil.NewRandom${pascal_name}(t, testPool $create_args)
 
 	type args struct {
 		id     db.${pascal_name}ID
@@ -39,12 +44,12 @@ func Test${pascal_name}_Update(t *testing.T) {
 			args: args{
 				id:     ${lower_name}.${pascal_name}ID,
 				params: db.${pascal_name}UpdateParams{
-					// TODO: set fields to update
+					// TODO: set fields to update as in crud-api-tests.go.tmpl.bash
 				},
 			},
 			want: func() *db.${pascal_name} {
 				u := *${lower_name}
-				// TODO: set updated fields to expected values
+				// TODO: set updated fields to expected values as in crud-api-tests.go.tmpl.bash
 
 				return &u
 			}(),
@@ -84,7 +89,8 @@ func Test${pascal_name}_Update(t *testing.T) {
 func Test${pascal_name}_${delete_method}(t *testing.T) {
 	t.Parallel()
 
-	${lower_name}, _ := postgresqltestutil.NewRandom${pascal_name}(t, testPool)
+	$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+	${lower_name}, _ := postgresqltestutil.NewRandom${pascal_name}(t, testPool $create_args)
 
 	type args struct {
 		id db.${pascal_name}ID
@@ -126,7 +132,8 @@ func Test${pascal_name}_${delete_method}(t *testing.T) {
 func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
-	${lower_name}, _ := postgresqltestutil.NewRandom${pascal_name}(t, testPool)
+	$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+	${lower_name}, _ := postgresqltestutil.NewRandom${pascal_name}(t, testPool $create_args)
 
 	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), 10, 65*time.Millisecond)
 
@@ -165,7 +172,7 @@ func Test${pascal_name}_Create(t *testing.T) {
 	t.Run(\"correct_${camel_name}\", func(t *testing.T) {
 		t.Parallel()
 
-		${camel_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t)
+		${camel_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
 
 		want := want{
 			${pascal_name}CreateParams: *${camel_name}CreateParams,
@@ -188,7 +195,7 @@ done)
 		t.Skip(\"not implemented\")
 		t.Parallel()
 
-		${camel_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t)
+		${camel_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
 		// NOTE: update params to trigger check error
 
 		args := args{
