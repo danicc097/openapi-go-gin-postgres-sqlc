@@ -1334,18 +1334,12 @@ x.release() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a given db table by struct name.
-# Accepts flags: --project
+# Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a
+# given db table by struct name.
+# Accepts flags:
+# --project - Generate as entity under a project.
 # Args: name
 x.dev-utils.create-crud() {
-  # TODO: new command x.dev-utils.create-crud-tests
-  # since we need to project gen with compilable state after this gen.
-  # maybe we could x.gen right here once has_deleted_at is implemented.
-  # FIXME: openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db/extra.xo.go:28
-  # is not generated to spec, so DbEntity does not exist.
-  # can swaggest generate spec from subtype? no
-  # better create Entity directly in spec.
-
   xsetup.backup
   { { {
     load_exported_crud_gen_vars $1 ${@:2}
@@ -1484,9 +1478,8 @@ load_exported_crud_gen_vars() {
   for arg in "${@:2}"; do
     case $arg in
     --project)
-      # For entities specific to a project, ie
-      # with project_id FK referencing projects.project_id
-      # TODO: maybe could autogenerate directly without arg passed, are there exceptions?
+      # For entities specific to a project, ie with project_id FK referencing projects.project_id
+      # Could autogenerate directly without arg passed, but just be explicit
       export with_project=1
       ;;
     *) ;;
