@@ -34,25 +34,20 @@ export const createWorkItemType = (
 /**
  * @summary get workitemtype.
  */
-export const getWorkItemType = (
-  projectName: 'demo' | 'demo_two',
-  id: number,
-  options?: SecondParameter<typeof customInstance>,
-) => {
-  return customInstance<WorkItemType>({ url: `/project/${projectName}/workItemType/${id}/`, method: 'GET' }, options)
+export const getWorkItemType = (id: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<WorkItemType>({ url: `/workItemType/${id}`, method: 'GET' }, options)
 }
 /**
  * @summary update workitemtype.
  */
 export const updateWorkItemType = (
-  projectName: 'demo' | 'demo_two',
   id: number,
   updateWorkItemTypeRequest: UpdateWorkItemTypeRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemType>(
     {
-      url: `/project/${projectName}/workItemType/${id}/`,
+      url: `/workItemType/${id}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: updateWorkItemTypeRequest,
@@ -63,12 +58,8 @@ export const updateWorkItemType = (
 /**
  * @summary delete workitemtype.
  */
-export const deleteWorkItemType = (
-  projectName: 'demo' | 'demo_two',
-  id: number,
-  options?: SecondParameter<typeof customInstance>,
-) => {
-  return customInstance<void>({ url: `/project/${projectName}/workItemType/${id}/`, method: 'DELETE' }, options)
+export const deleteWorkItemType = (id: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<void>({ url: `/workItemType/${id}`, method: 'DELETE' }, options)
 }
 export type CreateWorkItemTypeResult = NonNullable<Awaited<ReturnType<typeof createWorkItemType>>>
 export type GetWorkItemTypeResult = NonNullable<Awaited<ReturnType<typeof getWorkItemType>>>

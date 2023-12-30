@@ -26,7 +26,7 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - ${camel_name}
-  /${kebab_name}/{id}/:
+  /${kebab_name}/{id}:
     get:
       summary: get ${sentence_name}.
       !!merge <<: *x-require-authenticated

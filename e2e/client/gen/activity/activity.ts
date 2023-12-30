@@ -34,25 +34,20 @@ export const createActivity = (
 /**
  * @summary get activity.
  */
-export const getActivity = (
-  projectName: 'demo' | 'demo_two',
-  id: number,
-  options?: SecondParameter<typeof customInstance>,
-) => {
-  return customInstance<Activity>({ url: `/project/${projectName}/activity/${id}/`, method: 'GET' }, options)
+export const getActivity = (id: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<Activity>({ url: `/activity/${id}`, method: 'GET' }, options)
 }
 /**
  * @summary update activity.
  */
 export const updateActivity = (
-  projectName: 'demo' | 'demo_two',
   id: number,
   updateActivityRequest: UpdateActivityRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<Activity>(
     {
-      url: `/project/${projectName}/activity/${id}/`,
+      url: `/activity/${id}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: updateActivityRequest,
@@ -63,12 +58,8 @@ export const updateActivity = (
 /**
  * @summary delete activity.
  */
-export const deleteActivity = (
-  projectName: 'demo' | 'demo_two',
-  id: number,
-  options?: SecondParameter<typeof customInstance>,
-) => {
-  return customInstance<void>({ url: `/project/${projectName}/activity/${id}/`, method: 'DELETE' }, options)
+export const deleteActivity = (id: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<void>({ url: `/activity/${id}`, method: 'DELETE' }, options)
 }
 export type CreateActivityResult = NonNullable<Awaited<ReturnType<typeof createActivity>>>
 export type GetActivityResult = NonNullable<Awaited<ReturnType<typeof getActivity>>>

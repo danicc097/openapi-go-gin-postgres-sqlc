@@ -34,41 +34,27 @@ export const createTeam = (
 /**
  * @summary get team.
  */
-export const getTeam = (
-  projectName: 'demo' | 'demo_two',
-  id: number,
-  options?: SecondParameter<typeof customInstance>,
-) => {
-  return customInstance<Team>({ url: `/project/${projectName}/team/${id}/`, method: 'GET' }, options)
+export const getTeam = (id: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<Team>({ url: `/team/${id}`, method: 'GET' }, options)
 }
 /**
  * @summary update team.
  */
 export const updateTeam = (
-  projectName: 'demo' | 'demo_two',
   id: number,
   updateTeamRequest: UpdateTeamRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<Team>(
-    {
-      url: `/project/${projectName}/team/${id}/`,
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      data: updateTeamRequest,
-    },
+    { url: `/team/${id}`, method: 'PATCH', headers: { 'Content-Type': 'application/json' }, data: updateTeamRequest },
     options,
   )
 }
 /**
  * @summary delete team.
  */
-export const deleteTeam = (
-  projectName: 'demo' | 'demo_two',
-  id: number,
-  options?: SecondParameter<typeof customInstance>,
-) => {
-  return customInstance<void>({ url: `/project/${projectName}/team/${id}/`, method: 'DELETE' }, options)
+export const deleteTeam = (id: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<void>({ url: `/team/${id}`, method: 'DELETE' }, options)
 }
 export type CreateTeamResult = NonNullable<Awaited<ReturnType<typeof createTeam>>>
 export type GetTeamResult = NonNullable<Awaited<ReturnType<typeof getTeam>>>

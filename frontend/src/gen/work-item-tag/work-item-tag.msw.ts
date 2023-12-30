@@ -45,7 +45,7 @@ export const getWorkItemTagMock = () => [
       },
     })
   }),
-  http.get('*/project/:projectName/workItemTag/:id/', async () => {
+  http.get('*/workItemTag/:id', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getGetWorkItemTagMock()), {
       status: 200,
@@ -54,7 +54,7 @@ export const getWorkItemTagMock = () => [
       },
     })
   }),
-  http.patch('*/project/:projectName/workItemTag/:id/', async () => {
+  http.patch('*/workItemTag/:id', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getUpdateWorkItemTagMock()), {
       status: 200,
@@ -63,7 +63,7 @@ export const getWorkItemTagMock = () => [
       },
     })
   }),
-  http.delete('*/project/:projectName/workItemTag/:id/', async () => {
+  http.delete('*/workItemTag/:id', async () => {
     await delay(1000)
     return new HttpResponse(null, {
       status: 200,

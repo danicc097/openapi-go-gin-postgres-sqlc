@@ -42,7 +42,7 @@ export const getWorkItemTypeMock = () => [
       },
     })
   }),
-  http.get('*/project/:projectName/workItemType/:id/', async () => {
+  http.get('*/workItemType/:id', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getGetWorkItemTypeMock()), {
       status: 200,
@@ -51,7 +51,7 @@ export const getWorkItemTypeMock = () => [
       },
     })
   }),
-  http.patch('*/project/:projectName/workItemType/:id/', async () => {
+  http.patch('*/workItemType/:id', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getUpdateWorkItemTypeMock()), {
       status: 200,
@@ -60,7 +60,7 @@ export const getWorkItemTypeMock = () => [
       },
     })
   }),
-  http.delete('*/project/:projectName/workItemType/:id/', async () => {
+  http.delete('*/workItemType/:id', async () => {
     await delay(1000)
     return new HttpResponse(null, {
       status: 200,

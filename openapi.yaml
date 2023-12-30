@@ -220,13 +220,12 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - team
-  /project/{projectName}/team/{id}/:
+  /team/{id}:
     get:
       summary: get team.
       !!merge <<: *x-require-authenticated
       operationId: GetTeam
       parameters:
-        - $ref: '#/components/parameters/ProjectName'
         - $ref: '#/components/parameters/SerialID'
       responses:
         200:
@@ -243,7 +242,6 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateTeam
       parameters:
-        - $ref: '#/components/parameters/ProjectName'
         - $ref: '#/components/parameters/SerialID'
       requestBody:
         content:
@@ -266,7 +264,6 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteTeam
       parameters:
-        - $ref: '#/components/parameters/ProjectName'
         - $ref: '#/components/parameters/SerialID'
       responses:
         204:
@@ -333,13 +330,12 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - activity
-  /project/{projectName}/activity/{id}/:
+  /activity/{id}:
     get:
       summary: get activity.
       !!merge <<: *x-require-authenticated
       operationId: GetActivity
       parameters:
-        - $ref: '#/components/parameters/ProjectName'
         - $ref: '#/components/parameters/SerialID'
       responses:
         200:
@@ -358,7 +354,6 @@ paths:
       x-required-scopes:
         - activity:edit
       parameters:
-        - $ref: '#/components/parameters/ProjectName'
         - $ref: '#/components/parameters/SerialID'
       requestBody:
         content:
@@ -383,7 +378,6 @@ paths:
       x-required-scopes:
         - activity:delete
       parameters:
-        - $ref: '#/components/parameters/ProjectName'
         - $ref: '#/components/parameters/SerialID'
       responses:
         204:
@@ -391,13 +385,12 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - activity
-  /project/{projectName}/workItemTag/{id}/:
+  /workItemTag/{id}:
     get:
       summary: get workitemtag.
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemTag
       parameters:
-        - $ref: '#/components/parameters/ProjectName'
         - $ref: '#/components/parameters/SerialID'
       responses:
         200:
@@ -414,7 +407,6 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkItemTag
       parameters:
-        - $ref: '#/components/parameters/ProjectName'
         - $ref: '#/components/parameters/SerialID'
       requestBody:
         content:
@@ -437,7 +429,6 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkItemTag
       parameters:
-        - $ref: '#/components/parameters/ProjectName'
         - $ref: '#/components/parameters/SerialID'
       responses:
         204:
@@ -468,13 +459,12 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - workItemType
-  /project/{projectName}/workItemType/{id}/:
+  /workItemType/{id}:
     get:
       summary: get workitemtype.
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemType
       parameters:
-        - $ref: '#/components/parameters/ProjectName'
         - $ref: '#/components/parameters/SerialID'
       responses:
         200:
@@ -491,7 +481,6 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkItemType
       parameters:
-        - $ref: '#/components/parameters/ProjectName'
         - $ref: '#/components/parameters/SerialID'
       requestBody:
         content:
@@ -514,7 +503,6 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkItemType
       parameters:
-        - $ref: '#/components/parameters/ProjectName'
         - $ref: '#/components/parameters/SerialID'
       responses:
         204:

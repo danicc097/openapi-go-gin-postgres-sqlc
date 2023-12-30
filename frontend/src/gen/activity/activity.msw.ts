@@ -45,7 +45,7 @@ export const getActivityMock = () => [
       },
     })
   }),
-  http.get('*/project/:projectName/activity/:id/', async () => {
+  http.get('*/activity/:id', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getGetActivityMock()), {
       status: 200,
@@ -54,7 +54,7 @@ export const getActivityMock = () => [
       },
     })
   }),
-  http.patch('*/project/:projectName/activity/:id/', async () => {
+  http.patch('*/activity/:id', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getUpdateActivityMock()), {
       status: 200,
@@ -63,7 +63,7 @@ export const getActivityMock = () => [
       },
     })
   }),
-  http.delete('*/project/:projectName/activity/:id/', async () => {
+  http.delete('*/activity/:id', async () => {
     await delay(1000)
     return new HttpResponse(null, {
       status: 200,
