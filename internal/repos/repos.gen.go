@@ -3,17 +3,18 @@
 package repos
 
 type Repos struct {
-	Activity        Activity
-	DemoTwoWorkItem DemoTwoWorkItem
-	DemoWorkItem    DemoWorkItem
-	KanbanStep      KanbanStep
-	Notification    Notification
-	Project         Project
-	Team            Team
-	TimeEntry       TimeEntry
-	User            User
-	WorkItem        WorkItem
-	WorkItemComment WorkItemComment
-	WorkItemTag     WorkItemTag
-	WorkItemType    WorkItemType
+	Activity           Activity
+	DemoTwoWorkItem    DemoTwoWorkItem
+	DemoWorkItem       DemoWorkItem
+	EntityNotification EntityNotification
+	KanbanStep         KanbanStep
+	Notification       Notification
+	Project            Project
+	Team               Team
+	TimeEntry          TimeEntry
+	User               User
+	WorkItem           WorkItem
+	WorkItemComment    WorkItemComment
+	WorkItemTag        WorkItemTag
+	WorkItemType       WorkItemType
 }

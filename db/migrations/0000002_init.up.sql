@@ -262,9 +262,8 @@ create table entity_notifications (
   , message text not null
   , topic text not null
   , created_at timestamp with time zone default current_timestamp not null
-    , project_id int not null
+  , project_id int not null
   , foreign key (project_id) references projects (project_id) on delete cascade
-
 );
 
 comment on column entity_notifications.topic is '"type":models.Topics';
@@ -513,6 +512,7 @@ comment on column teams.project_id is '"cardinality":M2O && "properties":hidden'
 comment on column work_item_tags.project_id is '"cardinality":M2O && "properties":hidden';
 
 comment on column work_item_types.project_id is '"cardinality":M2O && "properties":hidden';
+
 comment on column entity_notifications.project_id is '"cardinality":M2O && "properties":hidden';
 
 comment on column kanban_steps.project_id is '"cardinality":M2O && "properties":hidden';

@@ -82,6 +82,9 @@ import {
   DbUserWIAUWorkItem,
   DemoKanbanSteps,
   DemoTwoKanbanSteps,
+  CreateEntityNotificationRequest,
+  UpdateEntityNotificationRequest,
+  EntityNotification,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -976,5 +979,41 @@ export const DemoTwoKanbanStepsDecoder: Decoder<DemoTwoKanbanSteps> = {
       throw new Error(`Schema ${DemoTwoKanbanStepsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DemoTwoKanbanStepsDecoder.definitionName)
+  },
+}
+export const CreateEntityNotificationRequestDecoder: Decoder<CreateEntityNotificationRequest> = {
+  definitionName: 'CreateEntityNotificationRequest',
+  schemaRef: '#/definitions/CreateEntityNotificationRequest',
+
+  decode(json: unknown): CreateEntityNotificationRequest {
+    const schema = ajv.getSchema(CreateEntityNotificationRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${CreateEntityNotificationRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, CreateEntityNotificationRequestDecoder.definitionName)
+  },
+}
+export const UpdateEntityNotificationRequestDecoder: Decoder<UpdateEntityNotificationRequest> = {
+  definitionName: 'UpdateEntityNotificationRequest',
+  schemaRef: '#/definitions/UpdateEntityNotificationRequest',
+
+  decode(json: unknown): UpdateEntityNotificationRequest {
+    const schema = ajv.getSchema(UpdateEntityNotificationRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${UpdateEntityNotificationRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, UpdateEntityNotificationRequestDecoder.definitionName)
+  },
+}
+export const EntityNotificationDecoder: Decoder<EntityNotification> = {
+  definitionName: 'EntityNotification',
+  schemaRef: '#/definitions/EntityNotification',
+
+  decode(json: unknown): EntityNotification {
+    const schema = ajv.getSchema(EntityNotificationDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${EntityNotificationDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, EntityNotificationDecoder.definitionName)
   },
 }

@@ -126,6 +126,17 @@ type ClientInterface interface {
 	// MyProviderLogin request
 	MyProviderLogin(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteEntityNotification request
+	DeleteEntityNotification(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetEntityNotification request
+	GetEntityNotification(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateEntityNotification request with any body
+	UpdateEntityNotificationWithBody(ctx context.Context, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateEntityNotification(ctx context.Context, id SerialID, body UpdateEntityNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// Events request
 	Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -156,6 +167,11 @@ type ClientInterface interface {
 	UpdateProjectConfigWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateProjectConfig(ctx context.Context, projectName ProjectName, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateEntityNotification request with any body
+	CreateEntityNotificationWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateEntityNotification(ctx context.Context, projectName ProjectName, body CreateEntityNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// InitializeProject request with any body
 	InitializeProjectWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -382,6 +398,82 @@ func (c *Client) MyProviderLogin(ctx context.Context, reqEditors ...RequestEdito
 	}
 }
 
+func (c *Client) DeleteEntityNotification(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteEntityNotificationRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) GetEntityNotification(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetEntityNotificationRequest(c.Server, id)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) UpdateEntityNotificationWithBody(ctx context.Context, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEntityNotificationRequestWithBody(c.Server, id, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) UpdateEntityNotification(ctx context.Context, id SerialID, body UpdateEntityNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateEntityNotificationRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
 func (c *Client) Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewEventsRequest(c.Server, params)
 	if err != nil {
@@ -574,6 +666,44 @@ func (c *Client) UpdateProjectConfigWithBody(ctx context.Context, projectName Pr
 
 func (c *Client) UpdateProjectConfig(ctx context.Context, projectName ProjectName, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateProjectConfigRequest(c.Server, projectName, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) CreateEntityNotificationWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateEntityNotificationRequestWithBody(c.Server, projectName, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) CreateEntityNotification(ctx context.Context, projectName ProjectName, body CreateEntityNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateEntityNotificationRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1433,6 +1563,121 @@ func NewMyProviderLoginRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewDeleteEntityNotificationRequest generates requests for DeleteEntityNotification
+func NewDeleteEntityNotificationRequest(server string, id SerialID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/entity-notification/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetEntityNotificationRequest generates requests for GetEntityNotification
+func NewGetEntityNotificationRequest(server string, id SerialID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/entity-notification/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateEntityNotificationRequest calls the generic UpdateEntityNotification builder with application/json body
+func NewUpdateEntityNotificationRequest(server string, id SerialID, body UpdateEntityNotificationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateEntityNotificationRequestWithBody(server, id, "application/json", bodyReader)
+}
+
+// NewUpdateEntityNotificationRequestWithBody generates requests for UpdateEntityNotification with any type of body
+func NewUpdateEntityNotificationRequestWithBody(server string, id SerialID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/entity-notification/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewEventsRequest generates requests for Events
 func NewEventsRequest(server string, params *EventsParams) (*http.Request, error) {
 	var err error
@@ -1788,6 +2033,53 @@ func NewUpdateProjectConfigRequestWithBody(server string, projectName ProjectNam
 	}
 
 	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateEntityNotificationRequest calls the generic CreateEntityNotification builder with application/json body
+func NewCreateEntityNotificationRequest(server string, projectName ProjectName, body CreateEntityNotificationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateEntityNotificationRequestWithBody(server, projectName, "application/json", bodyReader)
+}
+
+// NewCreateEntityNotificationRequestWithBody generates requests for CreateEntityNotification with any type of body
+func NewCreateEntityNotificationRequestWithBody(server string, projectName ProjectName, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "projectName", runtime.ParamLocationPath, projectName)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/project/%s/entity-notification/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -2805,6 +3097,17 @@ type ClientWithResponsesInterface interface {
 	// MyProviderLogin request
 	MyProviderLoginWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MyProviderLoginResponse, error)
 
+	// DeleteEntityNotification request
+	DeleteEntityNotificationWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*DeleteEntityNotificationResponse, error)
+
+	// GetEntityNotification request
+	GetEntityNotificationWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*GetEntityNotificationResponse, error)
+
+	// UpdateEntityNotification request with any body
+	UpdateEntityNotificationWithBodyWithResponse(ctx context.Context, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEntityNotificationResponse, error)
+
+	UpdateEntityNotificationWithResponse(ctx context.Context, id SerialID, body UpdateEntityNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEntityNotificationResponse, error)
+
 	// Events request
 	EventsWithResponse(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*EventsResponse, error)
 
@@ -2835,6 +3138,11 @@ type ClientWithResponsesInterface interface {
 	UpdateProjectConfigWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error)
 
 	UpdateProjectConfigWithResponse(ctx context.Context, projectName ProjectName, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateProjectConfigResponse, error)
+
+	// CreateEntityNotification request with any body
+	CreateEntityNotificationWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEntityNotificationResponse, error)
+
+	CreateEntityNotificationWithResponse(ctx context.Context, projectName ProjectName, body CreateEntityNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEntityNotificationResponse, error)
 
 	// InitializeProject request with any body
 	InitializeProjectWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*InitializeProjectResponse, error)
@@ -3060,6 +3368,74 @@ func (r MyProviderLoginResponse) StatusCode() int {
 	return 0
 }
 
+type DeleteEntityNotificationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteEntityNotificationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteEntityNotificationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetEntityNotificationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EntityNotification
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetEntityNotificationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetEntityNotificationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateEntityNotificationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EntityNotification
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateEntityNotificationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateEntityNotificationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type EventsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -3252,6 +3628,29 @@ func (r UpdateProjectConfigResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateProjectConfigResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateEntityNotificationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *EntityNotification
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateEntityNotificationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateEntityNotificationResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3842,6 +4241,41 @@ func (c *ClientWithResponses) MyProviderLoginWithResponse(ctx context.Context, r
 	return ParseMyProviderLoginResponse(rsp)
 }
 
+// DeleteEntityNotificationWithResponse request returning *DeleteEntityNotificationResponse
+func (c *ClientWithResponses) DeleteEntityNotificationWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*DeleteEntityNotificationResponse, error) {
+	rsp, err := c.DeleteEntityNotification(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteEntityNotificationResponse(rsp)
+}
+
+// GetEntityNotificationWithResponse request returning *GetEntityNotificationResponse
+func (c *ClientWithResponses) GetEntityNotificationWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*GetEntityNotificationResponse, error) {
+	rsp, err := c.GetEntityNotification(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetEntityNotificationResponse(rsp)
+}
+
+// UpdateEntityNotificationWithBodyWithResponse request with arbitrary body returning *UpdateEntityNotificationResponse
+func (c *ClientWithResponses) UpdateEntityNotificationWithBodyWithResponse(ctx context.Context, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateEntityNotificationResponse, error) {
+	rsp, err := c.UpdateEntityNotificationWithBody(ctx, id, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateEntityNotificationResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateEntityNotificationWithResponse(ctx context.Context, id SerialID, body UpdateEntityNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEntityNotificationResponse, error) {
+	rsp, err := c.UpdateEntityNotification(ctx, id, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateEntityNotificationResponse(rsp)
+}
+
 // EventsWithResponse request returning *EventsResponse
 func (c *ClientWithResponses) EventsWithResponse(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*EventsResponse, error) {
 	rsp, err := c.Events(ctx, params, reqEditors...)
@@ -3937,6 +4371,23 @@ func (c *ClientWithResponses) UpdateProjectConfigWithResponse(ctx context.Contex
 		return nil, err
 	}
 	return ParseUpdateProjectConfigResponse(rsp)
+}
+
+// CreateEntityNotificationWithBodyWithResponse request with arbitrary body returning *CreateEntityNotificationResponse
+func (c *ClientWithResponses) CreateEntityNotificationWithBodyWithResponse(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateEntityNotificationResponse, error) {
+	rsp, err := c.CreateEntityNotificationWithBody(ctx, projectName, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateEntityNotificationResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateEntityNotificationWithResponse(ctx context.Context, projectName ProjectName, body CreateEntityNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateEntityNotificationResponse, error) {
+	rsp, err := c.CreateEntityNotification(ctx, projectName, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateEntityNotificationResponse(rsp)
 }
 
 // InitializeProjectWithBodyWithResponse request with arbitrary body returning *InitializeProjectResponse
@@ -4382,6 +4833,97 @@ func ParseMyProviderLoginResponse(rsp *http.Response) (*MyProviderLoginResponse,
 	return response, nil
 }
 
+// ParseDeleteEntityNotificationResponse parses an HTTP response from a DeleteEntityNotificationWithResponse call
+func ParseDeleteEntityNotificationResponse(rsp *http.Response) (*DeleteEntityNotificationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteEntityNotificationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+	}
+
+	return response, nil
+}
+
+// ParseGetEntityNotificationResponse parses an HTTP response from a GetEntityNotificationWithResponse call
+func ParseGetEntityNotificationResponse(rsp *http.Response) (*GetEntityNotificationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetEntityNotificationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EntityNotification
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateEntityNotificationResponse parses an HTTP response from a UpdateEntityNotificationWithResponse call
+func ParseUpdateEntityNotificationResponse(rsp *http.Response) (*UpdateEntityNotificationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateEntityNotificationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EntityNotification
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseEventsResponse parses an HTTP response from a EventsWithResponse call
 func ParseEventsResponse(rsp *http.Response) (*EventsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -4600,6 +5142,39 @@ func ParseUpdateProjectConfigResponse(rsp *http.Response) (*UpdateProjectConfigR
 	response := &UpdateProjectConfigResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
+	}
+
+	return response, nil
+}
+
+// ParseCreateEntityNotificationResponse parses an HTTP response from a CreateEntityNotificationWithResponse call
+func ParseCreateEntityNotificationResponse(rsp *http.Response) (*CreateEntityNotificationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateEntityNotificationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest EntityNotification
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
 	}
 
 	return response, nil

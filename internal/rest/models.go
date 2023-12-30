@@ -137,3 +137,15 @@ type CreateDemoTwoWorkItemRequest struct {
 type CreateWorkItemCommentRequest struct {
 	db.WorkItemCommentCreateParams
 }
+
+type EntityNotification struct {
+	db.EntityNotification
+}
+
+type CreateEntityNotificationRequest struct {
+	db.EntityNotificationCreateParams
+}
+
+type UpdateEntityNotificationRequest struct {
+	db.EntityNotificationUpdateParams
+}

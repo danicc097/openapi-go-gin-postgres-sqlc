@@ -801,6 +801,86 @@ paths:
                   - $ref: '#/components/schemas/DbWorkItemComment'
       tags:
         - workItem
+  /project/{projectName}/entity-notification/:
+    post:
+      summary: create entity notification.
+      !!merge <<: *x-require-authenticated
+      operationId: CreateEntityNotification
+      x-required-scopes:
+        - entity-notification:create
+      parameters:
+        - $ref: '#/components/parameters/ProjectName'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEntityNotificationRequest'
+        required: true
+      responses:
+        201:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityNotification'
+        !!merge <<: *x-error-response
+      tags:
+        - entityNotification
+  /entity-notification/{id}:
+    get:
+      summary: get entity notification.
+      !!merge <<: *x-require-authenticated
+      operationId: GetEntityNotification
+      parameters:
+        - $ref: '#/components/parameters/SerialID'
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityNotification'
+        !!merge <<: *x-error-response
+      tags:
+        - entityNotification
+    patch:
+      summary: update entity notification.
+      !!merge <<: *x-require-authenticated
+      operationId: UpdateEntityNotification
+      x-required-scopes:
+        - entity-notification:edit
+      parameters:
+        - $ref: '#/components/parameters/SerialID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateEntityNotificationRequest'
+        required: true
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntityNotification'
+        !!merge <<: *x-error-response
+      tags:
+        - entityNotification
+    delete:
+      summary: delete .
+      !!merge <<: *x-require-authenticated
+      operationId: DeleteEntityNotification
+      x-required-scopes:
+        - entity-notification:delete
+      parameters:
+        - $ref: '#/components/parameters/SerialID'
+      responses:
+        204:
+          description: Success.
+        !!merge <<: *x-error-response
+      tags:
+        - entityNotification
 components:
   parameters:
     ProjectName:
@@ -1649,7 +1729,7 @@ components:
         - GlobalAlerts
     Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string
-      enum: ["users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review"]
+      enum: ["users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review", "entity-notification:create", "entity-notification:edit", "entity-notification:delete"]
       x-generated: '-'
       description: is generated from scopes.json keys.
     Scopes: # workaround for openapi-go gen
@@ -2142,6 +2222,54 @@ components:
       enum: ["Received"]
       x-generated: '-'
       description: is generated from kanban_steps table.
+    CreateEntityNotificationRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+        topic:
+          $ref: '#/components/schemas/Topics'
+      required:
+        - id
+        - message
+        - topic
+      type: object
+      x-postgen-struct: RestCreateEntityNotificationRequest
+    UpdateEntityNotificationRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        id:
+          type: string
+        message:
+          type: string
+        topic:
+          $ref: '#/components/schemas/Topics'
+      type: object
+      x-postgen-struct: RestUpdateEntityNotificationRequest
+    EntityNotification: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        entityNotificationID:
+          type: integer
+        id:
+          type: string
+        message:
+          type: string
+        projectID:
+          type: integer
+        topic:
+          $ref: '#/components/schemas/Topics'
+      required:
+        - entityNotificationID
+        - id
+        - message
+        - topic
+        - createdAt
+        - projectID
+      type: object
+      x-postgen-struct: RestEntityNotification
   examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:

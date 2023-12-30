@@ -819,7 +819,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "entity-notification:create",
+              "entity-notification:edit",
+              "entity-notification:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -1165,7 +1168,10 @@
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
-                        "work-item:review"
+                        "work-item:review",
+                        "entity-notification:create",
+                        "entity-notification:edit",
+                        "entity-notification:delete"
                       ],
                       "x-generated": "-",
                       "description": "is generated from scopes.json keys."
@@ -1558,7 +1564,10 @@
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
-                        "work-item:review"
+                        "work-item:review",
+                        "entity-notification:create",
+                        "entity-notification:edit",
+                        "entity-notification:delete"
                       ],
                       "x-generated": "-",
                       "description": "is generated from scopes.json keys."
@@ -2114,7 +2123,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "entity-notification:create",
+              "entity-notification:edit",
+              "entity-notification:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -2430,7 +2442,10 @@
         "work-item-tag:create",
         "work-item-tag:edit",
         "work-item-tag:delete",
-        "work-item:review"
+        "work-item:review",
+        "entity-notification:create",
+        "entity-notification:edit",
+        "entity-notification:delete"
       ],
       "x-generated": "-",
       "description": "is generated from scopes.json keys."
@@ -2452,7 +2467,10 @@
           "work-item-tag:create",
           "work-item-tag:edit",
           "work-item-tag:delete",
-          "work-item:review"
+          "work-item:review",
+          "entity-notification:create",
+          "entity-notification:edit",
+          "entity-notification:delete"
         ],
         "x-generated": "-",
         "description": "is generated from scopes.json keys."
@@ -2530,7 +2548,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "entity-notification:create",
+              "entity-notification:edit",
+              "entity-notification:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -3725,7 +3746,10 @@
                   "work-item-tag:create",
                   "work-item-tag:edit",
                   "work-item-tag:delete",
-                  "work-item:review"
+                  "work-item:review",
+                  "entity-notification:create",
+                  "entity-notification:edit",
+                  "entity-notification:delete"
                 ],
                 "x-generated": "-",
                 "description": "is generated from scopes.json keys."
@@ -3782,6 +3806,92 @@
       ],
       "x-generated": "-",
       "description": "is generated from kanban_steps table."
+    },
+    "CreateEntityNotificationRequest": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "topic": {
+          "description": "string identifiers for SSE event listeners.",
+          "type": "string",
+          "enum": [
+            "GlobalAlerts"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "message",
+        "topic"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateEntityNotificationRequest"
+    },
+    "UpdateEntityNotificationRequest": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "topic": {
+          "description": "string identifiers for SSE event listeners.",
+          "type": "string",
+          "enum": [
+            "GlobalAlerts"
+          ]
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateEntityNotificationRequest"
+    },
+    "EntityNotification": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "entityNotificationID": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "topic": {
+          "description": "string identifiers for SSE event listeners.",
+          "type": "string",
+          "enum": [
+            "GlobalAlerts"
+          ]
+        }
+      },
+      "required": [
+        "entityNotificationID",
+        "id",
+        "message",
+        "topic",
+        "createdAt",
+        "projectID"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestEntityNotification"
     }
   },
   "properties": {
@@ -4602,7 +4712,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "entity-notification:create",
+              "entity-notification:edit",
+              "entity-notification:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -4948,7 +5061,10 @@
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
-                        "work-item:review"
+                        "work-item:review",
+                        "entity-notification:create",
+                        "entity-notification:edit",
+                        "entity-notification:delete"
                       ],
                       "x-generated": "-",
                       "description": "is generated from scopes.json keys."
@@ -5341,7 +5457,10 @@
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
-                        "work-item:review"
+                        "work-item:review",
+                        "entity-notification:create",
+                        "entity-notification:edit",
+                        "entity-notification:delete"
                       ],
                       "x-generated": "-",
                       "description": "is generated from scopes.json keys."
@@ -5897,7 +6016,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "entity-notification:create",
+              "entity-notification:edit",
+              "entity-notification:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -6213,7 +6335,10 @@
         "work-item-tag:create",
         "work-item-tag:edit",
         "work-item-tag:delete",
-        "work-item:review"
+        "work-item:review",
+        "entity-notification:create",
+        "entity-notification:edit",
+        "entity-notification:delete"
       ],
       "x-generated": "-",
       "description": "is generated from scopes.json keys."
@@ -6235,7 +6360,10 @@
           "work-item-tag:create",
           "work-item-tag:edit",
           "work-item-tag:delete",
-          "work-item:review"
+          "work-item:review",
+          "entity-notification:create",
+          "entity-notification:edit",
+          "entity-notification:delete"
         ],
         "x-generated": "-",
         "description": "is generated from scopes.json keys."
@@ -6313,7 +6441,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "entity-notification:create",
+              "entity-notification:edit",
+              "entity-notification:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -7508,7 +7639,10 @@
                   "work-item-tag:create",
                   "work-item-tag:edit",
                   "work-item-tag:delete",
-                  "work-item:review"
+                  "work-item:review",
+                  "entity-notification:create",
+                  "entity-notification:edit",
+                  "entity-notification:delete"
                 ],
                 "x-generated": "-",
                 "description": "is generated from scopes.json keys."
@@ -7565,6 +7699,92 @@
       ],
       "x-generated": "-",
       "description": "is generated from kanban_steps table."
+    },
+    "CreateEntityNotificationRequest": {
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "topic": {
+          "description": "string identifiers for SSE event listeners.",
+          "type": "string",
+          "enum": [
+            "GlobalAlerts"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "message",
+        "topic"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateEntityNotificationRequest"
+    },
+    "UpdateEntityNotificationRequest": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "topic": {
+          "description": "string identifiers for SSE event listeners.",
+          "type": "string",
+          "enum": [
+            "GlobalAlerts"
+          ]
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateEntityNotificationRequest"
+    },
+    "EntityNotification": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "entityNotificationID": {
+          "type": "integer"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "topic": {
+          "description": "string identifiers for SSE event listeners.",
+          "type": "string",
+          "enum": [
+            "GlobalAlerts"
+          ]
+        }
+      },
+      "required": [
+        "entityNotificationID",
+        "id",
+        "message",
+        "topic",
+        "createdAt",
+        "projectID"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestEntityNotification"
     }
   }
 }

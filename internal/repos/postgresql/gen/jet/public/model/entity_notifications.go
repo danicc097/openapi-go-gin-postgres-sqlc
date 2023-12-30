@@ -17,4 +17,5 @@ type EntityNotifications struct {
 	Message              string    `db:"message"`
 	Topic                string    `db:"topic"`
 	CreatedAt            time.Time `db:"created_at"`
+	ProjectID            int32     `db:"project_id"`
 }
