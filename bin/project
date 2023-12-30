@@ -1484,6 +1484,9 @@ load_exported_crud_gen_vars() {
   for arg in "${@:2}"; do
     case $arg in
     --project)
+      # For entities specific to a project, ie
+      # with project_id FK referencing projects.project_id
+      # TODO: maybe could autogenerate directly without arg passed, are there exceptions?
       export with_project=1
       ;;
     *) ;;

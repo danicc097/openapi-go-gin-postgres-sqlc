@@ -11,7 +11,7 @@ $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgr
 func (h *StrictHandlers) Create${pascal_name}(c *gin.Context, request Create${pascal_name}RequestObject) (Create${pascal_name}ResponseObject, error) {
 	tx := GetTxFromCtx(c)
 
-	params := request.Body.${pascal_name}UpdateParams
+	params := request.Body.${pascal_name}CreateParams
 $(test -n "$with_project" && echo "	params.ProjectID = internal.ProjectIDByName[request.ProjectName]")
 
 	${camel_name}, err := h.svc.${pascal_name}.Create(c, tx, &params)
