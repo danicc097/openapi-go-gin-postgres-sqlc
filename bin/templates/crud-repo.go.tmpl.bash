@@ -1,4 +1,4 @@
-delete_method=$([[ -n "$has_deleted_at" ]] && echo "SoftDelete" || echo "Delete")
+delete_method=$(test -n "$has_deleted_at" && echo "SoftDelete" || echo "Delete")
 
 # shellcheck disable=SC2028,SC2154
 echo "package postgresql

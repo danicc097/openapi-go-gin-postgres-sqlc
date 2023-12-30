@@ -10,10 +10,10 @@ func (h *StrictHandlers) CreateTeam(c *gin.Context, request CreateTeamRequestObj
 	ctx := c.Request.Context()
 	tx := GetTxFromCtx(c)
 
-	body := request.Body
-	body.TeamCreateParams.ProjectID = internal.ProjectIDByName[request.ProjectName]
+	params := request.Body.TeamCreateParams
+	params.ProjectID = internal.ProjectIDByName[request.ProjectName]
 
-	team, err := h.svc.Team.Create(ctx, tx, &body.TeamCreateParams)
+	team, err := h.svc.Team.Create(ctx, tx, &params)
 	if err != nil {
 		renderErrorResponse(c, "Could not create team", err)
 
@@ -27,9 +27,9 @@ func (h *StrictHandlers) UpdateTeam(c *gin.Context, request UpdateTeamRequestObj
 	ctx := c.Request.Context()
 	tx := GetTxFromCtx(c)
 
-	body := request.Body
+	params := request.Body.TeamUpdateParams
 
-	team, err := h.svc.Team.Update(ctx, tx, db.TeamID(request.Id), &body.TeamUpdateParams)
+	team, err := h.svc.Team.Update(ctx, tx, db.TeamID(request.Id), &params)
 	if err != nil {
 		renderErrorResponse(c, "Could not update team", err)
 

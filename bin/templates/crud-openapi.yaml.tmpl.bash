@@ -3,13 +3,22 @@ echo "
 x-require-authenticated: &x-require-authenticated
 x-error-response: &x-error-response
 paths:
-  /${kebab_name}/:
+$(if test -n "$with_project"; then
+  echo "  /project/{projectName}/${kebab_name}/:"
+else
+  echo "  /${kebab_name}/:"
+fi)
     post:
       summary: create ${sentence_name}.
       !!merge <<: *x-require-authenticated
       operationId: Create${pascal_name}
       x-required-scopes:
         - ${kebab_name}:create
+$(if test -n "$with_project"; then
+  echo "
+      parameters:
+        - \$ref: '#/components/parameters/ProjectName'"
+fi)
       requestBody:
         content:
           application/json:

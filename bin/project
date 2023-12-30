@@ -1334,7 +1334,8 @@ x.release() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Creates a generic CRUD endpoint in the OpenAPI spec and generates related files.
+# Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a given db table by struct name.
+# Accepts flags: --project
 # Args: name
 x.dev-utils.create-crud() {
   # TODO: new command x.dev-utils.create-crud-tests
@@ -1347,7 +1348,7 @@ x.dev-utils.create-crud() {
 
   xsetup.backup
   { { {
-    load_exported_crud_gen_vars $1
+    load_exported_crud_gen_vars $1 ${@:2}
 
     local new_crud_schema="$(bash "$BIN_TEMPLATES_DIR"/crud-openapi.yaml.tmpl.bash)"
 
@@ -1376,7 +1377,7 @@ type Update${pascal_name}Request struct {
 }
 " >>"$REST_MODELS"
 
-    echo "package rest" >"internal/rest/api_${snake_name}.go"
+    echo "package rest" >"internal/rest/api_${snake_name}.go" # required to prevent codegen failing. Will be replaced afterwards
 
     yq eval-all \
       ". += {
@@ -1399,9 +1400,6 @@ type Update${pascal_name}Request struct {
     file="internal/services/service_${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-service.go.tmpl.bash >"$file" && gofumpt -w $file
-    file="internal/rest/api_${snake_name}.go"
-    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
-    bash "$BIN_TEMPLATES_DIR"/crud-api.go.tmpl.bash >"$file" && gofumpt -w $file
     file="internal/repos/postgresql/postgresqltestutil/${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-postgresqltestutil.go.tmpl.bash >"$file" && gofumpt -w $file
@@ -1455,15 +1453,17 @@ $formatted_string" "$service_repos_path"
 ${pascal_name}: ${lower_name}repo," "$service_repos_path"
 
     generate_repo_constructor
-    # TODO: accept repo interface name to force gen on that one only instead of forcing regen
     x.gen.gowrap $pascal_name
 
-    # TODO: create base for repo indexedqueries tests and api, service tests.
-    # can generate for create, indexed queries and delete easily.
-    # maybe update should just be tested in rest layer so its tested once and we see conditional struct filling works
     if gofumpt -w "$services_path" "$service_repos_path" && golangci-lint run --no-config --disable-all --enable=typecheck --timeout=10m; then
       x.gen
       x.dev-utils.create-crud-tests $1
+
+      # now that generated api models exist
+      file="internal/rest/api_${snake_name}.go"
+      rm -f file
+      test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+      bash "$BIN_TEMPLATES_DIR"/crud-api.go.tmpl.bash >"$file" && gofumpt -w $file
     else
       err "Typecheck failed after CRUD gen. To debug:
       1. Commit current changes
@@ -1479,7 +1479,16 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
 
 load_exported_crud_gen_vars() {
   local name="$1"
-  test -z "$name" && err "A pascal cased name is required"
+  test -z "$name" && err "A db table struct name is required"
+
+  for arg in "${@:2}"; do
+    case $arg in
+    --project)
+      export with_project=1
+      ;;
+    *) ;;
+    esac
+  done
 
   export pascal_name="$(to_pascal $name)"
   export camel_name="$(to_camel $name)"
@@ -1506,7 +1515,7 @@ load_exported_crud_gen_vars() {
 
 x.dev-utils.create-crud-tests() {
   { { {
-    load_exported_crud_gen_vars $1
+    load_exported_crud_gen_vars $1 ${@:2}
 
     local file="internal/repos/postgresql/repo_${snake_name}_test.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
