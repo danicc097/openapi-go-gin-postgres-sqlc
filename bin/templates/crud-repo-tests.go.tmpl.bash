@@ -172,6 +172,7 @@ func Test${pascal_name}_Create(t *testing.T) {
 	t.Run(\"correct_${camel_name}\", func(t *testing.T) {
 		t.Parallel()
 
+$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
 		${camel_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
 
 		want := want{
@@ -195,6 +196,7 @@ done)
 		t.Skip(\"not implemented\")
 		t.Parallel()
 
+$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
 		${camel_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
 		// NOTE: update params to trigger check error
 
