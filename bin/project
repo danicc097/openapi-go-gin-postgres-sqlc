@@ -1342,7 +1342,9 @@ x.release() {
 x.dev-utils.create-crud() {
   xsetup.backup
   { { {
-    load_exported_crud_gen_vars $1 ${@:2}
+    x.gen.xo
+
+    load_exported_crud_gen_vars ${@}
 
     local new_crud_schema="$(bash "$BIN_TEMPLATES_DIR"/crud-openapi.yaml.tmpl.bash)"
 
@@ -1451,7 +1453,7 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
 
     if gofumpt -w "$services_path" "$service_repos_path" && golangci-lint run --no-config --disable-all --enable=typecheck --timeout=10m; then
       x.gen
-      x.dev-utils.create-crud-tests $1
+      x.dev-utils.create-crud-tests ${@}
 
       # now that generated api models exist
       file="internal/rest/api_${snake_name}.go"
@@ -1464,7 +1466,7 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
       2. Run $CMD again with --x-no-backup flag
       3. Fix typecheck errors manually
       4. Run 'project gen', fix errors if any
-      5. Run 'project dev-utils.create-crud-tests $1'"
+      5. Run 'project dev-utils.create-crud-tests $*'"
     fi
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1511,7 +1513,7 @@ load_exported_crud_gen_vars() {
 
 x.dev-utils.create-crud-tests() {
   { { {
-    load_exported_crud_gen_vars $1 ${@:2}
+    load_exported_crud_gen_vars ${@}
 
     local file="internal/repos/postgresql/repo_${snake_name}_test.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
