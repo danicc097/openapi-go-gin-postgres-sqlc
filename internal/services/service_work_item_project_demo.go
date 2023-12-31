@@ -56,6 +56,16 @@ func (w *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID) (*
 func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
 
+	switch internal.DemoKanbanStepsNameByID[params.Base.KanbanStepID] {
+	case models.DemoKanbanStepsDisabled:
+		// something
+	}
+
+	switch internal.DemoWorkItemTypesNameByID[params.Base.WorkItemTypeID] {
+	case models.DemoWorkItemTypesType1:
+		// something
+	}
+
 	demoWi, err := w.repos.DemoWorkItem.Create(ctx, d, params.DemoWorkItemCreateParams)
 	if err != nil {
 		return nil, fmt.Errorf("repos.DemoWorkItem.Create: %w", err)
