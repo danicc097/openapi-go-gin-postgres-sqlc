@@ -66,15 +66,60 @@ $(test -n "$with_project" && echo "		projectID := internal.ProjectIDByName[model
 			${camel_name}, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
         $(test -n "$with_project" && echo "		ProjectID: projectID,")
       })
-			require.NoError(t, err, \"ff.CreateUser: %s\")
+			require.NoError(t, err, \"ff.Create${pascal_name}: %s\")
 
 			id := ${camel_name}.${pascal_name}.${pascal_name}ID
 			res, err := srv.client.Delete${pascal_name}WithResponse(context.Background(), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
-			fmt.Printf(\"res.Body: %v\n\", string(res.Body))
 			require.NoError(t, err)
 			require.Equal(t, tc.status, res.StatusCode())
 		})
 	}
+}
+
+
+func TestHandlers_Create${pascal_name}(t *testing.T) {
+	t.Parallel()
+
+	logger := zaptest.NewLogger(t).Sugar()
+
+	srv, err := runTestServer(t, testPool)
+	srv.setupCleanup(t)
+	require.NoError(t, err, \"Couldn't run test server: %s\n\")
+
+	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
+
+	t.Run(\"authenticated_user\", func(t *testing.T) {
+		t.Parallel()
+
+		role := models.RoleUser
+		scopes := models.Scopes{models.Scope${pascal_name}Create}
+
+		ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			Role:       role,
+			WithAPIKey: true,
+			Scopes:     scopes,
+		})
+		require.NoError(t, err, \"ff.CreateUser: %s\")
+
+$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+		projectID := internal.ProjectIDByName[pj]")
+
+		random${pascal_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
+		body := rest.Create${pascal_name}Request{
+			${pascal_name}CreateParams: *random${pascal_name}CreateParams,
+		}
+
+		res, err := srv.client.Create${pascal_name}WithResponse(context.Background() $(test -n "$with_project" && echo ", pj"), body, ReqWithAPIKey(ufixture.APIKey.APIKey))
+
+		require.NoError(t, err)
+		require.Equal(t, http.StatusCreated, res.StatusCode())
+$(for f in ${db_create_params_struct_fields[@]}; do
+  # loop db create or update params?
+  echo "		assert.EqualValues(t, random${pascal_name}CreateParams.$f, res.JSON201.$f)"
+done)
+
+	})
 }
 
 func TestHandlers_Get${pascal_name}(t *testing.T) {
@@ -106,7 +151,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 		${camel_name}, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
       $(test -n "$with_project" && echo "		ProjectID: projectID,")
     })
-		require.NoError(t, err, \"ff.CreateUser: %s\")
+		require.NoError(t, err, \"ff.Create${pascal_name}: %s\")
 
 		id := ${camel_name}.${pascal_name}.${pascal_name}ID
 		res, err := srv.client.Get${pascal_name}WithResponse(context.Background(), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
@@ -119,7 +164,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 		want, err := json.Marshal(&rest.${pascal_name}{${pascal_name}: *${camel_name}.${pascal_name}})
 		require.NoError(t, err)
 
-		assert.JSONEqf(t, string(want), string(got), \"\")
+		assert.JSONEqf(t, string(want), string(got), \"\") // ignore private JSON fields
 	})
 }
 
@@ -184,7 +229,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 			${camel_name}, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
         $(test -n "$with_project" && echo "		ProjectID: projectID,")
       })
-			require.NoError(t, err, \"ff.CreateUser: %s\")
+			require.NoError(t, err, \"ff.Create${pascal_name}: %s\")
 
 			id := ${camel_name}.${pascal_name}.${pascal_name}ID
 			updateRes, err := srv.client.Update${pascal_name}WithResponse(context.Background(), int(id), tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))

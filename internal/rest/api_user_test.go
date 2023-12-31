@@ -104,7 +104,7 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 		want, err := json.Marshal(&rest.User{User: *ufixture.User, Role: rest.Role(role)})
 		require.NoError(t, err)
 
-		assert.JSONEqf(t, string(want), string(got), "")
+		assert.JSONEqf(t, string(want), string(got), "") // ignore private fields
 	})
 }
 
