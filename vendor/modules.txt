@@ -540,10 +540,10 @@ github.com/spf13/pflag
 ## explicit; go 1.20
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
-# github.com/swaggest/jsonschema-go v0.3.62
+# github.com/swaggest/jsonschema-go v0.3.64
 ## explicit; go 1.18
 github.com/swaggest/jsonschema-go
-# github.com/swaggest/openapi-go v0.2.42
+# github.com/swaggest/openapi-go v0.2.44
 ## explicit; go 1.18
 github.com/swaggest/openapi-go
 github.com/swaggest/openapi-go/internal
