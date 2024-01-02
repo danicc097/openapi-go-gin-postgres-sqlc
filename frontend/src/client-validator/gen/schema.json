@@ -857,7 +857,10 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "null"
+          ]
         },
         "timeEntries": {
           "items": {
@@ -972,7 +975,10 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "null"
+          ]
         },
         "timeEntries": {
           "items": {
@@ -1765,7 +1771,7 @@
           ]
         },
         "workItemID": {
-          "$ref": "#/definitions/DbWorkItemID"
+          "type": "integer"
         }
       },
       "required": [
@@ -1823,7 +1829,7 @@
           ]
         },
         "notificationID": {
-          "$ref": "#/definitions/DbNotificationID"
+          "type": "integer"
         },
         "notificationType": {
           "$ref": "#/definitions/NotificationType"

@@ -38,8 +38,8 @@ require (
 	github.com/smartystreets/assertions v1.13.1
 	github.com/smartystreets/gunit v1.4.5
 	github.com/stretchr/testify v1.8.4
-	github.com/swaggest/jsonschema-go v0.3.62
-	github.com/swaggest/openapi-go v0.2.42
+	github.com/swaggest/jsonschema-go v0.3.64
+	github.com/swaggest/openapi-go v0.2.44
 	github.com/zitadel/oidc/v2 v2.11.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.45.0
 	go.opentelemetry.io/contrib/propagators/jaeger v1.20.0

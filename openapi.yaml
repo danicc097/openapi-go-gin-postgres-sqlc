@@ -1378,6 +1378,7 @@ components:
           format: date-time
           type: string
         teamID:
+          nullable: true
           type: integer
         timeEntries:
           items:
@@ -1450,6 +1451,7 @@ components:
           format: date-time
           type: string
         teamID:
+          nullable: true
           type: integer
         timeEntries:
           items:
@@ -2013,7 +2015,7 @@ components:
           nullable: true
           type: string
         workItemID:
-          $ref: '#/components/schemas/DbWorkItemID'
+          type: integer
       required:
         - workItemID
       type: object
@@ -2064,7 +2066,7 @@ components:
           nullable: true
           type: string
         notificationID:
-          $ref: '#/components/schemas/DbNotificationID'
+          type: integer
         notificationType:
           $ref: '#/components/schemas/NotificationType'
         receiver:

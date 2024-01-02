@@ -351,7 +351,7 @@ export interface components {
       };
       /** Format: date-time */
       targetDate: string;
-      teamID: number;
+      teamID: number | null;
       timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
       title: string;
       /** Format: date-time */
@@ -378,7 +378,7 @@ export interface components {
       };
       /** Format: date-time */
       targetDate: string;
-      teamID: number;
+      teamID: number | null;
       timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
       title: string;
       /** Format: date-time */
@@ -627,7 +627,7 @@ export interface components {
     DbDemoTwoWorkItem: {
       /** Format: date-time */
       customDateForProject2?: string | null;
-      workItemID: components["schemas"]["DbWorkItemID"];
+      workItemID: number;
     };
     DbDemoTwoWorkItemCreateParams: {
       /** Format: date-time */
@@ -644,7 +644,7 @@ export interface components {
       createdAt: string;
       labels: string[];
       link?: string | null;
-      notificationID: components["schemas"]["DbNotificationID"];
+      notificationID: number;
       notificationType: components["schemas"]["NotificationType"];
       receiver?: components["schemas"]["DbUserID"];
       sender: components["schemas"]["DbUserID"];

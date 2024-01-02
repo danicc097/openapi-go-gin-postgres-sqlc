@@ -328,8 +328,8 @@ type DbActivityCreateParams struct {
 
 // DbDemoTwoWorkItem defines the model for DbDemoTwoWorkItem.
 type DbDemoTwoWorkItem struct {
-	CustomDateForProject2 *time.Time   `json:"customDateForProject2"`
-	WorkItemID            DbWorkItemID `json:"workItemID"`
+	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
+	WorkItemID            int        `json:"workItemID"`
 }
 
 // DbDemoTwoWorkItemCreateParams defines the model for DbDemoTwoWorkItemCreateParams.
@@ -367,11 +367,11 @@ type DbKanbanStep struct {
 
 // DbNotification defines the model for DbNotification.
 type DbNotification struct {
-	Body           string           `json:"body"`
-	CreatedAt      time.Time        `json:"createdAt"`
-	Labels         []string         `json:"labels"`
-	Link           *string          `json:"link"`
-	NotificationID DbNotificationID `json:"notificationID"`
+	Body           string    `json:"body"`
+	CreatedAt      time.Time `json:"createdAt"`
+	Labels         []string  `json:"labels"`
+	Link           *string   `json:"link"`
+	NotificationID int       `json:"notificationID"`
 
 	// NotificationType is generated from database enum 'notification_type'.
 	NotificationType NotificationType `json:"notificationType"`
@@ -559,7 +559,7 @@ type DemoTwoWorkItems struct {
 	Members          *[]DbUserWIAUWorkItem  `json:"members"`
 	Metadata         map[string]interface{} `json:"metadata"`
 	TargetDate       time.Time              `json:"targetDate"`
-	TeamID           int                    `json:"teamID"`
+	TeamID           *int                   `json:"teamID"`
 	TimeEntries      *[]DbTimeEntry         `json:"timeEntries"`
 	Title            string                 `json:"title"`
 	UpdatedAt        time.Time              `json:"updatedAt"`
@@ -584,7 +584,7 @@ type DemoWorkItems struct {
 	Members          *[]DbUserWIAUWorkItem  `json:"members"`
 	Metadata         map[string]interface{} `json:"metadata"`
 	TargetDate       time.Time              `json:"targetDate"`
-	TeamID           int                    `json:"teamID"`
+	TeamID           *int                   `json:"teamID"`
 	TimeEntries      *[]DbTimeEntry         `json:"timeEntries"`
 	Title            string                 `json:"title"`
 	UpdatedAt        time.Time              `json:"updatedAt"`

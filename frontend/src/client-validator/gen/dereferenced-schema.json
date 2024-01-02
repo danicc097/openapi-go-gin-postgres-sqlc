@@ -332,7 +332,9 @@
                       "null"
                     ]
                   },
-                  "notificationID": {},
+                  "notificationID": {
+                    "type": "integer"
+                  },
                   "notificationType": {
                     "description": "is generated from database enum 'notification_type'.",
                     "type": "string",
@@ -1220,7 +1222,10 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "null"
+          ]
         },
         "timeEntries": {
           "items": {
@@ -1472,7 +1477,9 @@
                 "object"
               ]
             },
-            "workItemID": {}
+            "workItemID": {
+              "type": "integer"
+            }
           },
           "required": [
             "workItemID"
@@ -1613,7 +1620,10 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "null"
+          ]
         },
         "timeEntries": {
           "items": {
@@ -3418,7 +3428,9 @@
             "object"
           ]
         },
-        "workItemID": {}
+        "workItemID": {
+          "type": "integer"
+        }
       },
       "required": [
         "workItemID"
@@ -3474,7 +3486,9 @@
             "null"
           ]
         },
-        "notificationID": {},
+        "notificationID": {
+          "type": "integer"
+        },
         "notificationType": {
           "description": "is generated from database enum 'notification_type'.",
           "type": "string",
@@ -3582,7 +3596,9 @@
                 "null"
               ]
             },
-            "notificationID": {},
+            "notificationID": {
+              "type": "integer"
+            },
             "notificationType": {
               "description": "is generated from database enum 'notification_type'.",
               "type": "string",
@@ -4115,7 +4131,9 @@
                       "null"
                     ]
                   },
-                  "notificationID": {},
+                  "notificationID": {
+                    "type": "integer"
+                  },
                   "notificationType": {
                     "description": "is generated from database enum 'notification_type'.",
                     "type": "string",
@@ -5003,7 +5021,10 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "null"
+          ]
         },
         "timeEntries": {
           "items": {
@@ -5255,7 +5276,9 @@
                 "object"
               ]
             },
-            "workItemID": {}
+            "workItemID": {
+              "type": "integer"
+            }
           },
           "required": [
             "workItemID"
@@ -5396,7 +5419,10 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "null"
+          ]
         },
         "timeEntries": {
           "items": {
@@ -7201,7 +7227,9 @@
             "object"
           ]
         },
-        "workItemID": {}
+        "workItemID": {
+          "type": "integer"
+        }
       },
       "required": [
         "workItemID"
@@ -7257,7 +7285,9 @@
             "null"
           ]
         },
-        "notificationID": {},
+        "notificationID": {
+          "type": "integer"
+        },
         "notificationType": {
           "description": "is generated from database enum 'notification_type'.",
           "type": "string",
@@ -7365,7 +7395,9 @@
                 "null"
               ]
             },
-            "notificationID": {},
+            "notificationID": {
+              "type": "integer"
+            },
             "notificationType": {
               "description": "is generated from database enum 'notification_type'.",
               "type": "string",
