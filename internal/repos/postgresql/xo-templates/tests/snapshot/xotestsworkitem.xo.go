@@ -126,10 +126,10 @@ func WithXoTestsWorkItemFilters(filters map[string][]any) XoTestsWorkItemSelectC
 // WithXoTestsWorkItemHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
-// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
 //
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
 //	filters := map[string][]any{
-//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
 //	}
 func WithXoTestsWorkItemHavingClause(conditions map[string][]any) XoTestsWorkItemSelectConfigOption {
 	return func(s *XoTestsWorkItemSelectConfig) {

@@ -184,10 +184,10 @@ func WithTimeEntryFilters(filters map[string][]any) TimeEntrySelectConfigOption 
 // WithTimeEntryHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
-// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
 //
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
 //	filters := map[string][]any{
-//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
 //	}
 func WithTimeEntryHavingClause(conditions map[string][]any) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {

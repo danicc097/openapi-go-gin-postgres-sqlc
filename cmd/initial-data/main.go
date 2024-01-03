@@ -364,10 +364,6 @@ func main() {
 	// paginated queries have sortable id. for first query include previous results (-1 or -1 second)
 	// and then use returned cursor.
 	wis, err := db.WorkItemPaginatedByWorkItemID(ctx, pool, demoWorkItems[0].WorkItemID-1, models.DirectionAsc, db.WithWorkItemHavingClause(map[string][]any{
-		// FIXME:
-		// we need `having  $i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id));` -> still getting hash joins and index scans
-		// therefore another xo selectOption just like  db.WithWorkItemFilters,
-		// with concatenates having clauses, if any.
 		// adding inside where clause yields `aggregate functions are not allowed in WHERE, since it makes no sense.
 		//  see https://www.postgresql.org/docs/current/tutorial-agg.html
 		"$i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id))": {testUser.UserID},
