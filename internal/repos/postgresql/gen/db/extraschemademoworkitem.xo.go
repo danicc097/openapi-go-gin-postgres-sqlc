@@ -65,6 +65,7 @@ type ExtraSchemaDemoWorkItemSelectConfig struct {
 	orderBy string
 	joins   ExtraSchemaDemoWorkItemJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type ExtraSchemaDemoWorkItemSelectConfigOption func(*ExtraSchemaDemoWorkItemSelectConfig)
 
@@ -109,6 +110,20 @@ func WithExtraSchemaDemoWorkItemFilters(filters map[string][]any) ExtraSchemaDem
 	}
 }
 
+// WithExtraSchemaDemoWorkItemHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithExtraSchemaDemoWorkItemHavingClause(conditions map[string][]any) ExtraSchemaDemoWorkItemSelectConfigOption {
+	return func(s *ExtraSchemaDemoWorkItemSelectConfig) {
+		s.having = conditions
+	}
+}
+
 const extraSchemaDemoWorkItemTableWorkItemJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
 left join extra_schema.work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id
 `
@@ -146,9 +161,9 @@ func (esdwi *ExtraSchemaDemoWorkItem) Insert(ctx context.Context, db DB) (*Extra
 // Update updates a ExtraSchemaDemoWorkItem in the database.
 func (esdwi *ExtraSchemaDemoWorkItem) Update(ctx context.Context, db DB) (*ExtraSchemaDemoWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.demo_work_items SET
-	checked = $1
-	WHERE work_item_id = $2
+	sqlstr := `UPDATE extra_schema.demo_work_items SET 
+	checked = $1 
+	WHERE work_item_id = $2 
 	RETURNING * `
 	// run
 	logf(sqlstr, esdwi.Checked, esdwi.WorkItemID)
@@ -194,7 +209,7 @@ func (esdwi *ExtraSchemaDemoWorkItem) Upsert(ctx context.Context, db DB, params 
 // Delete deletes the ExtraSchemaDemoWorkItem from the database.
 func (esdwi *ExtraSchemaDemoWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.demo_work_items
+	sqlstr := `DELETE FROM extra_schema.demo_work_items 
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esdwi.WorkItemID); err != nil {
@@ -205,7 +220,7 @@ func (esdwi *ExtraSchemaDemoWorkItem) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaDemoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of ExtraSchemaDemoWorkItem.
 func ExtraSchemaDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID ExtraSchemaWorkItemID, direction models.Direction, opts ...ExtraSchemaDemoWorkItemSelectConfigOption) ([]ExtraSchemaDemoWorkItem, error) {
-	c := &ExtraSchemaDemoWorkItemSelectConfig{joins: ExtraSchemaDemoWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaDemoWorkItemSelectConfig{joins: ExtraSchemaDemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -231,6 +246,22 @@ func ExtraSchemaDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, wo
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -258,20 +289,21 @@ func ExtraSchemaDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, wo
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	demo_work_items.checked,
-	demo_work_items.work_item_id %s
-	 FROM extra_schema.demo_work_items %s
+	demo_work_items.work_item_id %s 
+	 FROM extra_schema.demo_work_items %s 
 	 WHERE demo_work_items.work_item_id %s $1
-	 %s   %s
-  ORDER BY
-		work_item_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		work_item_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaDemoWorkItemPaginatedByWorkItemID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaDemoWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
@@ -286,7 +318,7 @@ func ExtraSchemaDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, wo
 //
 // Generated from index 'demo_work_items_pkey'.
 func ExtraSchemaDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID ExtraSchemaWorkItemID, opts ...ExtraSchemaDemoWorkItemSelectConfigOption) (*ExtraSchemaDemoWorkItem, error) {
-	c := &ExtraSchemaDemoWorkItemSelectConfig{joins: ExtraSchemaDemoWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaDemoWorkItemSelectConfig{joins: ExtraSchemaDemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -314,6 +346,22 @@ func ExtraSchemaDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -334,20 +382,21 @@ func ExtraSchemaDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	demo_work_items.checked,
-	demo_work_items.work_item_id %s
-	 FROM extra_schema.demo_work_items %s
+	demo_work_items.work_item_id %s 
+	 FROM extra_schema.demo_work_items %s 
 	 WHERE demo_work_items.work_item_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaDemoWorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}

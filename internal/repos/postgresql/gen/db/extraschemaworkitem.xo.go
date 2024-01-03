@@ -73,6 +73,7 @@ type ExtraSchemaWorkItemSelectConfig struct {
 	orderBy string
 	joins   ExtraSchemaWorkItemJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type ExtraSchemaWorkItemSelectConfigOption func(*ExtraSchemaWorkItemSelectConfig)
 
@@ -122,6 +123,20 @@ type User__WIAU_ExtraSchemaWorkItem struct {
 func WithExtraSchemaWorkItemFilters(filters map[string][]any) ExtraSchemaWorkItemSelectConfigOption {
 	return func(s *ExtraSchemaWorkItemSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithExtraSchemaWorkItemHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithExtraSchemaWorkItemHavingClause(conditions map[string][]any) ExtraSchemaWorkItemSelectConfigOption {
+	return func(s *ExtraSchemaWorkItemSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -187,9 +202,9 @@ func (eswi *ExtraSchemaWorkItem) Insert(ctx context.Context, db DB) (*ExtraSchem
 // Update updates a ExtraSchemaWorkItem in the database.
 func (eswi *ExtraSchemaWorkItem) Update(ctx context.Context, db DB) (*ExtraSchemaWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.work_items SET
-	description = $1, title = $2
-	WHERE work_item_id = $3
+	sqlstr := `UPDATE extra_schema.work_items SET 
+	description = $1, title = $2 
+	WHERE work_item_id = $3 
 	RETURNING * `
 	// run
 	logf(sqlstr, eswi.Description, eswi.Title, eswi.WorkItemID)
@@ -235,7 +250,7 @@ func (eswi *ExtraSchemaWorkItem) Upsert(ctx context.Context, db DB, params *Extr
 // Delete deletes the ExtraSchemaWorkItem from the database.
 func (eswi *ExtraSchemaWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.work_items
+	sqlstr := `DELETE FROM extra_schema.work_items 
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, eswi.WorkItemID); err != nil {
@@ -246,7 +261,7 @@ func (eswi *ExtraSchemaWorkItem) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaWorkItemPaginatedByWorkItemID returns a cursor-paginated list of ExtraSchemaWorkItem.
 func ExtraSchemaWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID ExtraSchemaWorkItemID, direction models.Direction, opts ...ExtraSchemaWorkItemSelectConfigOption) ([]ExtraSchemaWorkItem, error) {
-	c := &ExtraSchemaWorkItemSelectConfig{joins: ExtraSchemaWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaWorkItemSelectConfig{joins: ExtraSchemaWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -272,6 +287,22 @@ func ExtraSchemaWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -305,21 +336,22 @@ func ExtraSchemaWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s
-	 FROM extra_schema.work_items %s
+	work_items.work_item_id %s 
+	 FROM extra_schema.work_items %s 
 	 WHERE work_items.work_item_id %s $1
-	 %s   %s
-  ORDER BY
-		work_item_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		work_item_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemPaginatedByWorkItemID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -334,7 +366,7 @@ func ExtraSchemaWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 //
 // Generated from index '[xo] base filter query'.
 func ExtraSchemaWorkItems(ctx context.Context, db DB, opts ...ExtraSchemaWorkItemSelectConfigOption) ([]ExtraSchemaWorkItem, error) {
-	c := &ExtraSchemaWorkItemSelectConfig{joins: ExtraSchemaWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaWorkItemSelectConfig{joins: ExtraSchemaWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -362,6 +394,22 @@ func ExtraSchemaWorkItems(ctx context.Context, db DB, opts ...ExtraSchemaWorkIte
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -388,21 +436,22 @@ func ExtraSchemaWorkItems(ctx context.Context, db DB, opts ...ExtraSchemaWorkIte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s
-	 FROM extra_schema.work_items %s
+	work_items.work_item_id %s 
+	 FROM extra_schema.work_items %s 
 	 WHERE true
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItems */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, )
-	rows, err := db.Query(ctx, sqlstr, append([]any{}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItem/WorkItemsByDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -420,7 +469,7 @@ func ExtraSchemaWorkItems(ctx context.Context, db DB, opts ...ExtraSchemaWorkIte
 //
 // Generated from index 'work_items_pkey'.
 func ExtraSchemaWorkItemByWorkItemID(ctx context.Context, db DB, workItemID ExtraSchemaWorkItemID, opts ...ExtraSchemaWorkItemSelectConfigOption) (*ExtraSchemaWorkItem, error) {
-	c := &ExtraSchemaWorkItemSelectConfig{joins: ExtraSchemaWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaWorkItemSelectConfig{joins: ExtraSchemaWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -446,6 +495,22 @@ func ExtraSchemaWorkItemByWorkItemID(ctx context.Context, db DB, workItemID Extr
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -474,21 +539,22 @@ func ExtraSchemaWorkItemByWorkItemID(ctx context.Context, db DB, workItemID Extr
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s
-	 FROM extra_schema.work_items %s
+	work_items.work_item_id %s 
+	 FROM extra_schema.work_items %s 
 	 WHERE work_items.work_item_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -504,7 +570,7 @@ func ExtraSchemaWorkItemByWorkItemID(ctx context.Context, db DB, workItemID Extr
 //
 // Generated from index 'work_items_title_description_idx1'.
 func ExtraSchemaWorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...ExtraSchemaWorkItemSelectConfigOption) ([]ExtraSchemaWorkItem, error) {
-	c := &ExtraSchemaWorkItemSelectConfig{joins: ExtraSchemaWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaWorkItemSelectConfig{joins: ExtraSchemaWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -530,6 +596,22 @@ func ExtraSchemaWorkItemsByTitle(ctx context.Context, db DB, title *string, opts
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -558,21 +640,22 @@ func ExtraSchemaWorkItemsByTitle(ctx context.Context, db DB, title *string, opts
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s
-	 FROM extra_schema.work_items %s
+	work_items.work_item_id %s 
+	 FROM extra_schema.work_items %s 
 	 WHERE work_items.title = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemsByTitle */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, title)
-	rows, err := db.Query(ctx, sqlstr, append([]any{title}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{title}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItem/WorkItemsByTitleDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}

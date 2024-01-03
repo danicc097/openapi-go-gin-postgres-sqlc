@@ -77,6 +77,7 @@ type WorkItemAssignedUserSelectConfig struct {
 	orderBy string
 	joins   WorkItemAssignedUserJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type WorkItemAssignedUserSelectConfigOption func(*WorkItemAssignedUserSelectConfig)
 
@@ -132,6 +133,20 @@ type User__WIAU_WorkItemAssignedUser struct {
 func WithWorkItemAssignedUserFilters(filters map[string][]any) WorkItemAssignedUserSelectConfigOption {
 	return func(s *WorkItemAssignedUserSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithWorkItemAssignedUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithWorkItemAssignedUserHavingClause(conditions map[string][]any) WorkItemAssignedUserSelectConfigOption {
+	return func(s *WorkItemAssignedUserSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -212,9 +227,9 @@ func (wiau *WorkItemAssignedUser) Insert(ctx context.Context, db DB) (*WorkItemA
 // Update updates a WorkItemAssignedUser in the database.
 func (wiau *WorkItemAssignedUser) Update(ctx context.Context, db DB) (*WorkItemAssignedUser, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_assigned_user SET
-	role = $1
-	WHERE work_item_id = $2  AND assigned_user = $3
+	sqlstr := `UPDATE public.work_item_assigned_user SET 
+	role = $1 
+	WHERE work_item_id = $2  AND assigned_user = $3 
 	RETURNING * `
 	// run
 	logf(sqlstr, wiau.Role, wiau.WorkItemID, wiau.AssignedUser)
@@ -261,7 +276,7 @@ func (wiau *WorkItemAssignedUser) Upsert(ctx context.Context, db DB, params *Wor
 // Delete deletes the WorkItemAssignedUser from the database.
 func (wiau *WorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM public.work_item_assigned_user
+	sqlstr := `DELETE FROM public.work_item_assigned_user 
 	WHERE work_item_id = $1 AND assigned_user = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wiau.WorkItemID, wiau.AssignedUser); err != nil {
@@ -274,7 +289,7 @@ func (wiau *WorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'work_item_assigned_user_assigned_user_work_item_id_idx'.
 func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser UserID, workItemID WorkItemID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
-	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -300,6 +315,22 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -328,21 +359,22 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s
-	 FROM public.work_item_assigned_user %s
+	work_item_assigned_user.work_item_id %s 
+	 FROM public.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.assigned_user = $1 AND work_item_assigned_user.work_item_id = $2
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemAssignedUsersByAssignedUserWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, assignedUser, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser, workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser, workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByAssignedUserWorkItemID/Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
@@ -360,7 +392,7 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID WorkItemID, assignedUser UserID, opts ...WorkItemAssignedUserSelectConfigOption) (*WorkItemAssignedUser, error) {
-	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -388,6 +420,22 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -414,21 +462,22 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s
-	 FROM public.work_item_assigned_user %s
+	work_item_assigned_user.work_item_id %s 
+	 FROM public.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.work_item_id = $1 AND work_item_assigned_user.assigned_user = $2
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemAssignedUserByWorkItemIDAssignedUser */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, assignedUser}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, assignedUser}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_assigned_user/WorkItemAssignedUserByWorkItemIDAssignedUser/db.Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
@@ -444,7 +493,7 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
-	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -472,6 +521,22 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID Wo
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -498,21 +563,22 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID Wo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s
-	 FROM public.work_item_assigned_user %s
+	work_item_assigned_user.work_item_id %s 
+	 FROM public.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.work_item_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemAssignedUsersByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
@@ -530,7 +596,7 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID Wo
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUser UserID, opts ...WorkItemAssignedUserSelectConfigOption) ([]WorkItemAssignedUser, error) {
-	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemAssignedUserSelectConfig{joins: WorkItemAssignedUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -556,6 +622,22 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -584,21 +666,22 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s
-	 FROM public.work_item_assigned_user %s
+	work_item_assigned_user.work_item_id %s 
+	 FROM public.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.assigned_user = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemAssignedUsersByAssignedUser */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}

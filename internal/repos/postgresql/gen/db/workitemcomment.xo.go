@@ -83,6 +83,7 @@ type WorkItemCommentSelectConfig struct {
 	orderBy string
 	joins   WorkItemCommentJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type WorkItemCommentSelectConfigOption func(*WorkItemCommentSelectConfig)
 
@@ -152,6 +153,20 @@ func WithWorkItemCommentFilters(filters map[string][]any) WorkItemCommentSelectC
 	}
 }
 
+// WithWorkItemCommentHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithWorkItemCommentHavingClause(conditions map[string][]any) WorkItemCommentSelectConfigOption {
+	return func(s *WorkItemCommentSelectConfig) {
+		s.having = conditions
+	}
+}
+
 const workItemCommentTableUserJoinSQL = `-- O2O join generated from "work_item_comments_user_id_fkey (Generated from M2O)"
 left join users as _work_item_comments_user_id on _work_item_comments_user_id.user_id = work_item_comments.user_id
 `
@@ -200,9 +215,9 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 // Update updates a WorkItemComment in the database.
 func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_comments SET
-	message = $1, user_id = $2, work_item_id = $3
-	WHERE work_item_comment_id = $4
+	sqlstr := `UPDATE public.work_item_comments SET 
+	message = $1, user_id = $2, work_item_id = $3 
+	WHERE work_item_comment_id = $4 
 	RETURNING * `
 	// run
 	logf(sqlstr, wic.CreatedAt, wic.Message, wic.UpdatedAt, wic.UserID, wic.WorkItemID, wic.WorkItemCommentID)
@@ -249,7 +264,7 @@ func (wic *WorkItemComment) Upsert(ctx context.Context, db DB, params *WorkItemC
 // Delete deletes the WorkItemComment from the database.
 func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.work_item_comments
+	sqlstr := `DELETE FROM public.work_item_comments 
 	WHERE work_item_comment_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID); err != nil {
@@ -260,7 +275,7 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 
 // WorkItemCommentPaginatedByWorkItemCommentID returns a cursor-paginated list of WorkItemComment.
 func WorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID WorkItemCommentID, direction models.Direction, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -286,6 +301,22 @@ func WorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db DB, wor
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -319,24 +350,25 @@ func WorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db DB, wor
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s
-	 FROM public.work_item_comments %s
+	work_item_comments.work_item_id %s 
+	 FROM public.work_item_comments %s 
 	 WHERE work_item_comments.work_item_comment_id %s $1
-	 %s   %s
-  ORDER BY
-		work_item_comment_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		work_item_comment_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemCommentPaginatedByWorkItemCommentID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/Paginated/db.Query: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
@@ -351,7 +383,7 @@ func WorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db DB, wor
 //
 // Generated from index 'work_item_comments_pkey'.
 func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID WorkItemCommentID, opts ...WorkItemCommentSelectConfigOption) (*WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -377,6 +409,22 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -405,24 +453,25 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s
-	 FROM public.work_item_comments %s
+	work_item_comments.work_item_id %s 
+	 FROM public.work_item_comments %s 
 	 WHERE work_item_comments.work_item_comment_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemCommentByWorkItemCommentID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemCommentID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_comments/WorkItemCommentByWorkItemCommentID/db.Query: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
@@ -438,7 +487,7 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 //
 // Generated from index 'work_item_comments_work_item_id_idx'.
 func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
-	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -464,6 +513,22 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID WorkIte
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -492,24 +557,25 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID WorkIte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s
-	 FROM public.work_item_comments %s
+	work_item_comments.work_item_id %s 
+	 FROM public.work_item_comments %s 
 	 WHERE work_item_comments.work_item_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemCommentsByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemComment/WorkItemCommentsByWorkItemID/Query: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}

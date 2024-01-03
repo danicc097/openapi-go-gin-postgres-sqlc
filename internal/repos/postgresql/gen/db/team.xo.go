@@ -84,6 +84,7 @@ type TeamSelectConfig struct {
 	orderBy string
 	joins   TeamJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type TeamSelectConfigOption func(*TeamSelectConfig)
 
@@ -152,6 +153,20 @@ func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 func WithTeamFilters(filters map[string][]any) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithTeamHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithTeamHavingClause(conditions map[string][]any) TeamSelectConfigOption {
+	return func(s *TeamSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -231,9 +246,9 @@ func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
 // Update updates a Team in the database.
 func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.teams SET
-	description = $1, name = $2, project_id = $3
-	WHERE team_id = $4
+	sqlstr := `UPDATE public.teams SET 
+	description = $1, name = $2, project_id = $3 
+	WHERE team_id = $4 
 	RETURNING * `
 	// run
 	logf(sqlstr, t.CreatedAt, t.Description, t.Name, t.ProjectID, t.UpdatedAt, t.TeamID)
@@ -280,7 +295,7 @@ func (t *Team) Upsert(ctx context.Context, db DB, params *TeamCreateParams) (*Te
 // Delete deletes the Team from the database.
 func (t *Team) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.teams
+	sqlstr := `DELETE FROM public.teams 
 	WHERE team_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, t.TeamID); err != nil {
@@ -291,7 +306,7 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 
 // TeamPaginatedByTeamID returns a cursor-paginated list of Team.
 func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID TeamID, direction models.Direction, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -317,6 +332,22 @@ func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID TeamID, direction 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -356,24 +387,25 @@ func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID TeamID, direction 
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.created_at,
 	teams.description,
 	teams.name,
 	teams.project_id,
 	teams.team_id,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.team_id %s $1
-	 %s   %s
-  ORDER BY
-		team_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		team_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* TeamPaginatedByTeamID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", &XoError{Entity: "Team", Err: err}))
 	}
@@ -386,7 +418,7 @@ func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID TeamID, direction 
 
 // TeamPaginatedByProjectID returns a cursor-paginated list of Team.
 func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -412,6 +444,22 @@ func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, d
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -451,24 +499,25 @@ func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, d
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.created_at,
 	teams.description,
 	teams.name,
 	teams.project_id,
 	teams.team_id,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.project_id %s $1
-	 %s   %s
-  ORDER BY
-		project_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		project_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* TeamPaginatedByProjectID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/Paginated/db.Query: %w", &XoError{Entity: "Team", Err: err}))
 	}
@@ -483,7 +532,7 @@ func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, d
 //
 // Generated from index 'teams_name_project_id_key'.
 func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID ProjectID, opts ...TeamSelectConfigOption) (*Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -511,6 +560,22 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID Proj
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -543,24 +608,25 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID Proj
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.created_at,
 	teams.description,
 	teams.name,
 	teams.project_id,
 	teams.team_id,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.name = $1 AND teams.project_id = $2
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TeamByNameProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByNameProjectID/db.Query: %w", &XoError{Entity: "Team", Err: err}))
 	}
@@ -576,7 +642,7 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID Proj
 //
 // Generated from index 'teams_name_project_id_key'.
 func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -604,6 +670,22 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -636,24 +718,25 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.created_at,
 	teams.description,
 	teams.name,
 	teams.project_id,
 	teams.team_id,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.name = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TeamsByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/Query: %w", &XoError{Entity: "Team", Err: err}))
 	}
@@ -671,7 +754,7 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 //
 // Generated from index 'teams_name_project_id_key'.
 func TeamsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -697,6 +780,22 @@ func TeamsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...T
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -731,24 +830,25 @@ func TeamsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...T
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.created_at,
 	teams.description,
 	teams.name,
 	teams.project_id,
 	teams.team_id,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.project_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TeamsByProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Team/TeamByNameProjectID/Query: %w", &XoError{Entity: "Team", Err: err}))
 	}
@@ -766,7 +866,7 @@ func TeamsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...T
 //
 // Generated from index 'teams_pkey'.
 func TeamByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...TeamSelectConfigOption) (*Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any)}
+	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -792,6 +892,22 @@ func TeamByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...TeamSelectC
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -826,24 +942,25 @@ func TeamByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...TeamSelectC
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.created_at,
 	teams.description,
 	teams.name,
 	teams.project_id,
 	teams.team_id,
-	teams.updated_at %s
-	 FROM public.teams %s
+	teams.updated_at %s 
+	 FROM public.teams %s 
 	 WHERE teams.team_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TeamByTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("teams/TeamByTeamID/db.Query: %w", &XoError{Entity: "Team", Err: err}))
 	}

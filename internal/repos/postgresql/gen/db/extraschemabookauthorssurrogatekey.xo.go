@@ -80,6 +80,7 @@ type ExtraSchemaBookAuthorsSurrogateKeySelectConfig struct {
 	orderBy string
 	joins   ExtraSchemaBookAuthorsSurrogateKeyJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption func(*ExtraSchemaBookAuthorsSurrogateKeySelectConfig)
 
@@ -135,6 +136,20 @@ type User__BASK_ExtraSchemaBookAuthorsSurrogateKey struct {
 func WithExtraSchemaBookAuthorsSurrogateKeyFilters(filters map[string][]any) ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption {
 	return func(s *ExtraSchemaBookAuthorsSurrogateKeySelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithExtraSchemaBookAuthorsSurrogateKeyHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithExtraSchemaBookAuthorsSurrogateKeyHavingClause(conditions map[string][]any) ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption {
+	return func(s *ExtraSchemaBookAuthorsSurrogateKeySelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -216,9 +231,9 @@ func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Insert(ctx context.Context, db
 // Update updates a ExtraSchemaBookAuthorsSurrogateKey in the database.
 func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Update(ctx context.Context, db DB) (*ExtraSchemaBookAuthorsSurrogateKey, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.book_authors_surrogate_key SET
-	author_id = $1, book_id = $2, pseudonym = $3
-	WHERE book_authors_surrogate_key_id = $4
+	sqlstr := `UPDATE extra_schema.book_authors_surrogate_key SET 
+	author_id = $1, book_id = $2, pseudonym = $3 
+	WHERE book_authors_surrogate_key_id = $4 
 	RETURNING * `
 	// run
 	logf(sqlstr, esbask.AuthorID, esbask.BookID, esbask.Pseudonym, esbask.BookAuthorsSurrogateKeyID)
@@ -265,7 +280,7 @@ func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Upsert(ctx context.Context, db
 // Delete deletes the ExtraSchemaBookAuthorsSurrogateKey from the database.
 func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.book_authors_surrogate_key
+	sqlstr := `DELETE FROM extra_schema.book_authors_surrogate_key 
 	WHERE book_authors_surrogate_key_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esbask.BookAuthorsSurrogateKeyID); err != nil {
@@ -276,7 +291,7 @@ func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Delete(ctx context.Context, db
 
 // ExtraSchemaBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID returns a cursor-paginated list of ExtraSchemaBookAuthorsSurrogateKey.
 func ExtraSchemaBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx context.Context, db DB, bookAuthorsSurrogateKeyID ExtraSchemaBookAuthorsSurrogateKeyID, direction models.Direction, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
-	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -302,6 +317,22 @@ func ExtraSchemaBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -335,22 +366,23 @@ func ExtraSchemaBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx 
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s
-	 FROM extra_schema.book_authors_surrogate_key %s
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM extra_schema.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id %s $1
-	 %s   %s
-  ORDER BY
-		book_authors_surrogate_key_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		book_authors_surrogate_key_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/Paginated/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
@@ -365,7 +397,7 @@ func ExtraSchemaBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx 
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
 func ExtraSchemaBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID ExtraSchemaBookID, authorID ExtraSchemaUserID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) (*ExtraSchemaBookAuthorsSurrogateKey, error) {
-	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -393,6 +425,22 @@ func ExtraSchemaBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -419,22 +467,23 @@ func ExtraSchemaBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s
-	 FROM extra_schema.book_authors_surrogate_key %s
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM extra_schema.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.book_id = $1 AND book_authors_surrogate_key.author_id = $2
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookAuthorsSurrogateKeyByBookIDAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, authorID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookIDAuthorID/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
@@ -450,7 +499,7 @@ func ExtraSchemaBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db 
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
 func ExtraSchemaBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
-	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -478,6 +527,22 @@ func ExtraSchemaBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, boo
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -504,22 +569,23 @@ func ExtraSchemaBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, boo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s
-	 FROM extra_schema.book_authors_surrogate_key %s
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM extra_schema.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.book_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookAuthorsSurrogateKeysByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
@@ -537,7 +603,7 @@ func ExtraSchemaBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, boo
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
 func ExtraSchemaBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID ExtraSchemaUserID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
-	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -563,6 +629,22 @@ func ExtraSchemaBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, a
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -591,22 +673,23 @@ func ExtraSchemaBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, a
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s
-	 FROM extra_schema.book_authors_surrogate_key %s
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM extra_schema.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.author_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookAuthorsSurrogateKeysByAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, authorID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
@@ -624,7 +707,7 @@ func ExtraSchemaBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, a
 //
 // Generated from index 'book_authors_surrogate_key_pkey'.
 func ExtraSchemaBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Context, db DB, bookAuthorsSurrogateKeyID ExtraSchemaBookAuthorsSurrogateKeyID, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) (*ExtraSchemaBookAuthorsSurrogateKey, error) {
-	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -650,6 +733,22 @@ func ExtraSchemaBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.C
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -678,22 +777,23 @@ func ExtraSchemaBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.C
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s
-	 FROM extra_schema.book_authors_surrogate_key %s
+	book_authors_surrogate_key.pseudonym %s 
+	 FROM extra_schema.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookAuthorsSurrogateKeyID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}

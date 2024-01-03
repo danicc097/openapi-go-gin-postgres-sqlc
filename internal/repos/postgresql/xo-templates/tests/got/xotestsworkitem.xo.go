@@ -72,6 +72,7 @@ type XoTestsWorkItemSelectConfig struct {
 	orderBy string
 	joins   XoTestsWorkItemJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type XoTestsWorkItemSelectConfigOption func(*XoTestsWorkItemSelectConfig)
 
@@ -119,6 +120,20 @@ type User__WIAU_XoTestsWorkItem struct {
 func WithXoTestsWorkItemFilters(filters map[string][]any) XoTestsWorkItemSelectConfigOption {
 	return func(s *XoTestsWorkItemSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithXoTestsWorkItemHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithXoTestsWorkItemHavingClause(conditions map[string][]any) XoTestsWorkItemSelectConfigOption {
+	return func(s *XoTestsWorkItemSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -184,9 +199,9 @@ func (xtwi *XoTestsWorkItem) Insert(ctx context.Context, db DB) (*XoTestsWorkIte
 // Update updates a XoTestsWorkItem in the database.
 func (xtwi *XoTestsWorkItem) Update(ctx context.Context, db DB) (*XoTestsWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.work_items SET
-	description = $1, title = $2
-	WHERE work_item_id = $3
+	sqlstr := `UPDATE xo_tests.work_items SET 
+	description = $1, title = $2 
+	WHERE work_item_id = $3 
 	RETURNING * `
 	// run
 	logf(sqlstr, xtwi.Description, xtwi.Title, xtwi.WorkItemID)
@@ -232,7 +247,7 @@ func (xtwi *XoTestsWorkItem) Upsert(ctx context.Context, db DB, params *XoTestsW
 // Delete deletes the XoTestsWorkItem from the database.
 func (xtwi *XoTestsWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.work_items
+	sqlstr := `DELETE FROM xo_tests.work_items 
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtwi.WorkItemID); err != nil {
@@ -243,7 +258,7 @@ func (xtwi *XoTestsWorkItem) Delete(ctx context.Context, db DB) error {
 
 // XoTestsWorkItemPaginatedByWorkItemID returns a cursor-paginated list of XoTestsWorkItem.
 func XoTestsWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID XoTestsWorkItemID, direction models.Direction, opts ...XoTestsWorkItemSelectConfigOption) ([]XoTestsWorkItem, error) {
-	c := &XoTestsWorkItemSelectConfig{joins: XoTestsWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsWorkItemSelectConfig{joins: XoTestsWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -269,6 +284,22 @@ func XoTestsWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -302,21 +333,22 @@ func XoTestsWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s
-	 FROM xo_tests.work_items %s
+	work_items.work_item_id %s 
+	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id %s $1
-	 %s   %s
-  ORDER BY
-		work_item_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		work_item_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemPaginatedByWorkItemID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -331,7 +363,7 @@ func XoTestsWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 //
 // Generated from index '[xo] base filter query'.
 func XoTestsWorkItems(ctx context.Context, db DB, opts ...XoTestsWorkItemSelectConfigOption) ([]XoTestsWorkItem, error) {
-	c := &XoTestsWorkItemSelectConfig{joins: XoTestsWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsWorkItemSelectConfig{joins: XoTestsWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -359,6 +391,22 @@ func XoTestsWorkItems(ctx context.Context, db DB, opts ...XoTestsWorkItemSelectC
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -385,21 +433,22 @@ func XoTestsWorkItems(ctx context.Context, db DB, opts ...XoTestsWorkItemSelectC
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s
-	 FROM xo_tests.work_items %s
+	work_items.work_item_id %s 
+	 FROM xo_tests.work_items %s 
 	 WHERE true
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItems */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, )
-	rows, err := db.Query(ctx, sqlstr, append([]any{}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsWorkItem/WorkItemsByDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -417,7 +466,7 @@ func XoTestsWorkItems(ctx context.Context, db DB, opts ...XoTestsWorkItemSelectC
 //
 // Generated from index 'work_items_pkey'.
 func XoTestsWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTestsWorkItemID, opts ...XoTestsWorkItemSelectConfigOption) (*XoTestsWorkItem, error) {
-	c := &XoTestsWorkItemSelectConfig{joins: XoTestsWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsWorkItemSelectConfig{joins: XoTestsWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -443,6 +492,22 @@ func XoTestsWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTestsW
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -471,21 +536,22 @@ func XoTestsWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTestsW
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s
-	 FROM xo_tests.work_items %s
+	work_items.work_item_id %s 
+	 FROM xo_tests.work_items %s 
 	 WHERE work_items.work_item_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -501,7 +567,7 @@ func XoTestsWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTestsW
 //
 // Generated from index 'work_items_title_description_idx1'.
 func XoTestsWorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...XoTestsWorkItemSelectConfigOption) ([]XoTestsWorkItem, error) {
-	c := &XoTestsWorkItemSelectConfig{joins: XoTestsWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsWorkItemSelectConfig{joins: XoTestsWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -527,6 +593,22 @@ func XoTestsWorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -555,21 +637,22 @@ func XoTestsWorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s
-	 FROM xo_tests.work_items %s
+	work_items.work_item_id %s 
+	 FROM xo_tests.work_items %s 
 	 WHERE work_items.title = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemsByTitle */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, title)
-	rows, err := db.Query(ctx, sqlstr, append([]any{title}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{title}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsWorkItem/WorkItemsByTitleDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}

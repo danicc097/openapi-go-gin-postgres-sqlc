@@ -84,6 +84,7 @@ type ExtraSchemaPagElementSelectConfig struct {
 	orderBy string
 	joins   ExtraSchemaPagElementJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type ExtraSchemaPagElementSelectConfigOption func(*ExtraSchemaPagElementSelectConfig)
 
@@ -147,6 +148,20 @@ func WithExtraSchemaPagElementFilters(filters map[string][]any) ExtraSchemaPagEl
 	}
 }
 
+// WithExtraSchemaPagElementHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithExtraSchemaPagElementHavingClause(conditions map[string][]any) ExtraSchemaPagElementSelectConfigOption {
+	return func(s *ExtraSchemaPagElementSelectConfig) {
+		s.having = conditions
+	}
+}
+
 const extraSchemaPagElementTableDummyJoinJoinSQL = `-- O2O join generated from "pag_element_dummy_fkey (inferred)"
 left join extra_schema.dummy_join as _pag_element_dummy on _pag_element_dummy.dummy_join_id = pag_element.dummy
 `
@@ -185,9 +200,9 @@ func (espe *ExtraSchemaPagElement) Insert(ctx context.Context, db DB) (*ExtraSch
 // Update updates a ExtraSchemaPagElement in the database.
 func (espe *ExtraSchemaPagElement) Update(ctx context.Context, db DB) (*ExtraSchemaPagElement, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.pag_element SET
-	dummy = $1, name = $2
-	WHERE paginated_element_id = $3
+	sqlstr := `UPDATE extra_schema.pag_element SET 
+	dummy = $1, name = $2 
+	WHERE paginated_element_id = $3 
 	RETURNING * `
 	// run
 	logf(sqlstr, espe.CreatedAt, espe.Dummy, espe.Name, espe.PaginatedElementID)
@@ -233,7 +248,7 @@ func (espe *ExtraSchemaPagElement) Upsert(ctx context.Context, db DB, params *Ex
 // Delete deletes the ExtraSchemaPagElement from the database.
 func (espe *ExtraSchemaPagElement) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.pag_element
+	sqlstr := `DELETE FROM extra_schema.pag_element 
 	WHERE paginated_element_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, espe.PaginatedElementID); err != nil {
@@ -244,7 +259,7 @@ func (espe *ExtraSchemaPagElement) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaPagElementPaginatedByCreatedAt returns a cursor-paginated list of ExtraSchemaPagElement.
 func ExtraSchemaPagElementPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...ExtraSchemaPagElementSelectConfigOption) ([]ExtraSchemaPagElement, error) {
-	c := &ExtraSchemaPagElementSelectConfig{joins: ExtraSchemaPagElementJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaPagElementSelectConfig{joins: ExtraSchemaPagElementJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -270,6 +285,22 @@ func ExtraSchemaPagElementPaginatedByCreatedAt(ctx context.Context, db DB, creat
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -297,22 +328,23 @@ func ExtraSchemaPagElementPaginatedByCreatedAt(ctx context.Context, db DB, creat
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
-	pag_element.paginated_element_id %s
-	 FROM extra_schema.pag_element %s
+	pag_element.paginated_element_id %s 
+	 FROM extra_schema.pag_element %s 
 	 WHERE pag_element.created_at %s $1
-	 %s   %s
-  ORDER BY
-		created_at %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		created_at %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaPagElementPaginatedByCreatedAt */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaPagElement/Paginated/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
@@ -327,7 +359,7 @@ func ExtraSchemaPagElementPaginatedByCreatedAt(ctx context.Context, db DB, creat
 //
 // Generated from index 'pag_element_created_at_key'.
 func ExtraSchemaPagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...ExtraSchemaPagElementSelectConfigOption) (*ExtraSchemaPagElement, error) {
-	c := &ExtraSchemaPagElementSelectConfig{joins: ExtraSchemaPagElementJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaPagElementSelectConfig{joins: ExtraSchemaPagElementJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -355,6 +387,22 @@ func ExtraSchemaPagElementByCreatedAt(ctx context.Context, db DB, createdAt time
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -375,22 +423,23 @@ func ExtraSchemaPagElementByCreatedAt(ctx context.Context, db DB, createdAt time
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
-	pag_element.paginated_element_id %s
-	 FROM extra_schema.pag_element %s
+	pag_element.paginated_element_id %s 
+	 FROM extra_schema.pag_element %s 
 	 WHERE pag_element.created_at = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaPagElementByCreatedAt */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByCreatedAt/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
@@ -406,7 +455,7 @@ func ExtraSchemaPagElementByCreatedAt(ctx context.Context, db DB, createdAt time
 //
 // Generated from index 'pag_element_pkey'.
 func ExtraSchemaPagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElementID ExtraSchemaPagElementID, opts ...ExtraSchemaPagElementSelectConfigOption) (*ExtraSchemaPagElement, error) {
-	c := &ExtraSchemaPagElementSelectConfig{joins: ExtraSchemaPagElementJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaPagElementSelectConfig{joins: ExtraSchemaPagElementJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -434,6 +483,22 @@ func ExtraSchemaPagElementByPaginatedElementID(ctx context.Context, db DB, pagin
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -454,22 +519,23 @@ func ExtraSchemaPagElementByPaginatedElementID(ctx context.Context, db DB, pagin
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
-	pag_element.paginated_element_id %s
-	 FROM extra_schema.pag_element %s
+	pag_element.paginated_element_id %s 
+	 FROM extra_schema.pag_element %s 
 	 WHERE pag_element.paginated_element_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaPagElementByPaginatedElementID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, paginatedElementID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{paginatedElementID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{paginatedElementID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByPaginatedElementID/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}

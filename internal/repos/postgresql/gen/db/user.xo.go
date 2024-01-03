@@ -147,10 +147,12 @@ func (u *User) SetUpdateParams(params *UserUpdateParams) {
 }
 
 type UserSelectConfig struct {
-	limit     string
-	orderBy   string
-	joins     UserJoins
-	filters   map[string][]any
+	limit   string
+	orderBy string
+	joins   UserJoins
+	filters map[string][]any
+	having  map[string][]any
+
 	deletedAt string
 }
 type UserSelectConfigOption func(*UserSelectConfig)
@@ -249,6 +251,20 @@ type WorkItem__WIAU_User struct {
 func WithUserFilters(filters map[string][]any) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithUserHavingClause(conditions map[string][]any) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -427,9 +443,9 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 // Update updates a User in the database.
 func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.users SET
-	api_key_id = $1, deleted_at = $2, email = $3, external_id = $4, first_name = $5, has_global_notifications = $6, has_personal_notifications = $7, last_name = $8, role_rank = $9, scopes = $10, username = $11
-	WHERE user_id = $12
+	sqlstr := `UPDATE public.users SET 
+	api_key_id = $1, deleted_at = $2, email = $3, external_id = $4, first_name = $5, has_global_notifications = $6, has_personal_notifications = $7, last_name = $8, role_rank = $9, scopes = $10, username = $11 
+	WHERE user_id = $12 
 	RETURNING * `
 	// run
 	logf(sqlstr, u.APIKeyID, u.CreatedAt, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.UpdatedAt, u.Username, u.UserID)
@@ -483,7 +499,7 @@ func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*Us
 // Delete deletes the User from the database.
 func (u *User) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.users
+	sqlstr := `DELETE FROM public.users 
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
@@ -495,8 +511,8 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the User from the database via 'deleted_at'.
 func (u *User) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE public.users
-	SET deleted_at = NOW()
+	sqlstr := `UPDATE public.users 
+	SET deleted_at = NOW() 
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
@@ -520,7 +536,7 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 
 // UserPaginatedByCreatedAt returns a cursor-paginated list of User.
 func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -546,6 +562,22 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -621,7 +653,7 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -636,18 +668,19 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s
-	 FROM public.users %s
+	users.username %s 
+	 FROM public.users %s 
 	 WHERE users.created_at %s $1
-	 %s   AND users.deleted_at is %s  %s
-  ORDER BY
-		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
+	 %s   AND users.deleted_at is %s  %s 
+  %s 
+  ORDER BY 
+		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* UserPaginatedByCreatedAt */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -662,7 +695,7 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 //
 // Generated from index 'users_created_at_key'.
 func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -688,6 +721,22 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -758,7 +807,7 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -773,18 +822,19 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s
-	 FROM public.users %s
+	users.username %s 
+	 FROM public.users %s 
 	 WHERE users.created_at = $1
-	 %s   AND users.deleted_at is %s  %s
-`, selects, joins, filters, c.deletedAt, groupbys)
+	 %s   AND users.deleted_at is %s  %s 
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByCreatedAt */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -800,7 +850,7 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 //
 // Generated from index 'users_deleted_at_idx'.
 func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " not null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " not null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -826,6 +876,22 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -896,7 +962,7 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -911,18 +977,19 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s
-	 FROM public.users %s
+	users.username %s 
+	 FROM public.users %s 
 	 WHERE users.deleted_at = $1 AND (deleted_at IS NOT NULL)
-	 %s   AND users.deleted_at is %s  %s
-`, selects, joins, filters, c.deletedAt, groupbys)
+	 %s   AND users.deleted_at is %s  %s 
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UsersByDeletedAt_WhereDeletedAtIsNotNull */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{deletedAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{deletedAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByDeletedAt/Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -940,7 +1007,7 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 //
 // Generated from index 'users_email_key'.
 func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -966,6 +1033,22 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -1036,7 +1119,7 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1051,18 +1134,19 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s
-	 FROM public.users %s
+	users.username %s 
+	 FROM public.users %s 
 	 WHERE users.email = $1
-	 %s   AND users.deleted_at is %s  %s
-`, selects, joins, filters, c.deletedAt, groupbys)
+	 %s   AND users.deleted_at is %s  %s 
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByEmail */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, email)
-	rows, err := db.Query(ctx, sqlstr, append([]any{email}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{email}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByEmail/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -1078,7 +1162,7 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 //
 // Generated from index 'users_external_id_key'.
 func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1104,6 +1188,22 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -1174,7 +1274,7 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1189,18 +1289,19 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s
-	 FROM public.users %s
+	users.username %s 
+	 FROM public.users %s 
 	 WHERE users.external_id = $1
-	 %s   AND users.deleted_at is %s  %s
-`, selects, joins, filters, c.deletedAt, groupbys)
+	 %s   AND users.deleted_at is %s  %s 
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByExternalID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, externalID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{externalID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{externalID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByExternalID/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -1216,7 +1317,7 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 //
 // Generated from index 'users_pkey'.
 func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1242,6 +1343,22 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -1312,7 +1429,7 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1327,18 +1444,19 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s
-	 FROM public.users %s
+	users.username %s 
+	 FROM public.users %s 
 	 WHERE users.user_id = $1
-	 %s   AND users.deleted_at is %s  %s
-`, selects, joins, filters, c.deletedAt, groupbys)
+	 %s   AND users.deleted_at is %s  %s 
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -1354,7 +1472,7 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 //
 // Generated from index 'users_updated_at_idx'.
 func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1380,6 +1498,22 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -1450,7 +1584,7 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1465,18 +1599,19 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s
-	 FROM public.users %s
+	users.username %s 
+	 FROM public.users %s 
 	 WHERE users.updated_at = $1
-	 %s   AND users.deleted_at is %s  %s
-`, selects, joins, filters, c.deletedAt, groupbys)
+	 %s   AND users.deleted_at is %s  %s 
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UsersByUpdatedAt */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, updatedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{updatedAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{updatedAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByUpdatedAt/Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -1494,7 +1629,7 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 //
 // Generated from index 'users_username_key'.
 func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1520,6 +1655,22 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -1590,7 +1741,7 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1605,18 +1756,19 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s
-	 FROM public.users %s
+	users.username %s 
+	 FROM public.users %s 
 	 WHERE users.username = $1
-	 %s   AND users.deleted_at is %s  %s
-`, selects, joins, filters, c.deletedAt, groupbys)
+	 %s   AND users.deleted_at is %s  %s 
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByUsername */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, username)
-	rows, err := db.Query(ctx, sqlstr, append([]any{username}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{username}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUsername/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}

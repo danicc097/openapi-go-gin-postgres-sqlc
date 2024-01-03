@@ -85,10 +85,12 @@ func (wit *WorkItemTag) SetUpdateParams(params *WorkItemTagUpdateParams) {
 }
 
 type WorkItemTagSelectConfig struct {
-	limit     string
-	orderBy   string
-	joins     WorkItemTagJoins
-	filters   map[string][]any
+	limit   string
+	orderBy string
+	joins   WorkItemTagJoins
+	filters map[string][]any
+	having  map[string][]any
+
 	deletedAt string
 }
 type WorkItemTagSelectConfigOption func(*WorkItemTagSelectConfig)
@@ -162,6 +164,20 @@ func WithWorkItemTagFilters(filters map[string][]any) WorkItemTagSelectConfigOpt
 	}
 }
 
+// WithWorkItemTagHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithWorkItemTagHavingClause(conditions map[string][]any) WorkItemTagSelectConfigOption {
+	return func(s *WorkItemTagSelectConfig) {
+		s.having = conditions
+	}
+}
+
 const workItemTagTableProjectJoinSQL = `-- O2O join generated from "work_item_tags_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_tags_project_id on _work_item_tags_project_id.project_id = work_item_tags.project_id
 `
@@ -222,9 +238,9 @@ func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error)
 // Update updates a WorkItemTag in the database.
 func (wit *WorkItemTag) Update(ctx context.Context, db DB) (*WorkItemTag, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_tags SET
-	color = $1, deleted_at = $2, description = $3, name = $4, project_id = $5
-	WHERE work_item_tag_id = $6
+	sqlstr := `UPDATE public.work_item_tags SET 
+	color = $1, deleted_at = $2, description = $3, name = $4, project_id = $5 
+	WHERE work_item_tag_id = $6 
 	RETURNING * `
 	// run
 	logf(sqlstr, wit.Color, wit.DeletedAt, wit.Description, wit.Name, wit.ProjectID, wit.WorkItemTagID)
@@ -272,7 +288,7 @@ func (wit *WorkItemTag) Upsert(ctx context.Context, db DB, params *WorkItemTagCr
 // Delete deletes the WorkItemTag from the database.
 func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.work_item_tags
+	sqlstr := `DELETE FROM public.work_item_tags 
 	WHERE work_item_tag_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTagID); err != nil {
@@ -284,8 +300,8 @@ func (wit *WorkItemTag) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the WorkItemTag from the database via 'deleted_at'.
 func (wit *WorkItemTag) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE public.work_item_tags
-	SET deleted_at = NOW()
+	sqlstr := `UPDATE public.work_item_tags 
+	SET deleted_at = NOW() 
 	WHERE work_item_tag_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTagID); err != nil {
@@ -309,7 +325,7 @@ func (wit *WorkItemTag) Restore(ctx context.Context, db DB) (*WorkItemTag, error
 
 // WorkItemTagPaginatedByWorkItemTagID returns a cursor-paginated list of WorkItemTag.
 func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkItemTagID, direction models.Direction, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -335,6 +351,22 @@ func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTag
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -368,24 +400,25 @@ func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTag
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
 	work_item_tags.deleted_at,
 	work_item_tags.description,
 	work_item_tags.name,
 	work_item_tags.project_id,
-	work_item_tags.work_item_tag_id %s
-	 FROM public.work_item_tags %s
+	work_item_tags.work_item_tag_id %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.work_item_tag_id %s $1
-	 %s   AND work_item_tags.deleted_at is %s  %s
-  ORDER BY
-		work_item_tag_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
+	 %s   AND work_item_tags.deleted_at is %s  %s 
+  %s 
+  ORDER BY 
+		work_item_tag_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagPaginatedByWorkItemTagID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
@@ -398,7 +431,7 @@ func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTag
 
 // WorkItemTagPaginatedByProjectID returns a cursor-paginated list of WorkItemTag.
 func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -424,6 +457,22 @@ func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID Proje
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -457,24 +506,25 @@ func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID Proje
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
 	work_item_tags.deleted_at,
 	work_item_tags.description,
 	work_item_tags.name,
 	work_item_tags.project_id,
-	work_item_tags.work_item_tag_id %s
-	 FROM public.work_item_tags %s
+	work_item_tags.work_item_tag_id %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.project_id %s $1
-	 %s   AND work_item_tags.deleted_at is %s  %s
-  ORDER BY
-		project_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
+	 %s   AND work_item_tags.deleted_at is %s  %s 
+  %s 
+  ORDER BY 
+		project_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagPaginatedByProjectID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
@@ -489,7 +539,7 @@ func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID Proje
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
 func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, projectID ProjectID, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -517,6 +567,22 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -543,24 +609,25 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
 	work_item_tags.deleted_at,
 	work_item_tags.description,
 	work_item_tags.name,
 	work_item_tags.project_id,
-	work_item_tags.work_item_tag_id %s
-	 FROM public.work_item_tags %s
+	work_item_tags.work_item_tag_id %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.name = $1 AND work_item_tags.project_id = $2
-	 %s   AND work_item_tags.deleted_at is %s  %s
-`, selects, joins, filters, c.deletedAt, groupbys)
+	 %s   AND work_item_tags.deleted_at is %s  %s 
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagByNameProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByNameProjectID/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
@@ -576,7 +643,7 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
 func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -604,6 +671,22 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -630,24 +713,25 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
 	work_item_tags.deleted_at,
 	work_item_tags.description,
 	work_item_tags.name,
 	work_item_tags.project_id,
-	work_item_tags.work_item_tag_id %s
-	 FROM public.work_item_tags %s
+	work_item_tags.work_item_tag_id %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.name = $1
-	 %s   AND work_item_tags.deleted_at is %s  %s
-`, selects, joins, filters, c.deletedAt, groupbys)
+	 %s   AND work_item_tags.deleted_at is %s  %s 
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagsByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
@@ -665,7 +749,7 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 //
 // Generated from index 'work_item_tags_name_project_id_key'.
 func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -691,6 +775,22 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -719,24 +819,25 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
 	work_item_tags.deleted_at,
 	work_item_tags.description,
 	work_item_tags.name,
 	work_item_tags.project_id,
-	work_item_tags.work_item_tag_id %s
-	 FROM public.work_item_tags %s
+	work_item_tags.work_item_tag_id %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.project_id = $1
-	 %s   AND work_item_tags.deleted_at is %s  %s
-`, selects, joins, filters, c.deletedAt, groupbys)
+	 %s   AND work_item_tags.deleted_at is %s  %s 
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagsByProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/WorkItemTagByNameProjectID/Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
@@ -754,7 +855,7 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 //
 // Generated from index 'work_item_tags_pkey'.
 func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkItemTagID, opts ...WorkItemTagSelectConfigOption) (*WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -780,6 +881,22 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkIt
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -808,24 +925,25 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkIt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_tags.color,
 	work_item_tags.deleted_at,
 	work_item_tags.description,
 	work_item_tags.name,
 	work_item_tags.project_id,
-	work_item_tags.work_item_tag_id %s
-	 FROM public.work_item_tags %s
+	work_item_tags.work_item_tag_id %s 
+	 FROM public.work_item_tags %s 
 	 WHERE work_item_tags.work_item_tag_id = $1
-	 %s   AND work_item_tags.deleted_at is %s  %s
-`, selects, joins, filters, c.deletedAt, groupbys)
+	 %s   AND work_item_tags.deleted_at is %s  %s 
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagByWorkItemTagID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemTagID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_tags/WorkItemTagByWorkItemTagID/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}

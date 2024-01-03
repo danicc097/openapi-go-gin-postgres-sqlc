@@ -80,6 +80,7 @@ type UserAPIKeySelectConfig struct {
 	orderBy string
 	joins   UserAPIKeyJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type UserAPIKeySelectConfigOption func(*UserAPIKeySelectConfig)
 
@@ -143,6 +144,20 @@ func WithUserAPIKeyFilters(filters map[string][]any) UserAPIKeySelectConfigOptio
 	}
 }
 
+// WithUserAPIKeyHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithUserAPIKeyHavingClause(conditions map[string][]any) UserAPIKeySelectConfigOption {
+	return func(s *UserAPIKeySelectConfig) {
+		s.having = conditions
+	}
+}
+
 const userAPIKeyTableUserJoinSQL = `-- O2O join generated from "user_api_keys_user_id_fkey (inferred)"
 left join users as _user_api_keys_user_id on _user_api_keys_user_id.user_id = user_api_keys.user_id
 `
@@ -181,9 +196,9 @@ func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
 // Update updates a UserAPIKey in the database.
 func (uak *UserAPIKey) Update(ctx context.Context, db DB) (*UserAPIKey, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.user_api_keys SET
-	api_key = $1, expires_on = $2, user_id = $3
-	WHERE user_api_key_id = $4
+	sqlstr := `UPDATE public.user_api_keys SET 
+	api_key = $1, expires_on = $2, user_id = $3 
+	WHERE user_api_key_id = $4 
 	RETURNING * `
 	// run
 	logf(sqlstr, uak.APIKey, uak.ExpiresOn, uak.UserID, uak.UserAPIKeyID)
@@ -230,7 +245,7 @@ func (uak *UserAPIKey) Upsert(ctx context.Context, db DB, params *UserAPIKeyCrea
 // Delete deletes the UserAPIKey from the database.
 func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.user_api_keys
+	sqlstr := `DELETE FROM public.user_api_keys 
 	WHERE user_api_key_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, uak.UserAPIKeyID); err != nil {
@@ -241,7 +256,7 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 
 // UserAPIKeyPaginatedByUserAPIKeyID returns a cursor-paginated list of UserAPIKey.
 func UserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKeyID, direction models.Direction, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
-	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
+	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -267,6 +282,22 @@ func UserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -294,22 +325,23 @@ func UserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID 
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
 	user_api_keys.user_api_key_id,
-	user_api_keys.user_id %s
-	 FROM public.user_api_keys %s
+	user_api_keys.user_id %s 
+	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id %s $1
-	 %s   %s
-  ORDER BY
-		user_api_key_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		user_api_key_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* UserAPIKeyPaginatedByUserAPIKeyID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
@@ -324,7 +356,7 @@ func UserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID 
 //
 // Generated from index 'user_api_keys_api_key_key'.
 func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
-	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
+	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -352,6 +384,22 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -372,22 +420,23 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
 	user_api_keys.user_api_key_id,
-	user_api_keys.user_id %s
-	 FROM public.user_api_keys %s
+	user_api_keys.user_id %s 
+	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.api_key = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserAPIKeyByAPIKey */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, apiKey)
-	rows, err := db.Query(ctx, sqlstr, append([]any{apiKey}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{apiKey}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
@@ -403,7 +452,7 @@ func UserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...UserA
 //
 // Generated from index 'user_api_keys_pkey'.
 func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKeyID, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
-	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
+	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -431,6 +480,22 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKe
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -451,22 +516,23 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKe
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
 	user_api_keys.user_api_key_id,
-	user_api_keys.user_id %s
-	 FROM public.user_api_keys %s
+	user_api_keys.user_id %s 
+	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserAPIKeyByUserAPIKeyID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userAPIKeyID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
@@ -482,7 +548,7 @@ func UserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID UserAPIKe
 //
 // Generated from index 'user_api_keys_user_id_key'.
 func UserAPIKeyByUserID(ctx context.Context, db DB, userID UserID, opts ...UserAPIKeySelectConfigOption) (*UserAPIKey, error) {
-	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any)}
+	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -510,6 +576,22 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID UserID, opts ...UserA
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -530,22 +612,23 @@ func UserAPIKeyByUserID(ctx context.Context, db DB, userID UserID, opts ...UserA
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
 	user_api_keys.user_api_key_id,
-	user_api_keys.user_id %s
-	 FROM public.user_api_keys %s
+	user_api_keys.user_id %s 
+	 FROM public.user_api_keys %s 
 	 WHERE user_api_keys.user_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserAPIKeyByUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}

@@ -86,6 +86,7 @@ type WorkItemTypeSelectConfig struct {
 	orderBy string
 	joins   WorkItemTypeJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type WorkItemTypeSelectConfigOption func(*WorkItemTypeSelectConfig)
 
@@ -130,6 +131,20 @@ func WithWorkItemTypeFilters(filters map[string][]any) WorkItemTypeSelectConfigO
 	}
 }
 
+// WithWorkItemTypeHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithWorkItemTypeHavingClause(conditions map[string][]any) WorkItemTypeSelectConfigOption {
+	return func(s *WorkItemTypeSelectConfig) {
+		s.having = conditions
+	}
+}
+
 const workItemTypeTableProjectJoinSQL = `-- O2O join generated from "work_item_types_project_id_fkey (Generated from M2O)"
 left join projects as _work_item_types_project_id on _work_item_types_project_id.project_id = work_item_types.project_id
 `
@@ -168,9 +183,9 @@ func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, erro
 // Update updates a WorkItemType in the database.
 func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_types SET
-	color = $1, description = $2, name = $3, project_id = $4
-	WHERE work_item_type_id = $5
+	sqlstr := `UPDATE public.work_item_types SET 
+	color = $1, description = $2, name = $3, project_id = $4 
+	WHERE work_item_type_id = $5 
 	RETURNING * `
 	// run
 	logf(sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID, wit.WorkItemTypeID)
@@ -218,7 +233,7 @@ func (wit *WorkItemType) Upsert(ctx context.Context, db DB, params *WorkItemType
 // Delete deletes the WorkItemType from the database.
 func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.work_item_types
+	sqlstr := `DELETE FROM public.work_item_types 
 	WHERE work_item_type_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTypeID); err != nil {
@@ -229,7 +244,7 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 
 // WorkItemTypePaginatedByWorkItemTypeID returns a cursor-paginated list of WorkItemType.
 func WorkItemTypePaginatedByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID WorkItemTypeID, direction models.Direction, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -257,6 +272,22 @@ func WorkItemTypePaginatedByWorkItemTypeID(ctx context.Context, db DB, workItemT
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -282,23 +313,24 @@ func WorkItemTypePaginatedByWorkItemTypeID(ctx context.Context, db DB, workItemT
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
-	work_item_types.work_item_type_id %s
-	 FROM public.work_item_types %s
+	work_item_types.work_item_type_id %s 
+	 FROM public.work_item_types %s 
 	 WHERE work_item_types.work_item_type_id %s $1
-	 %s   %s
-  ORDER BY
-		work_item_type_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		work_item_type_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTypePaginatedByWorkItemTypeID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTypeID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTypeID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", &XoError{Entity: "Work item type", Err: err}))
 	}
@@ -311,7 +343,7 @@ func WorkItemTypePaginatedByWorkItemTypeID(ctx context.Context, db DB, workItemT
 
 // WorkItemTypePaginatedByProjectID returns a cursor-paginated list of WorkItemType.
 func WorkItemTypePaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -339,6 +371,22 @@ func WorkItemTypePaginatedByProjectID(ctx context.Context, db DB, projectID Proj
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -364,23 +412,24 @@ func WorkItemTypePaginatedByProjectID(ctx context.Context, db DB, projectID Proj
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
-	work_item_types.work_item_type_id %s
-	 FROM public.work_item_types %s
+	work_item_types.work_item_type_id %s 
+	 FROM public.work_item_types %s 
 	 WHERE work_item_types.project_id %s $1
-	 %s   %s
-  ORDER BY
-		project_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		project_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTypePaginatedByProjectID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/Paginated/db.Query: %w", &XoError{Entity: "Work item type", Err: err}))
 	}
@@ -395,7 +444,7 @@ func WorkItemTypePaginatedByProjectID(ctx context.Context, db DB, projectID Proj
 //
 // Generated from index 'work_item_types_name_project_id_key'.
 func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projectID ProjectID, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -423,6 +472,22 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -443,23 +508,24 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
-	work_item_types.work_item_type_id %s
-	 FROM public.work_item_types %s
+	work_item_types.work_item_type_id %s 
+	 FROM public.work_item_types %s 
 	 WHERE work_item_types.name = $1 AND work_item_types.project_id = $2
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTypeByNameProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByNameProjectID/db.Query: %w", &XoError{Entity: "Work item type", Err: err}))
 	}
@@ -475,7 +541,7 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 //
 // Generated from index 'work_item_types_name_project_id_key'.
 func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -503,6 +569,22 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -523,23 +605,24 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
-	work_item_types.work_item_type_id %s
-	 FROM public.work_item_types %s
+	work_item_types.work_item_type_id %s 
+	 FROM public.work_item_types %s 
 	 WHERE work_item_types.name = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTypesByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/Query: %w", &XoError{Entity: "Work item type", Err: err}))
 	}
@@ -557,7 +640,7 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 //
 // Generated from index 'work_item_types_name_project_id_key'.
 func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -585,6 +668,22 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID ProjectID, o
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -605,23 +704,24 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID ProjectID, o
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
-	work_item_types.work_item_type_id %s
-	 FROM public.work_item_types %s
+	work_item_types.work_item_type_id %s 
+	 FROM public.work_item_types %s 
 	 WHERE work_item_types.project_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTypesByProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemType/WorkItemTypeByNameProjectID/Query: %w", &XoError{Entity: "Work item type", Err: err}))
 	}
@@ -639,7 +739,7 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID ProjectID, o
 //
 // Generated from index 'work_item_types_pkey'.
 func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID WorkItemTypeID, opts ...WorkItemTypeSelectConfigOption) (*WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -667,6 +767,22 @@ func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID Wor
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -687,23 +803,24 @@ func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID Wor
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
-	work_item_types.work_item_type_id %s
-	 FROM public.work_item_types %s
+	work_item_types.work_item_type_id %s 
+	 FROM public.work_item_types %s 
 	 WHERE work_item_types.work_item_type_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTypeByWorkItemTypeID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemTypeID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTypeID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTypeID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_types/WorkItemTypeByWorkItemTypeID/db.Query: %w", &XoError{Entity: "Work item type", Err: err}))
 	}

@@ -100,6 +100,7 @@ type KanbanStepSelectConfig struct {
 	orderBy string
 	joins   KanbanStepJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type KanbanStepSelectConfigOption func(*KanbanStepSelectConfig)
 
@@ -144,6 +145,20 @@ func WithKanbanStepFilters(filters map[string][]any) KanbanStepSelectConfigOptio
 	}
 }
 
+// WithKanbanStepHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithKanbanStepHavingClause(conditions map[string][]any) KanbanStepSelectConfigOption {
+	return func(s *KanbanStepSelectConfig) {
+		s.having = conditions
+	}
+}
+
 const kanbanStepTableProjectJoinSQL = `-- O2O join generated from "kanban_steps_project_id_fkey (Generated from M2O)"
 left join projects as _kanban_steps_project_id on _kanban_steps_project_id.project_id = kanban_steps.project_id
 `
@@ -182,9 +197,9 @@ func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {
 // Update updates a KanbanStep in the database.
 func (ks *KanbanStep) Update(ctx context.Context, db DB) (*KanbanStep, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.kanban_steps SET
-	color = $1, description = $2, name = $3, project_id = $4, step_order = $5, time_trackable = $6
-	WHERE kanban_step_id = $7
+	sqlstr := `UPDATE public.kanban_steps SET 
+	color = $1, description = $2, name = $3, project_id = $4, step_order = $5, time_trackable = $6 
+	WHERE kanban_step_id = $7 
 	RETURNING * `
 	// run
 	logf(sqlstr, ks.Color, ks.Description, ks.Name, ks.ProjectID, ks.StepOrder, ks.TimeTrackable, ks.KanbanStepID)
@@ -234,7 +249,7 @@ func (ks *KanbanStep) Upsert(ctx context.Context, db DB, params *KanbanStepCreat
 // Delete deletes the KanbanStep from the database.
 func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.kanban_steps
+	sqlstr := `DELETE FROM public.kanban_steps 
 	WHERE kanban_step_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, ks.KanbanStepID); err != nil {
@@ -245,7 +260,7 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 
 // KanbanStepPaginatedByKanbanStepID returns a cursor-paginated list of KanbanStep.
 func KanbanStepPaginatedByKanbanStepID(ctx context.Context, db DB, kanbanStepID KanbanStepID, direction models.Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -273,6 +288,22 @@ func KanbanStepPaginatedByKanbanStepID(ctx context.Context, db DB, kanbanStepID 
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -298,25 +329,26 @@ func KanbanStepPaginatedByKanbanStepID(ctx context.Context, db DB, kanbanStepID 
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	kanban_steps.color,
 	kanban_steps.description,
 	kanban_steps.kanban_step_id,
 	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.time_trackable %s
-	 FROM public.kanban_steps %s
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.kanban_step_id %s $1
-	 %s   %s
-  ORDER BY
-		kanban_step_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		kanban_step_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepPaginatedByKanbanStepID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{kanbanStepID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{kanbanStepID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
@@ -329,7 +361,7 @@ func KanbanStepPaginatedByKanbanStepID(ctx context.Context, db DB, kanbanStepID 
 
 // KanbanStepPaginatedByProjectID returns a cursor-paginated list of KanbanStep.
 func KanbanStepPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -357,6 +389,22 @@ func KanbanStepPaginatedByProjectID(ctx context.Context, db DB, projectID Projec
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -382,25 +430,26 @@ func KanbanStepPaginatedByProjectID(ctx context.Context, db DB, projectID Projec
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	kanban_steps.color,
 	kanban_steps.description,
 	kanban_steps.kanban_step_id,
 	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.time_trackable %s
-	 FROM public.kanban_steps %s
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.project_id %s $1
-	 %s   %s
-  ORDER BY
-		project_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		project_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepPaginatedByProjectID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
@@ -413,7 +462,7 @@ func KanbanStepPaginatedByProjectID(ctx context.Context, db DB, projectID Projec
 
 // KanbanStepPaginatedByStepOrder returns a cursor-paginated list of KanbanStep.
 func KanbanStepPaginatedByStepOrder(ctx context.Context, db DB, stepOrder int, direction models.Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -441,6 +490,22 @@ func KanbanStepPaginatedByStepOrder(ctx context.Context, db DB, stepOrder int, d
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -466,25 +531,26 @@ func KanbanStepPaginatedByStepOrder(ctx context.Context, db DB, stepOrder int, d
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	kanban_steps.color,
 	kanban_steps.description,
 	kanban_steps.kanban_step_id,
 	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.time_trackable %s
-	 FROM public.kanban_steps %s
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.step_order %s $1
-	 %s   %s
-  ORDER BY
-		step_order %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		step_order %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepPaginatedByStepOrder */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{stepOrder}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{stepOrder}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/Paginated/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
@@ -499,7 +565,7 @@ func KanbanStepPaginatedByStepOrder(ctx context.Context, db DB, stepOrder int, d
 //
 // Generated from index 'kanban_steps_pkey'.
 func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID KanbanStepID, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -527,6 +593,22 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID KanbanSte
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -547,25 +629,26 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID KanbanSte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	kanban_steps.color,
 	kanban_steps.description,
 	kanban_steps.kanban_step_id,
 	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.time_trackable %s
-	 FROM public.kanban_steps %s
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.kanban_step_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepByKanbanStepID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, kanbanStepID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{kanbanStepID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{kanbanStepID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByKanbanStepID/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
@@ -581,7 +664,7 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID KanbanSte
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
 func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID ProjectID, name string, stepOrder int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -609,6 +692,22 @@ func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID Pr
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -629,25 +728,26 @@ func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID Pr
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	kanban_steps.color,
 	kanban_steps.description,
 	kanban_steps.kanban_step_id,
 	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.time_trackable %s
-	 FROM public.kanban_steps %s
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.project_id = $1 AND kanban_steps.name = $2 AND kanban_steps.step_order = $3
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepByProjectIDNameStepOrder */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID, name, stepOrder)
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID, name, stepOrder}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID, name, stepOrder}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDNameStepOrder/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
@@ -663,7 +763,7 @@ func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID Pr
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
 func KanbanStepsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -691,6 +791,22 @@ func KanbanStepsByProjectID(ctx context.Context, db DB, projectID ProjectID, opt
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -711,25 +827,26 @@ func KanbanStepsByProjectID(ctx context.Context, db DB, projectID ProjectID, opt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	kanban_steps.color,
 	kanban_steps.description,
 	kanban_steps.kanban_step_id,
 	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.time_trackable %s
-	 FROM public.kanban_steps %s
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.project_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepsByProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
@@ -747,7 +864,7 @@ func KanbanStepsByProjectID(ctx context.Context, db DB, projectID ProjectID, opt
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
 func KanbanStepsByName(ctx context.Context, db DB, name string, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -775,6 +892,22 @@ func KanbanStepsByName(ctx context.Context, db DB, name string, opts ...KanbanSt
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -795,25 +928,26 @@ func KanbanStepsByName(ctx context.Context, db DB, name string, opts ...KanbanSt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	kanban_steps.color,
 	kanban_steps.description,
 	kanban_steps.kanban_step_id,
 	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.time_trackable %s
-	 FROM public.kanban_steps %s
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.name = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepsByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
@@ -831,7 +965,7 @@ func KanbanStepsByName(ctx context.Context, db DB, name string, opts ...KanbanSt
 //
 // Generated from index 'kanban_steps_project_id_name_step_order_idx'.
 func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -859,6 +993,22 @@ func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...K
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -879,25 +1029,26 @@ func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...K
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	kanban_steps.color,
 	kanban_steps.description,
 	kanban_steps.kanban_step_id,
 	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.time_trackable %s
-	 FROM public.kanban_steps %s
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.step_order = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepsByStepOrder */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, stepOrder)
-	rows, err := db.Query(ctx, sqlstr, append([]any{stepOrder}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{stepOrder}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("KanbanStep/KanbanStepByProjectIDNameStepOrder/Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}
@@ -915,7 +1066,7 @@ func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...K
 //
 // Generated from index 'kanban_steps_project_id_step_order_key'.
 func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID ProjectID, stepOrder int, opts ...KanbanStepSelectConfigOption) (*KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any)}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -943,6 +1094,22 @@ func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID Projec
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -963,25 +1130,26 @@ func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID Projec
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	kanban_steps.color,
 	kanban_steps.description,
 	kanban_steps.kanban_step_id,
 	kanban_steps.name,
 	kanban_steps.project_id,
 	kanban_steps.step_order,
-	kanban_steps.time_trackable %s
-	 FROM public.kanban_steps %s
+	kanban_steps.time_trackable %s 
+	 FROM public.kanban_steps %s 
 	 WHERE kanban_steps.project_id = $1 AND kanban_steps.step_order = $2
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepByProjectIDStepOrder */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID, stepOrder)
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID, stepOrder}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID, stepOrder}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("kanban_steps/KanbanStepByProjectIDStepOrder/db.Query: %w", &XoError{Entity: "Kanban step", Err: err}))
 	}

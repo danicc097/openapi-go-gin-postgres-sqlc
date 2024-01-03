@@ -75,6 +75,7 @@ type XoTestsBookAuthorSelectConfig struct {
 	orderBy string
 	joins   XoTestsBookAuthorJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type XoTestsBookAuthorSelectConfigOption func(*XoTestsBookAuthorSelectConfig)
 
@@ -128,6 +129,20 @@ type User__BA_XoTestsBookAuthor struct {
 func WithXoTestsBookAuthorFilters(filters map[string][]any) XoTestsBookAuthorSelectConfigOption {
 	return func(s *XoTestsBookAuthorSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithXoTestsBookAuthorHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithXoTestsBookAuthorHavingClause(conditions map[string][]any) XoTestsBookAuthorSelectConfigOption {
+	return func(s *XoTestsBookAuthorSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -208,9 +223,9 @@ func (xtba *XoTestsBookAuthor) Insert(ctx context.Context, db DB) (*XoTestsBookA
 // Update updates a XoTestsBookAuthor in the database.
 func (xtba *XoTestsBookAuthor) Update(ctx context.Context, db DB) (*XoTestsBookAuthor, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.book_authors SET
-	pseudonym = $1
-	WHERE book_id = $2  AND author_id = $3
+	sqlstr := `UPDATE xo_tests.book_authors SET 
+	pseudonym = $1 
+	WHERE book_id = $2  AND author_id = $3 
 	RETURNING * `
 	// run
 	logf(sqlstr, xtba.Pseudonym, xtba.BookID, xtba.AuthorID)
@@ -257,7 +272,7 @@ func (xtba *XoTestsBookAuthor) Upsert(ctx context.Context, db DB, params *XoTest
 // Delete deletes the XoTestsBookAuthor from the database.
 func (xtba *XoTestsBookAuthor) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM xo_tests.book_authors
+	sqlstr := `DELETE FROM xo_tests.book_authors 
 	WHERE book_id = $1 AND author_id = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtba.BookID, xtba.AuthorID); err != nil {
@@ -270,7 +285,7 @@ func (xtba *XoTestsBookAuthor) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'book_authors_pkey'.
 func XoTestsBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID XoTestsBookID, authorID XoTestsUserID, opts ...XoTestsBookAuthorSelectConfigOption) (*XoTestsBookAuthor, error) {
-	c := &XoTestsBookAuthorSelectConfig{joins: XoTestsBookAuthorJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookAuthorSelectConfig{joins: XoTestsBookAuthorJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -298,6 +313,22 @@ func XoTestsBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID XoTest
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -324,21 +355,22 @@ func XoTestsBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID XoTest
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s
-	 FROM xo_tests.book_authors %s
+	book_authors.pseudonym %s 
+	 FROM xo_tests.book_authors %s 
 	 WHERE book_authors.book_id = $1 AND book_authors.author_id = $2
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorByBookIDAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, authorID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors/BookAuthorByBookIDAuthorID/db.Query: %w", &XoError{Entity: "Book author", Err: err}))
 	}
@@ -354,7 +386,7 @@ func XoTestsBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID XoTest
 //
 // Generated from index 'book_authors_pkey'.
 func XoTestsBookAuthorsByBookID(ctx context.Context, db DB, bookID XoTestsBookID, opts ...XoTestsBookAuthorSelectConfigOption) ([]XoTestsBookAuthor, error) {
-	c := &XoTestsBookAuthorSelectConfig{joins: XoTestsBookAuthorJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookAuthorSelectConfig{joins: XoTestsBookAuthorJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -382,6 +414,22 @@ func XoTestsBookAuthorsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -408,21 +456,22 @@ func XoTestsBookAuthorsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s
-	 FROM xo_tests.book_authors %s
+	book_authors.pseudonym %s 
+	 FROM xo_tests.book_authors %s 
 	 WHERE book_authors.book_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsBookAuthor/BookAuthorByBookIDAuthorID/Query: %w", &XoError{Entity: "Book author", Err: err}))
 	}
@@ -440,7 +489,7 @@ func XoTestsBookAuthorsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 //
 // Generated from index 'book_authors_pkey'.
 func XoTestsBookAuthorsByAuthorID(ctx context.Context, db DB, authorID XoTestsUserID, opts ...XoTestsBookAuthorSelectConfigOption) ([]XoTestsBookAuthor, error) {
-	c := &XoTestsBookAuthorSelectConfig{joins: XoTestsBookAuthorJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookAuthorSelectConfig{joins: XoTestsBookAuthorJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -466,6 +515,22 @@ func XoTestsBookAuthorsByAuthorID(ctx context.Context, db DB, authorID XoTestsUs
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -494,21 +559,22 @@ func XoTestsBookAuthorsByAuthorID(ctx context.Context, db DB, authorID XoTestsUs
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s
-	 FROM xo_tests.book_authors %s
+	book_authors.pseudonym %s 
+	 FROM xo_tests.book_authors %s 
 	 WHERE book_authors.author_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsByAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, authorID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsBookAuthor/BookAuthorByBookIDAuthorID/Query: %w", &XoError{Entity: "Book author", Err: err}))
 	}

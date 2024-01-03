@@ -72,6 +72,7 @@ type XoTestsBookReviewSelectConfig struct {
 	orderBy string
 	joins   XoTestsBookReviewJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type XoTestsBookReviewSelectConfigOption func(*XoTestsBookReviewSelectConfig)
 
@@ -113,6 +114,20 @@ func WithXoTestsBookReviewJoin(joins XoTestsBookReviewJoins) XoTestsBookReviewSe
 func WithXoTestsBookReviewFilters(filters map[string][]any) XoTestsBookReviewSelectConfigOption {
 	return func(s *XoTestsBookReviewSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithXoTestsBookReviewHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithXoTestsBookReviewHavingClause(conditions map[string][]any) XoTestsBookReviewSelectConfigOption {
+	return func(s *XoTestsBookReviewSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -164,9 +179,9 @@ func (xtbr *XoTestsBookReview) Insert(ctx context.Context, db DB) (*XoTestsBookR
 // Update updates a XoTestsBookReview in the database.
 func (xtbr *XoTestsBookReview) Update(ctx context.Context, db DB) (*XoTestsBookReview, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.book_reviews SET
-	book_id = $1, reviewer = $2
-	WHERE book_review_id = $3
+	sqlstr := `UPDATE xo_tests.book_reviews SET 
+	book_id = $1, reviewer = $2 
+	WHERE book_review_id = $3 
 	RETURNING * `
 	// run
 	logf(sqlstr, xtbr.BookID, xtbr.Reviewer, xtbr.BookReviewID)
@@ -212,7 +227,7 @@ func (xtbr *XoTestsBookReview) Upsert(ctx context.Context, db DB, params *XoTest
 // Delete deletes the XoTestsBookReview from the database.
 func (xtbr *XoTestsBookReview) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.book_reviews
+	sqlstr := `DELETE FROM xo_tests.book_reviews 
 	WHERE book_review_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtbr.BookReviewID); err != nil {
@@ -223,7 +238,7 @@ func (xtbr *XoTestsBookReview) Delete(ctx context.Context, db DB) error {
 
 // XoTestsBookReviewPaginatedByBookReviewID returns a cursor-paginated list of XoTestsBookReview.
 func XoTestsBookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookReviewID XoTestsBookReviewID, direction models.Direction, opts ...XoTestsBookReviewSelectConfigOption) ([]XoTestsBookReview, error) {
-	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -249,6 +264,22 @@ func XoTestsBookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookRe
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -282,21 +313,22 @@ func XoTestsBookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookRe
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s
-	 FROM xo_tests.book_reviews %s
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_review_id %s $1
-	 %s   %s
-  ORDER BY
-		book_review_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		book_review_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookReviewPaginatedByBookReviewID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookReviewID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookReviewID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsBookReview/Paginated/db.Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
@@ -309,7 +341,7 @@ func XoTestsBookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookRe
 
 // XoTestsBookReviewPaginatedByBookID returns a cursor-paginated list of XoTestsBookReview.
 func XoTestsBookReviewPaginatedByBookID(ctx context.Context, db DB, bookID XoTestsBookID, direction models.Direction, opts ...XoTestsBookReviewSelectConfigOption) ([]XoTestsBookReview, error) {
-	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -335,6 +367,22 @@ func XoTestsBookReviewPaginatedByBookID(ctx context.Context, db DB, bookID XoTes
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -368,21 +416,22 @@ func XoTestsBookReviewPaginatedByBookID(ctx context.Context, db DB, bookID XoTes
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s
-	 FROM xo_tests.book_reviews %s
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_id %s $1
-	 %s   %s
-  ORDER BY
-		book_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		book_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookReviewPaginatedByBookID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsBookReview/Paginated/db.Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
@@ -397,7 +446,7 @@ func XoTestsBookReviewPaginatedByBookID(ctx context.Context, db DB, bookID XoTes
 //
 // Generated from index 'book_reviews_pkey'.
 func XoTestsBookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID XoTestsBookReviewID, opts ...XoTestsBookReviewSelectConfigOption) (*XoTestsBookReview, error) {
-	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -423,6 +472,22 @@ func XoTestsBookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID Xo
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -451,21 +516,22 @@ func XoTestsBookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID Xo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s
-	 FROM xo_tests.book_reviews %s
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_review_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookReviewByBookReviewID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookReviewID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookReviewID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookReviewID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByBookReviewID/db.Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
@@ -481,7 +547,7 @@ func XoTestsBookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID Xo
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
 func XoTestsBookReviewByReviewerBookID(ctx context.Context, db DB, reviewer XoTestsUserID, bookID XoTestsBookID, opts ...XoTestsBookReviewSelectConfigOption) (*XoTestsBookReview, error) {
-	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -509,6 +575,22 @@ func XoTestsBookReviewByReviewerBookID(ctx context.Context, db DB, reviewer XoTe
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -535,21 +617,22 @@ func XoTestsBookReviewByReviewerBookID(ctx context.Context, db DB, reviewer XoTe
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s
-	 FROM xo_tests.book_reviews %s
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.reviewer = $1 AND book_reviews.book_id = $2
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookReviewByReviewerBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, reviewer, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{reviewer, bookID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{reviewer, bookID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_reviews/BookReviewByReviewerBookID/db.Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
@@ -565,7 +648,7 @@ func XoTestsBookReviewByReviewerBookID(ctx context.Context, db DB, reviewer XoTe
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
 func XoTestsBookReviewsByReviewer(ctx context.Context, db DB, reviewer XoTestsUserID, opts ...XoTestsBookReviewSelectConfigOption) ([]XoTestsBookReview, error) {
-	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -593,6 +676,22 @@ func XoTestsBookReviewsByReviewer(ctx context.Context, db DB, reviewer XoTestsUs
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -619,21 +718,22 @@ func XoTestsBookReviewsByReviewer(ctx context.Context, db DB, reviewer XoTestsUs
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s
-	 FROM xo_tests.book_reviews %s
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.reviewer = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookReviewsByReviewer */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, reviewer)
-	rows, err := db.Query(ctx, sqlstr, append([]any{reviewer}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{reviewer}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsBookReview/BookReviewByReviewerBookID/Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}
@@ -651,7 +751,7 @@ func XoTestsBookReviewsByReviewer(ctx context.Context, db DB, reviewer XoTestsUs
 //
 // Generated from index 'book_reviews_reviewer_book_id_key'.
 func XoTestsBookReviewsByBookID(ctx context.Context, db DB, bookID XoTestsBookID, opts ...XoTestsBookReviewSelectConfigOption) ([]XoTestsBookReview, error) {
-	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -677,6 +777,22 @@ func XoTestsBookReviewsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -705,21 +821,22 @@ func XoTestsBookReviewsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s
-	 FROM xo_tests.book_reviews %s
+	book_reviews.reviewer %s 
+	 FROM xo_tests.book_reviews %s 
 	 WHERE book_reviews.book_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookReviewsByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsBookReview/BookReviewByReviewerBookID/Query: %w", &XoError{Entity: "Book review", Err: err}))
 	}

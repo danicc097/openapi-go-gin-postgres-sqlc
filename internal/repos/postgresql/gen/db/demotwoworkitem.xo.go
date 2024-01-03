@@ -66,6 +66,7 @@ type DemoTwoWorkItemSelectConfig struct {
 	orderBy string
 	joins   DemoTwoWorkItemJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type DemoTwoWorkItemSelectConfigOption func(*DemoTwoWorkItemSelectConfig)
 
@@ -129,6 +130,20 @@ func WithDemoTwoWorkItemFilters(filters map[string][]any) DemoTwoWorkItemSelectC
 	}
 }
 
+// WithDemoTwoWorkItemHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithDemoTwoWorkItemHavingClause(conditions map[string][]any) DemoTwoWorkItemSelectConfigOption {
+	return func(s *DemoTwoWorkItemSelectConfig) {
+		s.having = conditions
+	}
+}
+
 const demoTwoWorkItemTableWorkItemJoinSQL = `-- O2O join generated from "demo_two_work_items_work_item_id_fkey (inferred)"
 left join work_items as _demo_two_work_items_work_item_id on _demo_two_work_items_work_item_id.work_item_id = demo_two_work_items.work_item_id
 `
@@ -166,9 +181,9 @@ func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkIte
 // Update updates a DemoTwoWorkItem in the database.
 func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.demo_two_work_items SET
-	custom_date_for_project_2 = $1
-	WHERE work_item_id = $2
+	sqlstr := `UPDATE public.demo_two_work_items SET 
+	custom_date_for_project_2 = $1 
+	WHERE work_item_id = $2 
 	RETURNING * `
 	// run
 	logf(sqlstr, dtwi.CustomDateForProject2, dtwi.WorkItemID)
@@ -214,7 +229,7 @@ func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB, params *DemoTwoW
 // Delete deletes the DemoTwoWorkItem from the database.
 func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.demo_two_work_items
+	sqlstr := `DELETE FROM public.demo_two_work_items 
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, dtwi.WorkItemID); err != nil {
@@ -225,7 +240,7 @@ func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
 
 // DemoTwoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of DemoTwoWorkItem.
 func DemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
-	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -251,6 +266,22 @@ func DemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -278,20 +309,21 @@ func DemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	demo_two_work_items.custom_date_for_project_2,
-	demo_two_work_items.work_item_id %s
-	 FROM public.demo_two_work_items %s
+	demo_two_work_items.work_item_id %s 
+	 FROM public.demo_two_work_items %s 
 	 WHERE demo_two_work_items.work_item_id %s $1
-	 %s   %s
-  ORDER BY
-		work_item_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		work_item_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* DemoTwoWorkItemPaginatedByWorkItemID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoTwoWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Demo two work item", Err: err}))
 	}
@@ -306,7 +338,7 @@ func DemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 //
 // Generated from index 'demo_two_work_items_pkey'.
 func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoTwoWorkItemSelectConfigOption) (*DemoTwoWorkItem, error) {
-	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -334,6 +366,22 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItem
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -354,20 +402,21 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItem
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	demo_two_work_items.custom_date_for_project_2,
-	demo_two_work_items.work_item_id %s
-	 FROM public.demo_two_work_items %s
+	demo_two_work_items.work_item_id %s 
+	 FROM public.demo_two_work_items %s 
 	 WHERE demo_two_work_items.work_item_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* DemoTwoWorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_two_work_items/DemoTwoWorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Demo two work item", Err: err}))
 	}

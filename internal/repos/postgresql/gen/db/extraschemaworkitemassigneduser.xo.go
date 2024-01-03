@@ -76,6 +76,7 @@ type ExtraSchemaWorkItemAssignedUserSelectConfig struct {
 	orderBy string
 	joins   ExtraSchemaWorkItemAssignedUserJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type ExtraSchemaWorkItemAssignedUserSelectConfigOption func(*ExtraSchemaWorkItemAssignedUserSelectConfig)
 
@@ -131,6 +132,20 @@ type User__WIAU_ExtraSchemaWorkItemAssignedUser struct {
 func WithExtraSchemaWorkItemAssignedUserFilters(filters map[string][]any) ExtraSchemaWorkItemAssignedUserSelectConfigOption {
 	return func(s *ExtraSchemaWorkItemAssignedUserSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithExtraSchemaWorkItemAssignedUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithExtraSchemaWorkItemAssignedUserHavingClause(conditions map[string][]any) ExtraSchemaWorkItemAssignedUserSelectConfigOption {
+	return func(s *ExtraSchemaWorkItemAssignedUserSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -211,9 +226,9 @@ func (eswiau *ExtraSchemaWorkItemAssignedUser) Insert(ctx context.Context, db DB
 // Update updates a ExtraSchemaWorkItemAssignedUser in the database.
 func (eswiau *ExtraSchemaWorkItemAssignedUser) Update(ctx context.Context, db DB) (*ExtraSchemaWorkItemAssignedUser, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.work_item_assigned_user SET
-	role = $1
-	WHERE work_item_id = $2  AND assigned_user = $3
+	sqlstr := `UPDATE extra_schema.work_item_assigned_user SET 
+	role = $1 
+	WHERE work_item_id = $2  AND assigned_user = $3 
 	RETURNING * `
 	// run
 	logf(sqlstr, eswiau.ExtraSchemaRole, eswiau.WorkItemID, eswiau.AssignedUser)
@@ -260,7 +275,7 @@ func (eswiau *ExtraSchemaWorkItemAssignedUser) Upsert(ctx context.Context, db DB
 // Delete deletes the ExtraSchemaWorkItemAssignedUser from the database.
 func (eswiau *ExtraSchemaWorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM extra_schema.work_item_assigned_user
+	sqlstr := `DELETE FROM extra_schema.work_item_assigned_user 
 	WHERE work_item_id = $1 AND assigned_user = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, eswiau.WorkItemID, eswiau.AssignedUser); err != nil {
@@ -273,7 +288,7 @@ func (eswiau *ExtraSchemaWorkItemAssignedUser) Delete(ctx context.Context, db DB
 //
 // Generated from index 'work_item_assigned_user_assigned_user_work_item_id_idx'.
 func ExtraSchemaWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser ExtraSchemaUserID, workItemID ExtraSchemaWorkItemID, opts ...ExtraSchemaWorkItemAssignedUserSelectConfigOption) ([]ExtraSchemaWorkItemAssignedUser, error) {
-	c := &ExtraSchemaWorkItemAssignedUserSelectConfig{joins: ExtraSchemaWorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaWorkItemAssignedUserSelectConfig{joins: ExtraSchemaWorkItemAssignedUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -299,6 +314,22 @@ func ExtraSchemaWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Contex
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -327,21 +358,22 @@ func ExtraSchemaWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Contex
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s
-	 FROM extra_schema.work_item_assigned_user %s
+	work_item_assigned_user.work_item_id %s 
+	 FROM extra_schema.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.assigned_user = $1 AND work_item_assigned_user.work_item_id = $2
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAssignedUsersByAssignedUserWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, assignedUser, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser, workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser, workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItemAssignedUser/WorkItemAssignedUserByAssignedUserWorkItemID/Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
@@ -359,7 +391,7 @@ func ExtraSchemaWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Contex
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func ExtraSchemaWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID ExtraSchemaWorkItemID, assignedUser ExtraSchemaUserID, opts ...ExtraSchemaWorkItemAssignedUserSelectConfigOption) (*ExtraSchemaWorkItemAssignedUser, error) {
-	c := &ExtraSchemaWorkItemAssignedUserSelectConfig{joins: ExtraSchemaWorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaWorkItemAssignedUserSelectConfig{joins: ExtraSchemaWorkItemAssignedUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -387,6 +419,22 @@ func ExtraSchemaWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -413,21 +461,22 @@ func ExtraSchemaWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s
-	 FROM extra_schema.work_item_assigned_user %s
+	work_item_assigned_user.work_item_id %s 
+	 FROM extra_schema.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.work_item_id = $1 AND work_item_assigned_user.assigned_user = $2
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAssignedUserByWorkItemIDAssignedUser */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, assignedUser}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, assignedUser}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_assigned_user/WorkItemAssignedUserByWorkItemIDAssignedUser/db.Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
@@ -443,7 +492,7 @@ func ExtraSchemaWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func ExtraSchemaWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID ExtraSchemaWorkItemID, opts ...ExtraSchemaWorkItemAssignedUserSelectConfigOption) ([]ExtraSchemaWorkItemAssignedUser, error) {
-	c := &ExtraSchemaWorkItemAssignedUserSelectConfig{joins: ExtraSchemaWorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaWorkItemAssignedUserSelectConfig{joins: ExtraSchemaWorkItemAssignedUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -471,6 +520,22 @@ func ExtraSchemaWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, wo
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -497,21 +562,22 @@ func ExtraSchemaWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, wo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s
-	 FROM extra_schema.work_item_assigned_user %s
+	work_item_assigned_user.work_item_id %s 
+	 FROM extra_schema.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.work_item_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAssignedUsersByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
@@ -529,7 +595,7 @@ func ExtraSchemaWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, wo
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func ExtraSchemaWorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUser ExtraSchemaUserID, opts ...ExtraSchemaWorkItemAssignedUserSelectConfigOption) ([]ExtraSchemaWorkItemAssignedUser, error) {
-	c := &ExtraSchemaWorkItemAssignedUserSelectConfig{joins: ExtraSchemaWorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaWorkItemAssignedUserSelectConfig{joins: ExtraSchemaWorkItemAssignedUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -555,6 +621,22 @@ func ExtraSchemaWorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -583,21 +665,22 @@ func ExtraSchemaWorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s
-	 FROM extra_schema.work_item_assigned_user %s
+	work_item_assigned_user.work_item_id %s 
+	 FROM extra_schema.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.assigned_user = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAssignedUsersByAssignedUser */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}

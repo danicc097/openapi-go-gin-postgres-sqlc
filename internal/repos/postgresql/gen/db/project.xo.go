@@ -93,6 +93,7 @@ type ProjectSelectConfig struct {
 	orderBy string
 	joins   ProjectJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type ProjectSelectConfigOption func(*ProjectSelectConfig)
 
@@ -165,6 +166,20 @@ func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 func WithProjectFilters(filters map[string][]any) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithProjectHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithProjectHavingClause(conditions map[string][]any) ProjectSelectConfigOption {
+	return func(s *ProjectSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -276,9 +291,9 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 // Update updates a Project in the database.
 func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.projects SET
-	board_config = $1, description = $2, name = $3, work_items_table_name = $4
-	WHERE project_id = $5
+	sqlstr := `UPDATE public.projects SET 
+	board_config = $1, description = $2, name = $3, work_items_table_name = $4 
+	WHERE project_id = $5 
 	RETURNING * `
 	// run
 	logf(sqlstr, p.BoardConfig, p.CreatedAt, p.Description, p.Name, p.UpdatedAt, p.WorkItemsTableName, p.ProjectID)
@@ -326,7 +341,7 @@ func (p *Project) Upsert(ctx context.Context, db DB, params *ProjectCreateParams
 // Delete deletes the Project from the database.
 func (p *Project) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.projects
+	sqlstr := `DELETE FROM public.projects 
 	WHERE project_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, p.ProjectID); err != nil {
@@ -337,7 +352,7 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 
 // ProjectPaginatedByProjectID returns a cursor-paginated list of Project.
 func ProjectPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...ProjectSelectConfigOption) ([]Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -363,6 +378,22 @@ func ProjectPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -414,25 +445,26 @@ func ProjectPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	projects.board_config,
 	projects.created_at,
 	projects.description,
 	projects.name,
 	projects.project_id,
 	projects.updated_at,
-	projects.work_items_table_name %s
-	 FROM public.projects %s
+	projects.work_items_table_name %s 
+	 FROM public.projects %s 
 	 WHERE projects.project_id %s $1
-	 %s   %s
-  ORDER BY
-		project_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		project_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ProjectPaginatedByProjectID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Project/Paginated/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}
@@ -447,7 +479,7 @@ func ProjectPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID
 //
 // Generated from index 'projects_name_key'.
 func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -473,6 +505,22 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -519,25 +567,26 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	projects.board_config,
 	projects.created_at,
 	projects.description,
 	projects.name,
 	projects.project_id,
 	projects.updated_at,
-	projects.work_items_table_name %s
-	 FROM public.projects %s
+	projects.work_items_table_name %s 
+	 FROM public.projects %s 
 	 WHERE projects.name = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ProjectByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByName/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}
@@ -553,7 +602,7 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 //
 // Generated from index 'projects_pkey'.
 func ProjectByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -579,6 +628,22 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ..
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -625,25 +690,26 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ..
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	projects.board_config,
 	projects.created_at,
 	projects.description,
 	projects.name,
 	projects.project_id,
 	projects.updated_at,
-	projects.work_items_table_name %s
-	 FROM public.projects %s
+	projects.work_items_table_name %s 
+	 FROM public.projects %s 
 	 WHERE projects.project_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ProjectByProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByProjectID/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}
@@ -659,7 +725,7 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ..
 //
 // Generated from index 'projects_work_items_table_name_key'.
 func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName string, opts ...ProjectSelectConfigOption) (*Project, error) {
-	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any)}
+	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -685,6 +751,22 @@ func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -731,25 +813,26 @@ func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	projects.board_config,
 	projects.created_at,
 	projects.description,
 	projects.name,
 	projects.project_id,
 	projects.updated_at,
-	projects.work_items_table_name %s
-	 FROM public.projects %s
+	projects.work_items_table_name %s 
+	 FROM public.projects %s 
 	 WHERE projects.work_items_table_name = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ProjectByWorkItemsTableName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemsTableName)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemsTableName}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemsTableName}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("projects/ProjectByWorkItemsTableName/db.Query: %w", &XoError{Entity: "Project", Err: err}))
 	}

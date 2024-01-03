@@ -76,6 +76,7 @@ type ExtraSchemaBookAuthorSelectConfig struct {
 	orderBy string
 	joins   ExtraSchemaBookAuthorJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type ExtraSchemaBookAuthorSelectConfigOption func(*ExtraSchemaBookAuthorSelectConfig)
 
@@ -131,6 +132,20 @@ type User__BA_ExtraSchemaBookAuthor struct {
 func WithExtraSchemaBookAuthorFilters(filters map[string][]any) ExtraSchemaBookAuthorSelectConfigOption {
 	return func(s *ExtraSchemaBookAuthorSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithExtraSchemaBookAuthorHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithExtraSchemaBookAuthorHavingClause(conditions map[string][]any) ExtraSchemaBookAuthorSelectConfigOption {
+	return func(s *ExtraSchemaBookAuthorSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -211,9 +226,9 @@ func (esba *ExtraSchemaBookAuthor) Insert(ctx context.Context, db DB) (*ExtraSch
 // Update updates a ExtraSchemaBookAuthor in the database.
 func (esba *ExtraSchemaBookAuthor) Update(ctx context.Context, db DB) (*ExtraSchemaBookAuthor, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.book_authors SET
-	pseudonym = $1
-	WHERE book_id = $2  AND author_id = $3
+	sqlstr := `UPDATE extra_schema.book_authors SET 
+	pseudonym = $1 
+	WHERE book_id = $2  AND author_id = $3 
 	RETURNING * `
 	// run
 	logf(sqlstr, esba.Pseudonym, esba.BookID, esba.AuthorID)
@@ -260,7 +275,7 @@ func (esba *ExtraSchemaBookAuthor) Upsert(ctx context.Context, db DB, params *Ex
 // Delete deletes the ExtraSchemaBookAuthor from the database.
 func (esba *ExtraSchemaBookAuthor) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM extra_schema.book_authors
+	sqlstr := `DELETE FROM extra_schema.book_authors 
 	WHERE book_id = $1 AND author_id = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esba.BookID, esba.AuthorID); err != nil {
@@ -273,7 +288,7 @@ func (esba *ExtraSchemaBookAuthor) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'book_authors_pkey'.
 func ExtraSchemaBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID ExtraSchemaBookID, authorID ExtraSchemaUserID, opts ...ExtraSchemaBookAuthorSelectConfigOption) (*ExtraSchemaBookAuthor, error) {
-	c := &ExtraSchemaBookAuthorSelectConfig{joins: ExtraSchemaBookAuthorJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookAuthorSelectConfig{joins: ExtraSchemaBookAuthorJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -301,6 +316,22 @@ func ExtraSchemaBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID Ex
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -327,21 +358,22 @@ func ExtraSchemaBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID Ex
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s
-	 FROM extra_schema.book_authors %s
+	book_authors.pseudonym %s 
+	 FROM extra_schema.book_authors %s 
 	 WHERE book_authors.book_id = $1 AND book_authors.author_id = $2
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookAuthorByBookIDAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, authorID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors/BookAuthorByBookIDAuthorID/db.Query: %w", &XoError{Entity: "Book author", Err: err}))
 	}
@@ -357,7 +389,7 @@ func ExtraSchemaBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID Ex
 //
 // Generated from index 'book_authors_pkey'.
 func ExtraSchemaBookAuthorsByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookID, opts ...ExtraSchemaBookAuthorSelectConfigOption) ([]ExtraSchemaBookAuthor, error) {
-	c := &ExtraSchemaBookAuthorSelectConfig{joins: ExtraSchemaBookAuthorJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookAuthorSelectConfig{joins: ExtraSchemaBookAuthorJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -385,6 +417,22 @@ func ExtraSchemaBookAuthorsByBookID(ctx context.Context, db DB, bookID ExtraSche
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -411,21 +459,22 @@ func ExtraSchemaBookAuthorsByBookID(ctx context.Context, db DB, bookID ExtraSche
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s
-	 FROM extra_schema.book_authors %s
+	book_authors.pseudonym %s 
+	 FROM extra_schema.book_authors %s 
 	 WHERE book_authors.book_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookAuthorsByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthor/BookAuthorByBookIDAuthorID/Query: %w", &XoError{Entity: "Book author", Err: err}))
 	}
@@ -443,7 +492,7 @@ func ExtraSchemaBookAuthorsByBookID(ctx context.Context, db DB, bookID ExtraSche
 //
 // Generated from index 'book_authors_pkey'.
 func ExtraSchemaBookAuthorsByAuthorID(ctx context.Context, db DB, authorID ExtraSchemaUserID, opts ...ExtraSchemaBookAuthorSelectConfigOption) ([]ExtraSchemaBookAuthor, error) {
-	c := &ExtraSchemaBookAuthorSelectConfig{joins: ExtraSchemaBookAuthorJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookAuthorSelectConfig{joins: ExtraSchemaBookAuthorJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -469,6 +518,22 @@ func ExtraSchemaBookAuthorsByAuthorID(ctx context.Context, db DB, authorID Extra
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -497,21 +562,22 @@ func ExtraSchemaBookAuthorsByAuthorID(ctx context.Context, db DB, authorID Extra
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s
-	 FROM extra_schema.book_authors %s
+	book_authors.pseudonym %s 
+	 FROM extra_schema.book_authors %s 
 	 WHERE book_authors.author_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookAuthorsByAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, authorID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthor/BookAuthorByBookIDAuthorID/Query: %w", &XoError{Entity: "Book author", Err: err}))
 	}

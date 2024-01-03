@@ -62,6 +62,7 @@ type XoTestsDummyJoinSelectConfig struct {
 	orderBy string
 	joins   XoTestsDummyJoinJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type XoTestsDummyJoinSelectConfigOption func(*XoTestsDummyJoinSelectConfig)
 
@@ -100,6 +101,20 @@ func WithXoTestsDummyJoinFilters(filters map[string][]any) XoTestsDummyJoinSelec
 	}
 }
 
+// WithXoTestsDummyJoinHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+// // filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//
+//	filters := map[string][]any{
+//		"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithXoTestsDummyJoinHavingClause(conditions map[string][]any) XoTestsDummyJoinSelectConfigOption {
+	return func(s *XoTestsDummyJoinSelectConfig) {
+		s.having = conditions
+	}
+}
+
 // Insert inserts the XoTestsDummyJoin to the database.
 func (xtdj *XoTestsDummyJoin) Insert(ctx context.Context, db DB) (*XoTestsDummyJoin, error) {
 	// insert (primary key generated and returned by database)
@@ -128,9 +143,9 @@ func (xtdj *XoTestsDummyJoin) Insert(ctx context.Context, db DB) (*XoTestsDummyJ
 // Update updates a XoTestsDummyJoin in the database.
 func (xtdj *XoTestsDummyJoin) Update(ctx context.Context, db DB) (*XoTestsDummyJoin, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.dummy_join SET
-	name = $1
-	WHERE dummy_join_id = $2
+	sqlstr := `UPDATE xo_tests.dummy_join SET 
+	name = $1 
+	WHERE dummy_join_id = $2 
 	RETURNING * `
 	// run
 	logf(sqlstr, xtdj.Name, xtdj.DummyJoinID)
@@ -175,7 +190,7 @@ func (xtdj *XoTestsDummyJoin) Upsert(ctx context.Context, db DB, params *XoTests
 // Delete deletes the XoTestsDummyJoin from the database.
 func (xtdj *XoTestsDummyJoin) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.dummy_join
+	sqlstr := `DELETE FROM xo_tests.dummy_join 
 	WHERE dummy_join_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtdj.DummyJoinID); err != nil {
@@ -186,7 +201,7 @@ func (xtdj *XoTestsDummyJoin) Delete(ctx context.Context, db DB) error {
 
 // XoTestsDummyJoinPaginatedByDummyJoinID returns a cursor-paginated list of XoTestsDummyJoin.
 func XoTestsDummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID XoTestsDummyJoinID, direction models.Direction, opts ...XoTestsDummyJoinSelectConfigOption) ([]XoTestsDummyJoin, error) {
-	c := &XoTestsDummyJoinSelectConfig{joins: XoTestsDummyJoinJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsDummyJoinSelectConfig{joins: XoTestsDummyJoinJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -212,6 +227,22 @@ func XoTestsDummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoi
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -233,20 +264,21 @@ func XoTestsDummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoi
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	dummy_join.dummy_join_id,
-	dummy_join.name %s
-	 FROM xo_tests.dummy_join %s
+	dummy_join.name %s 
+	 FROM xo_tests.dummy_join %s 
 	 WHERE dummy_join.dummy_join_id %s $1
-	 %s   %s
-  ORDER BY
-		dummy_join_id %s `, selects, joins, operator, filters, groupbys, direction)
+	 %s   %s 
+  %s 
+  ORDER BY 
+		dummy_join_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsDummyJoinPaginatedByDummyJoinID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsDummyJoin/Paginated/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
@@ -261,7 +293,7 @@ func XoTestsDummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoi
 //
 // Generated from index 'dummy_join_pkey'.
 func XoTestsDummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID XoTestsDummyJoinID, opts ...XoTestsDummyJoinSelectConfigOption) (*XoTestsDummyJoin, error) {
-	c := &XoTestsDummyJoinSelectConfig{joins: XoTestsDummyJoinJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsDummyJoinSelectConfig{joins: XoTestsDummyJoinJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -289,6 +321,22 @@ func XoTestsDummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID XoTes
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -303,20 +351,21 @@ func XoTestsDummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID XoTes
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	dummy_join.dummy_join_id,
-	dummy_join.name %s
-	 FROM xo_tests.dummy_join %s
+	dummy_join.name %s 
+	 FROM xo_tests.dummy_join %s 
 	 WHERE dummy_join.dummy_join_id = $1
-	 %s   %s
-`, selects, joins, filters, groupbys)
+	 %s   %s 
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsDummyJoinByDummyJoinID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, dummyJoinID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("dummy_join/DummyJoinByDummyJoinID/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
