@@ -240,7 +240,7 @@ func main() {
 	demoWorkItems := []*db.WorkItem{}
 	var wg sync.WaitGroup
 	semaphore := make(chan struct{}, 2000)
-	for i := 1; i <= 10000; i++ {
+	for i := 1; i <= 100; i++ {
 		semaphore <- struct{}{} // acquire
 		wg.Add(1)
 
@@ -363,13 +363,14 @@ func main() {
 	handleError(err)
 	// paginated queries have sortable id. for first query include previous results (-1 or -1 second)
 	// and then use returned cursor.
-	wis, err := db.WorkItemPaginatedByWorkItemID(ctx, pool, demoWorkItems[0].WorkItemID-1, models.DirectionAsc, db.WithWorkItemFilters(map[string][]any{
+	wis, err := db.WorkItemPaginatedByWorkItemID(ctx, pool, demoWorkItems[0].WorkItemID-1, models.DirectionAsc, db.WithWorkItemHavingClause(map[string][]any{
 		// FIXME:
 		// we need `having  $i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id));` -> still getting hash joins and index scans
 		// therefore another xo selectOption just like  db.WithWorkItemFilters,
 		// with concatenates having clauses, if any.
 		// adding inside where clause yields `aggregate functions are not allowed in WHERE, since it makes no sense.
 		//  see https://www.postgresql.org/docs/current/tutorial-agg.html
+		"$i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id))": {testUser.UserID},
 	}), db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, DemoWorkItem: true}))
 	handleError(err)
 	fmt.Printf("wis len: %v - First workitem found:\n", len(wis))
