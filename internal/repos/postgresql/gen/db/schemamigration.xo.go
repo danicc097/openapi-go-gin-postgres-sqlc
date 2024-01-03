@@ -95,7 +95,7 @@ func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectCo
 	}
 }
 
-// WithSchemaMigrationFilters adds the given filters, which can be dynamically parameterized
+// WithSchemaMigrationFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -137,9 +137,9 @@ func (sm *SchemaMigration) Insert(ctx context.Context, db DB) (*SchemaMigration,
 // Update updates a SchemaMigration in the database.
 func (sm *SchemaMigration) Update(ctx context.Context, db DB) (*SchemaMigration, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.schema_migrations SET 
-	dirty = $1 
-	WHERE version = $2 
+	sqlstr := `UPDATE public.schema_migrations SET
+	dirty = $1
+	WHERE version = $2
 	RETURNING * `
 	// run
 	logf(sqlstr, sm.Dirty, sm.Version)
@@ -185,7 +185,7 @@ func (sm *SchemaMigration) Upsert(ctx context.Context, db DB, params *SchemaMigr
 // Delete deletes the SchemaMigration from the database.
 func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.schema_migrations 
+	sqlstr := `DELETE FROM public.schema_migrations
 	WHERE version = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, sm.Version); err != nil {
@@ -243,13 +243,13 @@ func SchemaMigrationPaginatedByVersion(ctx context.Context, db DB, version Schem
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	schema_migrations.dirty,
-	schema_migrations.version %s 
-	 FROM public.schema_migrations %s 
+	schema_migrations.version %s
+	 FROM public.schema_migrations %s
 	 WHERE schema_migrations.version %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		version %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* SchemaMigrationPaginatedByVersion */\n" + sqlstr
@@ -313,12 +313,12 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version SchemaMigratio
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	schema_migrations.dirty,
-	schema_migrations.version %s 
-	 FROM public.schema_migrations %s 
+	schema_migrations.version %s
+	 FROM public.schema_migrations %s
 	 WHERE schema_migrations.version = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

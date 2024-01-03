@@ -104,7 +104,7 @@ func WithExtraSchemaBookReviewJoin(joins ExtraSchemaBookReviewJoins) ExtraSchema
 	}
 }
 
-// WithExtraSchemaBookReviewFilters adds the given filters, which can be dynamically parameterized
+// WithExtraSchemaBookReviewFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -167,9 +167,9 @@ func (esbr *ExtraSchemaBookReview) Insert(ctx context.Context, db DB) (*ExtraSch
 // Update updates a ExtraSchemaBookReview in the database.
 func (esbr *ExtraSchemaBookReview) Update(ctx context.Context, db DB) (*ExtraSchemaBookReview, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.book_reviews SET 
-	book_id = $1, reviewer = $2 
-	WHERE book_review_id = $3 
+	sqlstr := `UPDATE extra_schema.book_reviews SET
+	book_id = $1, reviewer = $2
+	WHERE book_review_id = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, esbr.BookID, esbr.Reviewer, esbr.BookReviewID)
@@ -215,7 +215,7 @@ func (esbr *ExtraSchemaBookReview) Upsert(ctx context.Context, db DB, params *Ex
 // Delete deletes the ExtraSchemaBookReview from the database.
 func (esbr *ExtraSchemaBookReview) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.book_reviews 
+	sqlstr := `DELETE FROM extra_schema.book_reviews
 	WHERE book_review_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esbr.BookReviewID); err != nil {
@@ -285,14 +285,14 @@ func ExtraSchemaBookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bo
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s 
-	 FROM extra_schema.book_reviews %s 
+	book_reviews.reviewer %s
+	 FROM extra_schema.book_reviews %s
 	 WHERE book_reviews.book_review_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		book_review_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookReviewPaginatedByBookReviewID */\n" + sqlstr
@@ -371,14 +371,14 @@ func ExtraSchemaBookReviewPaginatedByBookID(ctx context.Context, db DB, bookID E
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s 
-	 FROM extra_schema.book_reviews %s 
+	book_reviews.reviewer %s
+	 FROM extra_schema.book_reviews %s
 	 WHERE book_reviews.book_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		book_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookReviewPaginatedByBookID */\n" + sqlstr
@@ -454,13 +454,13 @@ func ExtraSchemaBookReviewByBookReviewID(ctx context.Context, db DB, bookReviewI
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s 
-	 FROM extra_schema.book_reviews %s 
+	book_reviews.reviewer %s
+	 FROM extra_schema.book_reviews %s
 	 WHERE book_reviews.book_review_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -538,13 +538,13 @@ func ExtraSchemaBookReviewByReviewerBookID(ctx context.Context, db DB, reviewer 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s 
-	 FROM extra_schema.book_reviews %s 
+	book_reviews.reviewer %s
+	 FROM extra_schema.book_reviews %s
 	 WHERE book_reviews.reviewer = $1 AND book_reviews.book_id = $2
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -622,13 +622,13 @@ func ExtraSchemaBookReviewsByReviewer(ctx context.Context, db DB, reviewer Extra
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s 
-	 FROM extra_schema.book_reviews %s 
+	book_reviews.reviewer %s
+	 FROM extra_schema.book_reviews %s
 	 WHERE book_reviews.reviewer = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -708,13 +708,13 @@ func ExtraSchemaBookReviewsByBookID(ctx context.Context, db DB, bookID ExtraSche
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s 
-	 FROM extra_schema.book_reviews %s 
+	book_reviews.reviewer %s
+	 FROM extra_schema.book_reviews %s
 	 WHERE book_reviews.book_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

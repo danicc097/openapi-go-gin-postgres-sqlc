@@ -128,7 +128,7 @@ func WithExtraSchemaUserAPIKeyJoin(joins ExtraSchemaUserAPIKeyJoins) ExtraSchema
 	}
 }
 
-// WithExtraSchemaUserAPIKeyFilters adds the given filters, which can be dynamically parameterized
+// WithExtraSchemaUserAPIKeyFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -181,9 +181,9 @@ func (esuak *ExtraSchemaUserAPIKey) Insert(ctx context.Context, db DB) (*ExtraSc
 // Update updates a ExtraSchemaUserAPIKey in the database.
 func (esuak *ExtraSchemaUserAPIKey) Update(ctx context.Context, db DB) (*ExtraSchemaUserAPIKey, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.user_api_keys SET 
-	api_key = $1, expires_on = $2, user_id = $3 
-	WHERE user_api_key_id = $4 
+	sqlstr := `UPDATE extra_schema.user_api_keys SET
+	api_key = $1, expires_on = $2, user_id = $3
+	WHERE user_api_key_id = $4
 	RETURNING * `
 	// run
 	logf(sqlstr, esuak.APIKey, esuak.ExpiresOn, esuak.UserID, esuak.UserAPIKeyID)
@@ -230,7 +230,7 @@ func (esuak *ExtraSchemaUserAPIKey) Upsert(ctx context.Context, db DB, params *E
 // Delete deletes the ExtraSchemaUserAPIKey from the database.
 func (esuak *ExtraSchemaUserAPIKey) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.user_api_keys 
+	sqlstr := `DELETE FROM extra_schema.user_api_keys
 	WHERE user_api_key_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esuak.UserAPIKeyID); err != nil {
@@ -294,15 +294,15 @@ func ExtraSchemaUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, us
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
 	user_api_keys.user_api_key_id,
-	user_api_keys.user_id %s 
-	 FROM extra_schema.user_api_keys %s 
+	user_api_keys.user_id %s
+	 FROM extra_schema.user_api_keys %s
 	 WHERE user_api_keys.user_api_key_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		user_api_key_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserAPIKeyPaginatedByUserAPIKeyID */\n" + sqlstr
@@ -372,14 +372,14 @@ func ExtraSchemaUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, op
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
 	user_api_keys.user_api_key_id,
-	user_api_keys.user_id %s 
-	 FROM extra_schema.user_api_keys %s 
+	user_api_keys.user_id %s
+	 FROM extra_schema.user_api_keys %s
 	 WHERE user_api_keys.api_key = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -451,14 +451,14 @@ func ExtraSchemaUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyI
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
 	user_api_keys.user_api_key_id,
-	user_api_keys.user_id %s 
-	 FROM extra_schema.user_api_keys %s 
+	user_api_keys.user_id %s
+	 FROM extra_schema.user_api_keys %s
 	 WHERE user_api_keys.user_api_key_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -530,14 +530,14 @@ func ExtraSchemaUserAPIKeyByUserID(ctx context.Context, db DB, userID ExtraSchem
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
 	user_api_keys.user_api_key_id,
-	user_api_keys.user_id %s 
-	 FROM extra_schema.user_api_keys %s 
+	user_api_keys.user_id %s
+	 FROM extra_schema.user_api_keys %s
 	 WHERE user_api_keys.user_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

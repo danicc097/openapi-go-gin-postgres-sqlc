@@ -114,7 +114,7 @@ func WithDemoTwoWorkItemJoin(joins DemoTwoWorkItemJoins) DemoTwoWorkItemSelectCo
 	}
 }
 
-// WithDemoTwoWorkItemFilters adds the given filters, which can be dynamically parameterized
+// WithDemoTwoWorkItemFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -166,9 +166,9 @@ func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkIte
 // Update updates a DemoTwoWorkItem in the database.
 func (dtwi *DemoTwoWorkItem) Update(ctx context.Context, db DB) (*DemoTwoWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.demo_two_work_items SET 
-	custom_date_for_project_2 = $1 
-	WHERE work_item_id = $2 
+	sqlstr := `UPDATE public.demo_two_work_items SET
+	custom_date_for_project_2 = $1
+	WHERE work_item_id = $2
 	RETURNING * `
 	// run
 	logf(sqlstr, dtwi.CustomDateForProject2, dtwi.WorkItemID)
@@ -214,7 +214,7 @@ func (dtwi *DemoTwoWorkItem) Upsert(ctx context.Context, db DB, params *DemoTwoW
 // Delete deletes the DemoTwoWorkItem from the database.
 func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.demo_two_work_items 
+	sqlstr := `DELETE FROM public.demo_two_work_items
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, dtwi.WorkItemID); err != nil {
@@ -278,13 +278,13 @@ func DemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	demo_two_work_items.custom_date_for_project_2,
-	demo_two_work_items.work_item_id %s 
-	 FROM public.demo_two_work_items %s 
+	demo_two_work_items.work_item_id %s
+	 FROM public.demo_two_work_items %s
 	 WHERE demo_two_work_items.work_item_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		work_item_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* DemoTwoWorkItemPaginatedByWorkItemID */\n" + sqlstr
@@ -354,12 +354,12 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItem
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	demo_two_work_items.custom_date_for_project_2,
-	demo_two_work_items.work_item_id %s 
-	 FROM public.demo_two_work_items %s 
+	demo_two_work_items.work_item_id %s
+	 FROM public.demo_two_work_items %s
 	 WHERE demo_two_work_items.work_item_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

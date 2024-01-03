@@ -115,7 +115,7 @@ type User__BASK_ExtraSchemaBook struct {
 	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// WithExtraSchemaBookFilters adds the given filters, which can be dynamically parameterized
+// WithExtraSchemaBookFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -246,9 +246,9 @@ func (esb *ExtraSchemaBook) Insert(ctx context.Context, db DB) (*ExtraSchemaBook
 // Update updates a ExtraSchemaBook in the database.
 func (esb *ExtraSchemaBook) Update(ctx context.Context, db DB) (*ExtraSchemaBook, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.books SET 
-	name = $1 
-	WHERE book_id = $2 
+	sqlstr := `UPDATE extra_schema.books SET
+	name = $1
+	WHERE book_id = $2
 	RETURNING * `
 	// run
 	logf(sqlstr, esb.Name, esb.BookID)
@@ -293,7 +293,7 @@ func (esb *ExtraSchemaBook) Upsert(ctx context.Context, db DB, params *ExtraSche
 // Delete deletes the ExtraSchemaBook from the database.
 func (esb *ExtraSchemaBook) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.books 
+	sqlstr := `DELETE FROM extra_schema.books
 	WHERE book_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esb.BookID); err != nil {
@@ -375,13 +375,13 @@ func ExtraSchemaBookPaginatedByBookID(ctx context.Context, db DB, bookID ExtraSc
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	books.book_id,
-	books.name %s 
-	 FROM extra_schema.books %s 
+	books.name %s
+	 FROM extra_schema.books %s
 	 WHERE books.book_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		book_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookPaginatedByBookID */\n" + sqlstr
@@ -469,12 +469,12 @@ func ExtraSchemaBookByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookI
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	books.book_id,
-	books.name %s 
-	 FROM extra_schema.books %s 
+	books.name %s
+	 FROM extra_schema.books %s
 	 WHERE books.book_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

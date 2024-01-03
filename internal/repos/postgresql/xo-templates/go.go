@@ -2307,7 +2307,7 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	}
 
 	buf.WriteString(fmt.Sprintf(`
-// With%[1]sFilters adds the given filters, which can be dynamically parameterized
+// With%[1]sFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //filters := map[string][]any{

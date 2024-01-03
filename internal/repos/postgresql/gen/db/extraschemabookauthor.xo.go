@@ -119,7 +119,7 @@ type User__BA_ExtraSchemaBookAuthor struct {
 	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// WithExtraSchemaBookAuthorFilters adds the given filters, which can be dynamically parameterized
+// WithExtraSchemaBookAuthorFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -211,9 +211,9 @@ func (esba *ExtraSchemaBookAuthor) Insert(ctx context.Context, db DB) (*ExtraSch
 // Update updates a ExtraSchemaBookAuthor in the database.
 func (esba *ExtraSchemaBookAuthor) Update(ctx context.Context, db DB) (*ExtraSchemaBookAuthor, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.book_authors SET 
-	pseudonym = $1 
-	WHERE book_id = $2  AND author_id = $3 
+	sqlstr := `UPDATE extra_schema.book_authors SET
+	pseudonym = $1
+	WHERE book_id = $2  AND author_id = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, esba.Pseudonym, esba.BookID, esba.AuthorID)
@@ -260,7 +260,7 @@ func (esba *ExtraSchemaBookAuthor) Upsert(ctx context.Context, db DB, params *Ex
 // Delete deletes the ExtraSchemaBookAuthor from the database.
 func (esba *ExtraSchemaBookAuthor) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM extra_schema.book_authors 
+	sqlstr := `DELETE FROM extra_schema.book_authors
 	WHERE book_id = $1 AND author_id = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esba.BookID, esba.AuthorID); err != nil {
@@ -327,13 +327,13 @@ func ExtraSchemaBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID Ex
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s 
-	 FROM extra_schema.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM extra_schema.book_authors %s
 	 WHERE book_authors.book_id = $1 AND book_authors.author_id = $2
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -411,13 +411,13 @@ func ExtraSchemaBookAuthorsByBookID(ctx context.Context, db DB, bookID ExtraSche
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s 
-	 FROM extra_schema.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM extra_schema.book_authors %s
 	 WHERE book_authors.book_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -497,13 +497,13 @@ func ExtraSchemaBookAuthorsByAuthorID(ctx context.Context, db DB, authorID Extra
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s 
-	 FROM extra_schema.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM extra_schema.book_authors %s
 	 WHERE book_authors.author_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

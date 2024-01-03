@@ -115,7 +115,7 @@ func WithWorkItemTypeJoin(joins WorkItemTypeJoins) WorkItemTypeSelectConfigOptio
 	}
 }
 
-// WithWorkItemTypeFilters adds the given filters, which can be dynamically parameterized
+// WithWorkItemTypeFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -168,9 +168,9 @@ func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, erro
 // Update updates a WorkItemType in the database.
 func (wit *WorkItemType) Update(ctx context.Context, db DB) (*WorkItemType, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_types SET 
-	color = $1, description = $2, name = $3, project_id = $4 
-	WHERE work_item_type_id = $5 
+	sqlstr := `UPDATE public.work_item_types SET
+	color = $1, description = $2, name = $3, project_id = $4
+	WHERE work_item_type_id = $5
 	RETURNING * `
 	// run
 	logf(sqlstr, wit.Color, wit.Description, wit.Name, wit.ProjectID, wit.WorkItemTypeID)
@@ -218,7 +218,7 @@ func (wit *WorkItemType) Upsert(ctx context.Context, db DB, params *WorkItemType
 // Delete deletes the WorkItemType from the database.
 func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.work_item_types 
+	sqlstr := `DELETE FROM public.work_item_types
 	WHERE work_item_type_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wit.WorkItemTypeID); err != nil {
@@ -282,16 +282,16 @@ func WorkItemTypePaginatedByWorkItemTypeID(ctx context.Context, db DB, workItemT
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
-	work_item_types.work_item_type_id %s 
-	 FROM public.work_item_types %s 
+	work_item_types.work_item_type_id %s
+	 FROM public.work_item_types %s
 	 WHERE work_item_types.work_item_type_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		work_item_type_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTypePaginatedByWorkItemTypeID */\n" + sqlstr
@@ -364,16 +364,16 @@ func WorkItemTypePaginatedByProjectID(ctx context.Context, db DB, projectID Proj
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
-	work_item_types.work_item_type_id %s 
-	 FROM public.work_item_types %s 
+	work_item_types.work_item_type_id %s
+	 FROM public.work_item_types %s
 	 WHERE work_item_types.project_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		project_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTypePaginatedByProjectID */\n" + sqlstr
@@ -443,15 +443,15 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
-	work_item_types.work_item_type_id %s 
-	 FROM public.work_item_types %s 
+	work_item_types.work_item_type_id %s
+	 FROM public.work_item_types %s
 	 WHERE work_item_types.name = $1 AND work_item_types.project_id = $2
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -523,15 +523,15 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
-	work_item_types.work_item_type_id %s 
-	 FROM public.work_item_types %s 
+	work_item_types.work_item_type_id %s
+	 FROM public.work_item_types %s
 	 WHERE work_item_types.name = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -605,15 +605,15 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID ProjectID, o
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
-	work_item_types.work_item_type_id %s 
-	 FROM public.work_item_types %s 
+	work_item_types.work_item_type_id %s
+	 FROM public.work_item_types %s
 	 WHERE work_item_types.project_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -687,15 +687,15 @@ func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID Wor
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_types.color,
 	work_item_types.description,
 	work_item_types.name,
 	work_item_types.project_id,
-	work_item_types.work_item_type_id %s 
-	 FROM public.work_item_types %s 
+	work_item_types.work_item_type_id %s
+	 FROM public.work_item_types %s
 	 WHERE work_item_types.work_item_type_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

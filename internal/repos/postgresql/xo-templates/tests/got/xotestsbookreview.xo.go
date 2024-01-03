@@ -101,7 +101,7 @@ func WithXoTestsBookReviewJoin(joins XoTestsBookReviewJoins) XoTestsBookReviewSe
 	}
 }
 
-// WithXoTestsBookReviewFilters adds the given filters, which can be dynamically parameterized
+// WithXoTestsBookReviewFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -164,9 +164,9 @@ func (xtbr *XoTestsBookReview) Insert(ctx context.Context, db DB) (*XoTestsBookR
 // Update updates a XoTestsBookReview in the database.
 func (xtbr *XoTestsBookReview) Update(ctx context.Context, db DB) (*XoTestsBookReview, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.book_reviews SET 
-	book_id = $1, reviewer = $2 
-	WHERE book_review_id = $3 
+	sqlstr := `UPDATE xo_tests.book_reviews SET
+	book_id = $1, reviewer = $2
+	WHERE book_review_id = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, xtbr.BookID, xtbr.Reviewer, xtbr.BookReviewID)
@@ -212,7 +212,7 @@ func (xtbr *XoTestsBookReview) Upsert(ctx context.Context, db DB, params *XoTest
 // Delete deletes the XoTestsBookReview from the database.
 func (xtbr *XoTestsBookReview) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.book_reviews 
+	sqlstr := `DELETE FROM xo_tests.book_reviews
 	WHERE book_review_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtbr.BookReviewID); err != nil {
@@ -282,14 +282,14 @@ func XoTestsBookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookRe
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s 
-	 FROM xo_tests.book_reviews %s 
+	book_reviews.reviewer %s
+	 FROM xo_tests.book_reviews %s
 	 WHERE book_reviews.book_review_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		book_review_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookReviewPaginatedByBookReviewID */\n" + sqlstr
@@ -368,14 +368,14 @@ func XoTestsBookReviewPaginatedByBookID(ctx context.Context, db DB, bookID XoTes
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s 
-	 FROM xo_tests.book_reviews %s 
+	book_reviews.reviewer %s
+	 FROM xo_tests.book_reviews %s
 	 WHERE book_reviews.book_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		book_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookReviewPaginatedByBookID */\n" + sqlstr
@@ -451,13 +451,13 @@ func XoTestsBookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID Xo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s 
-	 FROM xo_tests.book_reviews %s 
+	book_reviews.reviewer %s
+	 FROM xo_tests.book_reviews %s
 	 WHERE book_reviews.book_review_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -535,13 +535,13 @@ func XoTestsBookReviewByReviewerBookID(ctx context.Context, db DB, reviewer XoTe
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s 
-	 FROM xo_tests.book_reviews %s 
+	book_reviews.reviewer %s
+	 FROM xo_tests.book_reviews %s
 	 WHERE book_reviews.reviewer = $1 AND book_reviews.book_id = $2
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -619,13 +619,13 @@ func XoTestsBookReviewsByReviewer(ctx context.Context, db DB, reviewer XoTestsUs
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s 
-	 FROM xo_tests.book_reviews %s 
+	book_reviews.reviewer %s
+	 FROM xo_tests.book_reviews %s
 	 WHERE book_reviews.reviewer = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -705,13 +705,13 @@ func XoTestsBookReviewsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_reviews.book_id,
 	book_reviews.book_review_id,
-	book_reviews.reviewer %s 
-	 FROM xo_tests.book_reviews %s 
+	book_reviews.reviewer %s
+	 FROM xo_tests.book_reviews %s
 	 WHERE book_reviews.book_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

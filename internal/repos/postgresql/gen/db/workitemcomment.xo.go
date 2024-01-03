@@ -137,7 +137,7 @@ func WithWorkItemCommentJoin(joins WorkItemCommentJoins) WorkItemCommentSelectCo
 	}
 }
 
-// WithWorkItemCommentFilters adds the given filters, which can be dynamically parameterized
+// WithWorkItemCommentFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -200,9 +200,9 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 // Update updates a WorkItemComment in the database.
 func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_comments SET 
-	message = $1, user_id = $2, work_item_id = $3 
-	WHERE work_item_comment_id = $4 
+	sqlstr := `UPDATE public.work_item_comments SET
+	message = $1, user_id = $2, work_item_id = $3
+	WHERE work_item_comment_id = $4
 	RETURNING * `
 	// run
 	logf(sqlstr, wic.CreatedAt, wic.Message, wic.UpdatedAt, wic.UserID, wic.WorkItemID, wic.WorkItemCommentID)
@@ -249,7 +249,7 @@ func (wic *WorkItemComment) Upsert(ctx context.Context, db DB, params *WorkItemC
 // Delete deletes the WorkItemComment from the database.
 func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.work_item_comments 
+	sqlstr := `DELETE FROM public.work_item_comments
 	WHERE work_item_comment_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID); err != nil {
@@ -319,17 +319,17 @@ func WorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db DB, wor
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM public.work_item_comments %s 
+	work_item_comments.work_item_id %s
+	 FROM public.work_item_comments %s
 	 WHERE work_item_comments.work_item_comment_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		work_item_comment_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemCommentPaginatedByWorkItemCommentID */\n" + sqlstr
@@ -405,16 +405,16 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM public.work_item_comments %s 
+	work_item_comments.work_item_id %s
+	 FROM public.work_item_comments %s
 	 WHERE work_item_comments.work_item_comment_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -492,16 +492,16 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID WorkIte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM public.work_item_comments %s 
+	work_item_comments.work_item_id %s
+	 FROM public.work_item_comments %s
 	 WHERE work_item_comments.work_item_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -103,7 +103,7 @@ func WithMovieJoin(joins MovieJoins) MovieSelectConfigOption {
 	}
 }
 
-// WithMovieFilters adds the given filters, which can be dynamically parameterized
+// WithMovieFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -146,9 +146,9 @@ func (m *Movie) Insert(ctx context.Context, db DB) (*Movie, error) {
 // Update updates a Movie in the database.
 func (m *Movie) Update(ctx context.Context, db DB) (*Movie, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.movies SET 
-	synopsis = $1, title = $2, year = $3 
-	WHERE movie_id = $4 
+	sqlstr := `UPDATE public.movies SET
+	synopsis = $1, title = $2, year = $3
+	WHERE movie_id = $4
 	RETURNING * `
 	// run
 	logf(sqlstr, m.Synopsis, m.Title, m.Year, m.MovieID)
@@ -195,7 +195,7 @@ func (m *Movie) Upsert(ctx context.Context, db DB, params *MovieCreateParams) (*
 // Delete deletes the Movie from the database.
 func (m *Movie) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.movies 
+	sqlstr := `DELETE FROM public.movies
 	WHERE movie_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, m.MovieID); err != nil {
@@ -253,15 +253,15 @@ func MoviePaginatedByMovieID(ctx context.Context, db DB, movieID MovieID, direct
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	movies.movie_id,
 	movies.synopsis,
 	movies.title,
-	movies.year %s 
-	 FROM public.movies %s 
+	movies.year %s
+	 FROM public.movies %s
 	 WHERE movies.movie_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		movie_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* MoviePaginatedByMovieID */\n" + sqlstr
@@ -325,14 +325,14 @@ func MovieByMovieID(ctx context.Context, db DB, movieID MovieID, opts ...MovieSe
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	movies.movie_id,
 	movies.synopsis,
 	movies.title,
-	movies.year %s 
-	 FROM public.movies %s 
+	movies.year %s
+	 FROM public.movies %s
 	 WHERE movies.movie_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

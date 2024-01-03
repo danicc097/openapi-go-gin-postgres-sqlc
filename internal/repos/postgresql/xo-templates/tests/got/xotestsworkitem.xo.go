@@ -107,7 +107,7 @@ type User__WIAU_XoTestsWorkItem struct {
 	Role *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
-// WithXoTestsWorkItemFilters adds the given filters, which can be dynamically parameterized
+// WithXoTestsWorkItemFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -184,9 +184,9 @@ func (xtwi *XoTestsWorkItem) Insert(ctx context.Context, db DB) (*XoTestsWorkIte
 // Update updates a XoTestsWorkItem in the database.
 func (xtwi *XoTestsWorkItem) Update(ctx context.Context, db DB) (*XoTestsWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.work_items SET 
-	description = $1, title = $2 
-	WHERE work_item_id = $3 
+	sqlstr := `UPDATE xo_tests.work_items SET
+	description = $1, title = $2
+	WHERE work_item_id = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, xtwi.Description, xtwi.Title, xtwi.WorkItemID)
@@ -232,7 +232,7 @@ func (xtwi *XoTestsWorkItem) Upsert(ctx context.Context, db DB, params *XoTestsW
 // Delete deletes the XoTestsWorkItem from the database.
 func (xtwi *XoTestsWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.work_items 
+	sqlstr := `DELETE FROM xo_tests.work_items
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtwi.WorkItemID); err != nil {
@@ -302,14 +302,14 @@ func XoTestsWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s 
-	 FROM xo_tests.work_items %s 
+	work_items.work_item_id %s
+	 FROM xo_tests.work_items %s
 	 WHERE work_items.work_item_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		work_item_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemPaginatedByWorkItemID */\n" + sqlstr
@@ -385,13 +385,13 @@ func XoTestsWorkItems(ctx context.Context, db DB, opts ...XoTestsWorkItemSelectC
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s 
-	 FROM xo_tests.work_items %s 
+	work_items.work_item_id %s
+	 FROM xo_tests.work_items %s
 	 WHERE true
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -471,13 +471,13 @@ func XoTestsWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTestsW
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s 
-	 FROM xo_tests.work_items %s 
+	work_items.work_item_id %s
+	 FROM xo_tests.work_items %s
 	 WHERE work_items.work_item_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -555,13 +555,13 @@ func XoTestsWorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s 
-	 FROM xo_tests.work_items %s 
+	work_items.work_item_id %s
+	 FROM xo_tests.work_items %s
 	 WHERE work_items.title = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

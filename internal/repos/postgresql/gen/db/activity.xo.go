@@ -147,7 +147,7 @@ func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 	}
 }
 
-// WithActivityFilters adds the given filters, which can be dynamically parameterized
+// WithActivityFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -216,9 +216,9 @@ func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {
 // Update updates a Activity in the database.
 func (a *Activity) Update(ctx context.Context, db DB) (*Activity, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.activities SET 
-	deleted_at = $1, description = $2, is_productive = $3, name = $4, project_id = $5 
-	WHERE activity_id = $6 
+	sqlstr := `UPDATE public.activities SET
+	deleted_at = $1, description = $2, is_productive = $3, name = $4, project_id = $5
+	WHERE activity_id = $6
 	RETURNING * `
 	// run
 	logf(sqlstr, a.DeletedAt, a.Description, a.IsProductive, a.Name, a.ProjectID, a.ActivityID)
@@ -266,7 +266,7 @@ func (a *Activity) Upsert(ctx context.Context, db DB, params *ActivityCreatePara
 // Delete deletes the Activity from the database.
 func (a *Activity) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.activities 
+	sqlstr := `DELETE FROM public.activities
 	WHERE activity_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, a.ActivityID); err != nil {
@@ -278,8 +278,8 @@ func (a *Activity) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the Activity from the database via 'deleted_at'.
 func (a *Activity) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE public.activities 
-	SET deleted_at = NOW() 
+	sqlstr := `UPDATE public.activities
+	SET deleted_at = NOW()
 	WHERE activity_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, a.ActivityID); err != nil {
@@ -362,17 +362,17 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	activities.activity_id,
 	activities.deleted_at,
 	activities.description,
 	activities.is_productive,
 	activities.name,
-	activities.project_id %s 
-	 FROM public.activities %s 
+	activities.project_id %s
+	 FROM public.activities %s
 	 WHERE activities.activity_id %s $1
-	 %s   AND activities.deleted_at is %s  %s 
-  ORDER BY 
+	 %s   AND activities.deleted_at is %s  %s
+  ORDER BY
 		activity_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ActivityPaginatedByActivityID */\n" + sqlstr
@@ -451,17 +451,17 @@ func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectI
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	activities.activity_id,
 	activities.deleted_at,
 	activities.description,
 	activities.is_productive,
 	activities.name,
-	activities.project_id %s 
-	 FROM public.activities %s 
+	activities.project_id %s
+	 FROM public.activities %s
 	 WHERE activities.project_id %s $1
-	 %s   AND activities.deleted_at is %s  %s 
-  ORDER BY 
+	 %s   AND activities.deleted_at is %s  %s
+  ORDER BY
 		project_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ActivityPaginatedByProjectID */\n" + sqlstr
@@ -537,16 +537,16 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	activities.activity_id,
 	activities.deleted_at,
 	activities.description,
 	activities.is_productive,
 	activities.name,
-	activities.project_id %s 
-	 FROM public.activities %s 
+	activities.project_id %s
+	 FROM public.activities %s
 	 WHERE activities.name = $1 AND activities.project_id = $2
-	 %s   AND activities.deleted_at is %s  %s 
+	 %s   AND activities.deleted_at is %s  %s
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -624,16 +624,16 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	activities.activity_id,
 	activities.deleted_at,
 	activities.description,
 	activities.is_productive,
 	activities.name,
-	activities.project_id %s 
-	 FROM public.activities %s 
+	activities.project_id %s
+	 FROM public.activities %s
 	 WHERE activities.name = $1
-	 %s   AND activities.deleted_at is %s  %s 
+	 %s   AND activities.deleted_at is %s  %s
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -713,16 +713,16 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	activities.activity_id,
 	activities.deleted_at,
 	activities.description,
 	activities.is_productive,
 	activities.name,
-	activities.project_id %s 
-	 FROM public.activities %s 
+	activities.project_id %s
+	 FROM public.activities %s
 	 WHERE activities.project_id = $1
-	 %s   AND activities.deleted_at is %s  %s 
+	 %s   AND activities.deleted_at is %s  %s
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -802,16 +802,16 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID ActivityID, opt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	activities.activity_id,
 	activities.deleted_at,
 	activities.description,
 	activities.is_productive,
 	activities.name,
-	activities.project_id %s 
-	 FROM public.activities %s 
+	activities.project_id %s
+	 FROM public.activities %s
 	 WHERE activities.activity_id = $1
-	 %s   AND activities.deleted_at is %s  %s 
+	 %s   AND activities.deleted_at is %s  %s
 `, selects, joins, filters, c.deletedAt, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

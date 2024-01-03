@@ -123,7 +123,7 @@ type User__BASK_ExtraSchemaBookAuthorsSurrogateKey struct {
 	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// WithExtraSchemaBookAuthorsSurrogateKeyFilters adds the given filters, which can be dynamically parameterized
+// WithExtraSchemaBookAuthorsSurrogateKeyFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -216,9 +216,9 @@ func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Insert(ctx context.Context, db
 // Update updates a ExtraSchemaBookAuthorsSurrogateKey in the database.
 func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Update(ctx context.Context, db DB) (*ExtraSchemaBookAuthorsSurrogateKey, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.book_authors_surrogate_key SET 
-	author_id = $1, book_id = $2, pseudonym = $3 
-	WHERE book_authors_surrogate_key_id = $4 
+	sqlstr := `UPDATE extra_schema.book_authors_surrogate_key SET
+	author_id = $1, book_id = $2, pseudonym = $3
+	WHERE book_authors_surrogate_key_id = $4
 	RETURNING * `
 	// run
 	logf(sqlstr, esbask.AuthorID, esbask.BookID, esbask.Pseudonym, esbask.BookAuthorsSurrogateKeyID)
@@ -265,7 +265,7 @@ func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Upsert(ctx context.Context, db
 // Delete deletes the ExtraSchemaBookAuthorsSurrogateKey from the database.
 func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.book_authors_surrogate_key 
+	sqlstr := `DELETE FROM extra_schema.book_authors_surrogate_key
 	WHERE book_authors_surrogate_key_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esbask.BookAuthorsSurrogateKeyID); err != nil {
@@ -335,15 +335,15 @@ func ExtraSchemaBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx 
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s 
-	 FROM extra_schema.book_authors_surrogate_key %s 
+	book_authors_surrogate_key.pseudonym %s
+	 FROM extra_schema.book_authors_surrogate_key %s
 	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		book_authors_surrogate_key_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID */\n" + sqlstr
@@ -419,14 +419,14 @@ func ExtraSchemaBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s 
-	 FROM extra_schema.book_authors_surrogate_key %s 
+	book_authors_surrogate_key.pseudonym %s
+	 FROM extra_schema.book_authors_surrogate_key %s
 	 WHERE book_authors_surrogate_key.book_id = $1 AND book_authors_surrogate_key.author_id = $2
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -504,14 +504,14 @@ func ExtraSchemaBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, boo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s 
-	 FROM extra_schema.book_authors_surrogate_key %s 
+	book_authors_surrogate_key.pseudonym %s
+	 FROM extra_schema.book_authors_surrogate_key %s
 	 WHERE book_authors_surrogate_key.book_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -591,14 +591,14 @@ func ExtraSchemaBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, a
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s 
-	 FROM extra_schema.book_authors_surrogate_key %s 
+	book_authors_surrogate_key.pseudonym %s
+	 FROM extra_schema.book_authors_surrogate_key %s
 	 WHERE book_authors_surrogate_key.author_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -678,14 +678,14 @@ func ExtraSchemaBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.C
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s 
-	 FROM extra_schema.book_authors_surrogate_key %s 
+	book_authors_surrogate_key.pseudonym %s
+	 FROM extra_schema.book_authors_surrogate_key %s
 	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

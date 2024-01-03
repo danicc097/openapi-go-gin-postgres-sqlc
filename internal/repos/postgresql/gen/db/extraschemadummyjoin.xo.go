@@ -89,7 +89,7 @@ func WithExtraSchemaDummyJoinJoin(joins ExtraSchemaDummyJoinJoins) ExtraSchemaDu
 	}
 }
 
-// WithExtraSchemaDummyJoinFilters adds the given filters, which can be dynamically parameterized
+// WithExtraSchemaDummyJoinFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -132,9 +132,9 @@ func (esdj *ExtraSchemaDummyJoin) Insert(ctx context.Context, db DB) (*ExtraSche
 // Update updates a ExtraSchemaDummyJoin in the database.
 func (esdj *ExtraSchemaDummyJoin) Update(ctx context.Context, db DB) (*ExtraSchemaDummyJoin, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.dummy_join SET 
-	name = $1 
-	WHERE dummy_join_id = $2 
+	sqlstr := `UPDATE extra_schema.dummy_join SET
+	name = $1
+	WHERE dummy_join_id = $2
 	RETURNING * `
 	// run
 	logf(sqlstr, esdj.Name, esdj.DummyJoinID)
@@ -179,7 +179,7 @@ func (esdj *ExtraSchemaDummyJoin) Upsert(ctx context.Context, db DB, params *Ext
 // Delete deletes the ExtraSchemaDummyJoin from the database.
 func (esdj *ExtraSchemaDummyJoin) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.dummy_join 
+	sqlstr := `DELETE FROM extra_schema.dummy_join
 	WHERE dummy_join_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esdj.DummyJoinID); err != nil {
@@ -237,13 +237,13 @@ func ExtraSchemaDummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dumm
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	dummy_join.dummy_join_id,
-	dummy_join.name %s 
-	 FROM extra_schema.dummy_join %s 
+	dummy_join.name %s
+	 FROM extra_schema.dummy_join %s
 	 WHERE dummy_join.dummy_join_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		dummy_join_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaDummyJoinPaginatedByDummyJoinID */\n" + sqlstr
@@ -307,12 +307,12 @@ func ExtraSchemaDummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID E
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	dummy_join.dummy_join_id,
-	dummy_join.name %s 
-	 FROM extra_schema.dummy_join %s 
+	dummy_join.name %s
+	 FROM extra_schema.dummy_join %s
 	 WHERE dummy_join.dummy_join_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

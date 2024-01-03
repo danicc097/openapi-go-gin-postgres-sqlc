@@ -94,7 +94,7 @@ func WithExtraSchemaDemoWorkItemJoin(joins ExtraSchemaDemoWorkItemJoins) ExtraSc
 	}
 }
 
-// WithExtraSchemaDemoWorkItemFilters adds the given filters, which can be dynamically parameterized
+// WithExtraSchemaDemoWorkItemFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -146,9 +146,9 @@ func (esdwi *ExtraSchemaDemoWorkItem) Insert(ctx context.Context, db DB) (*Extra
 // Update updates a ExtraSchemaDemoWorkItem in the database.
 func (esdwi *ExtraSchemaDemoWorkItem) Update(ctx context.Context, db DB) (*ExtraSchemaDemoWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.demo_work_items SET 
-	checked = $1 
-	WHERE work_item_id = $2 
+	sqlstr := `UPDATE extra_schema.demo_work_items SET
+	checked = $1
+	WHERE work_item_id = $2
 	RETURNING * `
 	// run
 	logf(sqlstr, esdwi.Checked, esdwi.WorkItemID)
@@ -194,7 +194,7 @@ func (esdwi *ExtraSchemaDemoWorkItem) Upsert(ctx context.Context, db DB, params 
 // Delete deletes the ExtraSchemaDemoWorkItem from the database.
 func (esdwi *ExtraSchemaDemoWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.demo_work_items 
+	sqlstr := `DELETE FROM extra_schema.demo_work_items
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esdwi.WorkItemID); err != nil {
@@ -258,13 +258,13 @@ func ExtraSchemaDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, wo
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	demo_work_items.checked,
-	demo_work_items.work_item_id %s 
-	 FROM extra_schema.demo_work_items %s 
+	demo_work_items.work_item_id %s
+	 FROM extra_schema.demo_work_items %s
 	 WHERE demo_work_items.work_item_id %s $1
-	 %s   %s 
-  ORDER BY 
+	 %s   %s
+  ORDER BY
 		work_item_id %s `, selects, joins, operator, filters, groupbys, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaDemoWorkItemPaginatedByWorkItemID */\n" + sqlstr
@@ -334,12 +334,12 @@ func ExtraSchemaDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	demo_work_items.checked,
-	demo_work_items.work_item_id %s 
-	 FROM extra_schema.demo_work_items %s 
+	demo_work_items.work_item_id %s
+	 FROM extra_schema.demo_work_items %s
 	 WHERE demo_work_items.work_item_id = $1
-	 %s   %s 
+	 %s   %s
 `, selects, joins, filters, groupbys)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
