@@ -239,14 +239,14 @@ func main() {
 
 	demoWorkItems := []*db.WorkItem{}
 	var wg sync.WaitGroup
-
-	for i := 1; i <= 2000; i++ {
+	semaphore := make(chan struct{}, 2000)
+	for i := 1; i <= 10000; i++ {
+		semaphore <- struct{}{} // acquire
 		wg.Add(1)
 
 		go func(i int) {
 			defer wg.Done()
 
-			fmt.Printf("i: %v\n", i)
 			demowi, err := demoWiSvc.Create(ctx, pool, services.DemoWorkItemCreateParams{
 				DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
 					Base: db.WorkItemCreateParams{
@@ -272,6 +272,8 @@ func main() {
 			})
 			handleError(err)
 			demoWorkItems = append(demoWorkItems, demowi)
+
+			<-semaphore // release
 		}(i)
 	}
 
@@ -362,17 +364,16 @@ func main() {
 	// paginated queries have sortable id. for first query include previous results (-1 or -1 second)
 	// and then use returned cursor.
 	wis, err := db.WorkItemPaginatedByWorkItemID(ctx, pool, demoWorkItems[0].WorkItemID-1, models.DirectionAsc, db.WithWorkItemFilters(map[string][]any{
-		// FIXME: this excludes the rest of members from joins. there should be 3, got the filter one only
-		// WE NEED `having  $i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id));`
+		// FIXME:
+		// we need `having  $i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id));` -> still getting hash joins and index scans
 		// therefore another xo selectOption just like  db.WithWorkItemFilters,
 		// with concatenates having clauses, if any.
-		// the below yields: aggregate functions are not allowed in WHERE, since it makes no sense.
+		// adding inside where clause yields `aggregate functions are not allowed in WHERE, since it makes no sense.
 		//  see https://www.postgresql.org/docs/current/tutorial-agg.html
-		// "$i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id))": {testUser.UserID},
 	}), db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, DemoWorkItem: true}))
 	handleError(err)
-	fmt.Printf("wis len: %v\n", len(wis))
-	format.PrintJSONByTag(wis, "db")
+	fmt.Printf("wis len: %v - First workitem found:\n", len(wis))
+	format.PrintJSONByTag(wis[0], "db")
 }
 
 func errAndExit(out []byte, err error) {
