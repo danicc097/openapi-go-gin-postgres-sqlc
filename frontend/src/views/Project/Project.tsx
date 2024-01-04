@@ -4,7 +4,7 @@ import 'src/assets/css/fonts.css'
 import 'src/assets/css/overrides.css'
 import 'src/assets/css/pulsate.css'
 import FallbackLoading from 'src/components/Loading/FallbackLoading'
-import { Textarea } from '@mantine/core'
+import { Button, Card, Popover, Space, Text, Textarea } from '@mantine/core'
 import DynamicForm, {
   selectOptionsBuilder,
   type SelectOptions,
@@ -24,6 +24,9 @@ import { useFormSlice } from 'src/slices/form'
 import { entries } from 'src/utils/object'
 import { JSONSchemaType } from 'ajv'
 import { JSON_SCHEMA, OPERATION_AUTH } from 'src/config'
+import { Tooltip as ReactTooltip } from 'react-tooltip'
+import { MyTourProvider } from 'src/tours/MyTourProvider'
+import { useTour } from '@reactour/tour'
 
 export default function Project() {
   const formSlice = useFormSlice()
@@ -41,6 +44,7 @@ export default function Project() {
   const { register, handleSubmit, control, formState } = createWorkItemTagForm
   const errors = formState.errors
 
+  const [tourButtonName, setTourButtonName] = useState('Useless button')
   useEffect(() => {
     // TODO: move to util hook useDynamicForm(formName)
     formSlice.resetCustomErrors(formName)
@@ -51,8 +55,22 @@ export default function Project() {
 
   const authorization = OPERATION_AUTH.CreateWorkItemTag
 
+  const tour = useTour()
+
+  console.log(`tour.currentStep: ${tour.currentStep}`)
+
   return (
     <>
+      <Button
+        className="tour-button"
+        onClick={(e) => {
+          tour.setIsOpen(true)
+        }}
+      >
+        Open tour
+      </Button>
+      <Space p={10} />
+      <Button className="tour-button-example">Click to continue tour</Button>
       <h3>Authorization:</h3>
       <CodeHighlight code={JSON.stringify(authorization, null, '  ')} language="json" />
       <h3>Form:</h3>
