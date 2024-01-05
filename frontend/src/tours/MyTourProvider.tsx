@@ -1,19 +1,25 @@
 import React, { useEffect } from 'react'
 import { TourProvider, useTour, StepType } from '@reactour/tour'
+import { Badge, MantineProvider, Portal, Text } from '@mantine/core'
+import { css } from '@emotion/react'
 
 /**
  * alternatives:
  * -  https://github.com/gilbarbara/react-joyride.
  *
- * TODO: conditionally set and hide via visibility: hidden so boxes are rendered for proper spacing
- * on document.querySelector('[aria-label="Go to next step"]')
- * until condition is met for step.
+ * TODO: conditionally set visibility: hidden
+ * on nextButton = document.querySelector('[aria-label="Go to next step"]')
+ * until condition is met for step. Then set beacon on top of nextButton or better yet fix bad hook closures.
  */
 export const MyTourProvider = ({ children }) => {
   const tour = useTour()
 
   const step1Handler = () => {
-    tour.setCurrentStep(tour.currentStep + 1)
+    tour.setCurrentStep((prevStep) => {
+      const s = prevStep + 1
+      console.log(`new step: ${s}`)
+      return s
+    })
     console.log('1 - handler')
   }
 
@@ -55,7 +61,28 @@ export const MyTourProvider = ({ children }) => {
   }, [tour])
 
   return (
-    <TourProvider disableFocusLock={true} disableInteraction={false} steps={steps}>
+    <TourProvider
+      css={css`
+        /* hide step selector */
+        div > div > button {
+          display: none !important;
+        }
+      `}
+      styles={{
+        badge: (props) => ({
+          ...props,
+          // visibility: 'hidden',
+        }),
+        popover: (props) => ({
+          ...props,
+          borderRadius: '1rem',
+        }),
+      }}
+      disableFocusLock={true}
+      disableInteraction={false}
+      steps={steps}
+      badgeContent={(badgeProps) => <div style={{ borderRadius: 0 }}>{badgeProps.currentStep + 1}</div>}
+    >
       {children}
     </TourProvider>
   )
