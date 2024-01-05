@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { TourProvider, useTour, StepType } from '@reactour/tour'
 import { Badge, MantineProvider, Portal, Text } from '@mantine/core'
 import { css } from '@emotion/react'
@@ -13,13 +13,17 @@ import { css } from '@emotion/react'
  */
 export const MyTourProvider = ({ children }) => {
   const tour = useTour()
+  const [currentStep, setCurrentStep] = useState(0)
+
+  function incrementStep() {
+    if (currentStep === steps.length) {
+      return
+    }
+    setCurrentStep((prevStep) => prevStep + 1)
+  }
 
   const step1Handler = () => {
-    tour.setCurrentStep((prevStep) => {
-      const s = prevStep + 1
-      console.log(`new step: ${s}`)
-      return s
-    })
+    incrementStep()
     console.log('1 - handler')
   }
 
@@ -35,18 +39,12 @@ export const MyTourProvider = ({ children }) => {
         console.log(buttonExample?.textContent)
         buttonExample?.addEventListener('click', step1Handler)
       },
-      actionAfter(elem) {
-        console.log('1- actionAfter')
-      },
     },
     {
       selector: '.tour-button',
       content: 'This is the second step after clicking',
       action(elem) {
         console.log('2 - adding event listeners for tour')
-      },
-      actionAfter(elem) {
-        console.log('2- actionAfter')
       },
     },
   ]
@@ -77,6 +75,14 @@ export const MyTourProvider = ({ children }) => {
           ...props,
           borderRadius: '1rem',
         }),
+      }}
+      currentStep={currentStep}
+      setCurrentStep={() => {
+        if (currentStep === steps.length - 1) {
+          setCurrentStep(0)
+        } else {
+          setCurrentStep(currentStep + 1)
+        }
       }}
       disableFocusLock={true}
       disableInteraction={false}
