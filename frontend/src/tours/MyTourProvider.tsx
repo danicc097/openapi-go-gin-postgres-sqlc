@@ -1,6 +1,14 @@
 import React, { useEffect } from 'react'
 import { TourProvider, useTour, StepType } from '@reactour/tour'
 
+/**
+ * alternatives:
+ * -  https://github.com/gilbarbara/react-joyride.
+ *
+ * TODO: conditionally set and hide via visibility: hidden so boxes are rendered for proper spacing
+ * on document.querySelector('[aria-label="Go to next step"]')
+ * until condition is met for step.
+ */
 export const MyTourProvider = ({ children }) => {
   const tour = useTour()
 
@@ -46,5 +54,9 @@ export const MyTourProvider = ({ children }) => {
     }
   }, [tour])
 
-  return <TourProvider steps={steps}>{children}</TourProvider>
+  return (
+    <TourProvider disableFocusLock={true} disableInteraction={false} steps={steps}>
+      {children}
+    </TourProvider>
+  )
 }
