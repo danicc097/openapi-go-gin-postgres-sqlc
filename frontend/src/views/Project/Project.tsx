@@ -25,7 +25,7 @@ import { entries } from 'src/utils/object'
 import { JSONSchemaType } from 'ajv'
 import { JSON_SCHEMA, OPERATION_AUTH } from 'src/config'
 import { Tooltip as ReactTooltip } from 'react-tooltip'
-import { MyTourProvider } from 'src/tours/MyTourProvider'
+import { AppTourProvider } from 'src/tours/AppTourProvider'
 import { useTour } from '@reactour/tour'
 
 export default function Project() {
@@ -56,8 +56,6 @@ export default function Project() {
   const authorization = OPERATION_AUTH.CreateWorkItemTag
 
   const tour = useTour()
-
-  console.log(`tour.currentStep: ${tour.currentStep}`)
 
   return (
     <>

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { TourProvider, useTour, StepType } from '@reactour/tour'
 import { Badge, MantineProvider, Portal, Text } from '@mantine/core'
 import { css } from '@emotion/react'
+import { useLocation } from 'react-router-dom'
 
 /**
  * alternatives:
@@ -11,9 +12,38 @@ import { css } from '@emotion/react'
  * on nextButton = document.querySelector('[aria-label="Go to next step"]')
  * until condition is met for step. Then set beacon on top of nextButton or better yet fix bad hook closures.
  */
-export const MyTourProvider = ({ children }) => {
+export const AppTourProvider = ({ children }) => {
   const tour = useTour()
   const [currentStep, setCurrentStep] = useState(0)
+  const location = useLocation()
+
+  // TODO: switch on app path:
+  useEffect(() => {
+    setCurrentStep(0)
+    if (location.pathname === '/page-1') {
+      tour.setSteps &&
+        tour.setSteps([
+          {
+            selector: '[data-tour="step-page"]',
+            content: 'text page',
+          },
+        ])
+    } else if (location.pathname === '/page-2') {
+      tour.setSteps &&
+        tour.setSteps([
+          {
+            selector: '[data-tour="step-page-2"]',
+            content: 'text page 2',
+          },
+          {
+            selector: '[data-tour="step-page-3"]',
+            content: 'text page 3',
+          },
+        ])
+    } else {
+      tour.setSteps && tour.setSteps(steps)
+    }
+  }, [location.pathname, setCurrentStep, tour.setSteps])
 
   function incrementStep() {
     if (currentStep === steps.length) {

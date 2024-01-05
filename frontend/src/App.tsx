@@ -74,6 +74,7 @@ import { parseSchemaFields } from 'src/utils/jsonSchema'
 import { schemaDefinitions } from 'src/client-validator/gen/meta'
 import Project from 'src/views/Project/Project'
 import { colorSwatchComponentInputOption } from 'src/components/formGeneration/components'
+import { AppTourProvider } from 'src/tours/AppTourProvider'
 
 const schema = {
   properties: {
@@ -368,231 +369,233 @@ export default function App() {
   type ExcludedFormKeys = 'base.metadata' | 'tagIDsMultiselect'
 
   return (
-    <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
-      <MantineProvider
-        colorSchemeManager={colorSchemeManager}
-        theme={createTheme({
-          shadows: {
-            md: '1px 1px 3px rgba(0, 0, 0, .25)',
-            xl: '5px 5px 3px rgba(0, 0, 0, .25)',
-          },
-          fontFamily: 'Catamaran, Arial, sans-serif',
-        })}
-      >
-        <ModalsProvider
-          labels={{ confirm: 'Submit', cancel: 'Cancel' }}
-          modalProps={{ styles: { root: { marginTop: '100px', zIndex: 20000 } } }}
+    <AppTourProvider>
+      <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
+        <MantineProvider
+          colorSchemeManager={colorSchemeManager}
+          theme={createTheme({
+            shadows: {
+              md: '1px 1px 3px rgba(0, 0, 0, .25)',
+              xl: '5px 5px 3px rgba(0, 0, 0, .25)',
+            },
+            fontFamily: 'Catamaran, Arial, sans-serif',
+          })}
         >
-          <Notifications />
-          <BrowserRouter basename="">
-            <React.Suspense
-              fallback={<div style={{ backgroundColor: 'rgb(20, 21, 25)', height: '100vh', width: '100vw' }} />}
-            >
-              <Layout>
-                <Routes>
-                  <Route path="/project" element={<Project />} />
-                  <Route
-                    path="/"
-                    element={
-                      <React.Suspense fallback={<FallbackLoading />}>
-                        {/* <LandingPage /> */}
-                        <Title size={20}>This form has been automatically generated from an openapi spec</Title>
-                        <Button
-                          onClick={(e) => {
-                            try {
-                              console.log(errors?.demoProject)
-                              // const r = demoWorkItemCreateForm.validate()
-                              // console.log({ r })
-                              // DemoWorkItemCreateRequestDecoder.decode(demoWorkItemCreateForm.values)
-                            } catch (error) {
-                              console.error(JSON.stringify(error?.validationErrors?.errors))
-                            }
-                          }}
-                        >
-                          Validate form
-                        </Button>
-                        <FormProvider {...form}>
-                          <DynamicForm<TestTypes.DemoWorkItemCreateRequest, ExcludedFormKeys>
-                            onSubmit={(e) => {
-                              e.preventDefault()
-                              form.handleSubmit(
-                                (data) => {
-                                  console.log({ data })
-                                },
-                                (errors) => {
-                                  console.log({ errors })
-                                },
-                              )(e)
+          <ModalsProvider
+            labels={{ confirm: 'Submit', cancel: 'Cancel' }}
+            modalProps={{ styles: { root: { marginTop: '100px', zIndex: 20000 } } }}
+          >
+            <Notifications />
+            <BrowserRouter basename="">
+              <React.Suspense
+                fallback={<div style={{ backgroundColor: 'rgb(20, 21, 25)', height: '100vh', width: '100vw' }} />}
+              >
+                <Layout>
+                  <Routes>
+                    <Route path="/project" element={<Project />} />
+                    <Route
+                      path="/"
+                      element={
+                        <React.Suspense fallback={<FallbackLoading />}>
+                          {/* <LandingPage /> */}
+                          <Title size={20}>This form has been automatically generated from an openapi spec</Title>
+                          <Button
+                            onClick={(e) => {
+                              try {
+                                console.log(errors?.demoProject)
+                                // const r = demoWorkItemCreateForm.validate()
+                                // console.log({ r })
+                                // DemoWorkItemCreateRequestDecoder.decode(demoWorkItemCreateForm.values)
+                              } catch (error) {
+                                console.error(JSON.stringify(error?.validationErrors?.errors))
+                              }
                             }}
-                            formName="demoWorkItemCreateForm"
-                            // schemaFields will come from `parseSchemaFields(schema.RestDemo... OR  asConst(jsonSchema.definitions.<...>))`
-                            // using this hardcoded for testing purposes
-                            schemaFields={{
-                              base: { isArray: false, required: true, type: 'object' },
-                              'base.closed': { type: 'date-time', required: false, isArray: false },
-                              'base.description': { type: 'string', required: true, isArray: false },
-                              'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
-                              'base.targetDate': { type: 'date', required: true, isArray: false },
-                              'base.teamID': { type: 'integer', required: true, isArray: false },
-                              'base.items': { type: 'object', required: false, isArray: true },
-                              'base.items.name': { type: 'string', required: true, isArray: false },
-                              'base.items.userId': { type: 'string', required: false, isArray: true },
-                              'base.items.items': { type: 'string', required: false, isArray: true },
-                              'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
-                              demoProject: { isArray: false, required: true, type: 'object' },
-                              'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
-                              'demoProject.line': { type: 'string', required: true, isArray: false },
-                              'demoProject.ref': { type: 'string', required: true, isArray: false },
-                              'demoProject.reopened': { type: 'boolean', required: true, isArray: false },
-                              'demoProject.workItemID': { type: 'integer', required: true, isArray: false },
-                              members: { type: 'object', required: false, isArray: true },
-                              'members.role': { type: 'string', required: true, isArray: false },
-                              'members.userID': { type: 'string', required: true, isArray: false },
-                              tagIDs: { type: 'integer', required: false, isArray: true },
-                            }}
-                            options={{
-                              // since labels is mandatory, instead of duplicating with ignore: U[] just
-                              // check if labels hasOwnProperty fieldKey and if not exclude from form.
-                              labels: {
-                                base: null,
-                                'base.closed': 'Closed',
-                                'base.description': 'Description',
-                                // 'base.metadata': 'metadata', // ignored -> not a key
-                                'base.kanbanStepID': 'Kanban step', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
-                                'base.targetDate': 'Target date',
-                                'demoProject.reopened': 'Reopened',
-                                'base.teamID': 'Team',
-                                'base.items': 'Items',
-                                'base.items.name': 'Name',
-                                'base.items.items': 'Items',
-                                'base.items.userId': 'User',
-                                'base.workItemTypeID': 'Type',
-                                demoProject: null,
-                                'demoProject.lastMessageAt': 'Last message at',
-                                'demoProject.line': 'Line',
-                                'demoProject.ref': 'Ref',
-                                'demoProject.workItemID': 'Work item',
-                                members: 'Members',
-                                'members.role': 'Role',
-                                'members.userID': 'User',
-                                tagIDs: 'Tags',
-                              },
-                              renderOrderPriority: ['tagIDs', 'members'],
-                              accordion: {
-                                'base.items': {
-                                  defaultOpen: true,
-                                  title: (
-                                    <Flex align="center" gap={10}>
-                                      <IconTag size={16} />
-                                      <Text fw={700} size={'md'}>
-                                        Items
-                                      </Text>
-                                    </Flex>
-                                  ),
+                          >
+                            Validate form
+                          </Button>
+                          <FormProvider {...form}>
+                            <DynamicForm<TestTypes.DemoWorkItemCreateRequest, ExcludedFormKeys>
+                              onSubmit={(e) => {
+                                e.preventDefault()
+                                form.handleSubmit(
+                                  (data) => {
+                                    console.log({ data })
+                                  },
+                                  (errors) => {
+                                    console.log({ errors })
+                                  },
+                                )(e)
+                              }}
+                              formName="demoWorkItemCreateForm"
+                              // schemaFields will come from `parseSchemaFields(schema.RestDemo... OR  asConst(jsonSchema.definitions.<...>))`
+                              // using this hardcoded for testing purposes
+                              schemaFields={{
+                                base: { isArray: false, required: true, type: 'object' },
+                                'base.closed': { type: 'date-time', required: false, isArray: false },
+                                'base.description': { type: 'string', required: true, isArray: false },
+                                'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
+                                'base.targetDate': { type: 'date', required: true, isArray: false },
+                                'base.teamID': { type: 'integer', required: true, isArray: false },
+                                'base.items': { type: 'object', required: false, isArray: true },
+                                'base.items.name': { type: 'string', required: true, isArray: false },
+                                'base.items.userId': { type: 'string', required: false, isArray: true },
+                                'base.items.items': { type: 'string', required: false, isArray: true },
+                                'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
+                                demoProject: { isArray: false, required: true, type: 'object' },
+                                'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
+                                'demoProject.line': { type: 'string', required: true, isArray: false },
+                                'demoProject.ref': { type: 'string', required: true, isArray: false },
+                                'demoProject.reopened': { type: 'boolean', required: true, isArray: false },
+                                'demoProject.workItemID': { type: 'integer', required: true, isArray: false },
+                                members: { type: 'object', required: false, isArray: true },
+                                'members.role': { type: 'string', required: true, isArray: false },
+                                'members.userID': { type: 'string', required: true, isArray: false },
+                                tagIDs: { type: 'integer', required: false, isArray: true },
+                              }}
+                              options={{
+                                // since labels is mandatory, instead of duplicating with ignore: U[] just
+                                // check if labels hasOwnProperty fieldKey and if not exclude from form.
+                                labels: {
+                                  base: null,
+                                  'base.closed': 'Closed',
+                                  'base.description': 'Description',
+                                  // 'base.metadata': 'metadata', // ignored -> not a key
+                                  'base.kanbanStepID': 'Kanban step', // if using KanbanStep transformer, then "Kanban step", "Kanban step name", etc.
+                                  'base.targetDate': 'Target date',
+                                  'demoProject.reopened': 'Reopened',
+                                  'base.teamID': 'Team',
+                                  'base.items': 'Items',
+                                  'base.items.name': 'Name',
+                                  'base.items.items': 'Items',
+                                  'base.items.userId': 'User',
+                                  'base.workItemTypeID': 'Type',
+                                  demoProject: null,
+                                  'demoProject.lastMessageAt': 'Last message at',
+                                  'demoProject.line': 'Line',
+                                  'demoProject.ref': 'Ref',
+                                  'demoProject.workItemID': 'Work item',
+                                  members: 'Members',
+                                  'members.role': 'Role',
+                                  'members.userID': 'User',
+                                  tagIDs: 'Tags',
                                 },
-                              },
-                              defaultValues: {
-                                'demoProject.line': '1111',
-                                'members.role': 'preparer',
-                              },
-                              selectOptions: {
-                                'members.userID': userIdSelectOption,
-                                'base.items.userId': userIdSelectOption,
-                                tagIDs: selectOptionsBuilder({
-                                  type: 'multiselect',
-                                  searchValueTransformer(el) {
-                                    return el.name
+                                renderOrderPriority: ['tagIDs', 'members'],
+                                accordion: {
+                                  'base.items': {
+                                    defaultOpen: true,
+                                    title: (
+                                      <Flex align="center" gap={10}>
+                                        <IconTag size={16} />
+                                        <Text fw={700} size={'md'}>
+                                          Items
+                                        </Text>
+                                      </Flex>
+                                    ),
                                   },
-                                  values: tags,
-                                  optionTransformer(el) {
-                                    return (
-                                      <Group align="center">
-                                        <Flex align="center" gap={12} justify="center">
-                                          <IconCircle size={12} fill={el.color} />
-                                          <div>{el.name}</div>
-                                        </Flex>
-                                      </Group>
-                                    )
-                                  },
-                                  formValueTransformer(el) {
-                                    return el.workItemTagID
-                                  },
-                                  pillTransformer(el) {
-                                    return <div>{el.name}</div>
-                                  },
-                                  labelColor(el) {
-                                    return el.color
-                                  },
-                                }),
-                                'members.role': selectOptionsBuilder({
-                                  type: 'select',
-                                  values: WORK_ITEM_ROLES,
-                                  optionTransformer: (el) => {
-                                    return <WorkItemRoleBadge role={el} />
-                                  },
-                                  formValueTransformer(el) {
-                                    return el
-                                  },
-                                  pillTransformer(el) {
-                                    return <WorkItemRoleBadge role={el} />
-                                  },
-                                }),
-                              },
-                              input: {
-                                'demoProject.line': {
-                                  component: colorSwatchComponentInputOption,
                                 },
-                              },
-                              // these should probably be all required later, to ensure formField is never used.
-                              propsOverride: {
-                                'demoProject.line': {
-                                  description: 'This is some help text for a disabled field.',
-                                  disabled: true,
+                                defaultValues: {
+                                  'demoProject.line': '1111',
+                                  'members.role': 'preparer',
                                 },
-                              },
-                            }} // satisfies DynamicFormOptions<TestTypes.DemoWorkItemCreateRequest, ExcludedFormKeys> // not needed anymore for some reason
-                          />
-                        </FormProvider>
-                      </React.Suspense>
-                    }
-                  />
-                  <Route
-                    path="/settings/user-permissions-management"
-                    element={
-                      <React.Suspense fallback={<FallbackLoading />}>
-                        <ProtectedRoute>
-                          <UserPermissionsPage />
-                        </ProtectedRoute>
-                      </React.Suspense>
-                    }
-                  />
-                  <Route
-                    path="/admin/project-management"
-                    element={
-                      <React.Suspense fallback={<FallbackLoading />}>
-                        <ProtectedRoute>
-                          <ProjectManagementPage />
-                        </ProtectedRoute>
-                      </React.Suspense>
-                    }
-                  />
-                  <Route
-                    path="*"
-                    element={
-                      <React.Suspense fallback={<FallbackLoading />}>
-                        <ProtectedRoute>
-                          <ErrorPage status={HttpStatus.NOT_FOUND_404} />
-                        </ProtectedRoute>
-                      </React.Suspense>
-                    }
-                  />
-                </Routes>
-              </Layout>
-            </React.Suspense>
-          </BrowserRouter>
-        </ModalsProvider>
-      </MantineProvider>
-      {!import.meta.env.PROD && <ReactQueryDevtools initialIsOpen />}
-    </PersistQueryClientProvider>
+                                selectOptions: {
+                                  'members.userID': userIdSelectOption,
+                                  'base.items.userId': userIdSelectOption,
+                                  tagIDs: selectOptionsBuilder({
+                                    type: 'multiselect',
+                                    searchValueTransformer(el) {
+                                      return el.name
+                                    },
+                                    values: tags,
+                                    optionTransformer(el) {
+                                      return (
+                                        <Group align="center">
+                                          <Flex align="center" gap={12} justify="center">
+                                            <IconCircle size={12} fill={el.color} />
+                                            <div>{el.name}</div>
+                                          </Flex>
+                                        </Group>
+                                      )
+                                    },
+                                    formValueTransformer(el) {
+                                      return el.workItemTagID
+                                    },
+                                    pillTransformer(el) {
+                                      return <div>{el.name}</div>
+                                    },
+                                    labelColor(el) {
+                                      return el.color
+                                    },
+                                  }),
+                                  'members.role': selectOptionsBuilder({
+                                    type: 'select',
+                                    values: WORK_ITEM_ROLES,
+                                    optionTransformer: (el) => {
+                                      return <WorkItemRoleBadge role={el} />
+                                    },
+                                    formValueTransformer(el) {
+                                      return el
+                                    },
+                                    pillTransformer(el) {
+                                      return <WorkItemRoleBadge role={el} />
+                                    },
+                                  }),
+                                },
+                                input: {
+                                  'demoProject.line': {
+                                    component: colorSwatchComponentInputOption,
+                                  },
+                                },
+                                // these should probably be all required later, to ensure formField is never used.
+                                propsOverride: {
+                                  'demoProject.line': {
+                                    description: 'This is some help text for a disabled field.',
+                                    disabled: true,
+                                  },
+                                },
+                              }} // satisfies DynamicFormOptions<TestTypes.DemoWorkItemCreateRequest, ExcludedFormKeys> // not needed anymore for some reason
+                            />
+                          </FormProvider>
+                        </React.Suspense>
+                      }
+                    />
+                    <Route
+                      path="/settings/user-permissions-management"
+                      element={
+                        <React.Suspense fallback={<FallbackLoading />}>
+                          <ProtectedRoute>
+                            <UserPermissionsPage />
+                          </ProtectedRoute>
+                        </React.Suspense>
+                      }
+                    />
+                    <Route
+                      path="/admin/project-management"
+                      element={
+                        <React.Suspense fallback={<FallbackLoading />}>
+                          <ProtectedRoute>
+                            <ProjectManagementPage />
+                          </ProtectedRoute>
+                        </React.Suspense>
+                      }
+                    />
+                    <Route
+                      path="*"
+                      element={
+                        <React.Suspense fallback={<FallbackLoading />}>
+                          <ProtectedRoute>
+                            <ErrorPage status={HttpStatus.NOT_FOUND_404} />
+                          </ProtectedRoute>
+                        </React.Suspense>
+                      }
+                    />
+                  </Routes>
+                </Layout>
+              </React.Suspense>
+            </BrowserRouter>
+          </ModalsProvider>
+        </MantineProvider>
+        {!import.meta.env.PROD && <ReactQueryDevtools initialIsOpen />}
+      </PersistQueryClientProvider>
+    </AppTourProvider>
   )
 }
