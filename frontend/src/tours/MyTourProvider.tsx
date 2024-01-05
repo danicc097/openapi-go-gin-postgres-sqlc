@@ -19,25 +19,29 @@ export const MyTourProvider = ({ children }) => {
     if (currentStep === steps.length) {
       return
     }
+    steps[currentStep]?.cleanup()
     setCurrentStep((prevStep) => prevStep + 1)
   }
 
   const step1Handler = () => {
     incrementStep()
-    console.log('1 - handler')
   }
 
-  const steps: StepType[] = [
+  const steps: (StepType & { cleanup: (...args: any) => void })[] = [
     {
       selector: '.tour-button-example',
       position: 'right',
       content: 'Click button',
       action(elem) {
         console.log('1- adding event listeners for tour')
-        console.log('here')
         const buttonExample = document.querySelector('.tour-button-example')
         console.log(buttonExample?.textContent)
         buttonExample?.addEventListener('click', step1Handler)
+      },
+      cleanup() {
+        console.log('cleanup for 1')
+        const buttonExample = document.querySelector('.tour-button-example')
+        buttonExample?.removeEventListener('click', step1Handler)
       },
     },
     {
@@ -46,17 +50,11 @@ export const MyTourProvider = ({ children }) => {
       action(elem) {
         console.log('2 - adding event listeners for tour')
       },
+      cleanup() {
+        console.log('cleanup for 2')
+      },
     },
   ]
-
-  useEffect(() => {
-    console.log(`current tour step: ${tour.currentStep}`)
-
-    return () => {
-      const buttonExample = document.querySelector('.tour-button-example')
-      buttonExample?.removeEventListener('click', step1Handler)
-    }
-  }, [tour])
 
   return (
     <TourProvider
