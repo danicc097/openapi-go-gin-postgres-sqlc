@@ -17,17 +17,19 @@ export const MyTourProvider = ({ children }) => {
 
   function incrementStep() {
     if (currentStep === steps.length) {
+      tour.setIsOpen(false)
       return
     }
     steps[currentStep]?.cleanup()
     setCurrentStep((prevStep) => prevStep + 1)
   }
 
-  const step1Handler = () => {
-    incrementStep()
+  type CustomStep = StepType & {
+    eventListener: EventListenerOrEventListenerObject
+    cleanup: (...args: any) => void
   }
 
-  const steps: (StepType & { cleanup: (...args: any) => void })[] = [
+  const steps: CustomStep[] = [
     {
       selector: '.tour-button-example',
       position: 'right',
@@ -36,12 +38,16 @@ export const MyTourProvider = ({ children }) => {
         console.log('1- adding event listeners for tour')
         const buttonExample = document.querySelector('.tour-button-example')
         console.log(buttonExample?.textContent)
-        buttonExample?.addEventListener('click', step1Handler)
+        buttonExample?.addEventListener('click', this.eventListener)
+        console.log({ this: this })
+      },
+      eventListener() {
+        incrementStep()
       },
       cleanup() {
         console.log('cleanup for 1')
         const buttonExample = document.querySelector('.tour-button-example')
-        buttonExample?.removeEventListener('click', step1Handler)
+        buttonExample?.removeEventListener('click', this.eventListener)
       },
     },
     {
@@ -49,6 +55,9 @@ export const MyTourProvider = ({ children }) => {
       content: 'This is the second step after clicking',
       action(elem) {
         console.log('2 - adding event listeners for tour')
+      },
+      eventListener() {
+        incrementStep()
       },
       cleanup() {
         console.log('cleanup for 2')
