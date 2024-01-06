@@ -127,7 +127,7 @@ func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 type TeamJoins struct {
 	Project     bool // O2O projects
 	TimeEntries bool // M2O time_entries
-	Members     bool // M2M user_team
+	MembersTeam bool // M2M user_team
 }
 
 // WithTeamJoin joins with the given tables.
@@ -136,7 +136,7 @@ func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 		s.joins = TeamJoins{
 			Project:     s.joins.Project || joins.Project,
 			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
-			Members:     s.joins.Members || joins.Members,
+			MembersTeam: s.joins.MembersTeam || joins.MembersTeam,
 		}
 	}
 }
@@ -196,7 +196,7 @@ const teamTableTimeEntriesSelectSQL = `COALESCE(joined_time_entries.time_entries
 
 const teamTableTimeEntriesGroupBySQL = `joined_time_entries.time_entries, teams.team_id`
 
-const teamTableMembersJoinSQL = `-- M2M join generated from "user_team_member_fkey"
+const teamTableMembersTeamJoinSQL = `-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 		user_team.team_id as user_team_team_id
@@ -211,12 +211,12 @@ left join (
 ) as joined_user_team_members on joined_user_team_members.user_team_team_id = teams.team_id
 `
 
-const teamTableMembersSelectSQL = `COALESCE(
+const teamTableMembersTeamSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') as user_team_members`
 
-const teamTableMembersGroupBySQL = `teams.team_id, teams.team_id`
+const teamTableMembersTeamGroupBySQL = `teams.team_id, teams.team_id`
 
 // Insert inserts the Team to the database.
 func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {
@@ -366,10 +366,10 @@ func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID TeamID, direction 
 		groupByClauses = append(groupByClauses, teamTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, teamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, teamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, teamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, teamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, teamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, teamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""
@@ -478,10 +478,10 @@ func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, d
 		groupByClauses = append(groupByClauses, teamTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, teamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, teamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, teamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, teamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, teamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, teamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""
@@ -592,10 +592,10 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID Proj
 		groupByClauses = append(groupByClauses, teamTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, teamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, teamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, teamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, teamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, teamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, teamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""
@@ -702,10 +702,10 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 		groupByClauses = append(groupByClauses, teamTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, teamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, teamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, teamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, teamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, teamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, teamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""
@@ -814,10 +814,10 @@ func TeamsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...T
 		groupByClauses = append(groupByClauses, teamTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, teamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, teamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, teamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, teamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, teamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, teamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""
@@ -926,10 +926,10 @@ func TeamByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...TeamSelectC
 		groupByClauses = append(groupByClauses, teamTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, teamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, teamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, teamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, teamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, teamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, teamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""

@@ -1162,7 +1162,14 @@ cc_label:
 		/**
 		 * Mark name clashes between constraint tables
 		 * TODO JoinTableClash pending O2O and M2M testing
-		 */
+		 * There are false positives, see user_project and user_team both have member field which triggers clash=true
+		 * * when this should only happen if both are in JoinFields struct.
+		 * however this makes everything more readable in the end...
+		 * type UserJoins struct {
+				ProjectsMember        bool // M2M user_project // vs just Projects
+				TeamsMember           bool // M2M user_team // vs just Teams
+			}
+		*/
 		var joinTableClash bool
 		for _, c := range constraints {
 			if c.Type != "foreign_key" {
@@ -2267,8 +2274,10 @@ type %s struct {
 		if joinName == "" {
 			continue
 		}
+
 		for _, j := range joinNames {
 			if j == joinName {
+				fmt.Printf("preventing clash -- joinName: %v\n", joinName)
 				// prevent clash
 				joinName = joinName + camelExport(c.RefTableName)
 			}
@@ -2286,6 +2295,7 @@ type %s struct {
 		sqlstrBuf.WriteString(fmt.Sprintf("const %sTable%sSelectSQL = `%s`\n\n", f.lower_first(tGoName), joinName, selectClause))
 		sqlstrBuf.WriteString(fmt.Sprintf("const %sTable%sGroupBySQL = `%s`\n\n", f.lower_first(tGoName), joinName, groupby))
 	}
+
 	buf.WriteString("}\n")
 
 	// recursive would go out of hand quickly, use go-jet or sqlc for these cases.

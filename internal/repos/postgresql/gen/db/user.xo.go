@@ -48,6 +48,7 @@ type User struct {
 	SenderNotificationsJoin   *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
 	UserTimeEntriesJoin       *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                       // M2O users
 	UserUserNotificationsJoin *[]UserNotification    `json:"-" db:"user_notifications" openapi-go:"ignore"`                 // M2O users
+	MemberProjectsJoin        *[]Project             `json:"-" db:"user_project_projects" openapi-go:"ignore"`              // M2M user_project
 	MemberTeamsJoin           *[]Team                `json:"-" db:"user_team_teams" openapi-go:"ignore"`                    // M2M user_team
 	APIKeyJoin                *UserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
 	APIKeyJoinAKI             *UserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
@@ -209,6 +210,7 @@ type UserJoins struct {
 	NotificationsSender   bool // M2O notifications
 	TimeEntries           bool // M2O time_entries
 	UserNotifications     bool // M2O user_notifications
+	ProjectsMember        bool // M2M user_project
 	TeamsMember           bool // M2M user_team
 	UserAPIKey            bool // O2O user_api_keys
 	UserAPIKeyUserAPIKeys bool // O2O user_api_keys
@@ -224,6 +226,7 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
 			TimeEntries:           s.joins.TimeEntries || joins.TimeEntries,
 			UserNotifications:     s.joins.UserNotifications || joins.UserNotifications,
+			ProjectsMember:        s.joins.ProjectsMember || joins.ProjectsMember,
 			TeamsMember:           s.joins.TeamsMember || joins.TeamsMember,
 			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
 			UserAPIKeyUserAPIKeys: s.joins.UserAPIKeyUserAPIKeys || joins.UserAPIKeyUserAPIKeys,
@@ -331,6 +334,28 @@ left join (
 const userTableUserNotificationsSelectSQL = `COALESCE(joined_user_notifications.user_notifications, '{}') as user_notifications`
 
 const userTableUserNotificationsGroupBySQL = `joined_user_notifications.user_notifications, users.user_id`
+
+const userTableProjectsMemberJoinSQL = `-- M2M join generated from "user_project_project_id_fkey"
+left join (
+	select
+		user_project.member as user_project_member
+		, projects.project_id as __projects_project_id
+		, row(projects.*) as __projects
+	from
+		user_project
+	join projects on projects.project_id = user_project.project_id
+	group by
+		user_project_member
+		, projects.project_id
+) as joined_user_project_projects on joined_user_project_projects.user_project_member = users.user_id
+`
+
+const userTableProjectsMemberSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_user_project_projects.__projects
+		)) filter (where joined_user_project_projects.__projects_project_id is not null), '{}') as user_project_projects`
+
+const userTableProjectsMemberGroupBySQL = `users.user_id, users.user_id`
 
 const userTableTeamsMemberJoinSQL = `-- M2M join generated from "user_team_team_id_fkey"
 left join (
@@ -608,6 +633,12 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
 	}
 
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
+	}
+
 	if c.joins.TeamsMember {
 		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
 		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
@@ -767,6 +798,12 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
 	}
 
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
+	}
+
 	if c.joins.TeamsMember {
 		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
 		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
@@ -920,6 +957,12 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
 		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
 	}
 
 	if c.joins.TeamsMember {
@@ -1079,6 +1122,12 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
 	}
 
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
+	}
+
 	if c.joins.TeamsMember {
 		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
 		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
@@ -1232,6 +1281,12 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
 		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
 	}
 
 	if c.joins.TeamsMember {
@@ -1389,6 +1444,12 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
 	}
 
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
+	}
+
 	if c.joins.TeamsMember {
 		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
 		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
@@ -1542,6 +1603,12 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
 		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
 	}
 
 	if c.joins.TeamsMember {
@@ -1699,6 +1766,12 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
 		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
 	}
 
 	if c.joins.TeamsMember {

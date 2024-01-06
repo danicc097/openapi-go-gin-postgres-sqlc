@@ -34,11 +34,12 @@ type Project struct {
 	CreatedAt          time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                              // created_at
 	UpdatedAt          time.Time            `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                                              // updated_at
 
-	ProjectActivitiesJoin    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`      // M2O projects
-	ProjectKanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`    // M2O projects
-	ProjectTeamsJoin         *[]Team         `json:"-" db:"teams" openapi-go:"ignore"`           // M2O projects
-	ProjectWorkItemTagsJoin  *[]WorkItemTag  `json:"-" db:"work_item_tags" openapi-go:"ignore"`  // M2O projects
-	ProjectWorkItemTypesJoin *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"` // M2O projects
+	ProjectActivitiesJoin    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`           // M2O projects
+	ProjectKanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`         // M2O projects
+	ProjectTeamsJoin         *[]Team         `json:"-" db:"teams" openapi-go:"ignore"`                // M2O projects
+	ProjectMembersJoin       *[]User         `json:"-" db:"user_project_members" openapi-go:"ignore"` // M2M user_project
+	ProjectWorkItemTagsJoin  *[]WorkItemTag  `json:"-" db:"work_item_tags" openapi-go:"ignore"`       // M2O projects
+	ProjectWorkItemTypesJoin *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"`      // M2O projects
 
 }
 
@@ -134,22 +135,24 @@ func WithProjectOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 }
 
 type ProjectJoins struct {
-	Activities    bool // M2O activities
-	KanbanSteps   bool // M2O kanban_steps
-	Teams         bool // M2O teams
-	WorkItemTags  bool // M2O work_item_tags
-	WorkItemTypes bool // M2O work_item_types
+	Activities     bool // M2O activities
+	KanbanSteps    bool // M2O kanban_steps
+	Teams          bool // M2O teams
+	MembersProject bool // M2M user_project
+	WorkItemTags   bool // M2O work_item_tags
+	WorkItemTypes  bool // M2O work_item_types
 }
 
 // WithProjectJoin joins with the given tables.
 func WithProjectJoin(joins ProjectJoins) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
 		s.joins = ProjectJoins{
-			Activities:    s.joins.Activities || joins.Activities,
-			KanbanSteps:   s.joins.KanbanSteps || joins.KanbanSteps,
-			Teams:         s.joins.Teams || joins.Teams,
-			WorkItemTags:  s.joins.WorkItemTags || joins.WorkItemTags,
-			WorkItemTypes: s.joins.WorkItemTypes || joins.WorkItemTypes,
+			Activities:     s.joins.Activities || joins.Activities,
+			KanbanSteps:    s.joins.KanbanSteps || joins.KanbanSteps,
+			Teams:          s.joins.Teams || joins.Teams,
+			MembersProject: s.joins.MembersProject || joins.MembersProject,
+			WorkItemTags:   s.joins.WorkItemTags || joins.WorkItemTags,
+			WorkItemTypes:  s.joins.WorkItemTypes || joins.WorkItemTypes,
 		}
 	}
 }
@@ -230,6 +233,28 @@ left join (
 const projectTableTeamsSelectSQL = `COALESCE(joined_teams.teams, '{}') as teams`
 
 const projectTableTeamsGroupBySQL = `joined_teams.teams, projects.project_id`
+
+const projectTableMembersProjectJoinSQL = `-- M2M join generated from "user_project_member_fkey"
+left join (
+	select
+		user_project.project_id as user_project_project_id
+		, users.user_id as __users_user_id
+		, row(users.*) as __users
+	from
+		user_project
+	join users on users.user_id = user_project.member
+	group by
+		user_project_project_id
+		, users.user_id
+) as joined_user_project_members on joined_user_project_members.user_project_project_id = projects.project_id
+`
+
+const projectTableMembersProjectSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_user_project_members.__users
+		)) filter (where joined_user_project_members.__users_user_id is not null), '{}') as user_project_members`
+
+const projectTableMembersProjectGroupBySQL = `projects.project_id, projects.project_id`
 
 const projectTableWorkItemTagsJoinSQL = `-- M2O join generated from "work_item_tags_project_id_fkey"
 left join (
@@ -418,6 +443,12 @@ func ProjectPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID
 		groupByClauses = append(groupByClauses, projectTableTeamsGroupBySQL)
 	}
 
+	if c.joins.MembersProject {
+		selectClauses = append(selectClauses, projectTableMembersProjectSelectSQL)
+		joinClauses = append(joinClauses, projectTableMembersProjectJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableMembersProjectGroupBySQL)
+	}
+
 	if c.joins.WorkItemTags {
 		selectClauses = append(selectClauses, projectTableWorkItemTagsSelectSQL)
 		joinClauses = append(joinClauses, projectTableWorkItemTagsJoinSQL)
@@ -545,6 +576,12 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 		groupByClauses = append(groupByClauses, projectTableTeamsGroupBySQL)
 	}
 
+	if c.joins.MembersProject {
+		selectClauses = append(selectClauses, projectTableMembersProjectSelectSQL)
+		joinClauses = append(joinClauses, projectTableMembersProjectJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableMembersProjectGroupBySQL)
+	}
+
 	if c.joins.WorkItemTags {
 		selectClauses = append(selectClauses, projectTableWorkItemTagsSelectSQL)
 		joinClauses = append(joinClauses, projectTableWorkItemTagsJoinSQL)
@@ -668,6 +705,12 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ..
 		groupByClauses = append(groupByClauses, projectTableTeamsGroupBySQL)
 	}
 
+	if c.joins.MembersProject {
+		selectClauses = append(selectClauses, projectTableMembersProjectSelectSQL)
+		joinClauses = append(joinClauses, projectTableMembersProjectJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableMembersProjectGroupBySQL)
+	}
+
 	if c.joins.WorkItemTags {
 		selectClauses = append(selectClauses, projectTableWorkItemTagsSelectSQL)
 		joinClauses = append(joinClauses, projectTableWorkItemTagsJoinSQL)
@@ -789,6 +832,12 @@ func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName 
 		selectClauses = append(selectClauses, projectTableTeamsSelectSQL)
 		joinClauses = append(joinClauses, projectTableTeamsJoinSQL)
 		groupByClauses = append(groupByClauses, projectTableTeamsGroupBySQL)
+	}
+
+	if c.joins.MembersProject {
+		selectClauses = append(selectClauses, projectTableMembersProjectSelectSQL)
+		joinClauses = append(joinClauses, projectTableMembersProjectJoinSQL)
+		groupByClauses = append(groupByClauses, projectTableMembersProjectGroupBySQL)
 	}
 
 	if c.joins.WorkItemTags {

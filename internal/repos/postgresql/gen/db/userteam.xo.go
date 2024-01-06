@@ -85,7 +85,7 @@ const ()
 
 type UserTeamJoins struct {
 	TeamsMember bool // M2M user_team
-	Members     bool // M2M user_team
+	MembersTeam bool // M2M user_team
 }
 
 // WithUserTeamJoin joins with the given tables.
@@ -93,7 +93,7 @@ func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
 		s.joins = UserTeamJoins{
 			TeamsMember: s.joins.TeamsMember || joins.TeamsMember,
-			Members:     s.joins.Members || joins.Members,
+			MembersTeam: s.joins.MembersTeam || joins.MembersTeam,
 		}
 	}
 }
@@ -149,7 +149,7 @@ const userTeamTableTeamsMemberSelectSQL = `COALESCE(
 
 const userTeamTableTeamsMemberGroupBySQL = `user_team.team_id, user_team.team_id, user_team.member`
 
-const userTeamTableMembersJoinSQL = `-- M2M join generated from "user_team_member_fkey"
+const userTeamTableMembersTeamJoinSQL = `-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 		user_team.team_id as user_team_team_id
@@ -164,12 +164,12 @@ left join (
 ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
 `
 
-const userTeamTableMembersSelectSQL = `COALESCE(
+const userTeamTableMembersTeamSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') as user_team_members`
 
-const userTeamTableMembersGroupBySQL = `user_team.member, user_team.team_id, user_team.member`
+const userTeamTableMembersTeamGroupBySQL = `user_team.member, user_team.team_id, user_team.member`
 
 // Insert inserts the UserTeam to the database.
 func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
@@ -267,10 +267,10 @@ func UserTeamsByMember(ctx context.Context, db DB, member UserID, opts ...UserTe
 		groupByClauses = append(groupByClauses, userTeamTableTeamsMemberGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, userTeamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""
@@ -369,10 +369,10 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member UserID, teamID Te
 		groupByClauses = append(groupByClauses, userTeamTableTeamsMemberGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, userTeamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""
@@ -469,10 +469,10 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...UserTe
 		groupByClauses = append(groupByClauses, userTeamTableTeamsMemberGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, userTeamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""
@@ -571,10 +571,10 @@ func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID TeamID, member U
 		groupByClauses = append(groupByClauses, userTeamTableTeamsMemberGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, userTeamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""
