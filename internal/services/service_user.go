@@ -305,8 +305,13 @@ func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID db.UserID, team
 		TeamID: teamID,
 		Member: userID,
 	})
+	var ierr *internal.Error
 	if err != nil {
-		return fmt.Errorf("db.CreateUserTeam: %w", err)
+		if errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists {
+			return nil
+		}
+
+		return internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not assign user to team")
 	}
 
 	u.logger.Infof("user %q assigned to team %d", userID, teamID)

@@ -121,6 +121,7 @@ func main() {
 			FirstName:  pointers.New("Name " + strconv.Itoa(i)),
 			Email:      "user_" + strconv.Itoa(i) + "@mail.com",
 			ExternalID: "external_id_user_" + strconv.Itoa(i),
+			// Scopes: []models.Scope{models.}, // TODO:
 		})
 		handleError(err)
 		_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
