@@ -21,7 +21,7 @@ declare
   proj_id int;
   t_id int;
   teams_in_project int[];
-  user_scopes jsonb[];
+  user_scopes text[];
 begin
   for u_id
   , proj_id
@@ -52,6 +52,7 @@ group by
   users.user_id
   , assigned_teams.project_id
   , users.scopes loop
+    raise notice 'user_project project-member sync for u_id: % proj_id % ' , u_id , proj_id;
     execute FORMAT('
             INSERT INTO user_project (member, project_id)
             VALUES(%L,%L)
@@ -61,6 +62,7 @@ group by
     -- assign to all teams in project
     if '{"project-member"}' = any (user_scopes) then
       FOREACH t_id in array teams_in_project loop
+        raise notice 'user_team project-member sync for u_id: % t_id % ' , u_id , t_id;
         execute FORMAT('
             INSERT INTO user_team (member, team_id)
             VALUES(%L,%L)
@@ -131,6 +133,8 @@ begin
     join user_team ut on ut.team_id = new.team_id
   where
     ut.member = new.member;
+
+  raise notice 'user_project for  new.member and teamid % % ' , new.member , new.team_id;
 
   return NEW;
 end;
