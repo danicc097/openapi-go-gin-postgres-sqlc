@@ -269,6 +269,11 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 		return nil, fmt.Errorf("repos.User.ByAPIKey: %w", err)
 	}
 
+	user, err = u.repos.User.ByID(ctx, d, user.UserID, u.getSharedDBOpts()...)
+	if err != nil {
+		return nil, fmt.Errorf("repos.User.ByID: %w", err)
+	}
+
 	return user, nil
 }
 
