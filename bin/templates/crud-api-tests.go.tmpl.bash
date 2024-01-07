@@ -71,7 +71,7 @@ $(test -n "$with_project" && echo "		projectID := internal.ProjectIDByName[model
 			id := ${camel_name}.${pascal_name}.${pascal_name}ID
 			res, err := srv.client.Delete${pascal_name}WithResponse(context.Background(), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
 			require.NoError(t, err)
-			require.Equal(t, tc.status, res.StatusCode())
+			require.Equal(t, tc.status, res.StatusCode(), string(res.Body))
 		})
 	}
 }
@@ -113,7 +113,7 @@ $(test -n "$with_project" && echo "		pj := models.ProjectDemo
 		res, err := srv.client.Create${pascal_name}WithResponse(context.Background() $(test -n "$with_project" && echo ", pj"), body, ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
-		require.Equal(t, http.StatusCreated, res.StatusCode())
+		require.Equal(t, http.StatusCreated, res.StatusCode(), string(res.Body))
 $(for f in ${db_create_params_struct_fields[@]}; do
   # loop db create or update params?
   echo "		assert.EqualValues(t, random${pascal_name}CreateParams.$f, res.JSON201.$f)"
@@ -157,7 +157,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 		res, err := srv.client.Get${pascal_name}WithResponse(context.Background(), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, res.StatusCode())
+		assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))
 
 		got, err := json.Marshal(res.JSON200)
 		require.NoError(t, err)
@@ -235,7 +235,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 			updateRes, err := srv.client.Update${pascal_name}WithResponse(context.Background(), int(id), tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
-			require.EqualValues(t, tc.status, updateRes.StatusCode())
+			require.EqualValues(t, tc.status, updateRes.StatusCode(), string(updateRes.Body))
 
 			if len(tc.validationErrorContains) > 0 {
 				for _, ve := range tc.validationErrorContains {

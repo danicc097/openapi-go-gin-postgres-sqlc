@@ -39,7 +39,7 @@ func TestAdminPingRoute(t *testing.T) {
 		res, err := srv.client.AdminPingWithResponse(context.Background(), ReqWithAPIKey(ufixture.APIKey.APIKey))
 		require.NoError(t, err)
 
-		assert.Equal(t, http.StatusOK, res.StatusCode())
+		assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))
 		assert.Equal(t, "pong", string(res.Body))
 	})
 	t.Run("missing_auth_header", func(t *testing.T) {
@@ -48,7 +48,7 @@ func TestAdminPingRoute(t *testing.T) {
 		res, err := srv.client.AdminPingWithResponse(context.Background())
 		require.NoError(t, err)
 
-		assert.Equal(t, http.StatusBadRequest, res.StatusCode())
+		assert.Equal(t, http.StatusBadRequest, res.StatusCode(), string(res.Body))
 		assert.EqualValues(t, models.ErrorCodeRequestValidation, res.JSON4XX.Type)
 	})
 }

@@ -64,7 +64,7 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 			}, ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 			require.NoError(t, err)
-			require.Equal(t, tc.status, res.StatusCode())
+			require.Equal(t, tc.status, res.StatusCode(), string(res.Body))
 		})
 	}
 }
