@@ -19,7 +19,7 @@ import (
 
 var errorUniqueViolationRegex = regexp.MustCompile(`\((.*)\)=\((.*)\)`)
 
-func parseDBErrorDetail(err error) error {
+func ParseDBErrorDetail(err error) error {
 	newErr := internal.WrapErrorf(err, models.ErrorCodeUnknown, err.Error())
 
 	/**

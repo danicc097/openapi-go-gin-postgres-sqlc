@@ -43,8 +43,8 @@ func GetValidateResponseFromCtx(c *gin.Context) bool {
 	return skip
 }
 
-// getUserFromCtx returns basic information from the current user.
-func getUserFromCtx(c *gin.Context) (services.CtxUser, error) {
+// getUserCallerFromCtx returns basic information from the current user.
+func getUserCallerFromCtx(c *gin.Context) (services.CtxUser, error) {
 	user, ok := c.Value(userCtxKey).(services.CtxUser)
 	if !ok {
 		return services.CtxUser{}, errors.New("user not found in ctx")
@@ -53,7 +53,7 @@ func getUserFromCtx(c *gin.Context) (services.CtxUser, error) {
 	return user, nil
 }
 
-func CtxWithUser(c *gin.Context, user *db.User) {
+func CtxWithUserCaller(c *gin.Context, user *db.User) {
 	c.Set(userCtxKey, services.CtxUser{
 		User:     *user,
 		Teams:    *user.MemberTeamsJoin,

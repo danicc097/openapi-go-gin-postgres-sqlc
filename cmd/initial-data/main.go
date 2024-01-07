@@ -93,6 +93,15 @@ func main() {
 	_, err = authnSvc.CreateAPIKeyForUser(ctx, superAdmin)
 	handleError(err)
 
+	superAdmin, err = userSvc.ByEmail(ctx, pool, superAdmin.Email) // get joins
+	handleError(err)
+
+	superAdminCaller := services.CtxUser{
+		User:     *superAdmin,
+		Teams:    *superAdmin.MemberTeamsJoin,
+		Projects: *superAdmin.MemberProjectsJoin,
+	}
+
 	//
 	//
 	// PROD guard
@@ -125,6 +134,9 @@ func main() {
 		})
 		handleError(err)
 		_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
+		handleError(err)
+
+		u, err = userSvc.ByEmail(ctx, pool, u.Email) // get joins
 		handleError(err)
 
 		users = append(users, u)
@@ -206,8 +218,7 @@ func main() {
 	 *
 	 **/
 	logger.Info("Creating workitem tags...")
-
-	wiTag1, err := wiTagSvc.Create(ctx, pool, services.CtxUser{User: *superAdmin}, &db.WorkItemTagCreateParams{
+	wiTag1, err := wiTagSvc.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Tag 1",
 		Description: "Tag 1 description",
@@ -215,7 +226,7 @@ func main() {
 	})
 	handleError(err, wiTag1)
 
-	wiTag2, err := wiTagSvc.Create(ctx, pool, services.CtxUser{User: *superAdmin}, &db.WorkItemTagCreateParams{
+	wiTag2, err := wiTagSvc.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Tag 2",
 		Description: "Tag 2 description",
@@ -223,7 +234,7 @@ func main() {
 	})
 	handleError(err, wiTag2)
 
-	wiTagDemo2_1, err := wiTagSvc.Create(ctx, pool, services.CtxUser{User: *superAdmin}, &db.WorkItemTagCreateParams{
+	wiTagDemo2_1, err := wiTagSvc.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
 		Name:        "Tag 1",
 		Description: "Tag 1 description",
@@ -293,7 +304,12 @@ func main() {
 	 **/
 	logger.Info("Creating time entries...")
 
-	te1, err := teSvc.Create(ctx, pool, services.CtxUser{User: *users[0]}, &db.TimeEntryCreateParams{
+	ucaller := services.CtxUser{
+		User:     *users[0],
+		Teams:    *users[0].MemberTeamsJoin,
+		Projects: *users[0].MemberProjectsJoin,
+	}
+	te1, err := teSvc.Create(ctx, pool, ucaller, &db.TimeEntryCreateParams{
 		WorkItemID:      &demoWorkItems[0].WorkItemID,
 		ActivityID:      activity1.ActivityID,
 		UserID:          users[0].UserID,
@@ -303,7 +319,7 @@ func main() {
 	})
 	handleError(err, te1)
 
-	te2, err := teSvc.Create(ctx, pool, services.CtxUser{User: *users[0]}, &db.TimeEntryCreateParams{
+	te2, err := teSvc.Create(ctx, pool, ucaller, &db.TimeEntryCreateParams{
 		ActivityID:      activity2.ActivityID,
 		UserID:          users[0].UserID,
 		TeamID:          &teamDemo.TeamID,
@@ -314,7 +330,7 @@ func main() {
 	handleError(err, te2)
 
 	for _, u := range users {
-		_, err := teSvc.Create(ctx, pool, services.CtxUser{User: *u}, &db.TimeEntryCreateParams{
+		_, err := teSvc.Create(ctx, pool, services.CtxUser{User: *u, Teams: *u.MemberTeamsJoin}, &db.TimeEntryCreateParams{
 			ActivityID: activity2.ActivityID,
 			UserID:     u.UserID,
 			TeamID:     &teamDemo.TeamID,

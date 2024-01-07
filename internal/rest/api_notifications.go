@@ -7,7 +7,7 @@ import (
 )
 
 func (h *StrictHandlers) GetPaginatedNotifications(c *gin.Context, request GetPaginatedNotificationsRequestObject) (GetPaginatedNotificationsResponseObject, error) {
-	caller, _ := getUserFromCtx(c)
+	caller, _ := getUserCallerFromCtx(c)
 
 	nn, err := h.svc.Notification.PaginatedNotifications(c.Request.Context(), h.pool, caller.UserID, request.Params)
 	if err != nil {

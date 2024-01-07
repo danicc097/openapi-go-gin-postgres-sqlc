@@ -31,13 +31,13 @@ func (u *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, op
 func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (*db.WorkItem, error) {
 	workItem, err := db.CreateWorkItem(ctx, d, &params.Base)
 	if err != nil {
-		return nil, internal.WrapErrorWithLocf(parseDBErrorDetail(err), "", []string{"base"}, "could not create workItem")
+		return nil, internal.WrapErrorWithLocf(ParseDBErrorDetail(err), "", []string{"base"}, "could not create workItem")
 	}
 
 	params.DemoProject.WorkItemID = workItem.WorkItemID
 	demoWorkItem, err := db.CreateDemoWorkItem(ctx, d, &params.DemoProject)
 	if err != nil {
-		return nil, internal.WrapErrorWithLocf(parseDBErrorDetail(err), "", []string{"demoWorkItem"}, "could not create demoWorkItem")
+		return nil, internal.WrapErrorWithLocf(ParseDBErrorDetail(err), "", []string{"demoWorkItem"}, "could not create demoWorkItem")
 	}
 
 	workItem.DemoWorkItemJoin = demoWorkItem
@@ -48,7 +48,7 @@ func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoW
 func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
 	workItem, err := u.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItem by id: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not get workItem by id: %w", ParseDBErrorDetail(err))
 	}
 	demoWorkItem := workItem.DemoWorkItemJoin
 
@@ -62,11 +62,11 @@ func (u *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, 
 
 	workItem, err = workItem.Update(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not update workItem: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not update workItem: %w", ParseDBErrorDetail(err))
 	}
 	demoWorkItem, err = demoWorkItem.Update(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not update demoWorkItem: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not update demoWorkItem: %w", ParseDBErrorDetail(err))
 	}
 
 	workItem.DemoWorkItemJoin = demoWorkItem

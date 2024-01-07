@@ -21,14 +21,17 @@ declare
   proj_id int;
   t_id int;
   teams_in_project int[];
+  user_scopes jsonb[];
 begin
   for u_id
   , proj_id
-  , teams_in_project in
+  , teams_in_project
+  , user_scopes in
   select
     user_id
     , assigned_teams.project_id
     , ARRAY_AGG(assigned_teams.tip)
+    , ARRAY_AGG(users.scopes)
   from
     users
   left join (
@@ -47,22 +50,26 @@ begin
   left join projects on assigned_teams.uid = users.user_id
 group by
   users.user_id
-  , assigned_teams.project_id loop
+  , assigned_teams.project_id
+  , users.scopes loop
     execute FORMAT('
             INSERT INTO user_project (member, project_id)
             VALUES(%L,%L)
             ON CONFLICT (member, project_id)
             DO NOTHING;
         ' , u_id , proj_id);
-    -- TODO: and for each project assigned assign to all teams with project
-    FOREACH t_id in array teams_in_project loop
-      execute FORMAT('
+    -- assign to all teams in project
+    if '{"project-member"}' = any (user_scopes) then
+      FOREACH t_id in array teams_in_project loop
+        execute FORMAT('
             INSERT INTO user_team (member, team_id)
             VALUES(%L,%L)
             ON CONFLICT (member, team_id)
             DO NOTHING;
-        ' , uid , team_id);
-    end loop;
+        ' , u_id , t_id);
+      end loop;
+    end if;
+
   end loop;
 end;
 $BODY$

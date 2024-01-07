@@ -30,13 +30,13 @@ func (u *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID,
 func (u *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoTwoWorkItemCreateParams) (*db.WorkItem, error) {
 	workItem, err := db.CreateWorkItem(ctx, d, &params.Base)
 	if err != nil {
-		return nil, fmt.Errorf("could not create workItem: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not create workItem: %w", ParseDBErrorDetail(err))
 	}
 
 	params.DemoTwoProject.WorkItemID = workItem.WorkItemID
 	demoTwoWorkItem, err := db.CreateDemoTwoWorkItem(ctx, d, &params.DemoTwoProject)
 	if err != nil {
-		return nil, fmt.Errorf("could not create demoTwoWorkItem: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not create demoTwoWorkItem: %w", ParseDBErrorDetail(err))
 	}
 
 	workItem.DemoTwoWorkItemJoin = demoTwoWorkItem
@@ -47,7 +47,7 @@ func (u *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.De
 func (u *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (*db.WorkItem, error) {
 	workItem, err := u.ByID(ctx, d, id)
 	if err != nil {
-		return nil, fmt.Errorf("could not get workItem by id: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not get workItem by id: %w", ParseDBErrorDetail(err))
 	}
 	demoTwoWorkItem := workItem.DemoTwoWorkItemJoin
 
@@ -61,11 +61,11 @@ func (u *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id db.WorkItemI
 
 	workItem, err = workItem.Update(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not update workItem: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not update workItem: %w", ParseDBErrorDetail(err))
 	}
 	demoTwoWorkItem, err = demoTwoWorkItem.Update(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not update demoTwoWorkItem: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not update demoTwoWorkItem: %w", ParseDBErrorDetail(err))
 	}
 
 	workItem.DemoTwoWorkItemJoin = demoTwoWorkItem

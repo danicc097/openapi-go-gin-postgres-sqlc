@@ -115,7 +115,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 
 			if !tc.withoutUser {
 				engine.Use(func(c *gin.Context) {
-					rest.CtxWithUser(c, ufixture.User)
+					rest.CtxWithUserCaller(c, ufixture.User)
 				})
 			}
 
