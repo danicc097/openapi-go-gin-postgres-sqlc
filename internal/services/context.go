@@ -9,3 +9,13 @@ type CtxUser struct {
 	Projects []db.Project
 	APIKey   *db.UserAPIKey
 }
+
+// NewCtxUser returns a new CtxUser.
+// Required joins: Teams, Projects.
+func NewCtxUser(user *db.User) *CtxUser {
+	return &CtxUser{
+		User:     *user,
+		Teams:    *user.MemberTeamsJoin,
+		Projects: *user.MemberProjectsJoin,
+	}
+}

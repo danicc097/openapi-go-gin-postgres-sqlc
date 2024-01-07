@@ -67,7 +67,7 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 		}
 	}
 
-	user, err = ff.svc.User.ByID(ctx, ff.db, user.UserID, db.WithUserJoin(db.UserJoins{}))
+	user, err = ff.svc.User.ByID(ctx, ff.db, user.UserID)
 	if err != nil {
 		return nil, fmt.Errorf("svc.User.ByEmail: %w", err)
 	}

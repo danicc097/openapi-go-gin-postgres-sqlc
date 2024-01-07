@@ -49,10 +49,8 @@ func TestUser_UpdateUser(t *testing.T) {
 				params: &models.UpdateUserRequest{
 					FirstName: pointers.New("changed"),
 				},
-				id: testUsers.user.User.UserID,
-				caller: services.CtxUser{
-					User: *testUsers.user.User,
-				},
+				id:     testUsers.user.User.UserID,
+				caller: *services.NewCtxUser(testUsers.user.User),
 			},
 			want: want{
 				FirstName: pointers.New("changed"),
@@ -64,9 +62,7 @@ func TestUser_UpdateUser(t *testing.T) {
 			args: args{
 				params: &models.UpdateUserRequest{},
 				id:     testUsers.user.User.UserID,
-				caller: services.CtxUser{
-					User: *testUsers.advancedUser.User,
-				},
+				caller: *services.NewCtxUser(testUsers.advancedUser.User),
 			},
 			error: "cannot change another user's information",
 		},
@@ -77,10 +73,8 @@ func TestUser_UpdateUser(t *testing.T) {
 					FirstName: pointers.New("changed"),
 					LastName:  pointers.New("changed"),
 				},
-				id: testUsers.user.User.UserID,
-				caller: services.CtxUser{
-					User: *testUsers.admin.User,
-				},
+				id:     testUsers.user.User.UserID,
+				caller: *services.NewCtxUser(testUsers.admin.User),
 			},
 			want: want{
 				FirstName: pointers.New("changed"),
@@ -158,10 +152,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 					Scopes: pointers.New(authzsvc.DefaultScopes(models.RoleManager)),
 					Role:   pointers.New(models.RoleManager),
 				},
-				id: testUsers.user.User.UserID,
-				caller: services.CtxUser{
-					User: *testUsers.manager.User,
-				},
+				id:     testUsers.user.User.UserID,
+				caller: *services.NewCtxUser(testUsers.manager.User),
 			},
 			want: want{
 				Scopes: authzsvc.DefaultScopes(models.RoleManager),
@@ -174,10 +166,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Role: pointers.New(models.RoleAdmin),
 				},
-				id: testUsers.user.User.UserID,
-				caller: services.CtxUser{
-					User: *testUsers.manager.User,
-				},
+				id:     testUsers.user.User.UserID,
+				caller: *services.NewCtxUser(testUsers.manager.User),
 			},
 			error: "cannot set a user rank higher than self",
 		},
@@ -187,10 +177,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &models.Scopes{models.ScopeUsersRead, models.ScopeProjectSettingsWrite, models.ScopeUsersWrite},
 				},
-				id: testUsers.user.User.UserID,
-				caller: services.CtxUser{
-					User: *testUsers.admin.User,
-				},
+				id:     testUsers.user.User.UserID,
+				caller: *services.NewCtxUser(testUsers.admin.User),
 			},
 			error: "cannot set a scope unassigned to self",
 		},
@@ -200,10 +188,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: pointers.New(authzsvc.DefaultScopes(models.RoleAdmin)),
 				},
-				id: testUsers.user.User.UserID,
-				caller: services.CtxUser{
-					User: *testUsers.admin.User,
-				},
+				id:     testUsers.user.User.UserID,
+				caller: *services.NewCtxUser(testUsers.admin.User),
 			},
 			want: want{
 				Scopes: testUsers.admin.User.Scopes,
@@ -216,10 +202,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &models.Scopes{},
 				},
-				id: testUsers.manager.User.UserID,
-				caller: services.CtxUser{
-					User: *testUsers.manager.User,
-				},
+				id:     testUsers.manager.User.UserID,
+				caller: *services.NewCtxUser(testUsers.manager.User),
 			},
 			error: "cannot update your own authorization information",
 		},
@@ -229,10 +213,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Role: pointers.New(models.RoleGuest),
 				},
-				id: testUsers.advancedUser.User.UserID,
-				caller: services.CtxUser{
-					User: *testUsers.manager.User,
-				},
+				id:     testUsers.advancedUser.User.UserID,
+				caller: *services.NewCtxUser(testUsers.manager.User),
 			},
 			error: "cannot demote a user role",
 		},
@@ -242,10 +224,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &models.Scopes{},
 				},
-				id: testUsers.user.User.UserID,
-				caller: services.CtxUser{
-					User: *testUsers.manager.User,
-				},
+				id:     testUsers.user.User.UserID,
+				caller: *services.NewCtxUser(testUsers.manager.User),
 			},
 			error: "cannot unassign a user's scope",
 		},
@@ -255,10 +235,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Scopes: &models.Scopes{},
 				},
-				id: testUsers.user.User.UserID,
-				caller: services.CtxUser{
-					User: *testUsers.admin.User,
-				},
+				id:     testUsers.user.User.UserID,
+				caller: *services.NewCtxUser(testUsers.admin.User),
 			},
 			want: want{
 				Scopes: models.Scopes{},
@@ -271,10 +249,8 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 				params: &models.UpdateUserAuthRequest{
 					Role: pointers.New(models.RoleGuest),
 				},
-				id: testUsers.advancedUser.User.UserID,
-				caller: services.CtxUser{
-					User: *testUsers.admin.User,
-				},
+				id:     testUsers.advancedUser.User.UserID,
+				caller: *services.NewCtxUser(testUsers.admin.User),
 			},
 			want: want{
 				Rank:   authzsvc.RoleByName(models.RoleGuest).Rank,
