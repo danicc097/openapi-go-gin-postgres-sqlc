@@ -293,7 +293,7 @@ func main() {
 	 **/
 	logger.Info("Creating time entries...")
 
-	te1, err := teSvc.Create(ctx, pool, users[0], &db.TimeEntryCreateParams{
+	te1, err := teSvc.Create(ctx, pool, services.CtxUser{User: *users[0]}, &db.TimeEntryCreateParams{
 		WorkItemID:      &demoWorkItems[0].WorkItemID,
 		ActivityID:      activity1.ActivityID,
 		UserID:          users[0].UserID,
@@ -303,7 +303,7 @@ func main() {
 	})
 	handleError(err, te1)
 
-	te2, err := teSvc.Create(ctx, pool, users[0], &db.TimeEntryCreateParams{
+	te2, err := teSvc.Create(ctx, pool, services.CtxUser{User: *users[0]}, &db.TimeEntryCreateParams{
 		ActivityID:      activity2.ActivityID,
 		UserID:          users[0].UserID,
 		TeamID:          &teamDemo.TeamID,
@@ -314,7 +314,7 @@ func main() {
 	handleError(err, te2)
 
 	for _, u := range users {
-		_, err := teSvc.Create(ctx, pool, u, &db.TimeEntryCreateParams{
+		_, err := teSvc.Create(ctx, pool, services.CtxUser{User: *u}, &db.TimeEntryCreateParams{
 			ActivityID: activity2.ActivityID,
 			UserID:     u.UserID,
 			TeamID:     &teamDemo.TeamID,

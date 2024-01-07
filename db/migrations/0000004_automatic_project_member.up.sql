@@ -19,32 +19,51 @@ do $BODY$
 declare
   u_id uuid;
   proj_id int;
+  t_id int;
+  teams_in_project int[];
 begin
   for u_id
-  , proj_id in
+  , proj_id
+  , teams_in_project in
   select
     user_id
     , assigned_teams.project_id
+    , ARRAY_AGG(assigned_teams.tip)
   from
     users
   left join (
     select
-      ut.member as u_id
+      ut.member as uid
       , teams.project_id
+      , ARRAY_AGG(ut.team_id) as tip
     from
       teams
       join user_team ut using (team_id)
       join users on ut.member = users.user_id
     where
-      ut.member = users.user_id) as assigned_teams on assigned_teams.u_id = users.user_id
-  left join projects on assigned_teams.u_id = users.user_id loop
-  execute FORMAT('
+      ut.member = users.user_id
+    group by
+      users.user_id , ut.member , teams.project_id) as assigned_teams on assigned_teams.uid = users.user_id
+  left join projects on assigned_teams.uid = users.user_id
+group by
+  users.user_id
+  , assigned_teams.project_id loop
+    execute FORMAT('
             INSERT INTO user_project (member, project_id)
             VALUES(%L,%L)
             ON CONFLICT (member, project_id)
             DO NOTHING;
         ' , u_id , proj_id);
-end loop;
+    -- TODO: and for each project assigned assign to all teams with project
+    FOREACH t_id in array teams_in_project loop
+      execute FORMAT('
+            INSERT INTO user_team (member, team_id)
+            VALUES(%L,%L)
+            ON CONFLICT (member, team_id)
+            DO NOTHING;
+        ' , uid , team_id);
+    end loop;
+  end loop;
 end;
 $BODY$
 language plpgsql;
@@ -89,3 +108,26 @@ language plpgsql;
 create trigger sync_user_teams
   after insert on teams for each row
   execute function sync_user_teams ();
+
+create or replace function sync_user_projects ()
+  returns trigger
+  as $BODY$
+begin
+  insert into user_project (project_id , member)
+  select
+    teams.project_id
+    , new.member
+  from
+    teams
+    join user_team ut on ut.team_id = new.team_id
+  where
+    ut.member = new.member;
+
+  return NEW;
+end;
+$BODY$
+language plpgsql;
+
+create trigger sync_user_projects
+  after insert on user_team for each row
+  execute function sync_user_projects ();
