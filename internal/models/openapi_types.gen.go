@@ -181,6 +181,7 @@ const (
 	ScopeActivityCreate       Scope = "activity:create"
 	ScopeActivityDelete       Scope = "activity:delete"
 	ScopeActivityEdit         Scope = "activity:edit"
+	ScopeProjectMember        Scope = "project-member"
 	ScopeProjectSettingsWrite Scope = "project-settings:write"
 	ScopeScopesWrite          Scope = "scopes:write"
 	ScopeTeamSettingsWrite    Scope = "team-settings:write"
@@ -199,6 +200,7 @@ func AllScopeValues() []Scope {
 		ScopeActivityCreate,
 		ScopeActivityDelete,
 		ScopeActivityEdit,
+		ScopeProjectMember,
 		ScopeProjectSettingsWrite,
 		ScopeScopesWrite,
 		ScopeTeamSettingsWrite,

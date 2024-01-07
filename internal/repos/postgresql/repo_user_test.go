@@ -157,7 +157,7 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	_, err = db.CreateUserTeam(ctx, testPool, &db.UserTeamCreateParams{Member: user.UserID, TeamID: team.TeamID})
 	require.NoError(t, err)
 
-	team, err = teamRepo.ByID(ctx, testPool, team.TeamID, db.WithTeamJoin(db.TeamJoins{Members: true, Project: true}))
+	team, err = teamRepo.ByID(ctx, testPool, team.TeamID, db.WithTeamJoin(db.TeamJoins{MembersTeam: true, Project: true}))
 	require.NoError(t, err)
 
 	uniqueCallback := func(t *testing.T, res *db.User) {

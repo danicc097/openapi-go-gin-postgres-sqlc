@@ -20,6 +20,7 @@ export type Project = 'demo' | 'demo_two'
  * is generated from scopes.json keys.
  */
 export type Scope =
+  | 'project-member'
   | 'users:read'
   | 'users:write'
   | 'users:delete'

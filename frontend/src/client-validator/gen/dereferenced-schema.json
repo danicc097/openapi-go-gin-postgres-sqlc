@@ -809,6 +809,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "project-member",
               "users:read",
               "users:write",
               "users:delete",
@@ -1155,6 +1156,7 @@
                     "items": {
                       "type": "string",
                       "enum": [
+                        "project-member",
                         "users:read",
                         "users:write",
                         "users:delete",
@@ -1553,6 +1555,7 @@
                     "items": {
                       "type": "string",
                       "enum": [
+                        "project-member",
                         "users:read",
                         "users:write",
                         "users:delete",
@@ -2112,6 +2115,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "project-member",
               "users:read",
               "users:write",
               "users:delete",
@@ -2428,6 +2432,7 @@
     "Scope": {
       "type": "string",
       "enum": [
+        "project-member",
         "users:read",
         "users:write",
         "users:delete",
@@ -2450,6 +2455,7 @@
       "items": {
         "type": "string",
         "enum": [
+          "project-member",
           "users:read",
           "users:write",
           "users:delete",
@@ -2528,6 +2534,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "project-member",
               "users:read",
               "users:write",
               "users:delete",
@@ -3729,6 +3736,7 @@
               "items": {
                 "type": "string",
                 "enum": [
+                  "project-member",
                   "users:read",
                   "users:write",
                   "users:delete",
@@ -4608,6 +4616,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "project-member",
               "users:read",
               "users:write",
               "users:delete",
@@ -4954,6 +4963,7 @@
                     "items": {
                       "type": "string",
                       "enum": [
+                        "project-member",
                         "users:read",
                         "users:write",
                         "users:delete",
@@ -5352,6 +5362,7 @@
                     "items": {
                       "type": "string",
                       "enum": [
+                        "project-member",
                         "users:read",
                         "users:write",
                         "users:delete",
@@ -5911,6 +5922,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "project-member",
               "users:read",
               "users:write",
               "users:delete",
@@ -6227,6 +6239,7 @@
     "Scope": {
       "type": "string",
       "enum": [
+        "project-member",
         "users:read",
         "users:write",
         "users:delete",
@@ -6249,6 +6262,7 @@
       "items": {
         "type": "string",
         "enum": [
+          "project-member",
           "users:read",
           "users:write",
           "users:delete",
@@ -6327,6 +6341,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "project-member",
               "users:read",
               "users:write",
               "users:delete",
@@ -7528,6 +7543,7 @@
               "items": {
                 "type": "string",
                 "enum": [
+                  "project-member",
                   "users:read",
                   "users:write",
                   "users:delete",

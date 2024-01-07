@@ -903,6 +903,7 @@
           "type": "array",
           "items": {
             "enum": [
+              "project-member",
               "users:read",
               "users:write",
               "users:delete",

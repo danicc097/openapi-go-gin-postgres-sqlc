@@ -1651,7 +1651,7 @@ components:
         - GlobalAlerts
     Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string
-      enum: ["users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review"]
+      enum: ["project-member", "users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review"]
       x-generated: '-'
       description: is generated from scopes.json keys.
     Scopes: # workaround for openapi-go gen

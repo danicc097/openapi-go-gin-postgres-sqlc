@@ -1334,12 +1334,16 @@ x.release() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a
-# given db table by struct name.
-# Accepts flags:
-# --project - Generate as entity under a project.
-# Args: name
-x.dev-utils.create-crud() {
+# Runs the go type checker.
+x.backend.typecheck() {
+  golangci-lint run --no-config --disable-all --enable=typecheck --timeout=10m
+}
+
+x.dev-utils.create-crud() { # Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a
+  # given db table by struct name.
+  # Accepts flags:
+  # --project - Generate as entity under a project.
+  # Args: name
   xsetup.backup
   { { {
     x.gen.xo
@@ -1451,7 +1455,7 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
     generate_repo_constructor
     x.gen.gowrap $pascal_name
 
-    if gofumpt -w "$services_path" "$service_repos_path" && golangci-lint run --no-config --disable-all --enable=typecheck --timeout=10m; then
+    if gofumpt -w "$services_path" "$service_repos_path" && x.backend.typecheck; then
       x.gen
       x.dev-utils.create-crud-tests ${@}
 

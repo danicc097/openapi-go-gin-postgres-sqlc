@@ -1266,6 +1266,7 @@
     "Scope": {
       "type": "string",
       "enum": [
+        "project-member",
         "users:read",
         "users:write",
         "users:delete",

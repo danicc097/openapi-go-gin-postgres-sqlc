@@ -459,7 +459,7 @@ export interface components {
      * @description is generated from scopes.json keys.
      * @enum {string}
      */
-    Scope: "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "activity:create" | "activity:edit" | "activity:delete" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review";
+    Scope: "project-member" | "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "activity:create" | "activity:edit" | "activity:delete" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review";
     Scopes: components["schemas"]["Scope"][];
     /**
      * @description is generated from roles.json keys.
