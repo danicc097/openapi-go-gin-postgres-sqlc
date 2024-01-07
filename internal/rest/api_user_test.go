@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
@@ -101,7 +102,12 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 
 		got, err := json.Marshal(res.JSON200)
 		require.NoError(t, err)
-		want, err := json.Marshal(&rest.User{User: *ufixture.User, Role: rest.Role(role)})
+		want, err := json.Marshal(&rest.User{
+			User:     *ufixture.User,
+			Role:     rest.Role(role),
+			Teams:    &[]db.Team{},
+			Projects: &[]db.Project{},
+		})
 		require.NoError(t, err)
 
 		assert.JSONEqf(t, string(want), string(got), "") // ignore private fields

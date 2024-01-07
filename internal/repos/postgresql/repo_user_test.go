@@ -154,6 +154,8 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
 	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
 
+	// FIXME: bad triggers assigned user beforehand so duplicate key viol
+	// TODO: repo tests where triggers are tested. same way as notifications
 	_, err = db.CreateUserTeam(ctx, testPool, &db.UserTeamCreateParams{Member: user.UserID, TeamID: team.TeamID})
 	require.NoError(t, err)
 

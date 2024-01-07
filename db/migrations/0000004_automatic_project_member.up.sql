@@ -116,6 +116,8 @@ create trigger sync_user_teams
   after insert on teams for each row
   execute function sync_user_teams ();
 
+-- assign user to team's project automatically.
+-- we won't assign to projects individually, it's implicit.
 create or replace function sync_user_projects ()
   returns trigger
   as $BODY$
