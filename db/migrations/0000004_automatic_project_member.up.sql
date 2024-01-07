@@ -56,8 +56,7 @@ group by
     execute FORMAT('
             INSERT INTO user_project (member, project_id)
             VALUES(%L,%L)
-            ON CONFLICT (member, project_id)
-            DO NOTHING;
+            ON CONFLICT DO NOTHING;
         ' , u_id , proj_id);
     -- assign to all teams in project
     if '{"project-member"}' = any (user_scopes) then
@@ -66,8 +65,7 @@ group by
         execute FORMAT('
             INSERT INTO user_team (member, team_id)
             VALUES(%L,%L)
-            ON CONFLICT (member, team_id)
-            DO NOTHING;
+            ON CONFLICT DO NOTHING;
         ' , u_id , t_id);
       end loop;
     end if;
@@ -132,7 +130,9 @@ begin
     teams
     join user_team ut on ut.team_id = new.team_id
   where
-    ut.member = new.member;
+    ut.member = new.member
+  on conflict
+    do nothing;
 
   raise notice 'user_project for  new.member and teamid % % ' , new.member , new.team_id;
 
