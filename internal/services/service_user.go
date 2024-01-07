@@ -94,6 +94,16 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	return user, nil
 }
 
+func (u *User) ByID(ctx context.Context, d db.DBTX, id db.UserID, dbOpts ...db.UserSelectConfigOption) (*db.User, error) {
+	opts := append(u.getSharedDBOpts(), dbOpts...)
+	user, err := u.repos.User.ByID(ctx, d, id, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("repos.User.ByID: %w", err)
+	}
+
+	return user, nil
+}
+
 // Update updates a user.
 func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller CtxUser, params *models.UpdateUserRequest) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()

@@ -93,7 +93,7 @@ func main() {
 	_, err = authnSvc.CreateAPIKeyForUser(ctx, superAdmin)
 	handleError(err)
 
-	superAdmin, err = userSvc.ByEmail(ctx, pool, superAdmin.Email) // get joins
+	superAdmin, err = userSvc.ByID(ctx, pool, superAdmin.UserID) // get joins
 	handleError(err)
 
 	superAdminCaller := services.CtxUser{
@@ -136,7 +136,7 @@ func main() {
 		_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
 		handleError(err)
 
-		u, err = userSvc.ByEmail(ctx, pool, u.Email) // get joins
+		u, err = userSvc.ByID(ctx, pool, u.UserID) // get joins
 		handleError(err)
 
 		users = append(users, u)
