@@ -43,6 +43,8 @@ func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Ser
 	// Instead create needed svcs within the function that needs them.
 	// usersvc.workitemtagsvc = workitemtagsvc
 	// workitemtagsvc.usersvc = usersvc
+	// solution: create needed services in each service method, e.g. witSvc := NewWorkItemTag(u.logger, u.repos)
+	// in our user service methods.
 
 	return &Services{
 		User:            usersvc,

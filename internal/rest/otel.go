@@ -12,7 +12,7 @@ const OtelName = "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/res
 
 func userIDAttribute(c *gin.Context) attribute.KeyValue {
 	uid := ""
-	if u := getUserFromCtx(c); u != nil {
+	if u, err := getUserFromCtx(c); err != nil {
 		uid = u.UserID.String()
 	}
 

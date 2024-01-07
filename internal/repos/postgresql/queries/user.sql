@@ -20,14 +20,14 @@ and (user_id = sqlc.narg('user_id')::uuid
   or sqlc.narg('user_id')::uuid is null)
 limit 1;
 
--- name: IsUserInProject :one
-select
-  exists (
-    select
-      1
-    from
-      user_team ut
-      join teams t on ut.team_id = t.team_id
-    where
-      ut.member = @user_id
-      and t.project_id = @project_id);
+-- -- name: IsUserInProject :one
+-- select
+--   exists (
+--     select
+--       1
+--     from
+--       user_team ut
+--       join teams t on ut.team_id = t.team_id
+--     where
+--       ut.member = @user_id
+--       and t.project_id = @project_id);

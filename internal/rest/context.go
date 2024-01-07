@@ -2,8 +2,10 @@ package rest
 
 import (
 	"context"
+	"errors"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
 	"go.opentelemetry.io/otel/trace"
@@ -42,17 +44,22 @@ func GetValidateResponseFromCtx(c *gin.Context) bool {
 }
 
 // getUserFromCtx returns basic information from the current user.
-func getUserFromCtx(c *gin.Context) *db.User {
-	user, ok := c.Value(userCtxKey).(*db.User)
+func getUserFromCtx(c *gin.Context) (services.CtxUser, error) {
+	user, ok := c.Value(userCtxKey).(services.CtxUser)
 	if !ok {
-		return nil
+		return services.CtxUser{}, errors.New("user not found in ctx")
 	}
 
-	return user
+	return user, nil
 }
 
 func CtxWithUser(c *gin.Context, user *db.User) {
-	c.Set(userCtxKey, user)
+	c.Set(userCtxKey, services.CtxUser{
+		User:     *user,
+		Teams:    *user.MemberTeamsJoin,
+		Projects: *user.MemberProjectsJoin,
+		APIKey:   user.APIKeyJoin,
+	})
 }
 
 func GetUserInfoFromCtx(c *gin.Context) []byte {

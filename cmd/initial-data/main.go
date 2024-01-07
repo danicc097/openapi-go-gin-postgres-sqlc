@@ -207,7 +207,7 @@ func main() {
 	 **/
 	logger.Info("Creating workitem tags...")
 
-	wiTag1, err := wiTagSvc.Create(ctx, pool, superAdmin, &db.WorkItemTagCreateParams{
+	wiTag1, err := wiTagSvc.Create(ctx, pool, services.CtxUser{User: *superAdmin}, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Tag 1",
 		Description: "Tag 1 description",
@@ -215,7 +215,7 @@ func main() {
 	})
 	handleError(err, wiTag1)
 
-	wiTag2, err := wiTagSvc.Create(ctx, pool, superAdmin, &db.WorkItemTagCreateParams{
+	wiTag2, err := wiTagSvc.Create(ctx, pool, services.CtxUser{User: *superAdmin}, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Tag 2",
 		Description: "Tag 2 description",
@@ -223,7 +223,7 @@ func main() {
 	})
 	handleError(err, wiTag2)
 
-	wiTagDemo2_1, err := wiTagSvc.Create(ctx, pool, superAdmin, &db.WorkItemTagCreateParams{
+	wiTagDemo2_1, err := wiTagSvc.Create(ctx, pool, services.CtxUser{User: *superAdmin}, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
 		Name:        "Tag 1",
 		Description: "Tag 1 description",

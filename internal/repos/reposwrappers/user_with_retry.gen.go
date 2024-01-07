@@ -237,25 +237,6 @@ func (_d UserWithRetry) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey stri
 	return
 }
 
-// IsUserInProject implements repos.User
-func (_d UserWithRetry) IsUserInProject(ctx context.Context, db db.DBTX, arg db.IsUserInProjectParams) (b1 bool, err error) {
-	b1, err = _d.User.IsUserInProject(ctx, db, arg)
-	if err == nil || _d._retryCount < 1 {
-		return
-	}
-	_ticker := time.NewTicker(_d._retryInterval)
-	defer _ticker.Stop()
-	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
-		select {
-		case <-ctx.Done():
-			return
-		case <-_ticker.C:
-		}
-		b1, err = _d.User.IsUserInProject(ctx, db, arg)
-	}
-	return
-}
-
 // Update implements repos.User
 func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (up1 *db.User, err error) {
 	up1, err = _d.User.Update(ctx, d, id, params)

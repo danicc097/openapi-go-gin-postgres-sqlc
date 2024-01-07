@@ -87,10 +87,10 @@ type AuthRestriction struct {
 // minimum role or has all required scopes.
 func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user := getUserFromCtx(c)
 		errorMsg := ""
 		errs := []string{}
-		if user == nil {
+		user, err := getUserFromCtx(c)
+		if err != nil {
 			renderErrorResponse(c, "Could not get current user.", nil)
 			c.Abort()
 

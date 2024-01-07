@@ -10,7 +10,7 @@ import (
 func (h *StrictHandlers) CreateWorkItemTag(c *gin.Context, request CreateWorkItemTagRequestObject) (CreateWorkItemTagResponseObject, error) {
 	ctx := c.Request.Context()
 	tx := GetTxFromCtx(c)
-	u := getUserFromCtx(c)
+	u, _ := getUserFromCtx(c)
 
 	body := request.Body
 	body.WorkItemTagCreateParams.ProjectID = internal.ProjectIDByName[request.ProjectName]

@@ -88,12 +88,9 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 }
 
 // Update updates a user.
-func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller *db.User, params *models.UpdateUserRequest) (*db.User, error) {
+func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller CtxUser, params *models.UpdateUserRequest) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	if caller == nil {
-		return nil, errors.New("caller cannot be nil")
-	}
 	if params == nil {
 		return nil, errors.New("params cannot be nil")
 	}
@@ -128,12 +125,9 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller *db.U
 	return user, nil
 }
 
-func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id db.UserID, caller *db.User, params *models.UpdateUserAuthRequest) (*db.User, error) {
+func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id db.UserID, caller CtxUser, params *models.UpdateUserAuthRequest) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	if caller == nil {
-		return nil, errors.New("caller cannot be nil")
-	}
 	if params == nil {
 		return nil, errors.New("params cannot be nil")
 	}
@@ -315,27 +309,6 @@ func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID db.UserID, team
 	}
 
 	u.logger.Infof("user %q assigned to team %d", userID, teamID)
-
-	return nil
-}
-
-func (u *User) UserInProject(ctx context.Context, d db.DBTX, userID db.UserID, projectID db.ProjectID) error {
-	// can't be done in constructor, inf recursion if its for solving a cyclic dep.
-	// if we need dep inj for some reason create service interface and pass as param
-	witSvc := NewWorkItemTag(u.logger, u.repos)
-	// FIXME:
-	witSvc.logger.Debug("this should not panic")
-	userInProject, err := u.repos.User.IsUserInProject(ctx, d, db.IsUserInProjectParams{
-		UserID:    userID.UUID,
-		ProjectID: int32(projectID),
-	})
-	if err != nil {
-		return fmt.Errorf("repos.User.IsUserInProject: %w", err)
-	}
-
-	if !userInProject {
-		return internal.NewErrorf(models.ErrorCodeUnauthorized, "user is not a member of project %q", internal.ProjectNameByID[projectID])
-	}
 
 	return nil
 }

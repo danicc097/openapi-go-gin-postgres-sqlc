@@ -192,20 +192,6 @@ func (_d UserWithPrometheus) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey
 	return _d.base.DeleteAPIKey(ctx, d, apiKey)
 }
 
-// IsUserInProject implements repos.User
-func (_d UserWithPrometheus) IsUserInProject(ctx context.Context, db db.DBTX, arg db.IsUserInProjectParams) (b1 bool, err error) {
-	_since := time.Now()
-	defer func() {
-		result := "ok"
-		if err != nil {
-			result = "error"
-		}
-
-		userDurationSummaryVec.WithLabelValues(_d.instanceName, "IsUserInProject", result).Observe(time.Since(_since).Seconds())
-	}()
-	return _d.base.IsUserInProject(ctx, db, arg)
-}
-
 // Update implements repos.User
 func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (up1 *db.User, err error) {
 	_since := time.Now()

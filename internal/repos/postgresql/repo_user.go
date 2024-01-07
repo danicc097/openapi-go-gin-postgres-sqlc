@@ -131,15 +131,6 @@ func (u *User) ByID(ctx context.Context, d db.DBTX, id db.UserID, opts ...db.Use
 	return user, nil
 }
 
-func (u *User) IsUserInProject(ctx context.Context, db db.DBTX, arg db.IsUserInProjectParams) (bool, error) {
-	r, err := u.q.IsUserInProject(ctx, db, arg)
-	if err != nil {
-		return false, fmt.Errorf("q.IsUserInProject: %w", parseDBErrorDetail(err))
-	}
-
-	return r, nil
-}
-
 func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {
 	uak, err := db.UserAPIKeyByAPIKey(ctx, d, apiKey, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	if err != nil {

@@ -39,7 +39,7 @@ func TestWorkItemTag_Update(t *testing.T) {
 	require.NoError(t, err)
 
 	witCreateParams := postgresqltestutil.RandomWorkItemTagCreateParams(t, internal.ProjectIDByName[requiredProject])
-	wit, err := svc.WorkItemTag.Create(context.Background(), testPool, tagCreator.User, witCreateParams)
+	wit, err := svc.WorkItemTag.Create(context.Background(), testPool, services.CtxUser{User: *tagCreator.User}, witCreateParams)
 	require.NoError(t, err)
 
 	type args struct {
@@ -104,7 +104,7 @@ func TestWorkItemTag_Update(t *testing.T) {
 			}
 
 			w := services.NewWorkItemTag(logger, repos)
-			got, err := w.Update(ctx, tx, user.User, tc.args.id, tc.args.params)
+			got, err := w.Update(ctx, tx, services.CtxUser{User: *user.User}, tc.args.id, tc.args.params)
 			if (err != nil) && tc.errorContains == "" {
 				t.Fatalf("unexpected error = %v", err)
 			}
