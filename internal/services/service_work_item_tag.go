@@ -8,7 +8,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
@@ -63,12 +62,11 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller CtxUser, p
 	// 		userInProject = true
 	// 	}
 	// }
-	format.PrintJSON(caller)
 	userProjects := make([]db.ProjectID, len(caller.Projects))
 	for i, p := range caller.Projects {
 		userProjects[i] = p.ProjectID
 	}
-	if slices.Contains(userProjects, params.ProjectID) {
+	if !slices.Contains(userProjects, params.ProjectID) {
 		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "user is not a member of project %q", internal.ProjectNameByID[params.ProjectID])
 	}
 
@@ -93,7 +91,7 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller CtxUser, i
 	for i, p := range caller.Projects {
 		userProjects[i] = p.ProjectID
 	}
-	if slices.Contains(userProjects, witObj.ProjectID) {
+	if !slices.Contains(userProjects, witObj.ProjectID) {
 		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "user is not a member of project %q", internal.ProjectNameByID[witObj.ProjectID])
 	}
 

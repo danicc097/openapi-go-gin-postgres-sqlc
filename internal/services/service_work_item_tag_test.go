@@ -38,6 +38,10 @@ func TestWorkItemTag_Update(t *testing.T) {
 	err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, team.TeamID)
 	require.NoError(t, err)
 
+	tagCreatorUser, err := svc.User.ByID(context.Background(), testPool, tagCreator.User.UserID)
+	require.NoError(t, err)
+	tagCreator.User = tagCreatorUser // TODO: AssignTeam should return with new team joins. so CtxUser is up to date
+
 	witCreateParams := postgresqltestutil.RandomWorkItemTagCreateParams(t, internal.ProjectIDByName[requiredProject])
 	wit, err := svc.WorkItemTag.Create(context.Background(), testPool, *services.NewCtxUser(tagCreator.User), witCreateParams)
 	require.NoError(t, err)
@@ -101,6 +105,9 @@ func TestWorkItemTag_Update(t *testing.T) {
 			if tc.args.withUserInProject {
 				err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)
 				require.NoError(t, err)
+				u, err := svc.User.ByID(ctx, tx, user.User.UserID) // TODO: AssignTeam should return with new team joins.
+				require.NoError(t, err)
+				user.User = u
 			}
 
 			w := services.NewWorkItemTag(logger, repos)
