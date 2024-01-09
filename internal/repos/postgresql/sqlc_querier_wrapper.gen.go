@@ -60,13 +60,3 @@ func (w QuerierWrapper) IsTeamInProject(ctx context.Context, db db.DBTX, arg db.
 	}
 	return
 }
-
-func (w QuerierWrapper) IsUserInProject(ctx context.Context, db db.DBTX, arg db.IsUserInProjectParams) (b1 bool, err error) {
-	/* defer newOTelSpan().Build(ctx).End() */
-
-	b1, err = w.Querier.IsUserInProject(ctx, db, arg)
-	if err != nil {
-		err = fmt.Errorf("Querier: %w", ParseDBErrorDetail(err))
-	}
-	return
-}

@@ -309,6 +309,8 @@ x.gen.pregen() {
 
     echo "Running generation"
 
+    generate_structs_map # structs might have been removed in the meantime
+
     go build -o $BUILD_DIR/codegen cmd/codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # xo gen may create/update models.
 
     codegen validate-spec -env=".env.$X_ENV"
