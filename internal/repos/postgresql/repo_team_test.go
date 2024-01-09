@@ -10,6 +10,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -64,18 +65,21 @@ func TestTriggers_sync_user_projects(t *testing.T) {
 	t.Run("syncs user", func(t *testing.T) {
 		t.Parallel()
 
+		tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
+		defer tx.Rollback(ctx)
+
 		var err error
 
-		user := postgresqltestutil.NewRandomUser(t, testPool)
-		team := postgresqltestutil.NewRandomTeam(t, testPool, projectID)
+		user := postgresqltestutil.NewRandomUser(t, tx)
+		team := postgresqltestutil.NewRandomTeam(t, tx, projectID)
 
-		_, err = db.CreateUserTeam(ctx, testPool, &db.UserTeamCreateParams{
+		_, err = db.CreateUserTeam(ctx, tx, &db.UserTeamCreateParams{
 			Member: user.UserID,
 			TeamID: team.TeamID,
 		})
 		require.NoError(t, err)
 
-		_, err = db.UserProjectByMemberProjectID(ctx, testPool, user.UserID, projectID) // created by trigger
+		_, err = db.UserProjectByMemberProjectID(ctx, tx, user.UserID, projectID) // created by trigger
 		require.NoError(t, err)
 	})
 }
@@ -109,27 +113,30 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			user := postgresqltestutil.NewRandomUser(t, testPool)
+			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
+			defer tx.Rollback(ctx)
+
+			user := postgresqltestutil.NewRandomUser(t, tx)
 
 			if tc.withScope {
 				user.Scopes = append(user.Scopes, models.ScopeProjectMember)
-				user, err = user.Update(ctx, testPool)
+				user, err = user.Update(ctx, tx)
 				require.NoError(t, err)
 			}
 
-			previousTeam := postgresqltestutil.NewRandomTeam(t, testPool, projectID)
-			_, err = db.CreateUserTeam(ctx, testPool, &db.UserTeamCreateParams{
+			previousTeam := postgresqltestutil.NewRandomTeam(t, tx, projectID)
+			_, err = db.CreateUserTeam(ctx, tx, &db.UserTeamCreateParams{
 				Member: user.UserID,
 				TeamID: previousTeam.TeamID,
 			})
 			require.NoError(t, err)
 
-			team := postgresqltestutil.NewRandomTeam(t, testPool, projectID) // may trigger user_team update for existing user that is already in project
+			team := postgresqltestutil.NewRandomTeam(t, tx, projectID) // may trigger user_team update for existing user that is already in project
 
-			_, err := db.UserTeamByMemberTeamID(ctx, testPool, user.UserID, previousTeam.TeamID)
+			_, err := db.UserTeamByMemberTeamID(ctx, tx, user.UserID, previousTeam.TeamID)
 			require.NoError(t, err) // was created manually first time to trigger user_project creation
 
-			_, err = db.UserTeamByMemberTeamID(ctx, testPool, user.UserID, team.TeamID)
+			_, err = db.UserTeamByMemberTeamID(ctx, tx, user.UserID, team.TeamID)
 			if tc.withScope {
 				require.NoError(t, err)
 			} else {
