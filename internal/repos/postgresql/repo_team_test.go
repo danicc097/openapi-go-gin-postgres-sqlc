@@ -87,8 +87,6 @@ func TestTriggers_sync_user_projects(t *testing.T) {
 func TestTriggers_sync_user_teams(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
-
 	projectID := internal.ProjectIDByName[models.ProjectDemo]
 
 	var err error
@@ -112,6 +110,8 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
+
+			ctx := context.Background()
 
 			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
 			defer tx.Rollback(ctx)
