@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewRandomUser(t *testing.T, d db.DBTX) (*db.User, error) {
+func NewRandomUser(t *testing.T, d db.DBTX) *db.User {
 	t.Helper()
 
 	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
@@ -24,7 +24,7 @@ func NewRandomUser(t *testing.T, d db.DBTX) (*db.User, error) {
 	user, err := userRepo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
-	return user, nil
+	return user
 }
 
 func RandomUserCreateParams(t *testing.T) *db.UserCreateParams {

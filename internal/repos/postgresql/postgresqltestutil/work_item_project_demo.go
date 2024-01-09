@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewRandomDemoWorkItem(t *testing.T, d db.DBTX, kanbanStepID db.KanbanStepID, workItemTypeID db.WorkItemTypeID, teamID db.TeamID) (*db.WorkItem, error) {
+func NewRandomDemoWorkItem(t *testing.T, d db.DBTX, kanbanStepID db.KanbanStepID, workItemTypeID db.WorkItemTypeID, teamID db.TeamID) *db.WorkItem {
 	t.Helper()
 
 	dpwiRepo := postgresql.NewDemoWorkItem()
@@ -29,5 +29,5 @@ func NewRandomDemoWorkItem(t *testing.T, d db.DBTX, kanbanStepID db.KanbanStepID
 	})
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
-	return dpwi, nil
+	return dpwi
 }

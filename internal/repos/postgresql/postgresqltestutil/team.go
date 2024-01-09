@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewRandomTeam(t *testing.T, d db.DBTX, projectID db.ProjectID) (*db.Team, error) {
+func NewRandomTeam(t *testing.T, d db.DBTX, projectID db.ProjectID) *db.Team {
 	t.Helper()
 
 	teamRepo := postgresql.NewTeam()
@@ -20,7 +20,7 @@ func NewRandomTeam(t *testing.T, d db.DBTX, projectID db.ProjectID) (*db.Team, e
 	team, err := teamRepo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
-	return team, nil
+	return team
 }
 
 func RandomTeamCreateParams(t *testing.T, projectID db.ProjectID) *db.TeamCreateParams {

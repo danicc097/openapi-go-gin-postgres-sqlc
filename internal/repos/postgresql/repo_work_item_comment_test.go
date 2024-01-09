@@ -21,13 +21,13 @@ func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 	ctx := context.Background()
 
 	projectID := internal.ProjectIDByName[models.ProjectDemo]
-	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, projectID)
+	team := postgresqltestutil.NewRandomTeam(t, testPool, projectID)
 
 	kanbanStepID := internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived]
 	workItemTypeID := internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1]
-	demoWorkItem, _ := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
+	demoWorkItem := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
 
-	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
+	user := postgresqltestutil.NewRandomUser(t, testPool)
 
 	wiccp := postgresqltestutil.RandomWorkItemCommentCreateParams(t, demoWorkItem.WorkItemID, user.UserID)
 
