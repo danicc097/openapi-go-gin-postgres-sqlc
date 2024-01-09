@@ -62,7 +62,7 @@ func (h *StrictHandlers) GetCurrentUser(c *gin.Context, request GetCurrentUserRe
 	}
 
 	res := User{
-		User:     caller.User,
+		User:     *caller.User,
 		Role:     Role(role.Name),
 		Teams:    &caller.Teams,
 		Projects: &caller.Projects,

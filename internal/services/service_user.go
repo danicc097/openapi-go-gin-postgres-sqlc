@@ -317,7 +317,7 @@ func (u *User) LatestGlobalNotifications(ctx context.Context, d db.DBTX, userID 
 	return []db.GetUserNotificationsRow{}, nil
 }
 
-func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID db.UserID, teamID db.TeamID) error {
+func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID db.UserID, teamID db.TeamID) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	_, err := db.CreateUserTeam(ctx, d, &db.UserTeamCreateParams{
@@ -327,14 +327,15 @@ func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID db.UserID, team
 	var ierr *internal.Error
 	if err != nil {
 		err := postgresql.ParseDBErrorDetail(err)
-		if errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists {
-			return nil
+		if !(errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists) {
+			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not assign user to team")
 		}
-
-		return internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not assign user to team")
 	}
 
-	u.logger.Infof("user %q assigned to team %d", userID, teamID)
+	user, err := u.repos.User.ByID(ctx, d, userID, u.getSharedDBOpts()...)
+	if err != nil {
+		return nil, fmt.Errorf("repos.User.ByID: %w", err)
+	}
 
-	return nil
+	return user, nil
 }

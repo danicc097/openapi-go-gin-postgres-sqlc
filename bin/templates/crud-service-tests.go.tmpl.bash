@@ -37,7 +37,7 @@ func Test${pascal_name}_Update(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, team.TeamID)
+	tagCreator.User, err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, team.TeamID)
 	require.NoError(t, err)
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
@@ -98,7 +98,7 @@ done)
 			require.NoError(t, err)
 
 			if tc.args.withUserInProject {
-				err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)
+				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)
 				require.NoError(t, err)
 			}
 

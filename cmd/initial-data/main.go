@@ -97,7 +97,7 @@ func main() {
 	handleError(err)
 
 	superAdminCaller := services.CtxUser{
-		User:     *superAdmin,
+		User:     superAdmin,
 		Teams:    *superAdmin.MemberTeamsJoin,
 		Projects: *superAdmin.MemberProjectsJoin,
 	}
@@ -173,16 +173,15 @@ func main() {
 	})
 	handleError(err, teamDemo2)
 
-	for _, u := range users {
-		err = userSvc.AssignTeam(ctx, pool, u.UserID, teamDemo.TeamID)
+	for i, u := range users {
+		users[i], err = userSvc.AssignTeam(ctx, pool, u.UserID, teamDemo.TeamID)
 		handleError(err)
-		// save up some extra calls
-		u.MemberTeamsJoin = &[]db.Team{*teamDemo}
 	}
+	format.PrintJSONByTag(users, "db")
 
-	err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo.TeamID)
+	superAdminCaller.User, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo.TeamID)
 	handleError(err)
-	err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo2.TeamID)
+	superAdminCaller.User, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo2.TeamID)
 	handleError(err)
 
 	/**
@@ -305,7 +304,7 @@ func main() {
 	logger.Info("Creating time entries...")
 
 	ucaller := services.CtxUser{
-		User:     *users[0],
+		User:     users[0],
 		Teams:    *users[0].MemberTeamsJoin,
 		Projects: *users[0].MemberProjectsJoin,
 	}
@@ -330,7 +329,7 @@ func main() {
 	handleError(err, te2)
 
 	for _, u := range users {
-		_, err := teSvc.Create(ctx, pool, services.CtxUser{User: *u, Teams: *u.MemberTeamsJoin}, &db.TimeEntryCreateParams{
+		_, err := teSvc.Create(ctx, pool, services.CtxUser{User: u, Teams: *u.MemberTeamsJoin}, &db.TimeEntryCreateParams{
 			ActivityID: activity2.ActivityID,
 			UserID:     u.UserID,
 			TeamID:     &teamDemo.TeamID,

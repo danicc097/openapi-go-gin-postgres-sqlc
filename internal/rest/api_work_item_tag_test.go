@@ -55,7 +55,7 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, team.TeamID)
+			_, err = svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, team.TeamID)
 			require.NoError(t, err)
 
 			witCreateParams := postgresqltestutil.RandomWorkItemTagCreateParams(t, internal.ProjectIDByName[requiredProject])
