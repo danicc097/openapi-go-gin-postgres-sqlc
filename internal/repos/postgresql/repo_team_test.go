@@ -58,28 +58,26 @@ func TestTeam_ByIndexedQueries(t *testing.T) {
 func TestTriggers_sync_user_projects(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
-
 	projectID := internal.ProjectIDByName[models.ProjectDemo]
 
 	t.Run("syncs user", func(t *testing.T) {
 		t.Parallel()
 
-		tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
-		defer tx.Rollback(ctx)
+		tx, _ := testPool.BeginTx(context.Background(), pgx.TxOptions{})
+		defer tx.Rollback(context.Background())
 
 		var err error
 
 		user := postgresqltestutil.NewRandomUser(t, tx)
 		team := postgresqltestutil.NewRandomTeam(t, tx, projectID)
 
-		_, err = db.CreateUserTeam(ctx, tx, &db.UserTeamCreateParams{
+		_, err = db.CreateUserTeam(context.Background(), tx, &db.UserTeamCreateParams{
 			Member: user.UserID,
 			TeamID: team.TeamID,
 		})
 		require.NoError(t, err)
 
-		_, err = db.UserProjectByMemberProjectID(ctx, tx, user.UserID, projectID) // created by trigger
+		_, err = db.UserProjectByMemberProjectID(context.Background(), tx, user.UserID, projectID) // created by trigger
 		require.NoError(t, err)
 	})
 }
@@ -88,8 +86,6 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 	t.Parallel()
 
 	projectID := internal.ProjectIDByName[models.ProjectDemo]
-
-	var err error
 
 	type params struct {
 		name      string
@@ -111,21 +107,21 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ctx := context.Background()
+			var err error
 
-			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
-			defer tx.Rollback(ctx)
+			tx, _ := testPool.BeginTx(context.Background(), pgx.TxOptions{})
+			defer tx.Rollback(context.Background())
 
 			user := postgresqltestutil.NewRandomUser(t, tx)
 
 			if tc.withScope {
 				user.Scopes = append(user.Scopes, models.ScopeProjectMember)
-				user, err = user.Update(ctx, tx)
+				user, err = user.Update(context.Background(), tx)
 				require.NoError(t, err)
 			}
 
 			previousTeam := postgresqltestutil.NewRandomTeam(t, tx, projectID)
-			_, err = db.CreateUserTeam(ctx, tx, &db.UserTeamCreateParams{
+			_, err = db.CreateUserTeam(context.Background(), tx, &db.UserTeamCreateParams{
 				Member: user.UserID,
 				TeamID: previousTeam.TeamID,
 			})
@@ -133,10 +129,10 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 
 			team := postgresqltestutil.NewRandomTeam(t, tx, projectID) // may trigger user_team update for existing user that is already in project
 
-			_, err := db.UserTeamByMemberTeamID(ctx, tx, user.UserID, previousTeam.TeamID)
+			_, err = db.UserTeamByMemberTeamID(context.Background(), tx, user.UserID, previousTeam.TeamID)
 			require.NoError(t, err) // was created manually first time to trigger user_project creation
 
-			_, err = db.UserTeamByMemberTeamID(ctx, tx, user.UserID, team.TeamID)
+			_, err = db.UserTeamByMemberTeamID(context.Background(), tx, user.UserID, team.TeamID)
 			if tc.withScope {
 				require.NoError(t, err)
 			} else {
