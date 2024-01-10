@@ -289,8 +289,8 @@ x.setup.swagger-ui() {
   { { {
     local name
 
-    name="$(curl --retry 10 -fsSL "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
-    curl --retry 10 -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
+    name="$(curl --retry 100 -fsSL "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
+    curl --retry 100 -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
     tar xf swagger-ui.tar.gz swagger-ui-"${name#*v}"/dist --one-top-level=swagger-ui --strip-components=2
     rm swagger-ui.tar.gz
     mkdir -p $SWAGGER_UI_DIR
@@ -308,6 +308,8 @@ x.gen.pregen() {
     POSTGRES_DB="$GEN_POSTGRES_DB"
 
     echo "Running generation"
+
+    generate_structs_map # structs might have been removed in the meantime
 
     go build -o $BUILD_DIR/codegen cmd/codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # xo gen may create/update models.
 
@@ -694,14 +696,14 @@ x.gen.jet() {
 x.gen.gowrap() {
   xsetup.backup
   { { {
-    name=$1 # optional to force regen on an interface
+    local name="$1" # optional to force regen on an interface
     local repos="$REPOS_DIR/repos.go"
 
     echo "Running generation"
 
     local cache="$CACHE/gowrap"
     local suffixes=(
-      "retry:with_retry"
+      "retry-repo:with_retry"
       "timeout:with_timeout"
       "otel:with_otel"
       "prometheus:with_prometheus" # TODO: https://last9.io/blog/native-support-for-opentelemetry-metrics-in-prometheus/ https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/translator/prometheus
@@ -712,7 +714,7 @@ x.gen.gowrap() {
 
     mkdir -p "$cache"
 
-    if test -n $name; then
+    if test -n "$name"; then
       repo_interfaces=("$name")
     fi
 
@@ -1334,21 +1336,21 @@ x.release() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-# Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a given db table by struct name.
-# Accepts flags: --project
-# Args: name
-x.dev-utils.create-crud() {
-  # TODO: new command x.dev-utils.create-crud-tests
-  # since we need to project gen with compilable state after this gen.
-  # maybe we could x.gen right here once has_deleted_at is implemented.
-  # FIXME: openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db/extra.xo.go:28
-  # is not generated to spec, so DbEntity does not exist.
-  # can swaggest generate spec from subtype? no
-  # better create Entity directly in spec.
+# Runs the go type checker.
+x.backend.typecheck() {
+  golangci-lint run --no-config --disable-all --enable=typecheck --timeout=10m
+}
 
+x.dev-utils.create-crud() { # Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a
+  # given db table by struct name.
+  # Accepts flags:
+  # --project - Generate as entity under a project.
+  # Args: name
   xsetup.backup
   { { {
-    load_exported_crud_gen_vars $1 ${@:2}
+    x.gen.xo
+
+    load_exported_crud_gen_vars ${@}
 
     local new_crud_schema="$(bash "$BIN_TEMPLATES_DIR"/crud-openapi.yaml.tmpl.bash)"
 
@@ -1455,9 +1457,9 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
     generate_repo_constructor
     x.gen.gowrap $pascal_name
 
-    if gofumpt -w "$services_path" "$service_repos_path" && golangci-lint run --no-config --disable-all --enable=typecheck --timeout=10m; then
+    if gofumpt -w "$services_path" "$service_repos_path" && x.backend.typecheck; then
       x.gen
-      x.dev-utils.create-crud-tests $1
+      x.dev-utils.create-crud-tests ${@}
 
       # now that generated api models exist
       file="internal/rest/api_${snake_name}.go"
@@ -1470,7 +1472,7 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
       2. Run $CMD again with --x-no-backup flag
       3. Fix typecheck errors manually
       4. Run 'project gen', fix errors if any
-      5. Run 'project dev-utils.create-crud-tests $1'"
+      5. Run 'project dev-utils.create-crud-tests $*'"
     fi
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1484,9 +1486,8 @@ load_exported_crud_gen_vars() {
   for arg in "${@:2}"; do
     case $arg in
     --project)
-      # For entities specific to a project, ie
-      # with project_id FK referencing projects.project_id
-      # TODO: maybe could autogenerate directly without arg passed, are there exceptions?
+      # For entities specific to a project, ie with project_id FK referencing projects.project_id
+      # Could autogenerate directly without arg passed, but just be explicit
       export with_project=1
       ;;
     *) ;;
@@ -1518,7 +1519,7 @@ load_exported_crud_gen_vars() {
 
 x.dev-utils.create-crud-tests() {
   { { {
-    load_exported_crud_gen_vars $1 ${@:2}
+    load_exported_crud_gen_vars ${@}
 
     local file="internal/repos/postgresql/repo_${snake_name}_test.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"

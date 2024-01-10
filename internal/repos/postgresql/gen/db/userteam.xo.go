@@ -66,6 +66,7 @@ type UserTeamSelectConfig struct {
 	orderBy string
 	joins   UserTeamJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type UserTeamSelectConfigOption func(*UserTeamSelectConfig)
 
@@ -84,7 +85,7 @@ const ()
 
 type UserTeamJoins struct {
 	TeamsMember bool // M2M user_team
-	Members     bool // M2M user_team
+	MembersTeam bool // M2M user_team
 }
 
 // WithUserTeamJoin joins with the given tables.
@@ -92,12 +93,12 @@ func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
 		s.joins = UserTeamJoins{
 			TeamsMember: s.joins.TeamsMember || joins.TeamsMember,
-			Members:     s.joins.Members || joins.Members,
+			MembersTeam: s.joins.MembersTeam || joins.MembersTeam,
 		}
 	}
 }
 
-// WithUserTeamFilters adds the given filters, which can be dynamically parameterized
+// WithUserTeamFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -109,6 +110,20 @@ func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 func WithUserTeamFilters(filters map[string][]any) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithUserTeamHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithUserTeamHavingClause(conditions map[string][]any) UserTeamSelectConfigOption {
+	return func(s *UserTeamSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -134,7 +149,7 @@ const userTeamTableTeamsMemberSelectSQL = `COALESCE(
 
 const userTeamTableTeamsMemberGroupBySQL = `user_team.team_id, user_team.team_id, user_team.member`
 
-const userTeamTableMembersJoinSQL = `-- M2M join generated from "user_team_member_fkey"
+const userTeamTableMembersTeamJoinSQL = `-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 		user_team.team_id as user_team_team_id
@@ -149,12 +164,12 @@ left join (
 ) as joined_user_team_members on joined_user_team_members.user_team_team_id = user_team.member
 `
 
-const userTeamTableMembersSelectSQL = `COALESCE(
+const userTeamTableMembersTeamSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		joined_user_team_members.__users
 		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') as user_team_members`
 
-const userTeamTableMembersGroupBySQL = `user_team.member, user_team.team_id, user_team.member`
+const userTeamTableMembersTeamGroupBySQL = `user_team.member, user_team.team_id, user_team.member`
 
 // Insert inserts the UserTeam to the database.
 func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
@@ -198,7 +213,7 @@ func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'user_team_member_idx'.
 func UserTeamsByMember(ctx context.Context, db DB, member UserID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -226,6 +241,22 @@ func UserTeamsByMember(ctx context.Context, db DB, member UserID, opts ...UserTe
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -236,10 +267,10 @@ func UserTeamsByMember(ctx context.Context, db DB, member UserID, opts ...UserTe
 		groupByClauses = append(groupByClauses, userTeamTableTeamsMemberGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, userTeamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""
@@ -258,14 +289,15 @@ func UserTeamsByMember(ctx context.Context, db DB, member UserID, opts ...UserTe
 	 FROM public.user_team %s 
 	 WHERE user_team.member = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserTeamsByMember */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, member)
-	rows, err := db.Query(ctx, sqlstr, append([]any{member}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{member}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMember/Query: %w", &XoError{Entity: "User team", Err: err}))
 	}
@@ -283,7 +315,7 @@ func UserTeamsByMember(ctx context.Context, db DB, member UserID, opts ...UserTe
 //
 // Generated from index 'user_team_pkey'.
 func UserTeamByMemberTeamID(ctx context.Context, db DB, member UserID, teamID TeamID, opts ...UserTeamSelectConfigOption) (*UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -311,6 +343,22 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member UserID, teamID Te
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -321,10 +369,10 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member UserID, teamID Te
 		groupByClauses = append(groupByClauses, userTeamTableTeamsMemberGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, userTeamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""
@@ -343,14 +391,15 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member UserID, teamID Te
 	 FROM public.user_team %s 
 	 WHERE user_team.member = $1 AND user_team.team_id = $2
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserTeamByMemberTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, member, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{member, teamID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{member, teamID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_team/UserTeamByMemberTeamID/db.Query: %w", &XoError{Entity: "User team", Err: err}))
 	}
@@ -366,7 +415,7 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member UserID, teamID Te
 //
 // Generated from index 'user_team_pkey'.
 func UserTeamsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -394,6 +443,22 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...UserTe
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -404,10 +469,10 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...UserTe
 		groupByClauses = append(groupByClauses, userTeamTableTeamsMemberGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, userTeamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""
@@ -426,14 +491,15 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...UserTe
 	 FROM public.user_team %s 
 	 WHERE user_team.team_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserTeamsByTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByMemberTeamID/Query: %w", &XoError{Entity: "User team", Err: err}))
 	}
@@ -451,7 +517,7 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...UserTe
 //
 // Generated from index 'user_team_team_id_member_idx'.
 func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID TeamID, member UserID, opts ...UserTeamSelectConfigOption) ([]UserTeam, error) {
-	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any)}
+	c := &UserTeamSelectConfig{joins: UserTeamJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -479,6 +545,22 @@ func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID TeamID, member U
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -489,10 +571,10 @@ func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID TeamID, member U
 		groupByClauses = append(groupByClauses, userTeamTableTeamsMemberGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
-		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
+	if c.joins.MembersTeam {
+		selectClauses = append(selectClauses, userTeamTableMembersTeamSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersTeamJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersTeamGroupBySQL)
 	}
 
 	selects := ""
@@ -511,14 +593,15 @@ func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID TeamID, member U
 	 FROM public.user_team %s 
 	 WHERE user_team.team_id = $1 AND user_team.member = $2
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserTeamsByTeamIDMember */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, teamID, member)
-	rows, err := db.Query(ctx, sqlstr, append([]any{teamID, member}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{teamID, member}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("UserTeam/UserTeamByTeamIDMember/Query: %w", &XoError{Entity: "User team", Err: err}))
 	}

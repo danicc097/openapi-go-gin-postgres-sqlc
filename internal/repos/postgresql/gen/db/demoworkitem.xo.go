@@ -87,6 +87,7 @@ type DemoWorkItemSelectConfig struct {
 	orderBy string
 	joins   DemoWorkItemJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type DemoWorkItemSelectConfigOption func(*DemoWorkItemSelectConfig)
 
@@ -135,7 +136,7 @@ func WithDemoWorkItemJoin(joins DemoWorkItemJoins) DemoWorkItemSelectConfigOptio
 	}
 }
 
-// WithDemoWorkItemFilters adds the given filters, which can be dynamically parameterized
+// WithDemoWorkItemFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -147,6 +148,20 @@ func WithDemoWorkItemJoin(joins DemoWorkItemJoins) DemoWorkItemSelectConfigOptio
 func WithDemoWorkItemFilters(filters map[string][]any) DemoWorkItemSelectConfigOption {
 	return func(s *DemoWorkItemSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithDemoWorkItemHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithDemoWorkItemHavingClause(conditions map[string][]any) DemoWorkItemSelectConfigOption {
+	return func(s *DemoWorkItemSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -249,7 +264,7 @@ func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 
 // DemoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of DemoWorkItem.
 func DemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
-	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -275,6 +290,22 @@ func DemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID Wo
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -311,14 +342,15 @@ func DemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID Wo
 	 FROM public.demo_work_items %s 
 	 WHERE demo_work_items.work_item_id %s $1
 	 %s   %s 
+  %s 
   ORDER BY 
-		work_item_id %s `, selects, joins, operator, filters, groupbys, direction)
+		work_item_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* DemoWorkItemPaginatedByWorkItemID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
@@ -333,7 +365,7 @@ func DemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID Wo
 //
 // Generated from index 'demo_work_items_pkey'.
 func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...DemoWorkItemSelectConfigOption) (*DemoWorkItem, error) {
-	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -359,6 +391,22 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID,
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -390,14 +438,15 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID,
 	 FROM public.demo_work_items %s 
 	 WHERE demo_work_items.work_item_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* DemoWorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
@@ -413,7 +462,7 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID,
 //
 // Generated from index 'demo_work_items_ref_line_idx'.
 func DemoWorkItemsByRefLine(ctx context.Context, db DB, ref string, line string, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
-	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any)}
+	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -439,6 +488,22 @@ func DemoWorkItemsByRefLine(ctx context.Context, db DB, ref string, line string,
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -470,14 +535,15 @@ func DemoWorkItemsByRefLine(ctx context.Context, db DB, ref string, line string,
 	 FROM public.demo_work_items %s 
 	 WHERE demo_work_items.ref = $1 AND demo_work_items.line = $2
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* DemoWorkItemsByRefLine */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, ref, line)
-	rows, err := db.Query(ctx, sqlstr, append([]any{ref, line}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{ref, line}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("DemoWorkItem/DemoWorkItemsByRefLine/Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}

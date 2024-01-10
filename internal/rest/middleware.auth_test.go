@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -90,9 +91,9 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		},
 	}
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
-	svcs := services.New(logger, services.CreateTestRepos(), testPool)
+	svcs := services.New(logger, services.CreateTestRepos(t), testPool)
 
 	for _, tc := range testCases {
 		tc := tc
@@ -115,7 +116,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 
 			if !tc.withoutUser {
 				engine.Use(func(c *gin.Context) {
-					rest.CtxWithUser(c, ufixture.User)
+					rest.CtxWithUserCaller(c, ufixture.User)
 				})
 			}
 

@@ -87,6 +87,7 @@ type ExtraSchemaNotificationSelectConfig struct {
 	orderBy string
 	joins   ExtraSchemaNotificationJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type ExtraSchemaNotificationSelectConfigOption func(*ExtraSchemaNotificationSelectConfig)
 
@@ -118,7 +119,7 @@ func WithExtraSchemaNotificationJoin(joins ExtraSchemaNotificationJoins) ExtraSc
 	}
 }
 
-// WithExtraSchemaNotificationFilters adds the given filters, which can be dynamically parameterized
+// WithExtraSchemaNotificationFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -130,6 +131,20 @@ func WithExtraSchemaNotificationJoin(joins ExtraSchemaNotificationJoins) ExtraSc
 func WithExtraSchemaNotificationFilters(filters map[string][]any) ExtraSchemaNotificationSelectConfigOption {
 	return func(s *ExtraSchemaNotificationSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithExtraSchemaNotificationHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithExtraSchemaNotificationHavingClause(conditions map[string][]any) ExtraSchemaNotificationSelectConfigOption {
+	return func(s *ExtraSchemaNotificationSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -242,7 +257,7 @@ func (esn *ExtraSchemaNotification) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaNotificationPaginatedByNotificationID returns a cursor-paginated list of ExtraSchemaNotification.
 func ExtraSchemaNotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID ExtraSchemaNotificationID, direction models.Direction, opts ...ExtraSchemaNotificationSelectConfigOption) ([]ExtraSchemaNotification, error) {
-	c := &ExtraSchemaNotificationSelectConfig{joins: ExtraSchemaNotificationJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaNotificationSelectConfig{joins: ExtraSchemaNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -268,6 +283,22 @@ func ExtraSchemaNotificationPaginatedByNotificationID(ctx context.Context, db DB
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -310,14 +341,15 @@ func ExtraSchemaNotificationPaginatedByNotificationID(ctx context.Context, db DB
 	 FROM extra_schema.notifications %s 
 	 WHERE notifications.notification_id %s $1
 	 %s   %s 
+  %s 
   ORDER BY 
-		notification_id %s `, selects, joins, operator, filters, groupbys, direction)
+		notification_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaNotificationPaginatedByNotificationID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaNotification/Paginated/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -332,7 +364,7 @@ func ExtraSchemaNotificationPaginatedByNotificationID(ctx context.Context, db DB
 //
 // Generated from index 'notifications_pkey'.
 func ExtraSchemaNotificationByNotificationID(ctx context.Context, db DB, notificationID ExtraSchemaNotificationID, opts ...ExtraSchemaNotificationSelectConfigOption) (*ExtraSchemaNotification, error) {
-	c := &ExtraSchemaNotificationSelectConfig{joins: ExtraSchemaNotificationJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaNotificationSelectConfig{joins: ExtraSchemaNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -358,6 +390,22 @@ func ExtraSchemaNotificationByNotificationID(ctx context.Context, db DB, notific
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -395,14 +443,15 @@ func ExtraSchemaNotificationByNotificationID(ctx context.Context, db DB, notific
 	 FROM extra_schema.notifications %s 
 	 WHERE notifications.notification_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaNotificationByNotificationID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, notificationID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -418,7 +467,7 @@ func ExtraSchemaNotificationByNotificationID(ctx context.Context, db DB, notific
 //
 // Generated from index 'notifications_sender_idx'.
 func ExtraSchemaNotificationsBySender(ctx context.Context, db DB, sender ExtraSchemaUserID, opts ...ExtraSchemaNotificationSelectConfigOption) ([]ExtraSchemaNotification, error) {
-	c := &ExtraSchemaNotificationSelectConfig{joins: ExtraSchemaNotificationJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaNotificationSelectConfig{joins: ExtraSchemaNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -444,6 +493,22 @@ func ExtraSchemaNotificationsBySender(ctx context.Context, db DB, sender ExtraSc
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -481,14 +546,15 @@ func ExtraSchemaNotificationsBySender(ctx context.Context, db DB, sender ExtraSc
 	 FROM extra_schema.notifications %s 
 	 WHERE notifications.sender = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaNotificationsBySender */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, sender)
-	rows, err := db.Query(ctx, sqlstr, append([]any{sender}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{sender}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaNotification/NotificationsBySender/Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}

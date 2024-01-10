@@ -38,7 +38,7 @@ func (a *TimeEntry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db
 }
 
 // Create creates a new time entry.
-func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
+func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller CtxUser, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	if caller.UserID != params.UserID {
@@ -46,8 +46,8 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller *db.User, para
 	}
 
 	if params.TeamID != nil {
-		teamIDs := make([]db.TeamID, len(*caller.MemberTeamsJoin))
-		for i, t := range *caller.MemberTeamsJoin {
+		teamIDs := make([]db.TeamID, len(caller.Teams))
+		for i, t := range caller.Teams {
 			teamIDs[i] = t.TeamID
 		}
 		if !slices.Contains(teamIDs, *params.TeamID) {

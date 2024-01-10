@@ -23,7 +23,7 @@ export interface DemoWorkItems {
   members?: DbUserWIAUWorkItem[] | null
   metadata: DemoWorkItemsMetadata
   targetDate: Date
-  teamID: number
+  teamID: number | null
   timeEntries?: DbTimeEntry[] | null
   title: string
   updatedAt: Date

@@ -12,19 +12,23 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
-func NewRandomUser(t *testing.T, d db.DBTX) (*db.User, error) {
+func NewRandomUser(t *testing.T, d db.DBTX) *db.User {
 	t.Helper()
 
-	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+
+	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 10, 65*time.Millisecond)
 
 	ucp := RandomUserCreateParams(t)
 
 	user, err := userRepo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
-	return user, nil
+	return user
 }
 
 func RandomUserCreateParams(t *testing.T) *db.UserCreateParams {

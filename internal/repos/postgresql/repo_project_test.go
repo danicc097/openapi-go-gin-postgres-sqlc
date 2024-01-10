@@ -56,13 +56,14 @@ func TestProject_BoardConfigUpdate(t *testing.T) {
 	t.Run("valid_subpath_replacement", func(t *testing.T) {
 		t.Parallel()
 
-		tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
-		defer tx.Rollback(ctx)
+		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
+		require.NoError(t, err)
+		defer tx.Rollback(ctx) // rollback errors should be ignored
 
 		const path = "some_path"
 
 		obj := map[string]any{"a": []string{"a.a", "a.b"}}
-		err := projectRepo.UpdateBoardConfig(ctx, tx, projectID, []string{"visualization", path}, obj)
+		err = projectRepo.UpdateBoardConfig(ctx, tx, projectID, []string{"visualization", path}, obj)
 		require.NoError(t, err)
 		p, err := projectRepo.ByID(ctx, tx, projectID)
 		require.NoError(t, err)
@@ -95,14 +96,15 @@ func TestProject_BoardConfigUpdate(t *testing.T) {
 	t.Run("valid_subpath_merge", func(t *testing.T) {
 		t.Parallel()
 
-		tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
-		defer tx.Rollback(ctx)
+		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
+		require.NoError(t, err)
+		defer tx.Rollback(ctx) // rollback errors should be ignored
 
 		const path1 = "some_path"
 		const path2 = "another_path"
 
 		obj1 := map[string]any{"a": []string{"a.a", "a.b"}}
-		err := projectRepo.UpdateBoardConfig(ctx, tx, projectID, []string{"visualization", path1}, obj1)
+		err = projectRepo.UpdateBoardConfig(ctx, tx, projectID, []string{"visualization", path1}, obj1)
 		require.NoError(t, err)
 		obj2 := map[string]any{"b": "1"}
 		err = projectRepo.UpdateBoardConfig(ctx, tx, projectID, []string{"visualization", path2}, obj2)

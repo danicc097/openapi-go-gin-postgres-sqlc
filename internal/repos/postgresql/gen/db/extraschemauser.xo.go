@@ -89,10 +89,12 @@ func (esu *ExtraSchemaUser) SetUpdateParams(params *ExtraSchemaUserUpdateParams)
 }
 
 type ExtraSchemaUserSelectConfig struct {
-	limit     string
-	orderBy   string
-	joins     ExtraSchemaUserJoins
-	filters   map[string][]any
+	limit   string
+	orderBy string
+	joins   ExtraSchemaUserJoins
+	filters map[string][]any
+	having  map[string][]any
+
 	deletedAt string
 }
 type ExtraSchemaUserSelectConfigOption func(*ExtraSchemaUserSelectConfig)
@@ -187,7 +189,7 @@ type WorkItem__WIAU_ExtraSchemaUser struct {
 	Role     *ExtraSchemaWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
-// WithExtraSchemaUserFilters adds the given filters, which can be dynamically parameterized
+// WithExtraSchemaUserFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -199,6 +201,20 @@ type WorkItem__WIAU_ExtraSchemaUser struct {
 func WithExtraSchemaUserFilters(filters map[string][]any) ExtraSchemaUserSelectConfigOption {
 	return func(s *ExtraSchemaUserSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithExtraSchemaUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithExtraSchemaUserHavingClause(conditions map[string][]any) ExtraSchemaUserSelectConfigOption {
+	return func(s *ExtraSchemaUserSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -480,7 +496,7 @@ func (esu *ExtraSchemaUser) Restore(ctx context.Context, db DB) (*ExtraSchemaUse
 
 // ExtraSchemaUserPaginatedByCreatedAt returns a cursor-paginated list of ExtraSchemaUser.
 func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...ExtraSchemaUserSelectConfigOption) ([]ExtraSchemaUser, error) {
-	c := &ExtraSchemaUserSelectConfig{deletedAt: " null ", joins: ExtraSchemaUserJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaUserSelectConfig{deletedAt: " null ", joins: ExtraSchemaUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -506,6 +522,22 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -590,14 +622,15 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 	 FROM extra_schema.users %s 
 	 WHERE users.created_at %s $1
 	 %s   AND users.deleted_at is %s  %s 
+  %s 
   ORDER BY 
-		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
+		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserPaginatedByCreatedAt */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaUser/Paginated/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -612,7 +645,7 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 //
 // Generated from index 'users_created_at_key'.
 func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...ExtraSchemaUserSelectConfigOption) (*ExtraSchemaUser, error) {
-	c := &ExtraSchemaUserSelectConfig{deletedAt: " null ", joins: ExtraSchemaUserJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaUserSelectConfig{deletedAt: " null ", joins: ExtraSchemaUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -638,6 +671,22 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -717,14 +766,15 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 	 FROM extra_schema.users %s 
 	 WHERE users.created_at = $1
 	 %s   AND users.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserByCreatedAt */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -740,7 +790,7 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 //
 // Generated from index 'users_name_key'.
 func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...ExtraSchemaUserSelectConfigOption) (*ExtraSchemaUser, error) {
-	c := &ExtraSchemaUserSelectConfig{deletedAt: " null ", joins: ExtraSchemaUserJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaUserSelectConfig{deletedAt: " null ", joins: ExtraSchemaUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -766,6 +816,22 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -845,14 +911,15 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 	 FROM extra_schema.users %s 
 	 WHERE users.name = $1
 	 %s   AND users.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByName/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -868,7 +935,7 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 //
 // Generated from index 'users_pkey'.
 func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserID, opts ...ExtraSchemaUserSelectConfigOption) (*ExtraSchemaUser, error) {
-	c := &ExtraSchemaUserSelectConfig{deletedAt: " null ", joins: ExtraSchemaUserJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaUserSelectConfig{deletedAt: " null ", joins: ExtraSchemaUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -894,6 +961,22 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -973,14 +1056,15 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 	 FROM extra_schema.users %s 
 	 WHERE users.user_id = $1
 	 %s   AND users.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserByUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}

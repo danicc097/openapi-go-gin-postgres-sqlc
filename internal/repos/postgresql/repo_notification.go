@@ -73,7 +73,7 @@ var _ repos.Notification = (*Notification)(nil)
 func (u *Notification) LatestNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
 	nn, err := u.q.GetUserNotifications(ctx, d, *params)
 	if err != nil {
-		return nil, fmt.Errorf("could not get notifications for user: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not get notifications for user: %w", ParseDBErrorDetail(err))
 	}
 
 	return nn, nil
@@ -82,13 +82,13 @@ func (u *Notification) LatestNotifications(ctx context.Context, d db.DBTX, param
 func (u *Notification) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (*db.UserNotification, error) {
 	notification, err := db.CreateNotification(ctx, d, params)
 	if err != nil {
-		return nil, fmt.Errorf("could not create notification: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not create notification: %w", ParseDBErrorDetail(err))
 	}
 
 	// only retrieve 1 user notification at most
 	nn, err := db.UserNotificationsByNotificationID(ctx, d, notification.NotificationID, db.WithUserNotificationLimit(1))
 	if len(nn) == 0 {
-		return nil, fmt.Errorf("could not create notification fan out: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not create notification fan out: %w", ParseDBErrorDetail(err))
 	}
 
 	return &nn[0], nil
@@ -112,7 +112,7 @@ func (u *Notification) PaginatedNotifications(ctx context.Context, d db.DBTX, us
 
 	notifications, err := db.UserNotificationPaginatedByUserNotificationID(ctx, d, db.UserNotificationID(userNotificationID), params.Direction, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could get paginated notifications: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could get paginated notifications: %w", ParseDBErrorDetail(err))
 	}
 
 	return notifications, nil
@@ -125,7 +125,7 @@ func (u *Notification) Delete(ctx context.Context, d db.DBTX, id db.Notification
 
 	err := notification.Delete(ctx, d)
 	if err != nil {
-		return nil, fmt.Errorf("could not delete notification: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not delete notification: %w", ParseDBErrorDetail(err))
 	}
 
 	return notification, err

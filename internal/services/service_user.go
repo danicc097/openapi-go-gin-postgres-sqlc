@@ -7,6 +7,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/pkg/errors"
@@ -18,6 +19,9 @@ type User struct {
 	logger   *zap.SugaredLogger
 	repos    *repos.Repos
 	authzsvc *Authorization
+	// sharedDBOpts represents shared db select options for all work item entities
+	// for returned values
+	getSharedDBOpts func() []db.UserSelectConfigOption
 }
 
 // NOTE: the most important distinction about repositories is that they represent collections of entities. They do not represent database storage or caching or any number of technical concerns. Repositories represent collections. How you hold those collections is simply an implementation detail.
@@ -44,6 +48,9 @@ func NewUser(logger *zap.SugaredLogger, repos *repos.Repos) *User {
 		logger:   logger,
 		repos:    repos,
 		authzsvc: authzsvc,
+		getSharedDBOpts: func() []db.UserSelectConfigOption {
+			return []db.UserSelectConfigOption{db.WithUserJoin(db.UserJoins{ProjectsMember: true, TeamsMember: true})}
+		},
 	}
 }
 
@@ -87,13 +94,20 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 	return user, nil
 }
 
+func (u *User) ByID(ctx context.Context, d db.DBTX, id db.UserID, dbOpts ...db.UserSelectConfigOption) (*db.User, error) {
+	opts := append(u.getSharedDBOpts(), dbOpts...)
+	user, err := u.repos.User.ByID(ctx, d, id, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("repos.User.ByID: %w", err)
+	}
+
+	return user, nil
+}
+
 // Update updates a user.
-func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller *db.User, params *models.UpdateUserRequest) (*db.User, error) {
+func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller CtxUser, params *models.UpdateUserRequest) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	if caller == nil {
-		return nil, errors.New("caller cannot be nil")
-	}
 	if params == nil {
 		return nil, errors.New("params cannot be nil")
 	}
@@ -128,12 +142,9 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller *db.U
 	return user, nil
 }
 
-func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id db.UserID, caller *db.User, params *models.UpdateUserAuthRequest) (*db.User, error) {
+func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id db.UserID, caller CtxUser, params *models.UpdateUserAuthRequest) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	if caller == nil {
-		return nil, errors.New("caller cannot be nil")
-	}
 	if params == nil {
 		return nil, errors.New("params cannot be nil")
 	}
@@ -211,10 +222,11 @@ func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.
 }
 
 // ByExternalID gets a user by ExternalID.
-func (u *User) ByExternalID(ctx context.Context, d db.DBTX, id string) (*db.User, error) {
+func (u *User) ByExternalID(ctx context.Context, d db.DBTX, id string, dbOpts ...db.UserSelectConfigOption) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	user, err := u.repos.User.ByExternalID(ctx, d, id)
+	opts := append(u.getSharedDBOpts(), dbOpts...)
+	user, err := u.repos.User.ByExternalID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.User.ByExternalID: %w", err)
 	}
@@ -223,10 +235,11 @@ func (u *User) ByExternalID(ctx context.Context, d db.DBTX, id string) (*db.User
 }
 
 // ByEmail gets a user by email.
-func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, error) {
+func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string, dbOpts ...db.UserSelectConfigOption) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	user, err := u.repos.User.ByEmail(ctx, d, email)
+	opts := append(u.getSharedDBOpts(), dbOpts...)
+	user, err := u.repos.User.ByEmail(ctx, d, email, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.User.ByEmail: %w", err)
 	}
@@ -235,10 +248,11 @@ func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string) (*db.User, 
 }
 
 // ByUsername gets a user by username.
-func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string) (*db.User, error) {
+func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string, dbOpts ...db.UserSelectConfigOption) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	user, err := u.repos.User.ByUsername(ctx, d, username)
+	opts := append(u.getSharedDBOpts(), dbOpts...)
+	user, err := u.repos.User.ByUsername(ctx, d, username, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.User.ByUsername: %w", err)
 	}
@@ -253,6 +267,11 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 	user, err := u.repos.User.ByAPIKey(ctx, d, apiKey)
 	if err != nil {
 		return nil, fmt.Errorf("repos.User.ByAPIKey: %w", err)
+	}
+
+	user, err = u.repos.User.ByID(ctx, d, user.UserID, u.getSharedDBOpts()...)
+	if err != nil {
+		return nil, fmt.Errorf("repos.User.ByID: %w", err)
 	}
 
 	return user, nil
@@ -298,39 +317,25 @@ func (u *User) LatestGlobalNotifications(ctx context.Context, d db.DBTX, userID 
 	return []db.GetUserNotificationsRow{}, nil
 }
 
-func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID db.UserID, teamID db.TeamID) error {
+func (u *User) AssignTeam(ctx context.Context, d db.DBTX, userID db.UserID, teamID db.TeamID) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	_, err := db.CreateUserTeam(ctx, d, &db.UserTeamCreateParams{
 		TeamID: teamID,
 		Member: userID,
 	})
+	var ierr *internal.Error
 	if err != nil {
-		return fmt.Errorf("db.CreateUserTeam: %w", err)
+		err := postgresql.ParseDBErrorDetail(err)
+		if !(errors.As(err, &ierr) && ierr.Code() == models.ErrorCodeAlreadyExists) {
+			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not assign user to team")
+		}
 	}
 
-	u.logger.Infof("user %q assigned to team %d", userID, teamID)
-
-	return nil
-}
-
-func (u *User) UserInProject(ctx context.Context, d db.DBTX, userID db.UserID, projectID db.ProjectID) error {
-	// can't be done in constructor, inf recursion if its for solving a cyclic dep.
-	// if we need dep inj for some reason create service interface and pass as param
-	witSvc := NewWorkItemTag(u.logger, u.repos)
-	// FIXME:
-	witSvc.logger.Debug("this should not panic")
-	userInProject, err := u.repos.User.IsUserInProject(ctx, d, db.IsUserInProjectParams{
-		UserID:    userID.UUID,
-		ProjectID: int32(projectID),
-	})
+	user, err := u.repos.User.ByID(ctx, d, userID, u.getSharedDBOpts()...)
 	if err != nil {
-		return fmt.Errorf("repos.User.IsUserInProject: %w", err)
+		return nil, fmt.Errorf("repos.User.ByID: %w", err)
 	}
 
-	if !userInProject {
-		return internal.NewErrorf(models.ErrorCodeUnauthorized, "user is not a member of project %q", internal.ProjectNameByID[projectID])
-	}
-
-	return nil
+	return user, nil
 }

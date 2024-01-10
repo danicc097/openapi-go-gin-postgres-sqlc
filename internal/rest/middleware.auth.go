@@ -43,7 +43,7 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 		apiKey := c.Request.Header.Get(ApiKeyHeaderKey)
 		auth := c.Request.Header.Get(AuthorizationHeaderKey)
 		if apiKey != "" {
-			u, err := m.svc.Authentication.GetUserFromAPIKey(c.Request.Context(), apiKey)
+			u, err := m.svc.Authentication.GetUserFromAPIKey(c.Request.Context(), apiKey) // includes caller joins
 			if err != nil || u == nil {
 				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from api key"))
 				c.Abort()
@@ -51,14 +51,14 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 				return
 			}
 
-			CtxWithUser(c, u)
+			CtxWithUserCaller(c, u)
 
 			c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
 
 			return
 		}
 		if strings.HasPrefix(auth, "Bearer ") {
-			u, err := m.svc.Authentication.GetUserFromAccessToken(c.Request.Context(), strings.Split(auth, "Bearer ")[1])
+			u, err := m.svc.Authentication.GetUserFromAccessToken(c.Request.Context(), strings.Split(auth, "Bearer ")[1]) // includes caller joins
 			if err != nil || u == nil {
 				renderErrorResponse(c, "Unauthenticated", internal.NewErrorf(models.ErrorCodeUnauthenticated, "could not get user from token: %s", err))
 				c.Abort()
@@ -66,7 +66,7 @@ func (m *authMiddleware) EnsureAuthenticated() gin.HandlerFunc {
 				return
 			}
 
-			CtxWithUser(c, u)
+			CtxWithUserCaller(c, u)
 
 			c.Next() // executes the pending handlers. What goes below is cleanup after the complete request.
 
@@ -87,10 +87,10 @@ type AuthRestriction struct {
 // minimum role or has all required scopes.
 func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		user := getUserFromCtx(c)
 		errorMsg := ""
 		errs := []string{}
-		if user == nil {
+		user, err := getUserCallerFromCtx(c)
+		if err != nil {
 			renderErrorResponse(c, "Could not get current user.", nil)
 			c.Abort()
 

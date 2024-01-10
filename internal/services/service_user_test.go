@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -23,12 +24,12 @@ type testUsers struct {
 func TestUser_UpdateUser(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	type args struct {
 		params *models.UpdateUserRequest
 		id     db.UserID
-		caller *db.User
+		caller services.CtxUser
 	}
 	type want struct {
 		FirstName *string
@@ -50,7 +51,7 @@ func TestUser_UpdateUser(t *testing.T) {
 					FirstName: pointers.New("changed"),
 				},
 				id:     testUsers.user.User.UserID,
-				caller: testUsers.user.User,
+				caller: *services.NewCtxUser(testUsers.user.User),
 			},
 			want: want{
 				FirstName: pointers.New("changed"),
@@ -62,7 +63,7 @@ func TestUser_UpdateUser(t *testing.T) {
 			args: args{
 				params: &models.UpdateUserRequest{},
 				id:     testUsers.user.User.UserID,
-				caller: testUsers.advancedUser.User,
+				caller: *services.NewCtxUser(testUsers.advancedUser.User),
 			},
 			error: "cannot change another user's information",
 		},
@@ -74,7 +75,7 @@ func TestUser_UpdateUser(t *testing.T) {
 					LastName:  pointers.New("changed"),
 				},
 				id:     testUsers.user.User.UserID,
-				caller: testUsers.admin.User,
+				caller: *services.NewCtxUser(testUsers.admin.User),
 			},
 			want: want{
 				FirstName: pointers.New("changed"),
@@ -88,12 +89,13 @@ func TestUser_UpdateUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			repos := services.CreateTestRepos()
+			repos := services.CreateTestRepos(t)
 			repos.Notification = &repostesting.FakeNotification{} // ignore
 
 			ctx := context.Background()
-			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
-			defer tx.Rollback(ctx)
+			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
+			require.NoError(t, err)
+			defer tx.Rollback(ctx) // rollback errors should be ignored
 
 			u := services.NewUser(logger, repos)
 			got, err := u.Update(ctx, tx, tc.args.id, tc.args.caller, tc.args.params)
@@ -117,7 +119,7 @@ func TestUser_UpdateUser(t *testing.T) {
 func TestUser_UpdateUserAuthorization(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	authzsvc, err := services.NewAuthorization(logger)
 	require.NoError(t, err, "newTestAuthService")
@@ -132,7 +134,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 	type args struct {
 		params *models.UpdateUserAuthRequest
 		id     db.UserID
-		caller *db.User
+		caller services.CtxUser
 	}
 	type want struct {
 		Scopes models.Scopes
@@ -153,7 +155,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 					Role:   pointers.New(models.RoleManager),
 				},
 				id:     testUsers.user.User.UserID,
-				caller: testUsers.manager.User,
+				caller: *services.NewCtxUser(testUsers.manager.User),
 			},
 			want: want{
 				Scopes: authzsvc.DefaultScopes(models.RoleManager),
@@ -167,7 +169,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 					Role: pointers.New(models.RoleAdmin),
 				},
 				id:     testUsers.user.User.UserID,
-				caller: testUsers.manager.User,
+				caller: *services.NewCtxUser(testUsers.manager.User),
 			},
 			error: "cannot set a user rank higher than self",
 		},
@@ -178,7 +180,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 					Scopes: &models.Scopes{models.ScopeUsersRead, models.ScopeProjectSettingsWrite, models.ScopeUsersWrite},
 				},
 				id:     testUsers.user.User.UserID,
-				caller: testUsers.admin.User,
+				caller: *services.NewCtxUser(testUsers.admin.User),
 			},
 			error: "cannot set a scope unassigned to self",
 		},
@@ -189,7 +191,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 					Scopes: pointers.New(authzsvc.DefaultScopes(models.RoleAdmin)),
 				},
 				id:     testUsers.user.User.UserID,
-				caller: testUsers.admin.User,
+				caller: *services.NewCtxUser(testUsers.admin.User),
 			},
 			want: want{
 				Scopes: testUsers.admin.User.Scopes,
@@ -203,7 +205,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 					Scopes: &models.Scopes{},
 				},
 				id:     testUsers.manager.User.UserID,
-				caller: testUsers.manager.User,
+				caller: *services.NewCtxUser(testUsers.manager.User),
 			},
 			error: "cannot update your own authorization information",
 		},
@@ -214,7 +216,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 					Role: pointers.New(models.RoleGuest),
 				},
 				id:     testUsers.advancedUser.User.UserID,
-				caller: testUsers.manager.User,
+				caller: *services.NewCtxUser(testUsers.manager.User),
 			},
 			error: "cannot demote a user role",
 		},
@@ -225,7 +227,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 					Scopes: &models.Scopes{},
 				},
 				id:     testUsers.user.User.UserID,
-				caller: testUsers.manager.User,
+				caller: *services.NewCtxUser(testUsers.manager.User),
 			},
 			error: "cannot unassign a user's scope",
 		},
@@ -236,7 +238,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 					Scopes: &models.Scopes{},
 				},
 				id:     testUsers.user.User.UserID,
-				caller: testUsers.admin.User,
+				caller: *services.NewCtxUser(testUsers.admin.User),
 			},
 			want: want{
 				Scopes: models.Scopes{},
@@ -250,7 +252,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 					Role: pointers.New(models.RoleGuest),
 				},
 				id:     testUsers.advancedUser.User.UserID,
-				caller: testUsers.admin.User,
+				caller: *services.NewCtxUser(testUsers.admin.User),
 			},
 			want: want{
 				Rank:   authzsvc.RoleByName(models.RoleGuest).Rank,
@@ -264,12 +266,13 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			repos := services.CreateTestRepos()
+			repos := services.CreateTestRepos(t)
 			repos.Notification = &repostesting.FakeNotification{} // ignore
 
 			ctx := context.Background()
-			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
-			defer tx.Rollback(ctx)
+			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
+			require.NoError(t, err)
+			defer tx.Rollback(ctx) // rollback errors should be ignored
 
 			u := services.NewUser(logger, repos)
 			got, err := u.UpdateUserAuthorization(ctx, tx, tc.args.id, tc.args.caller, tc.args.params)
@@ -294,9 +297,9 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 func createTestUsers(t *testing.T) testUsers {
 	t.Helper()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 

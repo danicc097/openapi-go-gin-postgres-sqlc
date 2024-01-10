@@ -118,6 +118,7 @@ type NotificationSelectConfig struct {
 	orderBy string
 	joins   NotificationJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type NotificationSelectConfigOption func(*NotificationSelectConfig)
 
@@ -170,7 +171,7 @@ func WithNotificationJoin(joins NotificationJoins) NotificationSelectConfigOptio
 	}
 }
 
-// WithNotificationFilters adds the given filters, which can be dynamically parameterized
+// WithNotificationFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -182,6 +183,20 @@ func WithNotificationJoin(joins NotificationJoins) NotificationSelectConfigOptio
 func WithNotificationFilters(filters map[string][]any) NotificationSelectConfigOption {
 	return func(s *NotificationSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithNotificationHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithNotificationHavingClause(conditions map[string][]any) NotificationSelectConfigOption {
+	return func(s *NotificationSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -254,7 +269,7 @@ func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error)
 	WHERE notification_id = $9 
 	RETURNING * `
 	// run
-	logf(sqlstr, n.Body, n.CreatedAt, n.Labels, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title, n.NotificationID)
+	logf(sqlstr, n.Body, n.Labels, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title, n.NotificationID)
 
 	rows, err := db.Query(ctx, sqlstr, n.Body, n.Labels, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title, n.NotificationID)
 	if err != nil {
@@ -314,7 +329,7 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 
 // NotificationPaginatedByNotificationID returns a cursor-paginated list of Notification.
 func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID NotificationID, direction models.Direction, opts ...NotificationSelectConfigOption) ([]Notification, error) {
-	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
+	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -340,6 +355,22 @@ func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificat
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -393,14 +424,15 @@ func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificat
 	 FROM public.notifications %s 
 	 WHERE notifications.notification_id %s $1
 	 %s   %s 
+  %s 
   ORDER BY 
-		notification_id %s `, selects, joins, operator, filters, groupbys, direction)
+		notification_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* NotificationPaginatedByNotificationID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/Paginated/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -415,7 +447,7 @@ func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificat
 //
 // Generated from index 'notifications_pkey'.
 func NotificationByNotificationID(ctx context.Context, db DB, notificationID NotificationID, opts ...NotificationSelectConfigOption) (*Notification, error) {
-	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
+	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -441,6 +473,22 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID Not
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -489,14 +537,15 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID Not
 	 FROM public.notifications %s 
 	 WHERE notifications.notification_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* NotificationByNotificationID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, notificationID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -512,7 +561,7 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID Not
 //
 // Generated from index 'notifications_receiver_rank_notification_type_created_at_idx'.
 func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, db DB, receiverRank *int, notificationType NotificationType, createdAt time.Time, opts ...NotificationSelectConfigOption) ([]Notification, error) {
-	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any)}
+	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -538,6 +587,22 @@ func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, d
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -586,14 +651,15 @@ func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, d
 	 FROM public.notifications %s 
 	 WHERE notifications.receiver_rank = $1 AND notifications.notification_type = $2 AND notifications.created_at = $3
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* NotificationsByReceiverRankNotificationTypeCreatedAt */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, receiverRank, notificationType, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{receiverRank, notificationType, createdAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{receiverRank, notificationType, createdAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Notification/NotificationsByReceiverRankNotificationTypeCreatedAt/Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}

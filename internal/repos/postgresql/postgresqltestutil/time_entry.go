@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewRandomTimeEntry(t *testing.T, d db.DBTX, activityID db.ActivityID, userID db.UserID, workItemID *db.WorkItemID, teamID *db.TeamID) (*db.TimeEntry, error) {
+func NewRandomTimeEntry(t *testing.T, d db.DBTX, activityID db.ActivityID, userID db.UserID, workItemID *db.WorkItemID, teamID *db.TeamID) *db.TimeEntry {
 	t.Helper()
 
 	teRepo := postgresql.NewTimeEntry()
@@ -21,7 +21,7 @@ func NewRandomTimeEntry(t *testing.T, d db.DBTX, activityID db.ActivityID, userI
 	te, err := teRepo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
-	return te, nil
+	return te
 }
 
 func RandomTimeEntryCreateParams(t *testing.T, activityID db.ActivityID, userID db.UserID, workItemID *db.WorkItemID, teamID *db.TeamID) *db.TimeEntryCreateParams {

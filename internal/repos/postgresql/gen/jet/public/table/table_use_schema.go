@@ -23,6 +23,7 @@ func UseSchema(schema string) {
 	TimeEntries = TimeEntries.FromSchema(schema)
 	UserAPIKeys = UserAPIKeys.FromSchema(schema)
 	UserNotifications = UserNotifications.FromSchema(schema)
+	UserProject = UserProject.FromSchema(schema)
 	UserTeam = UserTeam.FromSchema(schema)
 	Users = Users.FromSchema(schema)
 	WorkItemAssignedUser = WorkItemAssignedUser.FromSchema(schema)

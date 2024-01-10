@@ -69,6 +69,7 @@ type SchemaMigrationSelectConfig struct {
 	orderBy string
 	joins   SchemaMigrationJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type SchemaMigrationSelectConfigOption func(*SchemaMigrationSelectConfig)
 
@@ -95,7 +96,7 @@ func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectCo
 	}
 }
 
-// WithSchemaMigrationFilters adds the given filters, which can be dynamically parameterized
+// WithSchemaMigrationFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -107,6 +108,20 @@ func WithSchemaMigrationJoin(joins SchemaMigrationJoins) SchemaMigrationSelectCo
 func WithSchemaMigrationFilters(filters map[string][]any) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithSchemaMigrationHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithSchemaMigrationHavingClause(conditions map[string][]any) SchemaMigrationSelectConfigOption {
+	return func(s *SchemaMigrationSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -196,7 +211,7 @@ func (sm *SchemaMigration) Delete(ctx context.Context, db DB) error {
 
 // SchemaMigrationPaginatedByVersion returns a cursor-paginated list of SchemaMigration.
 func SchemaMigrationPaginatedByVersion(ctx context.Context, db DB, version SchemaMigrationID, direction models.Direction, opts ...SchemaMigrationSelectConfigOption) ([]SchemaMigration, error) {
-	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
+	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -222,6 +237,22 @@ func SchemaMigrationPaginatedByVersion(ctx context.Context, db DB, version Schem
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -249,14 +280,15 @@ func SchemaMigrationPaginatedByVersion(ctx context.Context, db DB, version Schem
 	 FROM public.schema_migrations %s 
 	 WHERE schema_migrations.version %s $1
 	 %s   %s 
+  %s 
   ORDER BY 
-		version %s `, selects, joins, operator, filters, groupbys, direction)
+		version %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* SchemaMigrationPaginatedByVersion */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{version}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("SchemaMigration/Paginated/db.Query: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}
@@ -271,7 +303,7 @@ func SchemaMigrationPaginatedByVersion(ctx context.Context, db DB, version Schem
 //
 // Generated from index 'schema_migrations_pkey'.
 func SchemaMigrationByVersion(ctx context.Context, db DB, version SchemaMigrationID, opts ...SchemaMigrationSelectConfigOption) (*SchemaMigration, error) {
-	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any)}
+	c := &SchemaMigrationSelectConfig{joins: SchemaMigrationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -299,6 +331,22 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version SchemaMigratio
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -319,14 +367,15 @@ func SchemaMigrationByVersion(ctx context.Context, db DB, version SchemaMigratio
 	 FROM public.schema_migrations %s 
 	 WHERE schema_migrations.version = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* SchemaMigrationByVersion */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, version)
-	rows, err := db.Query(ctx, sqlstr, append([]any{version}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{version}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("schema_migrations/SchemaMigrationByVersion/db.Query: %w", &XoError{Entity: "Schema migration", Err: err}))
 	}

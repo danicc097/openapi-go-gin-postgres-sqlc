@@ -38,7 +38,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useGetCurrentUser } from 'src/gen/user/user'
 import { useNotificationAPI } from 'src/hooks/ui/useNotificationAPI'
-import CONFIG from 'src/config'
 import { faUser } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import logoDark from 'src/assets/logo/two-white-clouds.svg'
@@ -49,6 +48,7 @@ import LoginButton from 'src/components/LoginButton'
 import { useDisclosure } from '@mantine/hooks'
 import { ThemeSwitcher } from 'src/components/ThemeSwitcher'
 import TestMantineV7 from 'src/components/Layout/TestMantineV7'
+import { CONFIG } from 'src/config'
 
 type LayoutProps = {
   children: React.ReactElement

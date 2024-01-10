@@ -87,13 +87,13 @@ func (_d ProjectWithTracing) ByName(ctx context.Context, d db.DBTX, name models.
 }
 
 // IsTeamInProject implements repos.Project
-func (_d ProjectWithTracing) IsTeamInProject(ctx context.Context, db db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
+func (_d ProjectWithTracing) IsTeamInProject(ctx context.Context, d db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Project.IsTeamInProject")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
 				"ctx": ctx,
-				"db":  db,
+				"d":   d,
 				"arg": arg}, map[string]interface{}{
 				"b1":  b1,
 				"err": err})
@@ -107,5 +107,5 @@ func (_d ProjectWithTracing) IsTeamInProject(ctx context.Context, db db.DBTX, ar
 
 		_span.End()
 	}()
-	return _d.Project.IsTeamInProject(ctx, db, arg)
+	return _d.Project.IsTeamInProject(ctx, d, arg)
 }

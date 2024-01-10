@@ -26,7 +26,7 @@ func (w QuerierWrapper) GetExtraSchemaNotifications(ctx context.Context, db db.D
 
 	ga1, err = w.Querier.GetExtraSchemaNotifications(ctx, db, arg)
 	if err != nil {
-		err = fmt.Errorf("Querier: %w", parseDBErrorDetail(err))
+		err = fmt.Errorf("Querier: %w", ParseDBErrorDetail(err))
 	}
 	return
 }
@@ -36,7 +36,7 @@ func (w QuerierWrapper) GetUser(ctx context.Context, db db.DBTX, arg db.GetUserP
 
 	g1, err = w.Querier.GetUser(ctx, db, arg)
 	if err != nil {
-		err = fmt.Errorf("Querier: %w", parseDBErrorDetail(err))
+		err = fmt.Errorf("Querier: %w", ParseDBErrorDetail(err))
 	}
 	return
 }
@@ -46,7 +46,7 @@ func (w QuerierWrapper) GetUserNotifications(ctx context.Context, db db.DBTX, ar
 
 	ga1, err = w.Querier.GetUserNotifications(ctx, db, arg)
 	if err != nil {
-		err = fmt.Errorf("Querier: %w", parseDBErrorDetail(err))
+		err = fmt.Errorf("Querier: %w", ParseDBErrorDetail(err))
 	}
 	return
 }
@@ -56,17 +56,7 @@ func (w QuerierWrapper) IsTeamInProject(ctx context.Context, db db.DBTX, arg db.
 
 	b1, err = w.Querier.IsTeamInProject(ctx, db, arg)
 	if err != nil {
-		err = fmt.Errorf("Querier: %w", parseDBErrorDetail(err))
-	}
-	return
-}
-
-func (w QuerierWrapper) IsUserInProject(ctx context.Context, db db.DBTX, arg db.IsUserInProjectParams) (b1 bool, err error) {
-	/* defer newOTelSpan().Build(ctx).End() */
-
-	b1, err = w.Querier.IsUserInProject(ctx, db, arg)
-	if err != nil {
-		err = fmt.Errorf("Querier: %w", parseDBErrorDetail(err))
+		err = fmt.Errorf("Querier: %w", ParseDBErrorDetail(err))
 	}
 	return
 }

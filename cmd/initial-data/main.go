@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
@@ -18,6 +19,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -62,6 +64,7 @@ func main() {
 	teamSvc := services.NewTeam(logger, repositories)
 	teSvc := services.NewTimeEntry(logger, repositories)
 	notifSvc := services.NewNotification(logger, repositories)
+	wiSvc := services.NewWorkItem(logger, repositories)
 	demoWiSvc := services.NewDemoWorkItem(logger, repositories)
 	wiTagSvc := services.NewWorkItemTag(logger, repositories)
 
@@ -89,7 +92,15 @@ func main() {
 	handleError(err)
 	_, err = authnSvc.CreateAPIKeyForUser(ctx, superAdmin)
 	handleError(err)
-	users = append(users, superAdmin)
+
+	superAdmin, err = userSvc.ByID(ctx, pool, superAdmin.UserID) // get joins
+	handleError(err)
+
+	superAdminCaller := services.CtxUser{
+		User:     superAdmin,
+		Teams:    *superAdmin.MemberTeamsJoin,
+		Projects: *superAdmin.MemberProjectsJoin,
+	}
 
 	//
 	//
@@ -119,9 +130,13 @@ func main() {
 			FirstName:  pointers.New("Name " + strconv.Itoa(i)),
 			Email:      "user_" + strconv.Itoa(i) + "@mail.com",
 			ExternalID: "external_id_user_" + strconv.Itoa(i),
+			// Scopes: []models.Scope{models.}, // TODO:
 		})
 		handleError(err)
 		_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
+		handleError(err)
+
+		u, err = userSvc.ByID(ctx, pool, u.UserID) // get joins
 		handleError(err)
 
 		users = append(users, u)
@@ -145,19 +160,29 @@ func main() {
 	 **/
 	logger.Info("Creating teams...")
 
-	team1, err := teamSvc.Create(ctx, pool, &db.TeamCreateParams{
+	teamDemo, err := teamSvc.Create(ctx, pool, &db.TeamCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Team 1",
 		Description: "Team 1 description",
 	})
-	handleError(err, team1)
+	handleError(err, teamDemo)
+	teamDemo2, err := teamSvc.Create(ctx, pool, &db.TeamCreateParams{
+		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
+		Name:        "Team 2",
+		Description: "Team 2 description",
+	})
+	handleError(err, teamDemo2)
 
-	for _, u := range users {
-		err = userSvc.AssignTeam(ctx, pool, u.UserID, team1.TeamID)
+	for i, u := range users {
+		users[i], err = userSvc.AssignTeam(ctx, pool, u.UserID, teamDemo.TeamID)
 		handleError(err)
-		// save up some extra calls
-		u.MemberTeamsJoin = &[]db.Team{*team1}
 	}
+	format.PrintJSONByTag(users, "db")
+
+	superAdminCaller.User, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo.TeamID)
+	handleError(err)
+	superAdminCaller.User, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo2.TeamID)
+	handleError(err)
 
 	/**
 	 *
@@ -192,8 +217,7 @@ func main() {
 	 *
 	 **/
 	logger.Info("Creating workitem tags...")
-
-	wiTag1, err := wiTagSvc.Create(ctx, pool, superAdmin, &db.WorkItemTagCreateParams{
+	wiTag1, err := wiTagSvc.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Tag 1",
 		Description: "Tag 1 description",
@@ -201,7 +225,7 @@ func main() {
 	})
 	handleError(err, wiTag1)
 
-	wiTag2, err := wiTagSvc.Create(ctx, pool, superAdmin, &db.WorkItemTagCreateParams{
+	wiTag2, err := wiTagSvc.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Tag 2",
 		Description: "Tag 2 description",
@@ -209,7 +233,7 @@ func main() {
 	})
 	handleError(err, wiTag2)
 
-	wiTagDemo2_1, err := wiTagSvc.Create(ctx, pool, superAdmin, &db.WorkItemTagCreateParams{
+	wiTagDemo2_1, err := wiTagSvc.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
 		Name:        "Tag 1",
 		Description: "Tag 1 description",
@@ -225,34 +249,46 @@ func main() {
 	logger.Info("Creating workitems...")
 
 	demoWorkItems := []*db.WorkItem{}
-	for i := 1; i <= 20; i++ {
-		demowi, err := demoWiSvc.Create(ctx, pool, services.DemoWorkItemCreateParams{
-			DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
-				Base: db.WorkItemCreateParams{
-					TeamID:         team1.TeamID,
-					Title:          fmt.Sprintf("A new work item (%d)", i),
-					Description:    fmt.Sprintf("Description for a new work item (%d)", i),
-					WorkItemTypeID: internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1],
-					// TODO if not passed then query where step order = 0 for a given project and use that
-					// steporder could also be generated just like idByName and viceversa
-					KanbanStepID: internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
-					TargetDate:   time.Now().Add(time.Duration(i) * day),
-					Metadata:     map[string]any{"key": true},
+	var wg sync.WaitGroup
+	semaphore := make(chan struct{}, 2000)
+	for i := 1; i <= 100; i++ {
+		semaphore <- struct{}{} // acquire
+		wg.Add(1)
+
+		go func(i int) {
+			defer wg.Done()
+
+			demowi, err := demoWiSvc.Create(ctx, pool, services.DemoWorkItemCreateParams{
+				DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
+					Base: db.WorkItemCreateParams{
+						TeamID:         teamDemo.TeamID,
+						Title:          fmt.Sprintf("A new work item (%d)", i),
+						Description:    fmt.Sprintf("Description for a new work item (%d)", i),
+						WorkItemTypeID: internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1],
+						// TODO if not passed then query where step order = 0 for a given project and use that
+						// steporder could also be generated just like idByName and viceversa
+						KanbanStepID: internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
+						TargetDate:   time.Now().Add(time.Duration(i) * day),
+						Metadata:     map[string]any{"key": true},
+					},
+					DemoProject: db.DemoWorkItemCreateParams{
+						LastMessageAt: time.Now().Add(time.Duration(-i) * day),
+					},
 				},
-				DemoProject: db.DemoWorkItemCreateParams{
-					LastMessageAt: time.Now().Add(time.Duration(-i) * day),
+				TagIDs: []db.WorkItemTagID{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
+				Members: []services.Member{
+					{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
+					{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
 				},
-			},
-			TagIDs: []db.WorkItemTagID{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
-			Members: []services.Member{
-				{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
-				{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
-			},
-		})
-		handleError(err)
-		fmt.Printf("demowi.WorkItemAssignedUsersJoin: %+v\n", demowi.WorkItemAssignedUsersJoin)
-		demoWorkItems = append(demoWorkItems, demowi)
+			})
+			handleError(err)
+			demoWorkItems = append(demoWorkItems, demowi)
+
+			<-semaphore // release
+		}(i)
 	}
+
+	wg.Wait()
 
 	demoWiSvc.Update(ctx, pool, demoWorkItems[0].WorkItemID, repos.DemoWorkItemUpdateParams{
 		Base: &db.WorkItemUpdateParams{
@@ -267,7 +303,12 @@ func main() {
 	 **/
 	logger.Info("Creating time entries...")
 
-	te1, err := teSvc.Create(ctx, pool, users[0], &db.TimeEntryCreateParams{
+	ucaller := services.CtxUser{
+		User:     users[0],
+		Teams:    *users[0].MemberTeamsJoin,
+		Projects: *users[0].MemberProjectsJoin,
+	}
+	te1, err := teSvc.Create(ctx, pool, ucaller, &db.TimeEntryCreateParams{
 		WorkItemID:      &demoWorkItems[0].WorkItemID,
 		ActivityID:      activity1.ActivityID,
 		UserID:          users[0].UserID,
@@ -277,10 +318,10 @@ func main() {
 	})
 	handleError(err, te1)
 
-	te2, err := teSvc.Create(ctx, pool, users[0], &db.TimeEntryCreateParams{
+	te2, err := teSvc.Create(ctx, pool, ucaller, &db.TimeEntryCreateParams{
 		ActivityID:      activity2.ActivityID,
 		UserID:          users[0].UserID,
-		TeamID:          &team1.TeamID,
+		TeamID:          &teamDemo.TeamID,
 		Comment:         "Doing really important stuff for the team",
 		Start:           time.Now(),
 		DurationMinutes: pointers.New(26),
@@ -288,10 +329,10 @@ func main() {
 	handleError(err, te2)
 
 	for _, u := range users {
-		_, err := teSvc.Create(ctx, pool, u, &db.TimeEntryCreateParams{
+		_, err := teSvc.Create(ctx, pool, services.CtxUser{User: u, Teams: *u.MemberTeamsJoin}, &db.TimeEntryCreateParams{
 			ActivityID: activity2.ActivityID,
 			UserID:     u.UserID,
-			TeamID:     &team1.TeamID,
+			TeamID:     &teamDemo.TeamID,
 			Comment:    "Generic comment (ongoing activity)",
 			Start:      time.Now().Add(time.Duration(rand.Intn(120)) * time.Hour),
 		})
@@ -331,6 +372,21 @@ func main() {
 		ReceiverRole: pointers.New(models.RoleUser),
 	})
 	handleError(err)
+
+	testUser := users[10]
+	fmt.Printf("testUser.UserID: %v\n", testUser.UserID)
+	err = wiSvc.AssignUsers(ctx, pool, demoWorkItems[0].WorkItemID, []services.Member{{Role: models.WorkItemRolePreparer, UserID: testUser.UserID}})
+	handleError(err)
+	// paginated queries have sortable id. for first query include previous results (-1 or -1 second)
+	// and then use returned cursor.
+	wis, err := db.WorkItemPaginatedByWorkItemID(ctx, pool, demoWorkItems[0].WorkItemID-1, models.DirectionAsc, db.WithWorkItemHavingClause(map[string][]any{
+		// adding inside where clause yields `aggregate functions are not allowed in WHERE, since it makes no sense.
+		//  see https://www.postgresql.org/docs/current/tutorial-agg.html
+		"$i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id))": {testUser.UserID},
+	}), db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, DemoWorkItem: true}))
+	handleError(err)
+	fmt.Printf("wis len: %v - First workitem found:\n", len(wis))
+	format.PrintJSONByTag(wis[0], "db")
 }
 
 func errAndExit(out []byte, err error) {
@@ -341,6 +397,6 @@ func errAndExit(out []byte, err error) {
 
 func handleError(err error, info ...any) {
 	if err != nil {
-		l.Sugar().Fatalf("error: %s || info: %v", err, info)
+		l.Sugar().Fatalf("initial-data error: %s || info: %v", err, info)
 	}
 }

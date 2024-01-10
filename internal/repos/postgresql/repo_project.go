@@ -23,10 +23,10 @@ func NewProject() *Project {
 
 var _ repos.Project = (*Project)(nil)
 
-func (u *Project) IsTeamInProject(ctx context.Context, db db.DBTX, arg db.IsTeamInProjectParams) (bool, error) {
-	r, err := u.q.IsTeamInProject(ctx, db, arg)
+func (u *Project) IsTeamInProject(ctx context.Context, d db.DBTX, arg db.IsTeamInProjectParams) (bool, error) {
+	r, err := u.q.IsTeamInProject(ctx, d, arg)
 	if err != nil {
-		return false, fmt.Errorf("q.IsTeamInProject: %w", parseDBErrorDetail(err))
+		return false, fmt.Errorf("q.IsTeamInProject: %w", ParseDBErrorDetail(err))
 	}
 
 	return r, nil
@@ -35,7 +35,7 @@ func (u *Project) IsTeamInProject(ctx context.Context, db db.DBTX, arg db.IsTeam
 func (u *Project) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (*db.Project, error) {
 	project, err := db.ProjectByProjectID(ctx, d, id, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get project: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not get project: %w", ParseDBErrorDetail(err))
 	}
 
 	return project, nil
@@ -44,7 +44,7 @@ func (u *Project) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...
 func (u *Project) ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (*db.Project, error) {
 	project, err := db.ProjectByName(ctx, d, name, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could not get project: %w", parseDBErrorDetail(err))
+		return nil, fmt.Errorf("could not get project: %w", ParseDBErrorDetail(err))
 	}
 
 	return project, nil
@@ -57,7 +57,7 @@ func (u *Project) UpdateBoardConfig(ctx context.Context, d db.DBTX, projectID db
 	WHERE project_id = $3`
 
 	if _, err := d.Exec(ctx, sqlstr, paths, obj, projectID); err != nil {
-		return fmt.Errorf("could not update project board config: %w", parseDBErrorDetail(err))
+		return fmt.Errorf("could not update project board config: %w", ParseDBErrorDetail(err))
 	}
 
 	return nil

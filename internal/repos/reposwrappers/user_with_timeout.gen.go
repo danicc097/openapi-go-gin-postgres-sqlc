@@ -41,8 +41,6 @@ type UserWithTimeoutConfig struct {
 
 	DeleteAPIKeyTimeout time.Duration
 
-	IsUserInProjectTimeout time.Duration
-
 	UpdateTimeout time.Duration
 }
 
@@ -162,16 +160,6 @@ func (_d UserWithTimeout) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey st
 		defer cancelFunc()
 	}
 	return _d.User.DeleteAPIKey(ctx, d, apiKey)
-}
-
-// IsUserInProject implements repos.User
-func (_d UserWithTimeout) IsUserInProject(ctx context.Context, db db.DBTX, arg db.IsUserInProjectParams) (b1 bool, err error) {
-	var cancelFunc func()
-	if _d.config.IsUserInProjectTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.IsUserInProjectTimeout)
-		defer cancelFunc()
-	}
-	return _d.User.IsUserInProject(ctx, db, arg)
 }
 
 // Update implements repos.User

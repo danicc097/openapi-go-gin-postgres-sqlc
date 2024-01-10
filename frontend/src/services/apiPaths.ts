@@ -1,4 +1,4 @@
-import CONFIG from 'src/config'
+import { CONFIG } from 'src/config'
 import type { paths } from 'src/types/schema'
 
 export function apiPath(path: keyof paths | null) {

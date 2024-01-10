@@ -79,6 +79,7 @@ type XoTestsUserAPIKeySelectConfig struct {
 	orderBy string
 	joins   XoTestsUserAPIKeyJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type XoTestsUserAPIKeySelectConfigOption func(*XoTestsUserAPIKeySelectConfig)
 
@@ -127,7 +128,7 @@ func WithXoTestsUserAPIKeyJoin(joins XoTestsUserAPIKeyJoins) XoTestsUserAPIKeySe
 	}
 }
 
-// WithXoTestsUserAPIKeyFilters adds the given filters, which can be dynamically parameterized
+// WithXoTestsUserAPIKeyFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -139,6 +140,20 @@ func WithXoTestsUserAPIKeyJoin(joins XoTestsUserAPIKeyJoins) XoTestsUserAPIKeySe
 func WithXoTestsUserAPIKeyFilters(filters map[string][]any) XoTestsUserAPIKeySelectConfigOption {
 	return func(s *XoTestsUserAPIKeySelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithXoTestsUserAPIKeyHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithXoTestsUserAPIKeyHavingClause(conditions map[string][]any) XoTestsUserAPIKeySelectConfigOption {
+	return func(s *XoTestsUserAPIKeySelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -240,7 +255,7 @@ func (xtuak *XoTestsUserAPIKey) Delete(ctx context.Context, db DB) error {
 
 // XoTestsUserAPIKeyPaginatedByUserAPIKeyID returns a cursor-paginated list of XoTestsUserAPIKey.
 func XoTestsUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID XoTestsUserAPIKeyID, direction models.Direction, opts ...XoTestsUserAPIKeySelectConfigOption) ([]XoTestsUserAPIKey, error) {
-	c := &XoTestsUserAPIKeySelectConfig{joins: XoTestsUserAPIKeyJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsUserAPIKeySelectConfig{joins: XoTestsUserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -266,6 +281,22 @@ func XoTestsUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAP
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -301,14 +332,15 @@ func XoTestsUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAP
 	 FROM xo_tests.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id %s $1
 	 %s   %s 
+  %s 
   ORDER BY 
-		user_api_key_id %s `, selects, joins, operator, filters, groupbys, direction)
+		user_api_key_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserAPIKeyPaginatedByUserAPIKeyID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsUserAPIKey/Paginated/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
@@ -323,7 +355,7 @@ func XoTestsUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAP
 //
 // Generated from index 'user_api_keys_api_key_key'.
 func XoTestsUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...XoTestsUserAPIKeySelectConfigOption) (*XoTestsUserAPIKey, error) {
-	c := &XoTestsUserAPIKeySelectConfig{joins: XoTestsUserAPIKeyJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsUserAPIKeySelectConfig{joins: XoTestsUserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -349,6 +381,22 @@ func XoTestsUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts .
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -379,14 +427,15 @@ func XoTestsUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts .
 	 FROM xo_tests.user_api_keys %s 
 	 WHERE user_api_keys.api_key = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserAPIKeyByAPIKey */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, apiKey)
-	rows, err := db.Query(ctx, sqlstr, append([]any{apiKey}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{apiKey}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
@@ -402,7 +451,7 @@ func XoTestsUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts .
 //
 // Generated from index 'user_api_keys_pkey'.
 func XoTestsUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID XoTestsUserAPIKeyID, opts ...XoTestsUserAPIKeySelectConfigOption) (*XoTestsUserAPIKey, error) {
-	c := &XoTestsUserAPIKeySelectConfig{joins: XoTestsUserAPIKeyJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsUserAPIKeySelectConfig{joins: XoTestsUserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -428,6 +477,22 @@ func XoTestsUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID Xo
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -458,14 +523,15 @@ func XoTestsUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID Xo
 	 FROM xo_tests.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserAPIKeyByUserAPIKeyID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userAPIKeyID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
@@ -481,7 +547,7 @@ func XoTestsUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID Xo
 //
 // Generated from index 'user_api_keys_user_id_key'.
 func XoTestsUserAPIKeyByUserID(ctx context.Context, db DB, userID XoTestsUserID, opts ...XoTestsUserAPIKeySelectConfigOption) (*XoTestsUserAPIKey, error) {
-	c := &XoTestsUserAPIKeySelectConfig{joins: XoTestsUserAPIKeyJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsUserAPIKeySelectConfig{joins: XoTestsUserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -507,6 +573,22 @@ func XoTestsUserAPIKeyByUserID(ctx context.Context, db DB, userID XoTestsUserID,
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -537,14 +619,15 @@ func XoTestsUserAPIKeyByUserID(ctx context.Context, db DB, userID XoTestsUserID,
 	 FROM xo_tests.user_api_keys %s 
 	 WHERE user_api_keys.user_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserAPIKeyByUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}

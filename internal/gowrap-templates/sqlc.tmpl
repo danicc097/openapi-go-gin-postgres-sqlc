@@ -24,7 +24,7 @@ func (w {{$decorator}}) {{$method.Declaration}} {
 
 	{{$method.ResultsNames}} = w.{{$.Interface.Name}}.{{$method.Call}}
 	if err != nil {
-		err = fmt.Errorf("{{$.Interface.Name}}: %w", parseDBErrorDetail(err))
+		err = fmt.Errorf("{{$.Interface.Name}}: %w", ParseDBErrorDetail(err))
 	}
 	return
 }

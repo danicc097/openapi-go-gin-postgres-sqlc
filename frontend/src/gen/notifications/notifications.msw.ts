@@ -18,7 +18,7 @@ export const getGetPaginatedNotificationsMock = () => ({
         faker.word.sample(),
       ),
       link: faker.helpers.arrayElement([faker.word.sample(), null]),
-      notificationID: {},
+      notificationID: faker.number.int({ min: undefined, max: undefined }),
       notificationType: faker.helpers.arrayElement(Object.values(NotificationType)),
       receiver: faker.word.sample(),
       sender: faker.word.sample(),

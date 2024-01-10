@@ -17,17 +17,18 @@ import (
 	\"github.com/jackc/pgx/v5\"
 	\"github.com/stretchr/testify/assert\"
 	\"github.com/stretchr/testify/require\"
+	\"go.uber.org/zap\"
 	\"go.uber.org/zap/zaptest\"
 )
 
 func Test${pascal_name}_Update(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	requiredProject := models.ProjectDemo
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	team, err := svc.Team.Create(context.Background(), testPool, postgresqltestutil.RandomTeamCreateParams(t, internal.ProjectIDByName[requiredProject]))
@@ -37,7 +38,7 @@ func Test${pascal_name}_Update(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, team.TeamID)
+	tagCreator.User, err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, team.TeamID)
 	require.NoError(t, err)
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
@@ -85,12 +86,14 @@ done)
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			repos := services.CreateTestRepos()
+			repos := services.CreateTestRepos(t)
 			repos.Notification = repostesting.NewFakeNotification() // unless we want to test notification integration
 
 			ctx := context.Background()
-			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
-			defer tx.Rollback(ctx)
+
+			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
+			require.NoError(t, err)
+			defer tx.Rollback(ctx) // rollback errors should be ignored
 
 			user, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				WithAPIKey: true,
@@ -98,7 +101,7 @@ done)
 			require.NoError(t, err)
 
 			if tc.args.withUserInProject {
-				err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)
+				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)
 				require.NoError(t, err)
 			}
 

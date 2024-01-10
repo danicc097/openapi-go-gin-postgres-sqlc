@@ -1,11 +1,14 @@
 package services
 
 import (
+	"testing"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 // CreateRepos creates repositories for service usage.
@@ -133,10 +136,12 @@ func CreateRepos() *repos.Repos {
 }
 
 // CreateTestRepos creates repositories with convenient wrappers for testing.
-func CreateTestRepos() *repos.Repos {
+func CreateTestRepos(t *testing.T) *repos.Repos {
 	repos := CreateRepos()
 
-	repos.User = reposwrappers.NewUserWithRetry(repos.User, 5, 65*time.Millisecond) // created_at unique
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+
+	repos.User = reposwrappers.NewUserWithRetry(repos.User, logger, 5, 65*time.Millisecond) // created_at unique
 
 	return repos
 }

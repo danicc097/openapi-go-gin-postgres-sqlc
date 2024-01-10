@@ -30,7 +30,7 @@ export default ({ mode }) => {
       // nodePolyfills(),
     ],
     server: {
-      port: Number(Config.FRONTEND_PORT) || 3020,
+      port: Number(Config.FRONTEND_PORT) || 5143,
       strictPort: true,
       // hmr: {
       //   protocol: 'wss',

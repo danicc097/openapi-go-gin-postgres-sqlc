@@ -49,8 +49,8 @@ create table projects (
   , description text not null
   , work_items_table_name text not null unique -- ensures project inserts are documented properly, postmigration script checks this column
   , board_config jsonb not null default '{}'
-  , created_at timestamp with time zone default current_timestamp not null
-  , updated_at timestamp with time zone default current_timestamp not null
+  , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
+  , updated_at timestamp with time zone default CLOCK_TIMESTAMP() not null
   , check (name ~ '^[a-zA-Z0-9_\-]+$')
 );
 
@@ -65,8 +65,8 @@ create table teams (
   , project_id int not null --limited to a project only
   , name text not null
   , description text not null
-  , created_at timestamp with time zone default current_timestamp not null
-  , updated_at timestamp with time zone default current_timestamp not null
+  , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
+  , updated_at timestamp with time zone default CLOCK_TIMESTAMP() not null
   , foreign key (project_id) references projects (project_id) on delete cascade
   , unique (name , project_id)
 );
@@ -107,8 +107,9 @@ create table users (
   , has_personal_notifications boolean default false not null
   , has_global_notifications boolean default false not null
   -- should have a new `id bigserial` col for pagination alongside existing uuid instead of this
-  , created_at timestamp with time zone default current_timestamp not null unique
-  , updated_at timestamp with time zone default current_timestamp not null
+  -- cannot use now()/current_timestamp if we want to use transactions reliably
+  , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null unique
+  , updated_at timestamp with time zone default CLOCK_TIMESTAMP() not null
   , deleted_at timestamp with time zone
   , foreign key (api_key_id) references user_api_keys (user_api_key_id) on delete cascade
 );
@@ -160,7 +161,7 @@ create table notifications (
   , body text not null
   , labels text[] not null
   , link text
-  , created_at timestamp with time zone default current_timestamp not null
+  , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
   , sender uuid not null
   , receiver uuid -- can be null for 'global' type
   , notification_type notification_type not null
@@ -261,7 +262,7 @@ create table entity_notifications (
   , id text not null
   , message text not null
   , topic text not null
-  , created_at timestamp with time zone default current_timestamp not null
+  , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
 );
 
 comment on column entity_notifications.topic is '"type":models.Topics';
@@ -345,8 +346,8 @@ create table work_items (
   , kanban_step_id int not null
   , closed_at timestamp with time zone -- NULL: active
   , target_date timestamp with time zone not null
-  , created_at timestamp with time zone default current_timestamp not null
-  , updated_at timestamp with time zone default current_timestamp not null
+  , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
+  , updated_at timestamp with time zone default CLOCK_TIMESTAMP() not null
   , deleted_at timestamp with time zone
   , foreign key (team_id) references teams (team_id) on delete cascade
   , foreign key (work_item_type_id) references work_item_types (work_item_type_id) on delete cascade
@@ -392,8 +393,8 @@ create table work_item_comments (
   , work_item_id bigint not null
   , user_id uuid not null
   , message text not null
-  , created_at timestamp with time zone default current_timestamp not null
-  , updated_at timestamp with time zone default current_timestamp not null
+  , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
+  , updated_at timestamp with time zone default CLOCK_TIMESTAMP() not null
   , foreign key (user_id) references users (user_id) on delete cascade
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
 );

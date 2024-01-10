@@ -13,6 +13,7 @@ export type Scope = typeof Scope[keyof typeof Scope]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Scope = {
+  'project-member': 'project-member',
   'users:read': 'users:read',
   'users:write': 'users:write',
   'users:delete': 'users:delete',

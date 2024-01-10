@@ -19,6 +19,6 @@ func TestPingRoute(t *testing.T) {
 	res, err := srv.client.PingWithResponse(context.Background())
 	require.NoError(t, err)
 
-	assert.Equal(t, http.StatusOK, res.StatusCode())
+	assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))
 	assert.Equal(t, "pong", string(res.Body))
 }

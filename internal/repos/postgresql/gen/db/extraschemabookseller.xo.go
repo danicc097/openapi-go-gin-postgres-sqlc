@@ -66,6 +66,7 @@ type ExtraSchemaBookSellerSelectConfig struct {
 	orderBy string
 	joins   ExtraSchemaBookSellerJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type ExtraSchemaBookSellerSelectConfigOption func(*ExtraSchemaBookSellerSelectConfig)
 
@@ -97,7 +98,7 @@ func WithExtraSchemaBookSellerJoin(joins ExtraSchemaBookSellerJoins) ExtraSchema
 	}
 }
 
-// WithExtraSchemaBookSellerFilters adds the given filters, which can be dynamically parameterized
+// WithExtraSchemaBookSellerFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -109,6 +110,20 @@ func WithExtraSchemaBookSellerJoin(joins ExtraSchemaBookSellerJoins) ExtraSchema
 func WithExtraSchemaBookSellerFilters(filters map[string][]any) ExtraSchemaBookSellerSelectConfigOption {
 	return func(s *ExtraSchemaBookSellerSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithExtraSchemaBookSellerHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithExtraSchemaBookSellerHavingClause(conditions map[string][]any) ExtraSchemaBookSellerSelectConfigOption {
+	return func(s *ExtraSchemaBookSellerSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -198,7 +213,7 @@ func (esbs *ExtraSchemaBookSeller) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'book_sellers_book_id_seller_idx'.
 func ExtraSchemaBookSellersByBookIDSeller(ctx context.Context, db DB, bookID ExtraSchemaBookID, seller ExtraSchemaUserID, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
-	c := &ExtraSchemaBookSellerSelectConfig{joins: ExtraSchemaBookSellerJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookSellerSelectConfig{joins: ExtraSchemaBookSellerJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -224,6 +239,22 @@ func ExtraSchemaBookSellersByBookIDSeller(ctx context.Context, db DB, bookID Ext
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -258,14 +289,15 @@ func ExtraSchemaBookSellersByBookIDSeller(ctx context.Context, db DB, bookID Ext
 	 FROM extra_schema.book_sellers %s 
 	 WHERE book_sellers.book_id = $1 AND book_sellers.seller = $2
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookSellersByBookIDSeller */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, seller)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, seller}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, seller}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaBookSeller/BookSellersByBookIDSeller/Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
@@ -283,7 +315,7 @@ func ExtraSchemaBookSellersByBookIDSeller(ctx context.Context, db DB, bookID Ext
 //
 // Generated from index 'book_sellers_pkey'.
 func ExtraSchemaBookSellersByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookID, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
-	c := &ExtraSchemaBookSellerSelectConfig{joins: ExtraSchemaBookSellerJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookSellerSelectConfig{joins: ExtraSchemaBookSellerJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -309,6 +341,22 @@ func ExtraSchemaBookSellersByBookID(ctx context.Context, db DB, bookID ExtraSche
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -343,14 +391,15 @@ func ExtraSchemaBookSellersByBookID(ctx context.Context, db DB, bookID ExtraSche
 	 FROM extra_schema.book_sellers %s 
 	 WHERE book_sellers.book_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookSellersByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaBookSeller/BookSellerByBookIDSeller/Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
@@ -368,7 +417,7 @@ func ExtraSchemaBookSellersByBookID(ctx context.Context, db DB, bookID ExtraSche
 //
 // Generated from index 'book_sellers_pkey'.
 func ExtraSchemaBookSellersBySeller(ctx context.Context, db DB, seller ExtraSchemaUserID, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
-	c := &ExtraSchemaBookSellerSelectConfig{joins: ExtraSchemaBookSellerJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookSellerSelectConfig{joins: ExtraSchemaBookSellerJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -394,6 +443,22 @@ func ExtraSchemaBookSellersBySeller(ctx context.Context, db DB, seller ExtraSche
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -428,14 +493,15 @@ func ExtraSchemaBookSellersBySeller(ctx context.Context, db DB, seller ExtraSche
 	 FROM extra_schema.book_sellers %s 
 	 WHERE book_sellers.seller = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookSellersBySeller */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, seller)
-	rows, err := db.Query(ctx, sqlstr, append([]any{seller}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{seller}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaBookSeller/BookSellerByBookIDSeller/Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
@@ -453,7 +519,7 @@ func ExtraSchemaBookSellersBySeller(ctx context.Context, db DB, seller ExtraSche
 //
 // Generated from index 'book_sellers_seller_book_id_idx'.
 func ExtraSchemaBookSellersBySellerBookID(ctx context.Context, db DB, seller ExtraSchemaUserID, bookID ExtraSchemaBookID, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
-	c := &ExtraSchemaBookSellerSelectConfig{joins: ExtraSchemaBookSellerJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookSellerSelectConfig{joins: ExtraSchemaBookSellerJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -479,6 +545,22 @@ func ExtraSchemaBookSellersBySellerBookID(ctx context.Context, db DB, seller Ext
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -513,14 +595,15 @@ func ExtraSchemaBookSellersBySellerBookID(ctx context.Context, db DB, seller Ext
 	 FROM extra_schema.book_sellers %s 
 	 WHERE book_sellers.seller = $1 AND book_sellers.book_id = $2
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookSellersBySellerBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, seller, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{seller, bookID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{seller, bookID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaBookSeller/BookSellersBySellerBookID/Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}

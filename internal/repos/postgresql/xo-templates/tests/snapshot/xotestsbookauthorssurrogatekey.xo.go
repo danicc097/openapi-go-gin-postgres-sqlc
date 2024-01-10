@@ -79,6 +79,7 @@ type XoTestsBookAuthorsSurrogateKeySelectConfig struct {
 	orderBy string
 	joins   XoTestsBookAuthorsSurrogateKeyJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type XoTestsBookAuthorsSurrogateKeySelectConfigOption func(*XoTestsBookAuthorsSurrogateKeySelectConfig)
 
@@ -120,7 +121,7 @@ type User__BASK_XoTestsBookAuthorsSurrogateKey struct {
 	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// WithXoTestsBookAuthorsSurrogateKeyFilters adds the given filters, which can be dynamically parameterized
+// WithXoTestsBookAuthorsSurrogateKeyFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -132,6 +133,20 @@ type User__BASK_XoTestsBookAuthorsSurrogateKey struct {
 func WithXoTestsBookAuthorsSurrogateKeyFilters(filters map[string][]any) XoTestsBookAuthorsSurrogateKeySelectConfigOption {
 	return func(s *XoTestsBookAuthorsSurrogateKeySelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithXoTestsBookAuthorsSurrogateKeyHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithXoTestsBookAuthorsSurrogateKeyHavingClause(conditions map[string][]any) XoTestsBookAuthorsSurrogateKeySelectConfigOption {
+	return func(s *XoTestsBookAuthorsSurrogateKeySelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -273,7 +288,7 @@ func (xtbask *XoTestsBookAuthorsSurrogateKey) Delete(ctx context.Context, db DB)
 
 // XoTestsBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID returns a cursor-paginated list of XoTestsBookAuthorsSurrogateKey.
 func XoTestsBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx context.Context, db DB, bookAuthorsSurrogateKeyID XoTestsBookAuthorsSurrogateKeyID, direction models.Direction, opts ...XoTestsBookAuthorsSurrogateKeySelectConfigOption) ([]XoTestsBookAuthorsSurrogateKey, error) {
-	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{joins: XoTestsBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{joins: XoTestsBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -299,6 +314,22 @@ func XoTestsBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx cont
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -340,14 +371,15 @@ func XoTestsBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx cont
 	 FROM xo_tests.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id %s $1
 	 %s   %s 
+  %s 
   ORDER BY 
-		book_authors_surrogate_key_id %s `, selects, joins, operator, filters, groupbys, direction)
+		book_authors_surrogate_key_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsBookAuthorsSurrogateKey/Paginated/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
@@ -362,7 +394,7 @@ func XoTestsBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx cont
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
 func XoTestsBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, bookID XoTestsBookID, authorID XoTestsUserID, opts ...XoTestsBookAuthorsSurrogateKeySelectConfigOption) (*XoTestsBookAuthorsSurrogateKey, error) {
-	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{joins: XoTestsBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{joins: XoTestsBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -388,6 +420,22 @@ func XoTestsBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -424,14 +472,15 @@ func XoTestsBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, 
 	 FROM xo_tests.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.book_id = $1 AND book_authors_surrogate_key.author_id = $2
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsSurrogateKeyByBookIDAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, authorID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, authorID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookIDAuthorID/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
@@ -447,7 +496,7 @@ func XoTestsBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, 
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
 func XoTestsBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID XoTestsBookID, opts ...XoTestsBookAuthorsSurrogateKeySelectConfigOption) ([]XoTestsBookAuthorsSurrogateKey, error) {
-	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{joins: XoTestsBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{joins: XoTestsBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -473,6 +522,22 @@ func XoTestsBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -509,14 +574,15 @@ func XoTestsBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID 
 	 FROM xo_tests.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.book_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsSurrogateKeysByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsBookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
@@ -534,7 +600,7 @@ func XoTestsBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID 
 //
 // Generated from index 'book_authors_surrogate_key_book_id_author_id_key'.
 func XoTestsBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, authorID XoTestsUserID, opts ...XoTestsBookAuthorsSurrogateKeySelectConfigOption) ([]XoTestsBookAuthorsSurrogateKey, error) {
-	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{joins: XoTestsBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{joins: XoTestsBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -560,6 +626,22 @@ func XoTestsBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, autho
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -596,14 +678,15 @@ func XoTestsBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, autho
 	 FROM xo_tests.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.author_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsSurrogateKeysByAuthorID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, authorID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{authorID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsBookAuthorsSurrogateKey/BookAuthorsSurrogateKeyByBookIDAuthorID/Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}
@@ -621,7 +704,7 @@ func XoTestsBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, autho
 //
 // Generated from index 'book_authors_surrogate_key_pkey'.
 func XoTestsBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Context, db DB, bookAuthorsSurrogateKeyID XoTestsBookAuthorsSurrogateKeyID, opts ...XoTestsBookAuthorsSurrogateKeySelectConfigOption) (*XoTestsBookAuthorsSurrogateKey, error) {
-	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{joins: XoTestsBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{joins: XoTestsBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -647,6 +730,22 @@ func XoTestsBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Conte
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -683,14 +782,15 @@ func XoTestsBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Conte
 	 FROM xo_tests.book_authors_surrogate_key %s 
 	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookAuthorsSurrogateKeyID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookAuthorsSurrogateKeyID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("book_authors_surrogate_key/BookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID/db.Query: %w", &XoError{Entity: "Book authors surrogate key", Err: err}))
 	}

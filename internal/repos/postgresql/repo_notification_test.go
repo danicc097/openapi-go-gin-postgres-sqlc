@@ -18,21 +18,22 @@ func TestNotification_Create(t *testing.T) {
 
 	notificationRepo := postgresql.NewNotification()
 
-	sender, err := postgresqltestutil.NewRandomUser(t, testPool)
-	require.NoError(t, err)
+	sender := postgresqltestutil.NewRandomUser(t, testPool)
 
 	t.Run("correct_personal_notification", func(t *testing.T) {
 		t.Parallel()
 
-		receiver, _ := postgresqltestutil.NewRandomUser(t, testPool)
+		receiver := postgresqltestutil.NewRandomUser(t, testPool)
 
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, pointers.New(receiver.UserID), db.NotificationTypePersonal)
 
 		ctx := context.Background()
-		tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{}) // prevent fan out trigger from affecting other tests
-		defer tx.Rollback(ctx)
+		// prevent fan out trigger from affecting other tests
+		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
+		require.NoError(t, err)
+		defer tx.Rollback(ctx) // rollback errors should be ignored
 
-		_, err := notificationRepo.Create(context.Background(), tx, ncp)
+		_, err = notificationRepo.Create(context.Background(), tx, ncp)
 		require.NoError(t, err)
 
 		params := db.GetUserNotificationsParams{UserID: receiver.UserID.UUID, NotificationType: db.NotificationTypePersonal}
@@ -47,13 +48,13 @@ func TestNotification_Create(t *testing.T) {
 
 		var err error
 
-		receiverRank3, err := postgresqltestutil.NewRandomUser(t, testPool)
+		receiverRank3 := postgresqltestutil.NewRandomUser(t, testPool)
 		require.NoError(t, err)
 		receiverRank3.RoleRank = 3
 		_, err = receiverRank3.Update(context.Background(), testPool)
 		require.NoError(t, err)
 
-		receiverRank1, err := postgresqltestutil.NewRandomUser(t, testPool)
+		receiverRank1 := postgresqltestutil.NewRandomUser(t, testPool)
 		require.NoError(t, err)
 		receiverRank1.RoleRank = 1
 		_, err = receiverRank1.Update(context.Background(), testPool)
@@ -66,7 +67,7 @@ func TestNotification_Create(t *testing.T) {
 		ctx := context.Background()
 		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{}) // prevent fan out trigger from affecting other tests
 		require.NoError(t, err)
-		defer tx.Rollback(ctx)
+		defer tx.Rollback(ctx) // rollback errors should be ignored
 
 		_, err = notificationRepo.Create(context.Background(), tx, ncp)
 		require.NoError(t, err)

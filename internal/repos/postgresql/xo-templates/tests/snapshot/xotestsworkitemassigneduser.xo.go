@@ -75,6 +75,7 @@ type XoTestsWorkItemAssignedUserSelectConfig struct {
 	orderBy string
 	joins   XoTestsWorkItemAssignedUserJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type XoTestsWorkItemAssignedUserSelectConfigOption func(*XoTestsWorkItemAssignedUserSelectConfig)
 
@@ -116,7 +117,7 @@ type User__WIAU_XoTestsWorkItemAssignedUser struct {
 	Role *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
-// WithXoTestsWorkItemAssignedUserFilters adds the given filters, which can be dynamically parameterized
+// WithXoTestsWorkItemAssignedUserFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -128,6 +129,20 @@ type User__WIAU_XoTestsWorkItemAssignedUser struct {
 func WithXoTestsWorkItemAssignedUserFilters(filters map[string][]any) XoTestsWorkItemAssignedUserSelectConfigOption {
 	return func(s *XoTestsWorkItemAssignedUserSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithXoTestsWorkItemAssignedUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithXoTestsWorkItemAssignedUserHavingClause(conditions map[string][]any) XoTestsWorkItemAssignedUserSelectConfigOption {
+	return func(s *XoTestsWorkItemAssignedUserSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -270,7 +285,7 @@ func (xtwiau *XoTestsWorkItemAssignedUser) Delete(ctx context.Context, db DB) er
 //
 // Generated from index 'work_item_assigned_user_assigned_user_work_item_id_idx'.
 func XoTestsWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, assignedUser XoTestsUserID, workItemID XoTestsWorkItemID, opts ...XoTestsWorkItemAssignedUserSelectConfigOption) ([]XoTestsWorkItemAssignedUser, error) {
-	c := &XoTestsWorkItemAssignedUserSelectConfig{joins: XoTestsWorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsWorkItemAssignedUserSelectConfig{joins: XoTestsWorkItemAssignedUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -296,6 +311,22 @@ func XoTestsWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, d
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -331,14 +362,15 @@ func XoTestsWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, d
 	 FROM xo_tests.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.assigned_user = $1 AND work_item_assigned_user.work_item_id = $2
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemAssignedUsersByAssignedUserWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, assignedUser, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser, workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser, workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsWorkItemAssignedUser/WorkItemAssignedUserByAssignedUserWorkItemID/Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
@@ -356,7 +388,7 @@ func XoTestsWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, d
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func XoTestsWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, workItemID XoTestsWorkItemID, assignedUser XoTestsUserID, opts ...XoTestsWorkItemAssignedUserSelectConfigOption) (*XoTestsWorkItemAssignedUser, error) {
-	c := &XoTestsWorkItemAssignedUserSelectConfig{joins: XoTestsWorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsWorkItemAssignedUserSelectConfig{joins: XoTestsWorkItemAssignedUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -382,6 +414,22 @@ func XoTestsWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -417,14 +465,15 @@ func XoTestsWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db
 	 FROM xo_tests.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.work_item_id = $1 AND work_item_assigned_user.assigned_user = $2
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemAssignedUserByWorkItemIDAssignedUser */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, assignedUser}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, assignedUser}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_item_assigned_user/WorkItemAssignedUserByWorkItemIDAssignedUser/db.Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
@@ -440,7 +489,7 @@ func XoTestsWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func XoTestsWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID XoTestsWorkItemID, opts ...XoTestsWorkItemAssignedUserSelectConfigOption) ([]XoTestsWorkItemAssignedUser, error) {
-	c := &XoTestsWorkItemAssignedUserSelectConfig{joins: XoTestsWorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsWorkItemAssignedUserSelectConfig{joins: XoTestsWorkItemAssignedUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -466,6 +515,22 @@ func XoTestsWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workIt
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -501,14 +566,15 @@ func XoTestsWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workIt
 	 FROM xo_tests.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.work_item_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemAssignedUsersByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsWorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}
@@ -526,7 +592,7 @@ func XoTestsWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workIt
 //
 // Generated from index 'work_item_assigned_user_pkey'.
 func XoTestsWorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUser XoTestsUserID, opts ...XoTestsWorkItemAssignedUserSelectConfigOption) ([]XoTestsWorkItemAssignedUser, error) {
-	c := &XoTestsWorkItemAssignedUserSelectConfig{joins: XoTestsWorkItemAssignedUserJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsWorkItemAssignedUserSelectConfig{joins: XoTestsWorkItemAssignedUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -552,6 +618,22 @@ func XoTestsWorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assi
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -587,14 +669,15 @@ func XoTestsWorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assi
 	 FROM xo_tests.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.assigned_user = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemAssignedUsersByAssignedUser */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, assignedUser)
-	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{assignedUser}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsWorkItemAssignedUser/WorkItemAssignedUserByWorkItemIDAssignedUser/Query: %w", &XoError{Entity: "Work item assigned user", Err: err}))
 	}

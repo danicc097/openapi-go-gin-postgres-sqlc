@@ -7,13 +7,14 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
 
 func TestAuthorization_Roles(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	authzsvc, err := services.NewAuthorization(logger)
 	require.NoError(t, err)
@@ -32,7 +33,7 @@ func TestAuthorization_Roles(t *testing.T) {
 func TestAuthorization_Scopes(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	authzsvc, err := services.NewAuthorization(logger)
 	require.NoError(t, err)

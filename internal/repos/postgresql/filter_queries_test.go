@@ -113,8 +113,6 @@ func buildFilterArgs(filter reflect.Value, zero bool) ([]reflect.Value, error) {
 			break
 		}
 		if t == reflect.TypeOf(uuid.UUID{}) {
-			// FIXME: unsupported filter type: db.UserID
-			// need to handle case reflect.Struct with field UUID
 			args = append(args, reflect.ValueOf(uuid.Nil))
 		}
 	case reflect.Slice: // assume testing with multiple parameters

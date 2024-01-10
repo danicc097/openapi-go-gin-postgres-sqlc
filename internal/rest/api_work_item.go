@@ -12,7 +12,7 @@ import (
 )
 
 func (h *StrictHandlers) CreateWorkitemComment(c *gin.Context, request CreateWorkitemCommentRequestObject) (CreateWorkitemCommentResponseObject, error) {
-	// caller := getUserFromCtx(c)
+	// caller , _ := getUserFromCtx(c)
 	tx := GetTxFromCtx(c)
 	_ = tx
 
@@ -37,7 +37,7 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 
 	span := GetSpanFromCtx(c)
 
-	// caller := getUserFromCtx(c)
+	// caller , _ := getUserFromCtx(c)
 	tx := GetTxFromCtx(c)
 
 	jsonBody, err := io.ReadAll(c.Request.Body)

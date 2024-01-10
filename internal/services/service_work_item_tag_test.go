@@ -15,17 +15,18 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
 
 func TestWorkItemTag_Update(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	requiredProject := models.ProjectDemo
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	team, err := svc.Team.Create(context.Background(), testPool, postgresqltestutil.RandomTeamCreateParams(t, internal.ProjectIDByName[requiredProject]))
@@ -35,11 +36,11 @@ func TestWorkItemTag_Update(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, team.TeamID)
+	tagCreator.User, err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, team.TeamID)
 	require.NoError(t, err)
 
 	witCreateParams := postgresqltestutil.RandomWorkItemTagCreateParams(t, internal.ProjectIDByName[requiredProject])
-	wit, err := svc.WorkItemTag.Create(context.Background(), testPool, tagCreator.User, witCreateParams)
+	wit, err := svc.WorkItemTag.Create(context.Background(), testPool, *services.NewCtxUser(tagCreator.User), witCreateParams)
 	require.NoError(t, err)
 
 	type args struct {
@@ -86,12 +87,13 @@ func TestWorkItemTag_Update(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			repos := services.CreateTestRepos()
+			repos := services.CreateTestRepos(t)
 			repos.Notification = repostesting.NewFakeNotification()
 
 			ctx := context.Background()
-			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
-			defer tx.Rollback(ctx)
+			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
+			require.NoError(t, err)
+			defer tx.Rollback(ctx) // rollback errors should be ignored
 
 			user, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				WithAPIKey: true,
@@ -99,12 +101,12 @@ func TestWorkItemTag_Update(t *testing.T) {
 			require.NoError(t, err)
 
 			if tc.args.withUserInProject {
-				err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)
+				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)
 				require.NoError(t, err)
 			}
 
 			w := services.NewWorkItemTag(logger, repos)
-			got, err := w.Update(ctx, tx, user.User, tc.args.id, tc.args.params)
+			got, err := w.Update(ctx, tx, *services.NewCtxUser(user.User), tc.args.id, tc.args.params)
 			if (err != nil) && tc.errorContains == "" {
 				t.Fatalf("unexpected error = %v", err)
 			}

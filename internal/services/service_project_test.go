@@ -39,7 +39,7 @@ package services_test
 // 		return proj, nil
 // 	}
 // 	fakeTeamRepo := &repostesting.FakeTeam{}
-// 	p := services.NewProject(zaptest.NewLogger(t).Sugar(), fakeProjectRepo, fakeTeamRepo)
+// 	p := services.NewProject(zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar(), fakeProjectRepo, fakeTeamRepo)
 
 // 	type args struct {
 // 		update map[string]any

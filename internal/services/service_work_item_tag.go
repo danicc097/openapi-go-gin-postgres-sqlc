@@ -9,6 +9,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
+	"golang.org/x/exp/slices"
 )
 
 type WorkItemTag struct {
@@ -49,28 +50,23 @@ func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, proj
 }
 
 // Create creates a new work item tag.
-func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller *db.User, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller CtxUser, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	// TODO: we should use GetUserInProject and not rely on db.User joins.
-	// but we want the ctx user set from auth mw
-	// to be as light as possible.
+	// TODO: user set from authmiddleware should be typed user with predefined useful joins like teams and projects.
+	// then pass over ass context. we could replace `caller CtxUser` with just its userID and fetch it every single time with its proper joins,
+	// but why would we... caller is something used all over the place for every service method.
 	// userInProject := false
-	// for _, team := range *caller.MemberTeamsJoin {
+	// for _, team := range caller.MemberTeamsJoin {
 	// 	if team.ProjectID == params.ProjectID {
 	// 		userInProject = true
 	// 	}
 	// }
-
-	userInProject, err := wit.repos.User.IsUserInProject(ctx, d, db.IsUserInProjectParams{
-		UserID:    caller.UserID.UUID,
-		ProjectID: int32(params.ProjectID),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("repos.User.IsUserInProject: %w", err)
+	userProjects := make([]db.ProjectID, len(caller.Projects))
+	for i, p := range caller.Projects {
+		userProjects[i] = p.ProjectID
 	}
-
-	if !userInProject {
+	if !slices.Contains(userProjects, params.ProjectID) {
 		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "user is not a member of project %q", internal.ProjectNameByID[params.ProjectID])
 	}
 
@@ -83,18 +79,20 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller *db.User, 
 }
 
 // Update updates an existing work item tag.
-func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller *db.User, id db.WorkItemTagID, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller CtxUser, id db.WorkItemTagID, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
-
-	usersvc := NewUser(wit.logger, wit.repos)
 
 	witObj, err := wit.repos.WorkItemTag.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("work item tag not found: %w", err)
 	}
 
-	if err := usersvc.UserInProject(ctx, d, caller.UserID, witObj.ProjectID); err != nil {
-		return nil, fmt.Errorf("user project check: %w", err)
+	userProjects := make([]db.ProjectID, len(caller.Projects))
+	for i, p := range caller.Projects {
+		userProjects[i] = p.ProjectID
+	}
+	if !slices.Contains(userProjects, witObj.ProjectID) {
+		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "user is not a member of project %q", internal.ProjectNameByID[witObj.ProjectID])
 	}
 
 	witObj, err = wit.repos.WorkItemTag.Update(ctx, d, id, params)
@@ -106,7 +104,7 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller *db.User, 
 }
 
 // Delete deletes a work item tag by ID.
-func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, caller *db.User, id db.WorkItemTagID) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, caller CtxUser, id db.WorkItemTagID) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	witObj, err := wit.repos.WorkItemTag.Delete(ctx, d, id)

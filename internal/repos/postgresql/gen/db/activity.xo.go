@@ -85,10 +85,12 @@ func (a *Activity) SetUpdateParams(params *ActivityUpdateParams) {
 }
 
 type ActivitySelectConfig struct {
-	limit     string
-	orderBy   string
-	joins     ActivityJoins
-	filters   map[string][]any
+	limit   string
+	orderBy string
+	joins   ActivityJoins
+	filters map[string][]any
+	having  map[string][]any
+
 	deletedAt string
 }
 type ActivitySelectConfigOption func(*ActivitySelectConfig)
@@ -147,7 +149,7 @@ func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 	}
 }
 
-// WithActivityFilters adds the given filters, which can be dynamically parameterized
+// WithActivityFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -159,6 +161,20 @@ func WithActivityJoin(joins ActivityJoins) ActivitySelectConfigOption {
 func WithActivityFilters(filters map[string][]any) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithActivityHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithActivityHavingClause(conditions map[string][]any) ActivitySelectConfigOption {
+	return func(s *ActivitySelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -303,7 +319,7 @@ func (a *Activity) Restore(ctx context.Context, db DB) (*Activity, error) {
 
 // ActivityPaginatedByActivityID returns a cursor-paginated list of Activity.
 func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID ActivityID, direction models.Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -329,6 +345,22 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -372,14 +404,15 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 	 FROM public.activities %s 
 	 WHERE activities.activity_id %s $1
 	 %s   AND activities.deleted_at is %s  %s 
+  %s 
   ORDER BY 
-		activity_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
+		activity_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ActivityPaginatedByActivityID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
@@ -392,7 +425,7 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 
 // ActivityPaginatedByProjectID returns a cursor-paginated list of Activity.
 func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -418,6 +451,22 @@ func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectI
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -461,14 +510,15 @@ func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectI
 	 FROM public.activities %s 
 	 WHERE activities.project_id %s $1
 	 %s   AND activities.deleted_at is %s  %s 
+  %s 
   ORDER BY 
-		project_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
+		project_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ActivityPaginatedByProjectID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
@@ -483,7 +533,7 @@ func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectI
 //
 // Generated from index 'activities_name_project_id_key'.
 func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID ProjectID, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -509,6 +559,22 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -547,14 +613,15 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 	 FROM public.activities %s 
 	 WHERE activities.name = $1 AND activities.project_id = $2
 	 %s   AND activities.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivityByNameProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name, projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByNameProjectID/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
@@ -570,7 +637,7 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 //
 // Generated from index 'activities_name_project_id_key'.
 func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -596,6 +663,22 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -634,14 +717,15 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 	 FROM public.activities %s 
 	 WHERE activities.name = $1
 	 %s   AND activities.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivitiesByName */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, name)
-	rows, err := db.Query(ctx, sqlstr, append([]any{name}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{name}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
@@ -659,7 +743,7 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 //
 // Generated from index 'activities_name_project_id_key'.
 func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -685,6 +769,22 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -723,14 +823,15 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts
 	 FROM public.activities %s 
 	 WHERE activities.project_id = $1
 	 %s   AND activities.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivitiesByProjectID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, projectID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/ActivityByNameProjectID/Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
@@ -748,7 +849,7 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts
 //
 // Generated from index 'activities_pkey'.
 func ActivityByActivityID(ctx context.Context, db DB, activityID ActivityID, opts ...ActivitySelectConfigOption) (*Activity, error) {
-	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -774,6 +875,22 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID ActivityID, opt
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -812,14 +929,15 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID ActivityID, opt
 	 FROM public.activities %s 
 	 WHERE activities.activity_id = $1
 	 %s   AND activities.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivityByActivityID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, activityID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("activities/ActivityByActivityID/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}

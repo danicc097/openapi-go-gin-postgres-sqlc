@@ -68,6 +68,7 @@ type ExtraSchemaBookSelectConfig struct {
 	orderBy string
 	joins   ExtraSchemaBookJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type ExtraSchemaBookSelectConfigOption func(*ExtraSchemaBookSelectConfig)
 
@@ -115,7 +116,7 @@ type User__BASK_ExtraSchemaBook struct {
 	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// WithExtraSchemaBookFilters adds the given filters, which can be dynamically parameterized
+// WithExtraSchemaBookFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -127,6 +128,20 @@ type User__BASK_ExtraSchemaBook struct {
 func WithExtraSchemaBookFilters(filters map[string][]any) ExtraSchemaBookSelectConfigOption {
 	return func(s *ExtraSchemaBookSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithExtraSchemaBookHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithExtraSchemaBookHavingClause(conditions map[string][]any) ExtraSchemaBookSelectConfigOption {
+	return func(s *ExtraSchemaBookSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -304,7 +319,7 @@ func (esb *ExtraSchemaBook) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaBookPaginatedByBookID returns a cursor-paginated list of ExtraSchemaBook.
 func ExtraSchemaBookPaginatedByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookID, direction models.Direction, opts ...ExtraSchemaBookSelectConfigOption) ([]ExtraSchemaBook, error) {
-	c := &ExtraSchemaBookSelectConfig{joins: ExtraSchemaBookJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookSelectConfig{joins: ExtraSchemaBookJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -330,6 +345,22 @@ func ExtraSchemaBookPaginatedByBookID(ctx context.Context, db DB, bookID ExtraSc
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -381,14 +412,15 @@ func ExtraSchemaBookPaginatedByBookID(ctx context.Context, db DB, bookID ExtraSc
 	 FROM extra_schema.books %s 
 	 WHERE books.book_id %s $1
 	 %s   %s 
+  %s 
   ORDER BY 
-		book_id %s `, selects, joins, operator, filters, groupbys, direction)
+		book_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookPaginatedByBookID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaBook/Paginated/db.Query: %w", &XoError{Entity: "Book", Err: err}))
 	}
@@ -403,7 +435,7 @@ func ExtraSchemaBookPaginatedByBookID(ctx context.Context, db DB, bookID ExtraSc
 //
 // Generated from index 'books_pkey'.
 func ExtraSchemaBookByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookID, opts ...ExtraSchemaBookSelectConfigOption) (*ExtraSchemaBook, error) {
-	c := &ExtraSchemaBookSelectConfig{joins: ExtraSchemaBookJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaBookSelectConfig{joins: ExtraSchemaBookJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -429,6 +461,22 @@ func ExtraSchemaBookByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookI
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -475,14 +523,15 @@ func ExtraSchemaBookByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookI
 	 FROM extra_schema.books %s 
 	 WHERE books.book_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("books/BookByBookID/db.Query: %w", &XoError{Entity: "Book", Err: err}))
 	}

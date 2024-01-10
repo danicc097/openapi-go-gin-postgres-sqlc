@@ -1,4 +1,7 @@
 {
+  "project-member": {
+    "description": "Automatically becomes a member in existing and upcoming teams in assigned projects."
+  },
   "users:read": {
     "description": "Can read other users data."
   },

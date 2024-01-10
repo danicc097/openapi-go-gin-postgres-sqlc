@@ -17,6 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -79,7 +80,7 @@ func TestOapiRequestValidator(t *testing.T) {
 		UserData: "hi!",
 	}
 
-	oasMw := rest.NewOpenapiMiddleware(zaptest.NewLogger(t).Sugar(), openapi)
+	oasMw := rest.NewOpenapiMiddleware(zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar(), openapi)
 	g.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	called := false
@@ -215,7 +216,7 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 		Options: kinopenapiOpts,
 	}
 
-	oasMw := rest.NewOpenapiMiddleware(zaptest.NewLogger(t).Sugar(), openapi)
+	oasMw := rest.NewOpenapiMiddleware(zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar(), openapi)
 	g.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	called := false

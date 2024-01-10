@@ -63,6 +63,7 @@ type ExtraSchemaDummyJoinSelectConfig struct {
 	orderBy string
 	joins   ExtraSchemaDummyJoinJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type ExtraSchemaDummyJoinSelectConfigOption func(*ExtraSchemaDummyJoinSelectConfig)
 
@@ -89,7 +90,7 @@ func WithExtraSchemaDummyJoinJoin(joins ExtraSchemaDummyJoinJoins) ExtraSchemaDu
 	}
 }
 
-// WithExtraSchemaDummyJoinFilters adds the given filters, which can be dynamically parameterized
+// WithExtraSchemaDummyJoinFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -101,6 +102,20 @@ func WithExtraSchemaDummyJoinJoin(joins ExtraSchemaDummyJoinJoins) ExtraSchemaDu
 func WithExtraSchemaDummyJoinFilters(filters map[string][]any) ExtraSchemaDummyJoinSelectConfigOption {
 	return func(s *ExtraSchemaDummyJoinSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithExtraSchemaDummyJoinHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithExtraSchemaDummyJoinHavingClause(conditions map[string][]any) ExtraSchemaDummyJoinSelectConfigOption {
+	return func(s *ExtraSchemaDummyJoinSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -190,7 +205,7 @@ func (esdj *ExtraSchemaDummyJoin) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaDummyJoinPaginatedByDummyJoinID returns a cursor-paginated list of ExtraSchemaDummyJoin.
 func ExtraSchemaDummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID ExtraSchemaDummyJoinID, direction models.Direction, opts ...ExtraSchemaDummyJoinSelectConfigOption) ([]ExtraSchemaDummyJoin, error) {
-	c := &ExtraSchemaDummyJoinSelectConfig{joins: ExtraSchemaDummyJoinJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaDummyJoinSelectConfig{joins: ExtraSchemaDummyJoinJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -216,6 +231,22 @@ func ExtraSchemaDummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dumm
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -243,14 +274,15 @@ func ExtraSchemaDummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dumm
 	 FROM extra_schema.dummy_join %s 
 	 WHERE dummy_join.dummy_join_id %s $1
 	 %s   %s 
+  %s 
   ORDER BY 
-		dummy_join_id %s `, selects, joins, operator, filters, groupbys, direction)
+		dummy_join_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaDummyJoinPaginatedByDummyJoinID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaDummyJoin/Paginated/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}
@@ -265,7 +297,7 @@ func ExtraSchemaDummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dumm
 //
 // Generated from index 'dummy_join_pkey'.
 func ExtraSchemaDummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID ExtraSchemaDummyJoinID, opts ...ExtraSchemaDummyJoinSelectConfigOption) (*ExtraSchemaDummyJoin, error) {
-	c := &ExtraSchemaDummyJoinSelectConfig{joins: ExtraSchemaDummyJoinJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaDummyJoinSelectConfig{joins: ExtraSchemaDummyJoinJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -293,6 +325,22 @@ func ExtraSchemaDummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID E
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
 	}
 
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -313,14 +361,15 @@ func ExtraSchemaDummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID E
 	 FROM extra_schema.dummy_join %s 
 	 WHERE dummy_join.dummy_join_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaDummyJoinByDummyJoinID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, dummyJoinID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{dummyJoinID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("dummy_join/DummyJoinByDummyJoinID/db.Query: %w", &XoError{Entity: "Dummy join", Err: err}))
 	}

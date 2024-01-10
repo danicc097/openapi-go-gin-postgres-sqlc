@@ -1162,7 +1162,14 @@ cc_label:
 		/**
 		 * Mark name clashes between constraint tables
 		 * TODO JoinTableClash pending O2O and M2M testing
-		 */
+		 * There are false positives, see user_project and user_team both have member field which triggers clash=true
+		 * * when this should only happen if both are in JoinFields struct.
+		 * however this makes everything more readable in the end...
+		 * type UserJoins struct {
+				ProjectsMember        bool // M2M user_project // vs just Projects
+				TeamsMember           bool // M2M user_team // vs just Teams
+			}
+		*/
 		var joinTableClash bool
 		for _, c := range constraints {
 			if c.Type != "foreign_key" {
@@ -1457,7 +1464,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		OpenAPISchema: openAPISchema,
 		ExtraTags:     extraTags,
 		Properties:    properties,
-		IsGenerated:   strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
+		IsGenerated:   strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated, // TODO: we have default gen_random_uuid(), clock_timestamp(), current_timestamp... not reliable
 	}, nil
 }
 
@@ -2026,7 +2033,7 @@ func (f *Funcs) initial_opts(v any) string {
 			buf.WriteString(`deletedAt: " null ",`)
 		}
 		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},`, x.GoName))
-		buf.WriteString(`filters: make(map[string][]any),
+		buf.WriteString(`filters: make(map[string][]any), having: make(map[string][]any),
 }`)
 	case Index:
 		for _, field := range x.Table.Fields { // table fields, not index fields
@@ -2054,7 +2061,7 @@ func (f *Funcs) initial_opts(v any) string {
 		}
 
 		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},`, x.Table.GoName))
-		buf.WriteString(`filters: make(map[string][]any),
+		buf.WriteString(`filters: make(map[string][]any), having: make(map[string][]any),
 }`)
 	default:
 		return ""
@@ -2103,7 +2110,9 @@ func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constra
 		limit       string
 		orderBy     string
 		joins       %[1]sJoins
-		filters     map[string][]any`, tGoName))
+		filters     map[string][]any
+		having     map[string][]any
+		`, tGoName))
 	if tableHasDeletedAt {
 		buf.WriteString(`
 			deletedAt   string`)
@@ -2265,8 +2274,10 @@ type %s struct {
 		if joinName == "" {
 			continue
 		}
+
 		for _, j := range joinNames {
 			if j == joinName {
+				fmt.Printf("preventing clash -- joinName: %v\n", joinName)
 				// prevent clash
 				joinName = joinName + camelExport(c.RefTableName)
 			}
@@ -2284,6 +2295,7 @@ type %s struct {
 		sqlstrBuf.WriteString(fmt.Sprintf("const %sTable%sSelectSQL = `%s`\n\n", f.lower_first(tGoName), joinName, selectClause))
 		sqlstrBuf.WriteString(fmt.Sprintf("const %sTable%sGroupBySQL = `%s`\n\n", f.lower_first(tGoName), joinName, groupby))
 	}
+
 	buf.WriteString("}\n")
 
 	// recursive would go out of hand quickly, use go-jet or sqlc for these cases.
@@ -2307,27 +2319,32 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 	}
 
 	buf.WriteString(fmt.Sprintf(`
-// With%[1]sFilters adds the given filters, which can be dynamically parameterized
+// With%[1]sFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //filters := map[string][]any{
 //	"NOT (col.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
 //	`+"`(col.created_at > $i OR \n//	col.is_closed = $i)`"+`: {time.Now().Add(-24 * time.Hour), true},
-//}`, tGoName))
-	buf.WriteString(fmt.Sprintf(`
+//}
 func With%[1]sFilters(filters map[string][]any) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
 		s.filters = filters
 	}
 }
-	`, tGoName))
 
-	// TODO :
-	// paramStart := 6 // TODO save last nth per query in paginated and index queries
-	// nth := func ()  string {
-	// 	paramStart++
-	// 	return strconv.Itoa(paramStart)
-	// }
+// With%[1]sHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func With%[1]sHavingClause(conditions map[string][]any) %[1]sSelectConfigOption {
+	return func(s *%[1]sSelectConfig) {
+		s.having = conditions
+	}
+}
+	`, tGoName))
 
 	buf.WriteString(sqlstrBuf.String())
 
@@ -2667,14 +2684,14 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 			if len(names[2:]) > 0 {
 				nn = strings.Join(names[2:], ", ")
 			}
-			return "ctx, sqlstr, append([]any{" + nn + "}, filterParams...)..."
+			return "ctx, sqlstr, append([]any{" + nn + "}, append(filterParams, havingParams...)...)..."
 		case CursorPagination:
 			names = append(names, f.params(x.Fields, false, nil))
 			nn := ""
 			if len(names[2:]) > 0 {
 				nn = strings.Join(names[2:], ", ")
 			}
-			return "ctx, sqlstr, append([]any{" + nn + "}, filterParams...)..."
+			return "ctx, sqlstr, append([]any{" + nn + "}, append(filterParams, havingParams...)...)..."
 		default:
 			names = append(names, fmt.Sprintf("/* UNSUPPORTED TYPE 14 (%d): %T */", i, v))
 		}
@@ -2940,6 +2957,7 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field) string {
 		}
 
 		groupbyClause := " %s \n"
+		havingClause := " %s \n"
 
 		buf := f.sqlstrBase(x)
 
@@ -2950,18 +2968,20 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field) string {
 		}
 	`)
 		if tableHasDeletedAt {
-			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s %s`, selects, joins%s, filters, c.deletedAt, groupbys %s)",
+			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s %s %s`, selects, joins %s, filters, c.deletedAt, groupbys, havingClause %s)",
 				strings.Join(lines, "\n\t"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s", x.SQLName),
 				groupbyClause,
+				havingClause,
 				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
 				strings.Repeat(", operator", len(orderbys)),
 				strings.Repeat(", direction", len(orderbys)),
 			))
 		} else {
-			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s`, selects, joins%s, filters, groupbys %s)",
+			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s %s`, selects, joins %s, filters, groupbys, havingClause %s)",
 				strings.Join(lines, "\n\t"),
 				groupbyClause,
+				havingClause,
 				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
 				strings.Repeat(", operator", len(orderbys)),
 				strings.Repeat(", direction", len(orderbys)),
@@ -3307,23 +3327,26 @@ func (f *Funcs) sqlstr_index(v any, tables Tables) string {
 			strings.Join(fields, ",\n\t") + " %s ",
 			" FROM " + f.schemafn(x.Table.SQLName) + " %s ",
 			" WHERE " + ff,
-			" %s ",
+			" %s ", // deleted at, etc.
 		}
 
 		groupbyClause := " %s \n"
+		havingClause := " %s \n"
 
 		buf := f.sqlstrBase(x.Table)
 
 		if tableHasDeletedAt {
-			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s`, selects, joins, filters, c.deletedAt, groupbys)",
+			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s %s`, selects, joins, filters, c.deletedAt, groupbys, havingClause)",
 				strings.Join(lines, "\n\t"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s", x.Table.SQLName),
 				groupbyClause,
+				havingClause,
 			))
 		} else {
-			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s`, selects, joins, filters, groupbys)",
+			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s`, selects, joins, filters, groupbys, havingClause)",
 				strings.Join(lines, "\n\t"),
 				groupbyClause,
+				havingClause,
 			))
 		}
 

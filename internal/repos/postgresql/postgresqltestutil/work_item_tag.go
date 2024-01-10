@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func NewRandomWorkItemTag(t *testing.T, d db.DBTX, projectID db.ProjectID) (*db.WorkItemTag, error) {
+func NewRandomWorkItemTag(t *testing.T, d db.DBTX, projectID db.ProjectID) *db.WorkItemTag {
 	t.Helper()
 
 	witRepo := postgresql.NewWorkItemTag()
@@ -20,7 +20,7 @@ func NewRandomWorkItemTag(t *testing.T, d db.DBTX, projectID db.ProjectID) (*db.
 	wit, err := witRepo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
-	return wit, nil
+	return wit
 }
 
 func RandomWorkItemTagCreateParams(t *testing.T, projectID db.ProjectID) *db.WorkItemTagCreateParams {

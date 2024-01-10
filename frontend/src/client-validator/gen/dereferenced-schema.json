@@ -332,7 +332,9 @@
                       "null"
                     ]
                   },
-                  "notificationID": {},
+                  "notificationID": {
+                    "type": "integer"
+                  },
                   "notificationType": {
                     "description": "is generated from database enum 'notification_type'.",
                     "type": "string",
@@ -807,6 +809,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "project-member",
               "users:read",
               "users:write",
               "users:delete",
@@ -1153,6 +1156,7 @@
                     "items": {
                       "type": "string",
                       "enum": [
+                        "project-member",
                         "users:read",
                         "users:write",
                         "users:delete",
@@ -1220,7 +1224,10 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "null"
+          ]
         },
         "timeEntries": {
           "items": {
@@ -1472,7 +1479,9 @@
                 "object"
               ]
             },
-            "workItemID": {}
+            "workItemID": {
+              "type": "integer"
+            }
           },
           "required": [
             "workItemID"
@@ -1546,6 +1555,7 @@
                     "items": {
                       "type": "string",
                       "enum": [
+                        "project-member",
                         "users:read",
                         "users:write",
                         "users:delete",
@@ -1613,7 +1623,10 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "null"
+          ]
         },
         "timeEntries": {
           "items": {
@@ -2102,6 +2115,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "project-member",
               "users:read",
               "users:write",
               "users:delete",
@@ -2418,6 +2432,7 @@
     "Scope": {
       "type": "string",
       "enum": [
+        "project-member",
         "users:read",
         "users:write",
         "users:delete",
@@ -2440,6 +2455,7 @@
       "items": {
         "type": "string",
         "enum": [
+          "project-member",
           "users:read",
           "users:write",
           "users:delete",
@@ -2518,6 +2534,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "project-member",
               "users:read",
               "users:write",
               "users:delete",
@@ -3418,7 +3435,9 @@
             "object"
           ]
         },
-        "workItemID": {}
+        "workItemID": {
+          "type": "integer"
+        }
       },
       "required": [
         "workItemID"
@@ -3474,7 +3493,9 @@
             "null"
           ]
         },
-        "notificationID": {},
+        "notificationID": {
+          "type": "integer"
+        },
         "notificationType": {
           "description": "is generated from database enum 'notification_type'.",
           "type": "string",
@@ -3582,7 +3603,9 @@
                 "null"
               ]
             },
-            "notificationID": {},
+            "notificationID": {
+              "type": "integer"
+            },
             "notificationType": {
               "description": "is generated from database enum 'notification_type'.",
               "type": "string",
@@ -3713,6 +3736,7 @@
               "items": {
                 "type": "string",
                 "enum": [
+                  "project-member",
                   "users:read",
                   "users:write",
                   "users:delete",
@@ -4115,7 +4139,9 @@
                       "null"
                     ]
                   },
-                  "notificationID": {},
+                  "notificationID": {
+                    "type": "integer"
+                  },
                   "notificationType": {
                     "description": "is generated from database enum 'notification_type'.",
                     "type": "string",
@@ -4590,6 +4616,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "project-member",
               "users:read",
               "users:write",
               "users:delete",
@@ -4936,6 +4963,7 @@
                     "items": {
                       "type": "string",
                       "enum": [
+                        "project-member",
                         "users:read",
                         "users:write",
                         "users:delete",
@@ -5003,7 +5031,10 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "null"
+          ]
         },
         "timeEntries": {
           "items": {
@@ -5255,7 +5286,9 @@
                 "object"
               ]
             },
-            "workItemID": {}
+            "workItemID": {
+              "type": "integer"
+            }
           },
           "required": [
             "workItemID"
@@ -5329,6 +5362,7 @@
                     "items": {
                       "type": "string",
                       "enum": [
+                        "project-member",
                         "users:read",
                         "users:write",
                         "users:delete",
@@ -5396,7 +5430,10 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "null"
+          ]
         },
         "timeEntries": {
           "items": {
@@ -5885,6 +5922,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "project-member",
               "users:read",
               "users:write",
               "users:delete",
@@ -6201,6 +6239,7 @@
     "Scope": {
       "type": "string",
       "enum": [
+        "project-member",
         "users:read",
         "users:write",
         "users:delete",
@@ -6223,6 +6262,7 @@
       "items": {
         "type": "string",
         "enum": [
+          "project-member",
           "users:read",
           "users:write",
           "users:delete",
@@ -6301,6 +6341,7 @@
           "items": {
             "type": "string",
             "enum": [
+              "project-member",
               "users:read",
               "users:write",
               "users:delete",
@@ -7201,7 +7242,9 @@
             "object"
           ]
         },
-        "workItemID": {}
+        "workItemID": {
+          "type": "integer"
+        }
       },
       "required": [
         "workItemID"
@@ -7257,7 +7300,9 @@
             "null"
           ]
         },
-        "notificationID": {},
+        "notificationID": {
+          "type": "integer"
+        },
         "notificationType": {
           "description": "is generated from database enum 'notification_type'.",
           "type": "string",
@@ -7365,7 +7410,9 @@
                 "null"
               ]
             },
-            "notificationID": {},
+            "notificationID": {
+              "type": "integer"
+            },
             "notificationType": {
               "description": "is generated from database enum 'notification_type'.",
               "type": "string",
@@ -7496,6 +7543,7 @@
               "items": {
                 "type": "string",
                 "enum": [
+                  "project-member",
                   "users:read",
                   "users:write",
                   "users:delete",

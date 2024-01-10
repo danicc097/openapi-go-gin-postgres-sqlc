@@ -25,15 +25,15 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 	if err != nil {
 		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
 	}
-	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
-	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
-	activity, _ := postgresqltestutil.NewRandomActivity(t, testPool, project.ProjectID)
+	user := postgresqltestutil.NewRandomUser(t, testPool)
+	team := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
+	activity := postgresqltestutil.NewRandomActivity(t, testPool, project.ProjectID)
 
 	kanbanStepID := internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived]
 	workItemTypeID := internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1]
 
-	workItem, _ := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
-	timeEntry, _ := postgresqltestutil.NewRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, &workItem.WorkItemID, nil) // time entry associated to a workItem
+	workItem := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
+	timeEntry := postgresqltestutil.NewRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, &workItem.WorkItemID, nil) // time entry associated to a workItem
 
 	uniqueTestCases := []filterTestCase[*db.TimeEntry]{
 		{

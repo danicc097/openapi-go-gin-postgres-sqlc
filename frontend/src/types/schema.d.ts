@@ -351,7 +351,7 @@ export interface components {
       };
       /** Format: date-time */
       targetDate: string;
-      teamID: number;
+      teamID: number | null;
       timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
       title: string;
       /** Format: date-time */
@@ -378,7 +378,7 @@ export interface components {
       };
       /** Format: date-time */
       targetDate: string;
-      teamID: number;
+      teamID: number | null;
       timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
       title: string;
       /** Format: date-time */
@@ -459,7 +459,7 @@ export interface components {
      * @description is generated from scopes.json keys.
      * @enum {string}
      */
-    Scope: "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "activity:create" | "activity:edit" | "activity:delete" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review";
+    Scope: "project-member" | "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "activity:create" | "activity:edit" | "activity:delete" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review";
     Scopes: components["schemas"]["Scope"][];
     /**
      * @description is generated from roles.json keys.
@@ -627,7 +627,7 @@ export interface components {
     DbDemoTwoWorkItem: {
       /** Format: date-time */
       customDateForProject2?: string | null;
-      workItemID: components["schemas"]["DbWorkItemID"];
+      workItemID: number;
     };
     DbDemoTwoWorkItemCreateParams: {
       /** Format: date-time */
@@ -644,7 +644,7 @@ export interface components {
       createdAt: string;
       labels: string[];
       link?: string | null;
-      notificationID: components["schemas"]["DbNotificationID"];
+      notificationID: number;
       notificationType: components["schemas"]["NotificationType"];
       receiver?: components["schemas"]["DbUserID"];
       sender: components["schemas"]["DbUserID"];

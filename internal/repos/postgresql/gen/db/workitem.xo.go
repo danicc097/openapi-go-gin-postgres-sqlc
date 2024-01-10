@@ -122,10 +122,12 @@ func (wi *WorkItem) SetUpdateParams(params *WorkItemUpdateParams) {
 }
 
 type WorkItemSelectConfig struct {
-	limit     string
-	orderBy   string
-	joins     WorkItemJoins
-	filters   map[string][]any
+	limit   string
+	orderBy string
+	joins   WorkItemJoins
+	filters map[string][]any
+	having  map[string][]any
+
 	deletedAt string
 }
 type WorkItemSelectConfigOption func(*WorkItemSelectConfig)
@@ -220,7 +222,7 @@ type User__WIAU_WorkItem struct {
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
-// WithWorkItemFilters adds the given filters, which can be dynamically parameterized
+// WithWorkItemFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -232,6 +234,20 @@ type User__WIAU_WorkItem struct {
 func WithWorkItemFilters(filters map[string][]any) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithWorkItemHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithWorkItemHavingClause(conditions map[string][]any) WorkItemSelectConfigOption {
+	return func(s *WorkItemSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -395,7 +411,7 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	WHERE work_item_id = $10 
 	RETURNING * `
 	// run
-	logf(sqlstr, wi.ClosedAt, wi.CreatedAt, wi.DeletedAt, wi.Description, wi.KanbanStepID, wi.Metadata, wi.TargetDate, wi.TeamID, wi.Title, wi.UpdatedAt, wi.WorkItemTypeID, wi.WorkItemID)
+	logf(sqlstr, wi.ClosedAt, wi.DeletedAt, wi.Description, wi.KanbanStepID, wi.Metadata, wi.TargetDate, wi.TeamID, wi.Title, wi.WorkItemTypeID, wi.WorkItemID)
 
 	rows, err := db.Query(ctx, sqlstr, wi.ClosedAt, wi.DeletedAt, wi.Description, wi.KanbanStepID, wi.Metadata, wi.TargetDate, wi.TeamID, wi.Title, wi.WorkItemTypeID, wi.WorkItemID)
 	if err != nil {
@@ -481,7 +497,7 @@ func (wi *WorkItem) Restore(ctx context.Context, db DB) (*WorkItem, error) {
 
 // WorkItemPaginatedByWorkItemID returns a cursor-paginated list of WorkItem.
 func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -507,6 +523,22 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -598,14 +630,15 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 	 FROM public.work_items %s 
 	 WHERE work_items.work_item_id %s $1
 	 %s   AND work_items.deleted_at is %s  %s 
+  %s 
   ORDER BY 
-		work_item_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
+		work_item_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemPaginatedByWorkItemID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -620,7 +653,7 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 //
 // Generated from index '[xo] base filter query'.
 func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -646,6 +679,22 @@ func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) (
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -732,14 +781,15 @@ func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) (
 	 FROM public.work_items %s 
 	 WHERE true
 	 %s   AND work_items.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItems */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, )
-	rows, err := db.Query(ctx, sqlstr, append([]any{}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -757,7 +807,7 @@ func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) (
 //
 // Generated from index 'work_items_deleted_at_idx'.
 func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " not null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemSelectConfig{deletedAt: " not null ", joins: WorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -783,6 +833,22 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -869,14 +935,15 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 	 FROM public.work_items %s 
 	 WHERE work_items.deleted_at = $1 AND (deleted_at IS NOT NULL)
 	 %s   AND work_items.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemsByDeletedAt_WhereDeletedAtIsNotNull */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{deletedAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{deletedAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByDeletedAt/Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -894,7 +961,7 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 //
 // Generated from index 'work_items_pkey'.
 func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...WorkItemSelectConfigOption) (*WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -920,6 +987,22 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -1006,14 +1089,15 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 	 FROM public.work_items %s 
 	 WHERE work_items.work_item_id = $1
 	 %s   AND work_items.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemByWorkItemID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("work_items/WorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -1029,7 +1113,7 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 //
 // Generated from index 'work_items_team_id_idx'.
 func WorkItemsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1055,6 +1139,22 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...WorkIt
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -1141,14 +1241,15 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...WorkIt
 	 FROM public.work_items %s 
 	 WHERE work_items.team_id = $1
 	 %s   AND work_items.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemsByTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{teamID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTeamID/Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -1166,7 +1267,7 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...WorkIt
 //
 // Generated from index 'work_items_title_description_idx1'.
 func WorkItemsByTitle(ctx context.Context, db DB, title string, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any)}
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1192,6 +1293,22 @@ func WorkItemsByTitle(ctx context.Context, db DB, title string, opts ...WorkItem
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -1278,14 +1395,15 @@ func WorkItemsByTitle(ctx context.Context, db DB, title string, opts ...WorkItem
 	 FROM public.work_items %s 
 	 WHERE work_items.title = $1
 	 %s   AND work_items.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemsByTitle */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, title)
-	rows, err := db.Query(ctx, sqlstr, append([]any{title}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{title}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/WorkItemsByTitleDescription/Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}

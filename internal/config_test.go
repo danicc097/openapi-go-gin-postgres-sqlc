@@ -60,6 +60,7 @@ func TestNewAppConfig(t *testing.T) {
 			errContains: `could not set "TEST_CFG_NAME" to "Name": TEST_CFG_NAME is not set but required`,
 		},
 	}
+	// nolint: paralleltest // cannot set env in parallel tests
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			for k, v := range tc.environ {

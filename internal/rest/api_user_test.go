@@ -8,25 +8,27 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
 
 func TestHandlers_DeleteUser(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	tests := []struct {
@@ -64,7 +66,7 @@ func TestHandlers_DeleteUser(t *testing.T) {
 			res, err := srv.client.DeleteUserWithResponse(context.Background(), ufixture.User.UserID.UUID, ReqWithAPIKey(ufixture.APIKey.APIKey))
 			fmt.Printf("res.Body: %v\n", string(res.Body))
 			require.NoError(t, err)
-			require.Equal(t, tc.status, res.StatusCode())
+			require.Equal(t, tc.status, res.StatusCode(), string(res.Body))
 		})
 	}
 }
@@ -72,13 +74,13 @@ func TestHandlers_DeleteUser(t *testing.T) {
 func TestHandlers_GetCurrentUser(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	t.Run("authenticated_user", func(t *testing.T) {
@@ -97,27 +99,32 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 		res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
-		assert.Equal(t, http.StatusOK, res.StatusCode())
+		assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))
 
 		got, err := json.Marshal(res.JSON200)
 		require.NoError(t, err)
-		want, err := json.Marshal(&rest.User{User: *ufixture.User, Role: rest.Role(role)})
+		want, err := json.Marshal(&rest.User{
+			User:     *ufixture.User,
+			Role:     rest.Role(role),
+			Teams:    &[]db.Team{},
+			Projects: &[]db.Project{},
+		})
 		require.NoError(t, err)
 
-		assert.JSONEqf(t, string(want), string(got), "")
+		assert.JSONEqf(t, string(want), string(got), "") // ignore private fields
 	})
 }
 
 func TestHandlers_UpdateUser(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	// NOTE:
@@ -153,7 +160,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 
 			require.NoError(t, err)
 			fmt.Printf("ures.Body: %v\n", string(ures.Body))
-			require.Equal(t, http.StatusNoContent, ures.StatusCode())
+			require.Equal(t, http.StatusNoContent, ures.StatusCode(), string(ures.Body))
 
 			res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(normalUser.APIKey.APIKey))
 
@@ -186,7 +193,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
-			assert.Equal(t, http.StatusBadRequest, res.StatusCode())
+			assert.Equal(t, http.StatusBadRequest, res.StatusCode(), string(res.Body))
 		})
 
 		t.Run("invalid_scopes_update", func(t *testing.T) {
@@ -197,7 +204,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
-			assert.Equal(t, http.StatusBadRequest, res.StatusCode())
+			assert.Equal(t, http.StatusBadRequest, res.StatusCode(), string(res.Body))
 		})
 	})
 
@@ -239,7 +246,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			ures, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.User.UserID.UUID, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
-			require.EqualValues(t, tc.status, ures.StatusCode())
+			require.EqualValues(t, tc.status, ures.StatusCode(), string(ures.Body))
 
 			if len(tc.validationErrorContains) > 0 {
 				for _, ve := range tc.validationErrorContains {

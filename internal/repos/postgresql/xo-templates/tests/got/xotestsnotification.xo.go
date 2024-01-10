@@ -79,6 +79,7 @@ type XoTestsNotificationSelectConfig struct {
 	orderBy string
 	joins   XoTestsNotificationJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type XoTestsNotificationSelectConfigOption func(*XoTestsNotificationSelectConfig)
 
@@ -108,7 +109,7 @@ func WithXoTestsNotificationJoin(joins XoTestsNotificationJoins) XoTestsNotifica
 	}
 }
 
-// WithXoTestsNotificationFilters adds the given filters, which can be dynamically parameterized
+// WithXoTestsNotificationFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -120,6 +121,20 @@ func WithXoTestsNotificationJoin(joins XoTestsNotificationJoins) XoTestsNotifica
 func WithXoTestsNotificationFilters(filters map[string][]any) XoTestsNotificationSelectConfigOption {
 	return func(s *XoTestsNotificationSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithXoTestsNotificationHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithXoTestsNotificationHavingClause(conditions map[string][]any) XoTestsNotificationSelectConfigOption {
+	return func(s *XoTestsNotificationSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -231,7 +246,7 @@ func (xtn *XoTestsNotification) Delete(ctx context.Context, db DB) error {
 
 // XoTestsNotificationPaginatedByNotificationID returns a cursor-paginated list of XoTestsNotification.
 func XoTestsNotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID XoTestsNotificationID, direction models.Direction, opts ...XoTestsNotificationSelectConfigOption) ([]XoTestsNotification, error) {
-	c := &XoTestsNotificationSelectConfig{joins: XoTestsNotificationJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsNotificationSelectConfig{joins: XoTestsNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -257,6 +272,22 @@ func XoTestsNotificationPaginatedByNotificationID(ctx context.Context, db DB, no
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -298,14 +329,15 @@ func XoTestsNotificationPaginatedByNotificationID(ctx context.Context, db DB, no
 	 FROM xo_tests.notifications %s 
 	 WHERE notifications.notification_id %s $1
 	 %s   %s 
+  %s 
   ORDER BY 
-		notification_id %s `, selects, joins, operator, filters, groupbys, direction)
+		notification_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsNotificationPaginatedByNotificationID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsNotification/Paginated/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -320,7 +352,7 @@ func XoTestsNotificationPaginatedByNotificationID(ctx context.Context, db DB, no
 //
 // Generated from index 'notifications_pkey'.
 func XoTestsNotificationByNotificationID(ctx context.Context, db DB, notificationID XoTestsNotificationID, opts ...XoTestsNotificationSelectConfigOption) (*XoTestsNotification, error) {
-	c := &XoTestsNotificationSelectConfig{joins: XoTestsNotificationJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsNotificationSelectConfig{joins: XoTestsNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -346,6 +378,22 @@ func XoTestsNotificationByNotificationID(ctx context.Context, db DB, notificatio
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -382,14 +430,15 @@ func XoTestsNotificationByNotificationID(ctx context.Context, db DB, notificatio
 	 FROM xo_tests.notifications %s 
 	 WHERE notifications.notification_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsNotificationByNotificationID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, notificationID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("notifications/NotificationByNotificationID/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -405,7 +454,7 @@ func XoTestsNotificationByNotificationID(ctx context.Context, db DB, notificatio
 //
 // Generated from index 'notifications_sender_idx'.
 func XoTestsNotificationsBySender(ctx context.Context, db DB, sender XoTestsUserID, opts ...XoTestsNotificationSelectConfigOption) ([]XoTestsNotification, error) {
-	c := &XoTestsNotificationSelectConfig{joins: XoTestsNotificationJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsNotificationSelectConfig{joins: XoTestsNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -431,6 +480,22 @@ func XoTestsNotificationsBySender(ctx context.Context, db DB, sender XoTestsUser
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -467,14 +532,15 @@ func XoTestsNotificationsBySender(ctx context.Context, db DB, sender XoTestsUser
 	 FROM xo_tests.notifications %s 
 	 WHERE notifications.sender = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsNotificationsBySender */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, sender)
-	rows, err := db.Query(ctx, sqlstr, append([]any{sender}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{sender}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsNotification/NotificationsBySender/Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}

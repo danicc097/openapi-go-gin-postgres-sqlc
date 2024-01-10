@@ -15,12 +15,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestUser_Update(t *testing.T) {
 	t.Parallel()
 
-	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
+	user := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
 		id     db.UserID
@@ -89,7 +91,7 @@ func TestUser_Update(t *testing.T) {
 func TestUser_SoftDelete(t *testing.T) {
 	t.Parallel()
 
-	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
+	user := postgresqltestutil.NewRandomUser(t, testPool)
 
 	type args struct {
 		id db.UserID
@@ -143,7 +145,8 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 10, 65*time.Millisecond)
 
 	teamRepo := postgresql.NewTeam()
 	projectRepo := postgresql.NewProject()
@@ -151,13 +154,13 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	project, err := projectRepo.ByName(ctx, testPool, models.ProjectDemo)
 	require.NoError(t, err)
 
-	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
-	user, _ := postgresqltestutil.NewRandomUser(t, testPool)
+	team := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
+	user := postgresqltestutil.NewRandomUser(t, testPool)
 
 	_, err = db.CreateUserTeam(ctx, testPool, &db.UserTeamCreateParams{Member: user.UserID, TeamID: team.TeamID})
 	require.NoError(t, err)
 
-	team, err = teamRepo.ByID(ctx, testPool, team.TeamID, db.WithTeamJoin(db.TeamJoins{Members: true, Project: true}))
+	team, err = teamRepo.ByID(ctx, testPool, team.TeamID, db.WithTeamJoin(db.TeamJoins{MembersTeam: true, Project: true}))
 	require.NoError(t, err)
 
 	uniqueCallback := func(t *testing.T, res *db.User) {
@@ -234,12 +237,13 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 func TestUser_UserAPIKeys(t *testing.T) {
 	t.Parallel()
 
-	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 10, 65*time.Millisecond)
 
 	t.Run("correct_api_key_creation", func(t *testing.T) {
 		t.Parallel()
 
-		user, _ := postgresqltestutil.NewRandomUser(t, testPool)
+		user := postgresqltestutil.NewRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, user)
 		require.NoError(t, err)
@@ -261,7 +265,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("can_get_user_by_api_key", func(t *testing.T) {
 		t.Parallel()
 
-		newUser, _ := postgresqltestutil.NewRandomUser(t, testPool)
+		newUser := postgresqltestutil.NewRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
 		require.NoError(t, err)
@@ -285,7 +289,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("can_delete_an_api_key", func(t *testing.T) {
 		t.Parallel()
 
-		newUser, _ := postgresqltestutil.NewRandomUser(t, testPool)
+		newUser := postgresqltestutil.NewRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
 		require.NoError(t, err)
@@ -302,7 +306,8 @@ func TestUser_UserAPIKeys(t *testing.T) {
 func TestUser_Create(t *testing.T) {
 	t.Parallel()
 
-	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 10, 65*time.Millisecond)
 
 	type want struct {
 		FullName *string

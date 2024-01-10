@@ -48,6 +48,7 @@ type User struct {
 	SenderNotificationsJoin   *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
 	UserTimeEntriesJoin       *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                       // M2O users
 	UserUserNotificationsJoin *[]UserNotification    `json:"-" db:"user_notifications" openapi-go:"ignore"`                 // M2O users
+	MemberProjectsJoin        *[]Project             `json:"-" db:"user_project_projects" openapi-go:"ignore"`              // M2M user_project
 	MemberTeamsJoin           *[]Team                `json:"-" db:"user_team_teams" openapi-go:"ignore"`                    // M2M user_team
 	APIKeyJoin                *UserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
 	APIKeyJoinAKI             *UserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
@@ -147,10 +148,12 @@ func (u *User) SetUpdateParams(params *UserUpdateParams) {
 }
 
 type UserSelectConfig struct {
-	limit     string
-	orderBy   string
-	joins     UserJoins
-	filters   map[string][]any
+	limit   string
+	orderBy string
+	joins   UserJoins
+	filters map[string][]any
+	having  map[string][]any
+
 	deletedAt string
 }
 type UserSelectConfigOption func(*UserSelectConfig)
@@ -207,6 +210,7 @@ type UserJoins struct {
 	NotificationsSender   bool // M2O notifications
 	TimeEntries           bool // M2O time_entries
 	UserNotifications     bool // M2O user_notifications
+	ProjectsMember        bool // M2M user_project
 	TeamsMember           bool // M2M user_team
 	UserAPIKey            bool // O2O user_api_keys
 	UserAPIKeyUserAPIKeys bool // O2O user_api_keys
@@ -222,6 +226,7 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
 			TimeEntries:           s.joins.TimeEntries || joins.TimeEntries,
 			UserNotifications:     s.joins.UserNotifications || joins.UserNotifications,
+			ProjectsMember:        s.joins.ProjectsMember || joins.ProjectsMember,
 			TeamsMember:           s.joins.TeamsMember || joins.TeamsMember,
 			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
 			UserAPIKeyUserAPIKeys: s.joins.UserAPIKeyUserAPIKeys || joins.UserAPIKeyUserAPIKeys,
@@ -237,7 +242,7 @@ type WorkItem__WIAU_User struct {
 	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
-// WithUserFilters adds the given filters, which can be dynamically parameterized
+// WithUserFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -249,6 +254,20 @@ type WorkItem__WIAU_User struct {
 func WithUserFilters(filters map[string][]any) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithUserHavingClause(conditions map[string][]any) UserSelectConfigOption {
+	return func(s *UserSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -315,6 +334,28 @@ left join (
 const userTableUserNotificationsSelectSQL = `COALESCE(joined_user_notifications.user_notifications, '{}') as user_notifications`
 
 const userTableUserNotificationsGroupBySQL = `joined_user_notifications.user_notifications, users.user_id`
+
+const userTableProjectsMemberJoinSQL = `-- M2M join generated from "user_project_project_id_fkey"
+left join (
+	select
+		user_project.member as user_project_member
+		, projects.project_id as __projects_project_id
+		, row(projects.*) as __projects
+	from
+		user_project
+	join projects on projects.project_id = user_project.project_id
+	group by
+		user_project_member
+		, projects.project_id
+) as joined_user_project_projects on joined_user_project_projects.user_project_member = users.user_id
+`
+
+const userTableProjectsMemberSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		joined_user_project_projects.__projects
+		)) filter (where joined_user_project_projects.__projects_project_id is not null), '{}') as user_project_projects`
+
+const userTableProjectsMemberGroupBySQL = `users.user_id, users.user_id`
 
 const userTableTeamsMemberJoinSQL = `-- M2M join generated from "user_team_team_id_fkey"
 left join (
@@ -432,7 +473,7 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	WHERE user_id = $12 
 	RETURNING * `
 	// run
-	logf(sqlstr, u.APIKeyID, u.CreatedAt, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.UpdatedAt, u.Username, u.UserID)
+	logf(sqlstr, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username, u.UserID)
 
 	rows, err := db.Query(ctx, sqlstr, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username, u.UserID)
 	if err != nil {
@@ -520,7 +561,7 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 
 // UserPaginatedByCreatedAt returns a cursor-paginated list of User.
 func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -546,6 +587,22 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -574,6 +631,12 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
 		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
 	}
 
 	if c.joins.TeamsMember {
@@ -640,14 +703,15 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 	 FROM public.users %s 
 	 WHERE users.created_at %s $1
 	 %s   AND users.deleted_at is %s  %s 
+  %s 
   ORDER BY 
-		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, direction)
+		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* UserPaginatedByCreatedAt */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -662,7 +726,7 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 //
 // Generated from index 'users_created_at_key'.
 func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -688,6 +752,22 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -716,6 +796,12 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
 		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
 	}
 
 	if c.joins.TeamsMember {
@@ -777,14 +863,15 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 	 FROM public.users %s 
 	 WHERE users.created_at = $1
 	 %s   AND users.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByCreatedAt */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByCreatedAt/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -800,7 +887,7 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 //
 // Generated from index 'users_deleted_at_idx'.
 func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, deletedAt *time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " not null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " not null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -826,6 +913,22 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -854,6 +957,12 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
 		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
 	}
 
 	if c.joins.TeamsMember {
@@ -915,14 +1024,15 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 	 FROM public.users %s 
 	 WHERE users.deleted_at = $1 AND (deleted_at IS NOT NULL)
 	 %s   AND users.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UsersByDeletedAt_WhereDeletedAtIsNotNull */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, deletedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{deletedAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{deletedAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByDeletedAt/Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -940,7 +1050,7 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 //
 // Generated from index 'users_email_key'.
 func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -966,6 +1076,22 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -994,6 +1120,12 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
 		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
 	}
 
 	if c.joins.TeamsMember {
@@ -1055,14 +1187,15 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 	 FROM public.users %s 
 	 WHERE users.email = $1
 	 %s   AND users.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByEmail */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, email)
-	rows, err := db.Query(ctx, sqlstr, append([]any{email}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{email}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByEmail/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -1078,7 +1211,7 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 //
 // Generated from index 'users_external_id_key'.
 func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1104,6 +1237,22 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -1132,6 +1281,12 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
 		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
 	}
 
 	if c.joins.TeamsMember {
@@ -1193,14 +1348,15 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 	 FROM public.users %s 
 	 WHERE users.external_id = $1
 	 %s   AND users.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByExternalID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, externalID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{externalID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{externalID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByExternalID/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -1216,7 +1372,7 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 //
 // Generated from index 'users_pkey'.
 func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1242,6 +1398,22 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -1270,6 +1442,12 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
 		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
 	}
 
 	if c.joins.TeamsMember {
@@ -1331,14 +1509,15 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 	 FROM public.users %s 
 	 WHERE users.user_id = $1
 	 %s   AND users.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUserID/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -1354,7 +1533,7 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 //
 // Generated from index 'users_updated_at_idx'.
 func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1380,6 +1559,22 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -1408,6 +1603,12 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
 		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
 	}
 
 	if c.joins.TeamsMember {
@@ -1469,14 +1670,15 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 	 FROM public.users %s 
 	 WHERE users.updated_at = $1
 	 %s   AND users.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UsersByUpdatedAt */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, updatedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{updatedAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{updatedAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/UsersByUpdatedAt/Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -1494,7 +1696,7 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 //
 // Generated from index 'users_username_key'.
 func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSelectConfigOption) (*User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any)}
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -1520,6 +1722,22 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -1548,6 +1766,12 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 		selectClauses = append(selectClauses, userTableUserNotificationsSelectSQL)
 		joinClauses = append(joinClauses, userTableUserNotificationsJoinSQL)
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
+	}
+
+	if c.joins.ProjectsMember {
+		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
+		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
+		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
 	}
 
 	if c.joins.TeamsMember {
@@ -1609,14 +1833,15 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 	 FROM public.users %s 
 	 WHERE users.username = $1
 	 %s   AND users.deleted_at is %s  %s 
-`, selects, joins, filters, c.deletedAt, groupbys)
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByUsername */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, username)
-	rows, err := db.Query(ctx, sqlstr, append([]any{username}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{username}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("users/UserByUsername/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}

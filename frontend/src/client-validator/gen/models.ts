@@ -20,6 +20,7 @@ export type Project = 'demo' | 'demo_two'
  * is generated from scopes.json keys.
  */
 export type Scope =
+  | 'project-member'
   | 'users:read'
   | 'users:write'
   | 'users:delete'
@@ -191,13 +192,12 @@ export interface DbNotification {
   createdAt: string
   labels: string[]
   link?: string | null
-  notificationID: DbNotificationID
+  notificationID: number
   notificationType: NotificationType
   receiver?: DbUserID
   sender: DbUserID
   title: string
 }
-export interface DbNotificationID {}
 export interface RestPaginationPage {
   nextCursor?: string
 }
@@ -313,7 +313,7 @@ export interface DemoWorkItems {
   members?: DbUserWIAUWorkItem[] | null
   metadata: {}
   targetDate: string
-  teamID: number
+  teamID: number | null
   timeEntries?: DbTimeEntry[] | null
   title: string
   updatedAt: string
@@ -337,7 +337,7 @@ export interface DemoTwoWorkItems {
   members?: DbUserWIAUWorkItem[] | null
   metadata: {}
   targetDate: string
-  teamID: number
+  teamID: number | null
   timeEntries?: DbTimeEntry[] | null
   title: string
   updatedAt: string
@@ -349,9 +349,8 @@ export interface DemoTwoWorkItems {
 }
 export interface DbDemoTwoWorkItem {
   customDateForProject2?: string | null
-  workItemID: DbWorkItemID
+  workItemID: number
 }
-export interface DbWorkItemID {}
 export interface InitializeProjectRequest {
   tags?: DbWorkItemTagCreateParams[] | null
   teams?: DbTeamCreateParams[] | null
@@ -497,8 +496,10 @@ export interface DbActivityCreateParams {
   name: string
   projectID?: number
 }
+export interface DbWorkItemID {}
 export interface DbProjectID {}
 export interface DbWorkItemTypeID {}
+export interface DbNotificationID {}
 export interface DbUserNotification {
   notificationID: number
   read: boolean

@@ -80,6 +80,7 @@ type ExtraSchemaUserAPIKeySelectConfig struct {
 	orderBy string
 	joins   ExtraSchemaUserAPIKeyJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type ExtraSchemaUserAPIKeySelectConfigOption func(*ExtraSchemaUserAPIKeySelectConfig)
 
@@ -128,7 +129,7 @@ func WithExtraSchemaUserAPIKeyJoin(joins ExtraSchemaUserAPIKeyJoins) ExtraSchema
 	}
 }
 
-// WithExtraSchemaUserAPIKeyFilters adds the given filters, which can be dynamically parameterized
+// WithExtraSchemaUserAPIKeyFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -140,6 +141,20 @@ func WithExtraSchemaUserAPIKeyJoin(joins ExtraSchemaUserAPIKeyJoins) ExtraSchema
 func WithExtraSchemaUserAPIKeyFilters(filters map[string][]any) ExtraSchemaUserAPIKeySelectConfigOption {
 	return func(s *ExtraSchemaUserAPIKeySelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithExtraSchemaUserAPIKeyHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithExtraSchemaUserAPIKeyHavingClause(conditions map[string][]any) ExtraSchemaUserAPIKeySelectConfigOption {
+	return func(s *ExtraSchemaUserAPIKeySelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -241,7 +256,7 @@ func (esuak *ExtraSchemaUserAPIKey) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaUserAPIKeyPaginatedByUserAPIKeyID returns a cursor-paginated list of ExtraSchemaUserAPIKey.
 func ExtraSchemaUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID ExtraSchemaUserAPIKeyID, direction models.Direction, opts ...ExtraSchemaUserAPIKeySelectConfigOption) ([]ExtraSchemaUserAPIKey, error) {
-	c := &ExtraSchemaUserAPIKeySelectConfig{joins: ExtraSchemaUserAPIKeyJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaUserAPIKeySelectConfig{joins: ExtraSchemaUserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -267,6 +282,22 @@ func ExtraSchemaUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, us
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -302,14 +333,15 @@ func ExtraSchemaUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, us
 	 FROM extra_schema.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id %s $1
 	 %s   %s 
+  %s 
   ORDER BY 
-		user_api_key_id %s `, selects, joins, operator, filters, groupbys, direction)
+		user_api_key_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserAPIKeyPaginatedByUserAPIKeyID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaUserAPIKey/Paginated/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
@@ -324,7 +356,7 @@ func ExtraSchemaUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, us
 //
 // Generated from index 'user_api_keys_api_key_key'.
 func ExtraSchemaUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts ...ExtraSchemaUserAPIKeySelectConfigOption) (*ExtraSchemaUserAPIKey, error) {
-	c := &ExtraSchemaUserAPIKeySelectConfig{joins: ExtraSchemaUserAPIKeyJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaUserAPIKeySelectConfig{joins: ExtraSchemaUserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -350,6 +382,22 @@ func ExtraSchemaUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, op
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -380,14 +428,15 @@ func ExtraSchemaUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, op
 	 FROM extra_schema.user_api_keys %s 
 	 WHERE user_api_keys.api_key = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserAPIKeyByAPIKey */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, apiKey)
-	rows, err := db.Query(ctx, sqlstr, append([]any{apiKey}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{apiKey}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByAPIKey/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
@@ -403,7 +452,7 @@ func ExtraSchemaUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, op
 //
 // Generated from index 'user_api_keys_pkey'.
 func ExtraSchemaUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID ExtraSchemaUserAPIKeyID, opts ...ExtraSchemaUserAPIKeySelectConfigOption) (*ExtraSchemaUserAPIKey, error) {
-	c := &ExtraSchemaUserAPIKeySelectConfig{joins: ExtraSchemaUserAPIKeyJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaUserAPIKeySelectConfig{joins: ExtraSchemaUserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -429,6 +478,22 @@ func ExtraSchemaUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyI
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -459,14 +524,15 @@ func ExtraSchemaUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyI
 	 FROM extra_schema.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserAPIKeyByUserAPIKeyID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userAPIKeyID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserAPIKeyID/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
@@ -482,7 +548,7 @@ func ExtraSchemaUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyI
 //
 // Generated from index 'user_api_keys_user_id_key'.
 func ExtraSchemaUserAPIKeyByUserID(ctx context.Context, db DB, userID ExtraSchemaUserID, opts ...ExtraSchemaUserAPIKeySelectConfigOption) (*ExtraSchemaUserAPIKey, error) {
-	c := &ExtraSchemaUserAPIKeySelectConfig{joins: ExtraSchemaUserAPIKeyJoins{}, filters: make(map[string][]any)}
+	c := &ExtraSchemaUserAPIKeySelectConfig{joins: ExtraSchemaUserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -508,6 +574,22 @@ func ExtraSchemaUserAPIKeyByUserID(ctx context.Context, db DB, userID ExtraSchem
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -538,14 +620,15 @@ func ExtraSchemaUserAPIKeyByUserID(ctx context.Context, db DB, userID ExtraSchem
 	 FROM extra_schema.user_api_keys %s 
 	 WHERE user_api_keys.user_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserAPIKeyByUserID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("user_api_keys/UserAPIKeyByUserID/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}

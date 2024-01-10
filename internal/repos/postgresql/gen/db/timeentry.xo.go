@@ -111,6 +111,7 @@ type TimeEntrySelectConfig struct {
 	orderBy string
 	joins   TimeEntryJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type TimeEntrySelectConfigOption func(*TimeEntrySelectConfig)
 
@@ -165,7 +166,7 @@ func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
 	}
 }
 
-// WithTimeEntryFilters adds the given filters, which can be dynamically parameterized
+// WithTimeEntryFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -177,6 +178,20 @@ func WithTimeEntryJoin(joins TimeEntryJoins) TimeEntrySelectConfigOption {
 func WithTimeEntryFilters(filters map[string][]any) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithTimeEntryHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithTimeEntryHavingClause(conditions map[string][]any) TimeEntrySelectConfigOption {
+	return func(s *TimeEntrySelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -312,7 +327,7 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 
 // TimeEntryPaginatedByTimeEntryID returns a cursor-paginated list of TimeEntry.
 func TimeEntryPaginatedByTimeEntryID(ctx context.Context, db DB, timeEntryID TimeEntryID, direction models.Direction, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
-	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
+	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -338,6 +353,22 @@ func TimeEntryPaginatedByTimeEntryID(ctx context.Context, db DB, timeEntryID Tim
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -395,14 +426,15 @@ func TimeEntryPaginatedByTimeEntryID(ctx context.Context, db DB, timeEntryID Tim
 	 FROM public.time_entries %s 
 	 WHERE time_entries.time_entry_id %s $1
 	 %s   %s 
+  %s 
   ORDER BY 
-		time_entry_id %s `, selects, joins, operator, filters, groupbys, direction)
+		time_entry_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* TimeEntryPaginatedByTimeEntryID */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/db.Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
@@ -417,7 +449,7 @@ func TimeEntryPaginatedByTimeEntryID(ctx context.Context, db DB, timeEntryID Tim
 //
 // Generated from index 'time_entries_pkey'.
 func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID TimeEntryID, opts ...TimeEntrySelectConfigOption) (*TimeEntry, error) {
-	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
+	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -443,6 +475,22 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID TimeEntryID,
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -495,14 +543,15 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID TimeEntryID,
 	 FROM public.time_entries %s 
 	 WHERE time_entries.time_entry_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TimeEntryByTimeEntryID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, timeEntryID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{timeEntryID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("time_entries/TimeEntryByTimeEntryID/db.Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
@@ -518,7 +567,7 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID TimeEntryID,
 //
 // Generated from index 'time_entries_user_id_team_id_idx'.
 func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID UserID, teamID TeamID, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
-	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
+	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -544,6 +593,22 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID UserID, teamID
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -596,14 +661,15 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID UserID, teamID
 	 FROM public.time_entries %s 
 	 WHERE time_entries.user_id = $1 AND time_entries.team_id = $2
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TimeEntriesByUserIDTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, userID, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{userID, teamID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{userID, teamID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByUserIDTeamID/Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}
@@ -621,7 +687,7 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID UserID, teamID
 //
 // Generated from index 'time_entries_work_item_id_team_id_idx'.
 func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID WorkItemID, teamID TeamID, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
-	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any)}
+	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -647,6 +713,22 @@ func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID WorkIt
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -699,14 +781,15 @@ func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID WorkIt
 	 FROM public.time_entries %s 
 	 WHERE time_entries.work_item_id = $1 AND time_entries.team_id = $2
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TimeEntriesByWorkItemIDTeamID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, workItemID, teamID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, teamID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID, teamID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("TimeEntry/TimeEntriesByWorkItemIDTeamID/Query: %w", &XoError{Entity: "Time entry", Err: err}))
 	}

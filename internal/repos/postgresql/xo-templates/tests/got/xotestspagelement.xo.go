@@ -83,6 +83,7 @@ type XoTestsPagElementSelectConfig struct {
 	orderBy string
 	joins   XoTestsPagElementJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type XoTestsPagElementSelectConfigOption func(*XoTestsPagElementSelectConfig)
 
@@ -131,7 +132,7 @@ func WithXoTestsPagElementJoin(joins XoTestsPagElementJoins) XoTestsPagElementSe
 	}
 }
 
-// WithXoTestsPagElementFilters adds the given filters, which can be dynamically parameterized
+// WithXoTestsPagElementFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -143,6 +144,20 @@ func WithXoTestsPagElementJoin(joins XoTestsPagElementJoins) XoTestsPagElementSe
 func WithXoTestsPagElementFilters(filters map[string][]any) XoTestsPagElementSelectConfigOption {
 	return func(s *XoTestsPagElementSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithXoTestsPagElementHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithXoTestsPagElementHavingClause(conditions map[string][]any) XoTestsPagElementSelectConfigOption {
+	return func(s *XoTestsPagElementSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -243,7 +258,7 @@ func (xtpe *XoTestsPagElement) Delete(ctx context.Context, db DB) error {
 
 // XoTestsPagElementPaginatedByCreatedAt returns a cursor-paginated list of XoTestsPagElement.
 func XoTestsPagElementPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...XoTestsPagElementSelectConfigOption) ([]XoTestsPagElement, error) {
-	c := &XoTestsPagElementSelectConfig{joins: XoTestsPagElementJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsPagElementSelectConfig{joins: XoTestsPagElementJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -269,6 +284,22 @@ func XoTestsPagElementPaginatedByCreatedAt(ctx context.Context, db DB, createdAt
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -304,14 +335,15 @@ func XoTestsPagElementPaginatedByCreatedAt(ctx context.Context, db DB, createdAt
 	 FROM xo_tests.pag_element %s 
 	 WHERE pag_element.created_at %s $1
 	 %s   %s 
+  %s 
   ORDER BY 
-		created_at %s `, selects, joins, operator, filters, groupbys, direction)
+		created_at %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsPagElementPaginatedByCreatedAt */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsPagElement/Paginated/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
@@ -326,7 +358,7 @@ func XoTestsPagElementPaginatedByCreatedAt(ctx context.Context, db DB, createdAt
 //
 // Generated from index 'pag_element_created_at_key'.
 func XoTestsPagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...XoTestsPagElementSelectConfigOption) (*XoTestsPagElement, error) {
-	c := &XoTestsPagElementSelectConfig{joins: XoTestsPagElementJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsPagElementSelectConfig{joins: XoTestsPagElementJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -352,6 +384,22 @@ func XoTestsPagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Tim
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -382,14 +430,15 @@ func XoTestsPagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Tim
 	 FROM xo_tests.pag_element %s 
 	 WHERE pag_element.created_at = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsPagElementByCreatedAt */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, createdAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByCreatedAt/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
@@ -405,7 +454,7 @@ func XoTestsPagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Tim
 //
 // Generated from index 'pag_element_pkey'.
 func XoTestsPagElementByPaginatedElementID(ctx context.Context, db DB, paginatedElementID XoTestsPagElementID, opts ...XoTestsPagElementSelectConfigOption) (*XoTestsPagElement, error) {
-	c := &XoTestsPagElementSelectConfig{joins: XoTestsPagElementJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsPagElementSelectConfig{joins: XoTestsPagElementJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -431,6 +480,22 @@ func XoTestsPagElementByPaginatedElementID(ctx context.Context, db DB, paginated
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -461,14 +526,15 @@ func XoTestsPagElementByPaginatedElementID(ctx context.Context, db DB, paginated
 	 FROM xo_tests.pag_element %s 
 	 WHERE pag_element.paginated_element_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsPagElementByPaginatedElementID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, paginatedElementID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{paginatedElementID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{paginatedElementID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("pag_element/PagElementByPaginatedElementID/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}

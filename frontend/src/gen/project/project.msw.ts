@@ -79,7 +79,7 @@ export const getGetProjectWorkitemsMock = () =>
         key: faker.color.hsl(),
       }))(),
       targetDate: (() => faker.date.past())(),
-      teamID: faker.number.int({ min: undefined, max: undefined }),
+      teamID: faker.helpers.arrayElement([faker.number.int({ min: undefined, max: undefined }), null]),
       timeEntries: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
         activityID: faker.number.int({ min: undefined, max: undefined }),
         comment: faker.word.sample(),
@@ -124,7 +124,7 @@ export const getGetProjectWorkitemsMock = () =>
       deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
       demoTwoWorkItem: {
         customDateForProject2: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-        workItemID: {},
+        workItemID: faker.number.int({ min: undefined, max: undefined }),
       },
       description: faker.word.sample(),
       kanbanStepID: faker.number.int({ min: undefined, max: undefined }),
@@ -148,7 +148,7 @@ export const getGetProjectWorkitemsMock = () =>
         key: faker.color.hsl(),
       }))(),
       targetDate: (() => faker.date.past())(),
-      teamID: faker.number.int({ min: undefined, max: undefined }),
+      teamID: faker.helpers.arrayElement([faker.number.int({ min: undefined, max: undefined }), null]),
       timeEntries: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
         activityID: faker.number.int({ min: undefined, max: undefined }),
         comment: faker.word.sample(),

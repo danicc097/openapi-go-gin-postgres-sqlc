@@ -65,6 +65,7 @@ type XoTestsBookSellerSelectConfig struct {
 	orderBy string
 	joins   XoTestsBookSellerJoins
 	filters map[string][]any
+	having  map[string][]any
 }
 type XoTestsBookSellerSelectConfigOption func(*XoTestsBookSellerSelectConfig)
 
@@ -94,7 +95,7 @@ func WithXoTestsBookSellerJoin(joins XoTestsBookSellerJoins) XoTestsBookSellerSe
 	}
 }
 
-// WithXoTestsBookSellerFilters adds the given filters, which can be dynamically parameterized
+// WithXoTestsBookSellerFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
 //
@@ -106,6 +107,20 @@ func WithXoTestsBookSellerJoin(joins XoTestsBookSellerJoins) XoTestsBookSellerSe
 func WithXoTestsBookSellerFilters(filters map[string][]any) XoTestsBookSellerSelectConfigOption {
 	return func(s *XoTestsBookSellerSelectConfig) {
 		s.filters = filters
+	}
+}
+
+// WithXoTestsBookSellerHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	filters := map[string][]any{
+//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	}
+func WithXoTestsBookSellerHavingClause(conditions map[string][]any) XoTestsBookSellerSelectConfigOption {
+	return func(s *XoTestsBookSellerSelectConfig) {
+		s.having = conditions
 	}
 }
 
@@ -195,7 +210,7 @@ func (xtbs *XoTestsBookSeller) Delete(ctx context.Context, db DB) error {
 //
 // Generated from index 'book_sellers_book_id_seller_idx'.
 func XoTestsBookSellersByBookIDSeller(ctx context.Context, db DB, bookID XoTestsBookID, seller XoTestsUserID, opts ...XoTestsBookSellerSelectConfigOption) ([]XoTestsBookSeller, error) {
-	c := &XoTestsBookSellerSelectConfig{joins: XoTestsBookSellerJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookSellerSelectConfig{joins: XoTestsBookSellerJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -221,6 +236,22 @@ func XoTestsBookSellersByBookIDSeller(ctx context.Context, db DB, bookID XoTests
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -255,14 +286,15 @@ func XoTestsBookSellersByBookIDSeller(ctx context.Context, db DB, bookID XoTests
 	 FROM xo_tests.book_sellers %s 
 	 WHERE book_sellers.book_id = $1 AND book_sellers.seller = $2
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookSellersByBookIDSeller */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID, seller)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, seller}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID, seller}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsBookSeller/BookSellersByBookIDSeller/Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
@@ -280,7 +312,7 @@ func XoTestsBookSellersByBookIDSeller(ctx context.Context, db DB, bookID XoTests
 //
 // Generated from index 'book_sellers_pkey'.
 func XoTestsBookSellersByBookID(ctx context.Context, db DB, bookID XoTestsBookID, opts ...XoTestsBookSellerSelectConfigOption) ([]XoTestsBookSeller, error) {
-	c := &XoTestsBookSellerSelectConfig{joins: XoTestsBookSellerJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookSellerSelectConfig{joins: XoTestsBookSellerJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -306,6 +338,22 @@ func XoTestsBookSellersByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -340,14 +388,15 @@ func XoTestsBookSellersByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 	 FROM xo_tests.book_sellers %s 
 	 WHERE book_sellers.book_id = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookSellersByBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsBookSeller/BookSellerByBookIDSeller/Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
@@ -365,7 +414,7 @@ func XoTestsBookSellersByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 //
 // Generated from index 'book_sellers_pkey'.
 func XoTestsBookSellersBySeller(ctx context.Context, db DB, seller XoTestsUserID, opts ...XoTestsBookSellerSelectConfigOption) ([]XoTestsBookSeller, error) {
-	c := &XoTestsBookSellerSelectConfig{joins: XoTestsBookSellerJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookSellerSelectConfig{joins: XoTestsBookSellerJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -391,6 +440,22 @@ func XoTestsBookSellersBySeller(ctx context.Context, db DB, seller XoTestsUserID
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -425,14 +490,15 @@ func XoTestsBookSellersBySeller(ctx context.Context, db DB, seller XoTestsUserID
 	 FROM xo_tests.book_sellers %s 
 	 WHERE book_sellers.seller = $1
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookSellersBySeller */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, seller)
-	rows, err := db.Query(ctx, sqlstr, append([]any{seller}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{seller}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsBookSeller/BookSellerByBookIDSeller/Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}
@@ -450,7 +516,7 @@ func XoTestsBookSellersBySeller(ctx context.Context, db DB, seller XoTestsUserID
 //
 // Generated from index 'book_sellers_seller_book_id_idx'.
 func XoTestsBookSellersBySellerBookID(ctx context.Context, db DB, seller XoTestsUserID, bookID XoTestsBookID, opts ...XoTestsBookSellerSelectConfigOption) ([]XoTestsBookSeller, error) {
-	c := &XoTestsBookSellerSelectConfig{joins: XoTestsBookSellerJoins{}, filters: make(map[string][]any)}
+	c := &XoTestsBookSellerSelectConfig{joins: XoTestsBookSellerJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -476,6 +542,22 @@ func XoTestsBookSellersBySellerBookID(ctx context.Context, db DB, seller XoTests
 	filters := ""
 	if len(filterClauses) > 0 {
 		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
 	var selectClauses []string
@@ -510,14 +592,15 @@ func XoTestsBookSellersBySellerBookID(ctx context.Context, db DB, seller XoTests
 	 FROM xo_tests.book_sellers %s 
 	 WHERE book_sellers.seller = $1 AND book_sellers.book_id = $2
 	 %s   %s 
-`, selects, joins, filters, groupbys)
+  %s 
+`, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookSellersBySellerBookID */\n" + sqlstr
 
 	// run
 	// logf(sqlstr, seller, bookID)
-	rows, err := db.Query(ctx, sqlstr, append([]any{seller, bookID}, filterParams...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{seller, bookID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsBookSeller/BookSellersBySellerBookID/Query: %w", &XoError{Entity: "Book seller", Err: err}))
 	}

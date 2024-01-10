@@ -19,11 +19,11 @@ func TestDemoTwoWorkItem_Update(t *testing.T) {
 	t.Parallel()
 
 	projectID := internal.ProjectIDByName[models.ProjectDemo]
-	team, _ := postgresqltestutil.NewRandomTeam(t, testPool, projectID)
+	team := postgresqltestutil.NewRandomTeam(t, testPool, projectID)
 
 	kanbanStepID := internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived]
 	workItemTypeID := internal.DemoTwoWorkItemTypesIDByName[models.DemoTwoWorkItemTypesType1]
-	demoWorkItem, _ := postgresqltestutil.NewRandomDemoTwoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
+	demoWorkItem := postgresqltestutil.NewRandomDemoTwoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
 
 	type args struct {
 		id     db.WorkItemID

@@ -188,6 +188,7 @@ const (
 	ScopeActivityCreate       Scope = "activity:create"
 	ScopeActivityDelete       Scope = "activity:delete"
 	ScopeActivityEdit         Scope = "activity:edit"
+	ScopeProjectMember        Scope = "project-member"
 	ScopeProjectSettingsWrite Scope = "project-settings:write"
 	ScopeScopesWrite          Scope = "scopes:write"
 	ScopeTeamSettingsWrite    Scope = "team-settings:write"
@@ -206,6 +207,7 @@ func AllScopeValues() []Scope {
 		ScopeActivityCreate,
 		ScopeActivityDelete,
 		ScopeActivityEdit,
+		ScopeProjectMember,
 		ScopeProjectSettingsWrite,
 		ScopeScopesWrite,
 		ScopeTeamSettingsWrite,
@@ -351,8 +353,8 @@ type DbActivityCreateParams struct {
 
 // DbDemoTwoWorkItem defines the model for DbDemoTwoWorkItem.
 type DbDemoTwoWorkItem struct {
-	CustomDateForProject2 *time.Time                `json:"customDateForProject2"`
-	WorkItemID            externalRef0.DbWorkItemID `json:"workItemID"`
+	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
+	WorkItemID            int        `json:"workItemID"`
 }
 
 // DbDemoTwoWorkItemCreateParams defines the model for DbDemoTwoWorkItemCreateParams.
@@ -390,11 +392,11 @@ type DbKanbanStep struct {
 
 // DbNotification defines the model for DbNotification.
 type DbNotification struct {
-	Body           string                        `json:"body"`
-	CreatedAt      time.Time                     `json:"createdAt"`
-	Labels         []string                      `json:"labels"`
-	Link           *string                       `json:"link"`
-	NotificationID externalRef0.DbNotificationID `json:"notificationID"`
+	Body           string    `json:"body"`
+	CreatedAt      time.Time `json:"createdAt"`
+	Labels         []string  `json:"labels"`
+	Link           *string   `json:"link"`
+	NotificationID int       `json:"notificationID"`
 
 	// NotificationType is generated from database enum 'notification_type'.
 	NotificationType externalRef0.NotificationType `json:"notificationType"`
@@ -583,7 +585,7 @@ type DemoTwoWorkItems  struct {
     Members *[]externalRef0.DbUserWIAUWorkItem`json:"members"`
     Metadata map[string]interface{}`json:"metadata"`
     TargetDate time.Time`json:"targetDate"`
-    TeamID int`json:"teamID"`
+    TeamID *int`json:"teamID"`
     TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
     Title string`json:"title"`
     UpdatedAt time.Time`json:"updatedAt"`
@@ -610,7 +612,7 @@ type DemoWorkItems  struct {
     Members *[]externalRef0.DbUserWIAUWorkItem`json:"members"`
     Metadata map[string]interface{}`json:"metadata"`
     TargetDate time.Time`json:"targetDate"`
-    TeamID int`json:"teamID"`
+    TeamID *int`json:"teamID"`
     TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
     Title string`json:"title"`
     UpdatedAt time.Time`json:"updatedAt"`

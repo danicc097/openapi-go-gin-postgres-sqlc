@@ -14,12 +14,14 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestUserFriendlyPgErrors(t *testing.T) {
 	t.Parallel()
-
-	witRepo := reposwrappers.NewWorkItemTagWithRetry(postgresql.NewWorkItemTag(), 10, 65*time.Millisecond)
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	witRepo := reposwrappers.NewWorkItemTagWithRetry(postgresql.NewWorkItemTag(), logger, 10, 65*time.Millisecond)
 
 	type want struct {
 		db.WorkItemTagCreateParams
@@ -52,13 +54,11 @@ func TestUserFriendlyPgErrors(t *testing.T) {
 
 		_, err = witRepo.Create(context.Background(), testPool, &args.params)
 		require.Error(t, err)
-		require.Error(t, err)
 
 		assert.ErrorContains(t, err, fmt.Sprintf("combination of name=%s and projectID=%d already exists", want.Name, want.ProjectID))
 
 		args.params.ProjectID = -999
 		_, err = witRepo.Create(context.Background(), testPool, &args.params)
-		require.Error(t, err)
 		require.Error(t, err)
 
 		assert.ErrorContains(t, err, fmt.Sprintf("projectID \"%d\" is invalid", args.params.ProjectID))
