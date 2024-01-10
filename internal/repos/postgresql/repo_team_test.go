@@ -83,6 +83,25 @@ func TestTriggers_sync_user_projects(t *testing.T) {
 	})
 }
 
+/*
+Cannot use current_timestamp when using transactions and column is unique.
+Savepoints have no effect, transaction timestamp is the same
+
+create table users (
+
+	user_id serial primary key
+	, email text not null unique
+	-- use clock instead so it doesn't use transaction time
+	--, created_at timestamp with time zone default clock_timestamp() not null unique
+	, created_at timestamp with time zone default current_timestamp not null unique
+
+);.
+
+BEGIN;
+insert into users (email) values ('mail1');
+insert into users (email) values ('mail2'); --fails
+COMMIT;.
+*/
 func TestTriggers_sync_user_teams(t *testing.T) {
 	t.Parallel()
 
@@ -116,6 +135,7 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored
 
+			// IMPORTANT: see note above
 			user := postgresqltestutil.NewRandomUser(t, tx)
 
 			if tc.withScope {
