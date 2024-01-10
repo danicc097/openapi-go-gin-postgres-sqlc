@@ -116,6 +116,13 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored
 
+			// FIXME: definite issue user with retry -> if we pass tx and its closed will fail.
+			// this is the only place where a WithRetry wrapper is used with tx that might fail.
+			// with testPool we have no issues.
+			// should pass logger to repo wrappers and log [Attempt 1/n] <err>
+			// detect if db passed is a tx, so if it errors out, we must tx.rollback (ignoring error).
+			// transaction aborted error occurs when a previous query has failed and the client
+			//  still issues queries in that transaction. The only thing to do in that state is a ROLLBACK
 			user := postgresqltestutil.NewRandomUser(t, tx)
 
 			if tc.withScope {

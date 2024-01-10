@@ -703,7 +703,7 @@ x.gen.gowrap() {
 
     local cache="$CACHE/gowrap"
     local suffixes=(
-      "retry:with_retry"
+      "retry-repo:with_retry"
       "timeout:with_timeout"
       "otel:with_otel"
       "prometheus:with_prometheus" # TODO: https://last9.io/blog/native-support-for-opentelemetry-metrics-in-prometheus/ https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/pkg/translator/prometheus
