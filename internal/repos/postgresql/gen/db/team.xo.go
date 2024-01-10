@@ -251,7 +251,7 @@ func (t *Team) Update(ctx context.Context, db DB) (*Team, error) {
 	WHERE team_id = $4 
 	RETURNING * `
 	// run
-	logf(sqlstr, t.CreatedAt, t.Description, t.Name, t.ProjectID, t.UpdatedAt, t.TeamID)
+	logf(sqlstr, t.Description, t.Name, t.ProjectID, t.TeamID)
 
 	rows, err := db.Query(ctx, sqlstr, t.Description, t.Name, t.ProjectID, t.TeamID)
 	if err != nil {

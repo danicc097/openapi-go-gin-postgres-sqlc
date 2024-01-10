@@ -1464,7 +1464,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		OpenAPISchema: openAPISchema,
 		ExtraTags:     extraTags,
 		Properties:    properties,
-		IsGenerated:   strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated,
+		IsGenerated:   strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated, // TODO: we have default gen_random_uuid(), clock_timestamp(), current_timestamp... not reliable
 	}, nil
 }
 

@@ -269,7 +269,7 @@ func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error)
 	WHERE notification_id = $9 
 	RETURNING * `
 	// run
-	logf(sqlstr, n.Body, n.CreatedAt, n.Labels, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title, n.NotificationID)
+	logf(sqlstr, n.Body, n.Labels, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title, n.NotificationID)
 
 	rows, err := db.Query(ctx, sqlstr, n.Body, n.Labels, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title, n.NotificationID)
 	if err != nil {

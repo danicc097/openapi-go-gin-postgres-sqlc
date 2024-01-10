@@ -220,7 +220,7 @@ func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment
 	WHERE work_item_comment_id = $4 
 	RETURNING * `
 	// run
-	logf(sqlstr, wic.CreatedAt, wic.Message, wic.UpdatedAt, wic.UserID, wic.WorkItemID, wic.WorkItemCommentID)
+	logf(sqlstr, wic.Message, wic.UserID, wic.WorkItemID, wic.WorkItemCommentID)
 
 	rows, err := db.Query(ctx, sqlstr, wic.Message, wic.UserID, wic.WorkItemID, wic.WorkItemCommentID)
 	if err != nil {

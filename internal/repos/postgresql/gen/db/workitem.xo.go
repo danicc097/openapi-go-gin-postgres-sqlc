@@ -411,7 +411,7 @@ func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	WHERE work_item_id = $10 
 	RETURNING * `
 	// run
-	logf(sqlstr, wi.ClosedAt, wi.CreatedAt, wi.DeletedAt, wi.Description, wi.KanbanStepID, wi.Metadata, wi.TargetDate, wi.TeamID, wi.Title, wi.UpdatedAt, wi.WorkItemTypeID, wi.WorkItemID)
+	logf(sqlstr, wi.ClosedAt, wi.DeletedAt, wi.Description, wi.KanbanStepID, wi.Metadata, wi.TargetDate, wi.TeamID, wi.Title, wi.WorkItemTypeID, wi.WorkItemID)
 
 	rows, err := db.Query(ctx, sqlstr, wi.ClosedAt, wi.DeletedAt, wi.Description, wi.KanbanStepID, wi.Metadata, wi.TargetDate, wi.TeamID, wi.Title, wi.WorkItemTypeID, wi.WorkItemID)
 	if err != nil {

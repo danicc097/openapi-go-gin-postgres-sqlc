@@ -473,7 +473,7 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	WHERE user_id = $12 
 	RETURNING * `
 	// run
-	logf(sqlstr, u.APIKeyID, u.CreatedAt, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.UpdatedAt, u.Username, u.UserID)
+	logf(sqlstr, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username, u.UserID)
 
 	rows, err := db.Query(ctx, sqlstr, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username, u.UserID)
 	if err != nil {

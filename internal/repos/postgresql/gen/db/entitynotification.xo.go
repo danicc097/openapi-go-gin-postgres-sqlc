@@ -187,7 +187,7 @@ func (en *EntityNotification) Update(ctx context.Context, db DB) (*EntityNotific
 	WHERE entity_notification_id = $4 
 	RETURNING * `
 	// run
-	logf(sqlstr, en.CreatedAt, en.ID, en.Message, en.Topic, en.EntityNotificationID)
+	logf(sqlstr, en.ID, en.Message, en.Topic, en.EntityNotificationID)
 
 	rows, err := db.Query(ctx, sqlstr, en.ID, en.Message, en.Topic, en.EntityNotificationID)
 	if err != nil {
