@@ -31,7 +31,7 @@ func TestNotification_Create(t *testing.T) {
 		// prevent fan out trigger from affecting other tests
 		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 		require.NoError(t, err)
-		defer func() { require.NoError(t, tx.Rollback(ctx)) }()
+		defer tx.Rollback(ctx) // rollback errors should be ignored
 
 		_, err = notificationRepo.Create(context.Background(), tx, ncp)
 		require.NoError(t, err)
@@ -67,7 +67,7 @@ func TestNotification_Create(t *testing.T) {
 		ctx := context.Background()
 		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{}) // prevent fan out trigger from affecting other tests
 		require.NoError(t, err)
-		defer tx.Rollback(ctx)
+		defer tx.Rollback(ctx) // rollback errors should be ignored
 
 		_, err = notificationRepo.Create(context.Background(), tx, ncp)
 		require.NoError(t, err)

@@ -67,7 +67,7 @@ func TestTriggers_sync_user_projects(t *testing.T) {
 
 		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 		require.NoError(t, err)
-		defer func() { require.NoError(t, tx.Rollback(ctx)) }()
+		defer tx.Rollback(ctx) // rollback errors should be ignored
 
 		user := postgresqltestutil.NewRandomUser(t, tx)
 		team := postgresqltestutil.NewRandomTeam(t, tx, projectID)
@@ -114,7 +114,7 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
-			defer func() { require.NoError(t, tx.Rollback(ctx)) }()
+			defer tx.Rollback(ctx) // rollback errors should be ignored
 
 			user := postgresqltestutil.NewRandomUser(t, tx)
 

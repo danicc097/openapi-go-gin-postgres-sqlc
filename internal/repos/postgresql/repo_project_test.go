@@ -58,7 +58,7 @@ func TestProject_BoardConfigUpdate(t *testing.T) {
 
 		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 		require.NoError(t, err)
-		defer func() { require.NoError(t, tx.Rollback(ctx)) }()
+		defer tx.Rollback(ctx) // rollback errors should be ignored
 
 		const path = "some_path"
 
@@ -98,7 +98,7 @@ func TestProject_BoardConfigUpdate(t *testing.T) {
 
 		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 		require.NoError(t, err)
-		defer func() { require.NoError(t, tx.Rollback(ctx)) }()
+		defer tx.Rollback(ctx) // rollback errors should be ignored
 
 		const path1 = "some_path"
 		const path2 = "another_path"

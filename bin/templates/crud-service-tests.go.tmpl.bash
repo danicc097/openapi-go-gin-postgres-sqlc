@@ -92,7 +92,7 @@ done)
 
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
-			defer func() { require.NoError(t, tx.Rollback(ctx)) }()
+			defer tx.Rollback(ctx) // rollback errors should be ignored
 
 			user, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				WithAPIKey: true,

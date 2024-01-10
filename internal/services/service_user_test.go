@@ -94,7 +94,7 @@ func TestUser_UpdateUser(t *testing.T) {
 			ctx := context.Background()
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
-			defer func() { require.NoError(t, tx.Rollback(ctx)) }()
+			defer tx.Rollback(ctx) // rollback errors should be ignored
 
 			u := services.NewUser(logger, repos)
 			got, err := u.Update(ctx, tx, tc.args.id, tc.args.caller, tc.args.params)
@@ -271,7 +271,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			ctx := context.Background()
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
-			defer func() { require.NoError(t, tx.Rollback(ctx)) }()
+			defer tx.Rollback(ctx) // rollback errors should be ignored
 
 			u := services.NewUser(logger, repos)
 			got, err := u.UpdateUserAuthorization(ctx, tx, tc.args.id, tc.args.caller, tc.args.params)
