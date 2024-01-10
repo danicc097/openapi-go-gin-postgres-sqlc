@@ -92,8 +92,9 @@ func TestUser_UpdateUser(t *testing.T) {
 			repos.Notification = &repostesting.FakeNotification{} // ignore
 
 			ctx := context.Background()
-			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
-			defer tx.Rollback(ctx)
+			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
+			require.NoError(t, err)
+			defer func() { require.NoError(t, tx.Rollback(ctx)) }()
 
 			u := services.NewUser(logger, repos)
 			got, err := u.Update(ctx, tx, tc.args.id, tc.args.caller, tc.args.params)
@@ -268,8 +269,9 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			repos.Notification = &repostesting.FakeNotification{} // ignore
 
 			ctx := context.Background()
-			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
-			defer tx.Rollback(ctx)
+			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
+			require.NoError(t, err)
+			defer func() { require.NoError(t, tx.Rollback(ctx)) }()
 
 			u := services.NewUser(logger, repos)
 			got, err := u.UpdateUserAuthorization(ctx, tx, tc.args.id, tc.args.caller, tc.args.params)

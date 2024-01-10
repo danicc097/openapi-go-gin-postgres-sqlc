@@ -28,10 +28,12 @@ func TestNotification_Create(t *testing.T) {
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, pointers.New(receiver.UserID), db.NotificationTypePersonal)
 
 		ctx := context.Background()
-		tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{}) // prevent fan out trigger from affecting other tests
-		defer tx.Rollback(ctx)
+		// prevent fan out trigger from affecting other tests
+		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
+		require.NoError(t, err)
+		defer func() { require.NoError(t, tx.Rollback(ctx)) }()
 
-		_, err := notificationRepo.Create(context.Background(), tx, ncp)
+		_, err = notificationRepo.Create(context.Background(), tx, ncp)
 		require.NoError(t, err)
 
 		params := db.GetUserNotificationsParams{UserID: receiver.UserID.UUID, NotificationType: db.NotificationTypePersonal}

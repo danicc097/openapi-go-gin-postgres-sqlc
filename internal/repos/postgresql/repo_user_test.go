@@ -197,12 +197,6 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 
 	nonUniqueTestCases := []filterTestCase[[]db.User]{
 		{
-			// FIXME: https://github.com/danicc097/openapi-go-gin-postgres-sqlc/actions/runs/7467525226/job/20321213188?pr=206
-			// due to user with project-member scope getting added since we're using projectdemo.
-			// TODO: should have helper NewRandomProject just for repo tests so we can test
-			// side effects on projects, which are hardcoded (might need same kind of helpers
-			// for kanban steps, work item types later)
-			// OR: run in tx
 			name:       "team_id",
 			filter:     team.TeamID,
 			repoMethod: reflect.ValueOf(userRepo.ByTeam),

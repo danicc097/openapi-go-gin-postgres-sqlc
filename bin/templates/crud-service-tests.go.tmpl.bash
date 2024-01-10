@@ -89,8 +89,10 @@ done)
 			repos.Notification = repostesting.NewFakeNotification() // unless we want to test notification integration
 
 			ctx := context.Background()
-			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
-			defer tx.Rollback(ctx)
+
+			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
+			require.NoError(t, err)
+			defer func() { require.NoError(t, tx.Rollback(ctx)) }()
 
 			user, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				WithAPIKey: true,

@@ -592,35 +592,35 @@ func (o *CodeGen) getServerInterfaceMethods() map[string]operationIDMethod {
 	return o.serverInterfaceMethods
 }
 
-func extractParameters(ft *ast.FuncType) string {
-	var params []string
-	for _, field := range ft.Params.List {
-		for _, name := range field.Names {
-			params = append(params, fmt.Sprintf("%s %s", name.Name, exprToString(field.Type)))
-		}
-	}
-	return strings.Join(params, ", ")
-}
+// func extractParameters(ft *ast.FuncType) string {
+// 	var params []string
+// 	for _, field := range ft.Params.List {
+// 		for _, name := range field.Names {
+// 			params = append(params, fmt.Sprintf("%s %s", name.Name, exprToString(field.Type)))
+// 		}
+// 	}
+// 	return strings.Join(params, ", ")
+// }
 
-// FIXME: does nothing.
-func _extractReturns(ft *ast.FuncType) string {
-	var returns []string
-	if ft.Results != nil {
-		for _, field := range ft.Results.List {
-			for _, name := range field.Names {
-				returns = append(returns, fmt.Sprintf("(%s %s)", name.Name, exprToString(field.Type)))
-			}
-		}
-	}
-	return strings.Join(returns, ", ")
-}
+// // FIXME: does nothing.
+// func _extractReturns(ft *ast.FuncType) string {
+// 	var returns []string
+// 	if ft.Results != nil {
+// 		for _, field := range ft.Results.List {
+// 			for _, name := range field.Names {
+// 				returns = append(returns, fmt.Sprintf("(%s %s)", name.Name, exprToString(field.Type)))
+// 			}
+// 		}
+// 	}
+// 	return strings.Join(returns, ", ")
+// }
 
-// exprToString converts an AST expression to its string representation.
-func exprToString(expr ast.Expr) string {
-	var buf strings.Builder
-	printer.Fprint(&buf, token.NewFileSet(), expr)
-	return buf.String()
-}
+// // exprToString converts an AST expression to its string representation.
+// func exprToString(expr ast.Expr) string {
+// 	var buf strings.Builder
+// 	printer.Fprint(&buf, token.NewFileSet(), expr)
+// 	return buf.String()
+// }
 
 // getOperationIDDifference returns the difference of all operation IDs
 // and those associated to a given tag.

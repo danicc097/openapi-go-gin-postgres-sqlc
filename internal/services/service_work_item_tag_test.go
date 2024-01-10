@@ -90,8 +90,9 @@ func TestWorkItemTag_Update(t *testing.T) {
 			repos.Notification = repostesting.NewFakeNotification()
 
 			ctx := context.Background()
-			tx, _ := testPool.BeginTx(ctx, pgx.TxOptions{})
-			defer tx.Rollback(ctx)
+			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
+			require.NoError(t, err)
+			defer func() { require.NoError(t, tx.Rollback(ctx)) }()
 
 			user, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				WithAPIKey: true,
