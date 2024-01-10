@@ -507,7 +507,7 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/rs/cors v1.10.0
+# github.com/rs/cors v1.10.1
 ## explicit; go 1.13
 github.com/rs/cors
 # github.com/russross/blackfriday/v2 v2.1.0
@@ -619,7 +619,7 @@ github.com/yuin/gopher-lua/pm
 # github.com/zitadel/logging v0.3.4
 ## explicit; go 1.13
 github.com/zitadel/logging
-# github.com/zitadel/oidc/v2 v2.11.0
+# github.com/zitadel/oidc/v2 v2.12.0
 ## explicit; go 1.19
 github.com/zitadel/oidc/v2/pkg/client
 github.com/zitadel/oidc/v2/pkg/client/rp
@@ -734,7 +734,7 @@ golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/publicsuffix
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.12.0
+# golang.org/x/oauth2 v0.13.0
 ## explicit; go 1.18
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
