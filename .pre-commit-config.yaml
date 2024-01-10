@@ -5,7 +5,7 @@ repos:
     hooks:
       - id: lint
         name: lint
-        entry: bin/project lint
+        entry: bin/project lint.sql
         language: script
         types: [text]
         pass_filenames: false
