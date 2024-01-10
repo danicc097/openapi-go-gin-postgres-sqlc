@@ -696,7 +696,7 @@ x.gen.jet() {
 x.gen.gowrap() {
   xsetup.backup
   { { {
-    name=$1 # optional to force regen on an interface
+    local name="$1" # optional to force regen on an interface
     local repos="$REPOS_DIR/repos.go"
 
     echo "Running generation"
@@ -714,7 +714,7 @@ x.gen.gowrap() {
 
     mkdir -p "$cache"
 
-    if test -n $name; then
+    if test -n "$name"; then
       repo_interfaces=("$name")
     fi
 

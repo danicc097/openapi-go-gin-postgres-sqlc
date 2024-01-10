@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -23,7 +24,7 @@ type testUsers struct {
 func TestUser_UpdateUser(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	type args struct {
 		params *models.UpdateUserRequest
@@ -88,7 +89,7 @@ func TestUser_UpdateUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			repos := services.CreateTestRepos()
+			repos := services.CreateTestRepos(t)
 			repos.Notification = &repostesting.FakeNotification{} // ignore
 
 			ctx := context.Background()
@@ -118,7 +119,7 @@ func TestUser_UpdateUser(t *testing.T) {
 func TestUser_UpdateUserAuthorization(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	authzsvc, err := services.NewAuthorization(logger)
 	require.NoError(t, err, "newTestAuthService")
@@ -265,7 +266,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			repos := services.CreateTestRepos()
+			repos := services.CreateTestRepos(t)
 			repos.Notification = &repostesting.FakeNotification{} // ignore
 
 			ctx := context.Background()
@@ -296,9 +297,9 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 func createTestUsers(t *testing.T) testUsers {
 	t.Helper()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 

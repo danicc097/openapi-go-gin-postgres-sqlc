@@ -22,7 +22,7 @@ func (ff *FixtureFactory) CreatePersonalNotification(ctx context.Context, params
 	if err != nil {
 		return nil, fmt.Errorf("ff.CreateUser: %w", err)
 	}
-	n, err := ff.svc.Notification.CreateNotification(ctx, ff.db, &services.NotificationCreateParams{
+	n, err := ff.svc.Notification.CreateNotification(ctx, ff.d, &services.NotificationCreateParams{
 		NotificationCreateParams: db.NotificationCreateParams{
 			Body:             testutil.RandomString(10),
 			Labels:           []string{"label " + fmt.Sprint(testutil.RandomInt(1, 9999))},
@@ -47,7 +47,7 @@ func (ff *FixtureFactory) CreateGlobalNotification(ctx context.Context, params C
 	if err != nil {
 		return nil, fmt.Errorf("ff.CreateUser: %w", err)
 	}
-	n, err := ff.svc.Notification.CreateNotification(ctx, ff.db, &services.NotificationCreateParams{
+	n, err := ff.svc.Notification.CreateNotification(ctx, ff.d, &services.NotificationCreateParams{
 		NotificationCreateParams: db.NotificationCreateParams{
 			Body:             testutil.RandomString(10),
 			Labels:           []string{"label " + fmt.Sprint(testutil.RandomInt(1, 9999))},

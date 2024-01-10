@@ -3,6 +3,7 @@ import(
   internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	repomodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"go.uber.org/zap"
 )
 
 {{ $decorator := (or .Vars.DecoratorName (printf "%sWithRetry" .Interface.Name)) }}
@@ -12,14 +13,16 @@ type {{$decorator}} struct {
   {{.Interface.Type}}
   _retryCount int
   _retryInterval time.Duration
+	logger *zap.SugaredLogger
 }
 
 // New{{$decorator}} returns {{$decorator}}
-func New{{$decorator}} (base {{.Interface.Type}}, retryCount int, retryInterval time.Duration) {{$decorator}} {
+func New{{$decorator}} (base {{.Interface.Type}}, logger *zap.SugaredLogger, retryCount int, retryInterval time.Duration) {{$decorator}} {
   return {{$decorator}} {
     {{.Interface.Name}}: base,
     _retryCount: retryCount,
     _retryInterval: retryInterval,
+    logger: logger,
   }
 }
 
@@ -27,6 +30,13 @@ func New{{$decorator}} (base {{.Interface.Type}}, retryCount int, retryInterval 
   {{if $method.ReturnsError}}
     // {{$method.Name}} implements {{$.Interface.Type}}
     func (_d {{$decorator}}) {{$method.Declaration}} {
+    	if tx, ok := d.(pgx.Tx); ok {
+        _, err = tx.Exec(ctx, "SAVEPOINT {{$decorator}}{{$method.Name}}")
+        if err != nil {
+          err = fmt.Errorf("could not store savepoint: %w", err)
+          return
+        }
+      }
       {{$method.ResultsNames}} = _d.{{$.Interface.Name}}.{{$method.Call}}
       if err == nil || _d._retryCount < 1 {
         return
@@ -43,6 +53,20 @@ func New{{$decorator}} (base {{.Interface.Type}}, retryCount int, retryInterval 
         {{else}}
           <-_ticker.C
         {{end -}}
+
+
+        if tx, ok := d.(pgx.Tx); ok {
+          if _, err = tx.Exec(ctx, "ROLLBACK to {{$decorator}}{{$method.Name}}"); err != nil{
+            err = fmt.Errorf("could not rollback to savepoint: %w", err)
+            return
+          }
+
+          if _, err = tx.Exec(ctx, "BEGIN"); err != nil{
+            err = fmt.Errorf("could not begin transaction after rollback: %w", err)
+            return
+          }
+        }
+
         {{$method.ResultsNames}} = _d.{{$.Interface.Name}}.{{$method.Call}}
       }
       return

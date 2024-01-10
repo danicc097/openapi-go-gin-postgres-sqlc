@@ -56,11 +56,11 @@ func (_d ProjectWithTimeout) ByName(ctx context.Context, d db.DBTX, name models.
 }
 
 // IsTeamInProject implements repos.Project
-func (_d ProjectWithTimeout) IsTeamInProject(ctx context.Context, db db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
+func (_d ProjectWithTimeout) IsTeamInProject(ctx context.Context, d db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
 	var cancelFunc func()
 	if _d.config.IsTeamInProjectTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.IsTeamInProjectTimeout)
 		defer cancelFunc()
 	}
-	return _d.Project.IsTeamInProject(ctx, db, arg)
+	return _d.Project.IsTeamInProject(ctx, d, arg)
 }

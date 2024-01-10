@@ -123,6 +123,8 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 			// detect if db passed is a tx, so if it errors out, we must tx.rollback (ignoring error).
 			// transaction aborted error occurs when a previous query has failed and the client
 			//  still issues queries in that transaction. The only thing to do in that state is a ROLLBACK
+			// IMPORTANT: however we only want to roll back a single query... should create a savepoint beforehand
+			// when using WithRetry and type is pgx.Tx before executing it.
 			user := postgresqltestutil.NewRandomUser(t, tx)
 
 			if tc.withScope {

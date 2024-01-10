@@ -20,19 +20,20 @@ $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgr
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers\"
 	\"github.com/stretchr/testify/assert\"
 	\"github.com/stretchr/testify/require\"
+	\"go.uber.org/zap\"
 	\"go.uber.org/zap/zaptest\"
 )
 
 func TestHandlers_Delete${pascal_name}(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, \"Couldn't run test server: %s\n\")
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	tests := []struct {
@@ -80,13 +81,13 @@ $(test -n "$with_project" && echo "		projectID := internal.ProjectIDByName[model
 func TestHandlers_Create${pascal_name}(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, \"Couldn't run test server: %s\n\")
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	t.Run(\"authenticated_user\", func(t *testing.T) {
@@ -125,13 +126,13 @@ done)
 func TestHandlers_Get${pascal_name}(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, \"Couldn't run test server: %s\n\")
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	t.Run(\"authenticated_user\", func(t *testing.T) {
@@ -171,13 +172,13 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 func TestHandlers_Update${pascal_name}(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, \"Couldn't run test server: %s\n\")
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")

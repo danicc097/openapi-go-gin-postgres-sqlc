@@ -11,19 +11,19 @@ import (
 // in the data store.
 type FixtureFactory struct {
 	t   *testing.T
-	db  db.DBTX
+	d   db.DBTX
 	svc *services.Services
 }
 
 // NewFixtureFactory returns a new FixtureFactory.
 func NewFixtureFactory(
 	t *testing.T,
-	db db.DBTX,
+	d db.DBTX,
 	svc *services.Services,
 ) *FixtureFactory {
 	return &FixtureFactory{
 		t:   t,
-		db:  db,
+		d:   d,
 		svc: svc,
 	}
 }

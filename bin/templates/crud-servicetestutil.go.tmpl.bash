@@ -25,14 +25,14 @@ type Create${pascal_name}Fixture struct {
 func (ff *FixtureFactory) Create${pascal_name}(ctx context.Context, params Create${pascal_name}Params) (*Create${pascal_name}Fixture, error) {
 	randomRepoCreateParams := postgresqltestutil.Random${pascal_name}CreateParams(ff.t $create_args)
 	// don't use repos for tests
-	${camel_name}, err := ff.svc.${pascal_name}.Create(ctx, ff.db, randomRepoCreateParams)
+	${camel_name}, err := ff.svc.${pascal_name}.Create(ctx, ff.d, randomRepoCreateParams)
 	if err != nil {
 		return nil, fmt.Errorf(\"svc.${pascal_name}.Create: %w\", err)
 	}
 
 $(test -n "$has_deleted_at" && echo "
 	if params.DeletedAt != nil {
-		${camel_name}, err = ff.svc.${pascal_name}.Delete(ctx, ff.db, ${camel_name}.${pascal_name}ID)
+		${camel_name}, err = ff.svc.${pascal_name}.Delete(ctx, ff.d, ${camel_name}.${pascal_name}ID)
 		if err != nil {
 			return nil, fmt.Errorf(\"svc.${pascal_name}.Delete: %w\", err)
 		}

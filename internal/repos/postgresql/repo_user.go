@@ -10,11 +10,13 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 // User represents the repository used for interacting with User records.
 type User struct {
-	q db.Querier
+	q      db.Querier
+	logger *zap.SugaredLogger
 }
 
 // NewUser instantiates the User repository.

@@ -17,17 +17,18 @@ import (
 	\"github.com/jackc/pgx/v5\"
 	\"github.com/stretchr/testify/assert\"
 	\"github.com/stretchr/testify/require\"
+	\"go.uber.org/zap\"
 	\"go.uber.org/zap/zaptest\"
 )
 
 func Test${pascal_name}_Update(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	requiredProject := models.ProjectDemo
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	team, err := svc.Team.Create(context.Background(), testPool, postgresqltestutil.RandomTeamCreateParams(t, internal.ProjectIDByName[requiredProject]))
@@ -85,7 +86,7 @@ done)
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			repos := services.CreateTestRepos()
+			repos := services.CreateTestRepos(t)
 			repos.Notification = repostesting.NewFakeNotification() // unless we want to test notification integration
 
 			ctx := context.Background()

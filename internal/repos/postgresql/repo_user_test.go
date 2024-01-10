@@ -15,6 +15,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestUser_Update(t *testing.T) {
@@ -143,7 +145,8 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 10, 65*time.Millisecond)
 
 	teamRepo := postgresql.NewTeam()
 	projectRepo := postgresql.NewProject()
@@ -234,7 +237,8 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 func TestUser_UserAPIKeys(t *testing.T) {
 	t.Parallel()
 
-	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 10, 65*time.Millisecond)
 
 	t.Run("correct_api_key_creation", func(t *testing.T) {
 		t.Parallel()
@@ -302,7 +306,8 @@ func TestUser_UserAPIKeys(t *testing.T) {
 func TestUser_Create(t *testing.T) {
 	t.Parallel()
 
-	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), 10, 65*time.Millisecond)
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 10, 65*time.Millisecond)
 
 	type want struct {
 		FullName *string

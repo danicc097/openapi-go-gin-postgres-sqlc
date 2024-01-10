@@ -15,19 +15,20 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest"
 )
 
 func TestHandlers_DeleteUser(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	tests := []struct {
@@ -73,13 +74,13 @@ func TestHandlers_DeleteUser(t *testing.T) {
 func TestHandlers_GetCurrentUser(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	t.Run("authenticated_user", func(t *testing.T) {
@@ -117,13 +118,13 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 func TestHandlers_UpdateUser(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t).Sugar()
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-	svc := services.New(logger, services.CreateTestRepos(), testPool)
+	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	// NOTE:
