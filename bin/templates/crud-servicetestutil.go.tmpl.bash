@@ -5,6 +5,7 @@ echo "package servicetestutil
 import (
 	\"context\"
 	\"fmt\"
+  $(test -n "$has_deleted_at" && echo "\"time\"")
 
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil\"

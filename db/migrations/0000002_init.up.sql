@@ -263,6 +263,7 @@ create table entity_notifications (
   , message text not null
   , topic text not null
   , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
+  , deleted_at timestamp with time zone
 );
 
 comment on column entity_notifications.topic is '"type":models.Topics';
