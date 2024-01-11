@@ -824,6 +824,19 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - entityNotification
+  /entity-notification/{id}/restore:
+    get:
+      summary: restore entity notification.
+      !!merge <<: *x-require-authenticated
+      operationId: RestoreEntityNotification
+      parameters:
+        - $ref: '#/components/parameters/SerialID'
+      responses:
+        204:
+          description: Success.
+        !!merge <<: *x-error-response
+      tags:
+        - entityNotification
   /entity-notification/{id}:
     get:
       summary: get entity notification.

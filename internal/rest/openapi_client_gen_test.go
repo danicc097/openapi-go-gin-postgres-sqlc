@@ -142,6 +142,9 @@ type ClientInterface interface {
 
 	UpdateEntityNotification(ctx context.Context, id SerialID, body UpdateEntityNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// RestoreEntityNotification request
+	RestoreEntityNotification(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// Events request
 	Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -495,6 +498,25 @@ func (c *Client) UpdateEntityNotificationWithBody(ctx context.Context, id Serial
 
 func (c *Client) UpdateEntityNotification(ctx context.Context, id SerialID, body UpdateEntityNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateEntityNotificationRequest(c.Server, id, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) RestoreEntityNotification(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewRestoreEntityNotificationRequest(c.Server, id)
 	if err != nil {
 		return nil, err
 	}
@@ -1714,6 +1736,40 @@ func NewUpdateEntityNotificationRequestWithBody(server string, id SerialID, cont
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewRestoreEntityNotificationRequest generates requests for RestoreEntityNotification
+func NewRestoreEntityNotificationRequest(server string, id SerialID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/entity-notification/%s/restore", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -3106,6 +3162,9 @@ type ClientWithResponsesInterface interface {
 
 	UpdateEntityNotificationWithResponse(ctx context.Context, id SerialID, body UpdateEntityNotificationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateEntityNotificationResponse, error)
 
+	// RestoreEntityNotification request
+	RestoreEntityNotificationWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*RestoreEntityNotificationResponse, error)
+
 	// Events request
 	EventsWithResponse(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*EventsResponse, error)
 
@@ -3446,6 +3505,28 @@ func (r UpdateEntityNotificationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateEntityNotificationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type RestoreEntityNotificationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r RestoreEntityNotificationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r RestoreEntityNotificationResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4286,6 +4367,15 @@ func (c *ClientWithResponses) UpdateEntityNotificationWithResponse(ctx context.C
 	return ParseUpdateEntityNotificationResponse(rsp)
 }
 
+// RestoreEntityNotificationWithResponse request returning *RestoreEntityNotificationResponse
+func (c *ClientWithResponses) RestoreEntityNotificationWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*RestoreEntityNotificationResponse, error) {
+	rsp, err := c.RestoreEntityNotification(ctx, id, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseRestoreEntityNotificationResponse(rsp)
+}
+
 // EventsWithResponse request returning *EventsResponse
 func (c *ClientWithResponses) EventsWithResponse(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*EventsResponse, error) {
 	rsp, err := c.Events(ctx, params, reqEditors...)
@@ -4945,6 +5035,31 @@ func ParseUpdateEntityNotificationResponse(rsp *http.Response) (*UpdateEntityNot
 		}
 		response.JSON4XX = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParseRestoreEntityNotificationResponse parses an HTTP response from a RestoreEntityNotificationWithResponse call
+func ParseRestoreEntityNotificationResponse(rsp *http.Response) (*RestoreEntityNotificationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &RestoreEntityNotificationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
 	}
 
 	return response, nil

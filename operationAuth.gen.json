@@ -208,6 +208,11 @@
     "role": null,
     "requiresAuthentication": true
   },
+  "RestoreEntityNotification": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
   "GetEntityNotification": {
     "scopes": null,
     "role": null,

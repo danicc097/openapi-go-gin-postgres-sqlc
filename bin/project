@@ -1134,7 +1134,7 @@ x.test.backend() {
     local cache_opt="-count=1"
     cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
 
-    rm -f /tmp/migration_marker
+    rm -f /tmp/migration_marker # still not 100% safe for concurrent go test suites but close enough.
 
     set -x
     APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo $cache_opt "$@" ./...
@@ -1351,7 +1351,7 @@ x.dev-utils.create-crud() { # Creates a generic CRUD endpoint in the OpenAPI spe
   { { {
     x.gen.xo
 
-    load_exported_crud_gen_vars ${@}
+    export_crud_gen_vars ${@}
 
     local new_crud_schema="$(bash "$BIN_TEMPLATES_DIR"/crud-openapi.yaml.tmpl.bash)"
 
@@ -1391,7 +1391,7 @@ type Update${pascal_name}Request struct {
       \"description\": \"Can edit ${sentence_name}s.\"
     },
     \"${kebab_name}:delete\": {
-      \"description\": \"Can delete ${sentence_name}s.\"
+      \"description\": \"Can delete$(test -n "$has_deleted_at" && echo " and restore") ${sentence_name}s.\"
     }
   }" -i -o=json "$SCOPE_POLICY_PATH"
 
@@ -1460,7 +1460,7 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
 
     if gofumpt -w "$services_path" "$service_repos_path" && x.backend.typecheck; then
       x.gen
-      x.dev-utils.create-crud-tests ${@}
+      yes y 2>/dev/null | x.dev-utils.create-crud-tests ${@}
 
       # now that generated api models exist
       file="internal/rest/api_${snake_name}.go"
@@ -1480,7 +1480,7 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
   xsetup.backup.cleanup
 }
 
-load_exported_crud_gen_vars() {
+export_crud_gen_vars() {
   local name="$1"
   test -z "$name" && err "A db table struct name is required"
 
@@ -1520,7 +1520,7 @@ load_exported_crud_gen_vars() {
 
 x.dev-utils.create-crud-tests() {
   { { {
-    load_exported_crud_gen_vars ${@}
+    export_crud_gen_vars ${@}
 
     local file="internal/repos/postgresql/repo_${snake_name}_test.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"

@@ -92,6 +92,121 @@ export const useCreateEntityNotification = <TError = void | HTTPError, TContext 
   return useMutation(mutationOptions)
 }
 /**
+ * @summary restore entity notification.
+ */
+export const restoreEntityNotification = (
+  id: number,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<void>({ url: `/entity-notification/${id}/restore`, method: 'GET', signal }, options)
+}
+
+export const getRestoreEntityNotificationQueryKey = (id: number) => {
+  return [`/entity-notification/${id}/restore`] as const
+}
+
+export const getRestoreEntityNotificationInfiniteQueryOptions = <
+  TData = Awaited<ReturnType<typeof restoreEntityNotification>>,
+  TError = HTTPError,
+>(
+  id: number,
+  options?: {
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof restoreEntityNotification>>, TError, TData>
+    request?: SecondParameter<typeof customInstance>
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getRestoreEntityNotificationQueryKey(id)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof restoreEntityNotification>>> = ({ signal }) =>
+    restoreEntityNotification(id, requestOptions, signal)
+
+  return { queryKey, queryFn, enabled: !!id, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof restoreEntityNotification>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey }
+}
+
+export type RestoreEntityNotificationInfiniteQueryResult = NonNullable<
+  Awaited<ReturnType<typeof restoreEntityNotification>>
+>
+export type RestoreEntityNotificationInfiniteQueryError = HTTPError
+
+/**
+ * @summary restore entity notification.
+ */
+export const useRestoreEntityNotificationInfinite = <
+  TData = Awaited<ReturnType<typeof restoreEntityNotification>>,
+  TError = HTTPError,
+>(
+  id: number,
+  options?: {
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof restoreEntityNotification>>, TError, TData>
+    request?: SecondParameter<typeof customInstance>
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getRestoreEntityNotificationInfiniteQueryOptions(id, options)
+
+  const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryOptions.queryKey
+
+  return query
+}
+
+export const getRestoreEntityNotificationQueryOptions = <
+  TData = Awaited<ReturnType<typeof restoreEntityNotification>>,
+  TError = HTTPError,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof restoreEntityNotification>>, TError, TData>
+    request?: SecondParameter<typeof customInstance>
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getRestoreEntityNotificationQueryKey(id)
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof restoreEntityNotification>>> = ({ signal }) =>
+    restoreEntityNotification(id, requestOptions, signal)
+
+  return { queryKey, queryFn, enabled: !!id, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof restoreEntityNotification>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey }
+}
+
+export type RestoreEntityNotificationQueryResult = NonNullable<Awaited<ReturnType<typeof restoreEntityNotification>>>
+export type RestoreEntityNotificationQueryError = HTTPError
+
+/**
+ * @summary restore entity notification.
+ */
+export const useRestoreEntityNotification = <
+  TData = Awaited<ReturnType<typeof restoreEntityNotification>>,
+  TError = HTTPError,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof restoreEntityNotification>>, TError, TData>
+    request?: SecondParameter<typeof customInstance>
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getRestoreEntityNotificationQueryOptions(id, options)
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryOptions.queryKey
+
+  return query
+}
+
+/**
  * @summary get entity notification.
  */
 export const getEntityNotification = (

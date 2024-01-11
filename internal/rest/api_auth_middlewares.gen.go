@@ -181,6 +181,10 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{}
 	case Ping:
 		return []gin.HandlerFunc{}
+	case RestoreEntityNotification:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
 	case UpdateActivity:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),

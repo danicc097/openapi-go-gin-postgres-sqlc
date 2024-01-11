@@ -69,3 +69,15 @@ func (t *EntityNotification) Delete(ctx context.Context, d db.DBTX, id db.Entity
 
 	return entityNotification, nil
 }
+
+// Restore restores a soft deleted entity notification.
+func (t *EntityNotification) Restore(ctx context.Context, d db.DBTX, id db.EntityNotificationID) (*db.EntityNotification, error) {
+	defer newOTelSpan().Build(ctx).End()
+
+	entityNotification, err := t.repos.EntityNotification.Restore(ctx, d, id)
+	if err != nil {
+		return nil, fmt.Errorf("repos.EntityNotification.Restore: %w", err)
+	}
+
+	return entityNotification, nil
+}

@@ -68,3 +68,16 @@ func (t *EntityNotification) Delete(ctx context.Context, d db.DBTX, id db.Entity
 
 	return entityNotification, err
 }
+
+func (t *EntityNotification) Restore(ctx context.Context, d db.DBTX, id db.EntityNotificationID) (*db.EntityNotification, error) {
+	entityNotification := &db.EntityNotification{
+		EntityNotificationID: id,
+	}
+
+	entityNotification, err := entityNotification.Restore(ctx, d)
+	if err != nil {
+		return nil, fmt.Errorf("could not restore entity notification: %w", ParseDBErrorDetail(err))
+	}
+
+	return entityNotification, err
+}

@@ -19,10 +19,11 @@ const (
 	Ping           OperationID = "Ping"
 
 	// Operation IDs for the 'entityNotification' tag.
-	CreateEntityNotification OperationID = "CreateEntityNotification"
-	DeleteEntityNotification OperationID = "DeleteEntityNotification"
-	GetEntityNotification    OperationID = "GetEntityNotification"
-	UpdateEntityNotification OperationID = "UpdateEntityNotification"
+	CreateEntityNotification  OperationID = "CreateEntityNotification"
+	DeleteEntityNotification  OperationID = "DeleteEntityNotification"
+	GetEntityNotification     OperationID = "GetEntityNotification"
+	RestoreEntityNotification OperationID = "RestoreEntityNotification"
+	UpdateEntityNotification  OperationID = "UpdateEntityNotification"
 
 	// Operation IDs for the 'events' tag.
 	Events OperationID = "Events"

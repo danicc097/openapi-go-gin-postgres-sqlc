@@ -158,5 +158,5 @@ type EntityNotification interface {
 	Create(ctx context.Context, d db.DBTX, params *db.EntityNotificationCreateParams) (*db.EntityNotification, error)
 	Update(ctx context.Context, d db.DBTX, id db.EntityNotificationID, params *db.EntityNotificationUpdateParams) (*db.EntityNotification, error)
 	Delete(ctx context.Context, d db.DBTX, id db.EntityNotificationID) (*db.EntityNotification, error)
+	Restore(ctx context.Context, d db.DBTX, id db.EntityNotificationID) (*db.EntityNotification, error)
 }
-

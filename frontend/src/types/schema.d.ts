@@ -140,6 +140,10 @@ export interface paths {
     /** create entity notification. */
     post: operations["CreateEntityNotification"];
   };
+  "/entity-notification/{id}/restore": {
+    /** restore entity notification. */
+    get: operations["RestoreEntityNotification"];
+  };
   "/entity-notification/{id}": {
     /** get entity notification. */
     get: operations["GetEntityNotification"];
@@ -1570,6 +1574,28 @@ export interface operations {
           "application/json": components["schemas"]["EntityNotification"];
         };
       };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** restore entity notification. */
+  RestoreEntityNotification: {
+    parameters: {
+      path: {
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      204: never;
       /** @description Unauthenticated */
       401: never;
       /** @description Unauthorized */

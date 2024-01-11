@@ -46,6 +46,15 @@ export const getEntityNotificationMock = () => [
       },
     })
   }),
+  http.get('*/entity-notification/:id/restore', async () => {
+    await delay(1000)
+    return new HttpResponse(null, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  }),
   http.get('*/entity-notification/:id', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getGetEntityNotificationMock()), {

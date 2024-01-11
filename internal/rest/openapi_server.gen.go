@@ -1079,6 +1079,9 @@ type ServerInterface interface {
 	// update entity notification.
 	// (PATCH /entity-notification/{id})
 	UpdateEntityNotification(c *gin.Context, id externalRef0.SerialID)
+	// restore entity notification.
+	// (GET /entity-notification/{id}/restore)
+	RestoreEntityNotification(c *gin.Context, id externalRef0.SerialID)
 
 	// (GET /events)
 	Events(c *gin.Context, params externalRef0.EventsParams)
@@ -1333,6 +1336,26 @@ func (siw *ServerInterfaceWrapper) UpdateEntityNotification(c *gin.Context) {
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.UpdateEntityNotification(c, id)
+}
+
+// RestoreEntityNotification operation with its own middleware.
+func (siw *ServerInterfaceWrapper) RestoreEntityNotification(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID // SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.RestoreEntityNotification(c, id)
 }
 
 // Events operation with its own middleware.
@@ -2049,6 +2072,11 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(UpdateEntityNotification), wrapper.UpdateEntityNotification)...,
 	)...)
 
+	router.GET(options.BaseURL+"/entity-notification/:id/restore", append(
+		wrapper.Handler.authMiddlewares(RestoreEntityNotification),
+		append(wrapper.Handler.middlewares(RestoreEntityNotification), wrapper.RestoreEntityNotification)...,
+	)...)
+
 	router.GET(options.BaseURL+"/events", append(
 		wrapper.Handler.authMiddlewares(Events),
 		append(wrapper.Handler.middlewares(Events), wrapper.Events)...,
@@ -2571,6 +2599,47 @@ type UpdateEntityNotification4XXJSONResponse struct {
 }
 
 func (response UpdateEntityNotification4XXJSONResponse) VisitUpdateEntityNotificationResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type RestoreEntityNotificationRequestObject struct {
+	Id externalRef0.SerialID `json:"id"`
+}
+
+type RestoreEntityNotificationResponseObject interface {
+	VisitRestoreEntityNotificationResponse(w http.ResponseWriter) error
+}
+
+type RestoreEntityNotification204Response struct{}
+
+func (response RestoreEntityNotification204Response) VisitRestoreEntityNotificationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type RestoreEntityNotification401Response struct{}
+
+func (response RestoreEntityNotification401Response) VisitRestoreEntityNotificationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type RestoreEntityNotification403Response struct{}
+
+func (response RestoreEntityNotification403Response) VisitRestoreEntityNotificationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type RestoreEntityNotification4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response RestoreEntityNotification4XXJSONResponse) VisitRestoreEntityNotificationResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(response.StatusCode)
 
@@ -3591,6 +3660,9 @@ type StrictServerInterface interface {
 	// update entity notification.
 	// (PATCH /entity-notification/{id})
 	UpdateEntityNotification(c *gin.Context, request UpdateEntityNotificationRequestObject) (UpdateEntityNotificationResponseObject, error)
+	// restore entity notification.
+	// (GET /entity-notification/{id}/restore)
+	RestoreEntityNotification(c *gin.Context, request RestoreEntityNotificationRequestObject) (RestoreEntityNotificationResponseObject, error)
 
 	// (GET /events)
 	Events(c *gin.Context, request EventsRequestObject) (EventsResponseObject, error)
@@ -3995,6 +4067,33 @@ func (sh *strictHandlers) UpdateEntityNotification(ctx *gin.Context, id external
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(UpdateEntityNotificationResponseObject); ok {
 		if err := validResponse.VisitUpdateEntityNotificationResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// RestoreEntityNotification operation middleware
+func (sh *strictHandlers) RestoreEntityNotification(ctx *gin.Context, id externalRef0.SerialID) {
+	var request RestoreEntityNotificationRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.RestoreEntityNotification(ctx, request.(RestoreEntityNotificationRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "RestoreEntityNotification")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(RestoreEntityNotificationResponseObject); ok {
+		if err := validResponse.VisitRestoreEntityNotificationResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

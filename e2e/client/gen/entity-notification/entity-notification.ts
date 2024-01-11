@@ -31,6 +31,12 @@ export const createEntityNotification = (
   )
 }
 /**
+ * @summary restore entity notification.
+ */
+export const restoreEntityNotification = (id: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<void>({ url: `/entity-notification/${id}/restore`, method: 'GET' }, options)
+}
+/**
  * @summary get entity notification.
  */
 export const getEntityNotification = (id: number, options?: SecondParameter<typeof customInstance>) => {
@@ -61,6 +67,7 @@ export const deleteEntityNotification = (id: number, options?: SecondParameter<t
   return customInstance<void>({ url: `/entity-notification/${id}`, method: 'DELETE' }, options)
 }
 export type CreateEntityNotificationResult = NonNullable<Awaited<ReturnType<typeof createEntityNotification>>>
+export type RestoreEntityNotificationResult = NonNullable<Awaited<ReturnType<typeof restoreEntityNotification>>>
 export type GetEntityNotificationResult = NonNullable<Awaited<ReturnType<typeof getEntityNotification>>>
 export type UpdateEntityNotificationResult = NonNullable<Awaited<ReturnType<typeof updateEntityNotification>>>
 export type DeleteEntityNotificationResult = NonNullable<Awaited<ReturnType<typeof deleteEntityNotification>>>

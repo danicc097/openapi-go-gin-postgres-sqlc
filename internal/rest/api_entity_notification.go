@@ -75,3 +75,16 @@ func (h *StrictHandlers) DeleteEntityNotification(c *gin.Context, request Delete
 
 	return DeleteEntityNotification204Response{}, nil
 }
+
+func (h *StrictHandlers) RestoreEntityNotification(c *gin.Context, request RestoreEntityNotificationRequestObject) (RestoreEntityNotificationResponseObject, error) {
+	tx := GetTxFromCtx(c)
+
+	_, err := h.svc.EntityNotification.Restore(c, tx, db.EntityNotificationID(request.Id))
+	if err != nil {
+		renderErrorResponse(c, "Could not restore entity notification", err)
+
+		return nil, nil
+	}
+
+	return RestoreEntityNotification204Response{}, nil
+}
