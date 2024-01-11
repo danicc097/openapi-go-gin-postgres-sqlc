@@ -135,7 +135,9 @@ func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 	$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
 	${lower_name} := postgresqltestutil.NewRandom${pascal_name}(t, testPool $create_args)
 
-	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), 10, 65*time.Millisecond)
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+
+	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), logger, 10, 65*time.Millisecond)
 
 	uniqueCallback := func(t *testing.T, res *db.${pascal_name}) {
 		assert.Equal(t, res.${pascal_name}ID, ${lower_name}.${pascal_name}ID)
@@ -158,7 +160,9 @@ func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 func Test${pascal_name}_Create(t *testing.T) {
 	t.Parallel()
 
-	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), 10, 65*time.Millisecond)
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+
+	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), logger, 10, 65*time.Millisecond)
 
 	type want struct {
 		// NOTE: include db-generated fields here to test equality as well

@@ -12,6 +12,8 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zaptest"
 )
 
 func TestEntityNotification_Update(t *testing.T) {
@@ -78,7 +80,7 @@ func TestEntityNotification_Update(t *testing.T) {
 	}
 }
 
-func TestEntityNotification_SoftDelete(t *testing.T) {
+func TestEntityNotification_Delete(t *testing.T) {
 	t.Parallel()
 
 	entitynotification := postgresqltestutil.NewRandomEntityNotification(t, testPool)
@@ -111,10 +113,11 @@ func TestEntityNotification_SoftDelete(t *testing.T) {
 
 			_, err = entityNotificationRepo.ByID(context.Background(), testPool, tc.args.id)
 			require.ErrorContains(t, err, errNoRows)
-
+			/* row was deleted
 			entitynotification, err = entityNotificationRepo.ByID(context.Background(), testPool, tc.args.id, db.WithDeletedEntityNotificationOnly())
 			require.NoError(t, err)
 			assert.Equal(t, entitynotification.EntityNotificationID, tc.args.id)
+			*/
 		})
 	}
 }
@@ -123,8 +126,9 @@ func TestEntityNotification_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
 	entitynotification := postgresqltestutil.NewRandomEntityNotification(t, testPool)
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
 
-	entityNotificationRepo := reposwrappers.NewEntityNotificationWithRetry(postgresql.NewEntityNotification(), 10, 65*time.Millisecond)
+	entityNotificationRepo := reposwrappers.NewEntityNotificationWithRetry(postgresql.NewEntityNotification(), logger, 10, 65*time.Millisecond)
 
 	uniqueCallback := func(t *testing.T, res *db.EntityNotification) {
 		assert.Equal(t, res.EntityNotificationID, entitynotification.EntityNotificationID)
@@ -147,7 +151,9 @@ func TestEntityNotification_ByIndexedQueries(t *testing.T) {
 func TestEntityNotification_Create(t *testing.T) {
 	t.Parallel()
 
-	entityNotificationRepo := reposwrappers.NewEntityNotificationWithRetry(postgresql.NewEntityNotification(), 10, 65*time.Millisecond)
+	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+
+	entityNotificationRepo := reposwrappers.NewEntityNotificationWithRetry(postgresql.NewEntityNotification(), logger, 10, 65*time.Millisecond)
 
 	type want struct {
 		// NOTE: include db-generated fields here to test equality as well

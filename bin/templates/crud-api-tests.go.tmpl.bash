@@ -6,7 +6,6 @@ echo "package rest_test
 import (
 	\"context\"
 	\"encoding/json\"
-	\"fmt\"
 	\"net/http\"
 	\"testing\"
 
