@@ -12,9 +12,10 @@ import (
 )
 
 type EntityNotifications struct {
-	EntityNotificationID int32     `sql:"primary_key" db:"entity_notification_id"`
-	ID                   string    `db:"id"`
-	Message              string    `db:"message"`
-	Topic                string    `db:"topic"`
-	CreatedAt            time.Time `db:"created_at"`
+	EntityNotificationID int32      `sql:"primary_key" db:"entity_notification_id"`
+	ID                   string     `db:"id"`
+	Message              string     `db:"message"`
+	Topic                string     `db:"topic"`
+	CreatedAt            time.Time  `db:"created_at"`
+	DeletedAt            *time.Time `db:"deleted_at"`
 }

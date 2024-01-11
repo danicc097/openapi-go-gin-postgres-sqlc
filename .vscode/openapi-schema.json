@@ -916,7 +916,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "entity-notification:create",
+              "entity-notification:edit",
+              "entity-notification:delete"
             ]
           }
         },

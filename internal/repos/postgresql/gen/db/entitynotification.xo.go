@@ -31,6 +31,7 @@ type EntityNotification struct {
 	Message              string               `json:"message" db:"message" required:"true" nullable:"false"`                               // message
 	Topic                models.Topics        `json:"topic" db:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"` // topic
 	CreatedAt            time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                          // created_at
+	DeletedAt            *time.Time           `json:"deletedAt" db:"deleted_at"`                                                           // deleted_at
 
 }
 
@@ -80,6 +81,8 @@ type EntityNotificationSelectConfig struct {
 	joins   EntityNotificationJoins
 	filters map[string][]any
 	having  map[string][]any
+
+	deletedAt string
 }
 type EntityNotificationSelectConfigOption func(*EntityNotificationSelectConfig)
 
@@ -92,6 +95,13 @@ func WithEntityNotificationLimit(limit int) EntityNotificationSelectConfigOption
 	}
 }
 
+// WithDeletedEntityNotificationOnly limits result to records marked as deleted.
+func WithDeletedEntityNotificationOnly() EntityNotificationSelectConfigOption {
+	return func(s *EntityNotificationSelectConfig) {
+		s.deletedAt = " not null "
+	}
+}
+
 type EntityNotificationOrderBy string
 
 const (
@@ -99,6 +109,10 @@ const (
 	EntityNotificationCreatedAtDescNullsLast  EntityNotificationOrderBy = " created_at DESC NULLS LAST "
 	EntityNotificationCreatedAtAscNullsFirst  EntityNotificationOrderBy = " created_at ASC NULLS FIRST "
 	EntityNotificationCreatedAtAscNullsLast   EntityNotificationOrderBy = " created_at ASC NULLS LAST "
+	EntityNotificationDeletedAtDescNullsFirst EntityNotificationOrderBy = " deleted_at DESC NULLS FIRST "
+	EntityNotificationDeletedAtDescNullsLast  EntityNotificationOrderBy = " deleted_at DESC NULLS LAST "
+	EntityNotificationDeletedAtAscNullsFirst  EntityNotificationOrderBy = " deleted_at ASC NULLS FIRST "
+	EntityNotificationDeletedAtAscNullsLast   EntityNotificationOrderBy = " deleted_at ASC NULLS LAST "
 )
 
 // WithEntityNotificationOrderBy orders results by the given columns.
@@ -158,14 +172,14 @@ func WithEntityNotificationHavingClause(conditions map[string][]any) EntityNotif
 func (en *EntityNotification) Insert(ctx context.Context, db DB) (*EntityNotification, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.entity_notifications (
-	id, message, topic
+	deleted_at, id, message, topic
 	) VALUES (
-	$1, $2, $3
+	$1, $2, $3, $4
 	) RETURNING * `
 	// run
-	logf(sqlstr, en.ID, en.Message, en.Topic)
+	logf(sqlstr, en.DeletedAt, en.ID, en.Message, en.Topic)
 
-	rows, err := db.Query(ctx, sqlstr, en.ID, en.Message, en.Topic)
+	rows, err := db.Query(ctx, sqlstr, en.DeletedAt, en.ID, en.Message, en.Topic)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("EntityNotification/Insert/db.Query: %w", &XoError{Entity: "Entity notification", Err: err}))
 	}
@@ -183,13 +197,13 @@ func (en *EntityNotification) Insert(ctx context.Context, db DB) (*EntityNotific
 func (en *EntityNotification) Update(ctx context.Context, db DB) (*EntityNotification, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.entity_notifications SET 
-	id = $1, message = $2, topic = $3 
-	WHERE entity_notification_id = $4 
+	deleted_at = $1, id = $2, message = $3, topic = $4 
+	WHERE entity_notification_id = $5 
 	RETURNING * `
 	// run
-	logf(sqlstr, en.ID, en.Message, en.Topic, en.EntityNotificationID)
+	logf(sqlstr, en.DeletedAt, en.ID, en.Message, en.Topic, en.EntityNotificationID)
 
-	rows, err := db.Query(ctx, sqlstr, en.ID, en.Message, en.Topic, en.EntityNotificationID)
+	rows, err := db.Query(ctx, sqlstr, en.DeletedAt, en.ID, en.Message, en.Topic, en.EntityNotificationID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("EntityNotification/Update/db.Query: %w", &XoError{Entity: "Entity notification", Err: err}))
 	}
@@ -240,9 +254,35 @@ func (en *EntityNotification) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// SoftDelete soft deletes the EntityNotification from the database via 'deleted_at'.
+func (en *EntityNotification) SoftDelete(ctx context.Context, db DB) error {
+	// delete with single primary key
+	sqlstr := `UPDATE public.entity_notifications 
+	SET deleted_at = NOW() 
+	WHERE entity_notification_id = $1 `
+	// run
+	if _, err := db.Exec(ctx, sqlstr, en.EntityNotificationID); err != nil {
+		return logerror(err)
+	}
+	// set deleted
+	en.DeletedAt = newPointer(time.Now())
+
+	return nil
+}
+
+// Restore restores a soft deleted EntityNotification from the database.
+func (en *EntityNotification) Restore(ctx context.Context, db DB) (*EntityNotification, error) {
+	en.DeletedAt = nil
+	newen, err := en.Update(ctx, db)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("EntityNotification/Restore/pgx.CollectRows: %w", &XoError{Entity: "Entity notification", Err: err}))
+	}
+	return newen, nil
+}
+
 // EntityNotificationPaginatedByEntityNotificationID returns a cursor-paginated list of EntityNotification.
 func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db DB, entityNotificationID EntityNotificationID, direction models.Direction, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
-	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &EntityNotificationSelectConfig{deletedAt: " null ", joins: EntityNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -307,16 +347,17 @@ func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db D
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	entity_notifications.created_at,
+	entity_notifications.deleted_at,
 	entity_notifications.entity_notification_id,
 	entity_notifications.id,
 	entity_notifications.message,
 	entity_notifications.topic %s 
 	 FROM public.entity_notifications %s 
 	 WHERE entity_notifications.entity_notification_id %s $1
-	 %s   %s 
+	 %s   AND entity_notifications.deleted_at is %s  %s 
   %s 
   ORDER BY 
-		entity_notification_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
+		entity_notification_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* EntityNotificationPaginatedByEntityNotificationID */\n" + sqlstr
 
@@ -337,7 +378,7 @@ func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db D
 //
 // Generated from index 'entity_notifications_pkey'.
 func EntityNotificationByEntityNotificationID(ctx context.Context, db DB, entityNotificationID EntityNotificationID, opts ...EntityNotificationSelectConfigOption) (*EntityNotification, error) {
-	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &EntityNotificationSelectConfig{deletedAt: " null ", joins: EntityNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
@@ -397,15 +438,16 @@ func EntityNotificationByEntityNotificationID(ctx context.Context, db DB, entity
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	entity_notifications.created_at,
+	entity_notifications.deleted_at,
 	entity_notifications.entity_notification_id,
 	entity_notifications.id,
 	entity_notifications.message,
 	entity_notifications.topic %s 
 	 FROM public.entity_notifications %s 
 	 WHERE entity_notifications.entity_notification_id = $1
-	 %s   %s 
+	 %s   AND entity_notifications.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
 	sqlstr = "/* EntityNotificationByEntityNotificationID */\n" + sqlstr

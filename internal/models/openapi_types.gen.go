@@ -178,20 +178,23 @@ func AllRoleValues() []Role {
 
 // Scope is generated from scopes.json keys.
 const (
-	ScopeActivityCreate       Scope = "activity:create"
-	ScopeActivityDelete       Scope = "activity:delete"
-	ScopeActivityEdit         Scope = "activity:edit"
-	ScopeProjectMember        Scope = "project-member"
-	ScopeProjectSettingsWrite Scope = "project-settings:write"
-	ScopeScopesWrite          Scope = "scopes:write"
-	ScopeTeamSettingsWrite    Scope = "team-settings:write"
-	ScopeUsersDelete          Scope = "users:delete"
-	ScopeUsersRead            Scope = "users:read"
-	ScopeUsersWrite           Scope = "users:write"
-	ScopeWorkItemReview       Scope = "work-item:review"
-	ScopeWorkItemTagCreate    Scope = "work-item-tag:create"
-	ScopeWorkItemTagDelete    Scope = "work-item-tag:delete"
-	ScopeWorkItemTagEdit      Scope = "work-item-tag:edit"
+	ScopeActivityCreate           Scope = "activity:create"
+	ScopeActivityDelete           Scope = "activity:delete"
+	ScopeActivityEdit             Scope = "activity:edit"
+	ScopeEntityNotificationCreate Scope = "entity-notification:create"
+	ScopeEntityNotificationDelete Scope = "entity-notification:delete"
+	ScopeEntityNotificationEdit   Scope = "entity-notification:edit"
+	ScopeProjectMember            Scope = "project-member"
+	ScopeProjectSettingsWrite     Scope = "project-settings:write"
+	ScopeScopesWrite              Scope = "scopes:write"
+	ScopeTeamSettingsWrite        Scope = "team-settings:write"
+	ScopeUsersDelete              Scope = "users:delete"
+	ScopeUsersRead                Scope = "users:read"
+	ScopeUsersWrite               Scope = "users:write"
+	ScopeWorkItemReview           Scope = "work-item:review"
+	ScopeWorkItemTagCreate        Scope = "work-item-tag:create"
+	ScopeWorkItemTagDelete        Scope = "work-item-tag:delete"
+	ScopeWorkItemTagEdit          Scope = "work-item-tag:edit"
 )
 
 // AllScopeValues returns all possible values for Scope.
@@ -200,6 +203,9 @@ func AllScopeValues() []Scope {
 		ScopeActivityCreate,
 		ScopeActivityDelete,
 		ScopeActivityEdit,
+		ScopeEntityNotificationCreate,
+		ScopeEntityNotificationDelete,
+		ScopeEntityNotificationEdit,
 		ScopeProjectMember,
 		ScopeProjectSettingsWrite,
 		ScopeScopesWrite,
@@ -277,6 +283,15 @@ type CreateDemoWorkItemRequest struct {
 	// ProjectName is generated from projects table.
 	ProjectName Project `json:"projectName"`
 	TagIDs      []int   `json:"tagIDs"`
+}
+
+// CreateEntityNotificationRequest defines the model for CreateEntityNotificationRequest.
+type CreateEntityNotificationRequest struct {
+	Id      string `json:"id"`
+	Message string `json:"message"`
+
+	// Topic string identifiers for SSE event listeners.
+	Topic Topics `json:"topic"`
 }
 
 // CreateTeamRequest defines the model for CreateTeamRequest.
@@ -600,6 +615,18 @@ type DemoWorkItems struct {
 // Direction defines the model for Direction.
 type Direction string
 
+// EntityNotification defines the model for EntityNotification.
+type EntityNotification struct {
+	CreatedAt            time.Time  `json:"createdAt"`
+	DeletedAt            *time.Time `json:"deletedAt"`
+	EntityNotificationID int        `json:"entityNotificationID"`
+	Id                   string     `json:"id"`
+	Message              string     `json:"message"`
+
+	// Topic string identifiers for SSE event listeners.
+	Topic Topics `json:"topic"`
+}
+
 // ErrorCode Represents standardized HTTP error types.
 // Notes:
 // - 'Private' marks an error to be hidden in response.
@@ -719,6 +746,15 @@ type UpdateActivityRequest struct {
 	Description  *string `json:"description,omitempty"`
 	IsProductive *bool   `json:"isProductive,omitempty"`
 	Name         *string `json:"name,omitempty"`
+}
+
+// UpdateEntityNotificationRequest defines the model for UpdateEntityNotificationRequest.
+type UpdateEntityNotificationRequest struct {
+	Id      *string `json:"id,omitempty"`
+	Message *string `json:"message,omitempty"`
+
+	// Topic string identifiers for SSE event listeners.
+	Topic *Topics `json:"topic,omitempty"`
 }
 
 // UpdateTeamRequest defines the model for UpdateTeamRequest.
@@ -850,6 +886,14 @@ type GetProjectWorkitemsParams struct {
 // UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
 
 type UpdateActivityJSONRequestBody = UpdateActivityRequest
+
+// CreateEntityNotificationJSONRequestBody defines body for CreateEntityNotification for application/json ContentType.
+
+type CreateEntityNotificationJSONRequestBody = CreateEntityNotificationRequest
+
+// UpdateEntityNotificationJSONRequestBody defines body for UpdateEntityNotification for application/json ContentType.
+
+type UpdateEntityNotificationJSONRequestBody = UpdateEntityNotificationRequest
 
 // CreateActivityJSONRequestBody defines body for CreateActivity for application/json ContentType.
 

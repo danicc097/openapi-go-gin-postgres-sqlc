@@ -117,21 +117,30 @@ func CreateRepos() *repos.Repos {
 		postgresql.OtelName,
 		nil,
 	)
+	entitynotificationrepo := reposwrappers.NewEntityNotificationWithTracing(
+		reposwrappers.NewEntityNotificationWithTimeout(
+			postgresql.NewEntityNotification(),
+			reposwrappers.EntityNotificationWithTimeoutConfig{},
+		),
+		postgresql.OtelName,
+		nil,
+	)
 
 	return &repos.Repos{
-		Activity:        activityrepo,
-		DemoTwoWorkItem: demotwoworkitemrepo,
-		DemoWorkItem:    demoworkitemrepo,
-		KanbanStep:      ksrepo,
-		Notification:    notifrepo,
-		Project:         projectrepo,
-		Team:            teamrepo,
-		TimeEntry:       timeentryrepo,
-		User:            urepo,
-		WorkItem:        workitemrepo,
-		WorkItemComment: workitemcommentrepo,
-		WorkItemTag:     workitemtagrepo,
-		WorkItemType:    workitemtyperepo,
+		EntityNotification: entitynotificationrepo,
+		Activity:           activityrepo,
+		DemoTwoWorkItem:    demotwoworkitemrepo,
+		DemoWorkItem:       demoworkitemrepo,
+		KanbanStep:         ksrepo,
+		Notification:       notifrepo,
+		Project:            projectrepo,
+		Team:               teamrepo,
+		TimeEntry:          timeentryrepo,
+		User:               urepo,
+		WorkItem:           workitemrepo,
+		WorkItemComment:    workitemcommentrepo,
+		WorkItemTag:        workitemtagrepo,
+		WorkItemType:       workitemtyperepo,
 	}
 }
 

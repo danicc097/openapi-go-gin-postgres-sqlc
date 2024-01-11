@@ -185,20 +185,23 @@ func AllRoleValues() []Role {
 
 // Scope is generated from scopes.json keys.
 const (
-	ScopeActivityCreate       Scope = "activity:create"
-	ScopeActivityDelete       Scope = "activity:delete"
-	ScopeActivityEdit         Scope = "activity:edit"
-	ScopeProjectMember        Scope = "project-member"
-	ScopeProjectSettingsWrite Scope = "project-settings:write"
-	ScopeScopesWrite          Scope = "scopes:write"
-	ScopeTeamSettingsWrite    Scope = "team-settings:write"
-	ScopeUsersDelete          Scope = "users:delete"
-	ScopeUsersRead            Scope = "users:read"
-	ScopeUsersWrite           Scope = "users:write"
-	ScopeWorkItemReview       Scope = "work-item:review"
-	ScopeWorkItemTagCreate    Scope = "work-item-tag:create"
-	ScopeWorkItemTagDelete    Scope = "work-item-tag:delete"
-	ScopeWorkItemTagEdit      Scope = "work-item-tag:edit"
+	ScopeActivityCreate           Scope = "activity:create"
+	ScopeActivityDelete           Scope = "activity:delete"
+	ScopeActivityEdit             Scope = "activity:edit"
+	ScopeEntityNotificationCreate Scope = "entity-notification:create"
+	ScopeEntityNotificationDelete Scope = "entity-notification:delete"
+	ScopeEntityNotificationEdit   Scope = "entity-notification:edit"
+	ScopeProjectMember            Scope = "project-member"
+	ScopeProjectSettingsWrite     Scope = "project-settings:write"
+	ScopeScopesWrite              Scope = "scopes:write"
+	ScopeTeamSettingsWrite        Scope = "team-settings:write"
+	ScopeUsersDelete              Scope = "users:delete"
+	ScopeUsersRead                Scope = "users:read"
+	ScopeUsersWrite               Scope = "users:write"
+	ScopeWorkItemReview           Scope = "work-item:review"
+	ScopeWorkItemTagCreate        Scope = "work-item-tag:create"
+	ScopeWorkItemTagDelete        Scope = "work-item-tag:delete"
+	ScopeWorkItemTagEdit          Scope = "work-item-tag:edit"
 )
 
 // AllScopeValues returns all possible values for Scope.
@@ -207,6 +210,9 @@ func AllScopeValues() []Scope {
 		ScopeActivityCreate,
 		ScopeActivityDelete,
 		ScopeActivityEdit,
+		ScopeEntityNotificationCreate,
+		ScopeEntityNotificationDelete,
+		ScopeEntityNotificationEdit,
 		ScopeProjectMember,
 		ScopeProjectSettingsWrite,
 		ScopeScopesWrite,
@@ -291,6 +297,17 @@ type CreateDemoWorkItemRequest  struct {
 // ProjectName is generated from projects table.
     ProjectName externalRef0.Project`json:"projectName"`
     TagIDs []int`json:"tagIDs"`
+}
+*/
+
+/* Ignoring existing rest struct
+// CreateEntityNotificationRequest defines the model for CreateEntityNotificationRequest.
+type CreateEntityNotificationRequest  struct {
+    Id string`json:"id"`
+    Message string`json:"message"`
+
+// Topic string identifiers for SSE event listeners.
+    Topic externalRef0.Topics`json:"topic"`
 }
 */
 
@@ -627,6 +644,20 @@ type DemoWorkItems  struct {
 // Direction defines the model for Direction.
 type Direction string
 
+/* Ignoring existing rest struct
+// EntityNotification defines the model for EntityNotification.
+type EntityNotification  struct {
+    CreatedAt time.Time`json:"createdAt"`
+    DeletedAt *time.Time`json:"deletedAt"`
+    EntityNotificationID int`json:"entityNotificationID"`
+    Id string`json:"id"`
+    Message string`json:"message"`
+
+// Topic string identifiers for SSE event listeners.
+    Topic externalRef0.Topics`json:"topic"`
+}
+*/
+
 // ErrorCode Represents standardized HTTP error types.
 // Notes:
 // - 'Private' marks an error to be hidden in response.
@@ -753,6 +784,17 @@ type UpdateActivityRequest  struct {
     Description *string`json:"description,omitempty"`
     IsProductive *bool`json:"isProductive,omitempty"`
     Name *string`json:"name,omitempty"`
+}
+*/
+
+/* Ignoring existing rest struct
+// UpdateEntityNotificationRequest defines the model for UpdateEntityNotificationRequest.
+type UpdateEntityNotificationRequest  struct {
+    Id *string`json:"id,omitempty"`
+    Message *string`json:"message,omitempty"`
+
+// Topic string identifiers for SSE event listeners.
+    Topic *externalRef0.Topics`json:"topic,omitempty"`
 }
 */
 
@@ -898,6 +940,14 @@ type GetProjectWorkitemsParams struct {
 
 type UpdateActivityJSONRequestBody = UpdateActivityRequest
 
+// CreateEntityNotificationJSONRequestBody defines body for CreateEntityNotification for application/json ContentType.
+
+type CreateEntityNotificationJSONRequestBody = CreateEntityNotificationRequest
+
+// UpdateEntityNotificationJSONRequestBody defines body for UpdateEntityNotification for application/json ContentType.
+
+type UpdateEntityNotificationJSONRequestBody = UpdateEntityNotificationRequest
+
 // CreateActivityJSONRequestBody defines body for CreateActivity for application/json ContentType.
 
 type CreateActivityJSONRequestBody = CreateActivityRequest
@@ -1017,6 +1067,18 @@ type ServerInterface interface {
 
 	// (GET /auth/myprovider/login)
 	MyProviderLogin(c *gin.Context)
+	// create entity notification.
+	// (POST /entity-notification/)
+	CreateEntityNotification(c *gin.Context)
+	// delete .
+	// (DELETE /entity-notification/{id})
+	DeleteEntityNotification(c *gin.Context, id externalRef0.SerialID)
+	// get entity notification.
+	// (GET /entity-notification/{id})
+	GetEntityNotification(c *gin.Context, id externalRef0.SerialID)
+	// update entity notification.
+	// (PATCH /entity-notification/{id})
+	UpdateEntityNotification(c *gin.Context, id externalRef0.SerialID)
 
 	// (GET /events)
 	Events(c *gin.Context, params externalRef0.EventsParams)
@@ -1202,6 +1264,75 @@ func (siw *ServerInterfaceWrapper) MyProviderCallback(c *gin.Context) {
 // MyProviderLogin operation with its own middleware.
 func (siw *ServerInterfaceWrapper) MyProviderLogin(c *gin.Context) {
 	siw.Handler.MyProviderLogin(c)
+}
+
+// CreateEntityNotification operation with its own middleware.
+func (siw *ServerInterfaceWrapper) CreateEntityNotification(c *gin.Context) {
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.CreateEntityNotification(c)
+}
+
+// DeleteEntityNotification operation with its own middleware.
+func (siw *ServerInterfaceWrapper) DeleteEntityNotification(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID // SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.DeleteEntityNotification(c, id)
+}
+
+// GetEntityNotification operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetEntityNotification(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID // SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.GetEntityNotification(c, id)
+}
+
+// UpdateEntityNotification operation with its own middleware.
+func (siw *ServerInterfaceWrapper) UpdateEntityNotification(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID // SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.UpdateEntityNotification(c, id)
 }
 
 // Events operation with its own middleware.
@@ -1898,6 +2029,26 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(MyProviderLogin), wrapper.MyProviderLogin)...,
 	)...)
 
+	router.POST(options.BaseURL+"/entity-notification/", append(
+		wrapper.Handler.authMiddlewares(CreateEntityNotification),
+		append(wrapper.Handler.middlewares(CreateEntityNotification), wrapper.CreateEntityNotification)...,
+	)...)
+
+	router.DELETE(options.BaseURL+"/entity-notification/:id", append(
+		wrapper.Handler.authMiddlewares(DeleteEntityNotification),
+		append(wrapper.Handler.middlewares(DeleteEntityNotification), wrapper.DeleteEntityNotification)...,
+	)...)
+
+	router.GET(options.BaseURL+"/entity-notification/:id", append(
+		wrapper.Handler.authMiddlewares(GetEntityNotification),
+		append(wrapper.Handler.middlewares(GetEntityNotification), wrapper.GetEntityNotification)...,
+	)...)
+
+	router.PATCH(options.BaseURL+"/entity-notification/:id", append(
+		wrapper.Handler.authMiddlewares(UpdateEntityNotification),
+		append(wrapper.Handler.middlewares(UpdateEntityNotification), wrapper.UpdateEntityNotification)...,
+	)...)
+
 	router.GET(options.BaseURL+"/events", append(
 		wrapper.Handler.authMiddlewares(Events),
 		append(wrapper.Handler.middlewares(Events), wrapper.Events)...,
@@ -2253,6 +2404,177 @@ type MyProviderLogin302Response struct{}
 func (response MyProviderLogin302Response) VisitMyProviderLoginResponse(w http.ResponseWriter) error {
 	w.WriteHeader(302)
 	return nil
+}
+
+type CreateEntityNotificationRequestObject struct {
+	Body *CreateEntityNotificationRequest
+}
+
+type CreateEntityNotificationResponseObject interface {
+	VisitCreateEntityNotificationResponse(w http.ResponseWriter) error
+}
+
+type CreateEntityNotification201JSONResponse EntityNotification
+
+func (response CreateEntityNotification201JSONResponse) VisitCreateEntityNotificationResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateEntityNotification401Response struct{}
+
+func (response CreateEntityNotification401Response) VisitCreateEntityNotificationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type CreateEntityNotification403Response struct{}
+
+func (response CreateEntityNotification403Response) VisitCreateEntityNotificationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type CreateEntityNotification4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response CreateEntityNotification4XXJSONResponse) VisitCreateEntityNotificationResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeleteEntityNotificationRequestObject struct {
+	Id externalRef0.SerialID `json:"id"`
+}
+
+type DeleteEntityNotificationResponseObject interface {
+	VisitDeleteEntityNotificationResponse(w http.ResponseWriter) error
+}
+
+type DeleteEntityNotification204Response struct{}
+
+func (response DeleteEntityNotification204Response) VisitDeleteEntityNotificationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteEntityNotification401Response struct{}
+
+func (response DeleteEntityNotification401Response) VisitDeleteEntityNotificationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteEntityNotification403Response struct{}
+
+func (response DeleteEntityNotification403Response) VisitDeleteEntityNotificationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteEntityNotification4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteEntityNotification4XXJSONResponse) VisitDeleteEntityNotificationResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetEntityNotificationRequestObject struct {
+	Id externalRef0.SerialID `json:"id"`
+}
+
+type GetEntityNotificationResponseObject interface {
+	VisitGetEntityNotificationResponse(w http.ResponseWriter) error
+}
+
+type GetEntityNotification200JSONResponse EntityNotification
+
+func (response GetEntityNotification200JSONResponse) VisitGetEntityNotificationResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetEntityNotification401Response struct{}
+
+func (response GetEntityNotification401Response) VisitGetEntityNotificationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetEntityNotification403Response struct{}
+
+func (response GetEntityNotification403Response) VisitGetEntityNotificationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetEntityNotification4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetEntityNotification4XXJSONResponse) VisitGetEntityNotificationResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateEntityNotificationRequestObject struct {
+	Id   externalRef0.SerialID `json:"id"`
+	Body *UpdateEntityNotificationRequest
+}
+
+type UpdateEntityNotificationResponseObject interface {
+	VisitUpdateEntityNotificationResponse(w http.ResponseWriter) error
+}
+
+type UpdateEntityNotification200JSONResponse EntityNotification
+
+func (response UpdateEntityNotification200JSONResponse) VisitUpdateEntityNotificationResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateEntityNotification401Response struct{}
+
+func (response UpdateEntityNotification401Response) VisitUpdateEntityNotificationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateEntityNotification403Response struct{}
+
+func (response UpdateEntityNotification403Response) VisitUpdateEntityNotificationResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type UpdateEntityNotification4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response UpdateEntityNotification4XXJSONResponse) VisitUpdateEntityNotificationResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
 type EventsRequestObject struct {
@@ -3257,6 +3579,18 @@ type StrictServerInterface interface {
 
 	// (GET /auth/myprovider/login)
 	MyProviderLogin(c *gin.Context, request MyProviderLoginRequestObject) (MyProviderLoginResponseObject, error)
+	// create entity notification.
+	// (POST /entity-notification/)
+	CreateEntityNotification(c *gin.Context, request CreateEntityNotificationRequestObject) (CreateEntityNotificationResponseObject, error)
+	// delete .
+	// (DELETE /entity-notification/{id})
+	DeleteEntityNotification(c *gin.Context, request DeleteEntityNotificationRequestObject) (DeleteEntityNotificationResponseObject, error)
+	// get entity notification.
+	// (GET /entity-notification/{id})
+	GetEntityNotification(c *gin.Context, request GetEntityNotificationRequestObject) (GetEntityNotificationResponseObject, error)
+	// update entity notification.
+	// (PATCH /entity-notification/{id})
+	UpdateEntityNotification(c *gin.Context, request UpdateEntityNotificationRequestObject) (UpdateEntityNotificationResponseObject, error)
 
 	// (GET /events)
 	Events(c *gin.Context, request EventsRequestObject) (EventsResponseObject, error)
@@ -3537,6 +3871,130 @@ func (sh *strictHandlers) MyProviderLogin(ctx *gin.Context) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(MyProviderLoginResponseObject); ok {
 		if err := validResponse.VisitMyProviderLoginResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateEntityNotification operation middleware
+func (sh *strictHandlers) CreateEntityNotification(ctx *gin.Context) {
+	var request CreateEntityNotificationRequestObject
+
+	// CreateEntityNotificationRequest
+	var body CreateEntityNotificationRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateEntityNotification(ctx, request.(CreateEntityNotificationRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "CreateEntityNotification")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateEntityNotificationResponseObject); ok {
+		if err := validResponse.VisitCreateEntityNotificationResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteEntityNotification operation middleware
+func (sh *strictHandlers) DeleteEntityNotification(ctx *gin.Context, id externalRef0.SerialID) {
+	var request DeleteEntityNotificationRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteEntityNotification(ctx, request.(DeleteEntityNotificationRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "DeleteEntityNotification")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteEntityNotificationResponseObject); ok {
+		if err := validResponse.VisitDeleteEntityNotificationResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetEntityNotification operation middleware
+func (sh *strictHandlers) GetEntityNotification(ctx *gin.Context, id externalRef0.SerialID) {
+	var request GetEntityNotificationRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetEntityNotification(ctx, request.(GetEntityNotificationRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetEntityNotification")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetEntityNotificationResponseObject); ok {
+		if err := validResponse.VisitGetEntityNotificationResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateEntityNotification operation middleware
+func (sh *strictHandlers) UpdateEntityNotification(ctx *gin.Context, id externalRef0.SerialID) {
+	var request UpdateEntityNotificationRequestObject
+
+	request.Id = id
+
+	// UpdateEntityNotificationRequest
+	var body UpdateEntityNotificationRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateEntityNotification(ctx, request.(UpdateEntityNotificationRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateEntityNotification")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateEntityNotificationResponseObject); ok {
+		if err := validResponse.VisitUpdateEntityNotificationResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

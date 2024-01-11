@@ -22,6 +22,7 @@ type entityNotificationsTable struct {
 	Message              postgres.ColumnString
 	Topic                postgres.ColumnString
 	CreatedAt            postgres.ColumnTimestampz
+	DeletedAt            postgres.ColumnTimestampz
 
 	AllColumns     postgres.ColumnList
 	MutableColumns postgres.ColumnList
@@ -67,8 +68,9 @@ func newEntityNotificationsTableImpl(schemaName, tableName, alias string) entity
 		MessageColumn              = postgres.StringColumn("message")
 		TopicColumn                = postgres.StringColumn("topic")
 		CreatedAtColumn            = postgres.TimestampzColumn("created_at")
-		allColumns                 = postgres.ColumnList{EntityNotificationIDColumn, IDColumn, MessageColumn, TopicColumn, CreatedAtColumn}
-		mutableColumns             = postgres.ColumnList{IDColumn, MessageColumn, TopicColumn, CreatedAtColumn}
+		DeletedAtColumn            = postgres.TimestampzColumn("deleted_at")
+		allColumns                 = postgres.ColumnList{EntityNotificationIDColumn, IDColumn, MessageColumn, TopicColumn, CreatedAtColumn, DeletedAtColumn}
+		mutableColumns             = postgres.ColumnList{IDColumn, MessageColumn, TopicColumn, CreatedAtColumn, DeletedAtColumn}
 	)
 
 	return entityNotificationsTable{
@@ -80,6 +82,7 @@ func newEntityNotificationsTableImpl(schemaName, tableName, alias string) entity
 		Message:              MessageColumn,
 		Topic:                TopicColumn,
 		CreatedAt:            CreatedAtColumn,
+		DeletedAt:            DeletedAtColumn,
 
 		AllColumns:     allColumns,
 		MutableColumns: mutableColumns,

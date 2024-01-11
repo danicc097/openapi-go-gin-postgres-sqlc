@@ -34,6 +34,9 @@ export type Scope =
   | 'work-item-tag:edit'
   | 'work-item-tag:delete'
   | 'work-item:review'
+  | 'entity-notification:create'
+  | 'entity-notification:edit'
+  | 'entity-notification:delete'
 export type Scopes = Scope[]
 /**
  * is generated from database enum 'work_item_role'.
@@ -505,4 +508,22 @@ export interface DbUserNotification {
   read: boolean
   userID: DbUserID
   userNotificationID: number
+}
+export interface CreateEntityNotificationRequest {
+  id: string
+  message: string
+  topic: Topics
+}
+export interface UpdateEntityNotificationRequest {
+  id?: string
+  message?: string
+  topic?: Topics
+}
+export interface EntityNotification {
+  createdAt: string
+  deletedAt?: string | null
+  entityNotificationID: number
+  id: string
+  message: string
+  topic: Topics
 }

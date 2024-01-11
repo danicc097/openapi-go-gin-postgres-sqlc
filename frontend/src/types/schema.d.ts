@@ -136,6 +136,18 @@ export interface paths {
     /** create workitem comment */
     post: operations["CreateWorkitemComment"];
   };
+  "/entity-notification/": {
+    /** create entity notification. */
+    post: operations["CreateEntityNotification"];
+  };
+  "/entity-notification/{id}": {
+    /** get entity notification. */
+    get: operations["GetEntityNotification"];
+    /** delete . */
+    delete: operations["DeleteEntityNotification"];
+    /** update entity notification. */
+    patch: operations["UpdateEntityNotification"];
+  };
 }
 
 export type webhooks = Record<string, never>;
@@ -459,7 +471,7 @@ export interface components {
      * @description is generated from scopes.json keys.
      * @enum {string}
      */
-    Scope: "project-member" | "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "activity:create" | "activity:edit" | "activity:delete" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review";
+    Scope: "project-member" | "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "activity:create" | "activity:edit" | "activity:delete" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review" | "entity-notification:create" | "entity-notification:edit" | "entity-notification:delete";
     Scopes: components["schemas"]["Scope"][];
     /**
      * @description is generated from roles.json keys.
@@ -680,6 +692,26 @@ export interface components {
      * @enum {string}
      */
     DemoTwoKanbanSteps: "Received";
+    CreateEntityNotificationRequest: {
+      id: string;
+      message: string;
+      topic: components["schemas"]["Topics"];
+    };
+    UpdateEntityNotificationRequest: {
+      id?: string;
+      message?: string;
+      topic?: components["schemas"]["Topics"];
+    };
+    EntityNotification: {
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      entityNotificationID: number;
+      id: string;
+      message: string;
+      topic: components["schemas"]["Topics"];
+    };
   };
   responses: never;
   parameters: {
@@ -1520,6 +1552,111 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["DbWorkItemComment"];
+        };
+      };
+    };
+  };
+  /** create entity notification. */
+  CreateEntityNotification: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateEntityNotificationRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      201: {
+        content: {
+          "application/json": components["schemas"]["EntityNotification"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** get entity notification. */
+  GetEntityNotification: {
+    parameters: {
+      path: {
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["EntityNotification"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** delete . */
+  DeleteEntityNotification: {
+    parameters: {
+      path: {
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      204: never;
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** update entity notification. */
+  UpdateEntityNotification: {
+    parameters: {
+      path: {
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateEntityNotificationRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["EntityNotification"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
         };
       };
     };

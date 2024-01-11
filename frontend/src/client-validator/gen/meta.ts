@@ -78,6 +78,9 @@ import {
   DbUserWIAUWorkItem,
   DemoKanbanSteps,
   DemoTwoKanbanSteps,
+  CreateEntityNotificationRequest,
+  UpdateEntityNotificationRequest,
+  EntityNotification,
 } from './models'
 
 export const schemaDefinitions = {
@@ -197,6 +200,15 @@ export const schemaDefinitions = {
   DbUserWIAUWorkItem: info<DbUserWIAUWorkItem>('DbUserWIAUWorkItem', '#/definitions/DbUserWIAUWorkItem'),
   DemoKanbanSteps: info<DemoKanbanSteps>('DemoKanbanSteps', '#/definitions/DemoKanbanSteps'),
   DemoTwoKanbanSteps: info<DemoTwoKanbanSteps>('DemoTwoKanbanSteps', '#/definitions/DemoTwoKanbanSteps'),
+  CreateEntityNotificationRequest: info<CreateEntityNotificationRequest>(
+    'CreateEntityNotificationRequest',
+    '#/definitions/CreateEntityNotificationRequest',
+  ),
+  UpdateEntityNotificationRequest: info<UpdateEntityNotificationRequest>(
+    'UpdateEntityNotificationRequest',
+    '#/definitions/UpdateEntityNotificationRequest',
+  ),
+  EntityNotification: info<EntityNotification>('EntityNotification', '#/definitions/EntityNotification'),
 }
 
 export interface SchemaInfo<T> {

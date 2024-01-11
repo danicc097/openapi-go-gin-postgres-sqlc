@@ -151,3 +151,12 @@ type TimeEntry interface {
 	Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error)
 	Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error)
 }
+
+// EntityNotification defines the datastore/repository handling persisting entity notification records.
+type EntityNotification interface {
+	ByID(ctx context.Context, d db.DBTX, id db.EntityNotificationID, opts ...db.EntityNotificationSelectConfigOption) (*db.EntityNotification, error)
+	Create(ctx context.Context, d db.DBTX, params *db.EntityNotificationCreateParams) (*db.EntityNotification, error)
+	Update(ctx context.Context, d db.DBTX, id db.EntityNotificationID, params *db.EntityNotificationUpdateParams) (*db.EntityNotification, error)
+	Delete(ctx context.Context, d db.DBTX, id db.EntityNotificationID) (*db.EntityNotification, error)
+}
+
