@@ -21,40 +21,40 @@ func NewQuerierWrapper(base db.Querier) QuerierWrapper {
 	}
 }
 
-func (w QuerierWrapper) GetExtraSchemaNotifications(ctx context.Context, db db.DBTX, arg db.GetExtraSchemaNotificationsParams) (ga1 []db.GetExtraSchemaNotificationsRow, err error) {
+func (w QuerierWrapper) GetExtraSchemaNotifications(ctx context.Context, d db.DBTX, arg db.GetExtraSchemaNotificationsParams) (ga1 []db.GetExtraSchemaNotificationsRow, err error) {
 	/* defer newOTelSpan().Build(ctx).End() */
 
-	ga1, err = w.Querier.GetExtraSchemaNotifications(ctx, db, arg)
+	ga1, err = w.Querier.GetExtraSchemaNotifications(ctx, d, arg)
 	if err != nil {
 		err = fmt.Errorf("Querier: %w", ParseDBErrorDetail(err))
 	}
 	return
 }
 
-func (w QuerierWrapper) GetUser(ctx context.Context, db db.DBTX, arg db.GetUserParams) (g1 db.GetUserRow, err error) {
+func (w QuerierWrapper) GetUser(ctx context.Context, d db.DBTX, arg db.GetUserParams) (g1 db.GetUserRow, err error) {
 	/* defer newOTelSpan().Build(ctx).End() */
 
-	g1, err = w.Querier.GetUser(ctx, db, arg)
+	g1, err = w.Querier.GetUser(ctx, d, arg)
 	if err != nil {
 		err = fmt.Errorf("Querier: %w", ParseDBErrorDetail(err))
 	}
 	return
 }
 
-func (w QuerierWrapper) GetUserNotifications(ctx context.Context, db db.DBTX, arg db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
+func (w QuerierWrapper) GetUserNotifications(ctx context.Context, d db.DBTX, arg db.GetUserNotificationsParams) (ga1 []db.GetUserNotificationsRow, err error) {
 	/* defer newOTelSpan().Build(ctx).End() */
 
-	ga1, err = w.Querier.GetUserNotifications(ctx, db, arg)
+	ga1, err = w.Querier.GetUserNotifications(ctx, d, arg)
 	if err != nil {
 		err = fmt.Errorf("Querier: %w", ParseDBErrorDetail(err))
 	}
 	return
 }
 
-func (w QuerierWrapper) IsTeamInProject(ctx context.Context, db db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
+func (w QuerierWrapper) IsTeamInProject(ctx context.Context, d db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
 	/* defer newOTelSpan().Build(ctx).End() */
 
-	b1, err = w.Querier.IsTeamInProject(ctx, db, arg)
+	b1, err = w.Querier.IsTeamInProject(ctx, d, arg)
 	if err != nil {
 		err = fmt.Errorf("Querier: %w", ParseDBErrorDetail(err))
 	}

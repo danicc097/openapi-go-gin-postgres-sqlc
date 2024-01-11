@@ -618,7 +618,8 @@ x.gen.sqlc() {
     rm -f "$PG_REPO_GEN"/db/*.sqlc.go
     x.lint.sql
     sqlc generate --experimental -f "$PG_REPO_DIR"/sqlc.yaml || err "Failed sqlc generation"
-    rm -f "$PG_REPO_GEN"/db/models.go # sqlc enums
+    rm -f "$PG_REPO_GEN"/db/models.go                            # sqlc enums
+    sed -i 's/\bdb DBTX\b/d DBTX/g' "$PG_REPO_GEN"/db/querier.go # consistent with repo gowrap gen so we can use reposwrappers
     gowrap gen \
       -g \
       -p "$GOMOD_PKG/$PG_REPO_GEN/db" \
