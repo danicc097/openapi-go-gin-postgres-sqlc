@@ -526,20 +526,26 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - workItemType
-  /user/:
+  /user/page:
     get:
-      summary: returns all users
-      !!merge <<: *x-require-authenticated
-      operationId: GetUsers
+      description: ""
+      summary: Get paginated users
+      operationId: GetPaginatedUsers
+      parameters:
+        - *x-paginationLimitParameter
+        - *x-paginationDirectionParameter
+        - *x-paginationCursorParameter
+      tags:
+        - user
       responses:
         200:
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedUsersResponse'
-          description: ok
-      tags:
-        - user
+        !!merge <<: *x-error-response
+      !!merge <<: *x-require-authenticated
   /user/me:
     get:
       summary: returns the logged in user

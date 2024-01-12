@@ -9,7 +9,7 @@ import { faker } from '@faker-js/faker'
 import { HttpResponse, delay, http } from 'msw'
 import { Project, Role, Scope } from '.././model'
 
-export const getGetUsersMock = () => ({
+export const getGetPaginatedUsersMock = () => ({
   items: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     apiKey: { apiKey: faker.word.sample(), expiresOn: (() => faker.date.past())(), userID: faker.word.sample() },
     createdAt: (() => faker.date.past())(),
@@ -145,9 +145,9 @@ export const getUpdateUserMock = () => ({
 })
 
 export const getUserMock = () => [
-  http.get('*/user/', async () => {
+  http.get('*/user/page', async () => {
     await delay(1000)
-    return new HttpResponse(JSON.stringify(getGetUsersMock()), {
+    return new HttpResponse(JSON.stringify(getGetPaginatedUsersMock()), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',

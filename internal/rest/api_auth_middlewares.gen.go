@@ -105,6 +105,10 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
+	case GetPaginatedUsers:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
 	case GetProject:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
@@ -126,10 +130,6 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthenticated(),
 		}
 	case GetTeam:
-		return []gin.HandlerFunc{
-			h.authmw.EnsureAuthenticated(),
-		}
-	case GetUsers:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}

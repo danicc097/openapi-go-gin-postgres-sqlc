@@ -5,6 +5,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
@@ -179,12 +180,12 @@ type FakeUser struct {
 		result1 *db.UserAPIKey
 		result2 error
 	}
-	PaginatedStub        func(context.Context, db.DBTX, ...db.UserSelectConfigOption) ([]db.User, error)
+	PaginatedStub        func(context.Context, db.DBTX, models.GetPaginatedUsersParams) ([]db.User, error)
 	paginatedMutex       sync.RWMutex
 	paginatedArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 []db.UserSelectConfigOption
+		arg3 models.GetPaginatedUsersParams
 	}
 	paginatedReturns struct {
 		result1 []db.User
@@ -944,20 +945,20 @@ func (fake *FakeUser) DeleteAPIKeyReturnsOnCall(i int, result1 *db.UserAPIKey, r
 	}{result1, result2}
 }
 
-func (fake *FakeUser) Paginated(arg1 context.Context, arg2 db.DBTX, arg3 ...db.UserSelectConfigOption) ([]db.User, error) {
+func (fake *FakeUser) Paginated(arg1 context.Context, arg2 db.DBTX, arg3 models.GetPaginatedUsersParams) ([]db.User, error) {
 	fake.paginatedMutex.Lock()
 	ret, specificReturn := fake.paginatedReturnsOnCall[len(fake.paginatedArgsForCall)]
 	fake.paginatedArgsForCall = append(fake.paginatedArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 []db.UserSelectConfigOption
+		arg3 models.GetPaginatedUsersParams
 	}{arg1, arg2, arg3})
 	stub := fake.PaginatedStub
 	fakeReturns := fake.paginatedReturns
 	fake.recordInvocation("Paginated", []interface{}{arg1, arg2, arg3})
 	fake.paginatedMutex.Unlock()
 	if stub != nil {
-		return stub(arg1, arg2, arg3...)
+		return stub(arg1, arg2, arg3)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -971,13 +972,13 @@ func (fake *FakeUser) PaginatedCallCount() int {
 	return len(fake.paginatedArgsForCall)
 }
 
-func (fake *FakeUser) PaginatedCalls(stub func(context.Context, db.DBTX, ...db.UserSelectConfigOption) ([]db.User, error)) {
+func (fake *FakeUser) PaginatedCalls(stub func(context.Context, db.DBTX, models.GetPaginatedUsersParams) ([]db.User, error)) {
 	fake.paginatedMutex.Lock()
 	defer fake.paginatedMutex.Unlock()
 	fake.PaginatedStub = stub
 }
 
-func (fake *FakeUser) PaginatedArgsForCall(i int) (context.Context, db.DBTX, []db.UserSelectConfigOption) {
+func (fake *FakeUser) PaginatedArgsForCall(i int) (context.Context, db.DBTX, models.GetPaginatedUsersParams) {
 	fake.paginatedMutex.RLock()
 	defer fake.paginatedMutex.RUnlock()
 	argsForCall := fake.paginatedArgsForCall[i]

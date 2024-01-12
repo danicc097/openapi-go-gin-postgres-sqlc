@@ -8,6 +8,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/prometheus/client_golang/prometheus"
@@ -193,7 +194,7 @@ func (_d UserWithPrometheus) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey
 }
 
 // Paginated implements repos.User
-func (_d UserWithPrometheus) Paginated(ctx context.Context, d db.DBTX, opts ...db.UserSelectConfigOption) (ua1 []db.User, err error) {
+func (_d UserWithPrometheus) Paginated(ctx context.Context, d db.DBTX, params models.GetPaginatedUsersParams) (ua1 []db.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -203,7 +204,7 @@ func (_d UserWithPrometheus) Paginated(ctx context.Context, d db.DBTX, opts ...d
 
 		userDurationSummaryVec.WithLabelValues(_d.instanceName, "Paginated", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.Paginated(ctx, d, opts...)
+	return _d.base.Paginated(ctx, d, params)
 }
 
 // Update implements repos.User

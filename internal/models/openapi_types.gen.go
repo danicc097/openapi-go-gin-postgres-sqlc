@@ -870,6 +870,13 @@ type GetProjectWorkitemsParams struct {
 	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 }
 
+// GetPaginatedUsersParams defines parameters for GetPaginatedUsers.
+type GetPaginatedUsersParams struct {
+	Limit     int       `form:"limit" json:"limit"`
+	Direction Direction `form:"direction" json:"direction"`
+	Cursor    string    `form:"cursor" json:"cursor"`
+}
+
 // UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
 
 type UpdateActivityJSONRequestBody = UpdateActivityRequest

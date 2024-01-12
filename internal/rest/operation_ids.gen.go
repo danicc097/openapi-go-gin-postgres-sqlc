@@ -45,7 +45,7 @@ const (
 	// Operation IDs for the 'user' tag.
 	DeleteUser              OperationID = "DeleteUser"
 	GetCurrentUser          OperationID = "GetCurrentUser"
-	GetUsers                OperationID = "GetUsers"
+	GetPaginatedUsers       OperationID = "GetPaginatedUsers"
 	UpdateUser              OperationID = "UpdateUser"
 	UpdateUserAuthorization OperationID = "UpdateUserAuthorization"
 

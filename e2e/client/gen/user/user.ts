@@ -5,6 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { GetPaginatedUsersParams } from '../model/getPaginatedUsersParams'
 import type { PaginatedUsersResponse } from '../model/paginatedUsersResponse'
 import type { UpdateUserAuthRequest } from '../model/updateUserAuthRequest'
 import type { UpdateUserRequest } from '../model/updateUserRequest'
@@ -15,10 +16,13 @@ import { customInstance } from '../../api/mutator'
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never
 
 /**
- * @summary returns all users
+ * @summary Get paginated users
  */
-export const getUsers = (options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<PaginatedUsersResponse>({ url: `/user/`, method: 'GET' }, options)
+export const getPaginatedUsers = (
+  params: GetPaginatedUsersParams,
+  options?: SecondParameter<typeof customInstance>,
+) => {
+  return customInstance<PaginatedUsersResponse>({ url: `/user/page`, method: 'GET', params }, options)
 }
 /**
  * @summary returns the logged in user
@@ -63,7 +67,7 @@ export const updateUser = (
     options,
   )
 }
-export type GetUsersResult = NonNullable<Awaited<ReturnType<typeof getUsers>>>
+export type GetPaginatedUsersResult = NonNullable<Awaited<ReturnType<typeof getPaginatedUsers>>>
 export type GetCurrentUserResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
 export type UpdateUserAuthorizationResult = NonNullable<Awaited<ReturnType<typeof updateUserAuthorization>>>
 export type DeleteUserResult = NonNullable<Awaited<ReturnType<typeof deleteUser>>>

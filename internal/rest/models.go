@@ -35,7 +35,7 @@ type Notification struct {
 
 // User represents an OpenAPI schema response for a User.
 type User struct {
-	db.User
+	*db.User
 	// Role replaces db RoleRank
 	Role Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 

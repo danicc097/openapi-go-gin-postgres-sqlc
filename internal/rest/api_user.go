@@ -32,7 +32,7 @@ func (h *StrictHandlers) UpdateUser(c *gin.Context, request UpdateUserRequestObj
 		return nil, nil
 	}
 
-	res := User{User: *user, Role: Role(role.Name)}
+	res := User{User: user, Role: Role(role.Name)}
 
 	return UpdateUser200JSONResponse(res), nil
 }
@@ -62,7 +62,7 @@ func (h *StrictHandlers) GetCurrentUser(c *gin.Context, request GetCurrentUserRe
 	}
 
 	res := User{
-		User:     *caller.User,
+		User:     caller.User,
 		Role:     Role(role.Name),
 		Teams:    &caller.Teams,
 		Projects: &caller.Projects,
@@ -89,8 +89,8 @@ func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateU
 	return UpdateUserAuthorization204Response{}, nil
 }
 
-func (h *StrictHandlers) GetUsers(c *gin.Context, request GetUsersRequestObject) (GetUsersResponseObject, error) {
-	users, err := h.svc.User.Paginated(c, h.pool)
+func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedUsersRequestObject) (GetPaginatedUsersResponseObject, error) {
+	users, err := h.svc.User.Paginated(c, h.pool, request.Params)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)
 
@@ -99,10 +99,13 @@ func (h *StrictHandlers) GetUsers(c *gin.Context, request GetUsersRequestObject)
 
 	items := make([]User, len(users))
 	for i, u := range users {
+		u := u
 		role, _ := h.svc.Authorization.RoleByRank(u.RoleRank)
 		items[i] = User{
-			User: u,
-			Role: Role(role.Name),
+			User:     &u,
+			Role:     Role(role.Name),
+			Teams:    u.MemberTeamsJoin,
+			Projects: u.MemberProjectsJoin,
 		}
 	}
 	res := PaginatedUsersResponse{
@@ -112,5 +115,5 @@ func (h *StrictHandlers) GetUsers(c *gin.Context, request GetUsersRequestObject)
 		Items: items,
 	}
 
-	return GetUsers200JSONResponse(res), nil
+	return GetPaginatedUsers200JSONResponse(res), nil
 }

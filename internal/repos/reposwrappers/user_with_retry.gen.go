@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/jackc/pgx/v5"
@@ -452,7 +453,7 @@ func (_d UserWithRetry) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey stri
 }
 
 // Paginated implements repos.User
-func (_d UserWithRetry) Paginated(ctx context.Context, d db.DBTX, opts ...db.UserSelectConfigOption) (ua1 []db.User, err error) {
+func (_d UserWithRetry) Paginated(ctx context.Context, d db.DBTX, params models.GetPaginatedUsersParams) (ua1 []db.User, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryPaginated")
 		if err != nil {
@@ -460,7 +461,7 @@ func (_d UserWithRetry) Paginated(ctx context.Context, d db.DBTX, opts ...db.Use
 			return
 		}
 	}
-	ua1, err = _d.User.Paginated(ctx, d, opts...)
+	ua1, err = _d.User.Paginated(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
 		return
 	}
@@ -484,7 +485,7 @@ func (_d UserWithRetry) Paginated(ctx context.Context, d db.DBTX, opts ...db.Use
 			}
 		}
 
-		ua1, err = _d.User.Paginated(ctx, d, opts...)
+		ua1, err = _d.User.Paginated(ctx, d, params)
 	}
 	return
 }

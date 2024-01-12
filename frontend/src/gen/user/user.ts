@@ -16,6 +16,7 @@ import type {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query'
+import type { GetPaginatedUsersParams } from '../model/getPaginatedUsersParams'
 import type { HTTPError } from '../model/hTTPError'
 import type { PaginatedUsersResponse } from '../model/paginatedUsersResponse'
 import type { UpdateUserAuthRequest } from '../model/updateUserAuthRequest'
@@ -27,47 +28,61 @@ import { customInstance } from '../../api/mutator'
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never
 
 /**
- * @summary returns all users
+ * @summary Get paginated users
  */
-export const getUsers = (options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
-  return customInstance<PaginatedUsersResponse>({ url: `/user/`, method: 'GET', signal }, options)
+export const getPaginatedUsers = (
+  params: GetPaginatedUsersParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<PaginatedUsersResponse>({ url: `/user/page`, method: 'GET', params, signal }, options)
 }
 
-export const getGetUsersQueryKey = () => {
-  return [`/user/`] as const
+export const getGetPaginatedUsersQueryKey = (params: GetPaginatedUsersParams) => {
+  return [`/user/page`, ...(params ? [params] : [])] as const
 }
 
-export const getGetUsersInfiniteQueryOptions = <
-  TData = Awaited<ReturnType<typeof getUsers>>,
-  TError = unknown,
->(options?: {
-  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>
-  request?: SecondParameter<typeof customInstance>
-}) => {
+export const getGetPaginatedUsersInfiniteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPaginatedUsers>>,
+  TError = void | HTTPError,
+>(
+  params: GetPaginatedUsersParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData>
+    request?: SecondParameter<typeof customInstance>
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetUsersQueryKey()
+  const queryKey = queryOptions?.queryKey ?? getGetPaginatedUsersQueryKey(params)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsers>>> = ({ signal }) => getUsers(requestOptions, signal)
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaginatedUsers>>> = ({ signal }) =>
+    getPaginatedUsers(params, requestOptions, signal)
 
   return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof getUsers>>,
+    Awaited<ReturnType<typeof getPaginatedUsers>>,
     TError,
     TData
   > & { queryKey: QueryKey }
 }
 
-export type GetUsersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsers>>>
-export type GetUsersInfiniteQueryError = unknown
+export type GetPaginatedUsersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getPaginatedUsers>>>
+export type GetPaginatedUsersInfiniteQueryError = void | HTTPError
 
 /**
- * @summary returns all users
+ * @summary Get paginated users
  */
-export const useGetUsersInfinite = <TData = Awaited<ReturnType<typeof getUsers>>, TError = unknown>(options?: {
-  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>
-  request?: SecondParameter<typeof customInstance>
-}): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetUsersInfiniteQueryOptions(options)
+export const useGetPaginatedUsersInfinite = <
+  TData = Awaited<ReturnType<typeof getPaginatedUsers>>,
+  TError = void | HTTPError,
+>(
+  params: GetPaginatedUsersParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData>
+    request?: SecondParameter<typeof customInstance>
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getGetPaginatedUsersInfiniteQueryOptions(params, options)
 
   const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
 
@@ -76,34 +91,44 @@ export const useGetUsersInfinite = <TData = Awaited<ReturnType<typeof getUsers>>
   return query
 }
 
-export const getGetUsersQueryOptions = <TData = Awaited<ReturnType<typeof getUsers>>, TError = unknown>(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>
-  request?: SecondParameter<typeof customInstance>
-}) => {
+export const getGetPaginatedUsersQueryOptions = <
+  TData = Awaited<ReturnType<typeof getPaginatedUsers>>,
+  TError = void | HTTPError,
+>(
+  params: GetPaginatedUsersParams,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData>
+    request?: SecondParameter<typeof customInstance>
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetUsersQueryKey()
+  const queryKey = queryOptions?.queryKey ?? getGetPaginatedUsersQueryKey(params)
 
-  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsers>>> = ({ signal }) => getUsers(requestOptions, signal)
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaginatedUsers>>> = ({ signal }) =>
+    getPaginatedUsers(params, requestOptions, signal)
 
   return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getUsers>>,
+    Awaited<ReturnType<typeof getPaginatedUsers>>,
     TError,
     TData
   > & { queryKey: QueryKey }
 }
 
-export type GetUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getUsers>>>
-export type GetUsersQueryError = unknown
+export type GetPaginatedUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getPaginatedUsers>>>
+export type GetPaginatedUsersQueryError = void | HTTPError
 
 /**
- * @summary returns all users
+ * @summary Get paginated users
  */
-export const useGetUsers = <TData = Awaited<ReturnType<typeof getUsers>>, TError = unknown>(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>
-  request?: SecondParameter<typeof customInstance>
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetUsersQueryOptions(options)
+export const useGetPaginatedUsers = <TData = Awaited<ReturnType<typeof getPaginatedUsers>>, TError = void | HTTPError>(
+  params: GetPaginatedUsersParams,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData>
+    request?: SecondParameter<typeof customInstance>
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getGetPaginatedUsersQueryOptions(params, options)
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 

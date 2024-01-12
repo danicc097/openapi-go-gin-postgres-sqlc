@@ -84,9 +84,9 @@ export interface paths {
     /** update workitemtype. */
     patch: operations["UpdateWorkItemType"];
   };
-  "/user/": {
-    /** returns all users */
-    get: operations["GetUsers"];
+  "/user/page": {
+    /** Get paginated users */
+    get: operations["GetPaginatedUsers"];
   };
   "/user/me": {
     /** returns the logged in user */
@@ -1277,13 +1277,30 @@ export interface operations {
       };
     };
   };
-  /** returns all users */
-  GetUsers: {
+  /** Get paginated users */
+  GetPaginatedUsers: {
+    parameters: {
+      query: {
+        limit: number;
+        direction: components["schemas"]["Direction"];
+        cursor: string;
+      };
+    };
     responses: {
-      /** @description ok */
+      /** @description OK */
       200: {
         content: {
           "application/json": components["schemas"]["PaginatedUsersResponse"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
         };
       };
     };

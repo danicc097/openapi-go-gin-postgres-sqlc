@@ -921,6 +921,13 @@ type GetProjectWorkitemsParams struct {
 	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 }
 
+// GetPaginatedUsersParams defines parameters for GetPaginatedUsers.
+type GetPaginatedUsersParams struct {
+	Limit     int                    `form:"limit" json:"limit"`
+	Direction externalRef0.Direction `form:"direction" json:"direction"`
+	Cursor    string                 `form:"cursor" json:"cursor"`
+}
+
 // UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
 
 type UpdateActivityJSONRequestBody = UpdateActivityRequest
@@ -1095,12 +1102,12 @@ type ServerInterface interface {
 	// update team.
 	// (PATCH /team/{id})
 	UpdateTeam(c *gin.Context, id externalRef0.SerialID)
-	// returns all users
-	// (GET /user/)
-	GetUsers(c *gin.Context)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context)
+	// Get paginated users
+	// (GET /user/page)
+	GetPaginatedUsers(c *gin.Context, params externalRef0.GetPaginatedUsersParams)
 	// deletes the user by id
 	// (DELETE /user/{id})
 	DeleteUser(c *gin.Context, id uuid.UUID)
@@ -1622,15 +1629,6 @@ func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
 	siw.Handler.UpdateTeam(c, id)
 }
 
-// GetUsers operation with its own middleware.
-func (siw *ServerInterfaceWrapper) GetUsers(c *gin.Context) {
-	c.Set(externalRef0.Bearer_authScopes, []string{})
-
-	c.Set(externalRef0.Api_keyScopes, []string{})
-
-	siw.Handler.GetUsers(c)
-}
-
 // GetCurrentUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 	c.Set(externalRef0.Bearer_authScopes, []string{})
@@ -1638,6 +1636,62 @@ func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.GetCurrentUser(c)
+}
+
+// GetPaginatedUsers operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetPaginatedUsers(c *gin.Context) {
+	var err error
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params externalRef0.GetPaginatedUsersParams
+
+	// ------------- Required query parameter "limit" -------------
+
+	if paramValue := c.Query("limit"); paramValue != "" {
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument limit is required, but not found"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "limit", c.Request.URL.Query(), &params.Limit)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter limit: %s", err)})
+		return
+	}
+
+	// ------------- Required query parameter "direction" -------------
+
+	if paramValue := c.Query("direction"); paramValue != "" {
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument direction is required, but not found"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "direction", c.Request.URL.Query(), &params.Direction)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter direction: %s", err)})
+		return
+	}
+
+	// ------------- Required query parameter "cursor" -------------
+
+	if paramValue := c.Query("cursor"); paramValue != "" {
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument cursor is required, but not found"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "cursor", c.Request.URL.Query(), &params.Cursor)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter cursor: %s", err)})
+		return
+	}
+
+	siw.Handler.GetPaginatedUsers(c, params)
 }
 
 // DeleteUser operation with its own middleware.
@@ -2041,14 +2095,14 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(UpdateTeam), wrapper.UpdateTeam)...,
 	)...)
 
-	router.GET(options.BaseURL+"/user/", append(
-		wrapper.Handler.authMiddlewares(GetUsers),
-		append(wrapper.Handler.middlewares(GetUsers), wrapper.GetUsers)...,
-	)...)
-
 	router.GET(options.BaseURL+"/user/me", append(
 		wrapper.Handler.authMiddlewares(GetCurrentUser),
 		append(wrapper.Handler.middlewares(GetCurrentUser), wrapper.GetCurrentUser)...,
+	)...)
+
+	router.GET(options.BaseURL+"/user/page", append(
+		wrapper.Handler.authMiddlewares(GetPaginatedUsers),
+		append(wrapper.Handler.middlewares(GetPaginatedUsers), wrapper.GetPaginatedUsers)...,
 	)...)
 
 	router.DELETE(options.BaseURL+"/user/:id", append(
@@ -2878,21 +2932,6 @@ func (response UpdateTeam4XXJSONResponse) VisitUpdateTeamResponse(w http.Respons
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type GetUsersRequestObject struct{}
-
-type GetUsersResponseObject interface {
-	VisitGetUsersResponse(w http.ResponseWriter) error
-}
-
-type GetUsers200JSONResponse PaginatedUsersResponse
-
-func (response GetUsers200JSONResponse) VisitGetUsersResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
 type GetCurrentUserRequestObject struct{}
 
 type GetCurrentUserResponseObject interface {
@@ -2906,6 +2945,49 @@ func (response GetCurrentUser200JSONResponse) VisitGetCurrentUserResponse(w http
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
+}
+
+type GetPaginatedUsersRequestObject struct {
+	Params externalRef0.GetPaginatedUsersParams
+}
+
+type GetPaginatedUsersResponseObject interface {
+	VisitGetPaginatedUsersResponse(w http.ResponseWriter) error
+}
+
+type GetPaginatedUsers200JSONResponse PaginatedUsersResponse
+
+func (response GetPaginatedUsers200JSONResponse) VisitGetPaginatedUsersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetPaginatedUsers401Response struct{}
+
+func (response GetPaginatedUsers401Response) VisitGetPaginatedUsersResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetPaginatedUsers403Response struct{}
+
+func (response GetPaginatedUsers403Response) VisitGetPaginatedUsersResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetPaginatedUsers4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetPaginatedUsers4XXJSONResponse) VisitGetPaginatedUsersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
 }
 
 type DeleteUserRequestObject struct {
@@ -3402,12 +3484,12 @@ type StrictServerInterface interface {
 	// update team.
 	// (PATCH /team/{id})
 	UpdateTeam(c *gin.Context, request UpdateTeamRequestObject) (UpdateTeamResponseObject, error)
-	// returns all users
-	// (GET /user/)
-	GetUsers(c *gin.Context, request GetUsersRequestObject) (GetUsersResponseObject, error)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context, request GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error)
+	// Get paginated users
+	// (GET /user/page)
+	GetPaginatedUsers(c *gin.Context, request GetPaginatedUsersRequestObject) (GetPaginatedUsersResponseObject, error)
 	// deletes the user by id
 	// (DELETE /user/{id})
 	DeleteUser(c *gin.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error)
@@ -4162,31 +4244,6 @@ func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, id externalRef0.SerialID)
 	}
 }
 
-// GetUsers operation middleware
-func (sh *strictHandlers) GetUsers(ctx *gin.Context) {
-	var request GetUsersRequestObject
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetUsers(ctx, request.(GetUsersRequestObject))
-	}
-	for _, middleware := range sh.strictMiddlewares {
-		handler = middleware(handler, "GetUsers")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetUsersResponseObject); ok {
-		if err := validResponse.VisitGetUsersResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
 // GetCurrentUser operation middleware
 func (sh *strictHandlers) GetCurrentUser(ctx *gin.Context) {
 	var request GetCurrentUserRequestObject
@@ -4205,6 +4262,33 @@ func (sh *strictHandlers) GetCurrentUser(ctx *gin.Context) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetCurrentUserResponseObject); ok {
 		if err := validResponse.VisitGetCurrentUserResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetPaginatedUsers operation middleware
+func (sh *strictHandlers) GetPaginatedUsers(ctx *gin.Context, params externalRef0.GetPaginatedUsersParams) {
+	var request GetPaginatedUsersRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetPaginatedUsers(ctx, request.(GetPaginatedUsersRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetPaginatedUsers")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetPaginatedUsersResponseObject); ok {
+		if err := validResponse.VisitGetPaginatedUsersResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
