@@ -27,6 +27,7 @@ export default function useAuthenticatedUser() {
   const isFirstRender = useIsFirstRender()
   const ui = useUISlice()
   const isAuthenticated = !!currentUser.data?.userID
+  const isAuthenticating = currentUser.isFetching && ui.accessToken !== ''
   // console.log({ isFirstRender })
   useEffect(() => {
     if (mountedRef.current && isFirstRender) {
@@ -35,7 +36,7 @@ export default function useAuthenticatedUser() {
     }
     // console.log({ rendersOutside: renders })
 
-    if (!isAuthenticated && !currentUser.isFetching && ui.accessToken !== '') {
+    if (!isAuthenticated && !isAuthenticating && ui.accessToken !== '') {
       currentUser.refetch()
     }
 
@@ -50,6 +51,7 @@ export default function useAuthenticatedUser() {
 
   return {
     isAuthenticated,
+    isAuthenticating,
     user,
   }
 }

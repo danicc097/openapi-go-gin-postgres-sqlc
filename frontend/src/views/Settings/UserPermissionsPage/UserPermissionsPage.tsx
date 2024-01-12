@@ -60,6 +60,7 @@ import classes from './UserPermissionsPage.module.css'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { useFormSlice } from 'src/slices/form'
 import { JSON_SCHEMA, ROLES, SCOPES } from 'src/config'
+import InfiniteLoader from 'src/components/Loading/InfiniteLoader'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 

@@ -37,5 +37,12 @@ export default function ProtectedRoute({ children, requiredRole, requiredScopes 
   //   redirectToAuthLogin()
   // }
 
-  return <ProtectedPage isAuthorized={isAuthorized({ user, requiredRole, requiredScopes })}>{children}</ProtectedPage>
+  return (
+    <ProtectedPage
+      unauthorizedMessage="<Specific authorization error message here (missing scopes list, role...)>"
+      isAuthorized={isAuthorized({ user, requiredRole, requiredScopes })}
+    >
+      {children}
+    </ProtectedPage>
+  )
 }
