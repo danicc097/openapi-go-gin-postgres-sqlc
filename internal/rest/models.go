@@ -44,12 +44,12 @@ type User struct {
 	Projects *[]db.Project  `json:"projects"`
 }
 
-// type Users []User // type Users []User is ignored in is_rest_type and not in structs.gen.go since its not a struct.
-// TODO: maybe worth it to include ALL types in models.go by default for swaggest instead of below workaround.
-// but first: can swaggest handle array gen properly?
+// type Users []User // cannot be handled by swaggest lib
+// panic: reflect: NumField of non-struct type rest.Users
+// should use below workaround as in paginated queries (all would be paginated queries in a way...)
 //
 //	type Users struct {
-//		Users []User `json:""`
+//		Users []User `json:"users"`
 //	}
 type PaginatedUsersResponse = PaginationBaseResponse[User]
 
