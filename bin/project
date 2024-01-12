@@ -2305,7 +2305,7 @@ if [[ -n "$1" ]]; then
       if [[ -n $X_IGNORE_BUILD_ERRORS ]]; then
         echo "${YELLOW}[WARNING] A rerun without ignoring build errors is required"
       fi
-      exit $?
+      exit $? # do not quote
     fi
   done
 fi

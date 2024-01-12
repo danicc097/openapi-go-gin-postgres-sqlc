@@ -86,8 +86,8 @@ list_descendants() {
 wait_without_error() {
   local -i err=0 werr=0
   while
-    wait -fn || werr=$?
-    ((werr != 127)) # 127: not found
+    wait -fn || werr=$? # do not quote
+    ((werr != 127))     # 127: not found
   do
     err=$werr
     ((err == 0)) || break # handle error as soon as it happens
@@ -309,13 +309,16 @@ get_function_name_in_line_number() {
 
 # Usage: trap 'show_tracebacks' ERR
 show_tracebacks() {
-  local err_code="$?"
+  local err_code=$? # do not quote!
   set +o xtrace
   local bash_command=${BASH_COMMAND}
   # function_name=$(get_function_name_in_line_number ${BASH_LINENO[0]} ${BASH_SOURCE[1]})
   # if [[ -n $function_name ]]; then
   #   function_name="[$function_name]"
   # fi
+  if [ "$err_code" -eq 130 ]; then
+    exit 1
+  fi
 
   if [[ $bash_command != xlog* && $bash_command != xerr* && ${#FUNCNAME[@]} -gt 2 ]]; then
     echo >&2
