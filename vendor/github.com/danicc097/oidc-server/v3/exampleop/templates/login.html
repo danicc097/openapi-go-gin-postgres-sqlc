@@ -37,6 +37,11 @@
           document.getElementById("username").value = user.username;
           document.getElementById("password").value = user.password;
         }
+
+        document.addEventListener("DOMContentLoaded", function() {
+          document.getElementById("userSelect").value = ""; // Set to empty string
+          updateCredentials(document.getElementById("userSelect"));
+        });
       </script>
 
       <button type="submit">Login</button>

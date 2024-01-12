@@ -23,7 +23,7 @@ export default function useAuthenticatedUser() {
   const isFirstRender = useIsFirstRender()
   const ui = useUISlice()
   const isAuthenticated = !!currentUser.data?.userID
-
+  console.log({ isFirstRender })
   useEffect(() => {
     if (mountedRef.current && isFirstRender) {
       // FIXME: ... one-off logic (in theory, not working)
@@ -40,7 +40,7 @@ export default function useAuthenticatedUser() {
     }
   }, [currentUser.data, isFirstRender, isAuthenticated, ui.accessToken])
 
-  const user = currentUser.data!
+  const user = currentUser.data
 
   return {
     isAuthenticated,
