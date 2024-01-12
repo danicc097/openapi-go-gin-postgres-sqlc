@@ -122,6 +122,11 @@
     "role": null,
     "requiresAuthentication": true
   },
+  "GetUsers": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
   "GetCurrentUser": {
     "scopes": null,
     "role": null,

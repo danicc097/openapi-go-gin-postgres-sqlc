@@ -1073,6 +1073,9 @@ type ServerInterface interface {
 	// update team.
 	// (PATCH /team/{id})
 	UpdateTeam(c *gin.Context, id externalRef0.SerialID)
+	// returns all users
+	// (GET /user/)
+	GetUsers(c *gin.Context)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context)
@@ -1132,10 +1135,11 @@ type MiddlewareFunc func(c *gin.Context)
 
 // DeleteActivity operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteActivity(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1152,10 +1156,11 @@ func (siw *ServerInterfaceWrapper) DeleteActivity(c *gin.Context) {
 
 // GetActivity operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetActivity(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1172,10 +1177,11 @@ func (siw *ServerInterfaceWrapper) GetActivity(c *gin.Context) {
 
 // UpdateActivity operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateActivity(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1192,6 +1198,7 @@ func (siw *ServerInterfaceWrapper) UpdateActivity(c *gin.Context) {
 
 // AdminPing operation with its own middleware.
 func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
+
 	c.Set(externalRef0.Bearer_authScopes, []string{})
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
@@ -1201,11 +1208,13 @@ func (siw *ServerInterfaceWrapper) AdminPing(c *gin.Context) {
 
 // MyProviderCallback operation with its own middleware.
 func (siw *ServerInterfaceWrapper) MyProviderCallback(c *gin.Context) {
+
 	siw.Handler.MyProviderCallback(c)
 }
 
 // MyProviderLogin operation with its own middleware.
 func (siw *ServerInterfaceWrapper) MyProviderLogin(c *gin.Context) {
+
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
@@ -1214,6 +1223,7 @@ func (siw *ServerInterfaceWrapper) MyProviderLogin(c *gin.Context) {
 	// ------------- Required query parameter "auth-redirect-uri" -------------
 
 	if paramValue := c.Query("auth-redirect-uri"); paramValue != "" {
+
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument auth-redirect-uri is required, but not found"})
 		return
@@ -1230,6 +1240,7 @@ func (siw *ServerInterfaceWrapper) MyProviderLogin(c *gin.Context) {
 
 // Events operation with its own middleware.
 func (siw *ServerInterfaceWrapper) Events(c *gin.Context) {
+
 	var err error
 
 	// Parameter object where we will unmarshal all parameters from the context
@@ -1238,6 +1249,7 @@ func (siw *ServerInterfaceWrapper) Events(c *gin.Context) {
 	// ------------- Required query parameter "projectName" -------------
 
 	if paramValue := c.Query("projectName"); paramValue != "" {
+
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument projectName is required, but not found"})
 		return
@@ -1254,6 +1266,7 @@ func (siw *ServerInterfaceWrapper) Events(c *gin.Context) {
 
 // GetPaginatedNotifications operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetPaginatedNotifications(c *gin.Context) {
+
 	var err error
 
 	c.Set(externalRef0.Bearer_authScopes, []string{})
@@ -1266,6 +1279,7 @@ func (siw *ServerInterfaceWrapper) GetPaginatedNotifications(c *gin.Context) {
 	// ------------- Required query parameter "limit" -------------
 
 	if paramValue := c.Query("limit"); paramValue != "" {
+
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument limit is required, but not found"})
 		return
@@ -1280,6 +1294,7 @@ func (siw *ServerInterfaceWrapper) GetPaginatedNotifications(c *gin.Context) {
 	// ------------- Required query parameter "direction" -------------
 
 	if paramValue := c.Query("direction"); paramValue != "" {
+
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument direction is required, but not found"})
 		return
@@ -1294,6 +1309,7 @@ func (siw *ServerInterfaceWrapper) GetPaginatedNotifications(c *gin.Context) {
 	// ------------- Required query parameter "cursor" -------------
 
 	if paramValue := c.Query("cursor"); paramValue != "" {
+
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument cursor is required, but not found"})
 		return
@@ -1310,20 +1326,23 @@ func (siw *ServerInterfaceWrapper) GetPaginatedNotifications(c *gin.Context) {
 
 // OpenapiYamlGet operation with its own middleware.
 func (siw *ServerInterfaceWrapper) OpenapiYamlGet(c *gin.Context) {
+
 	siw.Handler.OpenapiYamlGet(c)
 }
 
 // Ping operation with its own middleware.
 func (siw *ServerInterfaceWrapper) Ping(c *gin.Context) {
+
 	siw.Handler.Ping(c)
 }
 
 // GetProject operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetProject(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName // ProjectName
+	var projectName externalRef0.ProjectName //ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -1340,10 +1359,11 @@ func (siw *ServerInterfaceWrapper) GetProject(c *gin.Context) {
 
 // CreateActivity operation with its own middleware.
 func (siw *ServerInterfaceWrapper) CreateActivity(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName // ProjectName
+	var projectName externalRef0.ProjectName //ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -1360,10 +1380,11 @@ func (siw *ServerInterfaceWrapper) CreateActivity(c *gin.Context) {
 
 // GetProjectBoard operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetProjectBoard(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName // ProjectName
+	var projectName externalRef0.ProjectName //ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -1380,10 +1401,11 @@ func (siw *ServerInterfaceWrapper) GetProjectBoard(c *gin.Context) {
 
 // GetProjectConfig operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetProjectConfig(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName // ProjectName
+	var projectName externalRef0.ProjectName //ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -1400,10 +1422,11 @@ func (siw *ServerInterfaceWrapper) GetProjectConfig(c *gin.Context) {
 
 // UpdateProjectConfig operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateProjectConfig(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName // ProjectName
+	var projectName externalRef0.ProjectName //ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -1420,10 +1443,11 @@ func (siw *ServerInterfaceWrapper) UpdateProjectConfig(c *gin.Context) {
 
 // InitializeProject operation with its own middleware.
 func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName // ProjectName
+	var projectName externalRef0.ProjectName //ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -1440,10 +1464,11 @@ func (siw *ServerInterfaceWrapper) InitializeProject(c *gin.Context) {
 
 // CreateTeam operation with its own middleware.
 func (siw *ServerInterfaceWrapper) CreateTeam(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName // ProjectName
+	var projectName externalRef0.ProjectName //ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -1460,10 +1485,11 @@ func (siw *ServerInterfaceWrapper) CreateTeam(c *gin.Context) {
 
 // CreateWorkItemTag operation with its own middleware.
 func (siw *ServerInterfaceWrapper) CreateWorkItemTag(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName // ProjectName
+	var projectName externalRef0.ProjectName //ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -1480,10 +1506,11 @@ func (siw *ServerInterfaceWrapper) CreateWorkItemTag(c *gin.Context) {
 
 // CreateWorkItemType operation with its own middleware.
 func (siw *ServerInterfaceWrapper) CreateWorkItemType(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName // ProjectName
+	var projectName externalRef0.ProjectName //ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -1500,10 +1527,11 @@ func (siw *ServerInterfaceWrapper) CreateWorkItemType(c *gin.Context) {
 
 // GetProjectWorkitems operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetProjectWorkitems(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "projectName" -------------
-	var projectName externalRef0.ProjectName // ProjectName
+	var projectName externalRef0.ProjectName //ProjectName
 
 	err = runtime.BindStyledParameter("simple", false, "projectName", c.Param("projectName"), &projectName)
 	if err != nil {
@@ -1539,10 +1567,11 @@ func (siw *ServerInterfaceWrapper) GetProjectWorkitems(c *gin.Context) {
 
 // DeleteTeam operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteTeam(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1559,10 +1588,11 @@ func (siw *ServerInterfaceWrapper) DeleteTeam(c *gin.Context) {
 
 // GetTeam operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetTeam(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1579,10 +1609,11 @@ func (siw *ServerInterfaceWrapper) GetTeam(c *gin.Context) {
 
 // UpdateTeam operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1597,8 +1628,19 @@ func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
 	siw.Handler.UpdateTeam(c, id)
 }
 
+// GetUsers operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetUsers(c *gin.Context) {
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.GetUsers(c)
+}
+
 // GetCurrentUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
+
 	c.Set(externalRef0.Bearer_authScopes, []string{})
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
@@ -1608,10 +1650,11 @@ func (siw *ServerInterfaceWrapper) GetCurrentUser(c *gin.Context) {
 
 // DeleteUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id uuid.UUID // uuid.UUID
+	var id uuid.UUID //uuid.UUID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1628,10 +1671,11 @@ func (siw *ServerInterfaceWrapper) DeleteUser(c *gin.Context) {
 
 // UpdateUser operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id uuid.UUID // uuid.UUID
+	var id uuid.UUID //uuid.UUID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1648,10 +1692,11 @@ func (siw *ServerInterfaceWrapper) UpdateUser(c *gin.Context) {
 
 // UpdateUserAuthorization operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id uuid.UUID // uuid.UUID
+	var id uuid.UUID //uuid.UUID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1668,10 +1713,11 @@ func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
 
 // DeleteWorkItemTag operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteWorkItemTag(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1688,10 +1734,11 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemTag(c *gin.Context) {
 
 // GetWorkItemTag operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetWorkItemTag(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1708,10 +1755,11 @@ func (siw *ServerInterfaceWrapper) GetWorkItemTag(c *gin.Context) {
 
 // UpdateWorkItemTag operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateWorkItemTag(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1728,10 +1776,11 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemTag(c *gin.Context) {
 
 // DeleteWorkItemType operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteWorkItemType(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1748,10 +1797,11 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemType(c *gin.Context) {
 
 // GetWorkItemType operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetWorkItemType(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1768,10 +1818,11 @@ func (siw *ServerInterfaceWrapper) GetWorkItemType(c *gin.Context) {
 
 // UpdateWorkItemType operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateWorkItemType(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1788,6 +1839,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemType(c *gin.Context) {
 
 // CreateWorkitem operation with its own middleware.
 func (siw *ServerInterfaceWrapper) CreateWorkitem(c *gin.Context) {
+
 	c.Set(externalRef0.Bearer_authScopes, []string{})
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
@@ -1797,10 +1849,11 @@ func (siw *ServerInterfaceWrapper) CreateWorkitem(c *gin.Context) {
 
 // DeleteWorkitem operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteWorkitem(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1817,10 +1870,11 @@ func (siw *ServerInterfaceWrapper) DeleteWorkitem(c *gin.Context) {
 
 // GetWorkItem operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetWorkItem(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1837,10 +1891,11 @@ func (siw *ServerInterfaceWrapper) GetWorkItem(c *gin.Context) {
 
 // UpdateWorkitem operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateWorkitem(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1857,10 +1912,11 @@ func (siw *ServerInterfaceWrapper) UpdateWorkitem(c *gin.Context) {
 
 // CreateWorkitemComment operation with its own middleware.
 func (siw *ServerInterfaceWrapper) CreateWorkitemComment(c *gin.Context) {
+
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id externalRef0.SerialID //SerialID
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -2007,6 +2063,11 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(UpdateTeam), wrapper.UpdateTeam)...,
 	)...)
 
+	router.GET(options.BaseURL+"/user/", append(
+		wrapper.Handler.authMiddlewares(GetUsers),
+		append(wrapper.Handler.middlewares(GetUsers), wrapper.GetUsers)...,
+	)...)
+
 	router.GET(options.BaseURL+"/user/me", append(
 		wrapper.Handler.authMiddlewares(GetCurrentUser),
 		append(wrapper.Handler.middlewares(GetCurrentUser), wrapper.GetCurrentUser)...,
@@ -2091,21 +2152,24 @@ type DeleteActivityResponseObject interface {
 	VisitDeleteActivityResponse(w http.ResponseWriter) error
 }
 
-type DeleteActivity204Response struct{}
+type DeleteActivity204Response struct {
+}
 
 func (response DeleteActivity204Response) VisitDeleteActivityResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
 	return nil
 }
 
-type DeleteActivity401Response struct{}
+type DeleteActivity401Response struct {
+}
 
 func (response DeleteActivity401Response) VisitDeleteActivityResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type DeleteActivity403Response struct{}
+type DeleteActivity403Response struct {
+}
 
 func (response DeleteActivity403Response) VisitDeleteActivityResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2141,14 +2205,16 @@ func (response GetActivity200JSONResponse) VisitGetActivityResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetActivity401Response struct{}
+type GetActivity401Response struct {
+}
 
 func (response GetActivity401Response) VisitGetActivityResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type GetActivity403Response struct{}
+type GetActivity403Response struct {
+}
 
 func (response GetActivity403Response) VisitGetActivityResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2185,14 +2251,16 @@ func (response UpdateActivity200JSONResponse) VisitUpdateActivityResponse(w http
 	return json.NewEncoder(w).Encode(response)
 }
 
-type UpdateActivity401Response struct{}
+type UpdateActivity401Response struct {
+}
 
 func (response UpdateActivity401Response) VisitUpdateActivityResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type UpdateActivity403Response struct{}
+type UpdateActivity403Response struct {
+}
 
 func (response UpdateActivity403Response) VisitUpdateActivityResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2211,7 +2279,8 @@ func (response UpdateActivity4XXJSONResponse) VisitUpdateActivityResponse(w http
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type AdminPingRequestObject struct{}
+type AdminPingRequestObject struct {
+}
 
 type AdminPingResponseObject interface {
 	VisitAdminPingResponse(w http.ResponseWriter) error
@@ -2227,14 +2296,16 @@ func (response AdminPing200TextResponse) VisitAdminPingResponse(w http.ResponseW
 	return err
 }
 
-type AdminPing401Response struct{}
+type AdminPing401Response struct {
+}
 
 func (response AdminPing401Response) VisitAdminPingResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type AdminPing403Response struct{}
+type AdminPing403Response struct {
+}
 
 func (response AdminPing403Response) VisitAdminPingResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2253,7 +2324,8 @@ func (response AdminPing4XXJSONResponse) VisitAdminPingResponse(w http.ResponseW
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type MyProviderCallbackRequestObject struct{}
+type MyProviderCallbackRequestObject struct {
+}
 
 type MyProviderCallbackResponseObject interface {
 	VisitMyProviderCallbackResponse(w http.ResponseWriter) error
@@ -2339,14 +2411,16 @@ func (response GetPaginatedNotifications200JSONResponse) VisitGetPaginatedNotifi
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetPaginatedNotifications401Response struct{}
+type GetPaginatedNotifications401Response struct {
+}
 
 func (response GetPaginatedNotifications401Response) VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type GetPaginatedNotifications403Response struct{}
+type GetPaginatedNotifications403Response struct {
+}
 
 func (response GetPaginatedNotifications403Response) VisitGetPaginatedNotificationsResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2365,7 +2439,8 @@ func (response GetPaginatedNotifications4XXJSONResponse) VisitGetPaginatedNotifi
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type OpenapiYamlGetRequestObject struct{}
+type OpenapiYamlGetRequestObject struct {
+}
 
 type OpenapiYamlGetResponseObject interface {
 	VisitOpenapiYamlGetResponse(w http.ResponseWriter) error
@@ -2390,7 +2465,8 @@ func (response OpenapiYamlGet200ApplicationxYamlResponse) VisitOpenapiYamlGetRes
 	return err
 }
 
-type PingRequestObject struct{}
+type PingRequestObject struct {
+}
 
 type PingResponseObject interface {
 	VisitPingResponse(w http.ResponseWriter) error
@@ -2406,14 +2482,16 @@ func (response Ping200TextResponse) VisitPingResponse(w http.ResponseWriter) err
 	return err
 }
 
-type Ping401Response struct{}
+type Ping401Response struct {
+}
 
 func (response Ping401Response) VisitPingResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type Ping403Response struct{}
+type Ping403Response struct {
+}
 
 func (response Ping403Response) VisitPingResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2467,14 +2545,16 @@ func (response CreateActivity201JSONResponse) VisitCreateActivityResponse(w http
 	return json.NewEncoder(w).Encode(response)
 }
 
-type CreateActivity401Response struct{}
+type CreateActivity401Response struct {
+}
 
 func (response CreateActivity401Response) VisitCreateActivityResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type CreateActivity403Response struct{}
+type CreateActivity403Response struct {
+}
 
 func (response CreateActivity403Response) VisitCreateActivityResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2536,7 +2616,8 @@ type UpdateProjectConfigResponseObject interface {
 	VisitUpdateProjectConfigResponse(w http.ResponseWriter) error
 }
 
-type UpdateProjectConfig204Response struct{}
+type UpdateProjectConfig204Response struct {
+}
 
 func (response UpdateProjectConfig204Response) VisitUpdateProjectConfigResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
@@ -2552,7 +2633,8 @@ type InitializeProjectResponseObject interface {
 	VisitInitializeProjectResponse(w http.ResponseWriter) error
 }
 
-type InitializeProject204Response struct{}
+type InitializeProject204Response struct {
+}
 
 func (response InitializeProject204Response) VisitInitializeProjectResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
@@ -2577,14 +2659,16 @@ func (response CreateTeam201JSONResponse) VisitCreateTeamResponse(w http.Respons
 	return json.NewEncoder(w).Encode(response)
 }
 
-type CreateTeam401Response struct{}
+type CreateTeam401Response struct {
+}
 
 func (response CreateTeam401Response) VisitCreateTeamResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type CreateTeam403Response struct{}
+type CreateTeam403Response struct {
+}
 
 func (response CreateTeam403Response) VisitCreateTeamResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2621,14 +2705,16 @@ func (response CreateWorkItemTag201JSONResponse) VisitCreateWorkItemTagResponse(
 	return json.NewEncoder(w).Encode(response)
 }
 
-type CreateWorkItemTag401Response struct{}
+type CreateWorkItemTag401Response struct {
+}
 
 func (response CreateWorkItemTag401Response) VisitCreateWorkItemTagResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type CreateWorkItemTag403Response struct{}
+type CreateWorkItemTag403Response struct {
+}
 
 func (response CreateWorkItemTag403Response) VisitCreateWorkItemTagResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2665,14 +2751,16 @@ func (response CreateWorkItemType201JSONResponse) VisitCreateWorkItemTypeRespons
 	return json.NewEncoder(w).Encode(response)
 }
 
-type CreateWorkItemType401Response struct{}
+type CreateWorkItemType401Response struct {
+}
 
 func (response CreateWorkItemType401Response) VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type CreateWorkItemType403Response struct{}
+type CreateWorkItemType403Response struct {
+}
 
 func (response CreateWorkItemType403Response) VisitCreateWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2719,21 +2807,24 @@ type DeleteTeamResponseObject interface {
 	VisitDeleteTeamResponse(w http.ResponseWriter) error
 }
 
-type DeleteTeam204Response struct{}
+type DeleteTeam204Response struct {
+}
 
 func (response DeleteTeam204Response) VisitDeleteTeamResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
 	return nil
 }
 
-type DeleteTeam401Response struct{}
+type DeleteTeam401Response struct {
+}
 
 func (response DeleteTeam401Response) VisitDeleteTeamResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type DeleteTeam403Response struct{}
+type DeleteTeam403Response struct {
+}
 
 func (response DeleteTeam403Response) VisitDeleteTeamResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2769,14 +2860,16 @@ func (response GetTeam200JSONResponse) VisitGetTeamResponse(w http.ResponseWrite
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetTeam401Response struct{}
+type GetTeam401Response struct {
+}
 
 func (response GetTeam401Response) VisitGetTeamResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type GetTeam403Response struct{}
+type GetTeam403Response struct {
+}
 
 func (response GetTeam403Response) VisitGetTeamResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2813,14 +2906,16 @@ func (response UpdateTeam200JSONResponse) VisitUpdateTeamResponse(w http.Respons
 	return json.NewEncoder(w).Encode(response)
 }
 
-type UpdateTeam401Response struct{}
+type UpdateTeam401Response struct {
+}
 
 func (response UpdateTeam401Response) VisitUpdateTeamResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type UpdateTeam403Response struct{}
+type UpdateTeam403Response struct {
+}
 
 func (response UpdateTeam403Response) VisitUpdateTeamResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2839,7 +2934,24 @@ func (response UpdateTeam4XXJSONResponse) VisitUpdateTeamResponse(w http.Respons
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type GetCurrentUserRequestObject struct{}
+type GetUsersRequestObject struct {
+}
+
+type GetUsersResponseObject interface {
+	VisitGetUsersResponse(w http.ResponseWriter) error
+}
+
+type GetUsers200JSONResponse []externalRef0.User
+
+func (response GetUsers200JSONResponse) VisitGetUsersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetCurrentUserRequestObject struct {
+}
 
 type GetCurrentUserResponseObject interface {
 	VisitGetCurrentUserResponse(w http.ResponseWriter) error
@@ -2862,21 +2974,24 @@ type DeleteUserResponseObject interface {
 	VisitDeleteUserResponse(w http.ResponseWriter) error
 }
 
-type DeleteUser204Response struct{}
+type DeleteUser204Response struct {
+}
 
 func (response DeleteUser204Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
 	return nil
 }
 
-type DeleteUser401Response struct{}
+type DeleteUser401Response struct {
+}
 
 func (response DeleteUser401Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type DeleteUser403Response struct{}
+type DeleteUser403Response struct {
+}
 
 func (response DeleteUser403Response) VisitDeleteUserResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2922,7 +3037,8 @@ type UpdateUserAuthorizationResponseObject interface {
 	VisitUpdateUserAuthorizationResponse(w http.ResponseWriter) error
 }
 
-type UpdateUserAuthorization204Response struct{}
+type UpdateUserAuthorization204Response struct {
+}
 
 func (response UpdateUserAuthorization204Response) VisitUpdateUserAuthorizationResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
@@ -2937,21 +3053,24 @@ type DeleteWorkItemTagResponseObject interface {
 	VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error
 }
 
-type DeleteWorkItemTag204Response struct{}
+type DeleteWorkItemTag204Response struct {
+}
 
 func (response DeleteWorkItemTag204Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
 	return nil
 }
 
-type DeleteWorkItemTag401Response struct{}
+type DeleteWorkItemTag401Response struct {
+}
 
 func (response DeleteWorkItemTag401Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type DeleteWorkItemTag403Response struct{}
+type DeleteWorkItemTag403Response struct {
+}
 
 func (response DeleteWorkItemTag403Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -2987,14 +3106,16 @@ func (response GetWorkItemTag200JSONResponse) VisitGetWorkItemTagResponse(w http
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetWorkItemTag401Response struct{}
+type GetWorkItemTag401Response struct {
+}
 
 func (response GetWorkItemTag401Response) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type GetWorkItemTag403Response struct{}
+type GetWorkItemTag403Response struct {
+}
 
 func (response GetWorkItemTag403Response) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -3031,14 +3152,16 @@ func (response UpdateWorkItemTag200JSONResponse) VisitUpdateWorkItemTagResponse(
 	return json.NewEncoder(w).Encode(response)
 }
 
-type UpdateWorkItemTag401Response struct{}
+type UpdateWorkItemTag401Response struct {
+}
 
 func (response UpdateWorkItemTag401Response) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type UpdateWorkItemTag403Response struct{}
+type UpdateWorkItemTag403Response struct {
+}
 
 func (response UpdateWorkItemTag403Response) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -3065,21 +3188,24 @@ type DeleteWorkItemTypeResponseObject interface {
 	VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error
 }
 
-type DeleteWorkItemType204Response struct{}
+type DeleteWorkItemType204Response struct {
+}
 
 func (response DeleteWorkItemType204Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
 	return nil
 }
 
-type DeleteWorkItemType401Response struct{}
+type DeleteWorkItemType401Response struct {
+}
 
 func (response DeleteWorkItemType401Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type DeleteWorkItemType403Response struct{}
+type DeleteWorkItemType403Response struct {
+}
 
 func (response DeleteWorkItemType403Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -3115,14 +3241,16 @@ func (response GetWorkItemType200JSONResponse) VisitGetWorkItemTypeResponse(w ht
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetWorkItemType401Response struct{}
+type GetWorkItemType401Response struct {
+}
 
 func (response GetWorkItemType401Response) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type GetWorkItemType403Response struct{}
+type GetWorkItemType403Response struct {
+}
 
 func (response GetWorkItemType403Response) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -3159,14 +3287,16 @@ func (response UpdateWorkItemType200JSONResponse) VisitUpdateWorkItemTypeRespons
 	return json.NewEncoder(w).Encode(response)
 }
 
-type UpdateWorkItemType401Response struct{}
+type UpdateWorkItemType401Response struct {
+}
 
 func (response UpdateWorkItemType401Response) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.WriteHeader(401)
 	return nil
 }
 
-type UpdateWorkItemType403Response struct{}
+type UpdateWorkItemType403Response struct {
+}
 
 func (response UpdateWorkItemType403Response) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
 	w.WriteHeader(403)
@@ -3212,7 +3342,8 @@ type DeleteWorkitemResponseObject interface {
 	VisitDeleteWorkitemResponse(w http.ResponseWriter) error
 }
 
-type DeleteWorkitem204Response struct{}
+type DeleteWorkitem204Response struct {
+}
 
 func (response DeleteWorkitem204Response) VisitDeleteWorkitemResponse(w http.ResponseWriter) error {
 	w.WriteHeader(204)
@@ -3348,6 +3479,9 @@ type StrictServerInterface interface {
 	// update team.
 	// (PATCH /team/{id})
 	UpdateTeam(c *gin.Context, request UpdateTeamRequestObject) (UpdateTeamResponseObject, error)
+	// returns all users
+	// (GET /user/)
+	GetUsers(c *gin.Context, request GetUsersRequestObject) (GetUsersResponseObject, error)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context, request GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error)
@@ -3397,10 +3531,8 @@ type StrictServerInterface interface {
 	authMiddlewares(opID OperationID) []gin.HandlerFunc
 }
 
-type (
-	StrictHandlerFunc    = strictgin.StrictGinHandlerFunc
-	StrictMiddlewareFunc = strictgin.StrictGinMiddlewareFunc
-)
+type StrictHandlerFunc = strictgin.StrictGinHandlerFunc
+type StrictMiddlewareFunc = strictgin.StrictGinMiddlewareFunc
 
 func NewStrictHandler(ssi StrictServerInterface, strictMiddlewares []StrictMiddlewareFunc) ServerInterface {
 	return &strictHandlers{ssi: ssi, strictMiddlewares: strictMiddlewares}
@@ -3479,7 +3611,7 @@ func (sh *strictHandlers) UpdateActivity(ctx *gin.Context, id externalRef0.Seria
 
 	request.Id = id
 
-	// UpdateActivityRequest
+	//UpdateActivityRequest
 	var body UpdateActivityRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -3723,7 +3855,7 @@ func (sh *strictHandlers) CreateActivity(ctx *gin.Context, projectName externalR
 
 	request.ProjectName = projectName
 
-	// CreateActivityRequest
+	//CreateActivityRequest
 	var body CreateActivityRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -3813,7 +3945,7 @@ func (sh *strictHandlers) UpdateProjectConfig(ctx *gin.Context, projectName exte
 
 	request.ProjectName = projectName
 
-	// UpdateProjectConfigRequest
+	//UpdateProjectConfigRequest
 	var body externalRef0.UpdateProjectConfigJSONRequestBody
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -3849,7 +3981,7 @@ func (sh *strictHandlers) InitializeProject(ctx *gin.Context, projectName extern
 
 	request.ProjectName = projectName
 
-	// InitializeProjectRequest
+	//InitializeProjectRequest
 	var body externalRef0.InitializeProjectJSONRequestBody
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -3885,7 +4017,7 @@ func (sh *strictHandlers) CreateTeam(ctx *gin.Context, projectName externalRef0.
 
 	request.ProjectName = projectName
 
-	// CreateTeamRequest
+	//CreateTeamRequest
 	var body CreateTeamRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -3921,7 +4053,7 @@ func (sh *strictHandlers) CreateWorkItemTag(ctx *gin.Context, projectName extern
 
 	request.ProjectName = projectName
 
-	// CreateWorkItemTagRequest
+	//CreateWorkItemTagRequest
 	var body CreateWorkItemTagRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -3957,7 +4089,7 @@ func (sh *strictHandlers) CreateWorkItemType(ctx *gin.Context, projectName exter
 
 	request.ProjectName = projectName
 
-	// CreateWorkItemTypeRequest
+	//CreateWorkItemTypeRequest
 	var body CreateWorkItemTypeRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -4075,7 +4207,7 @@ func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, id externalRef0.SerialID)
 
 	request.Id = id
 
-	// UpdateTeamRequest
+	//UpdateTeamRequest
 	var body UpdateTeamRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -4098,6 +4230,31 @@ func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, id externalRef0.SerialID)
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(UpdateTeamResponseObject); ok {
 		if err := validResponse.VisitUpdateTeamResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetUsers operation middleware
+func (sh *strictHandlers) GetUsers(ctx *gin.Context) {
+	var request GetUsersRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetUsers(ctx, request.(GetUsersRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetUsers")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetUsersResponseObject); ok {
+		if err := validResponse.VisitGetUsersResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
@@ -4163,7 +4320,7 @@ func (sh *strictHandlers) UpdateUser(ctx *gin.Context, id uuid.UUID) {
 
 	request.Id = id
 
-	// UpdateUserRequest
+	//UpdateUserRequest
 	var body externalRef0.UpdateUserJSONRequestBody
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -4199,7 +4356,7 @@ func (sh *strictHandlers) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID
 
 	request.Id = id
 
-	// UpdateUserAuthorizationRequest
+	//UpdateUserAuthorizationRequest
 	var body externalRef0.UpdateUserAuthorizationJSONRequestBody
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -4289,7 +4446,7 @@ func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, id externalRef0.Se
 
 	request.Id = id
 
-	// UpdateWorkItemTagRequest
+	//UpdateWorkItemTagRequest
 	var body UpdateWorkItemTagRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -4379,7 +4536,7 @@ func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, id externalRef0.S
 
 	request.Id = id
 
-	// UpdateWorkItemTypeRequest
+	//UpdateWorkItemTypeRequest
 	var body UpdateWorkItemTypeRequest
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -4413,7 +4570,7 @@ func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, id externalRef0.S
 func (sh *strictHandlers) CreateWorkitem(ctx *gin.Context) {
 	var request CreateWorkitemRequestObject
 
-	// CreateWorkitemRequest
+	//CreateWorkitemRequest
 	var body externalRef0.CreateWorkitemJSONRequestBody
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
@@ -4530,7 +4687,7 @@ func (sh *strictHandlers) CreateWorkitemComment(ctx *gin.Context, id externalRef
 
 	request.Id = id
 
-	// CreateWorkitemCommentRequest
+	//CreateWorkitemCommentRequest
 	var body externalRef0.CreateWorkitemCommentJSONRequestBody
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)

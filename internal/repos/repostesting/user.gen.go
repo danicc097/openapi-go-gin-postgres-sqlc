@@ -179,6 +179,21 @@ type FakeUser struct {
 		result1 *db.UserAPIKey
 		result2 error
 	}
+	PaginatedStub        func(context.Context, db.DBTX, ...db.UserSelectConfigOption) ([]db.User, error)
+	paginatedMutex       sync.RWMutex
+	paginatedArgsForCall []struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 []db.UserSelectConfigOption
+	}
+	paginatedReturns struct {
+		result1 []db.User
+		result2 error
+	}
+	paginatedReturnsOnCall map[int]struct {
+		result1 []db.User
+		result2 error
+	}
 	UpdateStub        func(context.Context, db.DBTX, db.UserID, *db.UserUpdateParams) (*db.User, error)
 	updateMutex       sync.RWMutex
 	updateArgsForCall []struct {
@@ -929,6 +944,72 @@ func (fake *FakeUser) DeleteAPIKeyReturnsOnCall(i int, result1 *db.UserAPIKey, r
 	}{result1, result2}
 }
 
+func (fake *FakeUser) Paginated(arg1 context.Context, arg2 db.DBTX, arg3 ...db.UserSelectConfigOption) ([]db.User, error) {
+	fake.paginatedMutex.Lock()
+	ret, specificReturn := fake.paginatedReturnsOnCall[len(fake.paginatedArgsForCall)]
+	fake.paginatedArgsForCall = append(fake.paginatedArgsForCall, struct {
+		arg1 context.Context
+		arg2 db.DBTX
+		arg3 []db.UserSelectConfigOption
+	}{arg1, arg2, arg3})
+	stub := fake.PaginatedStub
+	fakeReturns := fake.paginatedReturns
+	fake.recordInvocation("Paginated", []interface{}{arg1, arg2, arg3})
+	fake.paginatedMutex.Unlock()
+	if stub != nil {
+		return stub(arg1, arg2, arg3...)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeUser) PaginatedCallCount() int {
+	fake.paginatedMutex.RLock()
+	defer fake.paginatedMutex.RUnlock()
+	return len(fake.paginatedArgsForCall)
+}
+
+func (fake *FakeUser) PaginatedCalls(stub func(context.Context, db.DBTX, ...db.UserSelectConfigOption) ([]db.User, error)) {
+	fake.paginatedMutex.Lock()
+	defer fake.paginatedMutex.Unlock()
+	fake.PaginatedStub = stub
+}
+
+func (fake *FakeUser) PaginatedArgsForCall(i int) (context.Context, db.DBTX, []db.UserSelectConfigOption) {
+	fake.paginatedMutex.RLock()
+	defer fake.paginatedMutex.RUnlock()
+	argsForCall := fake.paginatedArgsForCall[i]
+	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
+}
+
+func (fake *FakeUser) PaginatedReturns(result1 []db.User, result2 error) {
+	fake.paginatedMutex.Lock()
+	defer fake.paginatedMutex.Unlock()
+	fake.PaginatedStub = nil
+	fake.paginatedReturns = struct {
+		result1 []db.User
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeUser) PaginatedReturnsOnCall(i int, result1 []db.User, result2 error) {
+	fake.paginatedMutex.Lock()
+	defer fake.paginatedMutex.Unlock()
+	fake.PaginatedStub = nil
+	if fake.paginatedReturnsOnCall == nil {
+		fake.paginatedReturnsOnCall = make(map[int]struct {
+			result1 []db.User
+			result2 error
+		})
+	}
+	fake.paginatedReturnsOnCall[i] = struct {
+		result1 []db.User
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeUser) Update(arg1 context.Context, arg2 db.DBTX, arg3 db.UserID, arg4 *db.UserUpdateParams) (*db.User, error) {
 	fake.updateMutex.Lock()
 	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
@@ -1021,6 +1102,8 @@ func (fake *FakeUser) Invocations() map[string][][]interface{} {
 	defer fake.deleteMutex.RUnlock()
 	fake.deleteAPIKeyMutex.RLock()
 	defer fake.deleteAPIKeyMutex.RUnlock()
+	fake.paginatedMutex.RLock()
+	defer fake.paginatedMutex.RUnlock()
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}

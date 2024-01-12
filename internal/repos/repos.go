@@ -75,6 +75,7 @@ type User interface {
 	ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (*db.User, error)
 	ByExternalID(ctx context.Context, d db.DBTX, extID string, opts ...db.UserSelectConfigOption) (*db.User, error)
 	ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error)
+	Paginated(ctx context.Context, d db.DBTX, opts ...db.UserSelectConfigOption) ([]db.User, error)
 	Create(ctx context.Context, d db.DBTX, params *db.UserCreateParams) (*db.User, error)
 	Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (*db.User, error)
 	Delete(ctx context.Context, d db.DBTX, id db.UserID) (*db.User, error)

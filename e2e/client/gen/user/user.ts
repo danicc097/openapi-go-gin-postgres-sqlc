@@ -8,11 +8,18 @@
 import type { UpdateUserAuthRequest } from '../model/updateUserAuthRequest'
 import type { UpdateUserRequest } from '../model/updateUserRequest'
 import type { User } from '../model/user'
+import type { Users } from '../model/users'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never
 
+/**
+ * @summary returns all users
+ */
+export const getUsers = (options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<Users>({ url: `/user/`, method: 'GET' }, options)
+}
 /**
  * @summary returns the logged in user
  */
@@ -56,6 +63,7 @@ export const updateUser = (
     options,
   )
 }
+export type GetUsersResult = NonNullable<Awaited<ReturnType<typeof getUsers>>>
 export type GetCurrentUserResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
 export type UpdateUserAuthorizationResult = NonNullable<Awaited<ReturnType<typeof updateUserAuthorization>>>
 export type DeleteUserResult = NonNullable<Awaited<ReturnType<typeof deleteUser>>>

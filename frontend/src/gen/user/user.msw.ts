@@ -9,6 +9,51 @@ import { faker } from '@faker-js/faker'
 import { HttpResponse, delay, http } from 'msw'
 import { Project, Role, Scope } from '.././model'
 
+export const getGetUsersMock = () =>
+  Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+    apiKey: { apiKey: faker.word.sample(), expiresOn: (() => faker.date.past())(), userID: faker.word.sample() },
+    createdAt: (() => faker.date.past())(),
+    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
+    email: faker.word.sample(),
+    firstName: faker.helpers.arrayElement([faker.word.sample(), null]),
+    fullName: faker.helpers.arrayElement([faker.word.sample(), null]),
+    hasGlobalNotifications: faker.datatype.boolean(),
+    hasPersonalNotifications: faker.datatype.boolean(),
+    lastName: faker.helpers.arrayElement([faker.word.sample(), null]),
+    projects: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      boardConfig: {
+        fields: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+          isEditable: faker.datatype.boolean(),
+          isVisible: faker.datatype.boolean(),
+          name: faker.word.sample(),
+          path: faker.word.sample(),
+          showCollapsed: faker.datatype.boolean(),
+        })),
+        header: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
+          faker.word.sample(),
+        ),
+        visualization: {},
+      },
+      createdAt: (() => faker.date.past())(),
+      description: faker.word.sample(),
+      name: faker.helpers.arrayElement(Object.values(Project)),
+      projectID: faker.number.int({ min: undefined, max: undefined }),
+      updatedAt: (() => faker.date.past())(),
+    })),
+    role: faker.helpers.arrayElement(Object.values(Role)),
+    scopes: faker.helpers.arrayElements(Object.values(Scope)),
+    teams: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+      createdAt: (() => faker.date.past())(),
+      description: faker.word.sample(),
+      name: faker.word.sample(),
+      projectID: faker.number.int({ min: undefined, max: undefined }),
+      teamID: faker.number.int({ min: undefined, max: undefined }),
+      updatedAt: (() => faker.date.past())(),
+    })),
+    userID: faker.word.sample(),
+    username: faker.word.sample(),
+  }))
+
 export const getGetCurrentUserMock = () => ({
   apiKey: { apiKey: faker.word.sample(), expiresOn: (() => faker.date.past())(), userID: faker.word.sample() },
   createdAt: (() => faker.date.past())(),
@@ -98,6 +143,15 @@ export const getUpdateUserMock = () => ({
 })
 
 export const getUserMock = () => [
+  http.get('*/user/', async () => {
+    await delay(1000)
+    return new HttpResponse(JSON.stringify(getGetUsersMock()), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+  }),
   http.get('*/user/me', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getGetCurrentUserMock()), {

@@ -213,6 +213,8 @@ const uuids = [
   'd59d3a5c-b99f-40aa-9419-75a2bbb0fd52',
 ]
 
+// TODO: /users where deleted_at null
+// will be used on generated filterable mantine datatable table as in
 const members = [...Array(10)].map((x, i) => {
   const user = getGetCurrentUserMock()
   user.email = `${i}@mail.com`

@@ -44,6 +44,15 @@ type User struct {
 	Projects *[]db.Project  `json:"projects"`
 }
 
+// type Users []User // type Users []User is ignored in is_rest_type and not in structs.gen.go since its not a struct.
+// TODO: maybe worth it to include ALL types in models.go by default for swaggest instead of below workaround.
+// but first: can swaggest handle array gen properly?
+//
+//	type Users struct {
+//		Users []User `json:""`
+//	}
+type PaginatedUsersResponse = PaginationBaseResponse[User]
+
 type SharedWorkItemFields struct {
 	TimeEntries      *[]db.TimeEntry           `json:"timeEntries"`
 	WorkItemComments *[]db.WorkItemComment     `json:"workItemComments"`

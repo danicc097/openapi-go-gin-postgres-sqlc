@@ -5,6 +5,7 @@ import { useEffect, useRef } from 'react'
 import { AXIOS_INSTANCE } from 'src/api/mutator'
 import type { User } from 'src/gen/model'
 import { useGetCurrentUser } from 'src/gen/user/user'
+import useRenders from 'src/hooks/utils/useRenders'
 import { persister } from 'src/idb'
 import { LOGIN_COOKIE_KEY, UI_SLICE_PERSIST_KEY, useUISlice } from 'src/slices/ui'
 import AxiosInterceptors from 'src/utils/axios'
@@ -20,6 +21,7 @@ export default function useAuthenticatedUser() {
       },
     },
   })
+  const renders = useRenders()
   const isFirstRender = useIsFirstRender()
   const ui = useUISlice()
   const isAuthenticated = !!currentUser.data?.userID
@@ -27,7 +29,9 @@ export default function useAuthenticatedUser() {
   useEffect(() => {
     if (mountedRef.current && isFirstRender) {
       // FIXME: ... one-off logic (in theory, not working)
+      console.log({ renders: renders })
     }
+    console.log({ rendersOutside: renders })
 
     if (!isAuthenticated && !currentUser.isFetching && ui.accessToken !== '') {
       currentUser.refetch()

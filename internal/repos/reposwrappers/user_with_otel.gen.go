@@ -303,6 +303,30 @@ func (_d UserWithTracing) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey st
 	return _d.User.DeleteAPIKey(ctx, d, apiKey)
 }
 
+// Paginated implements repos.User
+func (_d UserWithTracing) Paginated(ctx context.Context, d db.DBTX, opts ...db.UserSelectConfigOption) (ua1 []db.User, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.User.Paginated")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":  ctx,
+				"d":    d,
+				"opts": opts}, map[string]interface{}{
+				"ua1": ua1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.User.Paginated(ctx, d, opts...)
+}
+
 // Update implements repos.User
 func (_d UserWithTracing) Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (up1 *db.User, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.User.Update")

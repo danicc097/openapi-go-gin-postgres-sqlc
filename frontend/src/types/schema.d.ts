@@ -84,6 +84,10 @@ export interface paths {
     /** update workitemtype. */
     patch: operations["UpdateWorkItemType"];
   };
+  "/user/": {
+    /** returns all users */
+    get: operations["GetUsers"];
+  };
   "/user/me": {
     /** returns the logged in user */
     get: operations["GetCurrentUser"];
@@ -396,6 +400,7 @@ export interface components {
     ProjectBoard: {
       projectName: components["schemas"]["Project"];
     };
+    Users: components["schemas"]["User"][];
     User: {
       apiKey?: components["schemas"]["DbUserAPIKey"];
       /** Format: date-time */
@@ -1257,6 +1262,17 @@ export interface operations {
       "4XX": {
         content: {
           "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** returns all users */
+  GetUsers: {
+    responses: {
+      /** @description ok */
+      200: {
+        content: {
+          "application/json": components["schemas"]["Users"];
         };
       };
     };

@@ -234,6 +234,18 @@ func (u *User) ByExternalID(ctx context.Context, d db.DBTX, id string, dbOpts ..
 	return user, nil
 }
 
+func (u *User) Paginated(ctx context.Context, d db.DBTX, dbOpts ...db.UserSelectConfigOption) ([]db.User, error) {
+	defer newOTelSpan().Build(ctx).End()
+
+	opts := append(u.getSharedDBOpts(), dbOpts...)
+	users, err := u.repos.User.Paginated(ctx, d, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("repos.User.Paginated: %w", err)
+	}
+
+	return users, nil
+}
+
 // ByEmail gets a user by email.
 func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string, dbOpts ...db.UserSelectConfigOption) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()

@@ -1079,6 +1079,12 @@
       "type": "object",
       "x-postgen-struct": "RestProjectBoard"
     },
+    "Users": {
+      "items": {
+        "$ref": "#/definitions/User"
+      },
+      "type": "array"
+    },
     "User": {
       "properties": {
         "apiKey": {
@@ -2043,6 +2049,9 @@
     },
     "ProjectBoard": {
       "$ref": "#/definitions/ProjectBoard"
+    },
+    "Users": {
+      "$ref": "#/definitions/Users"
     },
     "User": {
       "$ref": "#/definitions/User"

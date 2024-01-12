@@ -20,10 +20,97 @@ import type { HTTPError } from '../model/hTTPError'
 import type { UpdateUserAuthRequest } from '../model/updateUserAuthRequest'
 import type { UpdateUserRequest } from '../model/updateUserRequest'
 import type { User } from '../model/user'
+import type { Users } from '../model/users'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never
+
+/**
+ * @summary returns all users
+ */
+export const getUsers = (options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
+  return customInstance<Users>({ url: `/user/`, method: 'GET', signal }, options)
+}
+
+export const getGetUsersQueryKey = () => {
+  return [`/user/`] as const
+}
+
+export const getGetUsersInfiniteQueryOptions = <
+  TData = Awaited<ReturnType<typeof getUsers>>,
+  TError = unknown,
+>(options?: {
+  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>
+  request?: SecondParameter<typeof customInstance>
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetUsersQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsers>>> = ({ signal }) => getUsers(requestOptions, signal)
+
+  return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
+    Awaited<ReturnType<typeof getUsers>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey }
+}
+
+export type GetUsersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getUsers>>>
+export type GetUsersInfiniteQueryError = unknown
+
+/**
+ * @summary returns all users
+ */
+export const useGetUsersInfinite = <TData = Awaited<ReturnType<typeof getUsers>>, TError = unknown>(options?: {
+  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>
+  request?: SecondParameter<typeof customInstance>
+}): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getGetUsersInfiniteQueryOptions(options)
+
+  const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryOptions.queryKey
+
+  return query
+}
+
+export const getGetUsersQueryOptions = <TData = Awaited<ReturnType<typeof getUsers>>, TError = unknown>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>
+  request?: SecondParameter<typeof customInstance>
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {}
+
+  const queryKey = queryOptions?.queryKey ?? getGetUsersQueryKey()
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsers>>> = ({ signal }) => getUsers(requestOptions, signal)
+
+  return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getUsers>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey }
+}
+
+export type GetUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getUsers>>>
+export type GetUsersQueryError = unknown
+
+/**
+ * @summary returns all users
+ */
+export const useGetUsers = <TData = Awaited<ReturnType<typeof getUsers>>, TError = unknown>(options?: {
+  query?: UseQueryOptions<Awaited<ReturnType<typeof getUsers>>, TError, TData>
+  request?: SecondParameter<typeof customInstance>
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getGetUsersQueryOptions(options)
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
+
+  query.queryKey = queryOptions.queryKey
+
+  return query
+}
 
 /**
  * @summary returns the logged in user

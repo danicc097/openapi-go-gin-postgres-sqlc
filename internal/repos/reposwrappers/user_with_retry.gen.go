@@ -451,6 +451,44 @@ func (_d UserWithRetry) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey stri
 	return
 }
 
+// Paginated implements repos.User
+func (_d UserWithRetry) Paginated(ctx context.Context, d db.DBTX, opts ...db.UserSelectConfigOption) (ua1 []db.User, err error) {
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "SAVEPOINT UserWithRetryPaginated")
+		if err != nil {
+			err = fmt.Errorf("could not store savepoint: %w", err)
+			return
+		}
+	}
+	ua1, err = _d.User.Paginated(ctx, d, opts...)
+	if err == nil || _d._retryCount < 1 {
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		if tx, ok := d.(pgx.Tx); ok {
+			if _, err = tx.Exec(ctx, "ROLLBACK to UserWithRetryPaginated"); err != nil {
+				err = fmt.Errorf("could not rollback to savepoint: %w", err)
+				return
+			}
+
+			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
+				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
+				return
+			}
+		}
+
+		ua1, err = _d.User.Paginated(ctx, d, opts...)
+	}
+	return
+}
+
 // Update implements repos.User
 func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (up1 *db.User, err error) {
 	if tx, ok := d.(pgx.Tx); ok {

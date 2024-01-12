@@ -526,6 +526,20 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - workItemType
+  /user/:
+    get:
+      summary: returns all users
+      !!merge <<: *x-require-authenticated
+      operationId: GetUsers
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUsersResponse'
+          description: ok
+      tags:
+        - user
   /user/me:
     get:
       summary: returns the logged in user
@@ -1531,6 +1545,8 @@ components:
         - projectName
       type: object
       x-postgen-struct: RestProjectBoard
+    PaginatedUsersResponse:
+      x-postgen-struct: RestPaginatedUsersResponse
     User: # Generated from internal structs. DO NOT EDIT.
       properties:
         apiKey:

@@ -43,6 +43,7 @@ export type WorkItemRole = 'preparer' | 'reviewer'
  * is generated from roles.json keys.
  */
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
+export type Users = User[]
 /**
  * location in body path, if any
  */

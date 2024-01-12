@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
@@ -36,6 +37,15 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParam
 	}
 
 	return user, nil
+}
+
+func (u *User) Paginated(ctx context.Context, d db.DBTX, opts ...db.UserSelectConfigOption) ([]db.User, error) {
+	users, err := db.UserPaginatedByCreatedAt(ctx, d, time.Now(), models.DirectionDesc, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("could not get paginated users: %w", ParseDBErrorDetail(err))
+	}
+
+	return users, nil
 }
 
 func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (*db.User, error) {

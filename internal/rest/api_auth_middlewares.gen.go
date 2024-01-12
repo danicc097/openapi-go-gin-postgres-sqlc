@@ -129,6 +129,10 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
+	case GetUsers:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
 	case GetWorkItem:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),

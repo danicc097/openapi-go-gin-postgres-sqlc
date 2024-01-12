@@ -39,6 +39,7 @@ import {
   DemoTwoWorkItems,
   InitializeProjectRequest,
   ProjectBoard,
+  Users,
   User,
   HTTPValidationError,
   ErrorCode,
@@ -460,6 +461,18 @@ export const ProjectBoardDecoder: Decoder<ProjectBoard> = {
       throw new Error(`Schema ${ProjectBoardDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ProjectBoardDecoder.definitionName)
+  },
+}
+export const UsersDecoder: Decoder<Users> = {
+  definitionName: 'Users',
+  schemaRef: '#/definitions/Users',
+
+  decode(json: unknown): Users {
+    const schema = ajv.getSchema(UsersDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${UsersDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, UsersDecoder.definitionName)
   },
 }
 export const UserDecoder: Decoder<User> = {

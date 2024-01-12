@@ -3,6 +3,7 @@ package rest
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
@@ -88,3 +89,29 @@ func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateU
 
 	return UpdateUserAuthorization204Response{}, nil
 }
+
+func (h *StrictHandlers) GetUsers(c *gin.Context, request GetUsersRequestObject) (GetUsersResponseObject, error) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return GetUsers200JSONResponse{}, nil
+}
+
+// func (h *StrictHandlers) GetUsers(c *gin.Context, request GetUsersRequestObject) (GetUsersResponseObject, error) {
+// 	users, err := h.svc.User.Paginated(c, h.pool)
+// 	if err != nil {
+// 		renderErrorResponse(c, "Could not update user", err)
+
+// 		return nil, nil
+// 	}
+
+// 	res := make([]User, len(users))
+// 	for i, u := range users {
+// 		role, _ := h.svc.Authorization.RoleByRank(u.RoleRank)
+// 		res[i] = User{
+// 			User: u,
+// 			Role: Role(role.Name),
+// 		}
+// 	}
+
+// 	return GetUsers200JSONResponse(res), nil
+// }

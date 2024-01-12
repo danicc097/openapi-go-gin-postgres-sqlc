@@ -41,6 +41,8 @@ type UserWithTimeoutConfig struct {
 
 	DeleteAPIKeyTimeout time.Duration
 
+	PaginatedTimeout time.Duration
+
 	UpdateTimeout time.Duration
 }
 
@@ -160,6 +162,16 @@ func (_d UserWithTimeout) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey st
 		defer cancelFunc()
 	}
 	return _d.User.DeleteAPIKey(ctx, d, apiKey)
+}
+
+// Paginated implements repos.User
+func (_d UserWithTimeout) Paginated(ctx context.Context, d db.DBTX, opts ...db.UserSelectConfigOption) (ua1 []db.User, err error) {
+	var cancelFunc func()
+	if _d.config.PaginatedTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.PaginatedTimeout)
+		defer cancelFunc()
+	}
+	return _d.User.Paginated(ctx, d, opts...)
 }
 
 // Update implements repos.User
