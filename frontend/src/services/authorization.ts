@@ -4,7 +4,7 @@ import { apiPath } from 'src/services/apiPaths'
 import { keys } from 'src/utils/object'
 
 interface IsAuthorizedParams {
-  user: User
+  user?: User
   requiredRole?: Role | null
   requiredScopes?: Scopes | null
 }
@@ -14,6 +14,9 @@ interface IsAuthorizedParams {
 // scopes, role and requiresAuthentication before making the request.
 
 export function isAuthorized({ user, requiredRole = null, requiredScopes = null }: IsAuthorizedParams): boolean {
+  if (!user) {
+    return false
+  }
   if (requiredRole !== null) {
     if (ROLES[user.role].rank < ROLES[requiredRole].rank) {
       return false

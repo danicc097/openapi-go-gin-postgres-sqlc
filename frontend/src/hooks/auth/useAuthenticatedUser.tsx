@@ -9,6 +9,7 @@ import useRenders from 'src/hooks/utils/useRenders'
 import { persister } from 'src/idb'
 import { LOGIN_COOKIE_KEY, UI_SLICE_PERSIST_KEY, useUISlice } from 'src/slices/ui'
 import AxiosInterceptors from 'src/utils/axios'
+import { getCurrentFileName } from 'src/utils/utils'
 import { useIsFirstRender } from 'usehooks-ts'
 
 export default function useAuthenticatedUser() {
@@ -17,6 +18,7 @@ export default function useAuthenticatedUser() {
   const currentUser = useGetCurrentUser({
     query: {
       retry(failureCount, error) {
+        console.log(`retry on ${getCurrentFileName()}: ${failureCount}`)
         return ui.accessToken !== '' && failureCount < 3
       },
     },
@@ -25,13 +27,13 @@ export default function useAuthenticatedUser() {
   const isFirstRender = useIsFirstRender()
   const ui = useUISlice()
   const isAuthenticated = !!currentUser.data?.userID
-  console.log({ isFirstRender })
+  // console.log({ isFirstRender })
   useEffect(() => {
     if (mountedRef.current && isFirstRender) {
       // FIXME: ... one-off logic (in theory, not working)
-      console.log({ renders: renders })
+      // console.log({ renders: renders })
     }
-    console.log({ rendersOutside: renders })
+    // console.log({ rendersOutside: renders })
 
     if (!isAuthenticated && !currentUser.isFetching && ui.accessToken !== '') {
       currentUser.refetch()

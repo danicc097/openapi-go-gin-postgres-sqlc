@@ -22,7 +22,7 @@ import {
   localStorageColorSchemeManager,
   Textarea,
 } from '@mantine/core'
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient } from '@tanstack/react-query-persist-client'
 import axios from 'axios'
 import ProtectedRoute from 'src/components/Permissions/ProtectedRoute'
@@ -364,7 +364,7 @@ export default function App() {
   type ExcludedFormKeys = 'base.metadata' | 'tagIDsMultiselect'
 
   return (
-    <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
+    <QueryClientProvider client={queryClient} /**persistOptions={{ persister }} */>
       <MantineProvider
         colorSchemeManager={colorSchemeManager}
         theme={createTheme({
@@ -591,6 +591,6 @@ export default function App() {
         </ModalsProvider>
       </MantineProvider>
       {!import.meta.env.PROD && <ReactQueryDevtools initialIsOpen />}
-    </PersistQueryClientProvider>
+    </QueryClientProvider>
   )
 }

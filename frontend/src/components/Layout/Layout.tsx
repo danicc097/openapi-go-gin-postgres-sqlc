@@ -65,7 +65,7 @@ export default function Layout({ children }: LayoutProps) {
   const { burgerOpened, setBurgerOpened } = useUISlice()
 
   const tabs = []
-  const items = tabs.map((tab) => (
+  const tabComponents = tabs.map((tab) => (
     <Tabs.Tab value={tab} key={tab}>
       {tab}
     </Tabs.Tab>
@@ -128,13 +128,11 @@ export default function Layout({ children }: LayoutProps) {
         footer={{ height: 60 }}
         navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}
         // aside={{ width: 300, breakpoint: 'md', collapsed: { desktop: false, mobile: true } }}
-        padding="md"
       >
         <AppShell.Header>
           <Group
-            m={6}
-            pl={10}
-            pr={10}
+            h="100%"
+            px="md"
             css={css`
               align-self: center;
               justify-content: space-between;
@@ -203,7 +201,7 @@ export default function Layout({ children }: LayoutProps) {
                 tab: classes.tab,
               }}
             >
-              <Tabs.List>{items}</Tabs.List>
+              <Tabs.List>{tabComponents}</Tabs.List>
             </Tabs>
           </Container>
         </AppShell.Header>

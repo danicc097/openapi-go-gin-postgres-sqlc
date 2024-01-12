@@ -26,4 +26,8 @@ describe('roles and scopes', async () => {
   test('default authorized', () => {
     expect(isAuthorized({ user })).toBe(true)
   })
+  test('no user unauthorized', () => {
+    const user = undefined
+    expect(isAuthorized({ user })).toBe(false)
+  })
 })

@@ -1,5 +1,5 @@
 import { css } from '@emotion/react'
-import { Title, Text, Button, Container, Group, useMantineTheme, useMantineColorScheme } from '@mantine/core'
+import { Title, Text, Button, Container, Group, useMantineTheme, useMantineColorScheme, Flex } from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
 import HttpStatus from 'src/utils/httpStatus'
 import classes from './ErrorPage.module.css'
@@ -27,7 +27,7 @@ export function ErrorPage({ status }: ErrorPageProps) {
   }
 
   return (
-    <Container className={classes.root} miw={'100vw'}>
+    <Flex direction={'column'} align={'center'} className={classes.root}>
       <div className={classes.label}>{status}</div>
       <Title className={classes.title}>You have found a secret place.</Title>
       <Text color="dimmed" size="lg" ta="center" className={classes.description}>
@@ -52,6 +52,6 @@ export function ErrorPage({ status }: ErrorPageProps) {
           Take me back to the previous page
         </Button>
       </Group>
-    </Container>
+    </Flex>
   )
 }

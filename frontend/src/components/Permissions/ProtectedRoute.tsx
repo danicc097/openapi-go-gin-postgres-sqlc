@@ -22,16 +22,20 @@ type ProtectedRouteProps = {
  */
 export default function ProtectedRoute({ children, requiredRole, requiredScopes }: ProtectedRouteProps) {
   const { user, isAuthenticated } = useAuthenticatedUser()
-  const currentUser = useGetCurrentUser()
+  const currentUser = useGetCurrentUser({
+    query: {
+      retry(failureCount, error) {
+        console.log(`retry on ProtectedRoute: ${failureCount}`)
+        return ui.accessToken !== '' && failureCount < 3
+      },
+    },
+  })
   const ui = useUISlice()
 
-  if (!isAuthenticated && !currentUser.isFetching) {
-    redirectToAuthLogin()
-  }
-
-  if (!user) {
-    return null
-  }
+  // a clear login button is visible in place of avatar menu
+  // if (!isAuthenticated && !currentUser.isFetching) {
+  //   redirectToAuthLogin()
+  // }
 
   return <ProtectedPage isAuthorized={isAuthorized({ user, requiredRole, requiredScopes })}>{children}</ProtectedPage>
 }
