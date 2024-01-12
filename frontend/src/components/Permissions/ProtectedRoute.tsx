@@ -22,14 +22,6 @@ type ProtectedRouteProps = {
  */
 export default function ProtectedRoute({ children, requiredRole, requiredScopes }: ProtectedRouteProps) {
   const { user, isAuthenticated } = useAuthenticatedUser()
-  const currentUser = useGetCurrentUser({
-    query: {
-      retry(failureCount, error) {
-        console.log(`retry on ProtectedRoute: ${failureCount}`)
-        return ui.accessToken !== '' && failureCount < 3
-      },
-    },
-  })
   const ui = useUISlice()
 
   // a clear login button is visible in place of avatar menu
