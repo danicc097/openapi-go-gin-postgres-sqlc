@@ -1545,7 +1545,19 @@ components:
         - projectName
       type: object
       x-postgen-struct: RestProjectBoard
-    PaginatedUsersResponse:
+    PaginatedUsersResponse: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/RestUser'
+          nullable: true
+          type: array
+        page:
+          $ref: '#/components/schemas/RestPaginationPage'
+      required:
+        - page
+        - items
+      type: object
       x-postgen-struct: RestPaginatedUsersResponse
     User: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -1602,6 +1614,8 @@ components:
         - role
       type: object
       x-postgen-struct: RestUser
+    RestUser: # TODO: generate automatically for all in structs.gen
+      $ref: '#/components/schemas/User'
     HTTPValidationError:
       title: HTTPValidationError
       type: object
@@ -2137,6 +2151,26 @@ components:
         nextCursor:
           type: string
       type: object
+    Notification: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        notification:
+          $ref: '#/components/schemas/DbNotification'
+        notificationID:
+          type: integer
+        read:
+          type: boolean
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        userNotificationID:
+          type: integer
+      required:
+        - userNotificationID
+        - notificationID
+        - read
+        - userID
+        - notification
+      type: object
+      x-postgen-struct: RestNotification
     RestNotification: # Generated from internal structs. DO NOT EDIT.
       properties:
         notification:

@@ -43,7 +43,6 @@ export type WorkItemRole = 'preparer' | 'reviewer'
  * is generated from roles.json keys.
  */
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
-export type Users = User[]
 /**
  * location in body path, if any
  */
@@ -368,6 +367,27 @@ export interface DbTeamCreateParams {
 export interface ProjectBoard {
   projectName: Project
 }
+export interface PaginatedUsersResponse {
+  items: RestUser[] | null
+  page: RestPaginationPage
+}
+export interface RestUser {
+  apiKey?: DbUserAPIKey
+  createdAt: string
+  deletedAt?: string | null
+  email: string
+  firstName?: string | null
+  fullName?: string | null
+  hasGlobalNotifications: boolean
+  hasPersonalNotifications: boolean
+  lastName?: string | null
+  projects?: DbProject[] | null
+  role: Role
+  scopes: Scopes
+  teams?: DbTeam[] | null
+  userID: DbUserID
+  username: string
+}
 export interface User {
   apiKey?: DbUserAPIKey
   createdAt: string
@@ -502,6 +522,13 @@ export interface DbProjectID {}
 export interface DbWorkItemTypeID {}
 export interface DbNotificationID {}
 export interface DbUserNotification {
+  notificationID: number
+  read: boolean
+  userID: DbUserID
+  userNotificationID: number
+}
+export interface Notification {
+  notification: DbNotification
   notificationID: number
   read: boolean
   userID: DbUserID

@@ -3517,7 +3517,7 @@ func (r UpdateTeamResponse) StatusCode() int {
 type GetUsersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Users
+	JSON200      *PaginatedUsersResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -4967,7 +4967,7 @@ func ParseGetUsersResponse(rsp *http.Response) (*GetUsersResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Users
+		var dest PaginatedUsersResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

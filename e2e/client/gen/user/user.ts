@@ -5,10 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { PaginatedUsersResponse } from '../model/paginatedUsersResponse'
 import type { UpdateUserAuthRequest } from '../model/updateUserAuthRequest'
 import type { UpdateUserRequest } from '../model/updateUserRequest'
 import type { User } from '../model/user'
-import type { Users } from '../model/users'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -18,7 +18,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  * @summary returns all users
  */
 export const getUsers = (options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<Users>({ url: `/user/`, method: 'GET' }, options)
+  return customInstance<PaginatedUsersResponse>({ url: `/user/`, method: 'GET' }, options)
 }
 /**
  * @summary returns the logged in user

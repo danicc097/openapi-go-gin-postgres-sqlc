@@ -400,7 +400,10 @@ export interface components {
     ProjectBoard: {
       projectName: components["schemas"]["Project"];
     };
-    Users: components["schemas"]["User"][];
+    PaginatedUsersResponse: {
+      items: components["schemas"]["RestUser"][] | null;
+      page: components["schemas"]["RestPaginationPage"];
+    };
     User: {
       apiKey?: components["schemas"]["DbUserAPIKey"];
       /** Format: date-time */
@@ -420,6 +423,7 @@ export interface components {
       userID: components["schemas"]["DbUserID"];
       username: string;
     };
+    RestUser: components["schemas"]["User"];
     /** HTTPValidationError */
     HTTPValidationError: {
       /**
@@ -663,6 +667,13 @@ export interface components {
     };
     RestPaginationPage: {
       nextCursor?: string;
+    };
+    Notification: {
+      notification: components["schemas"]["DbNotification"];
+      notificationID: number;
+      read: boolean;
+      userID: components["schemas"]["DbUserID"];
+      userNotificationID: number;
     };
     RestNotification: {
       notification: components["schemas"]["DbNotification"];
@@ -1272,7 +1283,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["Users"];
+          "application/json": components["schemas"]["PaginatedUsersResponse"];
         };
       };
     };

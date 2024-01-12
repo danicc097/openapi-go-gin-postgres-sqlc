@@ -1079,11 +1079,27 @@
       "type": "object",
       "x-postgen-struct": "RestProjectBoard"
     },
-    "Users": {
-      "items": {
-        "$ref": "#/definitions/User"
+    "PaginatedUsersResponse": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/definitions/RestUser"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "page": {
+          "$ref": "#/definitions/RestPaginationPage"
+        }
       },
-      "type": "array"
+      "required": [
+        "page",
+        "items"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestPaginatedUsersResponse"
     },
     "User": {
       "properties": {
@@ -1174,6 +1190,9 @@
       ],
       "type": "object",
       "x-postgen-struct": "RestUser"
+    },
+    "RestUser": {
+      "$ref": "#/definitions/User"
     },
     "HTTPValidationError": {
       "title": "HTTPValidationError",
@@ -1894,6 +1913,34 @@
       },
       "type": "object"
     },
+    "Notification": {
+      "properties": {
+        "notification": {
+          "$ref": "#/definitions/DbNotification"
+        },
+        "notificationID": {
+          "type": "integer"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "userNotificationID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "userNotificationID",
+        "notificationID",
+        "read",
+        "userID",
+        "notification"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestNotification"
+    },
     "RestNotification": {
       "properties": {
         "notification": {
@@ -2050,11 +2097,14 @@
     "ProjectBoard": {
       "$ref": "#/definitions/ProjectBoard"
     },
-    "Users": {
-      "$ref": "#/definitions/Users"
+    "PaginatedUsersResponse": {
+      "$ref": "#/definitions/PaginatedUsersResponse"
     },
     "User": {
       "$ref": "#/definitions/User"
+    },
+    "RestUser": {
+      "$ref": "#/definitions/RestUser"
     },
     "HTTPValidationError": {
       "$ref": "#/definitions/HTTPValidationError"
@@ -2169,6 +2219,9 @@
     },
     "RestPaginationPage": {
       "$ref": "#/definitions/RestPaginationPage"
+    },
+    "Notification": {
+      "$ref": "#/definitions/Notification"
     },
     "RestNotification": {
       "$ref": "#/definitions/RestNotification"

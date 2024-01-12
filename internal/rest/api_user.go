@@ -3,7 +3,6 @@ package rest
 import (
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
@@ -91,27 +90,27 @@ func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateU
 }
 
 func (h *StrictHandlers) GetUsers(c *gin.Context, request GetUsersRequestObject) (GetUsersResponseObject, error) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	users, err := h.svc.User.Paginated(c, h.pool)
+	if err != nil {
+		renderErrorResponse(c, "Could not update user", err)
 
-	return GetUsers200JSONResponse{}, nil
+		return nil, nil
+	}
+
+	items := make([]User, len(users))
+	for i, u := range users {
+		role, _ := h.svc.Authorization.RoleByRank(u.RoleRank)
+		items[i] = User{
+			User: u,
+			Role: Role(role.Name),
+		}
+	}
+	res := PaginatedUsersResponse{
+		Page: PaginationPage{
+			NextCursor: fmt.Sprint(users[len(users)-1].CreatedAt),
+		},
+		Items: items,
+	}
+
+	return GetUsers200JSONResponse(res), nil
 }
-
-// func (h *StrictHandlers) GetUsers(c *gin.Context, request GetUsersRequestObject) (GetUsersResponseObject, error) {
-// 	users, err := h.svc.User.Paginated(c, h.pool)
-// 	if err != nil {
-// 		renderErrorResponse(c, "Could not update user", err)
-
-// 		return nil, nil
-// 	}
-
-// 	res := make([]User, len(users))
-// 	for i, u := range users {
-// 		role, _ := h.svc.Authorization.RoleByRank(u.RoleRank)
-// 		res[i] = User{
-// 			User: u,
-// 			Role: Role(role.Name),
-// 		}
-// 	}
-
-// 	return GetUsers200JSONResponse(res), nil
-// }

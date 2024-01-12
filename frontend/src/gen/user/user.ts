@@ -17,10 +17,10 @@ import type {
   UseQueryResult,
 } from '@tanstack/react-query'
 import type { HTTPError } from '../model/hTTPError'
+import type { PaginatedUsersResponse } from '../model/paginatedUsersResponse'
 import type { UpdateUserAuthRequest } from '../model/updateUserAuthRequest'
 import type { UpdateUserRequest } from '../model/updateUserRequest'
 import type { User } from '../model/user'
-import type { Users } from '../model/users'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -30,7 +30,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  * @summary returns all users
  */
 export const getUsers = (options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
-  return customInstance<Users>({ url: `/user/`, method: 'GET', signal }, options)
+  return customInstance<PaginatedUsersResponse>({ url: `/user/`, method: 'GET', signal }, options)
 }
 
 export const getGetUsersQueryKey = () => {

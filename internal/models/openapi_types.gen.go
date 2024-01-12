@@ -637,6 +637,15 @@ type InitializeProjectRequest struct {
 	Teams *[]DbTeamCreateParams        `json:"teams"`
 }
 
+// Notification defines the model for Notification.
+type Notification struct {
+	Notification       DbNotification `json:"notification"`
+	NotificationID     int            `json:"notificationID"`
+	Read               bool           `json:"read"`
+	UserID             DbUserID       `json:"userID"`
+	UserNotificationID int            `json:"userNotificationID"`
+}
+
 // NotificationType is generated from database enum 'notification_type'.
 type NotificationType string
 
@@ -644,6 +653,12 @@ type NotificationType string
 type PaginatedNotificationsResponse struct {
 	Items *[]RestNotification `json:"items"`
 	Page  RestPaginationPage  `json:"page"`
+}
+
+// PaginatedUsersResponse defines the model for PaginatedUsersResponse.
+type PaginatedUsersResponse struct {
+	Items *[]RestUser        `json:"items"`
+	Page  RestPaginationPage `json:"page"`
 }
 
 // Project is generated from projects table.
@@ -684,6 +699,9 @@ type RestNotification struct {
 type RestPaginationPage struct {
 	NextCursor *string `json:"nextCursor,omitempty"`
 }
+
+// RestUser defines the model for RestUser.
+type RestUser = User
 
 // Role is generated from roles.json keys.
 type Role string

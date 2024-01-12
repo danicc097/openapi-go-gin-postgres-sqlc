@@ -6,5 +6,9 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { User } from './user'
+import type { RestPaginationPage } from './restPaginationPage'
 
-export type Users = User[]
+export interface PaginatedUsersResponse {
+  items: User[] | null
+  page: RestPaginationPage
+}

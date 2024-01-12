@@ -9,8 +9,8 @@ import { faker } from '@faker-js/faker'
 import { HttpResponse, delay, http } from 'msw'
 import { Project, Role, Scope } from '.././model'
 
-export const getGetUsersMock = () =>
-  Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
+export const getGetUsersMock = () => ({
+  items: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
     apiKey: { apiKey: faker.word.sample(), expiresOn: (() => faker.date.past())(), userID: faker.word.sample() },
     createdAt: (() => faker.date.past())(),
     deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
@@ -52,7 +52,9 @@ export const getGetUsersMock = () =>
     })),
     userID: faker.word.sample(),
     username: faker.word.sample(),
-  }))
+  })),
+  page: { nextCursor: faker.word.sample() },
+})
 
 export const getGetCurrentUserMock = () => ({
   apiKey: { apiKey: faker.word.sample(), expiresOn: (() => faker.date.past())(), userID: faker.word.sample() },
