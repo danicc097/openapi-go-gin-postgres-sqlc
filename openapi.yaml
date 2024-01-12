@@ -104,16 +104,32 @@ paths:
     get:
       operationId: MyProviderCallback
       responses:
-        200:
-          description: callback for MyProvider auth server
+        302:
+          description: Callback for MyProvider auth server
+          headers:
+            Location:
+              description: The URL to which the client should be redirected based on auth:redirect-uri cookie.
+              schema:
+                type: string
       tags:
         - oidc
   /auth/myprovider/login:
     get:
       operationId: MyProviderLogin
+      parameters:
+        - name: auth-redirect-uri
+          required: true
+          schema:
+            type: string
+          in: query
       responses:
-        "302":
-          description: redirect to MyProvider auth server login
+        302:
+          description: Redirect to MyProvider auth server login
+          headers:
+            Location:
+              description: MyProvider login screen.
+              schema:
+                type: string
       tags:
         - oidc
   /events:

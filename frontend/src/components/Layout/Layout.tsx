@@ -60,7 +60,7 @@ export default function Layout({ children }: LayoutProps) {
   const [opened, { toggle }] = useDisclosure(false)
   const [userMenuOpened, setUserMenuOpened] = useState(false)
   const { user } = useAuthenticatedUser()
-  const [loginOut, setLoginOut] = useState(false)
+  const [loggingOut, setLoggingOut] = useState(false)
   const { colorScheme } = useMantineColorScheme() // TODO: app logo useffect
   const { burgerOpened, setBurgerOpened } = useUISlice()
 
@@ -87,12 +87,12 @@ export default function Layout({ children }: LayoutProps) {
   }, [user, showTestNotification, notify])
 
   const onLogout = async () => {
-    setLoginOut(true)
+    setLoggingOut(true)
     await logUserOut(queryClient)
   }
 
   function renderAvatarMenu() {
-    if (loginOut)
+    if (loggingOut)
       return (
         <Group gap={'md'} align="center">
           <Loader size={'sm'} variant="dots"></Loader>

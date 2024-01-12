@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/danicc097/oidc-server/v3/storage"
 	"github.com/gorilla/mux"
 	"golang.org/x/text/language"
 
@@ -39,7 +40,7 @@ func loggingMiddleware(next http.Handler) http.Handler {
 // SetupServer creates an OIDC server with Issuer=http://localhost:<port>
 //
 // Use one of the pre-made clients in storage/clients.go or register a new one.
-func SetupServer(issuer string, storage Storage, pathPrefix string, extraOptions ...op.Option) *mux.Router {
+func SetupServer[T storage.User](issuer string, storage Storage, pathPrefix string, users map[string]*T, extraOptions ...op.Option) *mux.Router {
 	// the OpenID Provider requires a 32-byte key for (token) encryption
 	// be sure to create a proper crypto random key and manage it securely!
 	key := sha256.Sum256([]byte("test"))
@@ -67,7 +68,7 @@ func SetupServer(issuer string, storage Storage, pathPrefix string, extraOptions
 	}
 	// the provider will only take care of the OpenID Protocol, so there must be some sort of UI for the login process
 	// for the simplicity of the example this means a simple page with username and password field
-	l := NewLogin(storage, op.AuthCallbackURL(provider), pathPrefix)
+	l := NewLogin(storage, op.AuthCallbackURL(provider), pathPrefix, users)
 
 	// regardless of how many pages / steps there are in the process, the UI must be registered in the router,
 	// so we will direct all calls to /login to the login UI

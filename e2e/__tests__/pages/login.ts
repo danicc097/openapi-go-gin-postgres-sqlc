@@ -9,12 +9,13 @@ export class LoginPage {
 
   static async create(page: Page): Promise<LoginPage> {
     const loginPage = new LoginPage(page)
-    await loginPage.navigateToLoginPage()
+    await loginPage.navigateToOIDCLoginPage()
     return loginPage
   }
 
-  private async navigateToLoginPage(): Promise<void> {
-    await this.page.goto('<login_page_url>')
+  private async navigateToOIDCLoginPage(): Promise<void> {
+    await this.page.goto("/login")
+    // TODO: click login
   }
 
   async enterCredentials(username: string, password: string): Promise<void> {

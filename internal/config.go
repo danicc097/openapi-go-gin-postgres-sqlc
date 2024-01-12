@@ -63,13 +63,15 @@ type AppConfig struct {
 	OIDC       OIDCConfig
 	SuperAdmin SuperAdminConfig
 
-	Domain       string `env:"DOMAIN"`
-	APIPort      string `env:"API_PORT"`
-	APIVersion   string `env:"API_VERSION"`
-	APIPrefix    string `env:"API_PREFIX"`
-	AppEnv       AppEnv `env:"APP_ENV"`
-	SigningKey   string `env:"SIGNING_KEY"`
-	BuildVersion string `env:"BUILD_VERSION,-"`
+	Domain         string `env:"DOMAIN"`
+	APIPort        string `env:"API_PORT"`
+	APIVersion     string `env:"API_VERSION"`
+	APIPrefix      string `env:"API_PREFIX"`
+	AppEnv         AppEnv `env:"APP_ENV"`
+	SigningKey     string `env:"SIGNING_KEY"`
+	BuildVersion   string `env:"BUILD_VERSION"`
+	CookieDomain   string `env:"COOKIE_DOMAIN"`
+	LoginCookieKey string `env:"LOGIN_COOKIE_KEY"`
 
 	ScopePolicyPath string `env:"SCOPE_POLICY_PATH"`
 	RolePolicyPath  string `env:"ROLE_POLICY_PATH"`

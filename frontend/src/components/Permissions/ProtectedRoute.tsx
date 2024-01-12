@@ -1,14 +1,15 @@
 import ProtectedPage from './ProtectedPage'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import type { Role, Scopes } from 'src/gen/model'
-import ROLES from 'src/roles'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
-import { useEffect } from 'react'
-import { isAuthorized } from 'src/services/authorization'
+import { useEffect, useState } from 'react'
+import { isAuthorized, redirectToAuthLogin } from 'src/services/authorization'
 import { apiPath } from 'src/services/apiPaths'
 import { notifications } from '@mantine/notifications'
+import { useMyProviderLogin } from 'src/gen/oidc/oidc'
+import { useGetCurrentUser } from 'src/gen/user/user'
 
 type ProtectedRouteProps = {
   children: JSX.Element
@@ -19,31 +20,17 @@ type ProtectedRouteProps = {
 /**
  *  Requires an authenticated user and optionally specific role or scopes.
  */
-export default function ProtectedRoute({ children, requiredRole = null, requiredScopes = null }: ProtectedRouteProps) {
-  const { user } = useAuthenticatedUser()
+export default function ProtectedRoute({ children, requiredRole, requiredScopes }: ProtectedRouteProps) {
+  const { user, isAuthenticated } = useAuthenticatedUser()
+  const currentUser = useGetCurrentUser()
+  const ui = useUISlice()
 
-  useEffect(() => {
-    if (!user) {
-      notifications.show({
-        id: ToastId.AuthRedirect,
-        title: 'Access Denied',
-        color: 'warning',
-        variant: 'alert',
-        withCloseButton: true,
-        autoClose: 15000,
-        message: 'Authenticated users only. Log in here or create a new account to view that page',
-      })
-    }
-  }, [user])
-
-  const isAuthenticated = true
-
-  if (!user) {
-    return <Navigate to="/login" />
+  if (!isAuthenticated && !currentUser.isFetching) {
+    redirectToAuthLogin()
   }
 
-  if (!isAuthenticated && user) {
-    window.location.replace(apiPath('/auth/myprovider/login'))
+  if (!user) {
+    return null
   }
 
   return <ProtectedPage isAuthorized={isAuthorized({ user, requiredRole, requiredScopes })}>{children}</ProtectedPage>

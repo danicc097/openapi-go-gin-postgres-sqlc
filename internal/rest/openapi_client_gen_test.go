@@ -124,7 +124,7 @@ type ClientInterface interface {
 	MyProviderCallback(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// MyProviderLogin request
-	MyProviderLogin(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	MyProviderLogin(ctx context.Context, params *MyProviderLoginParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// Events request
 	Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -363,8 +363,8 @@ func (c *Client) MyProviderCallback(ctx context.Context, reqEditors ...RequestEd
 	}
 }
 
-func (c *Client) MyProviderLogin(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewMyProviderLoginRequest(c.Server)
+func (c *Client) MyProviderLogin(ctx context.Context, params *MyProviderLoginParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewMyProviderLoginRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1407,7 +1407,7 @@ func NewMyProviderCallbackRequest(server string) (*http.Request, error) {
 }
 
 // NewMyProviderLoginRequest generates requests for MyProviderLogin
-func NewMyProviderLoginRequest(server string) (*http.Request, error) {
+func NewMyProviderLoginRequest(server string, params *MyProviderLoginParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1423,6 +1423,24 @@ func NewMyProviderLoginRequest(server string) (*http.Request, error) {
 	queryURL, err := serverURL.Parse(operationPath)
 	if err != nil {
 		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "auth-redirect-uri", runtime.ParamLocationQuery, params.AuthRedirectUri); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -2803,7 +2821,7 @@ type ClientWithResponsesInterface interface {
 	MyProviderCallbackWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MyProviderCallbackResponse, error)
 
 	// MyProviderLogin request
-	MyProviderLoginWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MyProviderLoginResponse, error)
+	MyProviderLoginWithResponse(ctx context.Context, params *MyProviderLoginParams, reqEditors ...RequestEditorFn) (*MyProviderLoginResponse, error)
 
 	// Events request
 	EventsWithResponse(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*EventsResponse, error)
@@ -3834,8 +3852,8 @@ func (c *ClientWithResponses) MyProviderCallbackWithResponse(ctx context.Context
 }
 
 // MyProviderLoginWithResponse request returning *MyProviderLoginResponse
-func (c *ClientWithResponses) MyProviderLoginWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*MyProviderLoginResponse, error) {
-	rsp, err := c.MyProviderLogin(ctx, reqEditors...)
+func (c *ClientWithResponses) MyProviderLoginWithResponse(ctx context.Context, params *MyProviderLoginParams, reqEditors ...RequestEditorFn) (*MyProviderLoginResponse, error) {
+	rsp, err := c.MyProviderLogin(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

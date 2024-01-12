@@ -10,24 +10,26 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type login struct {
+type login[T storage.User] struct {
 	authenticate authenticate
 	router       *mux.Router
 	callback     func(context.Context, string) string
 	pathPrefix   string
+	users        map[string]*T
 }
 
-func NewLogin(authenticate authenticate, callback func(context.Context, string) string, pathPrefix string) *login {
-	l := &login{
+func NewLogin[T storage.User](authenticate authenticate, callback func(context.Context, string) string, pathPrefix string, users map[string]*T) *login[T] {
+	l := &login[T]{
 		authenticate: authenticate,
 		callback:     callback,
 		pathPrefix:   pathPrefix,
+		users:        users,
 	}
 	l.createRouter()
 	return l
 }
 
-func (l *login) createRouter() {
+func (l *login[T]) createRouter() {
 	l.router = mux.NewRouter()
 	l.router.Path("/username").Methods("GET").HandlerFunc(l.loginHandler)
 	l.router.Path("/username").Methods("POST").HandlerFunc(l.checkLoginHandler)
@@ -37,7 +39,7 @@ type authenticate interface {
 	CheckUsernamePassword(username, password, id string) error
 }
 
-func (l *login) loginHandler(w http.ResponseWriter, r *http.Request) {
+func (l *login[T]) loginHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("cannot parse form:%s", err), http.StatusInternalServerError)
@@ -48,7 +50,7 @@ func (l *login) loginHandler(w http.ResponseWriter, r *http.Request) {
 	l.renderLogin(w, r.FormValue(queryAuthRequestID), nil)
 }
 
-func (l *login) renderLogin(w http.ResponseWriter, id string, err error) {
+func (l *login[T]) renderLogin(w http.ResponseWriter, id string, err error) {
 	if len(storage.StorageErrors.Errors) > 0 {
 		errMsg := strings.Join(storage.StorageErrors.Errors, " | ")
 		fmt.Printf("storage error err: %v\n", errMsg)
@@ -64,10 +66,12 @@ func (l *login) renderLogin(w http.ResponseWriter, id string, err error) {
 		ID         string
 		Error      string
 		PathPrefix string
+		Users      map[string]*T
 	}{
 		ID:         id,
 		PathPrefix: prefix,
 		Error:      errMsg(err),
+		Users:      l.users,
 	}
 	err = templates.ExecuteTemplate(w, "login", data)
 	if err != nil {
@@ -75,7 +79,7 @@ func (l *login) renderLogin(w http.ResponseWriter, id string, err error) {
 	}
 }
 
-func (l *login) checkLoginHandler(w http.ResponseWriter, r *http.Request) {
+func (l *login[T]) checkLoginHandler(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		http.Error(w, fmt.Sprintf("cannot parse form:%s", err), http.StatusInternalServerError)

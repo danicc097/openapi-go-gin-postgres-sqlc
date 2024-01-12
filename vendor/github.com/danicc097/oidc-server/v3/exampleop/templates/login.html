@@ -7,19 +7,37 @@
   </head>
   <body style="display: flex; align-items: center; justify-content: center; height: 100vh">
     <form method="POST" action="{{.PathPrefix}}/login/username" style="height: 200px; width: 200px">
+      <!-- oidc request id -->
       <input type="hidden" name="id" value="{{.ID}}" />
 
       <div>
-        <label for="username">Username:</label>
-        <input id="username" name="username" style="width: 100%" />
+        <label for="userSelect">Select user:</label>
+        <select id="userSelect" name="selectedUser" style="width: 100%" onchange="updateCredentials(this)">
+          {{range $key, $user := .Users}}
+            <option value="{{$key}}">{{$user.Username}} ({{$user.Email}})</option>
+          {{end}}
+        </select>
       </div>
 
-      <div>
-        <label for="password">Password:</label>
-        <input id="password" name="password" style="width: 100%" />
-      </div>
+      <!-- Hidden fields for username and password -->
+      <input type="hidden" id="username" name="username" />
+      <input type="hidden" id="password" name="password" />
 
       <p style="color: red; min-height: 1rem">{{.Error}}</p>
+
+      <script>
+        const users = {{.Users}};
+
+        console.log(users)
+
+        function updateCredentials(select) {
+          const selectedUsername = select.value;
+          const user = users[selectedUsername];
+
+          document.getElementById("username").value = user.username;
+          document.getElementById("password").value = user.password;
+        }
+      </script>
 
       <button type="submit">Login</button>
     </form>

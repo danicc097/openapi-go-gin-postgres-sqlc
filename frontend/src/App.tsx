@@ -190,13 +190,6 @@ const schema = {
   'x-postgen-struct': 'RestDemoWorkItemCreateRequest',
 }
 
-// axios.interceptors.request.use(requestInterceptor, function (error) {
-//   return Promise.reject(error)
-// })
-axios.interceptors.response.use(responseInterceptor, function (error) {
-  return Promise.reject(error)
-})
-
 function ErrorFallback({ error }: any) {
   return (
     <div role="alert">
@@ -369,27 +362,27 @@ export default function App() {
   type ExcludedFormKeys = 'base.metadata' | 'tagIDsMultiselect'
 
   return (
-    <AppTourProvider>
-      <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
-        <MantineProvider
-          colorSchemeManager={colorSchemeManager}
-          theme={createTheme({
-            shadows: {
-              md: '1px 1px 3px rgba(0, 0, 0, .25)',
-              xl: '5px 5px 3px rgba(0, 0, 0, .25)',
-            },
-            fontFamily: 'Catamaran, Arial, sans-serif',
-          })}
+    <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
+      <MantineProvider
+        colorSchemeManager={colorSchemeManager}
+        theme={createTheme({
+          shadows: {
+            md: '1px 1px 3px rgba(0, 0, 0, .25)',
+            xl: '5px 5px 3px rgba(0, 0, 0, .25)',
+          },
+          fontFamily: 'Catamaran, Arial, sans-serif',
+        })}
+      >
+        <ModalsProvider
+          labels={{ confirm: 'Submit', cancel: 'Cancel' }}
+          modalProps={{ styles: { root: { marginTop: '100px', zIndex: 20000 } } }}
         >
-          <ModalsProvider
-            labels={{ confirm: 'Submit', cancel: 'Cancel' }}
-            modalProps={{ styles: { root: { marginTop: '100px', zIndex: 20000 } } }}
-          >
-            <Notifications />
-            <BrowserRouter basename="">
-              <React.Suspense
-                fallback={<div style={{ backgroundColor: 'rgb(20, 21, 25)', height: '100vh', width: '100vw' }} />}
-              >
+          <Notifications />
+          <BrowserRouter basename="">
+            <React.Suspense
+              fallback={<div style={{ backgroundColor: 'rgb(20, 21, 25)', height: '100vh', width: '100vw' }} />}
+            >
+              <AppTourProvider>
                 <Layout>
                   <Routes>
                     <Route path="/project" element={<Project />} />
@@ -590,12 +583,12 @@ export default function App() {
                     />
                   </Routes>
                 </Layout>
-              </React.Suspense>
-            </BrowserRouter>
-          </ModalsProvider>
-        </MantineProvider>
-        {!import.meta.env.PROD && <ReactQueryDevtools initialIsOpen />}
-      </PersistQueryClientProvider>
-    </AppTourProvider>
+              </AppTourProvider>
+            </React.Suspense>
+          </BrowserRouter>
+        </ModalsProvider>
+      </MantineProvider>
+      {!import.meta.env.PROD && <ReactQueryDevtools initialIsOpen />}
+    </PersistQueryClientProvider>
   )
 }

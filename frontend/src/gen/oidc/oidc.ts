@@ -14,13 +14,14 @@ import type {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query'
+import type { MyProviderLoginParams } from '../model/myProviderLoginParams'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never
 
 export const myProviderCallback = (options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
-  return customInstance<void>({ url: `/auth/myprovider/callback`, method: 'GET', signal }, options)
+  return customInstance<unknown>({ url: `/auth/myprovider/callback`, method: 'GET', signal }, options)
 }
 
 export const getMyProviderCallbackQueryKey = () => {
@@ -29,7 +30,7 @@ export const getMyProviderCallbackQueryKey = () => {
 
 export const getMyProviderCallbackInfiniteQueryOptions = <
   TData = Awaited<ReturnType<typeof myProviderCallback>>,
-  TError = unknown,
+  TError = void,
 >(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -49,11 +50,11 @@ export const getMyProviderCallbackInfiniteQueryOptions = <
 }
 
 export type MyProviderCallbackInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderCallback>>>
-export type MyProviderCallbackInfiniteQueryError = unknown
+export type MyProviderCallbackInfiniteQueryError = void
 
 export const useMyProviderCallbackInfinite = <
   TData = Awaited<ReturnType<typeof myProviderCallback>>,
-  TError = unknown,
+  TError = void,
 >(options?: {
   query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -69,7 +70,7 @@ export const useMyProviderCallbackInfinite = <
 
 export const getMyProviderCallbackQueryOptions = <
   TData = Awaited<ReturnType<typeof myProviderCallback>>,
-  TError = unknown,
+  TError = void,
 >(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
@@ -89,12 +90,9 @@ export const getMyProviderCallbackQueryOptions = <
 }
 
 export type MyProviderCallbackQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderCallback>>>
-export type MyProviderCallbackQueryError = unknown
+export type MyProviderCallbackQueryError = void
 
-export const useMyProviderCallback = <
-  TData = Awaited<ReturnType<typeof myProviderCallback>>,
-  TError = unknown,
->(options?: {
+export const useMyProviderCallback = <TData = Awaited<ReturnType<typeof myProviderCallback>>, TError = void>(options?: {
   query?: UseQueryOptions<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData>
   request?: SecondParameter<typeof customInstance>
 }): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -107,27 +105,34 @@ export const useMyProviderCallback = <
   return query
 }
 
-export const myProviderLogin = (options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
-  return customInstance<unknown>({ url: `/auth/myprovider/login`, method: 'GET', signal }, options)
+export const myProviderLogin = (
+  params: MyProviderLoginParams,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<unknown>({ url: `/auth/myprovider/login`, method: 'GET', params, signal }, options)
 }
 
-export const getMyProviderLoginQueryKey = () => {
-  return [`/auth/myprovider/login`] as const
+export const getMyProviderLoginQueryKey = (params: MyProviderLoginParams) => {
+  return [`/auth/myprovider/login`, ...(params ? [params] : [])] as const
 }
 
 export const getMyProviderLoginInfiniteQueryOptions = <
   TData = Awaited<ReturnType<typeof myProviderLogin>>,
   TError = void,
->(options?: {
-  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>
-  request?: SecondParameter<typeof customInstance>
-}) => {
+>(
+  params: MyProviderLoginParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>
+    request?: SecondParameter<typeof customInstance>
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getMyProviderLoginQueryKey()
+  const queryKey = queryOptions?.queryKey ?? getMyProviderLoginQueryKey(params)
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof myProviderLogin>>> = ({ signal }) =>
-    myProviderLogin(requestOptions, signal)
+    myProviderLogin(params, requestOptions, signal)
 
   return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
     Awaited<ReturnType<typeof myProviderLogin>>,
@@ -139,14 +144,14 @@ export const getMyProviderLoginInfiniteQueryOptions = <
 export type MyProviderLoginInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderLogin>>>
 export type MyProviderLoginInfiniteQueryError = void
 
-export const useMyProviderLoginInfinite = <
-  TData = Awaited<ReturnType<typeof myProviderLogin>>,
-  TError = void,
->(options?: {
-  query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>
-  request?: SecondParameter<typeof customInstance>
-}): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getMyProviderLoginInfiniteQueryOptions(options)
+export const useMyProviderLoginInfinite = <TData = Awaited<ReturnType<typeof myProviderLogin>>, TError = void>(
+  params: MyProviderLoginParams,
+  options?: {
+    query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>
+    request?: SecondParameter<typeof customInstance>
+  },
+): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getMyProviderLoginInfiniteQueryOptions(params, options)
 
   const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
 
@@ -155,19 +160,19 @@ export const useMyProviderLoginInfinite = <
   return query
 }
 
-export const getMyProviderLoginQueryOptions = <
-  TData = Awaited<ReturnType<typeof myProviderLogin>>,
-  TError = void,
->(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>
-  request?: SecondParameter<typeof customInstance>
-}) => {
+export const getMyProviderLoginQueryOptions = <TData = Awaited<ReturnType<typeof myProviderLogin>>, TError = void>(
+  params: MyProviderLoginParams,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>
+    request?: SecondParameter<typeof customInstance>
+  },
+) => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getMyProviderLoginQueryKey()
+  const queryKey = queryOptions?.queryKey ?? getMyProviderLoginQueryKey(params)
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof myProviderLogin>>> = ({ signal }) =>
-    myProviderLogin(requestOptions, signal)
+    myProviderLogin(params, requestOptions, signal)
 
   return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
     Awaited<ReturnType<typeof myProviderLogin>>,
@@ -179,11 +184,14 @@ export const getMyProviderLoginQueryOptions = <
 export type MyProviderLoginQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderLogin>>>
 export type MyProviderLoginQueryError = void
 
-export const useMyProviderLogin = <TData = Awaited<ReturnType<typeof myProviderLogin>>, TError = void>(options?: {
-  query?: UseQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>
-  request?: SecondParameter<typeof customInstance>
-}): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getMyProviderLoginQueryOptions(options)
+export const useMyProviderLogin = <TData = Awaited<ReturnType<typeof myProviderLogin>>, TError = void>(
+  params: MyProviderLoginParams,
+  options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData>
+    request?: SecondParameter<typeof customInstance>
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+  const queryOptions = getMyProviderLoginQueryOptions(params, options)
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 

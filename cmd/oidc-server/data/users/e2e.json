@@ -1,7 +1,7 @@
 {
   "admin": {
     "id": "E2E-admin-id",
-    "username": "admin",
+    "username": "e2e-admin",
     "password": "admin",
     "firstName": "Mr",
     "lastName": "Admin",
@@ -14,7 +14,7 @@
   },
   "user1": {
     "id": "E2E-user1-id",
-    "username": "user1",
+    "username": "e2e-user1",
     "password": "user1",
     "firstName": "Test 1",
     "lastName": "User 1",
@@ -26,7 +26,7 @@
   },
   "user2": {
     "id": "E2E-user2-id",
-    "username": "user2",
+    "username": "e2e-user2",
     "password": "user2",
     "firstName": "Test 2",
     "lastName": "User 2",

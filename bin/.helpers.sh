@@ -37,7 +37,7 @@ with_tty() {
 }
 
 ensure_pwd_is_top_level() {
-  if [[ -z $TOP_LEVEL_DIR ]]; then
+  if [[ -z "$TOP_LEVEL_DIR" ]]; then
     echo "No .git directory found, skipping top level directory check."
     return
   fi

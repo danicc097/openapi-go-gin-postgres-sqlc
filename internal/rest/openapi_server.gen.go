@@ -876,6 +876,11 @@ type SerialID = int
 // UUID defines the model for UUID.
 type UUID = uuid.UUID
 
+// MyProviderLoginParams defines parameters for MyProviderLogin.
+type MyProviderLoginParams struct {
+	AuthRedirectUri string `form:"auth-redirect-uri" json:"auth-redirect-uri"`
+}
+
 // EventsParams defines parameters for Events.
 type EventsParams struct {
 	ProjectName externalRef0.Project `form:"projectName" json:"projectName"`
@@ -1016,7 +1021,7 @@ type ServerInterface interface {
 	MyProviderCallback(c *gin.Context)
 
 	// (GET /auth/myprovider/login)
-	MyProviderLogin(c *gin.Context)
+	MyProviderLogin(c *gin.Context, params externalRef0.MyProviderLoginParams)
 
 	// (GET /events)
 	Events(c *gin.Context, params externalRef0.EventsParams)
@@ -1201,7 +1206,26 @@ func (siw *ServerInterfaceWrapper) MyProviderCallback(c *gin.Context) {
 
 // MyProviderLogin operation with its own middleware.
 func (siw *ServerInterfaceWrapper) MyProviderLogin(c *gin.Context) {
-	siw.Handler.MyProviderLogin(c)
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params externalRef0.MyProviderLoginParams
+
+	// ------------- Required query parameter "auth-redirect-uri" -------------
+
+	if paramValue := c.Query("auth-redirect-uri"); paramValue != "" {
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument auth-redirect-uri is required, but not found"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "auth-redirect-uri", c.Request.URL.Query(), &params.AuthRedirectUri)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter auth-redirect-uri: %s", err)})
+		return
+	}
+
+	siw.Handler.MyProviderLogin(c, params)
 }
 
 // Events operation with its own middleware.
@@ -2235,22 +2259,38 @@ type MyProviderCallbackResponseObject interface {
 	VisitMyProviderCallbackResponse(w http.ResponseWriter) error
 }
 
-type MyProviderCallback200Response struct{}
+type MyProviderCallback302ResponseHeaders struct {
+	Location string
+}
 
-func (response MyProviderCallback200Response) VisitMyProviderCallbackResponse(w http.ResponseWriter) error {
-	w.WriteHeader(200)
+type MyProviderCallback302Response struct {
+	Headers MyProviderCallback302ResponseHeaders
+}
+
+func (response MyProviderCallback302Response) VisitMyProviderCallbackResponse(w http.ResponseWriter) error {
+	w.Header().Set("Location", fmt.Sprint(response.Headers.Location))
+	w.WriteHeader(302)
 	return nil
 }
 
-type MyProviderLoginRequestObject struct{}
+type MyProviderLoginRequestObject struct {
+	Params externalRef0.MyProviderLoginParams
+}
 
 type MyProviderLoginResponseObject interface {
 	VisitMyProviderLoginResponse(w http.ResponseWriter) error
 }
 
-type MyProviderLogin302Response struct{}
+type MyProviderLogin302ResponseHeaders struct {
+	Location string
+}
+
+type MyProviderLogin302Response struct {
+	Headers MyProviderLogin302ResponseHeaders
+}
 
 func (response MyProviderLogin302Response) VisitMyProviderLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Location", fmt.Sprint(response.Headers.Location))
 	w.WriteHeader(302)
 	return nil
 }
@@ -3520,8 +3560,10 @@ func (sh *strictHandlers) MyProviderCallback(ctx *gin.Context) {
 }
 
 // MyProviderLogin operation middleware
-func (sh *strictHandlers) MyProviderLogin(ctx *gin.Context) {
+func (sh *strictHandlers) MyProviderLogin(ctx *gin.Context, params externalRef0.MyProviderLoginParams) {
 	var request MyProviderLoginRequestObject
+
+	request.Params = params
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.MyProviderLogin(ctx, request.(MyProviderLoginRequestObject))

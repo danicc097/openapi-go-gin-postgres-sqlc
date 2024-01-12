@@ -710,13 +710,18 @@ export interface operations {
 
   MyProviderCallback: {
     responses: {
-      /** @description callback for MyProvider auth server */
-      200: never;
+      /** @description Callback for MyProvider auth server */
+      302: never;
     };
   };
   MyProviderLogin: {
+    parameters: {
+      query: {
+        "auth-redirect-uri": string;
+      };
+    };
     responses: {
-      /** @description redirect to MyProvider auth server login */
+      /** @description Redirect to MyProvider auth server login */
       302: never;
     };
   };

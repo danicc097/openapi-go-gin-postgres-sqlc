@@ -14,6 +14,8 @@ import (
 	"github.com/zitadel/oidc/v2/pkg/oidc"
 )
 
+const authRedirectCookieKey = "auth_redirect_uri"
+
 func state() string {
 	return uuid.New().String()
 }
@@ -47,40 +49,65 @@ func (h *StrictHandlers) codeExchange() gin.HandlerFunc {
 
 func (h *StrictHandlers) MyProviderCallback(c *gin.Context, request MyProviderCallbackRequestObject) (MyProviderCallbackResponseObject, error) {
 	c.Set(skipRequestValidationCtxKey, true)
-	userinfo := GetUserInfoFromCtx(c)
-	if userinfo == nil {
-		renderErrorResponse(c, "OIDC authentication error", internal.NewErrorf(models.ErrorCodeOIDC, "could not get OIDC userinfo from context"))
+
+	userinfo, err := GetUserInfoFromCtx(c)
+	if err != nil {
+		renderErrorResponse(c, "OIDC authentication error", internal.WrapErrorf(err, models.ErrorCodeOIDC, "user info not found"))
+		return nil, nil
 	}
-	fmt.Printf("userinfo in MyProviderCallback: %v\n", string(userinfo))
-	// {"email":"admin@admin.com","email_verified":true,"family_name":"Admin","given_name":"Mr","locale":"de","name":"Mr Admin","preferred_username":"admin","sub":"id1"}
 
-	// GetOrRegisterUserFromUserInfo
-	// CreateAccessTokenForUser
-	// get "auth:redirect-uri" cookie
+	ctx := c.Request.Context()
 
-	c.String(200, "would have been redirected to app frontend with actual user and logged in with JWT")
-	return nil, nil
+	u, err := h.svc.Authentication.GetOrRegisterUserFromUserInfo(ctx, *userinfo)
+	if err != nil {
+		renderErrorResponse(c, "OIDC authentication error", internal.WrapErrorf(err, models.ErrorCodeOIDC, "could not get or register user"))
+		return nil, nil
+	}
+
+	accessToken, err := h.svc.Authentication.CreateAccessTokenForUser(ctx, u)
+	if err != nil {
+		renderErrorResponse(c, "OIDC authentication error", internal.WrapErrorf(err, models.ErrorCodeOIDC, "could not create access token"))
+		return nil, nil
+	}
+
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     internal.Config.LoginCookieKey,
+		Value:    accessToken,
+		Path:     "/",
+		MaxAge:   3600 * 24 * 7,
+		Domain:   internal.Config.CookieDomain,
+		Secure:   true,
+		HttpOnly: false, // must access via JS
+		SameSite: http.SameSiteNoneMode,
+	})
+
+	redirectURI, err := c.Cookie(authRedirectCookieKey)
+	if err != nil {
+		redirectURI = internal.BuildAPIURL("docs")
+	}
+
+	return MyProviderCallback302Response{
+		Headers: MyProviderCallback302ResponseHeaders{
+			Location: redirectURI,
+		},
+	}, nil
 }
 
 func (h *StrictHandlers) MyProviderLogin(c *gin.Context, request MyProviderLoginRequestObject) (MyProviderLoginResponseObject, error) {
 	c.Set(skipRequestValidationCtxKey, true)
 
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     authRedirectCookieKey,
+		Value:    request.Params.AuthRedirectUri,
+		Path:     "/",
+		MaxAge:   3600 * 24 * 7,
+		Domain:   internal.Config.CookieDomain,
+		Secure:   true,
+		HttpOnly: false,
+		SameSite: http.SameSiteNoneMode,
+	})
+
 	gin.WrapH(rp.AuthURLHandler(state, h.provider))(c)
 
-	// use adaptation of https://github.com/zitadel/oidc/blob/main/example/client/app/app.go
-
-	// X TODO if env is dev should have helper func or just use zitadel oidcserver but with dummy data?
-	// X real server, though fake, will be hard to keep in sync. much easier to use a map of tokens that get returned
-	// X and key is set in .env.dev -> "DEV_USER": <map key> so that backend route on login gets that inmemory token,
-	// X and sets to cookie instead of redirecting to auth server and then doing all that in MyProviderCallback
-	// X (user already exists, all users got created via project db.initial-data )
-	// X if the above is done, we still need to test provider callback logic anyway (we can use mocked returned tokens in the same style as the above ones)
-	// X for testing, the app_env switch is not what will happen in prod. should int tests run in app_env=ci or app_env=prod?
-	// X to test auth server calls: https://deliveroo.engineering/2018/09/11/testing-with-third-parties-in-go.html
-
-	// IMPORTANT: easiest if import.meta is dev then use headers.set('x-api-key', `...`) for UI.
-	// that needs to have remove Authorization header removed. (or could fallthrough if auth header check failed so both can be used at the same time)
-	// its the same we do to test out swagger ui.
-	// initial-data for dev can create api keys for every user.
-	return nil, nil
+	return nil, nil // redirect handled by middleware above
 }

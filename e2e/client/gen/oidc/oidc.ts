@@ -5,16 +5,17 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { MyProviderLoginParams } from '../model/myProviderLoginParams'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never
 
 export const myProviderCallback = (options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<void>({ url: `/auth/myprovider/callback`, method: 'GET' }, options)
+  return customInstance<unknown>({ url: `/auth/myprovider/callback`, method: 'GET' }, options)
 }
-export const myProviderLogin = (options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<unknown>({ url: `/auth/myprovider/login`, method: 'GET' }, options)
+export const myProviderLogin = (params: MyProviderLoginParams, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<unknown>({ url: `/auth/myprovider/login`, method: 'GET', params }, options)
 }
 export type MyProviderCallbackResult = NonNullable<Awaited<ReturnType<typeof myProviderCallback>>>
 export type MyProviderLoginResult = NonNullable<Awaited<ReturnType<typeof myProviderLogin>>>

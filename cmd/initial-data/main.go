@@ -179,10 +179,12 @@ func main() {
 	}
 	format.PrintJSONByTag(users, "db")
 
-	superAdminCaller.User, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo.TeamID)
+	superAdmin, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo.TeamID)
 	handleError(err)
-	superAdminCaller.User, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo2.TeamID)
+	superAdmin, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo2.TeamID)
 	handleError(err)
+
+	superAdminCaller = *services.NewCtxUser(superAdmin)
 
 	/**
 	 *

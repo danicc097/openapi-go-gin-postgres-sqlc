@@ -1,5 +1,6 @@
 import { ROLES } from 'src/config'
 import { WorkItemRole, type Role, type Scopes, type User } from 'src/gen/model'
+import { apiPath } from 'src/services/apiPaths'
 import { keys } from 'src/utils/object'
 
 interface IsAuthorizedParams {
@@ -30,3 +31,9 @@ export function isAuthorized({ user, requiredRole = null, requiredScopes = null 
 }
 
 export const WORK_ITEM_ROLES: WorkItemRole[] = keys(WorkItemRole)
+
+export const redirectToAuthLogin = () => {
+  window.location.replace(
+    `${apiPath('/auth/myprovider/login')}?auth-redirect-uri=${encodeURIComponent(window.location.href)}`,
+  )
+}

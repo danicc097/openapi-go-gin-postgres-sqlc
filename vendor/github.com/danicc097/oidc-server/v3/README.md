@@ -20,3 +20,9 @@ containers.
   `storage/user.go`'s `User` for available fields.
 
 - `${DATA_DIR}/redirect_uris.txt`: valid redirect URIs to load at startup.
+
+## Examples
+
+See `example` directory. Run with `./example/run`, point to it in your client
+app and edit redirect_uris.txt accordingly.
+

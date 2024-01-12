@@ -1261,7 +1261,7 @@ x.run.frontend() {
 }
 
 # Run all project services with hot reload enabled in dev mode.
-x.run-dev() {
+x.run.all() {
   run_hot_reload
 
   while true; do

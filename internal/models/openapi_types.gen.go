@@ -829,6 +829,11 @@ type SerialID = int
 // UUID defines the model for UUID.
 type UUID = uuid.UUID
 
+// MyProviderLoginParams defines parameters for MyProviderLogin.
+type MyProviderLoginParams struct {
+	AuthRedirectUri string `form:"auth-redirect-uri" json:"auth-redirect-uri"`
+}
+
 // EventsParams defines parameters for Events.
 type EventsParams struct {
 	ProjectName Project `form:"projectName" json:"projectName"`
