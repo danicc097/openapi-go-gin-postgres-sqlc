@@ -75,6 +75,7 @@ import { colorSwatchComponentInputOption } from 'src/components/formGeneration/c
 import { AppTourProvider } from 'src/tours/AppTourProvider'
 import { useGetPaginatedUsers } from 'src/gen/user/user'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
+import { reactQueryDefaultAppOptions } from 'src/react-query'
 
 const schema = {
   properties: {
@@ -242,17 +243,14 @@ export default function App() {
 
   const { user } = useAuthenticatedUser()
 
-  const useUsers = useGetPaginatedUsers(
-    { direction: 'desc', cursor: new Date().toISOString(), limit: 10 },
-    { query: { enabled: false } },
-  )
+  const useUsers = useGetPaginatedUsers({ direction: 'desc', cursor: new Date().toISOString(), limit: 10 })
 
-  useEffect(() => {
-    if (!useUsers.data && !useUsers.isFetching && user) {
-      console.log({ status: useUsers.status })
-      useUsers.refetch()
-    }
-  }, [useUsers.isFetching, useUsers.data, user]) // only subscribe to specific react-query state, else inf request spam
+  // useEffect(() => {
+  //   if (!useUsers.data && !useUsers.isFetching && user) {
+  //     console.log({ status: useUsers.status })
+  //     useUsers.refetch()
+  //   }
+  // }, [useUsers.isFetching, useUsers.data, user]) // only subscribe to specific react-query state, else inf request spam
 
   const userIdSelectOption = selectOptionsBuilder({
     type: 'select',
