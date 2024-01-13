@@ -1301,7 +1301,7 @@ x.run-dockerized() {
   run_shared_services up -d --build --wait
   x.db.recreate
 
-  x.gen
+  # x.gen
 
   setup_swagger_ui
 
