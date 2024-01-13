@@ -557,7 +557,7 @@ export default function App() {
                       path="/settings/user-permissions-management"
                       element={
                         <React.Suspense fallback={<FallbackLoading />}>
-                          <ProtectedRoute>
+                          <ProtectedRoute requiredScopes={['activity:create', 'activity:delete', 'activity:delete']}>
                             <UserPermissionsPage />
                           </ProtectedRoute>
                         </React.Suspense>

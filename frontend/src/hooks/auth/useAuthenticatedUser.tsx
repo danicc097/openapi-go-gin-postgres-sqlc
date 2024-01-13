@@ -1,7 +1,7 @@
 import { QueryClient, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import Cookies from 'js-cookie'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AXIOS_INSTANCE } from 'src/api/mutator'
 import type { User } from 'src/gen/model'
 import { useGetCurrentUser } from 'src/gen/user/user'
@@ -9,17 +9,21 @@ import useRenders from 'src/hooks/utils/useRenders'
 import { persister } from 'src/idb'
 import { LOGIN_COOKIE_KEY, UI_SLICE_PERSIST_KEY, useUISlice } from 'src/slices/ui'
 import AxiosInterceptors from 'src/utils/axios'
-import { getCurrentFileName } from 'src/utils/utils'
 import { useIsFirstRender } from 'usehooks-ts'
 
 export default function useAuthenticatedUser() {
   const mountedRef = useMountedRef()
   const queryClient = useQueryClient()
+  const [failedAuthentication, setFailedAuthentication] = useState(false)
   const currentUser = useGetCurrentUser({
     query: {
+      retryDelay: 500,
       retry(failureCount, error) {
-        console.log(`retry on ${getCurrentFileName()}: ${failureCount}`)
-        return ui.accessToken !== '' && failureCount < 3
+        console.log(`retry on useAuthenticatedUser: ${failureCount}`)
+        const shouldRetry = ui.accessToken !== '' && failureCount < 3 && !failedAuthentication
+        if (!shouldRetry) setFailedAuthentication(true)
+
+        return shouldRetry
       },
     },
   })
@@ -36,7 +40,7 @@ export default function useAuthenticatedUser() {
     }
     // console.log({ rendersOutside: renders })
 
-    if (!isAuthenticated && !isAuthenticating && ui.accessToken !== '') {
+    if (!isAuthenticated && !isAuthenticating) {
       currentUser.refetch()
     }
 
@@ -52,6 +56,7 @@ export default function useAuthenticatedUser() {
   return {
     isAuthenticated,
     isAuthenticating,
+    isLoggingOut: ui.isLoggingOut,
     user,
   }
 }
