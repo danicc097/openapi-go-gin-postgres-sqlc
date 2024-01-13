@@ -46,11 +46,20 @@ export const getEventsInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof events>>> = ({ signal }) =>
     events(params, requestOptions, signal)
 
-  return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof events>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type EventsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof events>>>
@@ -86,11 +95,20 @@ export const getEventsQueryOptions = <TData = Awaited<ReturnType<typeof events>>
   const queryFn: QueryFunction<Awaited<ReturnType<typeof events>>> = ({ signal }) =>
     events(params, requestOptions, signal)
 
-  return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof events>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type EventsQueryResult = NonNullable<Awaited<ReturnType<typeof events>>>

@@ -1,6 +1,7 @@
 import { defineConfig } from 'orval'
 import { faker } from '@faker-js/faker'
 import _, { uniqueId } from 'lodash'
+import { reactQueryDefaultAppOptions } from './src/react-query'
 
 // for custom client see https://github.com/anymaniax/orval/blob/master/samples/react-query/custom-client/src/api/mutator/custom-client.ts#L1
 export default defineConfig({
@@ -22,10 +23,7 @@ export default defineConfig({
           useQuery: true,
           useInfinite: true, // https://tanstack.com/query/v4/docs/guides/infinite-queries
           // useInfiniteQueryParam: 'nextId',
-          options: {
-            // QueryObserverOptions passed directly to all generated queries
-            staleTime: 1000 * 3600,
-          },
+          options: reactQueryDefaultAppOptions.queries,
         },
         mock: {
           format: {

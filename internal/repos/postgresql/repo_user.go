@@ -52,7 +52,7 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPagina
 		}),
 		db.WithUserJoin(db.UserJoins{TeamsMember: true, ProjectsMember: true}),
 	}
-	if params.Limit > 0 {
+	if params.Limit > 0 { // for users, allow 0 or less to fetch all
 		opts = append(opts, db.WithUserLimit(params.Limit))
 	}
 

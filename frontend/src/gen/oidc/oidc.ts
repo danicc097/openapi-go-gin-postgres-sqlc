@@ -42,11 +42,20 @@ export const getMyProviderCallbackInfiniteQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof myProviderCallback>>> = ({ signal }) =>
     myProviderCallback(requestOptions, signal)
 
-  return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof myProviderCallback>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type MyProviderCallbackInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderCallback>>>
@@ -82,11 +91,20 @@ export const getMyProviderCallbackQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof myProviderCallback>>> = ({ signal }) =>
     myProviderCallback(requestOptions, signal)
 
-  return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof myProviderCallback>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof myProviderCallback>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type MyProviderCallbackQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderCallback>>>
@@ -134,11 +152,20 @@ export const getMyProviderLoginInfiniteQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof myProviderLogin>>> = ({ signal }) =>
     myProviderLogin(params, requestOptions, signal)
 
-  return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof myProviderLogin>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type MyProviderLoginInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderLogin>>>
@@ -174,11 +201,20 @@ export const getMyProviderLoginQueryOptions = <TData = Awaited<ReturnType<typeof
   const queryFn: QueryFunction<Awaited<ReturnType<typeof myProviderLogin>>> = ({ signal }) =>
     myProviderLogin(params, requestOptions, signal)
 
-  return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof myProviderLogin>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof myProviderLogin>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type MyProviderLoginQueryResult = NonNullable<Awaited<ReturnType<typeof myProviderLogin>>>

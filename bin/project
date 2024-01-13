@@ -867,9 +867,15 @@ x.gen.frontend() {
     export PATH=frontend/node_modules/.bin:$PATH
 
     SCHEMA_OUT="frontend/src/types/schema.d.ts"
-    orval_config="frontend/orval.config.ts"
+    local orval_config="frontend/orval.config.ts"
+    deps=(
+      "$orval_config"
+      "frontend/src/react-query.ts"
+      "frontend/scripts/"
+      "frontend/package.json"
+    )
 
-    cache_all "$CACHE/frontend.md5" bin/project bin/.helpers.sh .env.$X_ENV $SPEC_PATH $orval_config frontend/scripts/ frontend/package.json && return 0
+    cache_all "$CACHE/frontend.md5" bin/project bin/.helpers.sh .env.$X_ENV $SPEC_PATH ${deps[@]} && return 0
 
     config_template_setup frontend # no need to run if cached .env
 

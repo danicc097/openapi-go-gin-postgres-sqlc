@@ -10,7 +10,7 @@ export const reactQueryDefaultAppOptions = {
     retryOnMount: false,
     staleTime: Infinity,
     keepPreviousData: true,
-    retry(failureCount, error) {
+    retry: function (failureCount, error) {
       return failureCount < 3
     },
   },

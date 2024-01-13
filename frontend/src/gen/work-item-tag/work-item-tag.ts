@@ -120,11 +120,21 @@ export const getGetWorkItemTagInfiniteQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItemTag>>> = ({ signal }) =>
     getWorkItemTag(id, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!id, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof getWorkItemTag>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItemTag>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetWorkItemTagInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItemTag>>>
@@ -169,11 +179,21 @@ export const getGetWorkItemTagQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItemTag>>> = ({ signal }) =>
     getWorkItemTag(id, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!id, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getWorkItemTag>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getWorkItemTag>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetWorkItemTagQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItemTag>>>

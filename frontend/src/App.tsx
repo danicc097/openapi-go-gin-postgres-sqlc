@@ -243,7 +243,8 @@ export default function App() {
 
   const { user } = useAuthenticatedUser()
 
-  const useUsers = useGetPaginatedUsers({ direction: 'desc', cursor: new Date().toISOString(), limit: 10 })
+  // FIXME: infinite rerender if not disabling.
+  const useUsers = useGetPaginatedUsers({ direction: 'desc', cursor: new Date().toISOString(), limit: 0 })
 
   // useEffect(() => {
   //   if (!useUsers.data && !useUsers.isFetching && user) {
@@ -409,6 +410,7 @@ export default function App() {
                       element={
                         <React.Suspense fallback={<FallbackLoading />}>
                           {/* <LandingPage /> */}
+
                           <Title size={20}>This form has been automatically generated from an openapi spec</Title>
                           <Button
                             onClick={(e) => {
