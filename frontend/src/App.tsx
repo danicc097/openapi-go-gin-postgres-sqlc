@@ -215,6 +215,9 @@ const uuids = [
 
 // TODO: /users where deleted_at null
 // will be used on generated filterable mantine datatable table as in
+// https://www.mantine-react-table.com/docs/examples/react-query
+// https://www.mantine-react-table.com/docs/guides/column-filtering#manual-server-side-column-filtering
+// (note v2 in alpha)
 const members = [...Array(10)].map((x, i) => {
   const user = getGetCurrentUserMock()
   user.email = `${i}@mail.com`
