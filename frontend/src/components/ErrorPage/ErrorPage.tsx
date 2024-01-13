@@ -16,6 +16,7 @@ import HttpStatus from 'src/utils/httpStatus'
 import classes from './ErrorPage.module.css'
 import { IsAuthorizedResult } from 'src/services/authorization'
 import { sentenceCase } from 'src/utils/strings'
+import { upperFirst } from 'lodash'
 
 interface ErrorPageProps {
   status: number
@@ -50,7 +51,7 @@ export function ErrorPage({ status, authResult }: ErrorPageProps) {
         <>
           <Flex justify={'center'} align={'center'}>
             <Card shadow="sm" radius="md" ta="center" className={classes.errorMessage}>
-              <Text>{`${sentenceCase(authResult.errorMessage)}.`}</Text>
+              <Text>{`${upperFirst(authResult.errorMessage)}.`}</Text>
             </Card>
           </Flex>
         </>

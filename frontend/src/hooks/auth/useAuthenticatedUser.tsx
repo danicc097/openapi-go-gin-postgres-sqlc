@@ -20,7 +20,7 @@ export default function useAuthenticatedUser() {
       retryDelay: 500,
       retry(failureCount, error) {
         console.log(`retry on useAuthenticatedUser: ${failureCount}`)
-        const shouldRetry = ui.accessToken !== '' && failureCount < 3 && !failedAuthentication
+        const shouldRetry = ui.accessToken !== '' && failureCount < 2 && !failedAuthentication
         if (!shouldRetry) setFailedAuthentication(true)
 
         return shouldRetry
@@ -33,6 +33,7 @@ export default function useAuthenticatedUser() {
   const isAuthenticated = !!currentUser.data?.userID
   const isAuthenticating = currentUser.isFetching && ui.accessToken !== ''
   // console.log({ isFirstRender })
+
   useEffect(() => {
     if (mountedRef.current && isFirstRender) {
       // FIXME: ... one-off logic (in theory, not working)
@@ -52,6 +53,12 @@ export default function useAuthenticatedUser() {
   }, [currentUser.data, isFirstRender, isAuthenticated, ui.accessToken])
 
   const user = currentUser.data
+
+  useEffect(() => {
+    if (user) {
+      setFailedAuthentication(false)
+    }
+  }, [user])
 
   return {
     isAuthenticated,

@@ -29,7 +29,7 @@ export function isAuthorized({
   }
 
   if (!user) {
-    result.errorMessage = 'User not authenticated. Please log in.'
+    result.errorMessage = 'User not authenticated. Please log in'
     return result
   }
 

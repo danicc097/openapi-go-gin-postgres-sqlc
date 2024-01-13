@@ -22,7 +22,6 @@ import {
   localStorageColorSchemeManager,
   Textarea,
 } from '@mantine/core'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { PersistQueryClientProvider, type PersistedClient } from '@tanstack/react-query-persist-client'
 import axios from 'axios'
 import ProtectedRoute from 'src/components/Permissions/ProtectedRoute'
@@ -69,12 +68,13 @@ import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { useFormSlice } from 'src/slices/form'
 import { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
 import { persister } from 'src/idb'
-import { queryClient } from 'src/react-query'
 import { parseSchemaFields } from 'src/utils/jsonSchema'
 import { schemaDefinitions } from 'src/client-validator/gen/meta'
 import Project from 'src/views/Project/Project'
 import { colorSwatchComponentInputOption } from 'src/components/formGeneration/components'
 import { AppTourProvider } from 'src/tours/AppTourProvider'
+import { useGetPaginatedUsers } from 'src/gen/user/user'
+import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 
 const schema = {
   properties: {
@@ -226,20 +226,33 @@ const tags = [...Array(10)].map((x, i) => {
 
 const colorSchemeManager = localStorageColorSchemeManager({ key: 'theme' })
 
+const members = [...Array(10)].map((x, i) => {
+  const user = getGetCurrentUserMock()
+  user.email = `${i}@mail.com`
+  user.userID = i < uuids.length ? uuids[i]! : uuidv4()
+  return user
+})
+
 export default function App() {
   // TODO: /users where deleted_at null
   // will be used on generated filterable mantine datatable table as in
   // https://www.mantine-react-table.com/docs/examples/react-query
   // https://www.mantine-react-table.com/docs/guides/column-filtering#manual-server-side-column-filtering
   // (note v2 in alpha)
-  const [members] = useState(() =>
-    [...Array(10)].map((x, i) => {
-      const user = getGetCurrentUserMock()
-      user.email = `${i}@mail.com`
-      user.userID = i < uuids.length ? uuids[i]! : uuidv4()
-      return user
-    }),
+
+  const { user } = useAuthenticatedUser()
+
+  const useUsers = useGetPaginatedUsers(
+    { direction: 'desc', cursor: new Date().toISOString(), limit: 10 },
+    { query: { enabled: false } },
   )
+
+  useEffect(() => {
+    if (!useUsers.data && !useUsers.isFetching && user) {
+      console.log({ status: useUsers.status })
+      useUsers.refetch()
+    }
+  }, [useUsers.isFetching, useUsers.data, user]) // only subscribe to specific react-query state, else inf request spam
 
   const userIdSelectOption = selectOptionsBuilder({
     type: 'select',
@@ -369,7 +382,7 @@ export default function App() {
   type ExcludedFormKeys = 'base.metadata' | 'tagIDsMultiselect'
 
   return (
-    <QueryClientProvider client={queryClient} /**persistOptions={{ persister }} */>
+    <>
       <MantineProvider
         colorSchemeManager={colorSchemeManager}
         theme={createTheme({
@@ -596,6 +609,6 @@ export default function App() {
         </ModalsProvider>
       </MantineProvider>
       {!import.meta.env.PROD && <ReactQueryDevtools initialIsOpen />}
-    </QueryClientProvider>
+    </>
   )
 }
