@@ -1,8 +1,5 @@
 import { capitalize, upperCase } from 'lodash'
-import type { UserAvatarProps } from 'src/components/UserAvatar/UserAvatar'
-
-export const getAvatarName = ({ user }: UserAvatarProps) =>
-  upperCase(user?.firstName?.charAt(0) + user?.lastName?.charAt(0) ?? user?.username ?? '')
+import { User } from 'src/gen/model'
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -19,8 +16,8 @@ export const truncate = (str: string, n = 200, useWordBoundary = false) => {
   return `${useWordBoundary ? subString.substr(0, subString.lastIndexOf(' ')) : subString}&hellip;`
 }
 
-export const joinWithAnd = (arr: string[]) => {
-  if (arr.length === 1) return arr[0]
+export const joinWithAnd = (arr: string[]): string => {
+  if (arr.length === 1) return arr[0]!
   return `${arr.slice(0, -1).join(', ')} and ${arr.slice(-1)[0]}`
 }
 

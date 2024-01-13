@@ -79,11 +79,12 @@ const getUnauthorizedMessage = (authResult: IsAuthorizedResult): string => {
     }
 
     if (authResult.missingScopes && authResult.missingScopes.length > 0) {
-      const scopeMessage = joinWithAnd(authResult.missingScopes)
+      const quotedScopes = authResult.missingScopes.map((s) => `"${s}"`)
+      const scopeMessage = joinWithAnd(quotedScopes)
       messages.push(`missing scopes ${scopeMessage}`)
     }
 
-    return messages.join(', ')
+    return joinWithAnd(messages)
   }
 
   return ''

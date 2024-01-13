@@ -244,6 +244,7 @@ export default function UserPermissionsPage() {
       combobox.focusSearchInput()
     },
   })
+
   const comboboxOptions =
     userOptions
       ?.filter((item: any) => JSON.stringify(item.value).toLowerCase().includes(search.toLowerCase().trim()))
@@ -256,6 +257,8 @@ export default function UserPermissionsPage() {
           </Combobox.Option>
         )
       }) || []
+
+  if (!user) return null
 
   const element = (
     <FormProvider {...form}>

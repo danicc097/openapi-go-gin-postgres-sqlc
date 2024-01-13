@@ -38,7 +38,7 @@
   margin-bottom: var(--mantine-spacing-xl);
 
   p {
-    color: var(--mantine-color-error);
+    color: var(--mantine-color-red-7);
   }
 }
 

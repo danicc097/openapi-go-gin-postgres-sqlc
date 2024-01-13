@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import HttpStatus from 'src/utils/httpStatus'
 import classes from './ErrorPage.module.css'
 import { IsAuthorizedResult } from 'src/services/authorization'
+import { sentenceCase } from 'src/utils/strings'
 
 interface ErrorPageProps {
   status: number
@@ -45,11 +46,11 @@ export function ErrorPage({ status, authResult }: ErrorPageProps) {
       <Text pb={30} color="dimmed" size="m" ta="center" className={classes.description}>
         {text}
       </Text>
-      {authResult && authResult.isAuthorized && (
+      {authResult && !authResult.isAuthorized && (
         <>
           <Flex justify={'center'} align={'center'}>
             <Card shadow="sm" radius="md" ta="center" className={classes.errorMessage}>
-              <Text>{authResult.errorMessage}</Text>
+              <Text>{`${sentenceCase(authResult.errorMessage)}.`}</Text>
             </Card>
           </Flex>
         </>
