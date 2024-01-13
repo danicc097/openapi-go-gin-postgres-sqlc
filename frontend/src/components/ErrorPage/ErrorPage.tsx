@@ -9,17 +9,19 @@ import {
   useMantineColorScheme,
   Flex,
   Space,
+  Card,
 } from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
 import HttpStatus from 'src/utils/httpStatus'
 import classes from './ErrorPage.module.css'
+import { IsAuthorizedResult } from 'src/services/authorization'
 
 interface ErrorPageProps {
   status: number
-  unauthorizedMessage?: string
+  authResult?: IsAuthorizedResult
 }
 
-export function ErrorPage({ status, unauthorizedMessage }: ErrorPageProps) {
+export function ErrorPage({ status, authResult }: ErrorPageProps) {
   const { colorScheme } = useMantineColorScheme()
   const navigate = useNavigate()
 
@@ -40,15 +42,16 @@ export function ErrorPage({ status, unauthorizedMessage }: ErrorPageProps) {
   return (
     <Flex direction={'column'} align={'center'} className={classes.root}>
       <div className={classes.label}>{status}</div>
-      <Title className={classes.title}>You have found a secret place.</Title>
-      <Text color="dimmed" size="m" ta="center" className={classes.description}>
+      <Text pb={30} color="dimmed" size="m" ta="center" className={classes.description}>
         {text}
       </Text>
-      {unauthorizedMessage && (
+      {authResult && authResult.isAuthorized && (
         <>
-          <Text p={30} color="dimmed" size="m" ta="center" className={classes.description}>
-            {unauthorizedMessage}
-          </Text>
+          <Flex justify={'center'} align={'center'}>
+            <Card shadow="sm" radius="md" ta="center" className={classes.errorMessage}>
+              <Text>{authResult.errorMessage}</Text>
+            </Card>
+          </Flex>
         </>
       )}
       <Group align="center">

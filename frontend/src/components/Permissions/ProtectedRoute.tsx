@@ -5,11 +5,12 @@ import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import { useEffect, useState } from 'react'
-import { isAuthorized, redirectToAuthLogin } from 'src/services/authorization'
+import { IsAuthorizedResult, isAuthorized, redirectToAuthLogin } from 'src/services/authorization'
 import { apiPath } from 'src/services/apiPaths'
 import { notifications } from '@mantine/notifications'
 import { useMyProviderLogin } from 'src/gen/oidc/oidc'
 import { useGetCurrentUser } from 'src/gen/user/user'
+import { joinWithAnd } from 'src/utils/format'
 
 type ProtectedRouteProps = {
   children: JSX.Element
@@ -24,17 +25,11 @@ export default function ProtectedRoute({ children, requiredRole, requiredScopes 
   const { user, isAuthenticated } = useAuthenticatedUser()
   const ui = useUISlice()
 
-  // a clear login button is visible in place of avatar menu
+  const authResult = isAuthorized({ user, requiredRole, requiredScopes })
+
   // if (!isAuthenticated && !currentUser.isFetching) {
-  //   redirectToAuthLogin()
+  //   redirectToAuthLogin();
   // }
 
-  return (
-    <ProtectedPage
-      unauthorizedMessage="<Specific authorization error message here (missing scopes list, role...)>"
-      isAuthorized={isAuthorized({ user, requiredRole, requiredScopes })}
-    >
-      {children}
-    </ProtectedPage>
-  )
+  return <ProtectedPage authResult={authResult}>{children}</ProtectedPage>
 }

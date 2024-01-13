@@ -31,6 +31,17 @@
   }
 }
 
+.errorMessage {
+  max-width: 500px;
+  margin: auto;
+  margin-top: var(--mantine-spacing-xl);
+  margin-bottom: var(--mantine-spacing-xl);
+
+  p {
+    color: var(--mantine-color-error);
+  }
+}
+
 .description {
   max-width: 500px;
   margin: auto;

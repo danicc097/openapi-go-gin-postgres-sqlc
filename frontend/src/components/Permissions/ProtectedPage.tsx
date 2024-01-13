@@ -1,32 +1,41 @@
-import { Flex, Group, Text } from '@mantine/core'
-import _ from 'lodash'
-import React from 'react'
-import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
+import { Flex, Text } from '@mantine/core'
+import React, { useEffect, useState } from 'react'
 import InfiniteLoader from 'src/components/Loading/InfiniteLoader'
-import type { Role, Scopes } from 'src/gen/model'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
+import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
+import { IsAuthorizedResult } from 'src/services/authorization'
 import HttpStatus from 'src/utils/httpStatus'
 
 type ProtectedPageProps = {
   children: JSX.Element
-  isAuthorized: boolean
-  unauthorizedMessage?: string
+  authResult: IsAuthorizedResult
 }
 
-export default function ProtectedPage({ children, isAuthorized, unauthorizedMessage }: ProtectedPageProps) {
+export default function ProtectedPage({ children, authResult }: ProtectedPageProps) {
   const { isAuthenticating } = useAuthenticatedUser()
+  const [dotCount, setDotCount] = useState(1)
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setDotCount((prevCount) => (prevCount % 3) + 1)
+    }, 500)
+
+    return () => clearInterval(intervalId)
+  }, [])
 
   if (isAuthenticating) {
     return (
-      <Flex direction={'column'} justify="center" align="center">
+      <Flex p={50} direction={'column'} justify="center" align="center">
         <InfiniteLoader />
-        <Text size="lg">Loading user...</Text>
+        <Text pt={20} size="lg">
+          Authenticating user{'.'.repeat(dotCount)}
+        </Text>
       </Flex>
     )
   }
 
-  if (!isAuthorized) {
-    return <ErrorPage status={HttpStatus.FORBIDDEN_403} unauthorizedMessage={unauthorizedMessage} />
+  if (!authResult.isAuthorized) {
+    return <ErrorPage status={HttpStatus.FORBIDDEN_403} authResult={authResult} />
   }
 
   return children
