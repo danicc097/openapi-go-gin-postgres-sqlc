@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import 'src/assets/css/fonts.css'
 import 'src/assets/css/overrides.css'
@@ -213,18 +213,6 @@ const uuids = [
   'd59d3a5c-b99f-40aa-9419-75a2bbb0fd52',
 ]
 
-// TODO: /users where deleted_at null
-// will be used on generated filterable mantine datatable table as in
-// https://www.mantine-react-table.com/docs/examples/react-query
-// https://www.mantine-react-table.com/docs/guides/column-filtering#manual-server-side-column-filtering
-// (note v2 in alpha)
-const members = [...Array(10)].map((x, i) => {
-  const user = getGetCurrentUserMock()
-  user.email = `${i}@mail.com`
-  user.userID = i < uuids.length ? uuids[i]! : uuidv4()
-  return user
-})
-
 const tags = [...Array(10)].map((x, i) => {
   const tag: DbWorkItemTag = {
     name: `tag #${i}`,
@@ -238,32 +226,46 @@ const tags = [...Array(10)].map((x, i) => {
 
 const colorSchemeManager = localStorageColorSchemeManager({ key: 'theme' })
 
-const userIdSelectOption = selectOptionsBuilder({
-  type: 'select',
-  values: members,
-  //  TODO: transformers can be reusable between forms. could simply become
-  //  {
-  //   type: "select"
-  //   values: ...
-  //   ...userIdFormTransformers
-  // }
-  optionTransformer(el) {
-    return <UserComboboxOption user={el} />
-  },
-  formValueTransformer(el) {
-    return el.userID
-  },
-  pillTransformer(el) {
-    return <>{el.email}</>
-  },
-  searchValueTransformer(el) {
-    return `${el.email} ${el.fullName} ${el.username}`
-  },
-})
-
 export default function App() {
+  // TODO: /users where deleted_at null
+  // will be used on generated filterable mantine datatable table as in
+  // https://www.mantine-react-table.com/docs/examples/react-query
+  // https://www.mantine-react-table.com/docs/guides/column-filtering#manual-server-side-column-filtering
+  // (note v2 in alpha)
+  const [members] = useState(() =>
+    [...Array(10)].map((x, i) => {
+      const user = getGetCurrentUserMock()
+      user.email = `${i}@mail.com`
+      user.userID = i < uuids.length ? uuids[i]! : uuidv4()
+      return user
+    }),
+  )
+
+  const userIdSelectOption = selectOptionsBuilder({
+    type: 'select',
+    values: members,
+    //  TODO: transformers can be reusable between forms. could simply become
+    //  {
+    //   type: "select"
+    //   values: ...
+    //   ...userIdFormTransformers
+    // }
+    optionTransformer(el) {
+      return <UserComboboxOption user={el} />
+    },
+    formValueTransformer(el) {
+      return el.userID
+    },
+    pillTransformer(el) {
+      return <>{el.email}</>
+    },
+    searchValueTransformer(el) {
+      return `${el.email} ${el.fullName} ${el.username}`
+    },
+  })
+
   useEffect(() => {
-    document.body.style.background = 'none !important'
+    document.body.style.background = 'none !important' // body was preventing flashes
   }, [])
 
   const { verifyNotificationPermission } = useNotificationAPI()
