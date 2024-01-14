@@ -20,24 +20,11 @@ begin
   -- Dynamically create the cache.demo_work_items table
   execute 'CREATE SCHEMA IF NOT EXISTS cache;';
   execute FORMAT('CREATE TABLE IF NOT EXISTS cache.%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type);
-  execute FORMAT('
-        SELECT array_agg(column_name)
-        FROM information_schema.columns
-        WHERE table_schema = ''cache'' AND table_name = ''%I''' , project_name) into existing_cols;
-  -- Add missing columns
-  FOREACH col in array existing_cols loop
-    -- FIXME: syntax error at end of input
-    -- execute FORMAT('
-    --     ALTER TABLE cache.%I ADD COLUMN IF NOT EXISTS %s' , project_name , col);
-  end loop;
-  raise notice 'Table created/modified for % with fields: %' , project_name , project_table_col_and_type || ',' || work_items_col_and_type;
+  -- IMPORTANT: we will use extra columns so logic to add will be messy, and to alter existing types would have to be done manually.
+  -- better do these steps manually, ie when doing migrations (triggers will fail on migration if not synced so there's no risk of out of date cache schema)
 end;
 $$
 language plpgsql;
-
--- TODO: for project in projects table
-select
-  create_dynamic_table ('demo_work_items');
 
 create or replace function sync_work_items ()
   returns trigger
@@ -118,7 +105,11 @@ end;
 $$
 language plpgsql;
 
-create trigger work_items_sync_trigger
+-- TODO: anon func loop for project in projects table and drop and replace triggers always
+select
+  create_dynamic_table ('demo_work_items');
+
+create trigger work_items_sync_trigger_demo_work_items
   after insert or update on demo_work_items for each row
   execute function sync_work_items ('demo_work_items');
 
