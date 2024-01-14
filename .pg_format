@@ -36,8 +36,8 @@ numbering=0
 # Define the filename for the output. Default: stdout.
 output=
 # Set regex to find code that must not be changed.
-# NOTE: Single escaping in config file
-placeholder="sqlc\.(arg|narg)\(:?[^)]*\)"
+# NOTE: Single escaping and remove quotes!
+placeholder=sqlc\.(arg|narg)\(:?[^)]*\)
 # Use multi-line search for placeholder regex.
 multiline=0
 # Add RedShift keyworks to the list of SQL keyworks.

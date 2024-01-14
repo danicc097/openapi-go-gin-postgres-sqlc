@@ -95,7 +95,6 @@
     "pgFormatter.configFile": "${workspaceFolder}/.pg_format",
     // as per extension docs, else they're overridden with defaults...
     // https://github.com/bradymholt/vscode-pgFormatter#configuration
-    // NOTE: in config "sqlc\\.(arg|narg)\\(:?[^)]*\\)" escapes with single \
     "pgFormatter.placeholder": null,
     "pgFormatter.commaBreak": null,
     "pgFormatter.noSpaceFunction": null,
