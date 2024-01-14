@@ -94,29 +94,56 @@ begin
     union
     select
       UNNEST(work_items_cols)) , ', ');
-
-  execute FORMAT('
-        SELECT *
-        FROM work_items wi
-        JOIN %I USING (work_item_id)
-        WHERE wi.work_item_id = $1' , project_name) into all_values
+  -- see https://stackoverflow.com/questions/40687267/how-to-update-all-columns-with-insert-on-conflict
+  -- for simpler sync with cache.%I
+  -- we assume there are no side effects when deleting.
+  execute FORMAT( '
+  with data (
+    work_item_id
+) as (
+    select
+      %s
+    from
+      work_items wi
+      join demo_work_items using (work_item_id)
+    where
+      wi.work_item_id = $1
+)
+, del as (
+  delete from cache.demo_work_items as t using data d
+where t.work_item_id = d.work_item_id
+  -- AND    t <> d              -- optional, to avoid empty updates
+) -- only works for complete rows
+insert into cache.demo_work_items as t table data -- short for: SELECT * FROM data
+on conflict (work_item_id)
+  do nothing
+returning
+  t.work_item_id;
+  '
+    , all_cols_names)
   using new.work_item_id;
-  -- FIXME: get column names of all_values and use that instead of all_cols_names...
-  -- this is overly complicated for no reason.
-  -- all_values_columns := ARRAY_TO_STRING(array (
-  --     select
-  --       *
-  --     from PG_TYPEOF(all_values)) , ', ');
-  raise notice 'all_values_columns: %' , all_values_columns;
-  raise notice 'all_values: %' , all_values;
-  -- TODO: these come from all columns in the NEW KEYWORD
-  -- Get values for work_items_cols once and use them in the subsequent INSERT INTO ... VALUES ...
-  raise notice 'sssss %' , FORMAT(' insert into cache.%I (%s)
-      values (%s)
-    on conflict (work_item_id)
-      do update set
-        %s' , project_name , all_cols_names, all_values , ARRAY_TO_STRING(update_cols , ' , '));
-  -- using NEW;
+  -- execute FORMAT('
+  --       SELECT *
+  --       FROM work_items wi
+  --       JOIN %I USING (work_item_id)
+  --       WHERE wi.work_item_id = $1' , project_name) into all_values
+  -- using new.work_item_id;
+  -- -- FIXME: get column names of all_values and use that instead of all_cols_names...
+  -- -- this is overly complicated for no reason.
+  -- -- all_values_columns := ARRAY_TO_STRING(array (
+  -- --     select
+  -- --       *
+  -- --     from PG_TYPEOF(all_values)) , ', ');
+  -- raise notice 'all_values_columns: %' , all_values_columns;
+  -- raise notice 'all_values: %' , all_values;
+  -- -- TODO: these come from all columns in the NEW KEYWORD
+  -- -- Get values for work_items_cols once and use them in the subsequent INSERT INTO ... VALUES ...
+  -- raise notice 'sssss %' , FORMAT(' insert into cache.%I (%s)
+  --     values (%s)
+  --   on conflict (work_item_id)
+  --     do update set
+  --       %s' , project_name , all_cols_names, all_values , ARRAY_TO_STRING(update_cols , ' , '));
+  -- -- using NEW;
   return NEW;
 end;
 $$
