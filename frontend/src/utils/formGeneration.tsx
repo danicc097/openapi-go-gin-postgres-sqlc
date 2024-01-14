@@ -41,6 +41,8 @@ import { rem, useMantineTheme } from '@mantine/core'
 import { Icon123, IconMinus, IconPlus, IconTrash } from '@tabler/icons'
 import { pluralize, singularize } from 'inflection'
 import _, { concat, flatten, isArray, lowerCase, lowerFirst, memoize, upperFirst } from 'lodash'
+import { Virtuoso } from 'react-virtuoso'
+
 import React, {
   useState,
   type ComponentProps,
@@ -1138,7 +1140,11 @@ function CustomMultiselect({
             mah={200} // scrollable
             style={{ overflowY: 'auto' }}
           >
-            {comboboxOptions}
+            <Virtuoso
+              style={{ height: '400px' }}
+              totalCount={comboboxOptions.length}
+              itemContent={(index) => comboboxOptions[index]}
+            />
           </Combobox.Options>
         </Combobox.Dropdown>
       </Combobox>

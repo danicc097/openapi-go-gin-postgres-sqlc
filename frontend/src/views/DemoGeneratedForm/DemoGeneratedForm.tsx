@@ -185,7 +185,7 @@ const uuids = [
 // TODO: use https://github.com/petyosi/react-virtuoso
 // for custommultiselect and customselect (as well as regular selects if needed)
 // both custom implemenetations use Combobox which doesn't offer a limit prop
-const tags = [...Array(10)].map((x, i) => {
+const tags = [...Array(1000)].map((x, i) => {
   const tag: DbWorkItemTag = {
     name: `tag #${i}`,
     color: _.sample(colorBlindPalette)!,
@@ -213,14 +213,17 @@ export default function DemoGeneratedForm() {
   const { user } = useAuthenticatedUser()
 
   // FIXME: infinite rerender if not disabling.
-  const useUsers = useGetPaginatedUsers({ direction: 'desc', cursor: new Date().toISOString(), limit: 0 })
+  const useUsers = useGetPaginatedUsers(
+    { direction: 'desc', cursor: new Date().toISOString(), limit: 0 },
+    { query: { enabled: false } },
+  )
 
-  // useEffect(() => {
-  //   if (!useUsers.data && !useUsers.isFetching && user) {
-  //     console.log({ status: useUsers.status })
-  //     useUsers.refetch()
-  //   }
-  // }, [useUsers.isFetching, useUsers.data, user]) // only subscribe to specific react-query state, else inf request spam
+  useEffect(() => {
+    if (!useUsers.data && !useUsers.isFetching && user) {
+      console.log({ status: useUsers.status })
+      useUsers.refetch()
+    }
+  }, [useUsers.isFetching, useUsers.data, user]) // only subscribe to specific react-query state, else inf request spam
 
   const userIdSelectOption = selectOptionsBuilder({
     type: 'select',
