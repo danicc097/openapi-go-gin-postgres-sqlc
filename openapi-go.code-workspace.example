@@ -5,6 +5,9 @@
     },
     {
       "path": "e2e"
+    },
+    {
+      "path": "frontend"
     }
   ],
   "settings": {
@@ -86,7 +89,38 @@
       "pnpm",
       "ast-parser"
     ],
-    "vscode-command-help.pre": "source .envrc"
+    //
+    // SQL
+    //
+    "pgFormatter.configFile": "${workspaceFolder}/.pg_format",
+    // as per extension docs, else they're overridden with defaults...
+    // https://github.com/bradymholt/vscode-pgFormatter#configuration
+    // NOTE: in config "sqlc\\.(arg|narg)\\(:?[^)]*\\)" escapes with single \
+    "pgFormatter.placeholder": null,
+    "pgFormatter.commaBreak": null,
+    "pgFormatter.noSpaceFunction": null,
+    "pgFormatter.commaEnd": null,
+    "pgFormatter.commaStart": null,
+    "pgFormatter.extraFunction": null,
+    "pgFormatter.formatType": null,
+    "pgFormatter.functionCase": null,
+    "pgFormatter.keepNewline": null,
+    "pgFormatter.keywordCase": null,
+    "pgFormatter.noComment": null,
+    "pgFormatter.noExtraLine": null,
+    "pgFormatter.noGrouping": null,
+    "pgFormatter.perlBinPath": null,
+    "pgFormatter.pgFormatterPath": null,
+    "pgFormatter.spaces": null,
+    "pgFormatter.tabs": null,
+    "pgFormatter.typeCase": null,
+    "pgFormatter.wrapComment": null,
+    "pgFormatter.wrapLimit": null,
+    "vscode-command-help.pre": "source .envrc",
+    "typescript.tsdk": "frontend/node_modules/typescript/lib",
+    "cSpell.words": [
+      "ifaces"
+    ],
     "launch": {
       "version": "0.2.0",
       "configurations": [
