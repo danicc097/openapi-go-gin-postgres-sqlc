@@ -24,29 +24,32 @@ begin
       if not project_exists then
         raise exception 'Project table "%" does not exist' , t;
       end if;
-      -- work_items_columns := array[]::text[];
-      -- project_columns := array[]::text[];
-      -- -- Extract work_items table columns to a text[]
-      -- select
-      --   ARRAY_AGG(column_name) into work_items_columns
-      -- from
-      --   information_schema.columns
-      -- where
-      --   table_name = 'work_items';
-      -- -- Extract project table columns to a text[]
-      -- select
-      --   ARRAY_AGG(column_name) into project_columns
-      -- from
-      --   information_schema.columns
-      -- where
-      --   table_name = t;
-      -- -- Check for column name conflicts
-      -- if work_items_columns && project_columns then
-      --   raise exception 'Column names overlap between work_items and project table "%".
-      --   work_items_columns: %
-      --   project_columns: %
-      --   ' , t , work_items_columns , project_columns;
-      -- end if;
+
+      select
+        ARRAY_AGG(column_name) into work_items_columns
+      from
+        information_schema.columns
+      where
+        table_name = 'work_items'
+        and table_schema = 'public';
+
+      select
+        ARRAY_AGG(column_name) into project_columns
+      from
+        information_schema.columns
+      where
+        table_name = t
+        and table_schema = 'public'
+        --PK is FK
+        and column_name != 'work_item_id';
+      -- Check for column name clashing.
+      -- we will autogenerate and maintain cache schema tables so they must be unique.
+      if work_items_columns && project_columns then
+        raise exception '
+	column names overlap between work_items and project table "%".
+    work_items_columns: %
+    project_columns: % ' , t , work_items_columns , project_columns;
+      end if;
     end loop;
 end;
 $BODY$
