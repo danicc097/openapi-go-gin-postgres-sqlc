@@ -8,6 +8,17 @@
     }
   ],
   "settings": {
+    // see https://github.com/yokoe/vscode-postfix-go/blob/master/src/templates/customTemplate.ts#L5
+    "postfixGo.customTemplates": [
+      {
+        "name": "my_switch",
+        "body": "switch ${1:{{expr}}} {\ncase ${2:condition}: \n${0}\n}",
+        "description": "A custom switch",
+        "when": [
+          "identifier"
+        ]
+      },
+    ],
     "cssVariables.lookupFiles": [
       "**/*.css",
       "**/*.scss",
