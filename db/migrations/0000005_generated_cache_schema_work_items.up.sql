@@ -38,7 +38,8 @@ declare
   all_cols_names text;
   all_values record;
   all_values_columns text[];
-  wid bigint;
+  res record;
+  all_column_data_types text[];
 begin
   project_name := TG_ARGV[0];
   -- Make sure the project table exists
@@ -52,12 +53,23 @@ begin
     and c.relname = project_name
     and c.relkind = 'r';
 
-  select
-    new.work_item_id into wid;
-
   if not FOUND then
     raise exception 'Project table "%" does not exist' , project_name;
   end if;
+
+  select
+    -- ARRAY_AGG(column_name)
+    ARRAY_AGG(data_type)
+  from
+    information_schema.columns
+  where
+    table_name = 'work_items'
+    or table_name = 'demo_work_items'
+    and not (table_name = 'demo_work_items'
+      and column_name = 'work_item_id') -- PK is FK
+    and table_schema = 'public' into all_column_data_types;
+
+  raise notice 'datatypes: %' , all_column_data_types;
   -- Dynamically fetch column names
   execute FORMAT('
         SELECT ARRAY_AGG(column_name)
@@ -97,53 +109,44 @@ begin
   -- see https://stackoverflow.com/questions/40687267/how-to-update-all-columns-with-insert-on-conflict
   -- for simpler sync with cache.%I
   -- we assume there are no side effects when deleting.
-  execute FORMAT( '
-  with data (
-    work_item_id
-) as (
-    select
+  execute FORMAT('select
       %s
     from
       work_items wi
       join demo_work_items using (work_item_id)
     where
       wi.work_item_id = $1
-)
-, del as (
-  delete from cache.demo_work_items as t using data d
-where t.work_item_id = d.work_item_id
-  -- AND    t <> d              -- optional, to avoid empty updates
-) -- only works for complete rows
-insert into cache.demo_work_items as t table data -- short for: SELECT * FROM data
-on conflict (work_item_id)
-  do nothing
-returning
-  t.work_item_id;
-  '
-    , all_cols_names)
+  ' , all_cols_names) into res
   using new.work_item_id;
-  -- execute FORMAT('
-  --       SELECT *
-  --       FROM work_items wi
-  --       JOIN %I USING (work_item_id)
-  --       WHERE wi.work_item_id = $1' , project_name) into all_values
-  -- using new.work_item_id;
-  -- -- FIXME: get column names of all_values and use that instead of all_cols_names...
-  -- -- this is overly complicated for no reason.
-  -- -- all_values_columns := ARRAY_TO_STRING(array (
-  -- --     select
-  -- --       *
-  -- --     from PG_TYPEOF(all_values)) , ', ');
-  -- raise notice 'all_values_columns: %' , all_values_columns;
-  -- raise notice 'all_values: %' , all_values;
-  -- -- TODO: these come from all columns in the NEW KEYWORD
-  -- -- Get values for work_items_cols once and use them in the subsequent INSERT INTO ... VALUES ...
-  -- raise notice 'sssss %' , FORMAT(' insert into cache.%I (%s)
-  --     values (%s)
-  --   on conflict (work_item_id)
-  --     do update set
-  --       %s' , project_name , all_cols_names, all_values , ARRAY_TO_STRING(update_cols , ' , '));
-  -- -- using NEW;
+
+  raise notice '% ' , res;
+
+  execute FORMAT('
+  WITH data AS (
+    SELECT
+      %s
+    FROM
+      work_items wi
+      JOIN demo_work_items USING (work_item_id)
+    WHERE
+      wi.work_item_id = $1
+  )
+  , del AS (
+    DELETE FROM cache.demo_work_items AS t USING data d
+    WHERE t.work_item_id = d.work_item_id
+  )
+  INSERT INTO cache.demo_work_items AS t TABLE data
+  ON CONFLICT (work_item_id) DO NOTHING
+  RETURNING t.work_item_id
+' , ARRAY_TO_STRING(array (
+        select
+          FORMAT('%I::%s' , column_name , FORMAT_TYPE(column_data_type , -1))
+        from information_schema.columns
+        where
+          table_name = 'work_items'
+          and table_schema = 'public' order by ordinal_position) , ', '))
+  using new.work_item_id;
+
   return NEW;
 end;
 $$
