@@ -193,14 +193,6 @@ const tags = [...Array(1000)].map((x, i) => {
   return tag
 })
 
-// mock super slow at 1000. virtuoso working as expected.
-const members = [...Array(10)].map((x, i) => {
-  const user = getGetCurrentUserMock()
-  user.email = `${i}@mail.com`
-  user.userID = i < uuids.length ? uuids[i]! : uuidv4()
-  return user
-})
-
 export default function DemoGeneratedForm() {
   // TODO: /users where deleted_at null
   // will be used on generated filterable mantine datatable table as in
@@ -210,7 +202,7 @@ export default function DemoGeneratedForm() {
 
   const { user } = useAuthenticatedUser()
 
-  // FIXME: infinite rerender if not disabling.
+  // FIXME: infinite rerender if enabled.
   const useUsers = useGetPaginatedUsers(
     { direction: 'desc', cursor: new Date().toISOString(), limit: 0 },
     { query: { enabled: false } },
@@ -222,29 +214,6 @@ export default function DemoGeneratedForm() {
       useUsers.refetch()
     }
   }, [useUsers.isFetching, useUsers.data, user]) // only subscribe to specific react-query state, else inf request spam
-
-  const userIdSelectOption = selectOptionsBuilder({
-    type: 'select',
-    values: members,
-    //  TODO: transformers can be reusable between forms. could simply become
-    //  {
-    //   type: "select"
-    //   values: ...
-    //   ...userIdFormTransformers
-    // }
-    optionTransformer(el) {
-      return <UserComboboxOption user={el} />
-    },
-    formValueTransformer(el) {
-      return el.userID
-    },
-    pillTransformer(el) {
-      return <>{el.email}</>
-    },
-    searchValueTransformer(el) {
-      return `${el.email} ${el.fullName} ${el.username}`
-    },
-  })
 
   const formInitialValues = {
     base: {
@@ -335,6 +304,31 @@ export default function DemoGeneratedForm() {
   // }, [demoWorkItemCreateForm])
 
   type ExcludedFormKeys = 'base.metadata' | 'tagIDsMultiselect'
+
+  const members = useUsers.data?.items
+
+  const userIdSelectOption = selectOptionsBuilder({
+    type: 'select',
+    values: members ?? [],
+    //  TODO: transformers can be reusable between forms. could simply become
+    //  {
+    //   type: "select"
+    //   values: ...
+    //   ...userIdFormTransformers
+    // }
+    optionTransformer(el) {
+      return <UserComboboxOption user={el} />
+    },
+    formValueTransformer(el) {
+      return el.userID
+    },
+    pillTransformer(el) {
+      return <>{el.email}</>
+    },
+    searchValueTransformer(el) {
+      return `${el.email} ${el.fullName} ${el.username}`
+    },
+  })
 
   return (
     <>
