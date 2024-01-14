@@ -144,8 +144,6 @@ export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends u
   labelColor,
 })
 
-export const RHFInvalidDate = 'invalid date'
-
 export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>): InputOptions<Return, V> => ({
   component,
 })
@@ -670,8 +668,7 @@ const convertValueByType = (type: SchemaField['type'] | undefined, value) => {
   switch (type) {
     case 'date':
     case 'date-time':
-      // for some reason on hot reload we get invalid date error in form
-      return validDateFormValue(value) ? new Date(value) : undefined
+      return value ? new Date(value) : undefined
     default:
       return value
   }
@@ -692,7 +689,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   const { onChange: registerOnChange, ...registerProps } = form.register(formField, {
     ...(type === 'date' || type === 'date-time'
       ? // TODO: use convertValueByType
-        { valueAsDate: true, setValueAs: (v) => (validDateFormValue(v) ? new Date(v) : undefined) }
+        { valueAsDate: true, setValueAs: (v) => (v === '' ? undefined : new Date(v)) }
       : type === 'integer'
       ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseInt(v, 10)) }
       : type === 'number'
@@ -709,8 +706,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 1).join('.') as FormField
 
   const formValue = form.getValues(formField)
-
-  console.log({ formValue })
 
   if (formValue === null || formValue === undefined) {
     const defaultValue = options.defaultValues?.[schemaKey]
@@ -998,10 +993,6 @@ type CustomMultiselectProps = {
   itemName: string
 }
 
-function validDateFormValue(value: any): boolean {
-  return value && value !== '' && String(value).toLowerCase() !== RHFInvalidDate
-}
-
 function CustomMultiselect({
   formField,
   registerOnChange,
@@ -1150,14 +1141,11 @@ function CustomMultiselect({
             mah={200} // scrollable
             style={{ overflowY: 'auto' }}
           >
-            <ScrollArea.Autosize mah={200} type="always">
+            <ScrollArea.Autosize mah={200} type="scroll">
               <Virtuoso
                 style={{ height: '200px' }} // match height with autosize
                 totalCount={comboboxOptions.length}
                 itemContent={(index) => comboboxOptions[index]}
-                components={{
-                  Scroller: React.forwardRef((props, ref) => <div ref={ref} {...props} />),
-                }}
               />
             </ScrollArea.Autosize>
           </Combobox.Options>
@@ -1279,14 +1267,11 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
             style={{ overflowY: 'auto' }}
           >
             {comboboxOptions.length > 0 ? (
-              <ScrollArea.Autosize mah={200} type="always">
+              <ScrollArea.Autosize mah={200} type="scroll">
                 <Virtuoso
                   style={{ height: '200px' }} // match height with autosize
                   totalCount={comboboxOptions.length}
                   itemContent={(index) => comboboxOptions[index]}
-                  components={{
-                    Scroller: React.forwardRef((props, ref) => <div ref={ref} {...props} />),
-                  }}
                 />
               </ScrollArea.Autosize>
             ) : (

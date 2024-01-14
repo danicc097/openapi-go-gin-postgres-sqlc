@@ -193,6 +193,45 @@ const tags = [...Array(1000)].map((x, i) => {
   return tag
 })
 
+// cannot be inside component, else invalid date returned by mantine dates and RHF
+const formInitialValues = {
+  base: {
+    items: [
+      {
+        items: ['0001', '0002'],
+        userId: ['120cb364-2b18-49fb-b505-568834614c5d', 'fcd252dc-72a4-4514-bdd1-3cac573a5fac'],
+        name: 'item-1',
+      },
+      { items: ['0011', '0012'], userId: ['badid', 'badid2'], name: 'item-2' },
+    ],
+    // closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
+    targetDate: dayjs('2023-02-22').toDate(),
+    description: 'some text',
+    kanbanStepID: 1,
+    teamID: 1,
+    metadata: {},
+    // title: {},
+    workItemTypeID: 1,
+  },
+  // TODO: formGeneration must not assume options do exist, else all fails catastrophically.
+  // it's not just checking types...
+  // 1. move callout errors state to zustand, and create callout warnings too
+  // 2.(sol 1) if option not found for initial data, remove from form values
+  // and show persistent callout _warning_ that X was deleted since it was not found.
+  // it should update the form but show callout error saying ignoring bad type in `formField`, in this case `tagIDs.1`
+  // 2. (sol 2 which wont work) leave form as is and validate on first render will not catch errors for options not found, if type is right...
+  tagIDs: [1, 2, 'badid'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
+  tagIDsMultiselect: null,
+  // tagIDs: [0, 5, 8],
+  demoProject: {
+    lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
+    ref: '12341234',
+    workItemID: 1,
+    reopened: false, // for create will ignore field for form gen
+  },
+  members: [{ userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65' }, { role: 'preparer', userID: 'bad userID' }],
+} as TestTypes.DemoWorkItemCreateRequest
+
 export default function DemoGeneratedForm() {
   // TODO: /users where deleted_at null
   // will be used on generated filterable mantine datatable table as in
@@ -214,44 +253,6 @@ export default function DemoGeneratedForm() {
       useUsers.refetch()
     }
   }, [useUsers.isFetching, useUsers.data, user]) // only subscribe to specific react-query state, else inf request spam
-
-  const formInitialValues = {
-    base: {
-      items: [
-        {
-          items: ['0001', '0002'],
-          userId: ['120cb364-2b18-49fb-b505-568834614c5d', 'fcd252dc-72a4-4514-bdd1-3cac573a5fac'],
-          name: 'item-1',
-        },
-        { items: ['0011', '0012'], userId: ['badid', 'badid2'], name: 'item-2' },
-      ],
-      // closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-      targetDate: dayjs('2023-02-22').toDate(),
-      description: 'some text',
-      kanbanStepID: 1,
-      teamID: 1,
-      metadata: {},
-      // title: {},
-      workItemTypeID: 1,
-    },
-    // TODO: formGeneration must not assume options do exist, else all fails catastrophically.
-    // it's not just checking types...
-    // 1. move callout errors state to zustand, and create callout warnings too
-    // 2.(sol 1) if option not found for initial data, remove from form values
-    // and show persistent callout _warning_ that X was deleted since it was not found.
-    // it should update the form but show callout error saying ignoring bad type in `formField`, in this case `tagIDs.1`
-    // 2. (sol 2 which wont work) leave form as is and validate on first render will not catch errors for options not found, if type is right...
-    tagIDs: [1, 2, 'badid'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
-    tagIDsMultiselect: null,
-    // tagIDs: [0, 5, 8],
-    demoProject: {
-      lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-      ref: '12341234',
-      workItemID: 1,
-      reopened: false, // for create will ignore field for form gen
-    },
-    members: [{ userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65' }, { role: 'preparer', userID: 'bad userID' }],
-  } as TestTypes.DemoWorkItemCreateRequest
 
   const form = useForm<TestTypes.DemoWorkItemCreateRequest>({
     resolver: ajvResolver(schema as any, {
