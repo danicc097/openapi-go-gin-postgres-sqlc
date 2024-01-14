@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import 'src/assets/css/fonts.css'
 import 'src/assets/css/overrides.css'
 import 'src/assets/css/pulsate.css'
@@ -94,6 +94,28 @@ const ProjectManagementPage = React.lazy(() => import('src/views/Admin/ProjectMa
 
 const colorSchemeManager = localStorageColorSchemeManager({ key: 'theme' })
 
+const routes = {
+  '/project': <Project />,
+  '/': <h1>Home</h1>,
+  '/settings/user-permissions-management': (
+    <ProtectedRoute>
+      <UserPermissionsPage />
+    </ProtectedRoute>
+  ),
+  '/demo/generated-form': <DemoGeneratedForm />,
+  // TODO: update from eui
+  // '/admin/project-management': (
+  //   <ProtectedRoute>
+  //     <ProjectManagementPage />
+  //   </ProtectedRoute>
+  // ),
+  '*': (
+    <ProtectedRoute>
+      <ErrorPage status={HttpStatus.NOT_FOUND_404} />
+    </ProtectedRoute>
+  ),
+}
+
 export default function App() {
   useEffect(() => {
     document.body.style.background = 'none !important' // body was preventing flashes
@@ -133,53 +155,28 @@ export default function App() {
               <AppTourProvider>
                 <Layout>
                   <Routes>
-                    <Route path="/project" element={<Project />} />
-                    <Route
-                      path="/"
-                      element={
-                        <React.Suspense fallback={<FallbackLoading />}>
-                          <h1>Home</h1>
-                        </React.Suspense>
-                      }
-                    />
-                    <Route
-                      path="/settings/user-permissions-management"
-                      element={
-                        <React.Suspense fallback={<FallbackLoading />}>
-                          <ProtectedRoute>
-                            <UserPermissionsPage />
-                          </ProtectedRoute>
-                        </React.Suspense>
-                      }
-                    />
-                    <Route
-                      path="/demo/generated-form"
-                      element={
-                        <React.Suspense fallback={<FallbackLoading />}>
-                          <DemoGeneratedForm />
-                        </React.Suspense>
-                      }
-                    />
-                    <Route
-                      path="/admin/project-management"
-                      element={
-                        <React.Suspense fallback={<FallbackLoading />}>
-                          <ProtectedRoute>
-                            <ProjectManagementPage />
-                          </ProtectedRoute>
-                        </React.Suspense>
-                      }
-                    />
-                    <Route
-                      path="*"
-                      element={
-                        <React.Suspense fallback={<FallbackLoading />}>
-                          <ProtectedRoute>
-                            <ErrorPage status={HttpStatus.NOT_FOUND_404} />
-                          </ProtectedRoute>
-                        </React.Suspense>
-                      }
-                    />
+                    {Object.entries(routes).map(([path, component], index) => (
+                      <Route
+                        key={index}
+                        path={path}
+                        element={
+                          path === '/' ? (
+                            <React.Suspense fallback={<FallbackLoading />}>
+                              <h1>Home</h1>
+                              <ul>
+                                {Object.keys(routes).map((routePath) => (
+                                  <li key={routePath}>
+                                    <Link to={routePath}>{routePath}</Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            </React.Suspense>
+                          ) : (
+                            <React.Suspense fallback={<FallbackLoading />}>{component}</React.Suspense>
+                          )
+                        }
+                      />
+                    ))}
                   </Routes>
                 </Layout>
               </AppTourProvider>
