@@ -25,7 +25,6 @@ begin
     if (target is null) then
       target = '{}'::jsonb;
     end if;
-
     FOREACH k in array path loop
       p := p || k;
       if (target #> p is null) then
@@ -216,7 +215,6 @@ begin
     insert into user_notifications (notification_id , user_id)
       values (new.notification_id , new.receiver);
   end if;
-
   if new.notification_type = 'global' then
     update
       users

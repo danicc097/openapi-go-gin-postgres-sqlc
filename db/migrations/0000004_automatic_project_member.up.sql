@@ -93,11 +93,9 @@ begin
     up.project_id = new.project_id
     -- automatically include user with these scopes in all new teams
     and users.scopes @> '{"project-member"}' into users_to_include;
-
   if (users_to_include is null) then
     return new;
   end if;
-
   FOREACH uid in array users_to_include loop
     execute FORMAT('
             INSERT INTO user_team (member, team_id)
@@ -106,9 +104,7 @@ begin
             DO NOTHING;
         ' , uid , new.team_id);
   end loop;
-
   raise notice 'team id % initialized with user ids: % ' , new.team_id , users_to_include;
-
   return NEW;
 end;
 $BODY$
@@ -135,9 +131,7 @@ begin
     ut.member = new.member
   on conflict
     do nothing;
-
   raise notice 'user_project for  new.member and teamid % % ' , new.member , new.team_id;
-
   return NEW;
 end;
 $BODY$
@@ -147,32 +141,42 @@ create trigger sync_user_projects
   after insert or update on user_team for each row
   execute function sync_user_projects ();
 
-CREATE OR REPLACE FUNCTION create_dynamic_table(project_name text)
-  RETURNS VOID AS $$
-DECLARE
+create or replace function create_dynamic_table (project_name text)
+  returns VOID
+  as $$
+declare
   project_table_col_and_type text;
   work_items_col_and_type text;
-BEGIN
+  existing_cols text[];
+  col text;
+begin
   -- Dynamically fetch column names and data types from work_items
-  EXECUTE '
+  execute '
         SELECT string_agg(column_name || '' '' || data_type, '', '')
         FROM information_schema.columns
-        WHERE table_name = ''work_items'' AND table_schema = ''public''' INTO work_items_col_and_type;
-
+        WHERE table_name = ''work_items'' AND table_schema = ''public''' into work_items_col_and_type;
   -- Dynamically fetch column names and data types from the project_table
-  EXECUTE FORMAT('
+  execute FORMAT('
         SELECT string_agg(column_name || '' '' || data_type, '', '')
         FROM information_schema.columns
-        WHERE table_name = ''%I'' AND table_schema = ''public'' AND column_name != ''work_item_id''', project_name) INTO project_table_col_and_type;
-
+        WHERE table_name = ''%I'' AND table_schema = ''public'' AND column_name != ''work_item_id''' , project_name) into project_table_col_and_type;
   -- Dynamically create the cache.demo_work_items table
-  EXECUTE 'CREATE SCHEMA IF NOT EXISTS cache;';
-  EXECUTE FORMAT('CREATE TABLE IF NOT EXISTS cache.%I (%s)', project_name, project_table_col_and_type || ',' || work_items_col_and_type);
-
-  RAISE NOTICE 'Table created for % with fields: %', project_name, project_table_col_and_type || ',' || work_items_col_and_type;
-END;
-$$ LANGUAGE plpgsql;
-
+  execute 'CREATE SCHEMA IF NOT EXISTS cache;';
+  execute FORMAT('CREATE TABLE IF NOT EXISTS cache.%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type);
+  execute FORMAT('
+        SELECT array_agg(column_name)
+        FROM information_schema.columns
+        WHERE table_schema = ''cache'' AND table_name = ''%I''' , project_name) into existing_cols;
+  -- Add missing columns
+  FOREACH col in array existing_cols loop
+    -- FIXME: syntax error at end of input
+    -- execute FORMAT('
+    --     ALTER TABLE cache.%I ADD COLUMN IF NOT EXISTS %s' , project_name , col);
+  end loop;
+  raise notice 'Table created/modified for % with fields: %' , project_name , project_table_col_and_type || ',' || work_items_col_and_type;
+end;
+$$
+language plpgsql;
 
 -- TODO: for project in projects table
 select
@@ -199,7 +203,6 @@ begin
     n.nspname = 'public'
     and c.relname = project_name
     and c.relkind = 'r';
-
   if not FOUND then
     raise exception 'Project table "%" does not exist' , project_name;
   end if;
@@ -212,7 +215,6 @@ begin
         SELECT ARRAY_AGG(column_name)
         FROM information_schema.columns
         WHERE table_name = ''work_items'' AND table_schema = ''public''' into work_items_cols;
-
   raise notice 'work_items_cols: %' , work_items_cols;
   -- Construct the list of columns to synchronize
   sync_cols := array (
@@ -234,7 +236,6 @@ begin
       column_name || ' = wi.' || column_name
     from
       UNNEST(work_items_cols) as column_name);
-
   -- TODO: should exit early on clashing column names.
   -- need a trigger like post-migration/2-check-projects.sql so its catched in development
   -- Dynamically execute the synchronization query
@@ -248,16 +249,13 @@ begin
         JOIN work_items wi USING (work_item_id)
         ON CONFLICT (work_item_id) DO UPDATE
         SET %s
-    ' , project_name ,
-    ARRAY_TO_STRING(array (
+    ' , project_name , ARRAY_TO_STRING(array (
         select
           UNNEST(project_table_cols)
       union
       select
-        UNNEST(work_items_cols)) , ',') ,
-    ARRAY_TO_STRING(sync_cols , ', ') , project_name ,
-    ARRAY_TO_STRING(update_cols , ', '));
-
+	UNNEST(work_items_cols)) , ',') , ARRAY_TO_STRING(sync_cols , ', ') , project_name ,
+	  ARRAY_TO_STRING(update_cols , ', '));
   return NEW;
 end;
 $$

@@ -1093,17 +1093,9 @@ x.lint.sql() {
       "db"
     )
     for slq_dir in ${SQL_DIRS[@]}; do
-      pg_format \
-        --spaces 2 \
-        --wrap-limit 130 \
-        --function-case 2 \
-        --keyword-case 1 \
-        --placeholder "sqlc\\.(arg|narg)\\(:?[^)]*\\)" \
-        --inplace \
-        --keep-newline \
-        --comma-start \
-        --nogrouping \
-        $(find "$slq_dir" -name '*.*sql')
+      # TODO:
+      # "pgFormatter.configFile": "./<...>", so we can use it in vscode settings too
+      pg_format --config .pg_format $(find "$slq_dir" -name '*.*sql')
     done
 
     echo "Success"
