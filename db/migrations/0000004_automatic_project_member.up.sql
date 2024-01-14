@@ -239,6 +239,9 @@ begin
   -- TODO: should exit early on clashing column names.
   -- need a trigger like post-migration/2-check-projects.sql so its catched in development
   -- Dynamically execute the synchronization query
+  -- IMPORTANT: we may have extra columns in cache.%I (flags like activity ongoing, pending actions, etc.)
+  -- therefore this will quickly render itself useless, unless all these flags are nullable
+  -- and we have triggers in place to update cache table (should be the default usecase)
   raise notice 'insert stmt: %' , FORMAT('
         INSERT INTO cache.%I (%s)
         SELECT %s
