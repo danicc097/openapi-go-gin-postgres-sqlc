@@ -39,7 +39,7 @@ declare
   all_values record;
   all_values_columns text[];
   res record;
-  all_column_data_types text[];
+  all_columns_with_type text;
 begin
   project_name := TG_ARGV[0];
   -- Make sure the project table exists
@@ -58,18 +58,15 @@ begin
   end if;
 
   select
-    -- ARRAY_AGG(column_name)
-    ARRAY_AGG(data_type)
-  from
-    information_schema.columns
-  where
-    table_name = 'work_items'
-    or table_name = 'demo_work_items'
-    and not (table_name = 'demo_work_items'
-      and column_name = 'work_item_id') -- PK is FK
-    and table_schema = 'public' into all_column_data_types;
+    ARRAY_TO_STRING(array (
+        select
+          FORMAT('%I::%s' , column_name , data_type)
+        from information_schema.columns
+        where
+          table_name = 'work_items'
+          and table_schema = 'public' order by ordinal_position) , ', ') into all_columns_with_type;
 
-  raise notice 'datatypes: %' , all_column_data_types;
+  raise notice 'datatypes: %' , all_columns_with_type;
   -- Dynamically fetch column names
   execute FORMAT('
         SELECT ARRAY_AGG(column_name)
@@ -121,30 +118,20 @@ begin
 
   raise notice '% ' , res;
 
-  execute FORMAT('
-  WITH data AS (
-    SELECT
-      %s
-    FROM
-      work_items wi
-      JOIN demo_work_items USING (work_item_id)
-    WHERE
-      wi.work_item_id = $1
-  )
-  , del AS (
-    DELETE FROM cache.demo_work_items AS t USING data d
-    WHERE t.work_item_id = d.work_item_id
-  )
-  INSERT INTO cache.demo_work_items AS t TABLE data
-  ON CONFLICT (work_item_id) DO NOTHING
-  RETURNING t.work_item_id
-' , ARRAY_TO_STRING(array (
-        select
-          FORMAT('%I::%s' , column_name , FORMAT_TYPE(column_data_type , -1))
-        from information_schema.columns
+  execute FORMAT(' with data as (
+      select
+        %s
+        from work_items wi
+        join demo_work_items using (work_item_id)
         where
-          table_name = 'work_items'
-          and table_schema = 'public' order by ordinal_position) , ', '))
+          wi.work_item_id = $1
+)
+, del as ( delete from cache.demo_work_items as t using data d
+  where t.work_item_id = d.work_item_id)
+insert into cache.demo_work_items as t table data on conflict (work_item_id)
+  do nothing
+returning
+  t.work_item_id ' , all_columns_with_type)
   using new.work_item_id;
 
   return NEW;
