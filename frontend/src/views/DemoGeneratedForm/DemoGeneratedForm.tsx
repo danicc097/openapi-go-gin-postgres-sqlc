@@ -59,6 +59,7 @@ import { colorSwatchComponentInputOption } from 'src/components/formGeneration/c
 import { useGetPaginatedUsers } from 'src/gen/user/user'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import { useFormSlice } from 'src/slices/form'
+import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
 
 const schema = {
   properties: {
@@ -241,18 +242,13 @@ export default function DemoGeneratedForm() {
 
   const { user } = useAuthenticatedUser()
 
-  // FIXME: infinite rerender if enabled.
-  const useUsers = useGetPaginatedUsers(
-    { direction: 'desc', cursor: new Date().toISOString(), limit: 0 },
-    { query: { enabled: false } },
-  )
+  useStopInfiniteRenders(10)
 
-  useEffect(() => {
-    if (!useUsers.data && !useUsers.isFetching && user) {
-      console.log({ status: useUsers.status })
-      useUsers.refetch()
-    }
-  }, [useUsers.isFetching, useUsers.data, user]) // only subscribe to specific react-query state, else inf request spam
+  // FIXME: infinite rerender if enabled.
+  const { data: usersData } = useGetPaginatedUsers(
+    { direction: 'desc', cursor: new Date().toISOString(), limit: 0 },
+    // { query: { enabled: false } },
+  )
 
   const form = useForm<TestTypes.DemoWorkItemCreateRequest>({
     resolver: ajvResolver(schema as any, {
@@ -279,21 +275,21 @@ export default function DemoGeneratedForm() {
   const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } =
     useCalloutErrors('demoWorkItemCreateForm')
 
-  useEffect(() => {
-    console.log('errors')
-    console.log(errors)
-    // if (Object.keys(errors).length > 0 && !errorSet) {
-    // setCalloutErrors('Validation error')
+  // useEffect(() => {
+  //   console.log('errors')
+  //   console.log(errors)
+  //   // if (Object.keys(errors).length > 0 && !errorSet) {
+  //   // setCalloutErrors('Validation error')
 
-    // console.log('errors')
-    // console.log(errors)
+  //   // console.log('errors')
+  //   // console.log(errors)
 
-    // setCalloutErrors('Validation error')
-    // seterrorSet(true)
-    // // console.log(formSLice.callout[formName])
-    // // console.log(`form has errors: ${Object.keys(errors).length > 0}`)
-    // }
-  }, [formState])
+  //   // setCalloutErrors('Validation error')
+  //   // seterrorSet(true)
+  //   // // console.log(formSLice.callout[formName])
+  //   // // console.log(`form has errors: ${Object.keys(errors).length > 0}`)
+  //   // }
+  // }, [formState])
 
   // useEffect(() => {
   //   console.log(demoWorkItemCreateForm.values)
@@ -306,11 +302,11 @@ export default function DemoGeneratedForm() {
 
   type ExcludedFormKeys = 'base.metadata' | 'tagIDsMultiselect'
 
-  const members = useUsers.data?.items
+  const users = usersData?.items
 
   const userIdSelectOption = selectOptionsBuilder({
     type: 'select',
-    values: members ?? [],
+    values: users ?? [],
     //  TODO: transformers can be reusable between forms. could simply become
     //  {
     //   type: "select"
