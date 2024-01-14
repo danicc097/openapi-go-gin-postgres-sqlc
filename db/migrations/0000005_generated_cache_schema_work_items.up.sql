@@ -4,8 +4,6 @@ create or replace function create_dynamic_table (project_name text)
 declare
   project_table_col_and_type text;
   work_items_col_and_type text;
-  existing_cols text[];
-  col text;
 begin
   -- Dynamically fetch column names and data types from work_items
   execute '
@@ -20,8 +18,9 @@ begin
   -- Dynamically create the cache.demo_work_items table
   execute 'CREATE SCHEMA IF NOT EXISTS cache;';
   execute FORMAT('CREATE TABLE IF NOT EXISTS cache.%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type);
-  -- IMPORTANT: we will use extra columns so logic to add will be messy, and to alter existing types would have to be done manually.
-  -- better do these steps manually, ie when doing migrations (triggers will fail on migration if not synced so there's no risk of out of date cache schema)
+  -- IMPORTANT: we will use extra cache table columns so logic to add/modify cols will be messy.
+  -- altering existing types would have to be done manually either way.
+  -- better do these steps manually since its just a duplicate statement, ie when doing migrations (triggers will fail on migration if not synced so there's no risk of out of date cache schema).
 end;
 $$
 language plpgsql;
@@ -67,7 +66,7 @@ begin
     from
       UNNEST(work_items_cols) as column_name) || array (
     select
-      'new.' || column_name || ' AS ' || column_name
+      'NEW.' || column_name || ' AS ' || column_name
     from
       UNNEST(project_table_cols) as column_name);
   -- Construct the list of columns for the ON CONFLICT DO UPDATE part
@@ -80,9 +79,7 @@ begin
       column_name || ' = wi.' || column_name
     from
       UNNEST(work_items_cols) as column_name);
-  -- TODO: should exit early on clashing column names.
-  -- need a trigger like post-migration/2-check-projects.sql so its catched in development
-  -- Dynamically execute the synchronization query
+  -- Dynamically execute the synchronization query.
   -- IMPORTANT: we may have extra columns in cache.%I (flags like activity ongoing, pending actions, etc.)
   -- therefore this will quickly render itself useless, unless all these flags are nullable
   -- and we have triggers in place to update cache table (should be the default usecase)
