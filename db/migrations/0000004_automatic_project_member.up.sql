@@ -147,35 +147,34 @@ create trigger sync_user_projects
   after insert or update on user_team for each row
   execute function sync_user_projects ();
 
-create or replace function create_dynamic_table (project_name text)
-  returns VOID
-  as $$
-declare
+CREATE OR REPLACE FUNCTION create_dynamic_table(project_name text)
+  RETURNS VOID AS $$
+DECLARE
   project_table_col_and_type text;
   work_items_col_and_type text;
-begin
+BEGIN
   -- Dynamically fetch column names and data types from work_items
-  execute '
+  EXECUTE '
         SELECT string_agg(column_name || '' '' || data_type, '', '')
         FROM information_schema.columns
-        WHERE table_name = ''work_items'' AND table_schema = ''public''' into work_items_col_and_type;
+        WHERE table_name = ''work_items'' AND table_schema = ''public''' INTO work_items_col_and_type;
 
-  project_table_col_and_type := project_table_col_and_type || ',';
-
-  execute FORMAT('
+  -- Dynamically fetch column names and data types from the project_table
+  EXECUTE FORMAT('
         SELECT string_agg(column_name || '' '' || data_type, '', '')
         FROM information_schema.columns
-        WHERE table_name = ''%I'' AND table_schema = ''public''' , project_name) into project_table_col_and_type;
+        WHERE table_name = ''%I'' AND table_schema = ''public'' AND column_name != ''work_item_id''', project_name) INTO project_table_col_and_type;
+
   -- Dynamically create the cache.demo_work_items table
-  execute 'CREATE SCHEMA if not exists cache;';
-  -- EXECUTE 'CREATE TABLE cache.demo_work_items (' || project_table_col_and_type || work_items_col_and_type || ')';
-  raise notice '% fields: %' , project_name , project_table_col_and_type;
-  raise notice 'work_item fields: %' , work_items_col_and_type;
+  EXECUTE 'CREATE SCHEMA IF NOT EXISTS cache;';
+  EXECUTE FORMAT('CREATE TABLE IF NOT EXISTS cache.%I (%s)', project_name, project_table_col_and_type || ',' || work_items_col_and_type);
 
-end;
-$$
-language plpgsql;
+  RAISE NOTICE 'Table created for % with fields: %', project_name, project_table_col_and_type || ',' || work_items_col_and_type;
+END;
+$$ LANGUAGE plpgsql;
 
+
+-- TODO: for project in projects table
 select
   create_dynamic_table ('demo_work_items');
 
@@ -250,16 +249,13 @@ begin
         ON CONFLICT (work_item_id) DO UPDATE
         SET %s
     ' , project_name ,
-    -- Concatenate all column names in order
     ARRAY_TO_STRING(array (
         select
           UNNEST(project_table_cols)
       union
       select
         UNNEST(work_items_cols)) , ',') ,
-    -- Constructing SELECT clause with wi. and NEW. prefixes
     ARRAY_TO_STRING(sync_cols , ', ') , project_name ,
-    -- Constructing SET clause for conflict resolution
     ARRAY_TO_STRING(update_cols , ', '));
 
   return NEW;
