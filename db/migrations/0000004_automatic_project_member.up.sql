@@ -111,8 +111,7 @@ $BODY$
 language plpgsql;
 
 create trigger sync_user_teams
-  after insert on teams
-  for each row
+  after insert on teams for each row
   execute function sync_user_teams ();
 
 -- assign user to team's project automatically.
@@ -139,8 +138,7 @@ $BODY$
 language plpgsql;
 
 create trigger sync_user_projects
-  after insert or update on user_team
-  for each row
+  after insert or update on user_team for each row
   execute function sync_user_projects ();
 
 create or replace function create_dynamic_table (project_name text)
@@ -264,8 +262,7 @@ $$
 language plpgsql;
 
 create trigger work_items_sync_trigger
-  after insert or update on demo_work_items
-  for each row
+  after insert or update on demo_work_items for each row
   execute function sync_work_items ('demo_work_items');
 
 -- INSERT INTO cache.demo_work_items (work_item_id,ref,line,last_message_at,reopened, <here would go work_items_cols>)

@@ -1,8 +1,7 @@
 ####
 # From: https://github.com/darold/pgFormatter/blob/master/doc/pg_format.conf.sample
 ####
-keep_newline=1
-keep=newline
+keep-newline=1
 # NOTE: Not in default config, required to have multiple input files
 inplace=1
 # Obscure all literals in queries, use to hide confidential data before formatting.

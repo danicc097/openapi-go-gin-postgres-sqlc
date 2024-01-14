@@ -248,8 +248,7 @@ $function$;
 
 -- deletes get cascaded
 create trigger notifications_fan_out
-  after insert on notifications
-  for each row
+  after insert on notifications for each row
   execute function notification_fan_out ();
 
 --
