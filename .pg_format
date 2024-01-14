@@ -2,7 +2,6 @@
 # From: https://github.com/darold/pgFormatter/blob/master/doc/pg_format.conf.sample
 ####
 keep_newline=1
-keep_newline=1
 keep=newline
 # NOTE: Not in default config, required to have multiple input files
 inplace=1
@@ -24,7 +23,7 @@ keyword-case=1
 type-case=1
 # Change the case of the PostgreSQL functions. Default is unchanged: 0.
 # Values: 0=>unchanged, 1=>lowercase, 2=>uppercase, 3=>capitalize.
-function-case=1
+function-case=2
 # Do not add an extra empty line at end of the output.
 no-extra-line=0
 # Maximum length of a query, it will be cutted above the given size. Default: no truncate.

@@ -19,11 +19,9 @@ begin
             and c.relname = t
             and c.relkind = 'r' -- only tables
 ) into project_exists;
-
       if not project_exists then
         raise exception 'Project table "%" does not exist' , t;
       end if;
-
     end loop;
 end;
 $BODY$
