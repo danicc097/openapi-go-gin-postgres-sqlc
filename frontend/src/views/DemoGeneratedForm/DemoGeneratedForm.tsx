@@ -182,9 +182,6 @@ const uuids = [
   'd59d3a5c-b99f-40aa-9419-75a2bbb0fd52',
 ]
 
-// TODO: use https://github.com/petyosi/react-virtuoso
-// for custommultiselect and customselect (as well as regular selects if needed)
-// both custom implemenetations use Combobox which doesn't offer a limit prop
 const tags = [...Array(1000)].map((x, i) => {
   const tag: DbWorkItemTag = {
     name: `tag #${i}`,
@@ -196,6 +193,7 @@ const tags = [...Array(1000)].map((x, i) => {
   return tag
 })
 
+// mock super slow at 1000. virtuoso working as expected.
 const members = [...Array(10)].map((x, i) => {
   const user = getGetCurrentUserMock()
   user.email = `${i}@mail.com`

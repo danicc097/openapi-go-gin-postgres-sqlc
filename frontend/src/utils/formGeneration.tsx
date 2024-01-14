@@ -32,6 +32,7 @@ import {
   InputBase,
   PillsInput,
   Pill,
+  ScrollArea,
 } from '@mantine/core'
 import classes from './form.module.css'
 import { DateInput, DateTimePicker } from '@mantine/dates'
@@ -1140,11 +1141,13 @@ function CustomMultiselect({
             mah={200} // scrollable
             style={{ overflowY: 'auto' }}
           >
-            <Virtuoso
-              style={{ height: '400px' }}
-              totalCount={comboboxOptions.length}
-              itemContent={(index) => comboboxOptions[index]}
-            />
+            <ScrollArea.Autosize mah={200} type="scroll">
+              <Virtuoso
+                style={{ height: '200px' }} // match height with autosize
+                totalCount={comboboxOptions.length}
+                itemContent={(index) => comboboxOptions[index]}
+              />
+            </ScrollArea.Autosize>
           </Combobox.Options>
         </Combobox.Dropdown>
       </Combobox>
@@ -1263,7 +1266,17 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
             mah={200} // scrollable
             style={{ overflowY: 'auto' }}
           >
-            {comboboxOptions.length > 0 ? comboboxOptions : <Combobox.Empty>Nothing found</Combobox.Empty>}
+            {comboboxOptions.length > 0 ? (
+              <ScrollArea.Autosize mah={200} type="scroll">
+                <Virtuoso
+                  style={{ height: '200px' }} // match height with autosize
+                  totalCount={comboboxOptions.length}
+                  itemContent={(index) => comboboxOptions[index]}
+                />
+              </ScrollArea.Autosize>
+            ) : (
+              <Combobox.Empty>Nothing found</Combobox.Empty>
+            )}
           </Combobox.Options>
         </Combobox.Dropdown>
       </Combobox>
