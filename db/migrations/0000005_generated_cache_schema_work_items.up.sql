@@ -62,9 +62,11 @@ begin
         select
           FORMAT('%I::%s' , column_name , data_type)
         from information_schema.columns
-        where
-          table_name = 'work_items'
-          and table_schema = 'public' order by ordinal_position) , ', ') into all_columns_with_type;
+        where (table_name = 'work_items'
+          or table_name = 'demo_work_items')
+        and not (table_name = 'demo_work_items'
+          and column_name = 'work_item_id') -- PK is FK
+        and table_schema = 'public' order by ordinal_position) , ', ') into all_columns_with_type;
 
   raise notice 'datatypes: %' , all_columns_with_type;
   -- Dynamically fetch column names
@@ -160,3 +162,37 @@ create trigger work_items_sync_trigger_demo_work_items
 -- reopened = EXCLUDED.reopened
 -- ,
 -- <here would go work_items_cols doing <col> = wi.<col>>
+-- with data as (
+--   select
+--     work_item_id::bigint
+--     , ref::text
+--     , title::text
+--     , description::text
+--     , line::text
+--     , last_message_at::timestamp with time zone
+--     , work_item_type_id::integer
+--     , metadata::jsonb
+--     , reopened::boolean
+--     , team_id::integer
+--     , kanban_step_id::integer
+--     , closed_at::timestamp with time zone
+--     , target_date::timestamp with time zone
+--     , created_at::timestamp with time zone
+--     , updated_at::timestamp with time zone
+--     , deleted_at::timestamp with time zone
+--   from
+--     work_items wi
+--     join demo_work_items using (work_item_id)
+--   where
+--     wi.work_item_id = 1
+-- )
+-- , del as (
+--   delete from cache.demo_work_items as t using data d
+-- -- cache t has  {ref,line,last_message_at,reopened,work_item_id,title,description,work_item_type_id,metadata,team_id,kanban_step_id,closed_at,target_date,created_at,updated_at,deleted_at}
+-- -- d has a single work_item_id...
+-- where t.work_item_id = d.work_item_id)
+-- insert into cache.demo_work_items as t table data
+-- on conflict (work_item_id)
+--   do nothing
+-- returning
+--   t.work_item_id
