@@ -20,7 +20,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -179,7 +178,7 @@ func main() {
 		users[i], err = userSvc.AssignTeam(ctx, pool, u.UserID, teamDemo.TeamID)
 		handleError(err)
 	}
-	format.PrintJSONByTag(users, "db")
+	// format.PrintJSONByTag(users, "db")
 
 	superAdmin, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo.TeamID)
 	handleError(err)
@@ -381,16 +380,17 @@ func main() {
 	fmt.Printf("testUser.UserID: %v\n", testUser.UserID)
 	err = wiSvc.AssignUsers(ctx, pool, demoWorkItems[0].WorkItemID, []services.Member{{Role: models.WorkItemRolePreparer, UserID: testUser.UserID}})
 	handleError(err)
+	// TODO: tests later with paginated from cache.<project_name>
 	// paginated queries have sortable id. for first query include previous results (-1 or -1 second)
 	// and then use returned cursor.
-	wis, err := db.WorkItemPaginatedByWorkItemID(ctx, pool, demoWorkItems[0].WorkItemID-1, models.DirectionAsc, db.WithWorkItemHavingClause(map[string][]any{
-		// adding inside where clause yields `aggregate functions are not allowed in WHERE, since it makes no sense.
-		//  see https://www.postgresql.org/docs/current/tutorial-agg.html
-		"$i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id))": {testUser.UserID},
-	}), db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, DemoWorkItem: true}))
-	handleError(err)
-	fmt.Printf("wis len: %v - First workitem found:\n", len(wis))
-	format.PrintJSONByTag(wis[0], "db")
+	// wis, err := db.WorkItemPaginatedByWorkItemID(ctx, pool, demoWorkItems[0].WorkItemID-1, models.DirectionAsc, db.WithWorkItemHavingClause(map[string][]any{
+	// 	// adding inside where clause yields `aggregate functions are not allowed in WHERE, since it makes no sense.
+	// 	//  see https://www.postgresql.org/docs/current/tutorial-agg.html
+	// 	"$i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id))": {testUser.UserID},
+	// }), db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, DemoWorkItem: true}))
+	// handleError(err)
+	// fmt.Printf("wis len: %v - First workitem found:\n", len(wis))
+	// format.PrintJSONByTag(wis[0], "db")
 }
 
 func errAndExit(out []byte, err error) {

@@ -146,3 +146,84 @@ language plpgsql;
 create trigger sync_user_projects
   after insert or update on user_team for each row
   execute function sync_user_projects ();
+
+
+CREATE OR REPLACE FUNCTION create_dynamic_table(project_name text)
+RETURNS VOID AS $$
+DECLARE
+    project_table_cols text;
+    work_items_cols text;
+BEGIN
+    -- Dynamically fetch column names and data types from work_items
+    EXECUTE '
+        SELECT string_agg(column_name || '' '' || data_type, '', '')
+        FROM information_schema.columns
+        WHERE table_name = ''work_items'' AND table_schema = ''public'''
+    INTO work_items_cols;
+
+    project_table_cols := project_table_cols || ',';
+
+    EXECUTE format('
+        SELECT string_agg(column_name || '' '' || data_type, '', '')
+        FROM information_schema.columns
+        WHERE table_name = ''%I'' AND table_schema = ''public''', project_name)
+    INTO project_table_cols;
+
+    -- Dynamically create the cache.demo_work_items table
+    EXECUTE 'CREATE SCHEMA if not exists cache;';
+    -- EXECUTE 'CREATE TABLE cache.demo_work_items (' || project_table_cols || work_items_cols || ')';
+    raise notice '% fields: %', project_name, project_table_cols;
+    raise notice 'work_item fields: %', work_items_cols;
+
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT create_dynamic_table('demo_work_items');
+
+
+CREATE OR REPLACE FUNCTION sync_work_items()
+RETURNS TRIGGER AS $$
+DECLARE
+    project_name text;
+    columns text;
+BEGIN
+    -- Retrieve the project name from TG_ARGV
+    project_name := TG_ARGV[0];
+
+    -- Check if the project table exists
+    PERFORM 1
+    FROM pg_catalog.pg_class c
+    JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relname = project_name
+      AND c.relkind = 'r';
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Project table "%" does not exist', project_name;
+    END IF;
+
+    -- Dynamically fetch the column names from the project table
+    EXECUTE format('
+        SELECT string_agg(column_name, '', '')
+        FROM information_schema.columns
+        WHERE table_name = ''%I'' AND table_schema = ''public''', project_name) INTO columns;
+
+    raise notice 'coluumns: %', columns;
+
+    -- Dynamically execute the synchronization query
+    raise notice 'Would have updated cache: %', format('
+        INSERT INTO cache.%I (%s)
+        SELECT %s
+        FROM public.work_items
+        -- TODO: ON CONFLICT work_item_id UPDATE SET
+    ', project_name, columns, columns);
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER work_items_sync_trigger
+AFTER INSERT OR UPDATE ON demo_work_items
+FOR EACH ROW
+EXECUTE FUNCTION sync_work_items('demo_work_items');
