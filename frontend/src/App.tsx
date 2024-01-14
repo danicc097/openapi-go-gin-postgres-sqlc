@@ -138,7 +138,7 @@ export default function App() {
                       path="/"
                       element={
                         <React.Suspense fallback={<FallbackLoading />}>
-                          <h1>Hello</h1>
+                          <h1>Home</h1>
                         </React.Suspense>
                       }
                     />

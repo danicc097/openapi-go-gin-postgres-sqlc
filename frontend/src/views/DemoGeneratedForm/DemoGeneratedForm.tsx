@@ -242,13 +242,12 @@ export default function DemoGeneratedForm() {
 
   const { user } = useAuthenticatedUser()
 
+  const [cursor, setCursor] = useState(new Date().toISOString())
+
   useStopInfiniteRenders(10)
 
-  // FIXME: infinite rerender if enabled.
-  const { data: usersData } = useGetPaginatedUsers(
-    { direction: 'desc', cursor: new Date().toISOString(), limit: 0 },
-    // { query: { enabled: false } },
-  )
+  // watch out for queryKey slugs having dynamic values (like new Date() or anything generated)
+  const { data: usersData } = useGetPaginatedUsers({ direction: 'desc', cursor, limit: 0 })
 
   const form = useForm<TestTypes.DemoWorkItemCreateRequest>({
     resolver: ajvResolver(schema as any, {

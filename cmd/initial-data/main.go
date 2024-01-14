@@ -19,6 +19,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -127,7 +128,8 @@ func main() {
 	for i := 0; i < 10; i++ {
 		u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
 			Username:   "user_" + strconv.Itoa(i),
-			FirstName:  pointers.New("Name " + strconv.Itoa(i)),
+			FirstName:  pointers.New(testutil.RandomFirstName()),
+			LastName:   pointers.New(testutil.RandomLastName()),
 			Email:      "user_" + strconv.Itoa(i) + "@mail.com",
 			ExternalID: "external_id_user_" + strconv.Itoa(i),
 			// Scopes: []models.Scope{models.}, // TODO:
