@@ -34,6 +34,9 @@ declare
   work_items_cols text[];
   sync_cols text[];
   update_cols text[];
+  work_item_col_values text;
+  project_table_col_values text;
+  all_cols text;
 begin
   project_name := TG_ARGV[0];
   -- Make sure the project table exists
@@ -46,6 +49,7 @@ begin
     n.nspname = 'public'
     and c.relname = project_name
     and c.relkind = 'r';
+
   if not FOUND then
     raise exception 'Project table "%" does not exist' , project_name;
   end if;
@@ -54,10 +58,12 @@ begin
         SELECT ARRAY_AGG(column_name)
         FROM information_schema.columns
         WHERE table_name = ''%I'' AND table_schema = ''public''' , project_name) into project_table_cols;
+
   execute '
         SELECT ARRAY_AGG(column_name)
         FROM information_schema.columns
         WHERE table_name = ''work_items'' AND table_schema = ''public''' into work_items_cols;
+
   raise notice 'work_items_cols: %' , work_items_cols;
   -- Construct the list of columns to synchronize
   sync_cols := array (
@@ -79,24 +85,31 @@ begin
       column_name || ' = wi.' || column_name
     from
       UNNEST(work_items_cols) as column_name);
-  -- Dynamically execute the synchronization query.
-  -- IMPORTANT: we may have extra columns in cache.%I (flags like activity ongoing, pending actions, etc.)
-  -- therefore this will quickly render itself useless, unless all these flags are nullable
-  -- and we have triggers in place to update cache table (should be the default usecase)
-  raise notice 'insert stmt: %' , FORMAT('
-        INSERT INTO cache.%I (%s)
-        SELECT %s
-        FROM %I
-        JOIN work_items wi USING (work_item_id)
-        ON CONFLICT (work_item_id) DO UPDATE
-        SET %s
-    ' , project_name , ARRAY_TO_STRING(array (
-        select
-          UNNEST(project_table_cols)
-      union
+
+  project_table_col_values := ARRAY_TO_STRING(array (
       select
-	UNNEST(work_items_cols)) , ',') , ARRAY_TO_STRING(sync_cols , ', ') , project_name ,
-	  ARRAY_TO_STRING(update_cols , ', '));
+        'new.' || column_name
+      from UNNEST(project_table_cols) as column_name) , ', ');
+
+  work_item_col_values := ARRAY_TO_STRING(array (
+      select
+        'GETACTUALVALUE-OF-' || column_name
+      from UNNEST(work_items_cols) as column_name) , ', ');
+
+  all_cols := ARRAY_TO_STRING(array (
+      select
+        UNNEST(project_table_cols)
+    union
+    select
+      UNNEST(work_items_cols)) , ', ');
+  -- TODO: these come from all columns in the NEW KEYWORD
+  -- Get values for work_items_cols once and use them in the subsequent INSERT INTO ... VALUES ...
+  raise notice 'sssss %' , FORMAT(' insert into cache. %I (%s)
+      values (%s , %s)
+    on conflict (work_item_id)
+      do update set
+        %s' , project_name , all_cols, project_table_col_values, work_item_col_values , ARRAY_TO_STRING(update_cols , ' , '));
+  -- using NEW;
   return NEW;
 end;
 $$
