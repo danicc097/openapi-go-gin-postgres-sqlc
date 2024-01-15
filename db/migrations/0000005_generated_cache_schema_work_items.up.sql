@@ -1,31 +1,60 @@
-create or replace function create_dynamic_table (project_name text)
+create or replace function create_work_item_cache_table (project_name text)
   returns VOID
   as $$
 declare
   project_table_col_and_type text;
   work_items_col_and_type text;
+  constraint_exists boolean;
 begin
-  -- Dynamically fetch column names and data types from work_items
-  execute '
-        SELECT string_agg(column_name || '' '' || data_type, '', '')
-        FROM information_schema.columns
-        WHERE table_name = ''work_items'' AND table_schema = ''public''' into work_items_col_and_type;
-  -- Dynamically fetch column names and data types from the project_table
+  select
+    STRING_AGG(column_name || ' ' || data_type || ' ' || case when is_nullable = 'YES' then
+        ' NULL'
+      else
+        ' NOT NULL'
+      end , ', ')
+  from
+    information_schema.columns
+  where
+    table_name = 'work_items'
+    and table_schema = 'public' into work_items_col_and_type;
+
   execute FORMAT('
-        SELECT string_agg(column_name || '' '' || data_type, '', '')
+	SELECT string_agg(column_name || '' '' || data_type || '' '' || CASE WHEN is_nullable = ''YES'' THEN
+	  '' NULL'' ELSE '' NOT NULL'' END, '', '')
         FROM information_schema.columns
         WHERE table_name = ''%I'' AND table_schema = ''public'' AND column_name != ''work_item_id''' , project_name) into project_table_col_and_type;
   -- Dynamically create the cache.demo_work_items table
   execute 'CREATE SCHEMA IF NOT EXISTS cache;';
   execute FORMAT('CREATE TABLE IF NOT EXISTS cache.%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type);
-  execute FORMAT('ALTER TABLE cache.%I
-  DROP CONSTRAINT IF EXISTS fk_cache_%s_work_item_id,
-  DROP CONSTRAINT IF EXISTS cache_%s_work_item_id_unique
-  ' , project_name , project_name , project_name);
-  execute FORMAT('ALTER TABLE cache.%I
-  ADD CONSTRAINT fk_cache_%s_work_item_id FOREIGN KEY (work_item_id)
-  REFERENCES public.work_items (work_item_id) ON DELETE CASCADE,
-  ADD CONSTRAINT cache_%s_work_item_id_unique UNIQUE (work_item_id)' , project_name , project_name , project_name);
+  -- constraints
+  select
+    exists (
+      select
+        1
+      from
+        information_schema.table_constraints
+      where
+        constraint_name = 'fk_cache_' || project_name || '_work_item_id'
+        and table_schema = 'cache'
+        and table_name = project_name) into constraint_exists;
+  if not constraint_exists then
+    execute FORMAT('ALTER TABLE cache.%I ADD CONSTRAINT fk_cache_%s_work_item_id
+    FOREIGN KEY (work_item_id) REFERENCES public.work_items (work_item_id) ON DELETE CASCADE' , project_name , project_name);
+  end if;
+  select
+    exists (
+      select
+        1
+      from
+        information_schema.table_constraints
+      where
+        constraint_name = 'cache_' || project_name || '_work_item_id_unique'
+        and table_schema = 'cache'
+        and table_name = project_name) into constraint_exists;
+  if not constraint_exists then
+    execute FORMAT('ALTER TABLE cache.%I ADD CONSTRAINT cache_%s_work_item_id_unique
+    UNIQUE (work_item_id)' , project_name , project_name);
+  end if;
   -- IMPORTANT: we will use extra cache table columns so logic to add/modify cols will be messy.
   -- altering existing types would have to be done manually either way.
   -- better do these steps manually since its just a duplicate statement, ie when doing migrations (triggers will fail on migration if not synced so there's no risk of out of date cache schema).
@@ -122,7 +151,7 @@ language plpgsql;
 
 -- TODO: anon func loop for project in projects table and drop and replace triggers always
 select
-  create_dynamic_table ('demo_work_items');
+  create_work_item_cache_table ('demo_work_items');
 
 create trigger work_items_sync_trigger_demo_work_items
   after insert or update on demo_work_items for each row
