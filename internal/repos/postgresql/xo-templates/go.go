@@ -526,6 +526,9 @@ func fileNames(ctx context.Context, mode string, set *xo.Set) (map[string]bool, 
 		// Filenames are always lowercase.
 		var prefix string
 		if schema != "public" {
+			// don't refactor to use schema + "_" + "name"
+			// since it will clash struct names regardless whether
+			// its cache.my_table or public.cache_my_table.
 			prefix = camel(schema)
 		}
 		filename = strings.ToLower(prefix + filename)
