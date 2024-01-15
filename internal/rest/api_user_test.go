@@ -159,11 +159,10 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			ures, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
-			fmt.Printf("ures.Body: %v\n", string(ures.Body))
 			require.Equal(t, http.StatusNoContent, ures.StatusCode(), string(ures.Body))
 
 			res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(normalUser.APIKey.APIKey))
-
+			require.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))
 			require.NoError(t, err)
 			assert.EqualValues(t, *updateAuthParams.Role, res.JSON200.Role)
 		})
