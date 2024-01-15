@@ -49,6 +49,7 @@ declare
   res record;
   all_columns_with_type text;
   all_columns text;
+  conflict_update_columns text;
 begin
   project_name := TG_ARGV[0];
   -- Make sure the project table exists
@@ -66,58 +67,53 @@ begin
     raise exception 'Project table "%" does not exist' , project_name;
   end if;
 
-  select
-    ARRAY_TO_STRING(array (
-        select
-          FORMAT('%I::%s' , column_name , data_type)
-        from information_schema.columns
-        where (table_name = 'work_items'
-          or table_name = 'demo_work_items')
-        and not (table_name = 'demo_work_items'
-          and column_name = 'work_item_id') -- PK is FK
-        and table_schema = 'public' order by ordinal_position) , ', ') into all_columns_with_type;
-  select
-    ARRAY_TO_STRING(array (
-        select
-          FORMAT('%I' , column_name)
-        from information_schema.columns
-        where (table_name = 'work_items'
-          or table_name = 'demo_work_items')
-        and not (table_name = 'demo_work_items'
-          and column_name = 'work_item_id') -- PK is FK
-        and table_schema = 'public' order by ordinal_position) , ', ') into all_columns;
-
-  raise notice 'ssssss: %' , FORMAT( '
-with del as (
-  delete from cache.demo_work_items as t
-  where t.work_item_id = $1)
-insert into cache.demo_work_items
-  (%s)
-  select
-    %s
-  from work_items wi
-  join demo_work_items using (work_item_id)
-  where
-    wi.work_item_id = $1
-  on conflict (work_item_id)
-  do nothing -- another tx won insert after delete'
-    , all_columns , all_columns_with_type);
+  with data as (
+    select
+      FORMAT('%I'
+        , column_name) as c
+      , FORMAT('%I::%s'
+        , column_name
+        , data_type) as cwt
+    from
+      information_schema.columns
+    where (table_name = 'work_items'
+      or table_name = 'demo_work_items')
+    and not (table_name = 'demo_work_items'
+      and column_name = 'work_item_id') -- PK is FK
+    and table_schema = 'public'
+  order by
+    ordinal_position
+)
+select
+  ARRAY_TO_STRING(array (
+      select
+        c
+      from data) , ', ')
+  , ARRAY_TO_STRING(array (
+      select
+        cwt
+      from data) , ', ')
+  , ARRAY_TO_STRING(array (
+      select
+        FORMAT('%s = EXCLUDED.%s' , c , c)
+    from data) , ', ') into all_columns
+  , all_columns_with_type
+  , conflict_update_columns;
 
   execute FORMAT( '
-with del as (
-  delete from cache.demo_work_items as t
-  where t.work_item_id = $1)
 insert into cache.demo_work_items
   (%s)
   select
     %s
-  from work_items wi
-  join demo_work_items using (work_item_id)
+  from public.work_items wi
+  join public.demo_work_items using (work_item_id)
   where
     wi.work_item_id = $1
   on conflict (work_item_id)
-  do nothing -- another tx won insert after delete'
-    , all_columns , all_columns_with_type)
+  do update set
+    %s -- construct for all rows c = EXCLUDED.c (excluded is populated with all rows)
+  '
+    , all_columns , all_columns_with_type , conflict_update_columns)
   using new.work_item_id;
   return NEW;
 end;
