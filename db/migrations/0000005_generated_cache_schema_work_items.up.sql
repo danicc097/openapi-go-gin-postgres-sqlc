@@ -18,6 +18,11 @@ begin
   -- Dynamically create the cache.demo_work_items table
   execute 'CREATE SCHEMA IF NOT EXISTS cache;';
   execute FORMAT('CREATE TABLE IF NOT EXISTS cache.%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type);
+  execute FORMAT('ALTER TABLE cache.%I
+  DROP CONSTRAINT IF EXISTS fk_cache_%s_work_item_id' , project_name , project_name);
+  execute FORMAT('ALTER TABLE cache.%I
+  ADD CONSTRAINT fk_cache_%s_work_item_id FOREIGN KEY (work_item_id) REFERENCES public.work_items (work_item_id) ON DELETE
+    CASCADE' , project_name , project_name);
   -- IMPORTANT: we will use extra cache table columns so logic to add/modify cols will be messy.
   -- altering existing types would have to be done manually either way.
   -- better do these steps manually since its just a duplicate statement, ie when doing migrations (triggers will fail on migration if not synced so there's no risk of out of date cache schema).
@@ -40,6 +45,7 @@ declare
   all_values_columns text[];
   res record;
   all_columns_with_type text;
+  all_columns text;
 begin
   project_name := TG_ARGV[0];
   -- Make sure the project table exists
@@ -67,44 +73,27 @@ begin
         and not (table_name = 'demo_work_items'
           and column_name = 'work_item_id') -- PK is FK
         and table_schema = 'public' order by ordinal_position) , ', ') into all_columns_with_type;
+  select
+    ARRAY_TO_STRING(array (
+        select
+          FORMAT('%I' , column_name)
+        from information_schema.columns
+        where (table_name = 'work_items'
+          or table_name = 'demo_work_items')
+        and not (table_name = 'demo_work_items'
+          and column_name = 'work_item_id') -- PK is FK
+        and table_schema = 'public' order by ordinal_position) , ', ') into all_columns;
 
   raise notice 'datatypes: %' , all_columns_with_type;
   -- Dynamically fetch column names
-  execute FORMAT('
-        SELECT ARRAY_AGG(column_name)
-        FROM information_schema.columns
-        WHERE table_name = ''%I'' AND table_schema = ''public''' , project_name) into project_table_cols;
-
-  execute '
-        SELECT ARRAY_AGG(column_name)
-        FROM information_schema.columns
-        WHERE table_name = ''work_items'' AND table_schema = ''public''' into work_items_cols;
-  -- Construct the list of columns to synchronize
-  sync_cols := array (
-    select
-      'wi.' || column_name || ' AS ' || column_name
-    from
-      UNNEST(work_items_cols) as column_name) || array (
-    select
-      'NEW.' || column_name || ' AS ' || column_name
-    from
-      UNNEST(project_table_cols) as column_name);
-  -- Construct the list of columns for the ON CONFLICT DO UPDATE part
-  update_cols := array (
-    select
-      column_name || ' = EXCLUDED.' || column_name
-    from
-      UNNEST(project_table_cols) as column_name) || array (
-    select
-      column_name || ' = wi.' || column_name
-    from
-      UNNEST(work_items_cols) as column_name);
-  all_cols_names := ARRAY_TO_STRING(array (
-      select
-        UNNEST(project_table_cols)
-    union
-    select
-      UNNEST(work_items_cols)) , ', ');
+  -- execute FORMAT('
+  --       SELECT ARRAY_AGG(column_name)
+  --       FROM information_schema.columns
+  --       WHERE table_name = ''%I'' AND table_schema = ''public''' , project_name) into project_table_cols;
+  -- execute '
+  --       SELECT ARRAY_AGG(column_name)
+  --       FROM information_schema.columns
+  --       WHERE table_name = ''work_items'' AND table_schema = ''public''' into work_items_cols;
   -- see https://stackoverflow.com/questions/40687267/how-to-update-all-columns-with-insert-on-conflict
   -- for simpler sync with cache.%I
   -- we assume there are no side effects when deleting.
@@ -120,22 +109,24 @@ begin
 
   raise notice '% ' , res;
 
-  execute FORMAT(' with data as (
-      select
-        %s
-        from work_items wi
-        join demo_work_items using (work_item_id)
-        where
-          wi.work_item_id = $1
-)
-, del as ( delete from cache.demo_work_items as t using data d
-  where t.work_item_id = d.work_item_id)
-insert into cache.demo_work_items as t table data on conflict (work_item_id)
-  do nothing
+  raise notice 'aaaa % ' , FORMAT( '
+with del as (
+  delete from cache.demo_work_items as t
+  where t.work_item_id = $1)
+insert into cache.demo_work_items
+  (%s)
+  select
+    %s
+  from work_items wi
+  join demo_work_items using (work_item_id)
+  where
+    wi.work_item_id = $1
+  on conflict (work_item_id)
+  do nothing -- another tx won insert after delete
 returning
-  t.work_item_id ' , all_columns_with_type)
-  using new.work_item_id;
-
+  t.work_item_id '
+    , all_columns , all_columns_with_type);
+  -- using new.work_item_id;
   return NEW;
 end;
 $$
