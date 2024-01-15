@@ -1,1 +1,1 @@
-Executed in order after any migration.
+Commands are executed in filename order after any migration. Executed blocks need not be idempotent.

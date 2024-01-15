@@ -52,7 +52,6 @@ type DemoWorkItem interface {
 type DemoTwoWorkItem interface {
 	// ByID returns a generic WorkItem with project-specific fields joined by default.
 	ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
-	// params for dedicated workItem only require workItemID (FK-as-PK)
 	Create(ctx context.Context, d db.DBTX, params DemoTwoWorkItemCreateParams) (*db.WorkItem, error)
 	Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params DemoTwoWorkItemUpdateParams) (*db.WorkItem, error)
 }

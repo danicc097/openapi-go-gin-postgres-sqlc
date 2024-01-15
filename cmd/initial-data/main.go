@@ -66,6 +66,7 @@ func main() {
 	notifSvc := services.NewNotification(logger, repositories)
 	wiSvc := services.NewWorkItem(logger, repositories)
 	demoWiSvc := services.NewDemoWorkItem(logger, repositories)
+	demoTwoWiSvc := services.NewDemoTwoWorkItem(logger, repositories)
 	wiTagSvc := services.NewWorkItemTag(logger, repositories)
 
 	ctx := context.Background()
@@ -246,7 +247,7 @@ func main() {
 
 	/**
 	 *
-	 * WORK ITEMS
+	 * DEMO WORK ITEMS
 	 *
 	 **/
 	logger.Info("Creating workitems...")
@@ -298,6 +299,51 @@ func main() {
 			KanbanStepID: pointers.New(internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsUnderReview]),
 		},
 	})
+
+	/**
+	 *
+	 * DEMO TWO WORK ITEMS
+	 *
+	 **/
+	demoTwoWorkItems := []*db.WorkItem{}
+	for i := 1; i <= 20; i++ {
+		semaphore <- struct{}{} // acquire
+		wg.Add(1)
+
+		go func(i int) {
+			defer wg.Done()
+
+			demoTwowi, err := demoTwoWiSvc.Create(ctx, pool, services.DemoTwoWorkItemCreateParams{
+				DemoTwoWorkItemCreateParams: repos.DemoTwoWorkItemCreateParams{
+					Base: db.WorkItemCreateParams{
+						TeamID:         teamDemo.TeamID,
+						Title:          fmt.Sprintf("A new work item (%d)", i),
+						Description:    fmt.Sprintf("Description for a new work item (%d)", i),
+						WorkItemTypeID: internal.DemoTwoWorkItemTypesIDByName[models.DemoTwoWorkItemTypesType1],
+						// TODO if not passed then query where step order = 0 for a given project and use that
+						// steporder could also be generated just like idByName and viceversa
+						KanbanStepID: internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
+						TargetDate:   time.Now().Add(time.Duration(i) * day),
+						Metadata:     map[string]any{"key": true},
+					},
+					DemoTwoProject: db.DemoTwoWorkItemCreateParams{
+						CustomDateForProject2: pointers.New(time.Now().Add(time.Duration(i) * day)),
+					},
+				},
+				TagIDs: []db.WorkItemTagID{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
+				Members: []services.Member{
+					{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
+					{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
+				},
+			})
+			handleError(err)
+			demoTwoWorkItems = append(demoTwoWorkItems, demoTwowi)
+
+			<-semaphore // release
+		}(i)
+	}
+
+	wg.Wait()
 
 	/**
 	 *
