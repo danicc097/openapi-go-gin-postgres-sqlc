@@ -8,11 +8,10 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
 )
 
 func TestValidationErrorsResponse(t *testing.T) {
@@ -23,7 +22,7 @@ func TestValidationErrorsResponse(t *testing.T) {
 		t.Fatalf("could not read test spec: %s", err)
 	}
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 	oasMw := NewOpenapiMiddleware(logger, openapi)
 	oaOptions := createOpenAPIValidatorOptions()
 

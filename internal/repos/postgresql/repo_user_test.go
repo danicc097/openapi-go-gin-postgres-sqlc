@@ -11,12 +11,11 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
 )
 
 func TestUser_Update(t *testing.T) {
@@ -145,7 +144,7 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 10, 65*time.Millisecond)
 
 	teamRepo := postgresql.NewTeam()
@@ -237,7 +236,7 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 func TestUser_UserAPIKeys(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 10, 65*time.Millisecond)
 
 	t.Run("correct_api_key_creation", func(t *testing.T) {
@@ -306,7 +305,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 func TestUser_Create(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 10, 65*time.Millisecond)
 
 	type want struct {

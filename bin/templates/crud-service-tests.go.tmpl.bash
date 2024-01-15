@@ -14,6 +14,7 @@ import (
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil\"
+	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil\"
 	\"github.com/jackc/pgx/v5\"
 	\"github.com/stretchr/testify/assert\"
 	\"github.com/stretchr/testify/require\"
@@ -24,7 +25,7 @@ import (
 func Test${pascal_name}_Update(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 
 	requiredProject := models.ProjectDemo
 

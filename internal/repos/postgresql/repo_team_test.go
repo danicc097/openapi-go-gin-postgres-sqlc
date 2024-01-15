@@ -149,6 +149,8 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 				Member: user.UserID,
 				TeamID: previousTeam.TeamID,
 			})
+			// FIXME: could not create team: Process 1347 waits for RowExclusiveLock on relation 27813 of database 26116; blocked by process 1401.
+			// Process 1401 waits for ShareRowExclusiveLock on relation 27841 of database 26116; blocked by process 1347. | deadlock detected
 			require.NoError(t, err)
 
 			team := postgresqltestutil.NewRandomTeam(t, tx, projectID) // may trigger user_team update for existing user that is already in project

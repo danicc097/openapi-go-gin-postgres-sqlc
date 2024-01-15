@@ -16,6 +16,7 @@ $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgr
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil\"
+	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers\"
 	\"github.com/stretchr/testify/assert\"
 	\"github.com/stretchr/testify/require\"
@@ -26,7 +27,7 @@ $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgr
 func TestHandlers_Delete${pascal_name}(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
@@ -80,7 +81,7 @@ $(test -n "$with_project" && echo "		projectID := internal.ProjectIDByName[model
 func TestHandlers_Create${pascal_name}(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
@@ -125,7 +126,7 @@ done)
 func TestHandlers_Get${pascal_name}(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
@@ -171,7 +172,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 func TestHandlers_Update${pascal_name}(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)

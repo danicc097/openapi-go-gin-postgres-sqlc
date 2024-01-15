@@ -17,8 +17,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	redis "github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"
@@ -100,7 +98,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 	rdb.Set(ctx, "foo", "bar", 10*time.Second)
 	assert.Equal(t, "bar", rdb.Get(ctx, "foo").Val())
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 
 	_, err := openapi3.NewLoader().LoadFromFile("../../openapi.yaml")
 	if err != nil {

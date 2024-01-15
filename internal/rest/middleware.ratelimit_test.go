@@ -5,10 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
 	"golang.org/x/time/rate"
 )
 
@@ -16,7 +15,7 @@ func TestRateLimitMiddleware(t *testing.T) {
 	t.Parallel()
 
 	resp := httptest.NewRecorder()
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 	_, engine := gin.CreateTestContext(resp)
 	rl := 1
 	bl := 3

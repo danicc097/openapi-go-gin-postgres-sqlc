@@ -7,8 +7,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 )
 
 // CreateRepos creates repositories for service usage.
@@ -139,7 +138,7 @@ func CreateRepos() *repos.Repos {
 func CreateTestRepos(t *testing.T) *repos.Repos {
 	repos := CreateRepos()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 
 	repos.User = reposwrappers.NewUserWithRetry(repos.User, logger, 5, 65*time.Millisecond) // created_at unique
 

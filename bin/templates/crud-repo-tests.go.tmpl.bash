@@ -16,6 +16,7 @@ $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgr
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil\"
+	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers\"
 	\"github.com/stretchr/testify/assert\"
 	\"github.com/stretchr/testify/require\"
@@ -135,7 +136,7 @@ func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 	$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
 	${lower_name} := postgresqltestutil.NewRandom${pascal_name}(t, testPool $create_args)
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := logger := testutil.NewLogger(t)
 
 	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), logger, 10, 65*time.Millisecond)
 
@@ -160,7 +161,7 @@ func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 func Test${pascal_name}_Create(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := logger := testutil.NewLogger(t)
 
 	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), logger, 10, 65*time.Millisecond)
 

@@ -3,9 +3,11 @@ package postgresqltestutil
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/stretchr/testify/require"
 )
@@ -13,7 +15,7 @@ import (
 func NewRandomTeam(t *testing.T, d db.DBTX, projectID db.ProjectID) *db.Team {
 	t.Helper()
 
-	teamRepo := postgresql.NewTeam()
+	teamRepo := reposwrappers.NewTeamWithRetry(postgresql.NewTeam(), testutil.NewLogger(t), 3, 200*time.Millisecond)
 
 	ucp := RandomTeamCreateParams(t, projectID)
 
