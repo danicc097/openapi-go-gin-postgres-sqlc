@@ -117,7 +117,7 @@
     "scope": "postgres,sql",
     "prefix": "anonymous_block",
     "body": [
-      "/* do \\$BODY\\$",
+      "do \\$BODY\\$",
       "--declare",
       "--user_id uuid;",
       "begin",

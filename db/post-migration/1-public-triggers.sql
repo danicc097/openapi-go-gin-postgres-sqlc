@@ -30,16 +30,10 @@ begin
     information_schema.columns
   where (column_name = 'updated_at'
     and table_schema = 'public' -- breaks on managed cache tables
-    and (
-      select
-        1
-      from
-        information_schema.triggers
-      where
-        trigger_name = 'before_update_updated_at_' || table_schema || '_' || table_name) is null)
+)
     loop
       execute FORMAT('
-            CREATE TRIGGER before_update_updated_at_%s_%s
+            CREATE OR REPLACE TRIGGER before_update_updated_at_%s_%s
             BEFORE UPDATE ON %I
             FOR EACH ROW EXECUTE PROCEDURE before_update_updated_at();
         ' , s , t , t);
