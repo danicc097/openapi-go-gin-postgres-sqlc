@@ -19,10 +19,13 @@ begin
   execute 'CREATE SCHEMA IF NOT EXISTS cache;';
   execute FORMAT('CREATE TABLE IF NOT EXISTS cache.%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type);
   execute FORMAT('ALTER TABLE cache.%I
-  DROP CONSTRAINT IF EXISTS fk_cache_%s_work_item_id' , project_name , project_name);
+  DROP CONSTRAINT IF EXISTS fk_cache_%s_work_item_id,
+  DROP CONSTRAINT IF EXISTS cache_%s_work_item_id_unique
+  ' , project_name , project_name , project_name);
   execute FORMAT('ALTER TABLE cache.%I
-  ADD CONSTRAINT fk_cache_%s_work_item_id FOREIGN KEY (work_item_id) REFERENCES public.work_items (work_item_id) ON DELETE
-    CASCADE' , project_name , project_name);
+  ADD CONSTRAINT fk_cache_%s_work_item_id FOREIGN KEY (work_item_id)
+  REFERENCES public.work_items (work_item_id) ON DELETE CASCADE,
+  ADD CONSTRAINT cache_%s_work_item_id_unique UNIQUE (work_item_id)' , project_name , project_name , project_name);
   -- IMPORTANT: we will use extra cache table columns so logic to add/modify cols will be messy.
   -- altering existing types would have to be done manually either way.
   -- better do these steps manually since its just a duplicate statement, ie when doing migrations (triggers will fail on migration if not synced so there's no risk of out of date cache schema).
@@ -84,32 +87,7 @@ begin
           and column_name = 'work_item_id') -- PK is FK
         and table_schema = 'public' order by ordinal_position) , ', ') into all_columns;
 
-  raise notice 'datatypes: %' , all_columns_with_type;
-  -- Dynamically fetch column names
-  -- execute FORMAT('
-  --       SELECT ARRAY_AGG(column_name)
-  --       FROM information_schema.columns
-  --       WHERE table_name = ''%I'' AND table_schema = ''public''' , project_name) into project_table_cols;
-  -- execute '
-  --       SELECT ARRAY_AGG(column_name)
-  --       FROM information_schema.columns
-  --       WHERE table_name = ''work_items'' AND table_schema = ''public''' into work_items_cols;
-  -- see https://stackoverflow.com/questions/40687267/how-to-update-all-columns-with-insert-on-conflict
-  -- for simpler sync with cache.%I
-  -- we assume there are no side effects when deleting.
-  execute FORMAT('select
-      %s
-    from
-      work_items wi
-      join demo_work_items using (work_item_id)
-    where
-      wi.work_item_id = $1
-  ' , all_cols_names) into res
-  using new.work_item_id;
-
-  raise notice '% ' , res;
-
-  raise notice 'aaaa % ' , FORMAT( '
+  execute FORMAT( '
 with del as (
   delete from cache.demo_work_items as t
   where t.work_item_id = $1)
@@ -122,11 +100,9 @@ insert into cache.demo_work_items
   where
     wi.work_item_id = $1
   on conflict (work_item_id)
-  do nothing -- another tx won insert after delete
-returning
-  t.work_item_id '
-    , all_columns , all_columns_with_type);
-  -- using new.work_item_id;
+  do nothing -- another tx won insert after delete'
+    , all_columns , all_columns_with_type)
+  using new.work_item_id;
   return NEW;
 end;
 $$
