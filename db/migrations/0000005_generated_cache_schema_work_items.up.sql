@@ -87,6 +87,22 @@ begin
           and column_name = 'work_item_id') -- PK is FK
         and table_schema = 'public' order by ordinal_position) , ', ') into all_columns;
 
+  raise notice 'ssssss: %' , FORMAT( '
+with del as (
+  delete from cache.demo_work_items as t
+  where t.work_item_id = $1)
+insert into cache.demo_work_items
+  (%s)
+  select
+    %s
+  from work_items wi
+  join demo_work_items using (work_item_id)
+  where
+    wi.work_item_id = $1
+  on conflict (work_item_id)
+  do nothing -- another tx won insert after delete'
+    , all_columns , all_columns_with_type);
+
   execute FORMAT( '
 with del as (
   delete from cache.demo_work_items as t

@@ -29,6 +29,7 @@ begin
   from
     information_schema.columns
   where (column_name = 'updated_at'
+    and table_schema = 'public' -- breaks on managed cache tables
     and (
       select
         1
