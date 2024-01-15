@@ -50,26 +50,6 @@ func CreateXoTestsWorkItemAssignedUser(ctx context.Context, db DB, params *XoTes
 	return xtwiau.Insert(ctx, db)
 }
 
-// XoTestsWorkItemAssignedUserUpdateParams represents update params for 'xo_tests.work_item_assigned_user'.
-type XoTestsWorkItemAssignedUserUpdateParams struct {
-	AssignedUser *XoTestsUserID        `json:"assignedUser" nullable:"false"`                                 // assigned_user
-	XoTestsRole  **XoTestsWorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID   *XoTestsWorkItemID    `json:"workItemID" nullable:"false"`                                   // work_item_id
-}
-
-// SetUpdateParams updates xo_tests.work_item_assigned_user struct fields with the specified params.
-func (xtwiau *XoTestsWorkItemAssignedUser) SetUpdateParams(params *XoTestsWorkItemAssignedUserUpdateParams) {
-	if params.AssignedUser != nil {
-		xtwiau.AssignedUser = *params.AssignedUser
-	}
-	if params.XoTestsRole != nil {
-		xtwiau.XoTestsRole = *params.XoTestsRole
-	}
-	if params.WorkItemID != nil {
-		xtwiau.WorkItemID = *params.WorkItemID
-	}
-}
-
 type XoTestsWorkItemAssignedUserSelectConfig struct {
 	limit   string
 	orderBy string
@@ -195,6 +175,26 @@ const xoTestsWorkItemAssignedUserTableAssignedUsersSelectSQL = `COALESCE(
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const xoTestsWorkItemAssignedUserTableAssignedUsersGroupBySQL = `work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
+
+// XoTestsWorkItemAssignedUserUpdateParams represents update params for 'xo_tests.work_item_assigned_user'.
+type XoTestsWorkItemAssignedUserUpdateParams struct {
+	AssignedUser *XoTestsUserID        `json:"assignedUser" nullable:"false"`                                 // assigned_user
+	XoTestsRole  **XoTestsWorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
+	WorkItemID   *XoTestsWorkItemID    `json:"workItemID" nullable:"false"`                                   // work_item_id
+}
+
+// SetUpdateParams updates xo_tests.work_item_assigned_user struct fields with the specified params.
+func (xtwiau *XoTestsWorkItemAssignedUser) SetUpdateParams(params *XoTestsWorkItemAssignedUserUpdateParams) {
+	if params.AssignedUser != nil {
+		xtwiau.AssignedUser = *params.AssignedUser
+	}
+	if params.XoTestsRole != nil {
+		xtwiau.XoTestsRole = *params.XoTestsRole
+	}
+	if params.WorkItemID != nil {
+		xtwiau.WorkItemID = *params.WorkItemID
+	}
+}
 
 // Insert inserts the XoTestsWorkItemAssignedUser to the database.
 func (xtwiau *XoTestsWorkItemAssignedUser) Insert(ctx context.Context, db DB) (*XoTestsWorkItemAssignedUser, error) {

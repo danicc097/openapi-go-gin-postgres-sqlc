@@ -48,18 +48,6 @@ func CreateExtraSchemaDemoWorkItem(ctx context.Context, db DB, params *ExtraSche
 	return esdwi.Insert(ctx, db)
 }
 
-// ExtraSchemaDemoWorkItemUpdateParams represents update params for 'extra_schema.demo_work_items'.
-type ExtraSchemaDemoWorkItemUpdateParams struct {
-	Checked *bool `json:"checked" nullable:"false"` // checked
-}
-
-// SetUpdateParams updates extra_schema.demo_work_items struct fields with the specified params.
-func (esdwi *ExtraSchemaDemoWorkItem) SetUpdateParams(params *ExtraSchemaDemoWorkItemUpdateParams) {
-	if params.Checked != nil {
-		esdwi.Checked = *params.Checked
-	}
-}
-
 type ExtraSchemaDemoWorkItemSelectConfig struct {
 	limit   string
 	orderBy string
@@ -133,6 +121,18 @@ const extraSchemaDemoWorkItemTableWorkItemSelectSQL = `(case when _demo_work_ite
 const extraSchemaDemoWorkItemTableWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
       _demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id`
+
+// ExtraSchemaDemoWorkItemUpdateParams represents update params for 'extra_schema.demo_work_items'.
+type ExtraSchemaDemoWorkItemUpdateParams struct {
+	Checked *bool `json:"checked" nullable:"false"` // checked
+}
+
+// SetUpdateParams updates extra_schema.demo_work_items struct fields with the specified params.
+func (esdwi *ExtraSchemaDemoWorkItem) SetUpdateParams(params *ExtraSchemaDemoWorkItemUpdateParams) {
+	if params.Checked != nil {
+		esdwi.Checked = *params.Checked
+	}
+}
 
 // Insert inserts the ExtraSchemaDemoWorkItem to the database.
 func (esdwi *ExtraSchemaDemoWorkItem) Insert(ctx context.Context, db DB) (*ExtraSchemaDemoWorkItem, error) {

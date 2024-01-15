@@ -57,30 +57,6 @@ func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreatePa
 	return wit.Insert(ctx, db)
 }
 
-// WorkItemTypeUpdateParams represents update params for 'public.work_item_types'.
-type WorkItemTypeUpdateParams struct {
-	Color       *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
-	Description *string    `json:"description" nullable:"false"`                                        // description
-	Name        *string    `json:"name" nullable:"false"`                                               // name
-	ProjectID   *ProjectID `json:"-" openapi-go:"ignore"`                                               // project_id
-}
-
-// SetUpdateParams updates public.work_item_types struct fields with the specified params.
-func (wit *WorkItemType) SetUpdateParams(params *WorkItemTypeUpdateParams) {
-	if params.Color != nil {
-		wit.Color = *params.Color
-	}
-	if params.Description != nil {
-		wit.Description = *params.Description
-	}
-	if params.Name != nil {
-		wit.Name = *params.Name
-	}
-	if params.ProjectID != nil {
-		wit.ProjectID = *params.ProjectID
-	}
-}
-
 type WorkItemTypeSelectConfig struct {
 	limit   string
 	orderBy string
@@ -154,6 +130,30 @@ const workItemTypeTableProjectSelectSQL = `(case when _work_item_types_project_i
 const workItemTypeTableProjectGroupBySQL = `_work_item_types_project_id.project_id,
       _work_item_types_project_id.project_id,
 	work_item_types.work_item_type_id`
+
+// WorkItemTypeUpdateParams represents update params for 'public.work_item_types'.
+type WorkItemTypeUpdateParams struct {
+	Color       *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description *string    `json:"description" nullable:"false"`                                        // description
+	Name        *string    `json:"name" nullable:"false"`                                               // name
+	ProjectID   *ProjectID `json:"-" openapi-go:"ignore"`                                               // project_id
+}
+
+// SetUpdateParams updates public.work_item_types struct fields with the specified params.
+func (wit *WorkItemType) SetUpdateParams(params *WorkItemTypeUpdateParams) {
+	if params.Color != nil {
+		wit.Color = *params.Color
+	}
+	if params.Description != nil {
+		wit.Description = *params.Description
+	}
+	if params.Name != nil {
+		wit.Name = *params.Name
+	}
+	if params.ProjectID != nil {
+		wit.ProjectID = *params.ProjectID
+	}
+}
 
 // Insert inserts the WorkItemType to the database.
 func (wit *WorkItemType) Insert(ctx context.Context, db DB) (*WorkItemType, error) {

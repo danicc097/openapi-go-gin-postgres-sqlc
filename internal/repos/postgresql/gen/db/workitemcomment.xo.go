@@ -58,26 +58,6 @@ func CreateWorkItemComment(ctx context.Context, db DB, params *WorkItemCommentCr
 	return wic.Insert(ctx, db)
 }
 
-// WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'.
-type WorkItemCommentUpdateParams struct {
-	Message    *string     `json:"message" nullable:"false"`    // message
-	UserID     *UserID     `json:"userID" nullable:"false"`     // user_id
-	WorkItemID *WorkItemID `json:"workItemID" nullable:"false"` // work_item_id
-}
-
-// SetUpdateParams updates public.work_item_comments struct fields with the specified params.
-func (wic *WorkItemComment) SetUpdateParams(params *WorkItemCommentUpdateParams) {
-	if params.Message != nil {
-		wic.Message = *params.Message
-	}
-	if params.UserID != nil {
-		wic.UserID = *params.UserID
-	}
-	if params.WorkItemID != nil {
-		wic.WorkItemID = *params.WorkItemID
-	}
-}
-
 type WorkItemCommentSelectConfig struct {
 	limit   string
 	orderBy string
@@ -186,6 +166,26 @@ const workItemCommentTableWorkItemSelectSQL = `(case when _work_item_comments_wo
 const workItemCommentTableWorkItemGroupBySQL = `_work_item_comments_work_item_id.work_item_id,
       _work_item_comments_work_item_id.work_item_id,
 	work_item_comments.work_item_comment_id`
+
+// WorkItemCommentUpdateParams represents update params for 'public.work_item_comments'.
+type WorkItemCommentUpdateParams struct {
+	Message    *string     `json:"message" nullable:"false"`    // message
+	UserID     *UserID     `json:"userID" nullable:"false"`     // user_id
+	WorkItemID *WorkItemID `json:"workItemID" nullable:"false"` // work_item_id
+}
+
+// SetUpdateParams updates public.work_item_comments struct fields with the specified params.
+func (wic *WorkItemComment) SetUpdateParams(params *WorkItemCommentUpdateParams) {
+	if params.Message != nil {
+		wic.Message = *params.Message
+	}
+	if params.UserID != nil {
+		wic.UserID = *params.UserID
+	}
+	if params.WorkItemID != nil {
+		wic.WorkItemID = *params.WorkItemID
+	}
+}
 
 // Insert inserts the WorkItemComment to the database.
 func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment, error) {

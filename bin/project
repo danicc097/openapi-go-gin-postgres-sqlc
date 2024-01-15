@@ -653,9 +653,8 @@ x.gen.xo() {
       --ignore "*.updated_at" ||
       err "Failed xo extra_schema schema generation" &
 
-    rm -rf "$PG_REPO_GEN"/db/cache
-    mkdir -p "$PG_REPO_GEN"/db/cache
-    xo_schema -o "$PG_REPO_GEN"/db/cache \
+    mkdir -p "$PG_REPO_GEN"/db
+    xo_schema -o "$PG_REPO_GEN"/db \
       --schema cache ||
       err "Failed xo cache schema generation" &
 

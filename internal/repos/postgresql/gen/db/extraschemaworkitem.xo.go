@@ -52,22 +52,6 @@ func CreateExtraSchemaWorkItem(ctx context.Context, db DB, params *ExtraSchemaWo
 	return eswi.Insert(ctx, db)
 }
 
-// ExtraSchemaWorkItemUpdateParams represents update params for 'extra_schema.work_items'.
-type ExtraSchemaWorkItemUpdateParams struct {
-	Description **string `json:"description"` // description
-	Title       **string `json:"title"`       // title
-}
-
-// SetUpdateParams updates extra_schema.work_items struct fields with the specified params.
-func (eswi *ExtraSchemaWorkItem) SetUpdateParams(params *ExtraSchemaWorkItemUpdateParams) {
-	if params.Description != nil {
-		eswi.Description = *params.Description
-	}
-	if params.Title != nil {
-		eswi.Title = *params.Title
-	}
-}
-
 type ExtraSchemaWorkItemSelectConfig struct {
 	limit   string
 	orderBy string
@@ -173,6 +157,22 @@ const extraSchemaWorkItemTableAssignedUsersSelectSQL = `COALESCE(
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const extraSchemaWorkItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
+
+// ExtraSchemaWorkItemUpdateParams represents update params for 'extra_schema.work_items'.
+type ExtraSchemaWorkItemUpdateParams struct {
+	Description **string `json:"description"` // description
+	Title       **string `json:"title"`       // title
+}
+
+// SetUpdateParams updates extra_schema.work_items struct fields with the specified params.
+func (eswi *ExtraSchemaWorkItem) SetUpdateParams(params *ExtraSchemaWorkItemUpdateParams) {
+	if params.Description != nil {
+		eswi.Description = *params.Description
+	}
+	if params.Title != nil {
+		eswi.Title = *params.Title
+	}
+}
 
 // Insert inserts the ExtraSchemaWorkItem to the database.
 func (eswi *ExtraSchemaWorkItem) Insert(ctx context.Context, db DB) (*ExtraSchemaWorkItem, error) {

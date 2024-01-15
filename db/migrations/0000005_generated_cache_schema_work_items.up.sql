@@ -125,7 +125,7 @@ select
   , ARRAY_TO_STRING(array (
       select
         FORMAT('%s = EXCLUDED.%s' , c , c)
-    from data) , ', ') into all_columns
+      from data) , ', ') into all_columns
   , all_columns_with_type
   , conflict_update_columns;
 
@@ -141,8 +141,7 @@ insert into cache.demo_work_items
   on conflict (work_item_id)
   do update set
     %s -- construct for all rows c = EXCLUDED.c (excluded is populated with all rows)
-  '
-    , all_columns , all_columns_with_type , conflict_update_columns)
+  ' , all_columns , all_columns_with_type , conflict_update_columns)
   using new.work_item_id;
   return NEW;
 end;

@@ -55,26 +55,6 @@ func CreateExtraSchemaUserAPIKey(ctx context.Context, db DB, params *ExtraSchema
 	return esuak.Insert(ctx, db)
 }
 
-// ExtraSchemaUserAPIKeyUpdateParams represents update params for 'extra_schema.user_api_keys'.
-type ExtraSchemaUserAPIKeyUpdateParams struct {
-	APIKey    *string            `json:"apiKey" nullable:"false"`    // api_key
-	ExpiresOn *time.Time         `json:"expiresOn" nullable:"false"` // expires_on
-	UserID    *ExtraSchemaUserID `json:"userID" nullable:"false"`    // user_id
-}
-
-// SetUpdateParams updates extra_schema.user_api_keys struct fields with the specified params.
-func (esuak *ExtraSchemaUserAPIKey) SetUpdateParams(params *ExtraSchemaUserAPIKeyUpdateParams) {
-	if params.APIKey != nil {
-		esuak.APIKey = *params.APIKey
-	}
-	if params.ExpiresOn != nil {
-		esuak.ExpiresOn = *params.ExpiresOn
-	}
-	if params.UserID != nil {
-		esuak.UserID = *params.UserID
-	}
-}
-
 type ExtraSchemaUserAPIKeySelectConfig struct {
 	limit   string
 	orderBy string
@@ -167,6 +147,26 @@ const extraSchemaUserAPIKeyTableUserSelectSQL = `(case when _user_api_keys_user_
 const extraSchemaUserAPIKeyTableUserGroupBySQL = `_user_api_keys_user_id.user_id,
       _user_api_keys_user_id.user_id,
 	user_api_keys.user_api_key_id`
+
+// ExtraSchemaUserAPIKeyUpdateParams represents update params for 'extra_schema.user_api_keys'.
+type ExtraSchemaUserAPIKeyUpdateParams struct {
+	APIKey    *string            `json:"apiKey" nullable:"false"`    // api_key
+	ExpiresOn *time.Time         `json:"expiresOn" nullable:"false"` // expires_on
+	UserID    *ExtraSchemaUserID `json:"userID" nullable:"false"`    // user_id
+}
+
+// SetUpdateParams updates extra_schema.user_api_keys struct fields with the specified params.
+func (esuak *ExtraSchemaUserAPIKey) SetUpdateParams(params *ExtraSchemaUserAPIKeyUpdateParams) {
+	if params.APIKey != nil {
+		esuak.APIKey = *params.APIKey
+	}
+	if params.ExpiresOn != nil {
+		esuak.ExpiresOn = *params.ExpiresOn
+	}
+	if params.UserID != nil {
+		esuak.UserID = *params.UserID
+	}
+}
 
 // Insert inserts the ExtraSchemaUserAPIKey to the database.
 func (esuak *ExtraSchemaUserAPIKey) Insert(ctx context.Context, db DB) (*ExtraSchemaUserAPIKey, error) {

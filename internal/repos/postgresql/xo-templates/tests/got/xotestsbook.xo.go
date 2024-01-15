@@ -50,18 +50,6 @@ func CreateXoTestsBook(ctx context.Context, db DB, params *XoTestsBookCreatePara
 	return xtb.Insert(ctx, db)
 }
 
-// XoTestsBookUpdateParams represents update params for 'xo_tests.books'.
-type XoTestsBookUpdateParams struct {
-	Name *string `json:"name" nullable:"false"` // name
-}
-
-// SetUpdateParams updates xo_tests.books struct fields with the specified params.
-func (xtb *XoTestsBook) SetUpdateParams(params *XoTestsBookUpdateParams) {
-	if params.Name != nil {
-		xtb.Name = *params.Name
-	}
-}
-
 type XoTestsBookSelectConfig struct {
 	limit   string
 	orderBy string
@@ -229,6 +217,18 @@ const xoTestsBookTableSellersSelectSQL = `COALESCE(
 		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') as book_sellers_sellers`
 
 const xoTestsBookTableSellersGroupBySQL = `books.book_id, books.book_id`
+
+// XoTestsBookUpdateParams represents update params for 'xo_tests.books'.
+type XoTestsBookUpdateParams struct {
+	Name *string `json:"name" nullable:"false"` // name
+}
+
+// SetUpdateParams updates xo_tests.books struct fields with the specified params.
+func (xtb *XoTestsBook) SetUpdateParams(params *XoTestsBookUpdateParams) {
+	if params.Name != nil {
+		xtb.Name = *params.Name
+	}
+}
 
 // Insert inserts the XoTestsBook to the database.
 func (xtb *XoTestsBook) Insert(ctx context.Context, db DB) (*XoTestsBook, error) {

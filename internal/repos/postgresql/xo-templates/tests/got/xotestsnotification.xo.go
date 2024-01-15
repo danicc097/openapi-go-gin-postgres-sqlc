@@ -54,26 +54,6 @@ func CreateXoTestsNotification(ctx context.Context, db DB, params *XoTestsNotifi
 	return xtn.Insert(ctx, db)
 }
 
-// XoTestsNotificationUpdateParams represents update params for 'xo_tests.notifications'.
-type XoTestsNotificationUpdateParams struct {
-	Body     *string         `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"` // body
-	Receiver **XoTestsUserID `json:"receiver"`                                    // receiver
-	Sender   *XoTestsUserID  `json:"sender" nullable:"false"`                     // sender
-}
-
-// SetUpdateParams updates xo_tests.notifications struct fields with the specified params.
-func (xtn *XoTestsNotification) SetUpdateParams(params *XoTestsNotificationUpdateParams) {
-	if params.Body != nil {
-		xtn.Body = *params.Body
-	}
-	if params.Receiver != nil {
-		xtn.Receiver = *params.Receiver
-	}
-	if params.Sender != nil {
-		xtn.Sender = *params.Sender
-	}
-}
-
 type XoTestsNotificationSelectConfig struct {
 	limit   string
 	orderBy string
@@ -157,6 +137,26 @@ const xoTestsNotificationTableUserSenderSelectSQL = `(case when _notifications_s
 const xoTestsNotificationTableUserSenderGroupBySQL = `_notifications_sender.user_id,
       _notifications_sender.user_id,
 	notifications.notification_id`
+
+// XoTestsNotificationUpdateParams represents update params for 'xo_tests.notifications'.
+type XoTestsNotificationUpdateParams struct {
+	Body     *string         `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"` // body
+	Receiver **XoTestsUserID `json:"receiver"`                                    // receiver
+	Sender   *XoTestsUserID  `json:"sender" nullable:"false"`                     // sender
+}
+
+// SetUpdateParams updates xo_tests.notifications struct fields with the specified params.
+func (xtn *XoTestsNotification) SetUpdateParams(params *XoTestsNotificationUpdateParams) {
+	if params.Body != nil {
+		xtn.Body = *params.Body
+	}
+	if params.Receiver != nil {
+		xtn.Receiver = *params.Receiver
+	}
+	if params.Sender != nil {
+		xtn.Sender = *params.Sender
+	}
+}
 
 // Insert inserts the XoTestsNotification to the database.
 func (xtn *XoTestsNotification) Insert(ctx context.Context, db DB) (*XoTestsNotification, error) {

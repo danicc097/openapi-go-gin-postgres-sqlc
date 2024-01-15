@@ -81,46 +81,6 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 	return wi.Insert(ctx, db)
 }
 
-// WorkItemUpdateParams represents update params for 'public.work_items'.
-type WorkItemUpdateParams struct {
-	ClosedAt       **time.Time     `json:"closedAt"`                        // closed_at
-	Description    *string         `json:"description" nullable:"false"`    // description
-	KanbanStepID   *KanbanStepID   `json:"kanbanStepID" nullable:"false"`   // kanban_step_id
-	Metadata       *map[string]any `json:"metadata" nullable:"false"`       // metadata
-	TargetDate     *time.Time      `json:"targetDate" nullable:"false"`     // target_date
-	TeamID         *TeamID         `json:"teamID" nullable:"false"`         // team_id
-	Title          *string         `json:"title" nullable:"false"`          // title
-	WorkItemTypeID *WorkItemTypeID `json:"workItemTypeID" nullable:"false"` // work_item_type_id
-}
-
-// SetUpdateParams updates public.work_items struct fields with the specified params.
-func (wi *WorkItem) SetUpdateParams(params *WorkItemUpdateParams) {
-	if params.ClosedAt != nil {
-		wi.ClosedAt = *params.ClosedAt
-	}
-	if params.Description != nil {
-		wi.Description = *params.Description
-	}
-	if params.KanbanStepID != nil {
-		wi.KanbanStepID = *params.KanbanStepID
-	}
-	if params.Metadata != nil {
-		wi.Metadata = *params.Metadata
-	}
-	if params.TargetDate != nil {
-		wi.TargetDate = *params.TargetDate
-	}
-	if params.TeamID != nil {
-		wi.TeamID = *params.TeamID
-	}
-	if params.Title != nil {
-		wi.Title = *params.Title
-	}
-	if params.WorkItemTypeID != nil {
-		wi.WorkItemTypeID = *params.WorkItemTypeID
-	}
-}
-
 type WorkItemSelectConfig struct {
 	limit   string
 	orderBy string
@@ -377,6 +337,46 @@ const workItemTableWorkItemTypeSelectSQL = `(case when _work_items_work_item_typ
 const workItemTableWorkItemTypeGroupBySQL = `_work_items_work_item_type_id.work_item_type_id,
       _work_items_work_item_type_id.work_item_type_id,
 	work_items.work_item_id`
+
+// WorkItemUpdateParams represents update params for 'public.work_items'.
+type WorkItemUpdateParams struct {
+	ClosedAt       **time.Time     `json:"closedAt"`                        // closed_at
+	Description    *string         `json:"description" nullable:"false"`    // description
+	KanbanStepID   *KanbanStepID   `json:"kanbanStepID" nullable:"false"`   // kanban_step_id
+	Metadata       *map[string]any `json:"metadata" nullable:"false"`       // metadata
+	TargetDate     *time.Time      `json:"targetDate" nullable:"false"`     // target_date
+	TeamID         *TeamID         `json:"teamID" nullable:"false"`         // team_id
+	Title          *string         `json:"title" nullable:"false"`          // title
+	WorkItemTypeID *WorkItemTypeID `json:"workItemTypeID" nullable:"false"` // work_item_type_id
+}
+
+// SetUpdateParams updates public.work_items struct fields with the specified params.
+func (wi *WorkItem) SetUpdateParams(params *WorkItemUpdateParams) {
+	if params.ClosedAt != nil {
+		wi.ClosedAt = *params.ClosedAt
+	}
+	if params.Description != nil {
+		wi.Description = *params.Description
+	}
+	if params.KanbanStepID != nil {
+		wi.KanbanStepID = *params.KanbanStepID
+	}
+	if params.Metadata != nil {
+		wi.Metadata = *params.Metadata
+	}
+	if params.TargetDate != nil {
+		wi.TargetDate = *params.TargetDate
+	}
+	if params.TeamID != nil {
+		wi.TeamID = *params.TeamID
+	}
+	if params.Title != nil {
+		wi.Title = *params.Title
+	}
+	if params.WorkItemTypeID != nil {
+		wi.WorkItemTypeID = *params.WorkItemTypeID
+	}
+}
 
 // Insert inserts the WorkItem to the database.
 func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {

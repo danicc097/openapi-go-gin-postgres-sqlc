@@ -65,30 +65,6 @@ func CreateProject(ctx context.Context, db DB, params *ProjectCreateParams) (*Pr
 	return p.Insert(ctx, db)
 }
 
-// ProjectUpdateParams represents update params for 'public.projects'.
-type ProjectUpdateParams struct {
-	BoardConfig        *models.ProjectConfig `json:"boardConfig" nullable:"false" ref:"#/components/schemas/ProjectConfig"` // board_config
-	Description        *string               `json:"description" nullable:"false"`                                          // description
-	Name               *models.Project       `json:"name" nullable:"false" ref:"#/components/schemas/Project"`              // name
-	WorkItemsTableName *string               `json:"-" nullable:"false"`                                                    // work_items_table_name
-}
-
-// SetUpdateParams updates public.projects struct fields with the specified params.
-func (p *Project) SetUpdateParams(params *ProjectUpdateParams) {
-	if params.BoardConfig != nil {
-		p.BoardConfig = *params.BoardConfig
-	}
-	if params.Description != nil {
-		p.Description = *params.Description
-	}
-	if params.Name != nil {
-		p.Name = *params.Name
-	}
-	if params.WorkItemsTableName != nil {
-		p.WorkItemsTableName = *params.WorkItemsTableName
-	}
-}
-
 type ProjectSelectConfig struct {
 	limit   string
 	orderBy string
@@ -287,6 +263,30 @@ left join (
 const projectTableWorkItemTypesSelectSQL = `COALESCE(joined_work_item_types.work_item_types, '{}') as work_item_types`
 
 const projectTableWorkItemTypesGroupBySQL = `joined_work_item_types.work_item_types, projects.project_id`
+
+// ProjectUpdateParams represents update params for 'public.projects'.
+type ProjectUpdateParams struct {
+	BoardConfig        *models.ProjectConfig `json:"boardConfig" nullable:"false" ref:"#/components/schemas/ProjectConfig"` // board_config
+	Description        *string               `json:"description" nullable:"false"`                                          // description
+	Name               *models.Project       `json:"name" nullable:"false" ref:"#/components/schemas/Project"`              // name
+	WorkItemsTableName *string               `json:"-" nullable:"false"`                                                    // work_items_table_name
+}
+
+// SetUpdateParams updates public.projects struct fields with the specified params.
+func (p *Project) SetUpdateParams(params *ProjectUpdateParams) {
+	if params.BoardConfig != nil {
+		p.BoardConfig = *params.BoardConfig
+	}
+	if params.Description != nil {
+		p.Description = *params.Description
+	}
+	if params.Name != nil {
+		p.Name = *params.Name
+	}
+	if params.WorkItemsTableName != nil {
+		p.WorkItemsTableName = *params.WorkItemsTableName
+	}
+}
 
 // Insert inserts the Project to the database.
 func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {

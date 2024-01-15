@@ -99,54 +99,6 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 	return u.Insert(ctx, db)
 }
 
-// UserUpdateParams represents update params for 'public.users'.
-type UserUpdateParams struct {
-	APIKeyID                 **UserAPIKeyID `json:"-"`                                                         // api_key_id
-	Email                    *string        `json:"email" nullable:"false"`                                    // email
-	ExternalID               *string        `json:"-" nullable:"false"`                                        // external_id
-	FirstName                **string       `json:"firstName"`                                                 // first_name
-	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications" nullable:"false"`                   // has_global_notifications
-	HasPersonalNotifications *bool          `json:"hasPersonalNotifications" nullable:"false"`                 // has_personal_notifications
-	LastName                 **string       `json:"lastName"`                                                  // last_name
-	RoleRank                 *int           `json:"-" nullable:"false"`                                        // role_rank
-	Scopes                   *models.Scopes `json:"scopes" nullable:"false" ref:"#/components/schemas/Scopes"` // scopes
-	Username                 *string        `json:"username" nullable:"false"`                                 // username
-}
-
-// SetUpdateParams updates public.users struct fields with the specified params.
-func (u *User) SetUpdateParams(params *UserUpdateParams) {
-	if params.APIKeyID != nil {
-		u.APIKeyID = *params.APIKeyID
-	}
-	if params.Email != nil {
-		u.Email = *params.Email
-	}
-	if params.ExternalID != nil {
-		u.ExternalID = *params.ExternalID
-	}
-	if params.FirstName != nil {
-		u.FirstName = *params.FirstName
-	}
-	if params.HasGlobalNotifications != nil {
-		u.HasGlobalNotifications = *params.HasGlobalNotifications
-	}
-	if params.HasPersonalNotifications != nil {
-		u.HasPersonalNotifications = *params.HasPersonalNotifications
-	}
-	if params.LastName != nil {
-		u.LastName = *params.LastName
-	}
-	if params.RoleRank != nil {
-		u.RoleRank = *params.RoleRank
-	}
-	if params.Scopes != nil {
-		u.Scopes = *params.Scopes
-	}
-	if params.Username != nil {
-		u.Username = *params.Username
-	}
-}
-
 type UserSelectConfig struct {
 	limit   string
 	orderBy string
@@ -439,6 +391,54 @@ left join (
 const userTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
 
 const userTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, users.user_id`
+
+// UserUpdateParams represents update params for 'public.users'.
+type UserUpdateParams struct {
+	APIKeyID                 **UserAPIKeyID `json:"-"`                                                         // api_key_id
+	Email                    *string        `json:"email" nullable:"false"`                                    // email
+	ExternalID               *string        `json:"-" nullable:"false"`                                        // external_id
+	FirstName                **string       `json:"firstName"`                                                 // first_name
+	HasGlobalNotifications   *bool          `json:"hasGlobalNotifications" nullable:"false"`                   // has_global_notifications
+	HasPersonalNotifications *bool          `json:"hasPersonalNotifications" nullable:"false"`                 // has_personal_notifications
+	LastName                 **string       `json:"lastName"`                                                  // last_name
+	RoleRank                 *int           `json:"-" nullable:"false"`                                        // role_rank
+	Scopes                   *models.Scopes `json:"scopes" nullable:"false" ref:"#/components/schemas/Scopes"` // scopes
+	Username                 *string        `json:"username" nullable:"false"`                                 // username
+}
+
+// SetUpdateParams updates public.users struct fields with the specified params.
+func (u *User) SetUpdateParams(params *UserUpdateParams) {
+	if params.APIKeyID != nil {
+		u.APIKeyID = *params.APIKeyID
+	}
+	if params.Email != nil {
+		u.Email = *params.Email
+	}
+	if params.ExternalID != nil {
+		u.ExternalID = *params.ExternalID
+	}
+	if params.FirstName != nil {
+		u.FirstName = *params.FirstName
+	}
+	if params.HasGlobalNotifications != nil {
+		u.HasGlobalNotifications = *params.HasGlobalNotifications
+	}
+	if params.HasPersonalNotifications != nil {
+		u.HasPersonalNotifications = *params.HasPersonalNotifications
+	}
+	if params.LastName != nil {
+		u.LastName = *params.LastName
+	}
+	if params.RoleRank != nil {
+		u.RoleRank = *params.RoleRank
+	}
+	if params.Scopes != nil {
+		u.Scopes = *params.Scopes
+	}
+	if params.Username != nil {
+		u.Username = *params.Username
+	}
+}
 
 // Insert inserts the User to the database.
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {

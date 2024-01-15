@@ -62,22 +62,6 @@ func CreateXoTestsPagElement(ctx context.Context, db DB, params *XoTestsPagEleme
 	return xtpe.Insert(ctx, db)
 }
 
-// XoTestsPagElementUpdateParams represents update params for 'xo_tests.pag_element'.
-type XoTestsPagElementUpdateParams struct {
-	Dummy **XoTestsDummyJoinID `json:"dummy"`                 // dummy
-	Name  *string              `json:"name" nullable:"false"` // name
-}
-
-// SetUpdateParams updates xo_tests.pag_element struct fields with the specified params.
-func (xtpe *XoTestsPagElement) SetUpdateParams(params *XoTestsPagElementUpdateParams) {
-	if params.Dummy != nil {
-		xtpe.Dummy = *params.Dummy
-	}
-	if params.Name != nil {
-		xtpe.Name = *params.Name
-	}
-}
-
 type XoTestsPagElementSelectConfig struct {
 	limit   string
 	orderBy string
@@ -170,6 +154,22 @@ const xoTestsPagElementTableDummyJoinSelectSQL = `(case when _pag_element_dummy.
 const xoTestsPagElementTableDummyJoinGroupBySQL = `_pag_element_dummy.dummy_join_id,
       _pag_element_dummy.dummy_join_id,
 	pag_element.paginated_element_id`
+
+// XoTestsPagElementUpdateParams represents update params for 'xo_tests.pag_element'.
+type XoTestsPagElementUpdateParams struct {
+	Dummy **XoTestsDummyJoinID `json:"dummy"`                 // dummy
+	Name  *string              `json:"name" nullable:"false"` // name
+}
+
+// SetUpdateParams updates xo_tests.pag_element struct fields with the specified params.
+func (xtpe *XoTestsPagElement) SetUpdateParams(params *XoTestsPagElementUpdateParams) {
+	if params.Dummy != nil {
+		xtpe.Dummy = *params.Dummy
+	}
+	if params.Name != nil {
+		xtpe.Name = *params.Name
+	}
+}
 
 // Insert inserts the XoTestsPagElement to the database.
 func (xtpe *XoTestsPagElement) Insert(ctx context.Context, db DB) (*XoTestsPagElement, error) {

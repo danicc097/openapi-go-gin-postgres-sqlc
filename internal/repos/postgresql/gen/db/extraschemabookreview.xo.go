@@ -52,22 +52,6 @@ func CreateExtraSchemaBookReview(ctx context.Context, db DB, params *ExtraSchema
 	return esbr.Insert(ctx, db)
 }
 
-// ExtraSchemaBookReviewUpdateParams represents update params for 'extra_schema.book_reviews'.
-type ExtraSchemaBookReviewUpdateParams struct {
-	BookID   *ExtraSchemaBookID `json:"bookID" nullable:"false"`   // book_id
-	Reviewer *ExtraSchemaUserID `json:"reviewer" nullable:"false"` // reviewer
-}
-
-// SetUpdateParams updates extra_schema.book_reviews struct fields with the specified params.
-func (esbr *ExtraSchemaBookReview) SetUpdateParams(params *ExtraSchemaBookReviewUpdateParams) {
-	if params.BookID != nil {
-		esbr.BookID = *params.BookID
-	}
-	if params.Reviewer != nil {
-		esbr.Reviewer = *params.Reviewer
-	}
-}
-
 type ExtraSchemaBookReviewSelectConfig struct {
 	limit   string
 	orderBy string
@@ -153,6 +137,22 @@ const extraSchemaBookReviewTableUserSelectSQL = `(case when _book_reviews_review
 const extraSchemaBookReviewTableUserGroupBySQL = `_book_reviews_reviewer.user_id,
       _book_reviews_reviewer.user_id,
 	book_reviews.book_review_id`
+
+// ExtraSchemaBookReviewUpdateParams represents update params for 'extra_schema.book_reviews'.
+type ExtraSchemaBookReviewUpdateParams struct {
+	BookID   *ExtraSchemaBookID `json:"bookID" nullable:"false"`   // book_id
+	Reviewer *ExtraSchemaUserID `json:"reviewer" nullable:"false"` // reviewer
+}
+
+// SetUpdateParams updates extra_schema.book_reviews struct fields with the specified params.
+func (esbr *ExtraSchemaBookReview) SetUpdateParams(params *ExtraSchemaBookReviewUpdateParams) {
+	if params.BookID != nil {
+		esbr.BookID = *params.BookID
+	}
+	if params.Reviewer != nil {
+		esbr.Reviewer = *params.Reviewer
+	}
+}
 
 // Insert inserts the ExtraSchemaBookReview to the database.
 func (esbr *ExtraSchemaBookReview) Insert(ctx context.Context, db DB) (*ExtraSchemaBookReview, error) {

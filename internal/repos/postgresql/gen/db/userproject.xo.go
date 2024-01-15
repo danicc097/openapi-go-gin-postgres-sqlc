@@ -45,22 +45,6 @@ func CreateUserProject(ctx context.Context, db DB, params *UserProjectCreatePara
 	return up.Insert(ctx, db)
 }
 
-// UserProjectUpdateParams represents update params for 'public.user_project'.
-type UserProjectUpdateParams struct {
-	Member    *UserID    `json:"member" nullable:"false"`    // member
-	ProjectID *ProjectID `json:"projectID" nullable:"false"` // project_id
-}
-
-// SetUpdateParams updates public.user_project struct fields with the specified params.
-func (up *UserProject) SetUpdateParams(params *UserProjectUpdateParams) {
-	if params.Member != nil {
-		up.Member = *params.Member
-	}
-	if params.ProjectID != nil {
-		up.ProjectID = *params.ProjectID
-	}
-}
-
 type UserProjectSelectConfig struct {
 	limit   string
 	orderBy string
@@ -171,6 +155,22 @@ const userProjectTableMembersProjectSelectSQL = `COALESCE(
 
 const userProjectTableMembersProjectGroupBySQL = `user_project.member, user_project.project_id, user_project.member`
 
+// UserProjectUpdateParams represents update params for 'public.user_project'.
+type UserProjectUpdateParams struct {
+	Member    *UserID    `json:"member" nullable:"false"`    // member
+	ProjectID *ProjectID `json:"projectID" nullable:"false"` // project_id
+}
+
+// SetUpdateParams updates public.user_project struct fields with the specified params.
+func (up *UserProject) SetUpdateParams(params *UserProjectUpdateParams) {
+	if params.Member != nil {
+		up.Member = *params.Member
+	}
+	if params.ProjectID != nil {
+		up.ProjectID = *params.ProjectID
+	}
+}
+
 // Insert inserts the UserProject to the database.
 func (up *UserProject) Insert(ctx context.Context, db DB) (*UserProject, error) {
 	// insert (manual)
@@ -195,7 +195,7 @@ func (up *UserProject) Insert(ctx context.Context, db DB) (*UserProject, error) 
 	return up, nil
 }
 
-// ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
+// ------ NOTE: Update statements omitted due to lack of fields other than primary key or generated fields
 
 // Delete deletes the UserProject from the database.
 func (up *UserProject) Delete(ctx context.Context, db DB) error {

@@ -49,18 +49,6 @@ func CreateDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCr
 	return dtwi.Insert(ctx, db)
 }
 
-// DemoTwoWorkItemUpdateParams represents update params for 'public.demo_two_work_items'.
-type DemoTwoWorkItemUpdateParams struct {
-	CustomDateForProject2 **time.Time `json:"customDateForProject2"` // custom_date_for_project_2
-}
-
-// SetUpdateParams updates public.demo_two_work_items struct fields with the specified params.
-func (dtwi *DemoTwoWorkItem) SetUpdateParams(params *DemoTwoWorkItemUpdateParams) {
-	if params.CustomDateForProject2 != nil {
-		dtwi.CustomDateForProject2 = *params.CustomDateForProject2
-	}
-}
-
 type DemoTwoWorkItemSelectConfig struct {
 	limit   string
 	orderBy string
@@ -153,6 +141,18 @@ const demoTwoWorkItemTableWorkItemSelectSQL = `(case when _demo_two_work_items_w
 const demoTwoWorkItemTableWorkItemGroupBySQL = `_demo_two_work_items_work_item_id.work_item_id,
       _demo_two_work_items_work_item_id.work_item_id,
 	demo_two_work_items.work_item_id`
+
+// DemoTwoWorkItemUpdateParams represents update params for 'public.demo_two_work_items'.
+type DemoTwoWorkItemUpdateParams struct {
+	CustomDateForProject2 **time.Time `json:"customDateForProject2"` // custom_date_for_project_2
+}
+
+// SetUpdateParams updates public.demo_two_work_items struct fields with the specified params.
+func (dtwi *DemoTwoWorkItem) SetUpdateParams(params *DemoTwoWorkItemUpdateParams) {
+	if params.CustomDateForProject2 != nil {
+		dtwi.CustomDateForProject2 = *params.CustomDateForProject2
+	}
+}
 
 // Insert inserts the DemoTwoWorkItem to the database.
 func (dtwi *DemoTwoWorkItem) Insert(ctx context.Context, db DB) (*DemoTwoWorkItem, error) {

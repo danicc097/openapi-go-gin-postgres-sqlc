@@ -60,30 +60,6 @@ func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreatePara
 	return wit.Insert(ctx, db)
 }
 
-// WorkItemTagUpdateParams represents update params for 'public.work_item_tags'.
-type WorkItemTagUpdateParams struct {
-	Color       *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
-	Description *string    `json:"description" nullable:"false"`                                        // description
-	Name        *string    `json:"name" nullable:"false"`                                               // name
-	ProjectID   *ProjectID `json:"-" openapi-go:"ignore"`                                               // project_id
-}
-
-// SetUpdateParams updates public.work_item_tags struct fields with the specified params.
-func (wit *WorkItemTag) SetUpdateParams(params *WorkItemTagUpdateParams) {
-	if params.Color != nil {
-		wit.Color = *params.Color
-	}
-	if params.Description != nil {
-		wit.Description = *params.Description
-	}
-	if params.Name != nil {
-		wit.Name = *params.Name
-	}
-	if params.ProjectID != nil {
-		wit.ProjectID = *params.ProjectID
-	}
-}
-
 type WorkItemTagSelectConfig struct {
 	limit   string
 	orderBy string
@@ -209,6 +185,30 @@ const workItemTagTableWorkItemsWorkItemTagSelectSQL = `COALESCE(
 		)) filter (where joined_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') as work_item_work_item_tag_work_items`
 
 const workItemTagTableWorkItemsWorkItemTagGroupBySQL = `work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id`
+
+// WorkItemTagUpdateParams represents update params for 'public.work_item_tags'.
+type WorkItemTagUpdateParams struct {
+	Color       *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description *string    `json:"description" nullable:"false"`                                        // description
+	Name        *string    `json:"name" nullable:"false"`                                               // name
+	ProjectID   *ProjectID `json:"-" openapi-go:"ignore"`                                               // project_id
+}
+
+// SetUpdateParams updates public.work_item_tags struct fields with the specified params.
+func (wit *WorkItemTag) SetUpdateParams(params *WorkItemTagUpdateParams) {
+	if params.Color != nil {
+		wit.Color = *params.Color
+	}
+	if params.Description != nil {
+		wit.Description = *params.Description
+	}
+	if params.Name != nil {
+		wit.Name = *params.Name
+	}
+	if params.ProjectID != nil {
+		wit.ProjectID = *params.ProjectID
+	}
+}
 
 // Insert inserts the WorkItemTag to the database.
 func (wit *WorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemTag, error) {

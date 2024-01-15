@@ -54,26 +54,6 @@ func CreateXoTestsBookAuthorsSurrogateKey(ctx context.Context, db DB, params *Xo
 	return xtbask.Insert(ctx, db)
 }
 
-// XoTestsBookAuthorsSurrogateKeyUpdateParams represents update params for 'xo_tests.book_authors_surrogate_key'.
-type XoTestsBookAuthorsSurrogateKeyUpdateParams struct {
-	AuthorID  *XoTestsUserID `json:"authorID" nullable:"false"` // author_id
-	BookID    *XoTestsBookID `json:"bookID" nullable:"false"`   // book_id
-	Pseudonym **string       `json:"pseudonym"`                 // pseudonym
-}
-
-// SetUpdateParams updates xo_tests.book_authors_surrogate_key struct fields with the specified params.
-func (xtbask *XoTestsBookAuthorsSurrogateKey) SetUpdateParams(params *XoTestsBookAuthorsSurrogateKeyUpdateParams) {
-	if params.AuthorID != nil {
-		xtbask.AuthorID = *params.AuthorID
-	}
-	if params.BookID != nil {
-		xtbask.BookID = *params.BookID
-	}
-	if params.Pseudonym != nil {
-		xtbask.Pseudonym = *params.Pseudonym
-	}
-}
-
 type XoTestsBookAuthorsSurrogateKeySelectConfig struct {
 	limit   string
 	orderBy string
@@ -199,6 +179,26 @@ const xoTestsBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL = `COALESCE(
 		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') as book_authors_surrogate_key_authors`
 
 const xoTestsBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL = `book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id`
+
+// XoTestsBookAuthorsSurrogateKeyUpdateParams represents update params for 'xo_tests.book_authors_surrogate_key'.
+type XoTestsBookAuthorsSurrogateKeyUpdateParams struct {
+	AuthorID  *XoTestsUserID `json:"authorID" nullable:"false"` // author_id
+	BookID    *XoTestsBookID `json:"bookID" nullable:"false"`   // book_id
+	Pseudonym **string       `json:"pseudonym"`                 // pseudonym
+}
+
+// SetUpdateParams updates xo_tests.book_authors_surrogate_key struct fields with the specified params.
+func (xtbask *XoTestsBookAuthorsSurrogateKey) SetUpdateParams(params *XoTestsBookAuthorsSurrogateKeyUpdateParams) {
+	if params.AuthorID != nil {
+		xtbask.AuthorID = *params.AuthorID
+	}
+	if params.BookID != nil {
+		xtbask.BookID = *params.BookID
+	}
+	if params.Pseudonym != nil {
+		xtbask.Pseudonym = *params.Pseudonym
+	}
+}
 
 // Insert inserts the XoTestsBookAuthorsSurrogateKey to the database.
 func (xtbask *XoTestsBookAuthorsSurrogateKey) Insert(ctx context.Context, db DB) (*XoTestsBookAuthorsSurrogateKey, error) {

@@ -54,26 +54,6 @@ func CreateEntityNotification(ctx context.Context, db DB, params *EntityNotifica
 	return en.Insert(ctx, db)
 }
 
-// EntityNotificationUpdateParams represents update params for 'public.entity_notifications'.
-type EntityNotificationUpdateParams struct {
-	ID      *string        `json:"id" nullable:"false"`                                      // id
-	Message *string        `json:"message" nullable:"false"`                                 // message
-	Topic   *models.Topics `json:"topic" nullable:"false" ref:"#/components/schemas/Topics"` // topic
-}
-
-// SetUpdateParams updates public.entity_notifications struct fields with the specified params.
-func (en *EntityNotification) SetUpdateParams(params *EntityNotificationUpdateParams) {
-	if params.ID != nil {
-		en.ID = *params.ID
-	}
-	if params.Message != nil {
-		en.Message = *params.Message
-	}
-	if params.Topic != nil {
-		en.Topic = *params.Topic
-	}
-}
-
 type EntityNotificationSelectConfig struct {
 	limit   string
 	orderBy string
@@ -151,6 +131,26 @@ func WithEntityNotificationFilters(filters map[string][]any) EntityNotificationS
 func WithEntityNotificationHavingClause(conditions map[string][]any) EntityNotificationSelectConfigOption {
 	return func(s *EntityNotificationSelectConfig) {
 		s.having = conditions
+	}
+}
+
+// EntityNotificationUpdateParams represents update params for 'public.entity_notifications'.
+type EntityNotificationUpdateParams struct {
+	ID      *string        `json:"id" nullable:"false"`                                      // id
+	Message *string        `json:"message" nullable:"false"`                                 // message
+	Topic   *models.Topics `json:"topic" nullable:"false" ref:"#/components/schemas/Topics"` // topic
+}
+
+// SetUpdateParams updates public.entity_notifications struct fields with the specified params.
+func (en *EntityNotification) SetUpdateParams(params *EntityNotificationUpdateParams) {
+	if params.ID != nil {
+		en.ID = *params.ID
+	}
+	if params.Message != nil {
+		en.Message = *params.Message
+	}
+	if params.Topic != nil {
+		en.Topic = *params.Topic
 	}
 }
 

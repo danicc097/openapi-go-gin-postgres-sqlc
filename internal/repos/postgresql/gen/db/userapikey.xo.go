@@ -55,26 +55,6 @@ func CreateUserAPIKey(ctx context.Context, db DB, params *UserAPIKeyCreateParams
 	return uak.Insert(ctx, db)
 }
 
-// UserAPIKeyUpdateParams represents update params for 'public.user_api_keys'.
-type UserAPIKeyUpdateParams struct {
-	APIKey    *string    `json:"apiKey" nullable:"false"`    // api_key
-	ExpiresOn *time.Time `json:"expiresOn" nullable:"false"` // expires_on
-	UserID    *UserID    `json:"userID" nullable:"false"`    // user_id
-}
-
-// SetUpdateParams updates public.user_api_keys struct fields with the specified params.
-func (uak *UserAPIKey) SetUpdateParams(params *UserAPIKeyUpdateParams) {
-	if params.APIKey != nil {
-		uak.APIKey = *params.APIKey
-	}
-	if params.ExpiresOn != nil {
-		uak.ExpiresOn = *params.ExpiresOn
-	}
-	if params.UserID != nil {
-		uak.UserID = *params.UserID
-	}
-}
-
 type UserAPIKeySelectConfig struct {
 	limit   string
 	orderBy string
@@ -167,6 +147,26 @@ const userAPIKeyTableUserSelectSQL = `(case when _user_api_keys_user_id.user_id 
 const userAPIKeyTableUserGroupBySQL = `_user_api_keys_user_id.user_id,
       _user_api_keys_user_id.user_id,
 	user_api_keys.user_api_key_id`
+
+// UserAPIKeyUpdateParams represents update params for 'public.user_api_keys'.
+type UserAPIKeyUpdateParams struct {
+	APIKey    *string    `json:"apiKey" nullable:"false"`    // api_key
+	ExpiresOn *time.Time `json:"expiresOn" nullable:"false"` // expires_on
+	UserID    *UserID    `json:"userID" nullable:"false"`    // user_id
+}
+
+// SetUpdateParams updates public.user_api_keys struct fields with the specified params.
+func (uak *UserAPIKey) SetUpdateParams(params *UserAPIKeyUpdateParams) {
+	if params.APIKey != nil {
+		uak.APIKey = *params.APIKey
+	}
+	if params.ExpiresOn != nil {
+		uak.ExpiresOn = *params.ExpiresOn
+	}
+	if params.UserID != nil {
+		uak.UserID = *params.UserID
+	}
+}
 
 // Insert inserts the UserAPIKey to the database.
 func (uak *UserAPIKey) Insert(ctx context.Context, db DB) (*UserAPIKey, error) {
