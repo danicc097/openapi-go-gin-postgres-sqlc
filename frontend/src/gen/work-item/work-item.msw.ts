@@ -68,18 +68,6 @@ export const getUpdateWorkitemMock = () =>
     },
   ])
 
-export const getCreateWorkitemCommentMock = () =>
-  faker.helpers.arrayElement([
-    {
-      createdAt: (() => faker.date.past())(),
-      message: faker.word.sample(),
-      updatedAt: (() => faker.date.past())(),
-      userID: (() => faker.datatype.uuid())(),
-      workItemCommentID: faker.number.int({ min: undefined, max: undefined }),
-      workItemID: faker.number.int({ min: undefined, max: undefined }),
-    },
-  ])
-
 export const getWorkItemMock = () => [
   http.post('*/workitem/', async () => {
     await delay(1000)
@@ -111,15 +99,6 @@ export const getWorkItemMock = () => [
   http.delete('*/workitem/:id/', async () => {
     await delay(1000)
     return new HttpResponse(null, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-  http.post('*/workitem/:id/comments/', async () => {
-    await delay(1000)
-    return new HttpResponse(JSON.stringify(getCreateWorkitemCommentMock()), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',

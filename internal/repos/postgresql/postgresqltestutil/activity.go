@@ -23,6 +23,7 @@ func NewRandomActivity(t *testing.T, d db.DBTX, projectID db.ProjectID) *db.Acti
 	return activity
 }
 
+// NOTE: FKs should always be passed explicitly.
 func RandomActivityCreateParams(t *testing.T, projectID db.ProjectID) *db.ActivityCreateParams {
 	t.Helper()
 

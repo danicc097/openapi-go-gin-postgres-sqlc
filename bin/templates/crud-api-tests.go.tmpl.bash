@@ -20,8 +20,6 @@ $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgr
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers\"
 	\"github.com/stretchr/testify/assert\"
 	\"github.com/stretchr/testify/require\"
-	\"go.uber.org/zap\"
-	\"go.uber.org/zap/zaptest\"
 )
 
 func TestHandlers_Delete${pascal_name}(t *testing.T) {

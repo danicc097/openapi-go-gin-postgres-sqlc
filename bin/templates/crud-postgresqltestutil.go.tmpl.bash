@@ -25,7 +25,7 @@ func NewRandom${pascal_name}(t *testing.T, d db.DBTX $create_params) *db.${pasca
 
 	return ${camel_name}
 }
-
+// NOTE: FKs should always be passed explicitly.
 func Random${pascal_name}CreateParams(t *testing.T $create_params) *db.${pascal_name}CreateParams {
 	t.Helper()
 

@@ -814,29 +814,6 @@ paths:
           description: Success.
       tags:
         - workItem
-  /workitem/{id}/comments/:
-    post:
-      summary: create workitem comment
-      !!merge <<: *x-require-authenticated
-      operationId: CreateWorkitemComment
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CreateWorkItemCommentRequest'
-        required: true
-      parameters:
-        - $ref: '#/components/parameters/SerialID'
-      responses:
-        200:
-          description: Success.
-          content:
-            application/json:
-              schema:
-                oneOf:
-                  - $ref: '#/components/schemas/DbWorkItemComment'
-      tags:
-        - workItem
 components:
   parameters:
     ProjectName:

@@ -16,9 +16,17 @@ func NewRandomDemoWorkItem(t *testing.T, d db.DBTX, kanbanStepID db.KanbanStepID
 
 	dpwiRepo := postgresql.NewDemoWorkItem()
 
-	dpwi, err := dpwiRepo.Create(context.Background(), d, repos.DemoWorkItemCreateParams{
+	cp := RandomDemoWorkItemCreateParams(t, kanbanStepID, workItemTypeID, teamID)
+	dpwi, err := dpwiRepo.Create(context.Background(), d, cp)
+	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
+
+	return dpwi
+}
+
+// NOTE: FKs should always be passed explicitly.
+func RandomDemoWorkItemCreateParams(t *testing.T, kanbanStepID db.KanbanStepID, workItemTypeID db.WorkItemTypeID, teamID db.TeamID) repos.DemoWorkItemCreateParams {
+	return repos.DemoWorkItemCreateParams{
 		DemoProject: db.DemoWorkItemCreateParams{
-			// PK is FK. it will be set in repo method after base workitem creation which is unknown beforehand.
 			WorkItemID:    db.WorkItemID(-1),
 			Ref:           "ref-" + testutil.RandomString(5),
 			Line:          "line-" + testutil.RandomString(5),
@@ -26,8 +34,5 @@ func NewRandomDemoWorkItem(t *testing.T, d db.DBTX, kanbanStepID db.KanbanStepID
 			LastMessageAt: testutil.RandomDate(),
 		},
 		Base: *RandomWorkItemCreateParams(t, kanbanStepID, workItemTypeID, teamID),
-	})
-	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
-
-	return dpwi
+	}
 }

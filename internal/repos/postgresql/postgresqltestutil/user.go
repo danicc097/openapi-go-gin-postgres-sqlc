@@ -29,6 +29,7 @@ func NewRandomUser(t *testing.T, d db.DBTX) *db.User {
 	return user
 }
 
+// NOTE: FKs should always be passed explicitly.
 func RandomUserCreateParams(t *testing.T) *db.UserCreateParams {
 	t.Helper()
 

@@ -302,14 +302,12 @@ type CreateTeamRequest  struct {
 }
 */
 
-/* Ignoring existing rest struct
 // CreateWorkItemCommentRequest defines the model for CreateWorkItemCommentRequest.
-type CreateWorkItemCommentRequest  struct {
-    Message string`json:"message"`
-    UserID externalRef0.DbUserID`json:"userID"`
-    WorkItemID int`json:"workItemID"`
+type CreateWorkItemCommentRequest struct {
+	Message    string                `json:"message"`
+	UserID     externalRef0.DbUserID `json:"userID"`
+	WorkItemID int                   `json:"workItemID"`
 }
-*/
 
 // CreateWorkItemRequest defines the model for CreateWorkItemRequest.
 type CreateWorkItemRequest struct {
@@ -980,10 +978,6 @@ type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
 
 type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
 
-// CreateWorkitemCommentJSONRequestBody defines body for CreateWorkitemComment for application/json ContentType.
-
-type CreateWorkitemCommentJSONRequestBody = CreateWorkItemCommentRequest
-
 // AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {
 	var body CreateDemoWorkItemRequest
@@ -1147,9 +1141,6 @@ type ServerInterface interface {
 	// update workitem
 	// (PATCH /workitem/{id}/)
 	UpdateWorkitem(c *gin.Context, id externalRef0.SerialID)
-	// create workitem comment
-	// (POST /workitem/{id}/comments/)
-	CreateWorkitemComment(c *gin.Context, id externalRef0.SerialID)
 
 	middlewares(opID OperationID) []gin.HandlerFunc
 	authMiddlewares(opID OperationID) []gin.HandlerFunc
@@ -1943,26 +1934,6 @@ func (siw *ServerInterfaceWrapper) UpdateWorkitem(c *gin.Context) {
 	siw.Handler.UpdateWorkitem(c, id)
 }
 
-// CreateWorkitemComment operation with its own middleware.
-func (siw *ServerInterfaceWrapper) CreateWorkitemComment(c *gin.Context) {
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
-
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
-		return
-	}
-
-	c.Set(externalRef0.Bearer_authScopes, []string{})
-
-	c.Set(externalRef0.Api_keyScopes, []string{})
-
-	siw.Handler.CreateWorkitemComment(c, id)
-}
-
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL string
@@ -2168,11 +2139,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PATCH(options.BaseURL+"/workitem/:id/", append(
 		wrapper.Handler.authMiddlewares(UpdateWorkitem),
 		append(wrapper.Handler.middlewares(UpdateWorkitem), wrapper.UpdateWorkitem)...,
-	)...)
-
-	router.POST(options.BaseURL+"/workitem/:id/comments/", append(
-		wrapper.Handler.authMiddlewares(CreateWorkitemComment),
-		append(wrapper.Handler.middlewares(CreateWorkitemComment), wrapper.CreateWorkitemComment)...,
 	)...)
 }
 
@@ -3393,26 +3359,6 @@ func (response UpdateWorkitem200JSONResponse) VisitUpdateWorkitemResponse(w http
 	return json.NewEncoder(w).Encode(response)
 }
 
-type CreateWorkitemCommentRequestObject struct {
-	Id   externalRef0.SerialID `json:"id"`
-	Body *externalRef0.CreateWorkitemCommentJSONRequestBody
-}
-
-type CreateWorkitemCommentResponseObject interface {
-	VisitCreateWorkitemCommentResponse(w http.ResponseWriter) error
-}
-
-type CreateWorkitemComment200JSONResponse struct {
-	union json.RawMessage
-}
-
-func (response CreateWorkitemComment200JSONResponse) VisitCreateWorkitemCommentResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// delete activity.
@@ -3529,9 +3475,6 @@ type StrictServerInterface interface {
 	// update workitem
 	// (PATCH /workitem/{id}/)
 	UpdateWorkitem(c *gin.Context, request UpdateWorkitemRequestObject) (UpdateWorkitemResponseObject, error)
-	// create workitem comment
-	// (POST /workitem/{id}/comments/)
-	CreateWorkitemComment(c *gin.Context, request CreateWorkitemCommentRequestObject) (CreateWorkitemCommentResponseObject, error)
 	middlewares(opID OperationID) []gin.HandlerFunc
 	authMiddlewares(opID OperationID) []gin.HandlerFunc
 }
@@ -4683,42 +4626,6 @@ func (sh *strictHandlers) UpdateWorkitem(ctx *gin.Context, id externalRef0.Seria
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(UpdateWorkitemResponseObject); ok {
 		if err := validResponse.VisitUpdateWorkitemResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// CreateWorkitemComment operation middleware
-func (sh *strictHandlers) CreateWorkitemComment(ctx *gin.Context, id externalRef0.SerialID) {
-	var request CreateWorkitemCommentRequestObject
-
-	request.Id = id
-
-	// CreateWorkitemCommentRequest
-	var body externalRef0.CreateWorkitemCommentJSONRequestBody
-	if err := ctx.ShouldBind(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.CreateWorkitemComment(ctx, request.(CreateWorkitemCommentRequestObject))
-	}
-	for _, middleware := range sh.strictMiddlewares {
-		handler = middleware(handler, "CreateWorkitemComment")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(CreateWorkitemCommentResponseObject); ok {
-		if err := validResponse.VisitCreateWorkitemCommentResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

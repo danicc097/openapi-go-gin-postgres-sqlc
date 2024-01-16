@@ -52,14 +52,6 @@ func CreateRepos() *repos.Repos {
 		postgresql.OtelName,
 		nil,
 	)
-	workitemcommentrepo := reposwrappers.NewWorkItemCommentWithTracing(
-		reposwrappers.NewWorkItemCommentWithTimeout(
-			postgresql.NewWorkItemComment(),
-			reposwrappers.WorkItemCommentWithTimeoutConfig{},
-		),
-		postgresql.OtelName,
-		nil,
-	)
 	workitemtyperepo := reposwrappers.NewWorkItemTypeWithTracing(
 		reposwrappers.NewWorkItemTypeWithTimeout(
 			postgresql.NewWorkItemType(),
@@ -128,7 +120,6 @@ func CreateRepos() *repos.Repos {
 		TimeEntry:       timeentryrepo,
 		User:            urepo,
 		WorkItem:        workitemrepo,
-		WorkItemComment: workitemcommentrepo,
 		WorkItemTag:     workitemtagrepo,
 		WorkItemType:    workitemtyperepo,
 	}

@@ -230,7 +230,6 @@ var PublicStructs = map[string]any{
 	"RestCreateDemoWorkItemRequest":      new(rest.CreateDemoWorkItemRequest),
 	"RestCreateProjectBoardRequest":      new(rest.CreateProjectBoardRequest),
 	"RestCreateTeamRequest":              new(rest.CreateTeamRequest),
-	"RestCreateWorkItemCommentRequest":   new(rest.CreateWorkItemCommentRequest),
 	"RestCreateWorkItemTagRequest":       new(rest.CreateWorkItemTagRequest),
 	"RestCreateWorkItemTypeRequest":      new(rest.CreateWorkItemTypeRequest),
 	"RestDemoTwoWorkItems":               new(rest.DemoTwoWorkItems),

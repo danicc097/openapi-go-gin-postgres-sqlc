@@ -18,8 +18,6 @@ import (
 	\"github.com/jackc/pgx/v5\"
 	\"github.com/stretchr/testify/assert\"
 	\"github.com/stretchr/testify/require\"
-	\"go.uber.org/zap\"
-	\"go.uber.org/zap/zaptest\"
 )
 
 func Test${pascal_name}_Update(t *testing.T) {
@@ -34,12 +32,12 @@ func Test${pascal_name}_Update(t *testing.T) {
 
 	team, err := svc.Team.Create(context.Background(), testPool, postgresqltestutil.RandomTeamCreateParams(t, internal.ProjectIDByName[requiredProject]))
 	require.NoError(t, err)
-	tagCreator, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	creator, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		WithAPIKey: true,
 	})
 	require.NoError(t, err)
 
-	tagCreator.User, err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, team.TeamID)
+	creator.User, err = svc.User.AssignTeam(context.Background(), testPool, creator.User.UserID, team.TeamID)
 	require.NoError(t, err)
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")

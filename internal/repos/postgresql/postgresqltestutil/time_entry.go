@@ -3,9 +3,11 @@ package postgresqltestutil
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/stretchr/testify/require"
@@ -14,7 +16,7 @@ import (
 func NewRandomTimeEntry(t *testing.T, d db.DBTX, activityID db.ActivityID, userID db.UserID, workItemID *db.WorkItemID, teamID *db.TeamID) *db.TimeEntry {
 	t.Helper()
 
-	teRepo := postgresql.NewTimeEntry()
+	teRepo := reposwrappers.NewTimeEntryWithRetry(postgresql.NewTimeEntry(), testutil.NewLogger(t), 5, 65*time.Millisecond)
 
 	ucp := RandomTimeEntryCreateParams(t, activityID, userID, workItemID, teamID)
 
@@ -24,6 +26,7 @@ func NewRandomTimeEntry(t *testing.T, d db.DBTX, activityID db.ActivityID, userI
 	return te
 }
 
+// NOTE: FKs should always be passed explicitly.
 func RandomTimeEntryCreateParams(t *testing.T, activityID db.ActivityID, userID db.UserID, workItemID *db.WorkItemID, teamID *db.TeamID) *db.TimeEntryCreateParams {
 	t.Helper()
 

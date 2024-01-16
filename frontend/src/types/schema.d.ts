@@ -136,10 +136,6 @@ export interface paths {
     /** update workitem */
     patch: operations["UpdateWorkitem"];
   };
-  "/workitem/{id}/comments/": {
-    /** create workitem comment */
-    post: operations["CreateWorkitemComment"];
-  };
 }
 
 export type webhooks = Record<string, never>;
@@ -1548,27 +1544,6 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["DbWorkItem"];
-        };
-      };
-    };
-  };
-  /** create workitem comment */
-  CreateWorkitemComment: {
-    parameters: {
-      path: {
-        id: components["parameters"]["SerialID"];
-      };
-    };
-    requestBody: {
-      content: {
-        "application/json": components["schemas"]["CreateWorkItemCommentRequest"];
-      };
-    };
-    responses: {
-      /** @description Success. */
-      200: {
-        content: {
-          "application/json": components["schemas"]["DbWorkItemComment"];
         };
       };
     };

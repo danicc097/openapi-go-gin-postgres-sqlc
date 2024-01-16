@@ -245,11 +245,6 @@ type ClientInterface interface {
 
 	// UpdateWorkitem request
 	UpdateWorkitem(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// CreateWorkitemComment request with any body
-	CreateWorkitemCommentWithBody(ctx context.Context, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	CreateWorkitemComment(ctx context.Context, id SerialID, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) DeleteActivity(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1204,44 +1199,6 @@ func (c *Client) GetWorkItem(ctx context.Context, id SerialID, reqEditors ...Req
 
 func (c *Client) UpdateWorkitem(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWorkitemRequest(c.Server, id)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	if c.testHandler != nil {
-		resp := httptest.NewRecorder()
-		c.testHandler.ServeHTTP(resp, req)
-
-		return resp.Result(), nil
-	} else {
-		return c.Client.Do(req)
-	}
-}
-
-func (c *Client) CreateWorkitemCommentWithBody(ctx context.Context, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateWorkitemCommentRequestWithBody(c.Server, id, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	if c.testHandler != nil {
-		resp := httptest.NewRecorder()
-		c.testHandler.ServeHTTP(resp, req)
-
-		return resp.Result(), nil
-	} else {
-		return c.Client.Do(req)
-	}
-}
-
-func (c *Client) CreateWorkitemComment(ctx context.Context, id SerialID, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateWorkitemCommentRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2804,53 +2761,6 @@ func NewUpdateWorkitemRequest(server string, id SerialID) (*http.Request, error)
 	return req, nil
 }
 
-// NewCreateWorkitemCommentRequest calls the generic CreateWorkitemComment builder with application/json body
-func NewCreateWorkitemCommentRequest(server string, id SerialID, body CreateWorkitemCommentJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreateWorkitemCommentRequestWithBody(server, id, "application/json", bodyReader)
-}
-
-// NewCreateWorkitemCommentRequestWithBody generates requests for CreateWorkitemComment with any type of body
-func NewCreateWorkitemCommentRequestWithBody(server string, id SerialID, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/workitem/%s/comments/", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -3033,11 +2943,6 @@ type ClientWithResponsesInterface interface {
 
 	// UpdateWorkitem request
 	UpdateWorkitemWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*UpdateWorkitemResponse, error)
-
-	// CreateWorkitemComment request with any body
-	CreateWorkitemCommentWithBodyWithResponse(ctx context.Context, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error)
-
-	CreateWorkitemCommentWithResponse(ctx context.Context, id SerialID, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error)
 }
 
 type DeleteActivityResponse struct {
@@ -3891,30 +3796,6 @@ func (r UpdateWorkitemResponse) StatusCode() int {
 	return 0
 }
 
-type CreateWorkitemCommentResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *struct {
-		union json.RawMessage
-	}
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateWorkitemCommentResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateWorkitemCommentResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 // DeleteActivityWithResponse request returning *DeleteActivityResponse
 func (c *ClientWithResponses) DeleteActivityWithResponse(ctx context.Context, id SerialID, reqEditors ...RequestEditorFn) (*DeleteActivityResponse, error) {
 	rsp, err := c.DeleteActivity(ctx, id, reqEditors...)
@@ -4359,23 +4240,6 @@ func (c *ClientWithResponses) UpdateWorkitemWithResponse(ctx context.Context, id
 		return nil, err
 	}
 	return ParseUpdateWorkitemResponse(rsp)
-}
-
-// CreateWorkitemCommentWithBodyWithResponse request with arbitrary body returning *CreateWorkitemCommentResponse
-func (c *ClientWithResponses) CreateWorkitemCommentWithBodyWithResponse(ctx context.Context, id SerialID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error) {
-	rsp, err := c.CreateWorkitemCommentWithBody(ctx, id, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateWorkitemCommentResponse(rsp)
-}
-
-func (c *ClientWithResponses) CreateWorkitemCommentWithResponse(ctx context.Context, id SerialID, body CreateWorkitemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemCommentResponse, error) {
-	rsp, err := c.CreateWorkitemComment(ctx, id, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateWorkitemCommentResponse(rsp)
 }
 
 // ParseDeleteActivityResponse parses an HTTP response from a DeleteActivityWithResponse call
@@ -5367,33 +5231,6 @@ func ParseUpdateWorkitemResponse(rsp *http.Response) (*UpdateWorkitemResponse, e
 	}
 
 	response := &UpdateWorkitemResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			union json.RawMessage
-		}
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-	}
-
-	return response, nil
-}
-
-// ParseCreateWorkitemCommentResponse parses an HTTP response from a CreateWorkitemCommentWithResponse call
-func ParseCreateWorkitemCommentResponse(rsp *http.Response) (*CreateWorkitemCommentResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreateWorkitemCommentResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

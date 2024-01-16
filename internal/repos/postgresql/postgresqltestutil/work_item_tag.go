@@ -23,6 +23,7 @@ func NewRandomWorkItemTag(t *testing.T, d db.DBTX, projectID db.ProjectID) *db.W
 	return wit
 }
 
+// NOTE: FKs should always be passed explicitly.
 func RandomWorkItemTagCreateParams(t *testing.T, projectID db.ProjectID) *db.WorkItemTagCreateParams {
 	t.Helper()
 

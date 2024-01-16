@@ -50,10 +50,6 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
-	case CreateWorkitemComment:
-		return []gin.HandlerFunc{
-			h.authmw.EnsureAuthenticated(),
-		}
 	case DeleteActivity:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),

@@ -8,6 +8,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 )
 
+// NOTE: FKs should always be passed explicitly.
 func RandomNotificationCreateParams(t *testing.T, receiverRank *int, sender db.UserID, receiver *db.UserID, notificationType db.NotificationType) *db.NotificationCreateParams {
 	t.Helper()
 

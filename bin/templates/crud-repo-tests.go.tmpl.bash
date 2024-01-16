@@ -136,7 +136,6 @@ func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 	$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
 	${lower_name} := postgresqltestutil.NewRandom${pascal_name}(t, testPool $create_args)
 
-	logger := logger := testutil.NewLogger(t)
 
 	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), logger, 10, 65*time.Millisecond)
 
@@ -161,7 +160,6 @@ func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 func Test${pascal_name}_Create(t *testing.T) {
 	t.Parallel()
 
-	logger := logger := testutil.NewLogger(t)
 
 	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), logger, 10, 65*time.Millisecond)
 

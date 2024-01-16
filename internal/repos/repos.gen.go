@@ -13,7 +13,6 @@ type Repos struct {
 	TimeEntry       TimeEntry
 	User            User
 	WorkItem        WorkItem
-	WorkItemComment WorkItemComment
 	WorkItemTag     WorkItemTag
 	WorkItemType    WorkItemType
 }

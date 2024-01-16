@@ -25,6 +25,7 @@ func NewRandomTeam(t *testing.T, d db.DBTX, projectID db.ProjectID) *db.Team {
 	return team
 }
 
+// NOTE: FKs should always be passed explicitly.
 func RandomTeamCreateParams(t *testing.T, projectID db.ProjectID) *db.TeamCreateParams {
 	t.Helper()
 
