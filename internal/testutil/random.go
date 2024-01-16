@@ -88,6 +88,12 @@ func RandomLastName() string {
 	return lastNames[rand.Intn(len(lastNames))]
 }
 
+// RandomFrom selects a random item from a list. Assumes the list is not empty.
+func RandomFrom[T any](items []T) T {
+	index := rand.Intn(len(items))
+	return items[index]
+}
+
 // RandomEmail generates a random email.
 func RandomEmail() string {
 	return fmt.Sprintf("%s@email.com", RandomNameIdentifier(3, "."))

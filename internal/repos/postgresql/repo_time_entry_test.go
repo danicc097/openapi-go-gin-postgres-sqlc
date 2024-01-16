@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
@@ -16,23 +15,12 @@ import (
 func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
-	projectRepo := postgresql.NewProject()
 	timeEntryRepo := postgresql.NewTimeEntry()
 
-	ctx := context.Background()
-
-	project, err := projectRepo.ByName(ctx, testPool, models.ProjectDemo)
-	if err != nil {
-		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
-	}
 	user := postgresqltestutil.NewRandomUser(t, testPool)
-	team := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
-	activity := postgresqltestutil.NewRandomActivity(t, testPool, project.ProjectID)
+	activity := postgresqltestutil.NewRandomActivity(t, testPool, models.ProjectDemo)
 
-	kanbanStepID := internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived]
-	workItemTypeID := internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1]
-
-	workItem := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
+	workItem := postgresqltestutil.NewRandomDemoWorkItem(t, testPool)
 	timeEntry := postgresqltestutil.NewRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, &workItem.WorkItemID, nil) // time entry associated to a workItem
 
 	uniqueTestCases := []filterTestCase[*db.TimeEntry]{

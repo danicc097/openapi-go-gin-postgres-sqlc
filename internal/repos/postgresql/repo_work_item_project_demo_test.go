@@ -4,8 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
@@ -17,12 +15,7 @@ import (
 func TestDemoWorkItem_Update(t *testing.T) {
 	t.Parallel()
 
-	projectID := internal.ProjectIDByName[models.ProjectDemo]
-	team := postgresqltestutil.NewRandomTeam(t, testPool, projectID)
-
-	kanbanStepID := internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived]
-	workItemTypeID := internal.DemoWorkItemTypesIDByName[models.DemoWorkItemTypesType1]
-	demoWorkItem := postgresqltestutil.NewRandomDemoWorkItem(t, testPool, kanbanStepID, workItemTypeID, team.TeamID)
+	demoWorkItem := postgresqltestutil.NewRandomDemoWorkItem(t, testPool)
 
 	type args struct {
 		id     db.WorkItemID
