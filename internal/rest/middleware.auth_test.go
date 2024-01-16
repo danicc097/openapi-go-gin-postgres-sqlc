@@ -104,14 +104,11 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			authMw := rest.NewAuthMiddleware(logger, testPool, svcs)
 
 			ff := servicetestutil.NewFixtureFactory(t, testPool, svcs)
-			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				Scopes:     tc.scopes,
 				WithAPIKey: true,
 			})
-			if err != nil {
-				t.Fatalf("ff.CreateUser: %s", err)
-			}
 
 			if !tc.withoutUser {
 				engine.Use(func(c *gin.Context) {

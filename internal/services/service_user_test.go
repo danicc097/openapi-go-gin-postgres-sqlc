@@ -302,35 +302,30 @@ func createTestUsers(t *testing.T) testUsers {
 
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	guest, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	guest := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleGuest,
 		WithAPIKey: true,
 	})
-	require.NoError(t, err)
 
-	user, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	user := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleUser,
 		WithAPIKey: true,
 	})
-	require.NoError(t, err)
 
-	advancedUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	advancedUser := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdvancedUser,
 		WithAPIKey: true,
 	})
-	require.NoError(t, err)
 
-	manager, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	manager := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleManager,
 		WithAPIKey: true,
 	})
-	require.NoError(t, err)
 
-	admin, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	admin := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdmin,
 		WithAPIKey: true,
 	})
-	require.NoError(t, err)
 
 	return testUsers{
 		guest:        guest,

@@ -30,13 +30,12 @@ func TestGetPaginatedNotificationsRoute(t *testing.T) {
 	t.Run("user notifications", func(t *testing.T) {
 		t.Parallel()
 
-		ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			WithAPIKey: true,
 		})
 		require.NoError(t, err)
 
-		notification, err := ff.CreatePersonalNotification(context.Background(), servicetestutil.CreateNotificationParams{Receiver: &ufixture.User.UserID})
-		require.NoError(t, err)
+		notification := ff.CreatePersonalNotification(context.Background(), servicetestutil.CreateNotificationParams{Receiver: &ufixture.User.UserID})
 
 		p := &rest.GetPaginatedNotificationsParams{Limit: 5, Direction: models.DirectionAsc, Cursor: "0"}
 		nres, err := srv.client.GetPaginatedNotificationsWithResponse(context.Background(), p, ReqWithAPIKey(ufixture.APIKey.APIKey))

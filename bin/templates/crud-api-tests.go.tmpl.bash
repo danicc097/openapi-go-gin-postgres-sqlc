@@ -54,7 +54,7 @@ func TestHandlers_Delete${pascal_name}(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
@@ -62,7 +62,7 @@ func TestHandlers_Delete${pascal_name}(t *testing.T) {
 			require.NoError(t, err, \"ff.CreateUser: %s\")
 
 $(test -n "$with_project" && echo "		projectID := internal.ProjectIDByName[models.ProjectDemo]")
-			${camel_name}f, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
+			${camel_name}f := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
         $(test -n "$with_project" && echo "		ProjectID: projectID,")
       })
 			require.NoError(t, err, \"ff.Create${pascal_name}: %s\")
@@ -94,12 +94,11 @@ func TestHandlers_Create${pascal_name}(t *testing.T) {
 		role := models.RoleUser
 		scopes := models.Scopes{models.Scope${pascal_name}Create}
 
-		ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       role,
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		require.NoError(t, err, \"ff.CreateUser: %s\")
 
 $(test -n "$with_project" && echo "		pj := models.ProjectDemo
 		projectID := internal.ProjectIDByName[pj]")
@@ -139,15 +138,14 @@ func TestHandlers_Get${pascal_name}(t *testing.T) {
 		role := models.RoleUser
 		scopes := models.Scopes{} // no scope needed to read
 
-		ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       role,
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		require.NoError(t, err, \"ff.CreateUser: %s\")
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-		${camel_name}f, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
+		${camel_name}f := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
       $(test -n "$with_project" && echo "		ProjectID: projectID,")
     })
 		require.NoError(t, err, \"ff.Create${pascal_name}: %s\")
@@ -217,7 +215,7 @@ done)
 
 			var err error
 
-			normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			normalUser := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       models.RoleUser,
 				WithAPIKey: true,
 				Scopes:     []models.Scope{models.Scope${pascal_name}Edit},
@@ -225,7 +223,7 @@ done)
 			require.NoError(t, err, \"ff.CreateUser: %s\")
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-			${camel_name}f, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
+			${camel_name}f := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
         $(test -n "$with_project" && echo "		ProjectID: projectID,")
       })
 			require.NoError(t, err, \"ff.Create${pascal_name}: %s\")

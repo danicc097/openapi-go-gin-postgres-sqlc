@@ -19,11 +19,12 @@ type CreateWorkItemFixture struct {
 }
 
 // CreateWorkItem creates a new random work item comment with the given configuration.
-func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, params CreateWorkItemParams) (*CreateWorkItemFixture, error) {
-	teamf, err := ff.CreateTeam(ctx, CreateTeamParams{Project: params.Project})
-	require.NoError(ff.t, err)
+func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, params CreateWorkItemParams) *CreateWorkItemFixture {
+	teamf := ff.CreateTeam(ctx, CreateTeamParams{Project: params.Project})
 
 	var workItem *db.WorkItem
+	var err error
+
 	switch params.Project {
 	case models.ProjectDemo:
 		params := postgresqltestutil.RandomDemoWorkItemCreateParams(ff.t,
@@ -34,6 +35,7 @@ func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, params CreateWorkI
 		workItem, err = ff.svc.DemoWorkItem.Create(ctx, ff.d, services.DemoWorkItemCreateParams{
 			DemoWorkItemCreateParams: params,
 		})
+		require.NoError(ff.t, err)
 	case models.ProjectDemoTwo:
 		params := postgresqltestutil.RandomDemoTwoWorkItemCreateParams(ff.t,
 			postgresqltestutil.RandomKanbanStepID(params.Project),
@@ -43,9 +45,10 @@ func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, params CreateWorkI
 		workItem, err = ff.svc.DemoTwoWorkItem.Create(ctx, ff.d, services.DemoTwoWorkItemCreateParams{
 			DemoTwoWorkItemCreateParams: params,
 		})
+		require.NoError(ff.t, err)
 	}
 
 	return &CreateWorkItemFixture{
 		WorkItem: workItem,
-	}, nil
+	}
 }

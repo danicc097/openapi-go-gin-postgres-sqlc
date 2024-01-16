@@ -51,14 +51,14 @@ func TestHandlers_DeleteWorkItemComment(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
 			})
 			require.NoError(t, err, "ff.CreateUser: %s")
 
-			workItemCommentf, err := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
+			workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
 			require.NoError(t, err, "ff.CreateWorkItemComment: %s")
 
 			id := workItemCommentf.WorkItemComment.WorkItemCommentID
@@ -87,13 +87,12 @@ func TestHandlers_CreateWorkItemComment(t *testing.T) {
 		role := models.RoleUser
 		scopes := models.Scopes{models.ScopeWorkItemCommentCreate}
 
-		ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       role,
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		require.NoError(t, err, "ff.CreateUser: %s")
-		demoWorkItemf, err := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: models.ProjectDemo})
+		demoWorkItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: models.ProjectDemo})
 		require.NoError(t, err)
 
 		ufixture.User, err = svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, demoWorkItemf.WorkItem.TeamID)
@@ -132,14 +131,13 @@ func TestHandlers_GetWorkItemComment(t *testing.T) {
 		role := models.RoleUser
 		scopes := models.Scopes{} // no scope needed to read
 
-		ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       role,
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		require.NoError(t, err, "ff.CreateUser: %s")
 
-		workItemCommentf, err := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
+		workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
 		require.NoError(t, err, "ff.CreateWorkItemComment: %s")
 
 		id := workItemCommentf.WorkItemComment.WorkItemCommentID
@@ -169,10 +167,10 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	demoWorkItemf, err := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: models.ProjectDemo})
+	demoWorkItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: models.ProjectDemo})
 	require.NoError(t, err)
 
-	ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		WithAPIKey: true,
 		Scopes:     []models.Scope{models.ScopeWorkItemCommentEdit}, // TODO: most crud should be via roles, else cumbersome testing
 	})
@@ -217,14 +215,14 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 
 			var err error
 
-			normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			normalUser := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       models.RoleUser,
 				WithAPIKey: true,
 				Scopes:     []models.Scope{models.ScopeWorkItemCommentEdit},
 			})
 			require.NoError(t, err, "ff.CreateUser: %s")
 
-			workItemCommentf, err := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: *tc.body.UserID})
+			workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: *tc.body.UserID})
 			require.NoError(t, err, "ff.CreateWorkItemComment: %s")
 
 			id := workItemCommentf.WorkItemComment.WorkItemCommentID

@@ -9,6 +9,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
+	"github.com/stretchr/testify/require"
 )
 
 type CreateNotificationParams struct {
@@ -17,11 +18,9 @@ type CreateNotificationParams struct {
 }
 
 // CreatePersonalNotification creates a new notification with the given configuration.
-func (ff *FixtureFactory) CreatePersonalNotification(ctx context.Context, params CreateNotificationParams) (*db.UserNotification, error) {
-	admin, err := ff.CreateUser(ctx, CreateUserParams{Role: models.RoleAdmin})
-	if err != nil {
-		return nil, fmt.Errorf("ff.CreateUser: %w", err)
-	}
+func (ff *FixtureFactory) CreatePersonalNotification(ctx context.Context, params CreateNotificationParams) *db.UserNotification {
+	admin := ff.CreateUser(ctx, CreateUserParams{Role: models.RoleAdmin})
+
 	n, err := ff.svc.Notification.CreateNotification(ctx, ff.d, &services.NotificationCreateParams{
 		NotificationCreateParams: db.NotificationCreateParams{
 			Body:             testutil.RandomString(10),
@@ -33,20 +32,16 @@ func (ff *FixtureFactory) CreatePersonalNotification(ctx context.Context, params
 			Receiver:         params.Receiver,
 		},
 	})
-	if err != nil {
-		return nil, fmt.Errorf("ff.svc.Notification.CreateNotification: %w", err)
-	}
+	require.NoError(ff.t, err)
 
-	return n, nil
+	return n
 }
 
 // CreateGlobalNotification creates a new global notification with the given configuration.
 // Returns a single user notification from the fan out.
-func (ff *FixtureFactory) CreateGlobalNotification(ctx context.Context, params CreateNotificationParams) (*db.UserNotification, error) {
-	admin, err := ff.CreateUser(ctx, CreateUserParams{Role: models.RoleAdmin})
-	if err != nil {
-		return nil, fmt.Errorf("ff.CreateUser: %w", err)
-	}
+func (ff *FixtureFactory) CreateGlobalNotification(ctx context.Context, params CreateNotificationParams) *db.UserNotification {
+	admin := ff.CreateUser(ctx, CreateUserParams{Role: models.RoleAdmin})
+
 	n, err := ff.svc.Notification.CreateNotification(ctx, ff.d, &services.NotificationCreateParams{
 		NotificationCreateParams: db.NotificationCreateParams{
 			Body:             testutil.RandomString(10),
@@ -58,9 +53,7 @@ func (ff *FixtureFactory) CreateGlobalNotification(ctx context.Context, params C
 		},
 		ReceiverRole: params.ReceiverRole,
 	})
-	if err != nil {
-		return nil, fmt.Errorf("ff.svc.Notification.CreateNotification: %w", err)
-	}
+	require.NoError(ff.t, err)
 
-	return n, nil
+	return n
 }

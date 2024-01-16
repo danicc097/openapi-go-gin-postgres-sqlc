@@ -55,7 +55,7 @@ func TestHandlers_DeleteUser(t *testing.T) {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
@@ -88,12 +88,11 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 		role := models.RoleAdvancedUser
 		scopes := models.Scopes{models.ScopeProjectSettingsWrite}
 
-		ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       role,
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		require.NoError(t, err, "ff.CreateUser: %s")
 
 		res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(ufixture.APIKey.APIKey))
 
@@ -135,19 +134,17 @@ func TestHandlers_UpdateUser(t *testing.T) {
 
 		scopes := models.Scopes{models.ScopeScopesWrite}
 
-		manager, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		manager := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       models.RoleManager,
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		require.NoError(t, err, "ff.CreateUser: %s")
 
-		normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+		normalUser := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       models.RoleUser,
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		require.NoError(t, err, "ff.CreateUser: %s")
 
 		t.Run("valid_update", func(t *testing.T) {
 			t.Parallel()
@@ -169,7 +166,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 		t.Run("insufficient_caller_scopes", func(t *testing.T) {
 			t.Parallel()
 
-			managerWithoutScopes, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			managerWithoutScopes := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       models.Role(rest.RoleManager),
 				WithAPIKey: true,
 			})
@@ -235,7 +232,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			normalUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			normalUser := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       models.RoleUser,
 				WithAPIKey: true,
 			})

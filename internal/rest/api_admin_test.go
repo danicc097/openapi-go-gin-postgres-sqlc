@@ -21,13 +21,10 @@ func TestAdminPingRoute(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdmin,
 		WithAPIKey: true,
 	})
-	if err != nil {
-		t.Fatalf("ff.CreateUser: %s", err)
-	}
 
 	srv, err := runTestServer(t, testPool)
 	require.NoError(t, err, "Couldn't run test server: %s\n")

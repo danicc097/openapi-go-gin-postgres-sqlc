@@ -32,10 +32,9 @@ func Test${pascal_name}_Update(t *testing.T) {
 
 	team, err := svc.Team.Create(context.Background(), testPool, postgresqltestutil.RandomTeamCreateParams(t, internal.ProjectIDByName[requiredProject]))
 	require.NoError(t, err)
-	creator, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	creator := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		WithAPIKey: true,
 	})
-	require.NoError(t, err)
 
 	creator.User, err = svc.User.AssignTeam(context.Background(), testPool, creator.User.UserID, team.TeamID)
 	require.NoError(t, err)
@@ -94,10 +93,9 @@ done)
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored
 
-			user, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			user := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				WithAPIKey: true,
 			})
-			require.NoError(t, err)
 
 			if tc.args.withUserInProject {
 				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)
