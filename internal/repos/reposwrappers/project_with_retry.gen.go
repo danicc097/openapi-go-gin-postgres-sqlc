@@ -50,6 +50,7 @@ func (_d ProjectWithRetry) ByID(ctx context.Context, d db.DBTX, id db.ProjectID,
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -88,6 +89,7 @@ func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name models.Pr
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -126,6 +128,7 @@ func (_d ProjectWithRetry) IsTeamInProject(ctx context.Context, d db.DBTX, arg d
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return

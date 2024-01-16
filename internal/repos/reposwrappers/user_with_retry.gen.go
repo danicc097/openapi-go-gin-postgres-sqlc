@@ -50,6 +50,7 @@ func (_d UserWithRetry) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) 
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -88,6 +89,7 @@ func (_d UserWithRetry) ByEmail(ctx context.Context, d db.DBTX, email string, op
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -126,6 +128,7 @@ func (_d UserWithRetry) ByExternalID(ctx context.Context, d db.DBTX, extID strin
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -164,6 +167,7 @@ func (_d UserWithRetry) ByID(ctx context.Context, d db.DBTX, id db.UserID, opts 
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -202,6 +206,7 @@ func (_d UserWithRetry) ByProject(ctx context.Context, d db.DBTX, projectID db.P
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -240,6 +245,7 @@ func (_d UserWithRetry) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamID)
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -278,6 +284,7 @@ func (_d UserWithRetry) ByUsername(ctx context.Context, d db.DBTX, username stri
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -316,6 +323,7 @@ func (_d UserWithRetry) Create(ctx context.Context, d db.DBTX, params *db.UserCr
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -354,6 +362,7 @@ func (_d UserWithRetry) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.Us
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -392,6 +401,7 @@ func (_d UserWithRetry) Delete(ctx context.Context, d db.DBTX, id db.UserID) (up
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -430,6 +440,7 @@ func (_d UserWithRetry) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey stri
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -468,6 +479,7 @@ func (_d UserWithRetry) Paginated(ctx context.Context, d db.DBTX, params models.
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -506,6 +518,7 @@ func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id db.UserID, par
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return

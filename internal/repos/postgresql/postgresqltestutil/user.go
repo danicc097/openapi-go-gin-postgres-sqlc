@@ -19,7 +19,7 @@ func NewRandomUser(t *testing.T, d db.DBTX) *db.User {
 
 	logger := testutil.NewLogger(t)
 
-	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 10, 65*time.Millisecond)
+	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 5, 65*time.Millisecond)
 
 	ucp := RandomUserCreateParams(t)
 
