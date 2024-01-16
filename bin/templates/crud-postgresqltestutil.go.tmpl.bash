@@ -16,18 +16,6 @@ import (
 
 )
 
-func NewRandom${pascal_name}(t *testing.T, d db.DBTX $create_params) *db.${pascal_name} {
-	t.Helper()
-
-	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), testutil.NewLogger(t), 3, 200*time.Millisecond)
-
-	cp := Random${pascal_name}CreateParams(t $create_args)
-
-	${camel_name}, err := ${camel_name}Repo.Create(context.Background(), d, cp)
-	require.NoError(t, err, \"failed to create random entity\") // IMPORTANT: must fail. If testing actual failures use random create params instead
-
-	return ${camel_name}
-}
 // NOTE: FKs should always be passed explicitly.
 func Random${pascal_name}CreateParams(t *testing.T $create_params) *db.${pascal_name}CreateParams {
 	t.Helper()

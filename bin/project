@@ -1519,6 +1519,22 @@ x.dev-utils.create-crud-tests() {
   { { {
     load_exported_crud_gen_vars ${@}
 
+    local file="internal/repos/postgresql/new_random_test.go"
+    echo "
+func newRandom${pascal_name}(t *testing.T, d db.DBTX $create_params) *db.${pascal_name} {
+	t.Helper()
+
+	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), testutil.NewLogger(t), 3, 200*time.Millisecond)
+
+	cp := Random${pascal_name}CreateParams(t $create_args)
+
+	${camel_name}, err := ${camel_name}Repo.Create(context.Background(), d, cp)
+	require.NoError(t, err, \"failed to create random entity\") // IMPORTANT: must fail. If testing actual failures use random create params instead
+
+	return ${camel_name}
+}
+    " >>"$file" && gofumpt -w $file
+
     local file="internal/repos/postgresql/repo_${snake_name}_test.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-repo-tests.go.tmpl.bash >"$file" && gofumpt -w $file
@@ -1528,6 +1544,7 @@ x.dev-utils.create-crud-tests() {
     local file="internal/rest/api_${snake_name}_test.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-api-tests.go.tmpl.bash >"$file" && gofumpt -w $file
+
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
