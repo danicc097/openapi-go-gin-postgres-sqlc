@@ -34,6 +34,9 @@ export type Scope =
   | 'work-item-tag:edit'
   | 'work-item-tag:delete'
   | 'work-item:review'
+  | 'work-item-comment:create'
+  | 'work-item-comment:edit'
+  | 'work-item-comment:delete'
 export type Scopes = Scope[]
 /**
  * is generated from database enum 'work_item_role'.
@@ -533,4 +536,17 @@ export interface Notification {
   read: boolean
   userID: DbUserID
   userNotificationID: number
+}
+export interface UpdateWorkItemCommentRequest {
+  message?: string
+  userID?: DbUserID
+  workItemID?: number
+}
+export interface WorkItemComment {
+  createdAt: string
+  message: string
+  updatedAt: string
+  userID: DbUserID
+  workItemCommentID: number
+  workItemID: number
 }

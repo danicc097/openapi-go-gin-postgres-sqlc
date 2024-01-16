@@ -38,7 +38,7 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 		Role:       params.Role,
 	}
 
-	// don't use repos for tests
+	// don't use repos for test fixtures, useservice logic
 	user, err := ff.svc.User.Register(ctx, ff.d, ucp)
 	if err != nil {
 		return nil, fmt.Errorf("svc.User.Register: %w", err)

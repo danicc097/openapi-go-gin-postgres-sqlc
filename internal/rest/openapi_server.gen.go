@@ -185,20 +185,23 @@ func AllRoleValues() []Role {
 
 // Scope is generated from scopes.json keys.
 const (
-	ScopeActivityCreate       Scope = "activity:create"
-	ScopeActivityDelete       Scope = "activity:delete"
-	ScopeActivityEdit         Scope = "activity:edit"
-	ScopeProjectMember        Scope = "project-member"
-	ScopeProjectSettingsWrite Scope = "project-settings:write"
-	ScopeScopesWrite          Scope = "scopes:write"
-	ScopeTeamSettingsWrite    Scope = "team-settings:write"
-	ScopeUsersDelete          Scope = "users:delete"
-	ScopeUsersRead            Scope = "users:read"
-	ScopeUsersWrite           Scope = "users:write"
-	ScopeWorkItemReview       Scope = "work-item:review"
-	ScopeWorkItemTagCreate    Scope = "work-item-tag:create"
-	ScopeWorkItemTagDelete    Scope = "work-item-tag:delete"
-	ScopeWorkItemTagEdit      Scope = "work-item-tag:edit"
+	ScopeActivityCreate        Scope = "activity:create"
+	ScopeActivityDelete        Scope = "activity:delete"
+	ScopeActivityEdit          Scope = "activity:edit"
+	ScopeProjectMember         Scope = "project-member"
+	ScopeProjectSettingsWrite  Scope = "project-settings:write"
+	ScopeScopesWrite           Scope = "scopes:write"
+	ScopeTeamSettingsWrite     Scope = "team-settings:write"
+	ScopeUsersDelete           Scope = "users:delete"
+	ScopeUsersRead             Scope = "users:read"
+	ScopeUsersWrite            Scope = "users:write"
+	ScopeWorkItemCommentCreate Scope = "work-item-comment:create"
+	ScopeWorkItemCommentDelete Scope = "work-item-comment:delete"
+	ScopeWorkItemCommentEdit   Scope = "work-item-comment:edit"
+	ScopeWorkItemReview        Scope = "work-item:review"
+	ScopeWorkItemTagCreate     Scope = "work-item-tag:create"
+	ScopeWorkItemTagDelete     Scope = "work-item-tag:delete"
+	ScopeWorkItemTagEdit       Scope = "work-item-tag:edit"
 )
 
 // AllScopeValues returns all possible values for Scope.
@@ -214,6 +217,9 @@ func AllScopeValues() []Scope {
 		ScopeUsersDelete,
 		ScopeUsersRead,
 		ScopeUsersWrite,
+		ScopeWorkItemCommentCreate,
+		ScopeWorkItemCommentDelete,
+		ScopeWorkItemCommentEdit,
 		ScopeWorkItemReview,
 		ScopeWorkItemTagCreate,
 		ScopeWorkItemTagDelete,
@@ -302,12 +308,14 @@ type CreateTeamRequest  struct {
 }
 */
 
+/* Ignoring existing rest struct
 // CreateWorkItemCommentRequest defines the model for CreateWorkItemCommentRequest.
-type CreateWorkItemCommentRequest struct {
-	Message    string                `json:"message"`
-	UserID     externalRef0.DbUserID `json:"userID"`
-	WorkItemID int                   `json:"workItemID"`
+type CreateWorkItemCommentRequest  struct {
+    Message string`json:"message"`
+    UserID externalRef0.DbUserID`json:"userID"`
+    WorkItemID int`json:"workItemID"`
 }
+*/
 
 // CreateWorkItemRequest defines the model for CreateWorkItemRequest.
 type CreateWorkItemRequest struct {
@@ -801,6 +809,15 @@ type UpdateUserRequest struct {
 }
 
 /* Ignoring existing rest struct
+// UpdateWorkItemCommentRequest defines the model for UpdateWorkItemCommentRequest.
+type UpdateWorkItemCommentRequest  struct {
+    Message *string`json:"message,omitempty"`
+    UserID *externalRef0.DbUserID`json:"userID,omitempty"`
+    WorkItemID *int`json:"workItemID,omitempty"`
+}
+*/
+
+/* Ignoring existing rest struct
 // UpdateWorkItemTagRequest defines the model for UpdateWorkItemTagRequest.
 type UpdateWorkItemTagRequest  struct {
     Color *string`json:"color,omitempty"`
@@ -860,6 +877,18 @@ type ValidationError struct {
 	// Msg should always be shown to the user
 	Msg string `json:"msg"`
 }
+
+/* Ignoring existing rest struct
+// WorkItemComment defines the model for WorkItemComment.
+type WorkItemComment  struct {
+    CreatedAt time.Time`json:"createdAt"`
+    Message string`json:"message"`
+    UpdatedAt time.Time`json:"updatedAt"`
+    UserID externalRef0.DbUserID`json:"userID"`
+    WorkItemCommentID int`json:"workItemCommentID"`
+    WorkItemID int`json:"workItemID"`
+}
+*/
 
 // WorkItemRole is generated from database enum 'work_item_role'.
 type WorkItemRole string
@@ -965,6 +994,14 @@ type UpdateUserJSONRequestBody = UpdateUserRequest
 // UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
 
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
+
+// CreateWorkItemCommentJSONRequestBody defines body for CreateWorkItemComment for application/json ContentType.
+
+type CreateWorkItemCommentJSONRequestBody = CreateWorkItemCommentRequest
+
+// UpdateWorkItemCommentJSONRequestBody defines body for UpdateWorkItemComment for application/json ContentType.
+
+type UpdateWorkItemCommentJSONRequestBody = UpdateWorkItemCommentRequest
 
 // UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
 
@@ -1111,6 +1148,18 @@ type ServerInterface interface {
 	// updates user role and scopes by id
 	// (PATCH /user/{id}/authorization)
 	UpdateUserAuthorization(c *gin.Context, id uuid.UUID)
+	// create work item comment.
+	// (POST /work-item-comment/)
+	CreateWorkItemComment(c *gin.Context)
+	// delete .
+	// (DELETE /work-item-comment/{id})
+	DeleteWorkItemComment(c *gin.Context, id externalRef0.SerialID)
+	// get work item comment.
+	// (GET /work-item-comment/{id})
+	GetWorkItemComment(c *gin.Context, id externalRef0.SerialID)
+	// update work item comment.
+	// (PATCH /work-item-comment/{id})
+	UpdateWorkItemComment(c *gin.Context, id externalRef0.SerialID)
 	// delete workitemtag.
 	// (DELETE /workItemTag/{id})
 	DeleteWorkItemTag(c *gin.Context, id externalRef0.SerialID)
@@ -1745,6 +1794,75 @@ func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
 	siw.Handler.UpdateUserAuthorization(c, id)
 }
 
+// CreateWorkItemComment operation with its own middleware.
+func (siw *ServerInterfaceWrapper) CreateWorkItemComment(c *gin.Context) {
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.CreateWorkItemComment(c)
+}
+
+// DeleteWorkItemComment operation with its own middleware.
+func (siw *ServerInterfaceWrapper) DeleteWorkItemComment(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID // SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.DeleteWorkItemComment(c, id)
+}
+
+// GetWorkItemComment operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetWorkItemComment(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID // SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.GetWorkItemComment(c, id)
+}
+
+// UpdateWorkItemComment operation with its own middleware.
+func (siw *ServerInterfaceWrapper) UpdateWorkItemComment(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id externalRef0.SerialID // SerialID
+
+	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.UpdateWorkItemComment(c, id)
+}
+
 // DeleteWorkItemTag operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteWorkItemTag(c *gin.Context) {
 	var err error
@@ -2089,6 +2207,26 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PATCH(options.BaseURL+"/user/:id/authorization", append(
 		wrapper.Handler.authMiddlewares(UpdateUserAuthorization),
 		append(wrapper.Handler.middlewares(UpdateUserAuthorization), wrapper.UpdateUserAuthorization)...,
+	)...)
+
+	router.POST(options.BaseURL+"/work-item-comment/", append(
+		wrapper.Handler.authMiddlewares(CreateWorkItemComment),
+		append(wrapper.Handler.middlewares(CreateWorkItemComment), wrapper.CreateWorkItemComment)...,
+	)...)
+
+	router.DELETE(options.BaseURL+"/work-item-comment/:id", append(
+		wrapper.Handler.authMiddlewares(DeleteWorkItemComment),
+		append(wrapper.Handler.middlewares(DeleteWorkItemComment), wrapper.DeleteWorkItemComment)...,
+	)...)
+
+	router.GET(options.BaseURL+"/work-item-comment/:id", append(
+		wrapper.Handler.authMiddlewares(GetWorkItemComment),
+		append(wrapper.Handler.middlewares(GetWorkItemComment), wrapper.GetWorkItemComment)...,
+	)...)
+
+	router.PATCH(options.BaseURL+"/work-item-comment/:id", append(
+		wrapper.Handler.authMiddlewares(UpdateWorkItemComment),
+		append(wrapper.Handler.middlewares(UpdateWorkItemComment), wrapper.UpdateWorkItemComment)...,
 	)...)
 
 	router.DELETE(options.BaseURL+"/workItemTag/:id", append(
@@ -3031,6 +3169,177 @@ func (response UpdateUserAuthorization204Response) VisitUpdateUserAuthorizationR
 	return nil
 }
 
+type CreateWorkItemCommentRequestObject struct {
+	Body *CreateWorkItemCommentRequest
+}
+
+type CreateWorkItemCommentResponseObject interface {
+	VisitCreateWorkItemCommentResponse(w http.ResponseWriter) error
+}
+
+type CreateWorkItemComment201JSONResponse WorkItemComment
+
+func (response CreateWorkItemComment201JSONResponse) VisitCreateWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateWorkItemComment401Response struct{}
+
+func (response CreateWorkItemComment401Response) VisitCreateWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type CreateWorkItemComment403Response struct{}
+
+func (response CreateWorkItemComment403Response) VisitCreateWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type CreateWorkItemComment4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response CreateWorkItemComment4XXJSONResponse) VisitCreateWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeleteWorkItemCommentRequestObject struct {
+	Id externalRef0.SerialID `json:"id"`
+}
+
+type DeleteWorkItemCommentResponseObject interface {
+	VisitDeleteWorkItemCommentResponse(w http.ResponseWriter) error
+}
+
+type DeleteWorkItemComment204Response struct{}
+
+func (response DeleteWorkItemComment204Response) VisitDeleteWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteWorkItemComment401Response struct{}
+
+func (response DeleteWorkItemComment401Response) VisitDeleteWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteWorkItemComment403Response struct{}
+
+func (response DeleteWorkItemComment403Response) VisitDeleteWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteWorkItemComment4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteWorkItemComment4XXJSONResponse) VisitDeleteWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetWorkItemCommentRequestObject struct {
+	Id externalRef0.SerialID `json:"id"`
+}
+
+type GetWorkItemCommentResponseObject interface {
+	VisitGetWorkItemCommentResponse(w http.ResponseWriter) error
+}
+
+type GetWorkItemComment200JSONResponse WorkItemComment
+
+func (response GetWorkItemComment200JSONResponse) VisitGetWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWorkItemComment401Response struct{}
+
+func (response GetWorkItemComment401Response) VisitGetWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetWorkItemComment403Response struct{}
+
+func (response GetWorkItemComment403Response) VisitGetWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetWorkItemComment4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetWorkItemComment4XXJSONResponse) VisitGetWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateWorkItemCommentRequestObject struct {
+	Id   externalRef0.SerialID `json:"id"`
+	Body *UpdateWorkItemCommentRequest
+}
+
+type UpdateWorkItemCommentResponseObject interface {
+	VisitUpdateWorkItemCommentResponse(w http.ResponseWriter) error
+}
+
+type UpdateWorkItemComment200JSONResponse WorkItemComment
+
+func (response UpdateWorkItemComment200JSONResponse) VisitUpdateWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateWorkItemComment401Response struct{}
+
+func (response UpdateWorkItemComment401Response) VisitUpdateWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateWorkItemComment403Response struct{}
+
+func (response UpdateWorkItemComment403Response) VisitUpdateWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type UpdateWorkItemComment4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response UpdateWorkItemComment4XXJSONResponse) VisitUpdateWorkItemCommentResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
 type DeleteWorkItemTagRequestObject struct {
 	Id externalRef0.SerialID `json:"id"`
 }
@@ -3445,6 +3754,18 @@ type StrictServerInterface interface {
 	// updates user role and scopes by id
 	// (PATCH /user/{id}/authorization)
 	UpdateUserAuthorization(c *gin.Context, request UpdateUserAuthorizationRequestObject) (UpdateUserAuthorizationResponseObject, error)
+	// create work item comment.
+	// (POST /work-item-comment/)
+	CreateWorkItemComment(c *gin.Context, request CreateWorkItemCommentRequestObject) (CreateWorkItemCommentResponseObject, error)
+	// delete .
+	// (DELETE /work-item-comment/{id})
+	DeleteWorkItemComment(c *gin.Context, request DeleteWorkItemCommentRequestObject) (DeleteWorkItemCommentResponseObject, error)
+	// get work item comment.
+	// (GET /work-item-comment/{id})
+	GetWorkItemComment(c *gin.Context, request GetWorkItemCommentRequestObject) (GetWorkItemCommentResponseObject, error)
+	// update work item comment.
+	// (PATCH /work-item-comment/{id})
+	UpdateWorkItemComment(c *gin.Context, request UpdateWorkItemCommentRequestObject) (UpdateWorkItemCommentResponseObject, error)
 	// delete workitemtag.
 	// (DELETE /workItemTag/{id})
 	DeleteWorkItemTag(c *gin.Context, request DeleteWorkItemTagRequestObject) (DeleteWorkItemTagResponseObject, error)
@@ -4331,6 +4652,130 @@ func (sh *strictHandlers) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(UpdateUserAuthorizationResponseObject); ok {
 		if err := validResponse.VisitUpdateUserAuthorizationResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateWorkItemComment operation middleware
+func (sh *strictHandlers) CreateWorkItemComment(ctx *gin.Context) {
+	var request CreateWorkItemCommentRequestObject
+
+	// CreateWorkItemCommentRequest
+	var body CreateWorkItemCommentRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateWorkItemComment(ctx, request.(CreateWorkItemCommentRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "CreateWorkItemComment")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateWorkItemCommentResponseObject); ok {
+		if err := validResponse.VisitCreateWorkItemCommentResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteWorkItemComment operation middleware
+func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, id externalRef0.SerialID) {
+	var request DeleteWorkItemCommentRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteWorkItemComment(ctx, request.(DeleteWorkItemCommentRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "DeleteWorkItemComment")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteWorkItemCommentResponseObject); ok {
+		if err := validResponse.VisitDeleteWorkItemCommentResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWorkItemComment operation middleware
+func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, id externalRef0.SerialID) {
+	var request GetWorkItemCommentRequestObject
+
+	request.Id = id
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWorkItemComment(ctx, request.(GetWorkItemCommentRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetWorkItemComment")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWorkItemCommentResponseObject); ok {
+		if err := validResponse.VisitGetWorkItemCommentResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateWorkItemComment operation middleware
+func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, id externalRef0.SerialID) {
+	var request UpdateWorkItemCommentRequestObject
+
+	request.Id = id
+
+	// UpdateWorkItemCommentRequest
+	var body UpdateWorkItemCommentRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateWorkItemComment(ctx, request.(UpdateWorkItemCommentRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateWorkItemComment")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateWorkItemCommentResponseObject); ok {
+		if err := validResponse.VisitUpdateWorkItemCommentResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

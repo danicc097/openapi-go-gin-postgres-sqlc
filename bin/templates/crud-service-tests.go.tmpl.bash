@@ -52,7 +52,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 		withUserInProject bool
 	}
 
-	random${pascal_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
+	wantParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
 
 	tests := []struct {
 		name          string
@@ -65,7 +65,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 			args: args{
 				params: &db.${pascal_name}UpdateParams{
 			$(for f in ${db_update_params_struct_fields[@]}; do
-  echo "		$f: &random${pascal_name}CreateParams.$f,"
+  echo "		$f: &wantParams.$f,"
 done)
 				},
 				withUserInProject: false, //
@@ -74,7 +74,7 @@ done)
 			want: db.${pascal_name}UpdateParams{
 				// generating fields based on randomized createparams since it's a superset of updateparams.
 			$(for f in ${db_update_params_struct_fields[@]}; do
-  echo "		$f: &random${pascal_name}CreateParams.$f,"
+  echo "		$f: &wantParams.$f,"
 done)
 			},
 		},

@@ -27,4 +27,7 @@ export const Scope = {
   'work-item-tag:edit': 'work-item-tag:edit',
   'work-item-tag:delete': 'work-item-tag:delete',
   'work-item:review': 'work-item:review',
+  'work-item-comment:create': 'work-item-comment:create',
+  'work-item-comment:edit': 'work-item-comment:edit',
+  'work-item-comment:delete': 'work-item-comment:delete',
 } as const

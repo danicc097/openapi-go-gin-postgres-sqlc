@@ -822,7 +822,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "work-item-comment:create",
+              "work-item-comment:edit",
+              "work-item-comment:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -1169,7 +1172,10 @@
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
-                        "work-item:review"
+                        "work-item:review",
+                        "work-item-comment:create",
+                        "work-item-comment:edit",
+                        "work-item-comment:delete"
                       ],
                       "x-generated": "-",
                       "description": "is generated from scopes.json keys."
@@ -1568,7 +1574,10 @@
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
-                        "work-item:review"
+                        "work-item:review",
+                        "work-item-comment:create",
+                        "work-item-comment:edit",
+                        "work-item-comment:delete"
                       ],
                       "x-generated": "-",
                       "description": "is generated from scopes.json keys."
@@ -2131,7 +2140,10 @@
                     "work-item-tag:create",
                     "work-item-tag:edit",
                     "work-item-tag:delete",
-                    "work-item:review"
+                    "work-item:review",
+                    "work-item-comment:create",
+                    "work-item-comment:edit",
+                    "work-item-comment:delete"
                   ],
                   "x-generated": "-",
                   "description": "is generated from scopes.json keys."
@@ -2432,7 +2444,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "work-item-comment:create",
+              "work-item-comment:edit",
+              "work-item-comment:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -2712,7 +2727,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "work-item-comment:create",
+              "work-item-comment:edit",
+              "work-item-comment:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -3029,7 +3047,10 @@
         "work-item-tag:create",
         "work-item-tag:edit",
         "work-item-tag:delete",
-        "work-item:review"
+        "work-item:review",
+        "work-item-comment:create",
+        "work-item-comment:edit",
+        "work-item-comment:delete"
       ],
       "x-generated": "-",
       "description": "is generated from scopes.json keys."
@@ -3052,7 +3073,10 @@
           "work-item-tag:create",
           "work-item-tag:edit",
           "work-item-tag:delete",
-          "work-item:review"
+          "work-item:review",
+          "work-item-comment:create",
+          "work-item-comment:edit",
+          "work-item-comment:delete"
         ],
         "x-generated": "-",
         "description": "is generated from scopes.json keys."
@@ -3131,7 +3155,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "work-item-comment:create",
+              "work-item-comment:edit",
+              "work-item-comment:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -4435,7 +4462,10 @@
                   "work-item-tag:create",
                   "work-item-tag:edit",
                   "work-item-tag:delete",
-                  "work-item:review"
+                  "work-item:review",
+                  "work-item-comment:create",
+                  "work-item-comment:edit",
+                  "work-item-comment:delete"
                 ],
                 "x-generated": "-",
                 "description": "is generated from scopes.json keys."
@@ -4492,6 +4522,72 @@
       ],
       "x-generated": "-",
       "description": "is generated from kanban_steps table."
+    },
+    "UpdateWorkItemCommentRequest": {
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          }
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateWorkItemCommentRequest"
+    },
+    "WorkItemComment": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          }
+        },
+        "workItemCommentID": {
+          "type": "integer"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemCommentID",
+        "workItemID",
+        "userID",
+        "message",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemComment"
     }
   },
   "properties": {
@@ -5315,7 +5411,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "work-item-comment:create",
+              "work-item-comment:edit",
+              "work-item-comment:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -5662,7 +5761,10 @@
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
-                        "work-item:review"
+                        "work-item:review",
+                        "work-item-comment:create",
+                        "work-item-comment:edit",
+                        "work-item-comment:delete"
                       ],
                       "x-generated": "-",
                       "description": "is generated from scopes.json keys."
@@ -6061,7 +6163,10 @@
                         "work-item-tag:create",
                         "work-item-tag:edit",
                         "work-item-tag:delete",
-                        "work-item:review"
+                        "work-item:review",
+                        "work-item-comment:create",
+                        "work-item-comment:edit",
+                        "work-item-comment:delete"
                       ],
                       "x-generated": "-",
                       "description": "is generated from scopes.json keys."
@@ -6624,7 +6729,10 @@
                     "work-item-tag:create",
                     "work-item-tag:edit",
                     "work-item-tag:delete",
-                    "work-item:review"
+                    "work-item:review",
+                    "work-item-comment:create",
+                    "work-item-comment:edit",
+                    "work-item-comment:delete"
                   ],
                   "x-generated": "-",
                   "description": "is generated from scopes.json keys."
@@ -6925,7 +7033,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "work-item-comment:create",
+              "work-item-comment:edit",
+              "work-item-comment:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -7205,7 +7316,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "work-item-comment:create",
+              "work-item-comment:edit",
+              "work-item-comment:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -7522,7 +7636,10 @@
         "work-item-tag:create",
         "work-item-tag:edit",
         "work-item-tag:delete",
-        "work-item:review"
+        "work-item:review",
+        "work-item-comment:create",
+        "work-item-comment:edit",
+        "work-item-comment:delete"
       ],
       "x-generated": "-",
       "description": "is generated from scopes.json keys."
@@ -7545,7 +7662,10 @@
           "work-item-tag:create",
           "work-item-tag:edit",
           "work-item-tag:delete",
-          "work-item:review"
+          "work-item:review",
+          "work-item-comment:create",
+          "work-item-comment:edit",
+          "work-item-comment:delete"
         ],
         "x-generated": "-",
         "description": "is generated from scopes.json keys."
@@ -7624,7 +7744,10 @@
               "work-item-tag:create",
               "work-item-tag:edit",
               "work-item-tag:delete",
-              "work-item:review"
+              "work-item:review",
+              "work-item-comment:create",
+              "work-item-comment:edit",
+              "work-item-comment:delete"
             ],
             "x-generated": "-",
             "description": "is generated from scopes.json keys."
@@ -8928,7 +9051,10 @@
                   "work-item-tag:create",
                   "work-item-tag:edit",
                   "work-item-tag:delete",
-                  "work-item:review"
+                  "work-item:review",
+                  "work-item-comment:create",
+                  "work-item-comment:edit",
+                  "work-item-comment:delete"
                 ],
                 "x-generated": "-",
                 "description": "is generated from scopes.json keys."
@@ -8985,6 +9111,72 @@
       ],
       "x-generated": "-",
       "description": "is generated from kanban_steps table."
+    },
+    "UpdateWorkItemCommentRequest": {
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          }
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateWorkItemCommentRequest"
+    },
+    "WorkItemComment": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          }
+        },
+        "workItemCommentID": {
+          "type": "integer"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemCommentID",
+        "workItemID",
+        "userID",
+        "message",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemComment"
     }
   }
 }

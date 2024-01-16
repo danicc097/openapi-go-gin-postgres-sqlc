@@ -11,12 +11,15 @@ import (
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
 	\"github.com/stretchr/testify/require\"
+  \"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers\"
+	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil\"
+
 )
 
 func NewRandom${pascal_name}(t *testing.T, d db.DBTX $create_params) *db.${pascal_name} {
 	t.Helper()
 
-	${camel_name}Repo := postgresql.New${pascal_name}()
+	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), testutil.NewLogger(t), 3, 200*time.Millisecond)
 
 	ucp := Random${pascal_name}CreateParams(t $create_args)
 

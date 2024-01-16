@@ -136,6 +136,18 @@ export interface paths {
     /** update workitem */
     patch: operations["UpdateWorkitem"];
   };
+  "/work-item-comment/": {
+    /** create work item comment. */
+    post: operations["CreateWorkItemComment"];
+  };
+  "/work-item-comment/{id}": {
+    /** get work item comment. */
+    get: operations["GetWorkItemComment"];
+    /** delete . */
+    delete: operations["DeleteWorkItemComment"];
+    /** update work item comment. */
+    patch: operations["UpdateWorkItemComment"];
+  };
 }
 
 export type webhooks = Record<string, never>;
@@ -464,7 +476,7 @@ export interface components {
      * @description is generated from scopes.json keys.
      * @enum {string}
      */
-    Scope: "project-member" | "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "activity:create" | "activity:edit" | "activity:delete" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review";
+    Scope: "project-member" | "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "activity:create" | "activity:edit" | "activity:delete" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review" | "work-item-comment:create" | "work-item-comment:edit" | "work-item-comment:delete";
     Scopes: components["schemas"]["Scope"][];
     /**
      * @description is generated from roles.json keys.
@@ -692,6 +704,21 @@ export interface components {
      * @enum {string}
      */
     DemoTwoKanbanSteps: "Received";
+    UpdateWorkItemCommentRequest: {
+      message?: string;
+      userID?: components["schemas"]["DbUserID"];
+      workItemID?: number;
+    };
+    WorkItemComment: {
+      /** Format: date-time */
+      createdAt: string;
+      message: string;
+      /** Format: date-time */
+      updatedAt: string;
+      userID: components["schemas"]["DbUserID"];
+      workItemCommentID: number;
+      workItemID: number;
+    };
   };
   responses: never;
   parameters: {
@@ -1544,6 +1571,111 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["DbWorkItem"];
+        };
+      };
+    };
+  };
+  /** create work item comment. */
+  CreateWorkItemComment: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateWorkItemCommentRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      201: {
+        content: {
+          "application/json": components["schemas"]["WorkItemComment"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** get work item comment. */
+  GetWorkItemComment: {
+    parameters: {
+      path: {
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["WorkItemComment"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** delete . */
+  DeleteWorkItemComment: {
+    parameters: {
+      path: {
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      204: never;
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** update work item comment. */
+  UpdateWorkItemComment: {
+    parameters: {
+      path: {
+        id: components["parameters"]["SerialID"];
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateWorkItemCommentRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["WorkItemComment"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
         };
       };
     };

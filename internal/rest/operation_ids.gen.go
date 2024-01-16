@@ -55,6 +55,12 @@ const (
 	GetWorkItem    OperationID = "GetWorkItem"
 	UpdateWorkitem OperationID = "UpdateWorkitem"
 
+	// Operation IDs for the 'workItemComment' tag.
+	CreateWorkItemComment OperationID = "CreateWorkItemComment"
+	DeleteWorkItemComment OperationID = "DeleteWorkItemComment"
+	GetWorkItemComment    OperationID = "GetWorkItemComment"
+	UpdateWorkItemComment OperationID = "UpdateWorkItemComment"
+
 	// Operation IDs for the 'workItemTag' tag.
 	CreateWorkItemTag OperationID = "CreateWorkItemTag"
 	DeleteWorkItemTag OperationID = "DeleteWorkItemTag"

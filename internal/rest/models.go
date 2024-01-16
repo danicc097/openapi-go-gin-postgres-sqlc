@@ -143,3 +143,15 @@ type CreateDemoTwoWorkItemRequest struct {
 	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 	services.DemoTwoWorkItemCreateParams
 }
+
+type WorkItemComment struct {
+	db.WorkItemComment
+}
+
+type CreateWorkItemCommentRequest struct {
+	db.WorkItemCommentCreateParams
+}
+
+type UpdateWorkItemCommentRequest struct {
+	db.WorkItemCommentUpdateParams
+}

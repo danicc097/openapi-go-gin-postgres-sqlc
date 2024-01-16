@@ -9,6 +9,7 @@ import (
 )
 
 type Services struct {
+	WorkItemComment *WorkItemComment
 	User            *User
 	Project         *Project
 	Team            *Team
@@ -45,8 +46,10 @@ func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Ser
 	// workitemtagsvc.usersvc = usersvc
 	// solution: create needed services in each service method, e.g. witSvc := NewWorkItemTag(u.logger, u.repos)
 	// in our user service methods.
+	workitemcommentsvc := NewWorkItemComment(logger, repos)
 
 	return &Services{
+		WorkItemComment: workitemcommentsvc,
 		User:            usersvc,
 		Team:            teamsvc,
 		Project:         projectsvc,

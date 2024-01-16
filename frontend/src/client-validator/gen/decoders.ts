@@ -85,6 +85,8 @@ import {
   DbUserWIAUWorkItem,
   DemoKanbanSteps,
   DemoTwoKanbanSteps,
+  UpdateWorkItemCommentRequest,
+  WorkItemComment,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -1015,5 +1017,29 @@ export const DemoTwoKanbanStepsDecoder: Decoder<DemoTwoKanbanSteps> = {
       throw new Error(`Schema ${DemoTwoKanbanStepsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DemoTwoKanbanStepsDecoder.definitionName)
+  },
+}
+export const UpdateWorkItemCommentRequestDecoder: Decoder<UpdateWorkItemCommentRequest> = {
+  definitionName: 'UpdateWorkItemCommentRequest',
+  schemaRef: '#/definitions/UpdateWorkItemCommentRequest',
+
+  decode(json: unknown): UpdateWorkItemCommentRequest {
+    const schema = ajv.getSchema(UpdateWorkItemCommentRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${UpdateWorkItemCommentRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, UpdateWorkItemCommentRequestDecoder.definitionName)
+  },
+}
+export const WorkItemCommentDecoder: Decoder<WorkItemComment> = {
+  definitionName: 'WorkItemComment',
+  schemaRef: '#/definitions/WorkItemComment',
+
+  decode(json: unknown): WorkItemComment {
+    const schema = ajv.getSchema(WorkItemCommentDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${WorkItemCommentDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, WorkItemCommentDecoder.definitionName)
   },
 }

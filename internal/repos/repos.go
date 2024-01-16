@@ -143,3 +143,12 @@ type TimeEntry interface {
 	Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error)
 	Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error)
 }
+
+// WorkItemComment defines the datastore/repository handling persisting work item comment records.
+type WorkItemComment interface {
+	ByID(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, opts ...db.WorkItemCommentSelectConfigOption) (*db.WorkItemComment, error)
+	Create(ctx context.Context, d db.DBTX, params *db.WorkItemCommentCreateParams) (*db.WorkItemComment, error)
+	Update(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, params *db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error)
+	Delete(ctx context.Context, d db.DBTX, id db.WorkItemCommentID) (*db.WorkItemComment, error)
+}
+

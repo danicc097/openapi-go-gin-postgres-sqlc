@@ -81,6 +81,8 @@ import {
   DbUserWIAUWorkItem,
   DemoKanbanSteps,
   DemoTwoKanbanSteps,
+  UpdateWorkItemCommentRequest,
+  WorkItemComment,
 } from './models'
 
 export const schemaDefinitions = {
@@ -206,6 +208,11 @@ export const schemaDefinitions = {
   DbUserWIAUWorkItem: info<DbUserWIAUWorkItem>('DbUserWIAUWorkItem', '#/definitions/DbUserWIAUWorkItem'),
   DemoKanbanSteps: info<DemoKanbanSteps>('DemoKanbanSteps', '#/definitions/DemoKanbanSteps'),
   DemoTwoKanbanSteps: info<DemoTwoKanbanSteps>('DemoTwoKanbanSteps', '#/definitions/DemoTwoKanbanSteps'),
+  UpdateWorkItemCommentRequest: info<UpdateWorkItemCommentRequest>(
+    'UpdateWorkItemCommentRequest',
+    '#/definitions/UpdateWorkItemCommentRequest',
+  ),
+  WorkItemComment: info<WorkItemComment>('WorkItemComment', '#/definitions/WorkItemComment'),
 }
 
 export interface SchemaInfo<T> {

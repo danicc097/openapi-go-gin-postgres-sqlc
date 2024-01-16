@@ -1304,7 +1304,10 @@
         "work-item-tag:create",
         "work-item-tag:edit",
         "work-item-tag:delete",
-        "work-item:review"
+        "work-item:review",
+        "work-item-comment:create",
+        "work-item-comment:edit",
+        "work-item-comment:delete"
       ],
       "x-generated": "-",
       "description": "is generated from scopes.json keys."
@@ -2001,6 +2004,60 @@
       ],
       "x-generated": "-",
       "description": "is generated from kanban_steps table."
+    },
+    "UpdateWorkItemCommentRequest": {
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateWorkItemCommentRequest"
+    },
+    "WorkItemComment": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "workItemCommentID": {
+          "type": "integer"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemCommentID",
+        "workItemID",
+        "userID",
+        "message",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemComment"
     }
   },
   "properties": {
@@ -2234,6 +2291,12 @@
     },
     "DemoTwoKanbanSteps": {
       "$ref": "#/definitions/DemoTwoKanbanSteps"
+    },
+    "UpdateWorkItemCommentRequest": {
+      "$ref": "#/definitions/UpdateWorkItemCommentRequest"
+    },
+    "WorkItemComment": {
+      "$ref": "#/definitions/WorkItemComment"
     }
   }
 }

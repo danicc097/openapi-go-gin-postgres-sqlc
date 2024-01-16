@@ -814,6 +814,84 @@ paths:
           description: Success.
       tags:
         - workItem
+  /work-item-comment/:
+    post:
+      summary: create work item comment.
+      !!merge <<: *x-require-authenticated
+      operationId: CreateWorkItemComment
+      x-required-scopes:
+        - work-item-comment:create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWorkItemCommentRequest'
+        required: true
+      responses:
+        201:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemComment'
+        !!merge <<: *x-error-response
+      tags:
+        - workItemComment
+  /work-item-comment/{id}:
+    get:
+      summary: get work item comment.
+      !!merge <<: *x-require-authenticated
+      operationId: GetWorkItemComment
+      parameters:
+        - $ref: '#/components/parameters/SerialID'
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemComment'
+        !!merge <<: *x-error-response
+      tags:
+        - workItemComment
+    patch:
+      summary: update work item comment.
+      !!merge <<: *x-require-authenticated
+      operationId: UpdateWorkItemComment
+      x-required-scopes:
+        - work-item-comment:edit
+      parameters:
+        - $ref: '#/components/parameters/SerialID'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkItemCommentRequest'
+        required: true
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemComment'
+        !!merge <<: *x-error-response
+      tags:
+        - workItemComment
+    delete:
+      summary: delete .
+      !!merge <<: *x-require-authenticated
+      operationId: DeleteWorkItemComment
+      x-required-scopes:
+        - work-item-comment:delete
+      parameters:
+        - $ref: '#/components/parameters/SerialID'
+      responses:
+        204:
+          description: Success.
+        !!merge <<: *x-error-response
+      tags:
+        - workItemComment
 components:
   parameters:
     ProjectName:
@@ -1680,7 +1758,7 @@ components:
         - GlobalAlerts
     Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string
-      enum: ["project-member", "users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review"]
+      enum: ["project-member", "users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review", "work-item-comment:create", "work-item-comment:edit", "work-item-comment:delete"]
       x-generated: '-'
       description: is generated from scopes.json keys.
     Scopes: # workaround for openapi-go gen
@@ -2193,6 +2271,41 @@ components:
       enum: ["Received"]
       x-generated: '-'
       description: is generated from kanban_steps table.
+    UpdateWorkItemCommentRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        message:
+          type: string
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        workItemID:
+          type: integer
+      type: object
+      x-postgen-struct: RestUpdateWorkItemCommentRequest
+    WorkItemComment: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        message:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        workItemCommentID:
+          type: integer
+        workItemID:
+          type: integer
+      required:
+        - workItemCommentID
+        - workItemID
+        - userID
+        - message
+        - createdAt
+        - updatedAt
+      type: object
+      x-postgen-struct: RestWorkItemComment
   examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:

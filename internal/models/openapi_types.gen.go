@@ -178,20 +178,23 @@ func AllRoleValues() []Role {
 
 // Scope is generated from scopes.json keys.
 const (
-	ScopeActivityCreate       Scope = "activity:create"
-	ScopeActivityDelete       Scope = "activity:delete"
-	ScopeActivityEdit         Scope = "activity:edit"
-	ScopeProjectMember        Scope = "project-member"
-	ScopeProjectSettingsWrite Scope = "project-settings:write"
-	ScopeScopesWrite          Scope = "scopes:write"
-	ScopeTeamSettingsWrite    Scope = "team-settings:write"
-	ScopeUsersDelete          Scope = "users:delete"
-	ScopeUsersRead            Scope = "users:read"
-	ScopeUsersWrite           Scope = "users:write"
-	ScopeWorkItemReview       Scope = "work-item:review"
-	ScopeWorkItemTagCreate    Scope = "work-item-tag:create"
-	ScopeWorkItemTagDelete    Scope = "work-item-tag:delete"
-	ScopeWorkItemTagEdit      Scope = "work-item-tag:edit"
+	ScopeActivityCreate        Scope = "activity:create"
+	ScopeActivityDelete        Scope = "activity:delete"
+	ScopeActivityEdit          Scope = "activity:edit"
+	ScopeProjectMember         Scope = "project-member"
+	ScopeProjectSettingsWrite  Scope = "project-settings:write"
+	ScopeScopesWrite           Scope = "scopes:write"
+	ScopeTeamSettingsWrite     Scope = "team-settings:write"
+	ScopeUsersDelete           Scope = "users:delete"
+	ScopeUsersRead             Scope = "users:read"
+	ScopeUsersWrite            Scope = "users:write"
+	ScopeWorkItemCommentCreate Scope = "work-item-comment:create"
+	ScopeWorkItemCommentDelete Scope = "work-item-comment:delete"
+	ScopeWorkItemCommentEdit   Scope = "work-item-comment:edit"
+	ScopeWorkItemReview        Scope = "work-item:review"
+	ScopeWorkItemTagCreate     Scope = "work-item-tag:create"
+	ScopeWorkItemTagDelete     Scope = "work-item-tag:delete"
+	ScopeWorkItemTagEdit       Scope = "work-item-tag:edit"
 )
 
 // AllScopeValues returns all possible values for Scope.
@@ -207,6 +210,9 @@ func AllScopeValues() []Scope {
 		ScopeUsersDelete,
 		ScopeUsersRead,
 		ScopeUsersWrite,
+		ScopeWorkItemCommentCreate,
+		ScopeWorkItemCommentDelete,
+		ScopeWorkItemCommentEdit,
 		ScopeWorkItemReview,
 		ScopeWorkItemTagCreate,
 		ScopeWorkItemTagDelete,
@@ -761,6 +767,13 @@ type UpdateUserRequest struct {
 	LastName *string `json:"lastName,omitempty"`
 }
 
+// UpdateWorkItemCommentRequest defines the model for UpdateWorkItemCommentRequest.
+type UpdateWorkItemCommentRequest struct {
+	Message    *string   `json:"message,omitempty"`
+	UserID     *DbUserID `json:"userID,omitempty"`
+	WorkItemID *int      `json:"workItemID,omitempty"`
+}
+
 // UpdateWorkItemTagRequest defines the model for UpdateWorkItemTagRequest.
 type UpdateWorkItemTagRequest struct {
 	Color       *string `json:"color,omitempty"`
@@ -814,6 +827,16 @@ type ValidationError struct {
 
 	// Msg should always be shown to the user
 	Msg string `json:"msg"`
+}
+
+// WorkItemComment defines the model for WorkItemComment.
+type WorkItemComment struct {
+	CreatedAt         time.Time `json:"createdAt"`
+	Message           string    `json:"message"`
+	UpdatedAt         time.Time `json:"updatedAt"`
+	UserID            DbUserID  `json:"userID"`
+	WorkItemCommentID int       `json:"workItemCommentID"`
+	WorkItemID        int       `json:"workItemID"`
 }
 
 // WorkItemRole is generated from database enum 'work_item_role'.
@@ -916,6 +939,14 @@ type UpdateUserJSONRequestBody = UpdateUserRequest
 // UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
 
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
+
+// CreateWorkItemCommentJSONRequestBody defines body for CreateWorkItemComment for application/json ContentType.
+
+type CreateWorkItemCommentJSONRequestBody = CreateWorkItemCommentRequest
+
+// UpdateWorkItemCommentJSONRequestBody defines body for UpdateWorkItemComment for application/json ContentType.
+
+type UpdateWorkItemCommentJSONRequestBody = UpdateWorkItemCommentRequest
 
 // UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
 
