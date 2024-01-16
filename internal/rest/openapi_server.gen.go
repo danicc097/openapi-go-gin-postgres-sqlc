@@ -1066,13 +1066,13 @@ func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
 type ServerInterface interface {
 	// delete activity.
 	// (DELETE /activity/{id})
-	DeleteActivity(c *gin.Context, id externalRef0.SerialID)
+	DeleteActivity(c *gin.Context, id int)
 	// get activity.
 	// (GET /activity/{id})
-	GetActivity(c *gin.Context, id externalRef0.SerialID)
+	GetActivity(c *gin.Context, id int)
 	// update activity.
 	// (PATCH /activity/{id})
-	UpdateActivity(c *gin.Context, id externalRef0.SerialID)
+	UpdateActivity(c *gin.Context, id int)
 	// Ping pongs
 	// (GET /admin/ping)
 	AdminPing(c *gin.Context)
@@ -1126,13 +1126,13 @@ type ServerInterface interface {
 	GetProjectWorkitems(c *gin.Context, projectName externalRef0.ProjectName, params externalRef0.GetProjectWorkitemsParams)
 	// delete team.
 	// (DELETE /team/{id})
-	DeleteTeam(c *gin.Context, id externalRef0.SerialID)
+	DeleteTeam(c *gin.Context, id int)
 	// get team.
 	// (GET /team/{id})
-	GetTeam(c *gin.Context, id externalRef0.SerialID)
+	GetTeam(c *gin.Context, id int)
 	// update team.
 	// (PATCH /team/{id})
-	UpdateTeam(c *gin.Context, id externalRef0.SerialID)
+	UpdateTeam(c *gin.Context, id int)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context)
@@ -1149,47 +1149,47 @@ type ServerInterface interface {
 	// (PATCH /user/{id}/authorization)
 	UpdateUserAuthorization(c *gin.Context, id uuid.UUID)
 	// create work item comment.
-	// (POST /work-item-comment/)
-	CreateWorkItemComment(c *gin.Context)
+	// (POST /work-item/{workItemID}/comment/)
+	CreateWorkItemComment(c *gin.Context, workItemID int)
 	// delete .
-	// (DELETE /work-item-comment/{id})
-	DeleteWorkItemComment(c *gin.Context, id externalRef0.SerialID)
+	// (DELETE /work-item/{workItemID}/comment/{id})
+	DeleteWorkItemComment(c *gin.Context, workItemID int, id int)
 	// get work item comment.
-	// (GET /work-item-comment/{id})
-	GetWorkItemComment(c *gin.Context, id externalRef0.SerialID)
+	// (GET /work-item/{workItemID}/comment/{id})
+	GetWorkItemComment(c *gin.Context, workItemID int, id int)
 	// update work item comment.
-	// (PATCH /work-item-comment/{id})
-	UpdateWorkItemComment(c *gin.Context, id externalRef0.SerialID)
+	// (PATCH /work-item/{workItemID}/comment/{id})
+	UpdateWorkItemComment(c *gin.Context, workItemID int, id int)
 	// delete workitemtag.
 	// (DELETE /workItemTag/{id})
-	DeleteWorkItemTag(c *gin.Context, id externalRef0.SerialID)
+	DeleteWorkItemTag(c *gin.Context, id int)
 	// get workitemtag.
 	// (GET /workItemTag/{id})
-	GetWorkItemTag(c *gin.Context, id externalRef0.SerialID)
+	GetWorkItemTag(c *gin.Context, id int)
 	// update workitemtag.
 	// (PATCH /workItemTag/{id})
-	UpdateWorkItemTag(c *gin.Context, id externalRef0.SerialID)
+	UpdateWorkItemTag(c *gin.Context, id int)
 	// delete workitemtype.
 	// (DELETE /workItemType/{id})
-	DeleteWorkItemType(c *gin.Context, id externalRef0.SerialID)
+	DeleteWorkItemType(c *gin.Context, id int)
 	// get workitemtype.
 	// (GET /workItemType/{id})
-	GetWorkItemType(c *gin.Context, id externalRef0.SerialID)
+	GetWorkItemType(c *gin.Context, id int)
 	// update workitemtype.
 	// (PATCH /workItemType/{id})
-	UpdateWorkItemType(c *gin.Context, id externalRef0.SerialID)
+	UpdateWorkItemType(c *gin.Context, id int)
 	// create workitem
 	// (POST /workitem/)
 	CreateWorkitem(c *gin.Context)
 	// delete workitem
 	// (DELETE /workitem/{id}/)
-	DeleteWorkitem(c *gin.Context, id externalRef0.SerialID)
+	DeleteWorkitem(c *gin.Context, id int)
 	// get workitem
 	// (GET /workitem/{id}/)
-	GetWorkItem(c *gin.Context, id externalRef0.SerialID)
+	GetWorkItem(c *gin.Context, id int)
 	// update workitem
 	// (PATCH /workitem/{id}/)
-	UpdateWorkitem(c *gin.Context, id externalRef0.SerialID)
+	UpdateWorkitem(c *gin.Context, id int)
 
 	middlewares(opID OperationID) []gin.HandlerFunc
 	authMiddlewares(opID OperationID) []gin.HandlerFunc
@@ -1207,7 +1207,7 @@ func (siw *ServerInterfaceWrapper) DeleteActivity(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1227,7 +1227,7 @@ func (siw *ServerInterfaceWrapper) GetActivity(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1247,7 +1247,7 @@ func (siw *ServerInterfaceWrapper) UpdateActivity(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1614,7 +1614,7 @@ func (siw *ServerInterfaceWrapper) DeleteTeam(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1634,7 +1634,7 @@ func (siw *ServerInterfaceWrapper) GetTeam(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1654,7 +1654,7 @@ func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1796,19 +1796,39 @@ func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
 
 // CreateWorkItemComment operation with its own middleware.
 func (siw *ServerInterfaceWrapper) CreateWorkItemComment(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "workItemID" -------------
+	var workItemID int // int
+
+	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemID: %s", err)})
+		return
+	}
+
 	c.Set(externalRef0.Bearer_authScopes, []string{})
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.CreateWorkItemComment(c)
+	siw.Handler.CreateWorkItemComment(c, workItemID)
 }
 
 // DeleteWorkItemComment operation with its own middleware.
 func (siw *ServerInterfaceWrapper) DeleteWorkItemComment(c *gin.Context) {
 	var err error
 
+	// ------------- Path parameter "workItemID" -------------
+	var workItemID int // int
+
+	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemID: %s", err)})
+		return
+	}
+
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1820,15 +1840,24 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemComment(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.DeleteWorkItemComment(c, id)
+	siw.Handler.DeleteWorkItemComment(c, workItemID, id)
 }
 
 // GetWorkItemComment operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetWorkItemComment(c *gin.Context) {
 	var err error
 
+	// ------------- Path parameter "workItemID" -------------
+	var workItemID int // int
+
+	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemID: %s", err)})
+		return
+	}
+
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1840,15 +1869,24 @@ func (siw *ServerInterfaceWrapper) GetWorkItemComment(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.GetWorkItemComment(c, id)
+	siw.Handler.GetWorkItemComment(c, workItemID, id)
 }
 
 // UpdateWorkItemComment operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateWorkItemComment(c *gin.Context) {
 	var err error
 
+	// ------------- Path parameter "workItemID" -------------
+	var workItemID int // int
+
+	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemID: %s", err)})
+		return
+	}
+
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1860,7 +1898,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemComment(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.UpdateWorkItemComment(c, id)
+	siw.Handler.UpdateWorkItemComment(c, workItemID, id)
 }
 
 // DeleteWorkItemTag operation with its own middleware.
@@ -1868,7 +1906,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemTag(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1888,7 +1926,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemTag(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1908,7 +1946,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemTag(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1928,7 +1966,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemType(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1948,7 +1986,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemType(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1968,7 +2006,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemType(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -1997,7 +2035,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkitem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -2017,7 +2055,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -2037,7 +2075,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkitem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id externalRef0.SerialID // SerialID
+	var id int // int
 
 	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
 	if err != nil {
@@ -2209,22 +2247,22 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(UpdateUserAuthorization), wrapper.UpdateUserAuthorization)...,
 	)...)
 
-	router.POST(options.BaseURL+"/work-item-comment/", append(
+	router.POST(options.BaseURL+"/work-item/:workItemID/comment/", append(
 		wrapper.Handler.authMiddlewares(CreateWorkItemComment),
 		append(wrapper.Handler.middlewares(CreateWorkItemComment), wrapper.CreateWorkItemComment)...,
 	)...)
 
-	router.DELETE(options.BaseURL+"/work-item-comment/:id", append(
+	router.DELETE(options.BaseURL+"/work-item/:workItemID/comment/:id", append(
 		wrapper.Handler.authMiddlewares(DeleteWorkItemComment),
 		append(wrapper.Handler.middlewares(DeleteWorkItemComment), wrapper.DeleteWorkItemComment)...,
 	)...)
 
-	router.GET(options.BaseURL+"/work-item-comment/:id", append(
+	router.GET(options.BaseURL+"/work-item/:workItemID/comment/:id", append(
 		wrapper.Handler.authMiddlewares(GetWorkItemComment),
 		append(wrapper.Handler.middlewares(GetWorkItemComment), wrapper.GetWorkItemComment)...,
 	)...)
 
-	router.PATCH(options.BaseURL+"/work-item-comment/:id", append(
+	router.PATCH(options.BaseURL+"/work-item/:workItemID/comment/:id", append(
 		wrapper.Handler.authMiddlewares(UpdateWorkItemComment),
 		append(wrapper.Handler.middlewares(UpdateWorkItemComment), wrapper.UpdateWorkItemComment)...,
 	)...)
@@ -2281,7 +2319,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 }
 
 type DeleteActivityRequestObject struct {
-	Id externalRef0.SerialID `json:"id"`
+	Id int `json:"id"`
 }
 
 type DeleteActivityResponseObject interface {
@@ -2322,7 +2360,7 @@ func (response DeleteActivity4XXJSONResponse) VisitDeleteActivityResponse(w http
 }
 
 type GetActivityRequestObject struct {
-	Id externalRef0.SerialID `json:"id"`
+	Id int `json:"id"`
 }
 
 type GetActivityResponseObject interface {
@@ -2365,7 +2403,7 @@ func (response GetActivity4XXJSONResponse) VisitGetActivityResponse(w http.Respo
 }
 
 type UpdateActivityRequestObject struct {
-	Id   externalRef0.SerialID `json:"id"`
+	Id   int `json:"id"`
 	Body *UpdateActivityRequest
 }
 
@@ -2909,7 +2947,7 @@ func (response GetProjectWorkitems200JSONResponse) VisitGetProjectWorkitemsRespo
 }
 
 type DeleteTeamRequestObject struct {
-	Id externalRef0.SerialID `json:"id"`
+	Id int `json:"id"`
 }
 
 type DeleteTeamResponseObject interface {
@@ -2950,7 +2988,7 @@ func (response DeleteTeam4XXJSONResponse) VisitDeleteTeamResponse(w http.Respons
 }
 
 type GetTeamRequestObject struct {
-	Id externalRef0.SerialID `json:"id"`
+	Id int `json:"id"`
 }
 
 type GetTeamResponseObject interface {
@@ -2993,7 +3031,7 @@ func (response GetTeam4XXJSONResponse) VisitGetTeamResponse(w http.ResponseWrite
 }
 
 type UpdateTeamRequestObject struct {
-	Id   externalRef0.SerialID `json:"id"`
+	Id   int `json:"id"`
 	Body *UpdateTeamRequest
 }
 
@@ -3170,7 +3208,8 @@ func (response UpdateUserAuthorization204Response) VisitUpdateUserAuthorizationR
 }
 
 type CreateWorkItemCommentRequestObject struct {
-	Body *CreateWorkItemCommentRequest
+	WorkItemID int `json:"workItemID"`
+	Body       *CreateWorkItemCommentRequest
 }
 
 type CreateWorkItemCommentResponseObject interface {
@@ -3213,7 +3252,8 @@ func (response CreateWorkItemComment4XXJSONResponse) VisitCreateWorkItemCommentR
 }
 
 type DeleteWorkItemCommentRequestObject struct {
-	Id externalRef0.SerialID `json:"id"`
+	WorkItemID int `json:"workItemID"`
+	Id         int `json:"id"`
 }
 
 type DeleteWorkItemCommentResponseObject interface {
@@ -3254,7 +3294,8 @@ func (response DeleteWorkItemComment4XXJSONResponse) VisitDeleteWorkItemCommentR
 }
 
 type GetWorkItemCommentRequestObject struct {
-	Id externalRef0.SerialID `json:"id"`
+	WorkItemID int `json:"workItemID"`
+	Id         int `json:"id"`
 }
 
 type GetWorkItemCommentResponseObject interface {
@@ -3297,8 +3338,9 @@ func (response GetWorkItemComment4XXJSONResponse) VisitGetWorkItemCommentRespons
 }
 
 type UpdateWorkItemCommentRequestObject struct {
-	Id   externalRef0.SerialID `json:"id"`
-	Body *UpdateWorkItemCommentRequest
+	WorkItemID int `json:"workItemID"`
+	Id         int `json:"id"`
+	Body       *UpdateWorkItemCommentRequest
 }
 
 type UpdateWorkItemCommentResponseObject interface {
@@ -3341,7 +3383,7 @@ func (response UpdateWorkItemComment4XXJSONResponse) VisitUpdateWorkItemCommentR
 }
 
 type DeleteWorkItemTagRequestObject struct {
-	Id externalRef0.SerialID `json:"id"`
+	Id int `json:"id"`
 }
 
 type DeleteWorkItemTagResponseObject interface {
@@ -3382,7 +3424,7 @@ func (response DeleteWorkItemTag4XXJSONResponse) VisitDeleteWorkItemTagResponse(
 }
 
 type GetWorkItemTagRequestObject struct {
-	Id externalRef0.SerialID `json:"id"`
+	Id int `json:"id"`
 }
 
 type GetWorkItemTagResponseObject interface {
@@ -3425,7 +3467,7 @@ func (response GetWorkItemTag4XXJSONResponse) VisitGetWorkItemTagResponse(w http
 }
 
 type UpdateWorkItemTagRequestObject struct {
-	Id   externalRef0.SerialID `json:"id"`
+	Id   int `json:"id"`
 	Body *UpdateWorkItemTagRequest
 }
 
@@ -3469,7 +3511,7 @@ func (response UpdateWorkItemTag4XXJSONResponse) VisitUpdateWorkItemTagResponse(
 }
 
 type DeleteWorkItemTypeRequestObject struct {
-	Id externalRef0.SerialID `json:"id"`
+	Id int `json:"id"`
 }
 
 type DeleteWorkItemTypeResponseObject interface {
@@ -3510,7 +3552,7 @@ func (response DeleteWorkItemType4XXJSONResponse) VisitDeleteWorkItemTypeRespons
 }
 
 type GetWorkItemTypeRequestObject struct {
-	Id externalRef0.SerialID `json:"id"`
+	Id int `json:"id"`
 }
 
 type GetWorkItemTypeResponseObject interface {
@@ -3553,7 +3595,7 @@ func (response GetWorkItemType4XXJSONResponse) VisitGetWorkItemTypeResponse(w ht
 }
 
 type UpdateWorkItemTypeRequestObject struct {
-	Id   externalRef0.SerialID `json:"id"`
+	Id   int `json:"id"`
 	Body *UpdateWorkItemTypeRequest
 }
 
@@ -3616,7 +3658,7 @@ func (response CreateWorkitem201JSONResponse) VisitCreateWorkitemResponse(w http
 }
 
 type DeleteWorkitemRequestObject struct {
-	Id externalRef0.SerialID `json:"id"`
+	Id int `json:"id"`
 }
 
 type DeleteWorkitemResponseObject interface {
@@ -3631,7 +3673,7 @@ func (response DeleteWorkitem204Response) VisitDeleteWorkitemResponse(w http.Res
 }
 
 type GetWorkItemRequestObject struct {
-	Id externalRef0.SerialID `json:"id"`
+	Id int `json:"id"`
 }
 
 type GetWorkItemResponseObject interface {
@@ -3650,7 +3692,7 @@ func (response GetWorkItem200JSONResponse) VisitGetWorkItemResponse(w http.Respo
 }
 
 type UpdateWorkitemRequestObject struct {
-	Id externalRef0.SerialID `json:"id"`
+	Id int `json:"id"`
 }
 
 type UpdateWorkitemResponseObject interface {
@@ -3755,16 +3797,16 @@ type StrictServerInterface interface {
 	// (PATCH /user/{id}/authorization)
 	UpdateUserAuthorization(c *gin.Context, request UpdateUserAuthorizationRequestObject) (UpdateUserAuthorizationResponseObject, error)
 	// create work item comment.
-	// (POST /work-item-comment/)
+	// (POST /work-item/{workItemID}/comment/)
 	CreateWorkItemComment(c *gin.Context, request CreateWorkItemCommentRequestObject) (CreateWorkItemCommentResponseObject, error)
 	// delete .
-	// (DELETE /work-item-comment/{id})
+	// (DELETE /work-item/{workItemID}/comment/{id})
 	DeleteWorkItemComment(c *gin.Context, request DeleteWorkItemCommentRequestObject) (DeleteWorkItemCommentResponseObject, error)
 	// get work item comment.
-	// (GET /work-item-comment/{id})
+	// (GET /work-item/{workItemID}/comment/{id})
 	GetWorkItemComment(c *gin.Context, request GetWorkItemCommentRequestObject) (GetWorkItemCommentResponseObject, error)
 	// update work item comment.
-	// (PATCH /work-item-comment/{id})
+	// (PATCH /work-item/{workItemID}/comment/{id})
 	UpdateWorkItemComment(c *gin.Context, request UpdateWorkItemCommentRequestObject) (UpdateWorkItemCommentResponseObject, error)
 	// delete workitemtag.
 	// (DELETE /workItemTag/{id})
@@ -3823,7 +3865,7 @@ func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 }
 
 // DeleteActivity operation middleware
-func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, id int) {
 	var request DeleteActivityRequestObject
 
 	request.Id = id
@@ -3850,7 +3892,7 @@ func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, id externalRef0.Seria
 }
 
 // GetActivity operation middleware
-func (sh *strictHandlers) GetActivity(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) GetActivity(ctx *gin.Context, id int) {
 	var request GetActivityRequestObject
 
 	request.Id = id
@@ -3877,7 +3919,7 @@ func (sh *strictHandlers) GetActivity(ctx *gin.Context, id externalRef0.SerialID
 }
 
 // UpdateActivity operation middleware
-func (sh *strictHandlers) UpdateActivity(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) UpdateActivity(ctx *gin.Context, id int) {
 	var request UpdateActivityRequestObject
 
 	request.Id = id
@@ -4419,7 +4461,7 @@ func (sh *strictHandlers) GetProjectWorkitems(ctx *gin.Context, projectName exte
 }
 
 // DeleteTeam operation middleware
-func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, id int) {
 	var request DeleteTeamRequestObject
 
 	request.Id = id
@@ -4446,7 +4488,7 @@ func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, id externalRef0.SerialID)
 }
 
 // GetTeam operation middleware
-func (sh *strictHandlers) GetTeam(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) GetTeam(ctx *gin.Context, id int) {
 	var request GetTeamRequestObject
 
 	request.Id = id
@@ -4473,7 +4515,7 @@ func (sh *strictHandlers) GetTeam(ctx *gin.Context, id externalRef0.SerialID) {
 }
 
 // UpdateTeam operation middleware
-func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, id int) {
 	var request UpdateTeamRequestObject
 
 	request.Id = id
@@ -4660,8 +4702,10 @@ func (sh *strictHandlers) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID
 }
 
 // CreateWorkItemComment operation middleware
-func (sh *strictHandlers) CreateWorkItemComment(ctx *gin.Context) {
+func (sh *strictHandlers) CreateWorkItemComment(ctx *gin.Context, workItemID int) {
 	var request CreateWorkItemCommentRequestObject
+
+	request.WorkItemID = workItemID
 
 	// CreateWorkItemCommentRequest
 	var body CreateWorkItemCommentRequest
@@ -4694,9 +4738,10 @@ func (sh *strictHandlers) CreateWorkItemComment(ctx *gin.Context) {
 }
 
 // DeleteWorkItemComment operation middleware
-func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID int, id int) {
 	var request DeleteWorkItemCommentRequestObject
 
+	request.WorkItemID = workItemID
 	request.Id = id
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
@@ -4721,9 +4766,10 @@ func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, id externalRef
 }
 
 // GetWorkItemComment operation middleware
-func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID int, id int) {
 	var request GetWorkItemCommentRequestObject
 
+	request.WorkItemID = workItemID
 	request.Id = id
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
@@ -4748,9 +4794,10 @@ func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, id externalRef0.S
 }
 
 // UpdateWorkItemComment operation middleware
-func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, workItemID int, id int) {
 	var request UpdateWorkItemCommentRequestObject
 
+	request.WorkItemID = workItemID
 	request.Id = id
 
 	// UpdateWorkItemCommentRequest
@@ -4784,7 +4831,7 @@ func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, id externalRef
 }
 
 // DeleteWorkItemTag operation middleware
-func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, id int) {
 	var request DeleteWorkItemTagRequestObject
 
 	request.Id = id
@@ -4811,7 +4858,7 @@ func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, id externalRef0.Se
 }
 
 // GetWorkItemTag operation middleware
-func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, id int) {
 	var request GetWorkItemTagRequestObject
 
 	request.Id = id
@@ -4838,7 +4885,7 @@ func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, id externalRef0.Seria
 }
 
 // UpdateWorkItemTag operation middleware
-func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, id int) {
 	var request UpdateWorkItemTagRequestObject
 
 	request.Id = id
@@ -4874,7 +4921,7 @@ func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, id externalRef0.Se
 }
 
 // DeleteWorkItemType operation middleware
-func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, id int) {
 	var request DeleteWorkItemTypeRequestObject
 
 	request.Id = id
@@ -4901,7 +4948,7 @@ func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, id externalRef0.S
 }
 
 // GetWorkItemType operation middleware
-func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, id int) {
 	var request GetWorkItemTypeRequestObject
 
 	request.Id = id
@@ -4928,7 +4975,7 @@ func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, id externalRef0.Seri
 }
 
 // UpdateWorkItemType operation middleware
-func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, id int) {
 	var request UpdateWorkItemTypeRequestObject
 
 	request.Id = id
@@ -4998,7 +5045,7 @@ func (sh *strictHandlers) CreateWorkitem(ctx *gin.Context) {
 }
 
 // DeleteWorkitem operation middleware
-func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, id int) {
 	var request DeleteWorkitemRequestObject
 
 	request.Id = id
@@ -5025,7 +5072,7 @@ func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, id externalRef0.Seria
 }
 
 // GetWorkItem operation middleware
-func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, id int) {
 	var request GetWorkItemRequestObject
 
 	request.Id = id
@@ -5052,7 +5099,7 @@ func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, id externalRef0.SerialID
 }
 
 // UpdateWorkitem operation middleware
-func (sh *strictHandlers) UpdateWorkitem(ctx *gin.Context, id externalRef0.SerialID) {
+func (sh *strictHandlers) UpdateWorkitem(ctx *gin.Context, id int) {
 	var request UpdateWorkitemRequestObject
 
 	request.Id = id

@@ -21,7 +21,7 @@ type CreateTeamFixture struct {
 // CreateTeam creates a new random work item comment with the given configuration.
 func (ff *FixtureFactory) CreateTeam(ctx context.Context, params CreateTeamParams) (*CreateTeamFixture, error) {
 	randomRepoCreateParams := postgresqltestutil.RandomTeamCreateParams(ff.t, internal.ProjectIDByName[params.Project])
-	// don't use repos for test fixtures, useservice logic
+	// don't use repos for test fixtures, use service logic
 	team, err := ff.svc.Team.Create(ctx, ff.d, randomRepoCreateParams)
 	if err != nil {
 		return nil, fmt.Errorf("svc.Team.Create: %w", err)

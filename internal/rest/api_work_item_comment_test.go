@@ -58,11 +58,11 @@ func TestHandlers_DeleteWorkItemComment(t *testing.T) {
 			})
 			require.NoError(t, err, "ff.CreateUser: %s")
 
-			workItemComment, err := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
+			workItemCommentf, err := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
 			require.NoError(t, err, "ff.CreateWorkItemComment: %s")
 
-			id := workItemComment.WorkItemComment.WorkItemCommentID
-			res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
+			id := workItemCommentf.WorkItemComment.WorkItemCommentID
+			res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), int(workItemCommentf.WorkItem.WorkItemID), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
 			require.NoError(t, err)
 			require.Equal(t, tc.status, res.StatusCode(), string(res.Body))
 		})
@@ -104,7 +104,7 @@ func TestHandlers_CreateWorkItemComment(t *testing.T) {
 			WorkItemCommentCreateParams: *randomWorkItemCommentCreateParams,
 		}
 
-		res, err := srv.client.CreateWorkItemCommentWithResponse(context.Background(), body, ReqWithAPIKey(ufixture.APIKey.APIKey))
+		res, err := srv.client.CreateWorkItemCommentWithResponse(context.Background(), int(demoWorkItemf.WorkItem.WorkItemID), body, ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
 		require.Equal(t, http.StatusCreated, res.StatusCode(), string(res.Body))
@@ -143,7 +143,7 @@ func TestHandlers_GetWorkItemComment(t *testing.T) {
 		require.NoError(t, err, "ff.CreateWorkItemComment: %s")
 
 		id := workItemCommentf.WorkItemComment.WorkItemCommentID
-		res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
+		res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), int(workItemCommentf.WorkItem.WorkItemID), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))
@@ -224,11 +224,11 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 			})
 			require.NoError(t, err, "ff.CreateUser: %s")
 
-			workItemComment, err := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: *tc.body.UserID})
+			workItemCommentf, err := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: *tc.body.UserID})
 			require.NoError(t, err, "ff.CreateWorkItemComment: %s")
 
-			id := workItemComment.WorkItemComment.WorkItemCommentID
-			updateRes, err := srv.client.UpdateWorkItemCommentWithResponse(context.Background(), int(id), tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
+			id := workItemCommentf.WorkItemComment.WorkItemCommentID
+			updateRes, err := srv.client.UpdateWorkItemCommentWithResponse(context.Background(), int(workItemCommentf.WorkItem.WorkItemID), int(id), tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			require.EqualValues(t, tc.status, updateRes.StatusCode(), string(updateRes.Body))
@@ -243,7 +243,7 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 
 			assert.EqualValues(t, id, updateRes.JSON200.WorkItemCommentID)
 
-			res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), int(id), ReqWithAPIKey(normalUser.APIKey.APIKey))
+			res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), int(workItemCommentf.WorkItem.WorkItemID), int(id), ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			assert.EqualValues(t, *tc.body.Message, res.JSON200.Message)

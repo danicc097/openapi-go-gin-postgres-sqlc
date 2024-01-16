@@ -36,6 +36,16 @@ x-uuidParameter: &x-uuidParameter
       path: github.com/google/uuid
   example: 123e4567-e89b-12d3-a456-426614174000
   style: simple
+x-serialIDParameter: &x-serialIDParameter
+  description: integer identifier
+  explode: false
+  in: path
+  name: id
+  required: true
+  schema:
+    type: integer
+  example: 41131
+  style: simple
 x-paginationLimitParameter: &x-paginationLimitParameter
   name: limit
   required: true
@@ -242,7 +252,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetTeam
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         200:
           description: Success.
@@ -258,7 +268,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateTeam
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       requestBody:
         content:
           application/json:
@@ -280,7 +290,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteTeam
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         204:
           description: Success.
@@ -352,7 +362,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetActivity
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         200:
           description: Success.
@@ -370,7 +380,7 @@ paths:
       x-required-scopes:
         - activity:edit
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       requestBody:
         content:
           application/json:
@@ -394,7 +404,7 @@ paths:
       x-required-scopes:
         - activity:delete
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         204:
           description: Success.
@@ -407,7 +417,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemTag
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         200:
           description: Success.
@@ -423,7 +433,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkItemTag
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       requestBody:
         content:
           application/json:
@@ -445,7 +455,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkItemTag
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         204:
           description: Success.
@@ -481,7 +491,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemType
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         200:
           description: Success.
@@ -497,7 +507,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkItemType
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       requestBody:
         content:
           application/json:
@@ -519,7 +529,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkItemType
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         204:
           description: Success.
@@ -776,7 +786,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItem
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         200:
           description: Success.
@@ -792,7 +802,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkitem
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         200:
           description: Success.
@@ -808,17 +818,20 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkitem
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         204:
           description: Success.
       tags:
         - workItem
-  /work-item-comment/:
+  /work-item/{workItemID}/comment/:
     post:
       summary: create work item comment.
       !!merge <<: *x-require-authenticated
       operationId: CreateWorkItemComment
+      parameters:
+        - !!merge <<: *x-serialIDParameter
+          name: workItemID
       x-required-scopes:
         - work-item-comment:create
       requestBody:
@@ -837,13 +850,15 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - workItemComment
-  /work-item-comment/{id}:
+  /work-item/{workItemID}/comment/{id}:
     get:
       summary: get work item comment.
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemComment
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameter
+          name: workItemID
       responses:
         200:
           description: Success.
@@ -861,7 +876,9 @@ paths:
       x-required-scopes:
         - work-item-comment:edit
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameter
+          name: workItemID
       requestBody:
         content:
           application/json:
@@ -885,7 +902,9 @@ paths:
       x-required-scopes:
         - work-item-comment:delete
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameter
+          name: workItemID
       responses:
         204:
           description: Success.
@@ -905,16 +924,7 @@ components:
       example: demo
       style: simple
     UUID: *x-uuidParameter
-    SerialID:
-      description: integer identifier
-      explode: false
-      in: path
-      name: id
-      required: true
-      schema:
-        type: integer
-      example: 41131
-      style: simple
+    SerialID: *x-serialIDParameter
   schemas:
     CreateActivityRequest: # Generated from internal structs. DO NOT EDIT.
       properties:

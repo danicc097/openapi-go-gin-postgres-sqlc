@@ -17,12 +17,13 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  * @summary create work item comment.
  */
 export const createWorkItemComment = (
+  workItemID: number,
   createWorkItemCommentRequest: CreateWorkItemCommentRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemComment>(
     {
-      url: `/work-item-comment/`,
+      url: `/work-item/${workItemID}/comment/`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: createWorkItemCommentRequest,
@@ -33,20 +34,25 @@ export const createWorkItemComment = (
 /**
  * @summary get work item comment.
  */
-export const getWorkItemComment = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<WorkItemComment>({ url: `/work-item-comment/${id}`, method: 'GET' }, options)
+export const getWorkItemComment = (
+  workItemID: number,
+  id: number,
+  options?: SecondParameter<typeof customInstance>,
+) => {
+  return customInstance<WorkItemComment>({ url: `/work-item/${workItemID}/comment/${id}`, method: 'GET' }, options)
 }
 /**
  * @summary update work item comment.
  */
 export const updateWorkItemComment = (
+  workItemID: number,
   id: number,
   updateWorkItemCommentRequest: UpdateWorkItemCommentRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemComment>(
     {
-      url: `/work-item-comment/${id}`,
+      url: `/work-item/${workItemID}/comment/${id}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: updateWorkItemCommentRequest,
@@ -57,8 +63,12 @@ export const updateWorkItemComment = (
 /**
  * @summary delete .
  */
-export const deleteWorkItemComment = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<void>({ url: `/work-item-comment/${id}`, method: 'DELETE' }, options)
+export const deleteWorkItemComment = (
+  workItemID: number,
+  id: number,
+  options?: SecondParameter<typeof customInstance>,
+) => {
+  return customInstance<void>({ url: `/work-item/${workItemID}/comment/${id}`, method: 'DELETE' }, options)
 }
 export type CreateWorkItemCommentResult = NonNullable<Awaited<ReturnType<typeof createWorkItemComment>>>
 export type GetWorkItemCommentResult = NonNullable<Awaited<ReturnType<typeof getWorkItemComment>>>

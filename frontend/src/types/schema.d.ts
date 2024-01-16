@@ -40,7 +40,7 @@ export interface paths {
     /** create team. */
     post: operations["CreateTeam"];
   };
-  "/team/{id}": {
+  [path: `/team/${number}`]: {
     /** get team. */
     get: operations["GetTeam"];
     /** delete team. */
@@ -56,7 +56,7 @@ export interface paths {
     /** create activity. */
     post: operations["CreateActivity"];
   };
-  "/activity/{id}": {
+  [path: `/activity/${number}`]: {
     /** get activity. */
     get: operations["GetActivity"];
     /** delete activity. */
@@ -64,7 +64,7 @@ export interface paths {
     /** update activity. */
     patch: operations["UpdateActivity"];
   };
-  "/workItemTag/{id}": {
+  [path: `/workItemTag/${number}`]: {
     /** get workitemtag. */
     get: operations["GetWorkItemTag"];
     /** delete workitemtag. */
@@ -76,7 +76,7 @@ export interface paths {
     /** create workitemtype. */
     post: operations["CreateWorkItemType"];
   };
-  "/workItemType/{id}": {
+  [path: `/workItemType/${number}`]: {
     /** get workitemtype. */
     get: operations["GetWorkItemType"];
     /** delete workitemtype. */
@@ -128,7 +128,7 @@ export interface paths {
     /** create workitem */
     post: operations["CreateWorkitem"];
   };
-  "/workitem/{id}/": {
+  [path: `/workitem/${number}/`]: {
     /** get workitem */
     get: operations["GetWorkItem"];
     /** delete workitem */
@@ -136,11 +136,11 @@ export interface paths {
     /** update workitem */
     patch: operations["UpdateWorkitem"];
   };
-  "/work-item-comment/": {
+  [path: `/work-item/${number}/comment/`]: {
     /** create work item comment. */
     post: operations["CreateWorkItemComment"];
   };
-  "/work-item-comment/{id}": {
+  [path: `/work-item/${number}/comment/${number}`]: {
     /** get work item comment. */
     get: operations["GetWorkItemComment"];
     /** delete . */
@@ -895,7 +895,11 @@ export interface operations {
   GetTeam: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -921,7 +925,11 @@ export interface operations {
   DeleteTeam: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -943,7 +951,11 @@ export interface operations {
   UpdateTeam: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     requestBody: {
@@ -1036,7 +1048,11 @@ export interface operations {
   GetActivity: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1062,7 +1078,11 @@ export interface operations {
   DeleteActivity: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1084,7 +1104,11 @@ export interface operations {
   UpdateActivity: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     requestBody: {
@@ -1115,7 +1139,11 @@ export interface operations {
   GetWorkItemTag: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1141,7 +1169,11 @@ export interface operations {
   DeleteWorkItemTag: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1163,7 +1195,11 @@ export interface operations {
   UpdateWorkItemTag: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     requestBody: {
@@ -1225,7 +1261,11 @@ export interface operations {
   GetWorkItemType: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1251,7 +1291,11 @@ export interface operations {
   DeleteWorkItemType: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1273,7 +1317,11 @@ export interface operations {
   UpdateWorkItemType: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     requestBody: {
@@ -1535,7 +1583,11 @@ export interface operations {
   GetWorkItem: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1551,7 +1603,11 @@ export interface operations {
   DeleteWorkitem: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1563,7 +1619,11 @@ export interface operations {
   UpdateWorkitem: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1577,6 +1637,15 @@ export interface operations {
   };
   /** create work item comment. */
   CreateWorkItemComment: {
+    parameters: {
+      path: {
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        workItemID: number;
+      };
+    };
     requestBody: {
       content: {
         "application/json": components["schemas"]["CreateWorkItemCommentRequest"];
@@ -1605,7 +1674,16 @@ export interface operations {
   GetWorkItemComment: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        workItemID: number;
       };
     };
     responses: {
@@ -1631,7 +1709,16 @@ export interface operations {
   DeleteWorkItemComment: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        workItemID: number;
       };
     };
     responses: {
@@ -1653,7 +1740,16 @@ export interface operations {
   UpdateWorkItemComment: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        workItemID: number;
       };
     };
     requestBody: {
