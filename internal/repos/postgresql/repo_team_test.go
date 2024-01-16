@@ -69,8 +69,8 @@ func TestTriggers_sync_user_projects(t *testing.T) {
 		require.NoError(t, err)
 		defer tx.Rollback(ctx) // rollback errors should be ignored
 
-		user := postgresqltestutil.NewRandomUser(t, tx)
-		team := postgresqltestutil.NewRandomTeam(t, tx, projectID)
+		user := newRandomUser(t, tx)
+		team := newRandomTeam(t, tx, projectID)
 
 		_, err = db.CreateUserTeam(ctx, tx, &db.UserTeamCreateParams{
 			Member: user.UserID,
@@ -136,7 +136,7 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 			defer tx.Rollback(ctx) // rollback errors should be ignored
 
 			// IMPORTANT: see note above
-			user := postgresqltestutil.NewRandomUser(t, tx)
+			user := newRandomUser(t, tx)
 
 			if tc.withScope {
 				user.Scopes = append(user.Scopes, models.ScopeProjectMember)
@@ -144,7 +144,7 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			previousTeam := postgresqltestutil.NewRandomTeam(t, tx, projectID)
+			previousTeam := newRandomTeam(t, tx, projectID)
 			_, err = db.CreateUserTeam(ctx, tx, &db.UserTeamCreateParams{
 				Member: user.UserID,
 				TeamID: previousTeam.TeamID,
@@ -153,7 +153,7 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 			// Process 1401 waits for ShareRowExclusiveLock on relation 27841 of database 26116; blocked by process 1347. | deadlock detected
 			require.NoError(t, err)
 
-			team := postgresqltestutil.NewRandomTeam(t, tx, projectID) // may trigger user_team update for existing user that is already in project
+			team := newRandomTeam(t, tx, projectID) // may trigger user_team update for existing user that is already in project
 
 			_, err = db.UserTeamByMemberTeamID(ctx, tx, user.UserID, previousTeam.TeamID)
 			require.NoError(t, err) // was created manually first time to trigger user_project creation

@@ -62,12 +62,12 @@ func TestHandlers_Delete${pascal_name}(t *testing.T) {
 			require.NoError(t, err, \"ff.CreateUser: %s\")
 
 $(test -n "$with_project" && echo "		projectID := internal.ProjectIDByName[models.ProjectDemo]")
-			${camel_name}, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
+			${camel_name}f, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
         $(test -n "$with_project" && echo "		ProjectID: projectID,")
       })
 			require.NoError(t, err, \"ff.Create${pascal_name}: %s\")
 
-			id := ${camel_name}.${pascal_name}.${pascal_name}ID
+			id := ${camel_name}f.${pascal_name}.${pascal_name}ID
 			res, err := srv.client.Delete${pascal_name}WithResponse(context.Background(), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
 			require.NoError(t, err)
 			require.Equal(t, tc.status, res.StatusCode(), string(res.Body))
@@ -137,7 +137,7 @@ func TestHandlers_Get${pascal_name}(t *testing.T) {
 		t.Parallel()
 
 		role := models.RoleUser
-		scopes := models.Scopes{}
+		scopes := models.Scopes{} // no scope needed to read
 
 		ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       role,
@@ -147,12 +147,12 @@ func TestHandlers_Get${pascal_name}(t *testing.T) {
 		require.NoError(t, err, \"ff.CreateUser: %s\")
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-		${camel_name}, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
+		${camel_name}f, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
       $(test -n "$with_project" && echo "		ProjectID: projectID,")
     })
 		require.NoError(t, err, \"ff.Create${pascal_name}: %s\")
 
-		id := ${camel_name}.${pascal_name}.${pascal_name}ID
+		id := ${camel_name}f.${pascal_name}.${pascal_name}ID
 		res, err := srv.client.Get${pascal_name}WithResponse(context.Background(), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
@@ -160,7 +160,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 
 		got, err := json.Marshal(res.JSON200)
 		require.NoError(t, err)
-		want, err := json.Marshal(&rest.${pascal_name}{${pascal_name}: *${camel_name}.${pascal_name}})
+		want, err := json.Marshal(&rest.${pascal_name}{${pascal_name}: *${camel_name}f.${pascal_name}})
 		require.NoError(t, err)
 
 		assert.JSONEqf(t, string(want), string(got), \"\") // ignore private JSON fields
@@ -225,12 +225,12 @@ done)
 			require.NoError(t, err, \"ff.CreateUser: %s\")
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-			${camel_name}, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
+			${camel_name}f, err := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
         $(test -n "$with_project" && echo "		ProjectID: projectID,")
       })
 			require.NoError(t, err, \"ff.Create${pascal_name}: %s\")
 
-			id := ${camel_name}.${pascal_name}.${pascal_name}ID
+			id := ${camel_name}f.${pascal_name}.${pascal_name}ID
 			updateRes, err := srv.client.Update${pascal_name}WithResponse(context.Background(), int(id), tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)

@@ -58,7 +58,7 @@ func TestHandlers_DeleteWorkItemComment(t *testing.T) {
 			})
 			require.NoError(t, err, "ff.CreateUser: %s")
 
-			workItemComment, err := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{})
+			workItemComment, err := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
 			require.NoError(t, err, "ff.CreateWorkItemComment: %s")
 
 			id := workItemComment.WorkItemComment.WorkItemCommentID
@@ -93,12 +93,13 @@ func TestHandlers_CreateWorkItemComment(t *testing.T) {
 			Scopes:     scopes,
 		})
 		require.NoError(t, err, "ff.CreateUser: %s")
-		demoWorkItem := postgresqltestutil.NewRandomDemoWorkItem(t, testPool)
-
-		ufixture.User, err = svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, demoWorkItem.TeamID)
+		demoWorkItemf, err := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: models.ProjectDemo})
 		require.NoError(t, err)
 
-		randomWorkItemCommentCreateParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t, ufixture.User.UserID, demoWorkItem.WorkItemID)
+		ufixture.User, err = svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, demoWorkItemf.WorkItem.TeamID)
+		require.NoError(t, err)
+
+		randomWorkItemCommentCreateParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t, ufixture.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
 		body := rest.CreateWorkItemCommentRequest{
 			WorkItemCommentCreateParams: *randomWorkItemCommentCreateParams,
 		}
@@ -129,7 +130,7 @@ func TestHandlers_GetWorkItemComment(t *testing.T) {
 		t.Parallel()
 
 		role := models.RoleUser
-		scopes := models.Scopes{}
+		scopes := models.Scopes{} // no scope needed to read
 
 		ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       role,
@@ -138,10 +139,10 @@ func TestHandlers_GetWorkItemComment(t *testing.T) {
 		})
 		require.NoError(t, err, "ff.CreateUser: %s")
 
-		workItemComment, err := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{})
+		workItemCommentf, err := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
 		require.NoError(t, err, "ff.CreateWorkItemComment: %s")
 
-		id := workItemComment.WorkItemComment.WorkItemCommentID
+		id := workItemCommentf.WorkItemComment.WorkItemCommentID
 		res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
@@ -149,7 +150,7 @@ func TestHandlers_GetWorkItemComment(t *testing.T) {
 
 		got, err := json.Marshal(res.JSON200)
 		require.NoError(t, err)
-		want, err := json.Marshal(&rest.WorkItemComment{WorkItemComment: *workItemComment.WorkItemComment})
+		want, err := json.Marshal(&rest.WorkItemComment{WorkItemComment: *workItemCommentf.WorkItemComment})
 		require.NoError(t, err)
 
 		assert.JSONEqf(t, string(want), string(got), "") // ignore private JSON fields
@@ -168,7 +169,8 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	demoWorkItem := postgresqltestutil.NewRandomDemoWorkItem(t, testPool)
+	demoWorkItemf, err := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: models.ProjectDemo})
+	require.NoError(t, err)
 
 	ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		WithAPIKey: true,
@@ -176,7 +178,7 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 	})
 	require.NoError(t, err, "ff.CreateUser: %s")
 
-	ufixture.User, err = svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, demoWorkItem.TeamID)
+	ufixture.User, err = svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, demoWorkItemf.WorkItem.TeamID)
 	require.NoError(t, err)
 
 	tests := []struct {
@@ -189,7 +191,7 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 			name:   "valid work item comment update",
 			status: http.StatusOK,
 			body: func() rest.UpdateWorkItemCommentRequest {
-				randomWorkItemCommentCreateParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t, ufixture.User.UserID, demoWorkItem.WorkItemID)
+				randomWorkItemCommentCreateParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t, ufixture.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
 
 				return rest.UpdateWorkItemCommentRequest{
 					WorkItemCommentUpdateParams: db.WorkItemCommentUpdateParams{
@@ -222,7 +224,7 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 			})
 			require.NoError(t, err, "ff.CreateUser: %s")
 
-			workItemComment, err := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{})
+			workItemComment, err := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: *tc.body.UserID})
 			require.NoError(t, err, "ff.CreateWorkItemComment: %s")
 
 			id := workItemComment.WorkItemComment.WorkItemCommentID

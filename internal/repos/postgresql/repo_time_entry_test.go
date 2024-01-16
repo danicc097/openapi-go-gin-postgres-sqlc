@@ -17,11 +17,11 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 
 	timeEntryRepo := postgresql.NewTimeEntry()
 
-	user := postgresqltestutil.NewRandomUser(t, testPool)
-	activity := postgresqltestutil.NewRandomActivity(t, testPool, models.ProjectDemo)
+	user := newRandomUser(t, testPool)
+	activity := newRandomActivity(t, testPool, models.ProjectDemo)
 
-	workItem := postgresqltestutil.NewRandomDemoWorkItem(t, testPool)
-	timeEntry := postgresqltestutil.NewRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, &workItem.WorkItemID, nil) // time entry associated to a workItem
+	workItem := newRandomDemoWorkItem(t, testPool)
+	timeEntry := newRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, &workItem.WorkItemID, nil) // time entry associated to a workItem
 
 	uniqueTestCases := []filterTestCase[*db.TimeEntry]{
 		{

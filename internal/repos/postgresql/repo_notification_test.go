@@ -18,12 +18,12 @@ func TestNotification_Create(t *testing.T) {
 
 	notificationRepo := postgresql.NewNotification()
 
-	sender := postgresqltestutil.NewRandomUser(t, testPool)
+	sender := newRandomUser(t, testPool)
 
 	t.Run("correct_personal_notification", func(t *testing.T) {
 		t.Parallel()
 
-		receiver := postgresqltestutil.NewRandomUser(t, testPool)
+		receiver := newRandomUser(t, testPool)
 
 		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, pointers.New(receiver.UserID), db.NotificationTypePersonal)
 
@@ -48,13 +48,13 @@ func TestNotification_Create(t *testing.T) {
 
 		var err error
 
-		receiverRank3 := postgresqltestutil.NewRandomUser(t, testPool)
+		receiverRank3 := newRandomUser(t, testPool)
 		require.NoError(t, err)
 		receiverRank3.RoleRank = 3
 		_, err = receiverRank3.Update(context.Background(), testPool)
 		require.NoError(t, err)
 
-		receiverRank1 := postgresqltestutil.NewRandomUser(t, testPool)
+		receiverRank1 := newRandomUser(t, testPool)
 		require.NoError(t, err)
 		receiverRank1.RoleRank = 1
 		_, err = receiverRank1.Update(context.Background(), testPool)

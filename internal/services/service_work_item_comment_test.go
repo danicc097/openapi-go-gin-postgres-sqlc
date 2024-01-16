@@ -34,12 +34,13 @@ func TestWorkItemComment_Update(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	demoWorkItem := postgresqltestutil.NewRandomDemoWorkItem(t, testPool)
-
-	creator.User, err = svc.User.AssignTeam(context.Background(), testPool, creator.User.UserID, demoWorkItem.TeamID)
+	demoWorkItemf, err := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: models.ProjectDemo})
 	require.NoError(t, err)
 
-	workItemCommentCreateParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t, creator.User.UserID, demoWorkItem.WorkItemID)
+	creator.User, err = svc.User.AssignTeam(context.Background(), testPool, creator.User.UserID, demoWorkItemf.WorkItem.TeamID)
+	require.NoError(t, err)
+
+	workItemCommentCreateParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t, creator.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
 	workitemcomment, err := svc.WorkItemComment.Create(context.Background(), testPool, workItemCommentCreateParams)
 	require.NoError(t, err)
 
@@ -49,7 +50,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 		withUserInProject bool
 	}
 
-	wantParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t, creator.User.UserID, demoWorkItem.WorkItemID)
+	wantParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t, creator.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
 
 	tests := []struct {
 		name          string

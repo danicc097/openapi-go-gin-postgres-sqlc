@@ -26,7 +26,7 @@ func Test${pascal_name}_Update(t *testing.T) {
 	t.Parallel()
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-	${lower_name} := postgresqltestutil.NewRandom${pascal_name}(t, testPool $create_args)
+	${lower_name} := newRandom${pascal_name}(t, testPool $create_args)
 
 	type args struct {
 		id     db.${pascal_name}ID
@@ -91,7 +91,7 @@ func Test${pascal_name}_${delete_method}(t *testing.T) {
 	t.Parallel()
 
 	$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-	${lower_name} := postgresqltestutil.NewRandom${pascal_name}(t, testPool $create_args)
+	${lower_name} := newRandom${pascal_name}(t, testPool $create_args)
 
 	type args struct {
 		id db.${pascal_name}ID
@@ -134,8 +134,9 @@ func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
 	$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-	${lower_name} := postgresqltestutil.NewRandom${pascal_name}(t, testPool $create_args)
+	${lower_name} := newRandom${pascal_name}(t, testPool $create_args)
 
+	logger := testutil.NewLogger(t)
 
 	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), logger, 10, 65*time.Millisecond)
 
@@ -160,6 +161,7 @@ func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 func Test${pascal_name}_Create(t *testing.T) {
 	t.Parallel()
 
+	logger := testutil.NewLogger(t)
 
 	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), logger, 10, 65*time.Millisecond)
 

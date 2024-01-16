@@ -21,7 +21,7 @@ import (
 func TestUser_Update(t *testing.T) {
 	t.Parallel()
 
-	user := postgresqltestutil.NewRandomUser(t, testPool)
+	user := newRandomUser(t, testPool)
 
 	type args struct {
 		id     db.UserID
@@ -90,7 +90,7 @@ func TestUser_Update(t *testing.T) {
 func TestUser_SoftDelete(t *testing.T) {
 	t.Parallel()
 
-	user := postgresqltestutil.NewRandomUser(t, testPool)
+	user := newRandomUser(t, testPool)
 
 	type args struct {
 		id db.UserID
@@ -153,8 +153,8 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	project, err := projectRepo.ByName(ctx, testPool, models.ProjectDemo)
 	require.NoError(t, err)
 
-	team := postgresqltestutil.NewRandomTeam(t, testPool, project.ProjectID)
-	user := postgresqltestutil.NewRandomUser(t, testPool)
+	team := newRandomTeam(t, testPool, project.ProjectID)
+	user := newRandomUser(t, testPool)
 
 	_, err = db.CreateUserTeam(ctx, testPool, &db.UserTeamCreateParams{Member: user.UserID, TeamID: team.TeamID})
 	require.NoError(t, err)
@@ -242,7 +242,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("correct_api_key_creation", func(t *testing.T) {
 		t.Parallel()
 
-		user := postgresqltestutil.NewRandomUser(t, testPool)
+		user := newRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, user)
 		require.NoError(t, err)
@@ -264,7 +264,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("can_get_user_by_api_key", func(t *testing.T) {
 		t.Parallel()
 
-		newUser := postgresqltestutil.NewRandomUser(t, testPool)
+		newUser := newRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
 		require.NoError(t, err)
@@ -288,7 +288,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 	t.Run("can_delete_an_api_key", func(t *testing.T) {
 		t.Parallel()
 
-		newUser := postgresqltestutil.NewRandomUser(t, testPool)
+		newUser := newRandomUser(t, testPool)
 
 		uak, err := userRepo.CreateAPIKey(context.Background(), testPool, newUser)
 		require.NoError(t, err)

@@ -7,7 +7,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/stretchr/testify/assert"
 )
@@ -15,7 +14,7 @@ import (
 func TestDemoWorkItem_Update(t *testing.T) {
 	t.Parallel()
 
-	demoWorkItem := postgresqltestutil.NewRandomDemoWorkItem(t, testPool)
+	demoWorkItem := newRandomDemoWorkItem(t, testPool)
 
 	type args struct {
 		id     db.WorkItemID

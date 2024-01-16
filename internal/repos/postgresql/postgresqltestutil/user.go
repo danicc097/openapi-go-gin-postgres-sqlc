@@ -1,33 +1,13 @@
 package postgresqltestutil
 
 import (
-	"context"
 	"testing"
-	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/stretchr/testify/require"
 )
-
-func NewRandomUser(t *testing.T, d db.DBTX) *db.User {
-	t.Helper()
-
-	logger := testutil.NewLogger(t)
-
-	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 5, 65*time.Millisecond)
-
-	ucp := RandomUserCreateParams(t)
-
-	user, err := userRepo.Create(context.Background(), d, ucp)
-	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
-
-	return user
-}
 
 // NOTE: FKs should always be passed explicitly.
 func RandomUserCreateParams(t *testing.T) *db.UserCreateParams {

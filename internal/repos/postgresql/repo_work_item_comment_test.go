@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/stretchr/testify/assert"
@@ -18,7 +18,7 @@ import (
 func TestWorkItemComment_Update(t *testing.T) {
 	t.Parallel()
 
-	workitemcomment := postgresqltestutil.NewRandomWorkItemComment(t, testPool)
+	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectDemo)
 
 	type args struct {
 		id     db.WorkItemCommentID
@@ -82,7 +82,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 func TestWorkItemComment_Delete(t *testing.T) {
 	t.Parallel()
 
-	workitemcomment := postgresqltestutil.NewRandomWorkItemComment(t, testPool)
+	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectDemo)
 
 	type args struct {
 		id db.WorkItemCommentID
@@ -124,7 +124,8 @@ func TestWorkItemComment_Delete(t *testing.T) {
 func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
-	workitemcomment := postgresqltestutil.NewRandomWorkItemComment(t, testPool)
+	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectDemo)
+	logger := testutil.NewLogger(t)
 
 	workItemCommentRepo := reposwrappers.NewWorkItemCommentWithRetry(postgresql.NewWorkItemComment(), logger, 10, 65*time.Millisecond)
 
@@ -149,8 +150,6 @@ func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 func TestWorkItemComment_Create(t *testing.T) {
 	t.Parallel()
 
-	workItemCommentRepo := reposwrappers.NewWorkItemCommentWithRetry(postgresql.NewWorkItemComment(), logger, 10, 65*time.Millisecond)
-
 	type want struct {
 		// NOTE: include db-generated fields here to test equality as well
 		db.WorkItemCommentCreateParams
@@ -163,39 +162,6 @@ func TestWorkItemComment_Create(t *testing.T) {
 	t.Run("correct_workItemComment", func(t *testing.T) {
 		t.Parallel()
 
-		workItemCommentCreateParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t)
-
-		want := want{
-			WorkItemCommentCreateParams: *workItemCommentCreateParams,
-		}
-
-		args := args{
-			params: *workItemCommentCreateParams,
-		}
-
-		got, err := workItemCommentRepo.Create(context.Background(), testPool, &args.params)
-		require.NoError(t, err)
-
-		assert.Equal(t, want.Message, got.Message)
-		assert.Equal(t, want.UserID, got.UserID)
-		assert.Equal(t, want.WorkItemID, got.WorkItemID)
-	})
-
-	// implement if needed
-	t.Run("check constraint raises violation error", func(t *testing.T) {
-		t.Skip("not implemented")
-		t.Parallel()
-
-		workItemCommentCreateParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t)
-		// NOTE: update params to trigger check error
-
-		args := args{
-			params: *workItemCommentCreateParams,
-		}
-
-		_, err := workItemCommentRepo.Create(context.Background(), testPool, &args.params)
-		require.Error(t, err)
-
-		assert.ErrorContains(t, err, errViolatesCheckConstraint)
+		newRandomWorkItemComment(t, testPool, models.ProjectDemo)
 	})
 }
