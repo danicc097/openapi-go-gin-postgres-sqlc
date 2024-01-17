@@ -93,85 +93,229 @@ x-error-response: &x-error-response
 # <<<--- GENERATED DB ANCHORS. DO NOT EDIT. --->>>
 x-activityIDParameter: &x-activityIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: activityID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ActivityID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: activityID
 x-entityNotificationIDParameter: &x-entityNotificationIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: entityNotificationID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.EntityNotificationID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: entityNotificationID
 x-extraSchemaBookAuthorsSurrogateKeyIDParameter: &x-extraSchemaBookAuthorsSurrogateKeyIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaBookAuthorsSurrogateKeyID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaBookAuthorsSurrogateKeyID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaBookAuthorsSurrogateKeyID
 x-extraSchemaBookIDParameter: &x-extraSchemaBookIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaBookID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaBookID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaBookID
 x-extraSchemaBookReviewIDParameter: &x-extraSchemaBookReviewIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaBookReviewID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaBookReviewID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaBookReviewID
 x-extraSchemaDummyJoinIDParameter: &x-extraSchemaDummyJoinIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaDummyJoinID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaDummyJoinID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaDummyJoinID
 x-extraSchemaNotificationIDParameter: &x-extraSchemaNotificationIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaNotificationID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaNotificationID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaNotificationID
 x-extraSchemaUserAPIKeyIDParameter: &x-extraSchemaUserAPIKeyIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaUserAPIKeyID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaUserAPIKeyID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaUserAPIKeyID
 x-extraSchemaWorkItemIDParameter: &x-extraSchemaWorkItemIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaWorkItemID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaWorkItemID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaWorkItemID
 x-kanbanStepIDParameter: &x-kanbanStepIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: kanbanStepID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.KanbanStepID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: kanbanStepID
 x-movieIDParameter: &x-movieIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: movieID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.MovieID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: movieID
 x-notificationIDParameter: &x-notificationIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: notificationID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.NotificationID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: notificationID
 x-projectIDParameter: &x-projectIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: projectID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ProjectID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: projectID
 x-schemaMigrationIDParameter: &x-schemaMigrationIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: schemaMigrationID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.SchemaMigrationID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: schemaMigrationID
 x-teamIDParameter: &x-teamIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: teamID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.TeamID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: teamID
 x-timeEntryIDParameter: &x-timeEntryIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: timeEntryID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.TimeEntryID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: timeEntryID
 x-userAPIKeyIDParameter: &x-userAPIKeyIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: userAPIKeyID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.UserAPIKeyID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: userAPIKeyID
 x-userNotificationIDParameter: &x-userNotificationIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: userNotificationID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.UserNotificationID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: userNotificationID
 x-workItemCommentIDParameter: &x-workItemCommentIDParameter
   !!merge <<: *x-serialIDParameterBase
-  schema:
+  schema: # Generated. DO NOT EDIT.
     type: integer
     x-go-type: db.WorkItemCommentID
     x-go-type-import:
       name: db
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
-  name: workItemCommentID # Generated. DO NOT EDIT.
+  name: workItemCommentID
 x-workItemIDParameter: &x-workItemIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: workItemID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.WorkItemID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: workItemID
 x-workItemTagIDParameter: &x-workItemTagIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: workItemTagID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.WorkItemTagID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: workItemTagID
 x-workItemTypeIDParameter: &x-workItemTypeIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: workItemTypeID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.WorkItemTypeID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: workItemTypeID
 x-extraSchemaPagElementIDParameter: &x-extraSchemaPagElementIDParameter
   !!merge <<: *x-uuidIDParameterBase
-  name: extraSchemaPagElementID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.WorkItemTypeID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaPagElementID
 x-extraSchemaUserIDParameter: &x-extraSchemaUserIDParameter
   !!merge <<: *x-uuidIDParameterBase
-  name: extraSchemaUserID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.WorkItemTypeID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaUserID
 x-userIDParameter: &x-userIDParameter
   !!merge <<: *x-uuidIDParameterBase
-  name: userID # Generated. DO NOT EDIT.
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.WorkItemTypeID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: userID
 # <<<--- END OF ANCHORS DB GENERATION. DO NOT EDIT. --->>>
 #
 #

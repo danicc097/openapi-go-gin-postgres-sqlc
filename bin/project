@@ -1877,8 +1877,15 @@ generate_spec_helpers() {
   go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/db"
   for entity in ${int_ids[@]}; do
     camel=$(to_camel $entity)
+    pascal=$(to_pascal $entity)
     anchors+=("x-${camel}Parameter: &x-${camel}Parameter # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
+  schema:
+    type: integer
+    x-go-type: db.${pascal}
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: ${camel}
 ")
   done
@@ -1888,6 +1895,12 @@ generate_spec_helpers() {
     camel=$(to_camel $entity)
     anchors+=("x-${camel}Parameter: &x-${camel}Parameter # Generated. DO NOT EDIT.
   !!merge <<: *x-uuidIDParameterBase
+  schema:
+    type: integer
+    x-go-type: db.${pascal}
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: ${camel}
 ")
   done

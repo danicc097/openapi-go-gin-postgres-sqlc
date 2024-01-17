@@ -60,7 +60,7 @@ func TestHandlers_DeleteWorkItemComment(t *testing.T) {
 			workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
 
 			id := workItemCommentf.WorkItemComment.WorkItemCommentID
-			res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), int(workItemCommentf.WorkItem.WorkItemID), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
+			res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), workItemCommentf.WorkItem.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 			require.NoError(t, err)
 			require.Equal(t, tc.status, res.StatusCode(), string(res.Body))
 		})
@@ -138,7 +138,7 @@ func TestHandlers_GetWorkItemComment(t *testing.T) {
 		workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
 
 		id := workItemCommentf.WorkItemComment.WorkItemCommentID
-		res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), int(workItemCommentf.WorkItem.WorkItemID), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
+		res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), workItemCommentf.WorkItem.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))
@@ -220,7 +220,7 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 			workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: *tc.body.UserID})
 
 			id := workItemCommentf.WorkItemComment.WorkItemCommentID
-			updateRes, err := srv.client.UpdateWorkItemCommentWithResponse(context.Background(), int(workItemCommentf.WorkItem.WorkItemID), int(id), tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
+			updateRes, err := srv.client.UpdateWorkItemCommentWithResponse(context.Background(), workItemCommentf.WorkItem.WorkItemID, id, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			require.EqualValues(t, tc.status, updateRes.StatusCode(), string(updateRes.Body))
@@ -235,7 +235,7 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 
 			assert.EqualValues(t, id, updateRes.JSON200.WorkItemCommentID)
 
-			res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), int(workItemCommentf.WorkItem.WorkItemID), int(id), ReqWithAPIKey(normalUser.APIKey.APIKey))
+			res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), workItemCommentf.WorkItem.WorkItemID, id, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			assert.EqualValues(t, *tc.body.Message, res.JSON200.Message)

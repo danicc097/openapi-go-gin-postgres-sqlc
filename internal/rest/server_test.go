@@ -195,7 +195,7 @@ func TestTracing(t *testing.T) {
 	workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
 
 	id := workItemCommentf.WorkItemComment.WorkItemCommentID
-	res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), int(workItemCommentf.WorkItem.WorkItemID), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
+	res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), workItemCommentf.WorkItem.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNoContent, res.StatusCode(), string(res.Body))
 

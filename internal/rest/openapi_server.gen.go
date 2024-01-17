@@ -1064,13 +1064,13 @@ func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
 type ServerInterface interface {
 	// delete activity.
 	// (DELETE /activity/{activityID})
-	DeleteActivity(c *gin.Context, activityID int)
+	DeleteActivity(c *gin.Context, activityID db.ActivityID)
 	// get activity.
 	// (GET /activity/{activityID})
-	GetActivity(c *gin.Context, activityID int)
+	GetActivity(c *gin.Context, activityID db.ActivityID)
 	// update activity.
 	// (PATCH /activity/{activityID})
-	UpdateActivity(c *gin.Context, activityID int)
+	UpdateActivity(c *gin.Context, activityID db.ActivityID)
 	// Ping pongs
 	// (GET /admin/ping)
 	AdminPing(c *gin.Context)
@@ -1124,13 +1124,13 @@ type ServerInterface interface {
 	GetProjectWorkitems(c *gin.Context, projectName externalRef0.ProjectName, params externalRef0.GetProjectWorkitemsParams)
 	// delete team.
 	// (DELETE /team/{teamID})
-	DeleteTeam(c *gin.Context, teamID int)
+	DeleteTeam(c *gin.Context, teamID db.TeamID)
 	// get team.
 	// (GET /team/{teamID})
-	GetTeam(c *gin.Context, teamID int)
+	GetTeam(c *gin.Context, teamID db.TeamID)
 	// update team.
 	// (PATCH /team/{teamID})
-	UpdateTeam(c *gin.Context, teamID int)
+	UpdateTeam(c *gin.Context, teamID db.TeamID)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context)
@@ -1148,46 +1148,46 @@ type ServerInterface interface {
 	UpdateUserAuthorization(c *gin.Context, id uuid.UUID)
 	// delete workitemtag.
 	// (DELETE /work-item-tag/{workItemTagID})
-	DeleteWorkItemTag(c *gin.Context, workItemTagID int)
+	DeleteWorkItemTag(c *gin.Context, workItemTagID db.WorkItemTagID)
 	// get workitemtag.
 	// (GET /work-item-tag/{workItemTagID})
-	GetWorkItemTag(c *gin.Context, workItemTagID int)
+	GetWorkItemTag(c *gin.Context, workItemTagID db.WorkItemTagID)
 	// update workitemtag.
 	// (PATCH /work-item-tag/{workItemTagID})
-	UpdateWorkItemTag(c *gin.Context, workItemTagID int)
+	UpdateWorkItemTag(c *gin.Context, workItemTagID db.WorkItemTagID)
 	// delete workitemtype.
 	// (DELETE /work-item-type/{workItemTypeID})
-	DeleteWorkItemType(c *gin.Context, workItemTypeID int)
+	DeleteWorkItemType(c *gin.Context, workItemTypeID db.WorkItemTypeID)
 	// get workitemtype.
 	// (GET /work-item-type/{workItemTypeID})
-	GetWorkItemType(c *gin.Context, workItemTypeID int)
+	GetWorkItemType(c *gin.Context, workItemTypeID db.WorkItemTypeID)
 	// update workitemtype.
 	// (PATCH /work-item-type/{workItemTypeID})
-	UpdateWorkItemType(c *gin.Context, workItemTypeID int)
+	UpdateWorkItemType(c *gin.Context, workItemTypeID db.WorkItemTypeID)
 	// create workitem
 	// (POST /work-item/)
 	CreateWorkitem(c *gin.Context)
 	// delete workitem
 	// (DELETE /work-item/{workItemID}/)
-	DeleteWorkitem(c *gin.Context, workItemID int)
+	DeleteWorkitem(c *gin.Context, workItemID db.WorkItemID)
 	// get workitem
 	// (GET /work-item/{workItemID}/)
-	GetWorkItem(c *gin.Context, workItemID int)
+	GetWorkItem(c *gin.Context, workItemID db.WorkItemID)
 	// update workitem
 	// (PATCH /work-item/{workItemID}/)
-	UpdateWorkitem(c *gin.Context, workItemID int)
+	UpdateWorkitem(c *gin.Context, workItemID db.WorkItemID)
 	// create work item comment.
 	// (POST /work-item/{workItemID}/comment/)
 	CreateWorkItemComment(c *gin.Context, workItemID int)
 	// delete .
 	// (DELETE /work-item/{workItemID}/comment/{workItemCommentID})
-	DeleteWorkItemComment(c *gin.Context, workItemID int, workItemCommentID db.WorkItemCommentID)
+	DeleteWorkItemComment(c *gin.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID)
 	// get work item comment.
 	// (GET /work-item/{workItemID}/comment/{workItemCommentID})
-	GetWorkItemComment(c *gin.Context, workItemID int, workItemCommentID db.WorkItemCommentID)
+	GetWorkItemComment(c *gin.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID)
 	// update work item comment.
 	// (PATCH /work-item/{workItemID}/comment/{workItemCommentID})
-	UpdateWorkItemComment(c *gin.Context, workItemID int, workItemCommentID db.WorkItemCommentID)
+	UpdateWorkItemComment(c *gin.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID)
 
 	middlewares(opID OperationID) []gin.HandlerFunc
 	authMiddlewares(opID OperationID) []gin.HandlerFunc
@@ -1205,7 +1205,7 @@ func (siw *ServerInterfaceWrapper) DeleteActivity(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "activityID" -------------
-	var activityID int // int
+	var activityID db.ActivityID // db.ActivityID
 
 	err = runtime.BindStyledParameter("simple", false, "activityID", c.Param("activityID"), &activityID)
 	if err != nil {
@@ -1225,7 +1225,7 @@ func (siw *ServerInterfaceWrapper) GetActivity(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "activityID" -------------
-	var activityID int // int
+	var activityID db.ActivityID // db.ActivityID
 
 	err = runtime.BindStyledParameter("simple", false, "activityID", c.Param("activityID"), &activityID)
 	if err != nil {
@@ -1245,7 +1245,7 @@ func (siw *ServerInterfaceWrapper) UpdateActivity(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "activityID" -------------
-	var activityID int // int
+	var activityID db.ActivityID // db.ActivityID
 
 	err = runtime.BindStyledParameter("simple", false, "activityID", c.Param("activityID"), &activityID)
 	if err != nil {
@@ -1612,7 +1612,7 @@ func (siw *ServerInterfaceWrapper) DeleteTeam(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "teamID" -------------
-	var teamID int // int
+	var teamID db.TeamID // db.TeamID
 
 	err = runtime.BindStyledParameter("simple", false, "teamID", c.Param("teamID"), &teamID)
 	if err != nil {
@@ -1632,7 +1632,7 @@ func (siw *ServerInterfaceWrapper) GetTeam(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "teamID" -------------
-	var teamID int // int
+	var teamID db.TeamID // db.TeamID
 
 	err = runtime.BindStyledParameter("simple", false, "teamID", c.Param("teamID"), &teamID)
 	if err != nil {
@@ -1652,7 +1652,7 @@ func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "teamID" -------------
-	var teamID int // int
+	var teamID db.TeamID // db.TeamID
 
 	err = runtime.BindStyledParameter("simple", false, "teamID", c.Param("teamID"), &teamID)
 	if err != nil {
@@ -1797,7 +1797,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemTag(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemTagID" -------------
-	var workItemTagID int // int
+	var workItemTagID db.WorkItemTagID // db.WorkItemTagID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemTagID", c.Param("workItemTagID"), &workItemTagID)
 	if err != nil {
@@ -1817,7 +1817,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemTag(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemTagID" -------------
-	var workItemTagID int // int
+	var workItemTagID db.WorkItemTagID // db.WorkItemTagID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemTagID", c.Param("workItemTagID"), &workItemTagID)
 	if err != nil {
@@ -1837,7 +1837,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemTag(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemTagID" -------------
-	var workItemTagID int // int
+	var workItemTagID db.WorkItemTagID // db.WorkItemTagID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemTagID", c.Param("workItemTagID"), &workItemTagID)
 	if err != nil {
@@ -1857,7 +1857,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemType(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemTypeID" -------------
-	var workItemTypeID int // int
+	var workItemTypeID db.WorkItemTypeID // db.WorkItemTypeID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemTypeID", c.Param("workItemTypeID"), &workItemTypeID)
 	if err != nil {
@@ -1877,7 +1877,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemType(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemTypeID" -------------
-	var workItemTypeID int // int
+	var workItemTypeID db.WorkItemTypeID // db.WorkItemTypeID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemTypeID", c.Param("workItemTypeID"), &workItemTypeID)
 	if err != nil {
@@ -1897,7 +1897,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemType(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemTypeID" -------------
-	var workItemTypeID int // int
+	var workItemTypeID db.WorkItemTypeID // db.WorkItemTypeID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemTypeID", c.Param("workItemTypeID"), &workItemTypeID)
 	if err != nil {
@@ -1926,7 +1926,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkitem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemID" -------------
-	var workItemID int // int
+	var workItemID db.WorkItemID // db.WorkItemID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
@@ -1946,7 +1946,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemID" -------------
-	var workItemID int // int
+	var workItemID db.WorkItemID // db.WorkItemID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
@@ -1966,7 +1966,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkitem(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemID" -------------
-	var workItemID int // int
+	var workItemID db.WorkItemID // db.WorkItemID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
@@ -2006,7 +2006,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemComment(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemID" -------------
-	var workItemID int // int
+	var workItemID db.WorkItemID // db.WorkItemID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
@@ -2035,7 +2035,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemComment(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemID" -------------
-	var workItemID int // int
+	var workItemID db.WorkItemID // db.WorkItemID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
@@ -2064,7 +2064,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemComment(c *gin.Context) {
 	var err error
 
 	// ------------- Path parameter "workItemID" -------------
-	var workItemID int // int
+	var workItemID db.WorkItemID // db.WorkItemID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
@@ -2317,7 +2317,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 }
 
 type DeleteActivityRequestObject struct {
-	ActivityID int `json:"activityID"`
+	ActivityID db.ActivityID `json:"activityID"`
 }
 
 type DeleteActivityResponseObject interface {
@@ -2358,7 +2358,7 @@ func (response DeleteActivity4XXJSONResponse) VisitDeleteActivityResponse(w http
 }
 
 type GetActivityRequestObject struct {
-	ActivityID int `json:"activityID"`
+	ActivityID db.ActivityID `json:"activityID"`
 }
 
 type GetActivityResponseObject interface {
@@ -2401,7 +2401,7 @@ func (response GetActivity4XXJSONResponse) VisitGetActivityResponse(w http.Respo
 }
 
 type UpdateActivityRequestObject struct {
-	ActivityID int `json:"activityID"`
+	ActivityID db.ActivityID `json:"activityID"`
 	Body       *UpdateActivityRequest
 }
 
@@ -2945,7 +2945,7 @@ func (response GetProjectWorkitems200JSONResponse) VisitGetProjectWorkitemsRespo
 }
 
 type DeleteTeamRequestObject struct {
-	TeamID int `json:"teamID"`
+	TeamID db.TeamID `json:"teamID"`
 }
 
 type DeleteTeamResponseObject interface {
@@ -2986,7 +2986,7 @@ func (response DeleteTeam4XXJSONResponse) VisitDeleteTeamResponse(w http.Respons
 }
 
 type GetTeamRequestObject struct {
-	TeamID int `json:"teamID"`
+	TeamID db.TeamID `json:"teamID"`
 }
 
 type GetTeamResponseObject interface {
@@ -3029,7 +3029,7 @@ func (response GetTeam4XXJSONResponse) VisitGetTeamResponse(w http.ResponseWrite
 }
 
 type UpdateTeamRequestObject struct {
-	TeamID int `json:"teamID"`
+	TeamID db.TeamID `json:"teamID"`
 	Body   *UpdateTeamRequest
 }
 
@@ -3206,7 +3206,7 @@ func (response UpdateUserAuthorization204Response) VisitUpdateUserAuthorizationR
 }
 
 type DeleteWorkItemTagRequestObject struct {
-	WorkItemTagID int `json:"workItemTagID"`
+	WorkItemTagID db.WorkItemTagID `json:"workItemTagID"`
 }
 
 type DeleteWorkItemTagResponseObject interface {
@@ -3247,7 +3247,7 @@ func (response DeleteWorkItemTag4XXJSONResponse) VisitDeleteWorkItemTagResponse(
 }
 
 type GetWorkItemTagRequestObject struct {
-	WorkItemTagID int `json:"workItemTagID"`
+	WorkItemTagID db.WorkItemTagID `json:"workItemTagID"`
 }
 
 type GetWorkItemTagResponseObject interface {
@@ -3290,7 +3290,7 @@ func (response GetWorkItemTag4XXJSONResponse) VisitGetWorkItemTagResponse(w http
 }
 
 type UpdateWorkItemTagRequestObject struct {
-	WorkItemTagID int `json:"workItemTagID"`
+	WorkItemTagID db.WorkItemTagID `json:"workItemTagID"`
 	Body          *UpdateWorkItemTagRequest
 }
 
@@ -3334,7 +3334,7 @@ func (response UpdateWorkItemTag4XXJSONResponse) VisitUpdateWorkItemTagResponse(
 }
 
 type DeleteWorkItemTypeRequestObject struct {
-	WorkItemTypeID int `json:"workItemTypeID"`
+	WorkItemTypeID db.WorkItemTypeID `json:"workItemTypeID"`
 }
 
 type DeleteWorkItemTypeResponseObject interface {
@@ -3375,7 +3375,7 @@ func (response DeleteWorkItemType4XXJSONResponse) VisitDeleteWorkItemTypeRespons
 }
 
 type GetWorkItemTypeRequestObject struct {
-	WorkItemTypeID int `json:"workItemTypeID"`
+	WorkItemTypeID db.WorkItemTypeID `json:"workItemTypeID"`
 }
 
 type GetWorkItemTypeResponseObject interface {
@@ -3418,7 +3418,7 @@ func (response GetWorkItemType4XXJSONResponse) VisitGetWorkItemTypeResponse(w ht
 }
 
 type UpdateWorkItemTypeRequestObject struct {
-	WorkItemTypeID int `json:"workItemTypeID"`
+	WorkItemTypeID db.WorkItemTypeID `json:"workItemTypeID"`
 	Body           *UpdateWorkItemTypeRequest
 }
 
@@ -3481,7 +3481,7 @@ func (response CreateWorkitem201JSONResponse) VisitCreateWorkitemResponse(w http
 }
 
 type DeleteWorkitemRequestObject struct {
-	WorkItemID int `json:"workItemID"`
+	WorkItemID db.WorkItemID `json:"workItemID"`
 }
 
 type DeleteWorkitemResponseObject interface {
@@ -3496,7 +3496,7 @@ func (response DeleteWorkitem204Response) VisitDeleteWorkitemResponse(w http.Res
 }
 
 type GetWorkItemRequestObject struct {
-	WorkItemID int `json:"workItemID"`
+	WorkItemID db.WorkItemID `json:"workItemID"`
 }
 
 type GetWorkItemResponseObject interface {
@@ -3515,7 +3515,7 @@ func (response GetWorkItem200JSONResponse) VisitGetWorkItemResponse(w http.Respo
 }
 
 type UpdateWorkitemRequestObject struct {
-	WorkItemID int `json:"workItemID"`
+	WorkItemID db.WorkItemID `json:"workItemID"`
 }
 
 type UpdateWorkitemResponseObject interface {
@@ -3578,7 +3578,7 @@ func (response CreateWorkItemComment4XXJSONResponse) VisitCreateWorkItemCommentR
 }
 
 type DeleteWorkItemCommentRequestObject struct {
-	WorkItemID        int                  `json:"workItemID"`
+	WorkItemID        db.WorkItemID        `json:"workItemID"`
 	WorkItemCommentID db.WorkItemCommentID `json:"workItemCommentID"`
 }
 
@@ -3620,7 +3620,7 @@ func (response DeleteWorkItemComment4XXJSONResponse) VisitDeleteWorkItemCommentR
 }
 
 type GetWorkItemCommentRequestObject struct {
-	WorkItemID        int                  `json:"workItemID"`
+	WorkItemID        db.WorkItemID        `json:"workItemID"`
 	WorkItemCommentID db.WorkItemCommentID `json:"workItemCommentID"`
 }
 
@@ -3664,7 +3664,7 @@ func (response GetWorkItemComment4XXJSONResponse) VisitGetWorkItemCommentRespons
 }
 
 type UpdateWorkItemCommentRequestObject struct {
-	WorkItemID        int                  `json:"workItemID"`
+	WorkItemID        db.WorkItemID        `json:"workItemID"`
 	WorkItemCommentID db.WorkItemCommentID `json:"workItemCommentID"`
 	Body              *UpdateWorkItemCommentRequest
 }
@@ -3863,7 +3863,7 @@ func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 }
 
 // DeleteActivity operation middleware
-func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, activityID int) {
+func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, activityID db.ActivityID) {
 	var request DeleteActivityRequestObject
 
 	request.ActivityID = activityID
@@ -3890,7 +3890,7 @@ func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, activityID int) {
 }
 
 // GetActivity operation middleware
-func (sh *strictHandlers) GetActivity(ctx *gin.Context, activityID int) {
+func (sh *strictHandlers) GetActivity(ctx *gin.Context, activityID db.ActivityID) {
 	var request GetActivityRequestObject
 
 	request.ActivityID = activityID
@@ -3917,7 +3917,7 @@ func (sh *strictHandlers) GetActivity(ctx *gin.Context, activityID int) {
 }
 
 // UpdateActivity operation middleware
-func (sh *strictHandlers) UpdateActivity(ctx *gin.Context, activityID int) {
+func (sh *strictHandlers) UpdateActivity(ctx *gin.Context, activityID db.ActivityID) {
 	var request UpdateActivityRequestObject
 
 	request.ActivityID = activityID
@@ -4459,7 +4459,7 @@ func (sh *strictHandlers) GetProjectWorkitems(ctx *gin.Context, projectName exte
 }
 
 // DeleteTeam operation middleware
-func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, teamID int) {
+func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, teamID db.TeamID) {
 	var request DeleteTeamRequestObject
 
 	request.TeamID = teamID
@@ -4486,7 +4486,7 @@ func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, teamID int) {
 }
 
 // GetTeam operation middleware
-func (sh *strictHandlers) GetTeam(ctx *gin.Context, teamID int) {
+func (sh *strictHandlers) GetTeam(ctx *gin.Context, teamID db.TeamID) {
 	var request GetTeamRequestObject
 
 	request.TeamID = teamID
@@ -4513,7 +4513,7 @@ func (sh *strictHandlers) GetTeam(ctx *gin.Context, teamID int) {
 }
 
 // UpdateTeam operation middleware
-func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, teamID int) {
+func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, teamID db.TeamID) {
 	var request UpdateTeamRequestObject
 
 	request.TeamID = teamID
@@ -4700,7 +4700,7 @@ func (sh *strictHandlers) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID
 }
 
 // DeleteWorkItemTag operation middleware
-func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, workItemTagID int) {
+func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, workItemTagID db.WorkItemTagID) {
 	var request DeleteWorkItemTagRequestObject
 
 	request.WorkItemTagID = workItemTagID
@@ -4727,7 +4727,7 @@ func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, workItemTagID int)
 }
 
 // GetWorkItemTag operation middleware
-func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, workItemTagID int) {
+func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, workItemTagID db.WorkItemTagID) {
 	var request GetWorkItemTagRequestObject
 
 	request.WorkItemTagID = workItemTagID
@@ -4754,7 +4754,7 @@ func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, workItemTagID int) {
 }
 
 // UpdateWorkItemTag operation middleware
-func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, workItemTagID int) {
+func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, workItemTagID db.WorkItemTagID) {
 	var request UpdateWorkItemTagRequestObject
 
 	request.WorkItemTagID = workItemTagID
@@ -4790,7 +4790,7 @@ func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, workItemTagID int)
 }
 
 // DeleteWorkItemType operation middleware
-func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, workItemTypeID int) {
+func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, workItemTypeID db.WorkItemTypeID) {
 	var request DeleteWorkItemTypeRequestObject
 
 	request.WorkItemTypeID = workItemTypeID
@@ -4817,7 +4817,7 @@ func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, workItemTypeID in
 }
 
 // GetWorkItemType operation middleware
-func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, workItemTypeID int) {
+func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, workItemTypeID db.WorkItemTypeID) {
 	var request GetWorkItemTypeRequestObject
 
 	request.WorkItemTypeID = workItemTypeID
@@ -4844,7 +4844,7 @@ func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, workItemTypeID int) 
 }
 
 // UpdateWorkItemType operation middleware
-func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, workItemTypeID int) {
+func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, workItemTypeID db.WorkItemTypeID) {
 	var request UpdateWorkItemTypeRequestObject
 
 	request.WorkItemTypeID = workItemTypeID
@@ -4914,7 +4914,7 @@ func (sh *strictHandlers) CreateWorkitem(ctx *gin.Context) {
 }
 
 // DeleteWorkitem operation middleware
-func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, workItemID int) {
+func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, workItemID db.WorkItemID) {
 	var request DeleteWorkitemRequestObject
 
 	request.WorkItemID = workItemID
@@ -4941,7 +4941,7 @@ func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, workItemID int) {
 }
 
 // GetWorkItem operation middleware
-func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, workItemID int) {
+func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, workItemID db.WorkItemID) {
 	var request GetWorkItemRequestObject
 
 	request.WorkItemID = workItemID
@@ -4968,7 +4968,7 @@ func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, workItemID int) {
 }
 
 // UpdateWorkitem operation middleware
-func (sh *strictHandlers) UpdateWorkitem(ctx *gin.Context, workItemID int) {
+func (sh *strictHandlers) UpdateWorkitem(ctx *gin.Context, workItemID db.WorkItemID) {
 	var request UpdateWorkitemRequestObject
 
 	request.WorkItemID = workItemID
@@ -5031,7 +5031,7 @@ func (sh *strictHandlers) CreateWorkItemComment(ctx *gin.Context, workItemID int
 }
 
 // DeleteWorkItemComment operation middleware
-func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID int, workItemCommentID db.WorkItemCommentID) {
+func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID) {
 	var request DeleteWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
@@ -5059,7 +5059,7 @@ func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID int
 }
 
 // GetWorkItemComment operation middleware
-func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID int, workItemCommentID db.WorkItemCommentID) {
+func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID) {
 	var request GetWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
@@ -5087,7 +5087,7 @@ func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID int, w
 }
 
 // UpdateWorkItemComment operation middleware
-func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, workItemID int, workItemCommentID db.WorkItemCommentID) {
+func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID) {
 	var request UpdateWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
