@@ -523,7 +523,7 @@ go-utils.find_db_ids_int() {
   local -n __arr="$1"
   local pkg="$2"
   mapfile -t __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
-    sed -ne 's/[\s]*type[[:space:]]*\([^[:space:]]*\)ID[[:space:]]*int.*/\1/p')
+    sed -ne 's/[\s]*type[[:space:]]*\([^[:space:]]*\)ID[[:space:]]*int.*/\1ID/p')
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No db int IDs found in package $pkg"
   fi

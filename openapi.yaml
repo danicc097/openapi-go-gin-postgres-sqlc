@@ -87,15 +87,85 @@ x-error-response: &x-error-response
 # Anchors must be defined before lines that use them. Also cannot use anchors from different files.
 # See https://docs.gitlab.com/ee/ci/yaml/yaml_optimization.html
 #
-# TODO: range db IDs and uuids (userID will need merge with uuidParameterBase).
-# Ideally in the future this also helps so that oapi-codegen and orval can generate typesafe ids
-# instead of primitives
+# Ideally in the future this also helps so that oapi-codegen and orval can generate typesafe ids instead of primitives
 #
 # <<<--- GENERATED DB ANCHORS. DO NOT EDIT. --->>>
-x-teamIDParameter: &x-teamIDParameter
+x-activityIDParameter: &x-activityIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: activityID
+x-entityNotificationIDParameter: &x-entityNotificationIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: entityNotificationID
+x-extraSchemaBookAuthorsSurrogateKeyIDParameter: &x-extraSchemaBookAuthorsSurrogateKeyIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: extraSchemaBookAuthorsSurrogateKeyID
+x-extraSchemaBookIDParameter: &x-extraSchemaBookIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: extraSchemaBookID
+x-extraSchemaBookReviewIDParameter: &x-extraSchemaBookReviewIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: extraSchemaBookReviewID
+x-extraSchemaDummyJoinIDParameter: &x-extraSchemaDummyJoinIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: extraSchemaDummyJoinID
+x-extraSchemaNotificationIDParameter: &x-extraSchemaNotificationIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: extraSchemaNotificationID
+x-extraSchemaUserAPIKeyIDParameter: &x-extraSchemaUserAPIKeyIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: extraSchemaUserAPIKeyID
+x-extraSchemaWorkItemIDParameter: &x-extraSchemaWorkItemIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: extraSchemaWorkItemID
+x-kanbanStepIDParameter: &x-kanbanStepIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: kanbanStepID
+x-movieIDParameter: &x-movieIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: movieID
+x-notificationIDParameter: &x-notificationIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: notificationID
+x-projectIDParameter: &x-projectIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: projectID
+x-schemaMigrationIDParameter: &x-schemaMigrationIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: schemaMigrationID
+x-teamIDParameter: &x-teamIDParameter # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
   name: teamID
-# <<<--- END OF ANCHORS DB GENERATION --->>>
+x-timeEntryIDParameter: &x-timeEntryIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: timeEntryID
+x-userAPIKeyIDParameter: &x-userAPIKeyIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: userAPIKeyID
+x-userNotificationIDParameter: &x-userNotificationIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: userNotificationID
+x-workItemCommentIDParameter: &x-workItemCommentIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: workItemCommentID
+x-workItemIDParameter: &x-workItemIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: workItemID
+x-workItemTagIDParameter: &x-workItemTagIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: workItemTagID
+x-workItemTypeIDParameter: &x-workItemTypeIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  name: workItemTypeID
+x-extraSchemaPagElementIDParameter: &x-extraSchemaPagElementIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-uuidIDParameterBase
+  name: extraSchemaPagElementID
+x-extraSchemaUserIDParameter: &x-extraSchemaUserIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-uuidIDParameterBase
+  name: extraSchemaUserID
+x-userIDParameter: &x-userIDParameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-uuidIDParameterBase
+  name: userID
+# <<<--- END OF ANCHORS DB GENERATION. DO NOT EDIT. --->>>
 #
 #
 openapi: 3.0.3
