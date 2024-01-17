@@ -54,26 +54,6 @@ func CreateXoTestsUserAPIKey(ctx context.Context, db DB, params *XoTestsUserAPIK
 	return xtuak.Insert(ctx, db)
 }
 
-// XoTestsUserAPIKeyUpdateParams represents update params for 'xo_tests.user_api_keys'.
-type XoTestsUserAPIKeyUpdateParams struct {
-	APIKey    *string        `json:"apiKey" nullable:"false"`    // api_key
-	ExpiresOn *time.Time     `json:"expiresOn" nullable:"false"` // expires_on
-	UserID    *XoTestsUserID `json:"userID" nullable:"false"`    // user_id
-}
-
-// SetUpdateParams updates xo_tests.user_api_keys struct fields with the specified params.
-func (xtuak *XoTestsUserAPIKey) SetUpdateParams(params *XoTestsUserAPIKeyUpdateParams) {
-	if params.APIKey != nil {
-		xtuak.APIKey = *params.APIKey
-	}
-	if params.ExpiresOn != nil {
-		xtuak.ExpiresOn = *params.ExpiresOn
-	}
-	if params.UserID != nil {
-		xtuak.UserID = *params.UserID
-	}
-}
-
 type XoTestsUserAPIKeySelectConfig struct {
 	limit   string
 	orderBy string
@@ -166,6 +146,26 @@ const xoTestsUserAPIKeyTableUserSelectSQL = `(case when _user_api_keys_user_id.u
 const xoTestsUserAPIKeyTableUserGroupBySQL = `_user_api_keys_user_id.user_id,
       _user_api_keys_user_id.user_id,
 	user_api_keys.user_api_key_id`
+
+// XoTestsUserAPIKeyUpdateParams represents update params for 'xo_tests.user_api_keys'.
+type XoTestsUserAPIKeyUpdateParams struct {
+	APIKey    *string        `json:"apiKey" nullable:"false"`    // api_key
+	ExpiresOn *time.Time     `json:"expiresOn" nullable:"false"` // expires_on
+	UserID    *XoTestsUserID `json:"userID" nullable:"false"`    // user_id
+}
+
+// SetUpdateParams updates xo_tests.user_api_keys struct fields with the specified params.
+func (xtuak *XoTestsUserAPIKey) SetUpdateParams(params *XoTestsUserAPIKeyUpdateParams) {
+	if params.APIKey != nil {
+		xtuak.APIKey = *params.APIKey
+	}
+	if params.ExpiresOn != nil {
+		xtuak.ExpiresOn = *params.ExpiresOn
+	}
+	if params.UserID != nil {
+		xtuak.UserID = *params.UserID
+	}
+}
 
 // Insert inserts the XoTestsUserAPIKey to the database.
 func (xtuak *XoTestsUserAPIKey) Insert(ctx context.Context, db DB) (*XoTestsUserAPIKey, error) {

@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Button, useMantineTheme } from '@mantine/core'
 import { apiPath } from 'src/services/apiPaths'
 import { faSignIn } from '@fortawesome/free-solid-svg-icons'
+import { redirectToAuthLogin } from 'src/services/authorization'
 
 export default function LoginButton() {
   const { colors } = useMantineTheme()
@@ -17,9 +18,9 @@ export default function LoginButton() {
           }}
           onClick={(e) => {
             e.preventDefault()
-            location.href = apiPath('/auth/myprovider/login')
+            redirectToAuthLogin()
           }}
-          leftIcon={<FontAwesomeIcon icon={faSignIn} size="xl" />}
+          leftSection={<FontAwesomeIcon icon={faSignIn} size="xl" />}
         >
           Login
         </Button>

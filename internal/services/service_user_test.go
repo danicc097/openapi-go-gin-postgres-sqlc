@@ -9,12 +9,11 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
 )
 
 type testUsers struct {
@@ -24,7 +23,7 @@ type testUsers struct {
 func TestUser_UpdateUser(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 
 	type args struct {
 		params *models.UpdateUserRequest
@@ -119,7 +118,7 @@ func TestUser_UpdateUser(t *testing.T) {
 func TestUser_UpdateUserAuthorization(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 
 	authzsvc, err := services.NewAuthorization(logger)
 	require.NoError(t, err, "newTestAuthService")
@@ -297,41 +296,36 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 func createTestUsers(t *testing.T) testUsers {
 	t.Helper()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	guest, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	guest := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleGuest,
 		WithAPIKey: true,
 	})
-	require.NoError(t, err)
 
-	user, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	user := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleUser,
 		WithAPIKey: true,
 	})
-	require.NoError(t, err)
 
-	advancedUser, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	advancedUser := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdvancedUser,
 		WithAPIKey: true,
 	})
-	require.NoError(t, err)
 
-	manager, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	manager := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleManager,
 		WithAPIKey: true,
 	})
-	require.NoError(t, err)
 
-	admin, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	admin := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		Role:       models.RoleAdmin,
 		WithAPIKey: true,
 	})
-	require.NoError(t, err)
 
 	return testUsers{
 		guest:        guest,

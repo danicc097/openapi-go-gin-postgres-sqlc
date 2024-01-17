@@ -63,38 +63,6 @@ func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams
 	return ks.Insert(ctx, db)
 }
 
-// KanbanStepUpdateParams represents update params for 'public.kanban_steps'.
-type KanbanStepUpdateParams struct {
-	Color         *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
-	Description   *string    `json:"description" nullable:"false"`                                        // description
-	Name          *string    `json:"name" nullable:"false"`                                               // name
-	ProjectID     *ProjectID `json:"-" openapi-go:"ignore"`                                               // project_id
-	StepOrder     *int       `json:"stepOrder" nullable:"false"`                                          // step_order
-	TimeTrackable *bool      `json:"timeTrackable" nullable:"false"`                                      // time_trackable
-}
-
-// SetUpdateParams updates public.kanban_steps struct fields with the specified params.
-func (ks *KanbanStep) SetUpdateParams(params *KanbanStepUpdateParams) {
-	if params.Color != nil {
-		ks.Color = *params.Color
-	}
-	if params.Description != nil {
-		ks.Description = *params.Description
-	}
-	if params.Name != nil {
-		ks.Name = *params.Name
-	}
-	if params.ProjectID != nil {
-		ks.ProjectID = *params.ProjectID
-	}
-	if params.StepOrder != nil {
-		ks.StepOrder = *params.StepOrder
-	}
-	if params.TimeTrackable != nil {
-		ks.TimeTrackable = *params.TimeTrackable
-	}
-}
-
 type KanbanStepSelectConfig struct {
 	limit   string
 	orderBy string
@@ -168,6 +136,38 @@ const kanbanStepTableProjectSelectSQL = `(case when _kanban_steps_project_id.pro
 const kanbanStepTableProjectGroupBySQL = `_kanban_steps_project_id.project_id,
       _kanban_steps_project_id.project_id,
 	kanban_steps.kanban_step_id`
+
+// KanbanStepUpdateParams represents update params for 'public.kanban_steps'.
+type KanbanStepUpdateParams struct {
+	Color         *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
+	Description   *string    `json:"description" nullable:"false"`                                        // description
+	Name          *string    `json:"name" nullable:"false"`                                               // name
+	ProjectID     *ProjectID `json:"-" openapi-go:"ignore"`                                               // project_id
+	StepOrder     *int       `json:"stepOrder" nullable:"false"`                                          // step_order
+	TimeTrackable *bool      `json:"timeTrackable" nullable:"false"`                                      // time_trackable
+}
+
+// SetUpdateParams updates public.kanban_steps struct fields with the specified params.
+func (ks *KanbanStep) SetUpdateParams(params *KanbanStepUpdateParams) {
+	if params.Color != nil {
+		ks.Color = *params.Color
+	}
+	if params.Description != nil {
+		ks.Description = *params.Description
+	}
+	if params.Name != nil {
+		ks.Name = *params.Name
+	}
+	if params.ProjectID != nil {
+		ks.ProjectID = *params.ProjectID
+	}
+	if params.StepOrder != nil {
+		ks.StepOrder = *params.StepOrder
+	}
+	if params.TimeTrackable != nil {
+		ks.TimeTrackable = *params.TimeTrackable
+	}
+}
 
 // Insert inserts the KanbanStep to the database.
 func (ks *KanbanStep) Insert(ctx context.Context, db DB) (*KanbanStep, error) {

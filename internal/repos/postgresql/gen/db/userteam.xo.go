@@ -45,22 +45,6 @@ func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*
 	return ut.Insert(ctx, db)
 }
 
-// UserTeamUpdateParams represents update params for 'public.user_team'.
-type UserTeamUpdateParams struct {
-	Member *UserID `json:"member" nullable:"false"` // member
-	TeamID *TeamID `json:"teamID" nullable:"false"` // team_id
-}
-
-// SetUpdateParams updates public.user_team struct fields with the specified params.
-func (ut *UserTeam) SetUpdateParams(params *UserTeamUpdateParams) {
-	if params.Member != nil {
-		ut.Member = *params.Member
-	}
-	if params.TeamID != nil {
-		ut.TeamID = *params.TeamID
-	}
-}
-
 type UserTeamSelectConfig struct {
 	limit   string
 	orderBy string
@@ -171,6 +155,22 @@ const userTeamTableMembersTeamSelectSQL = `COALESCE(
 
 const userTeamTableMembersTeamGroupBySQL = `user_team.member, user_team.team_id, user_team.member`
 
+// UserTeamUpdateParams represents update params for 'public.user_team'.
+type UserTeamUpdateParams struct {
+	Member *UserID `json:"member" nullable:"false"` // member
+	TeamID *TeamID `json:"teamID" nullable:"false"` // team_id
+}
+
+// SetUpdateParams updates public.user_team struct fields with the specified params.
+func (ut *UserTeam) SetUpdateParams(params *UserTeamUpdateParams) {
+	if params.Member != nil {
+		ut.Member = *params.Member
+	}
+	if params.TeamID != nil {
+		ut.TeamID = *params.TeamID
+	}
+}
+
 // Insert inserts the UserTeam to the database.
 func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	// insert (manual)
@@ -195,7 +195,7 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 	return ut, nil
 }
 
-// ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
+// ------ NOTE: Update statements omitted due to lack of fields other than primary key or generated fields
 
 // Delete deletes the UserTeam from the database.
 func (ut *UserTeam) Delete(ctx context.Context, db DB) error {

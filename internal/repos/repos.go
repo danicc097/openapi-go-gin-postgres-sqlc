@@ -52,7 +52,6 @@ type DemoWorkItem interface {
 type DemoTwoWorkItem interface {
 	// ByID returns a generic WorkItem with project-specific fields joined by default.
 	ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
-	// params for dedicated workItem only require workItemID (FK-as-PK)
 	Create(ctx context.Context, d db.DBTX, params DemoTwoWorkItemCreateParams) (*db.WorkItem, error)
 	Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params DemoTwoWorkItemUpdateParams) (*db.WorkItem, error)
 }
@@ -75,6 +74,7 @@ type User interface {
 	ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (*db.User, error)
 	ByExternalID(ctx context.Context, d db.DBTX, extID string, opts ...db.UserSelectConfigOption) (*db.User, error)
 	ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error)
+	Paginated(ctx context.Context, d db.DBTX, params models.GetPaginatedUsersParams) ([]db.User, error)
 	Create(ctx context.Context, d db.DBTX, params *db.UserCreateParams) (*db.User, error)
 	Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (*db.User, error)
 	Delete(ctx context.Context, d db.DBTX, id db.UserID) (*db.User, error)
@@ -116,14 +116,6 @@ type WorkItemType interface {
 	ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.WorkItemTypeSelectConfigOption) (*db.WorkItemType, error)
 }
 
-// WorkItemComment defines the datastore/repository handling persisting WorkItemComment records.
-type WorkItemComment interface {
-	ByID(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, opts ...db.WorkItemCommentSelectConfigOption) (*db.WorkItemComment, error)
-	Create(ctx context.Context, d db.DBTX, params *db.WorkItemCommentCreateParams) (*db.WorkItemComment, error)
-	Update(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, params *db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error)
-	Delete(ctx context.Context, d db.DBTX, id db.WorkItemCommentID) (*db.WorkItemComment, error)
-}
-
 // WorkItemTag defines the datastore/repository handling persisting WorkItemTag records.
 type WorkItemTag interface {
 	ByID(ctx context.Context, d db.DBTX, id db.WorkItemTagID, opts ...db.WorkItemTagSelectConfigOption) (*db.WorkItemTag, error)
@@ -150,4 +142,12 @@ type TimeEntry interface {
 	Create(ctx context.Context, d db.DBTX, params *db.TimeEntryCreateParams) (*db.TimeEntry, error)
 	Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error)
 	Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error)
+}
+
+// WorkItemComment defines the datastore/repository handling persisting work item comment records.
+type WorkItemComment interface {
+	ByID(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, opts ...db.WorkItemCommentSelectConfigOption) (*db.WorkItemComment, error)
+	Create(ctx context.Context, d db.DBTX, params *db.WorkItemCommentCreateParams) (*db.WorkItemComment, error)
+	Update(ctx context.Context, d db.DBTX, id db.WorkItemCommentID, params *db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error)
+	Delete(ctx context.Context, d db.DBTX, id db.WorkItemCommentID) (*db.WorkItemComment, error)
 }

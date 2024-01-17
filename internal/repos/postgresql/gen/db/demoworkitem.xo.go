@@ -58,30 +58,6 @@ func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreatePa
 	return dwi.Insert(ctx, db)
 }
 
-// DemoWorkItemUpdateParams represents update params for 'public.demo_work_items'.
-type DemoWorkItemUpdateParams struct {
-	LastMessageAt *time.Time `json:"lastMessageAt" nullable:"false"`            // last_message_at
-	Line          *string    `json:"line" nullable:"false"`                     // line
-	Ref           *string    `json:"ref" nullable:"false" pattern:"^[0-9]{8}$"` // ref
-	Reopened      *bool      `json:"reopened" nullable:"false"`                 // reopened
-}
-
-// SetUpdateParams updates public.demo_work_items struct fields with the specified params.
-func (dwi *DemoWorkItem) SetUpdateParams(params *DemoWorkItemUpdateParams) {
-	if params.LastMessageAt != nil {
-		dwi.LastMessageAt = *params.LastMessageAt
-	}
-	if params.Line != nil {
-		dwi.Line = *params.Line
-	}
-	if params.Ref != nil {
-		dwi.Ref = *params.Ref
-	}
-	if params.Reopened != nil {
-		dwi.Reopened = *params.Reopened
-	}
-}
-
 type DemoWorkItemSelectConfig struct {
 	limit   string
 	orderBy string
@@ -174,6 +150,30 @@ const demoWorkItemTableWorkItemSelectSQL = `(case when _demo_work_items_work_ite
 const demoWorkItemTableWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
       _demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id`
+
+// DemoWorkItemUpdateParams represents update params for 'public.demo_work_items'.
+type DemoWorkItemUpdateParams struct {
+	LastMessageAt *time.Time `json:"lastMessageAt" nullable:"false"`            // last_message_at
+	Line          *string    `json:"line" nullable:"false"`                     // line
+	Ref           *string    `json:"ref" nullable:"false" pattern:"^[0-9]{8}$"` // ref
+	Reopened      *bool      `json:"reopened" nullable:"false"`                 // reopened
+}
+
+// SetUpdateParams updates public.demo_work_items struct fields with the specified params.
+func (dwi *DemoWorkItem) SetUpdateParams(params *DemoWorkItemUpdateParams) {
+	if params.LastMessageAt != nil {
+		dwi.LastMessageAt = *params.LastMessageAt
+	}
+	if params.Line != nil {
+		dwi.Line = *params.Line
+	}
+	if params.Ref != nil {
+		dwi.Ref = *params.Ref
+	}
+	if params.Reopened != nil {
+		dwi.Reopened = *params.Reopened
+	}
+}
 
 // Insert inserts the DemoWorkItem to the database.
 func (dwi *DemoWorkItem) Insert(ctx context.Context, db DB) (*DemoWorkItem, error) {

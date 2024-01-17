@@ -52,26 +52,6 @@ func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie,
 	return m.Insert(ctx, db)
 }
 
-// MovieUpdateParams represents update params for 'public.movies'.
-type MovieUpdateParams struct {
-	Synopsis *string `json:"synopsis" nullable:"false"` // synopsis
-	Title    *string `json:"title" nullable:"false"`    // title
-	Year     *int    `json:"year" nullable:"false"`     // year
-}
-
-// SetUpdateParams updates public.movies struct fields with the specified params.
-func (m *Movie) SetUpdateParams(params *MovieUpdateParams) {
-	if params.Synopsis != nil {
-		m.Synopsis = *params.Synopsis
-	}
-	if params.Title != nil {
-		m.Title = *params.Title
-	}
-	if params.Year != nil {
-		m.Year = *params.Year
-	}
-}
-
 type MovieSelectConfig struct {
 	limit   string
 	orderBy string
@@ -130,6 +110,26 @@ func WithMovieFilters(filters map[string][]any) MovieSelectConfigOption {
 func WithMovieHavingClause(conditions map[string][]any) MovieSelectConfigOption {
 	return func(s *MovieSelectConfig) {
 		s.having = conditions
+	}
+}
+
+// MovieUpdateParams represents update params for 'public.movies'.
+type MovieUpdateParams struct {
+	Synopsis *string `json:"synopsis" nullable:"false"` // synopsis
+	Title    *string `json:"title" nullable:"false"`    // title
+	Year     *int    `json:"year" nullable:"false"`     // year
+}
+
+// SetUpdateParams updates public.movies struct fields with the specified params.
+func (m *Movie) SetUpdateParams(params *MovieUpdateParams) {
+	if params.Synopsis != nil {
+		m.Synopsis = *params.Synopsis
+	}
+	if params.Title != nil {
+		m.Title = *params.Title
+	}
+	if params.Year != nil {
+		m.Year = *params.Year
 	}
 }
 

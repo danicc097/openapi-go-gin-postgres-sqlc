@@ -10,11 +10,10 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
 )
 
 func TestAuthorizationMiddleware(t *testing.T) {
@@ -91,7 +90,7 @@ func TestAuthorizationMiddleware(t *testing.T) {
 		},
 	}
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 
 	svcs := services.New(logger, services.CreateTestRepos(t), testPool)
 
@@ -105,14 +104,11 @@ func TestAuthorizationMiddleware(t *testing.T) {
 			authMw := rest.NewAuthMiddleware(logger, testPool, svcs)
 
 			ff := servicetestutil.NewFixtureFactory(t, testPool, svcs)
-			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				Scopes:     tc.scopes,
 				WithAPIKey: true,
 			})
-			if err != nil {
-				t.Fatalf("ff.CreateUser: %s", err)
-			}
 
 			if !tc.withoutUser {
 				engine.Use(func(c *gin.Context) {

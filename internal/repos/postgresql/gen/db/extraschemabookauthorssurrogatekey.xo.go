@@ -55,26 +55,6 @@ func CreateExtraSchemaBookAuthorsSurrogateKey(ctx context.Context, db DB, params
 	return esbask.Insert(ctx, db)
 }
 
-// ExtraSchemaBookAuthorsSurrogateKeyUpdateParams represents update params for 'extra_schema.book_authors_surrogate_key'.
-type ExtraSchemaBookAuthorsSurrogateKeyUpdateParams struct {
-	AuthorID  *ExtraSchemaUserID `json:"authorID" nullable:"false"` // author_id
-	BookID    *ExtraSchemaBookID `json:"bookID" nullable:"false"`   // book_id
-	Pseudonym **string           `json:"pseudonym"`                 // pseudonym
-}
-
-// SetUpdateParams updates extra_schema.book_authors_surrogate_key struct fields with the specified params.
-func (esbask *ExtraSchemaBookAuthorsSurrogateKey) SetUpdateParams(params *ExtraSchemaBookAuthorsSurrogateKeyUpdateParams) {
-	if params.AuthorID != nil {
-		esbask.AuthorID = *params.AuthorID
-	}
-	if params.BookID != nil {
-		esbask.BookID = *params.BookID
-	}
-	if params.Pseudonym != nil {
-		esbask.Pseudonym = *params.Pseudonym
-	}
-}
-
 type ExtraSchemaBookAuthorsSurrogateKeySelectConfig struct {
 	limit   string
 	orderBy string
@@ -202,6 +182,26 @@ const extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL = `COALESCE(
 		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') as book_authors_surrogate_key_authors`
 
 const extraSchemaBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL = `book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id`
+
+// ExtraSchemaBookAuthorsSurrogateKeyUpdateParams represents update params for 'extra_schema.book_authors_surrogate_key'.
+type ExtraSchemaBookAuthorsSurrogateKeyUpdateParams struct {
+	AuthorID  *ExtraSchemaUserID `json:"authorID" nullable:"false"` // author_id
+	BookID    *ExtraSchemaBookID `json:"bookID" nullable:"false"`   // book_id
+	Pseudonym **string           `json:"pseudonym"`                 // pseudonym
+}
+
+// SetUpdateParams updates extra_schema.book_authors_surrogate_key struct fields with the specified params.
+func (esbask *ExtraSchemaBookAuthorsSurrogateKey) SetUpdateParams(params *ExtraSchemaBookAuthorsSurrogateKeyUpdateParams) {
+	if params.AuthorID != nil {
+		esbask.AuthorID = *params.AuthorID
+	}
+	if params.BookID != nil {
+		esbask.BookID = *params.BookID
+	}
+	if params.Pseudonym != nil {
+		esbask.Pseudonym = *params.Pseudonym
+	}
+}
 
 // Insert inserts the ExtraSchemaBookAuthorsSurrogateKey to the database.
 func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Insert(ctx context.Context, db DB) (*ExtraSchemaBookAuthorsSurrogateKey, error) {

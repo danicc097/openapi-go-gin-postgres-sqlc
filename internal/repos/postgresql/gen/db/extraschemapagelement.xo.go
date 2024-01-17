@@ -63,22 +63,6 @@ func CreateExtraSchemaPagElement(ctx context.Context, db DB, params *ExtraSchema
 	return espe.Insert(ctx, db)
 }
 
-// ExtraSchemaPagElementUpdateParams represents update params for 'extra_schema.pag_element'.
-type ExtraSchemaPagElementUpdateParams struct {
-	Dummy **ExtraSchemaDummyJoinID `json:"dummy"`                 // dummy
-	Name  *string                  `json:"name" nullable:"false"` // name
-}
-
-// SetUpdateParams updates extra_schema.pag_element struct fields with the specified params.
-func (espe *ExtraSchemaPagElement) SetUpdateParams(params *ExtraSchemaPagElementUpdateParams) {
-	if params.Dummy != nil {
-		espe.Dummy = *params.Dummy
-	}
-	if params.Name != nil {
-		espe.Name = *params.Name
-	}
-}
-
 type ExtraSchemaPagElementSelectConfig struct {
 	limit   string
 	orderBy string
@@ -171,6 +155,22 @@ const extraSchemaPagElementTableDummyJoinSelectSQL = `(case when _pag_element_du
 const extraSchemaPagElementTableDummyJoinGroupBySQL = `_pag_element_dummy.dummy_join_id,
       _pag_element_dummy.dummy_join_id,
 	pag_element.paginated_element_id`
+
+// ExtraSchemaPagElementUpdateParams represents update params for 'extra_schema.pag_element'.
+type ExtraSchemaPagElementUpdateParams struct {
+	Dummy **ExtraSchemaDummyJoinID `json:"dummy"`                 // dummy
+	Name  *string                  `json:"name" nullable:"false"` // name
+}
+
+// SetUpdateParams updates extra_schema.pag_element struct fields with the specified params.
+func (espe *ExtraSchemaPagElement) SetUpdateParams(params *ExtraSchemaPagElementUpdateParams) {
+	if params.Dummy != nil {
+		espe.Dummy = *params.Dummy
+	}
+	if params.Name != nil {
+		espe.Name = *params.Name
+	}
+}
 
 // Insert inserts the ExtraSchemaPagElement to the database.
 func (espe *ExtraSchemaPagElement) Insert(ctx context.Context, db DB) (*ExtraSchemaPagElement, error) {

@@ -34,6 +34,9 @@ export type Scope =
   | 'work-item-tag:edit'
   | 'work-item-tag:delete'
   | 'work-item:review'
+  | 'work-item-comment:create'
+  | 'work-item-comment:edit'
+  | 'work-item-comment:delete'
 export type Scopes = Scope[]
 /**
  * is generated from database enum 'work_item_role'.
@@ -367,6 +370,27 @@ export interface DbTeamCreateParams {
 export interface ProjectBoard {
   projectName: Project
 }
+export interface PaginatedUsersResponse {
+  items: RestUser[] | null
+  page: RestPaginationPage
+}
+export interface RestUser {
+  apiKey?: DbUserAPIKey
+  createdAt: string
+  deletedAt?: string | null
+  email: string
+  firstName?: string | null
+  fullName?: string | null
+  hasGlobalNotifications: boolean
+  hasPersonalNotifications: boolean
+  lastName?: string | null
+  projects?: DbProject[] | null
+  role: Role
+  scopes: Scopes
+  teams?: DbTeam[] | null
+  userID: DbUserID
+  username: string
+}
 export interface User {
   apiKey?: DbUserAPIKey
   createdAt: string
@@ -505,4 +529,24 @@ export interface DbUserNotification {
   read: boolean
   userID: DbUserID
   userNotificationID: number
+}
+export interface Notification {
+  notification: DbNotification
+  notificationID: number
+  read: boolean
+  userID: DbUserID
+  userNotificationID: number
+}
+export interface UpdateWorkItemCommentRequest {
+  message?: string
+  userID?: DbUserID
+  workItemID?: number
+}
+export interface WorkItemComment {
+  createdAt: string
+  message: string
+  updatedAt: string
+  userID: DbUserID
+  workItemCommentID: number
+  workItemID: number
 }

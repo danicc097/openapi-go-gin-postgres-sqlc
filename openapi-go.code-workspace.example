@@ -5,21 +5,30 @@
     },
     {
       "path": "e2e"
+    },
+    {
+      "path": "frontend"
     }
   ],
   "settings": {
-    "cssvar.postcssSyntax": {
-      "postcss-syntax": [
-        "js",
-        "jsx",
-        "ts",
-        "tsx"
-      ]
-    },
-    "cssvar.files": [
-      "src/**/*.css",
-      "frontend/src/**/*.css",
-      "styles/global.css"
+    // see https://github.com/yokoe/vscode-postfix-go/blob/master/src/templates/customTemplate.ts#L5
+    "postfixGo.customTemplates": [
+      {
+        "name": "my_switch",
+        "body": "switch ${1:{{expr}}} {\ncase ${2:condition}: \n${0}\n}",
+        "description": "A custom switch",
+        "when": [
+          "identifier"
+        ]
+      },
+    ],
+    "cssVariables.lookupFiles": [
+      "**/*.css",
+      "**/*.scss",
+      "**/*.sass",
+      "**/*.less",
+      "node_modules/@mantine/core/styles.css",
+      "frontend/node_modules/@mantine/core/styles.css"
     ],
     "yaml.schemas": {
       "https://raw.githubusercontent.com/docker/cli/master/cli/compose/schema/data/config_schema_v3.8.json": "*compose*.yml",
@@ -80,7 +89,37 @@
       "pnpm",
       "ast-parser"
     ],
-    "vscode-command-help.pre": "source .envrc"
+    //
+    // SQL
+    //
+    "pgFormatter.configFile": "${workspaceFolder}/.pg_format",
+    // as per extension docs, else they're overridden with defaults...
+    // https://github.com/bradymholt/vscode-pgFormatter#configuration
+    "pgFormatter.placeholder": null,
+    "pgFormatter.commaBreak": null,
+    "pgFormatter.noSpaceFunction": null,
+    "pgFormatter.commaEnd": null,
+    "pgFormatter.commaStart": null,
+    "pgFormatter.extraFunction": null,
+    "pgFormatter.formatType": null,
+    "pgFormatter.functionCase": null,
+    "pgFormatter.keepNewline": null,
+    "pgFormatter.keywordCase": null,
+    "pgFormatter.noComment": null,
+    "pgFormatter.noExtraLine": null,
+    "pgFormatter.noGrouping": null,
+    "pgFormatter.perlBinPath": null,
+    "pgFormatter.pgFormatterPath": null,
+    "pgFormatter.spaces": null,
+    "pgFormatter.tabs": null,
+    "pgFormatter.typeCase": null,
+    "pgFormatter.wrapComment": null,
+    "pgFormatter.wrapLimit": null,
+    "vscode-command-help.pre": "source .envrc",
+    "typescript.tsdk": "frontend/node_modules/typescript/lib",
+    "cSpell.words": [
+      "ifaces"
+    ],
     "launch": {
       "version": "0.2.0",
       "configurations": [

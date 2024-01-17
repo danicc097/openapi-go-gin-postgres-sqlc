@@ -40,5 +40,14 @@
   },
   "work-item:review": {
     "description": "Can be part of a work item with reviewer role."
+  },
+  "work-item-comment:create": {
+    "description": "Can create work item comments."
+  },
+  "work-item-comment:edit": {
+    "description": "Can edit work item comments."
+  },
+  "work-item-comment:delete": {
+    "description": "Can delete work item comments."
   }
 }

@@ -73,46 +73,6 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 	return n.Insert(ctx, db)
 }
 
-// NotificationUpdateParams represents update params for 'public.notifications'.
-type NotificationUpdateParams struct {
-	Body             *string           `json:"body" nullable:"false"`                                                         // body
-	Labels           *[]string         `json:"labels" nullable:"false"`                                                       // labels
-	Link             **string          `json:"link"`                                                                          // link
-	NotificationType *NotificationType `json:"notificationType" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
-	Receiver         **UserID          `json:"receiver"`                                                                      // receiver
-	ReceiverRank     **int             `json:"-"`                                                                             // receiver_rank
-	Sender           *UserID           `json:"sender" nullable:"false"`                                                       // sender
-	Title            *string           `json:"title" nullable:"false"`                                                        // title
-}
-
-// SetUpdateParams updates public.notifications struct fields with the specified params.
-func (n *Notification) SetUpdateParams(params *NotificationUpdateParams) {
-	if params.Body != nil {
-		n.Body = *params.Body
-	}
-	if params.Labels != nil {
-		n.Labels = *params.Labels
-	}
-	if params.Link != nil {
-		n.Link = *params.Link
-	}
-	if params.NotificationType != nil {
-		n.NotificationType = *params.NotificationType
-	}
-	if params.Receiver != nil {
-		n.Receiver = *params.Receiver
-	}
-	if params.ReceiverRank != nil {
-		n.ReceiverRank = *params.ReceiverRank
-	}
-	if params.Sender != nil {
-		n.Sender = *params.Sender
-	}
-	if params.Title != nil {
-		n.Title = *params.Title
-	}
-}
-
 type NotificationSelectConfig struct {
 	limit   string
 	orderBy string
@@ -235,6 +195,46 @@ left join (
 const notificationTableUserNotificationsSelectSQL = `COALESCE(joined_user_notifications.user_notifications, '{}') as user_notifications`
 
 const notificationTableUserNotificationsGroupBySQL = `joined_user_notifications.user_notifications, notifications.notification_id`
+
+// NotificationUpdateParams represents update params for 'public.notifications'.
+type NotificationUpdateParams struct {
+	Body             *string           `json:"body" nullable:"false"`                                                         // body
+	Labels           *[]string         `json:"labels" nullable:"false"`                                                       // labels
+	Link             **string          `json:"link"`                                                                          // link
+	NotificationType *NotificationType `json:"notificationType" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
+	Receiver         **UserID          `json:"receiver"`                                                                      // receiver
+	ReceiverRank     **int             `json:"-"`                                                                             // receiver_rank
+	Sender           *UserID           `json:"sender" nullable:"false"`                                                       // sender
+	Title            *string           `json:"title" nullable:"false"`                                                        // title
+}
+
+// SetUpdateParams updates public.notifications struct fields with the specified params.
+func (n *Notification) SetUpdateParams(params *NotificationUpdateParams) {
+	if params.Body != nil {
+		n.Body = *params.Body
+	}
+	if params.Labels != nil {
+		n.Labels = *params.Labels
+	}
+	if params.Link != nil {
+		n.Link = *params.Link
+	}
+	if params.NotificationType != nil {
+		n.NotificationType = *params.NotificationType
+	}
+	if params.Receiver != nil {
+		n.Receiver = *params.Receiver
+	}
+	if params.ReceiverRank != nil {
+		n.ReceiverRank = *params.ReceiverRank
+	}
+	if params.Sender != nil {
+		n.Sender = *params.Sender
+	}
+	if params.Title != nil {
+		n.Title = *params.Title
+	}
+}
 
 // Insert inserts the Notification to the database.
 func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error) {

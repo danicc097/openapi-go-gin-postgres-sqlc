@@ -1,6 +1,6 @@
-/**
- * Package oidc_server is a modified version of the example server at https://github.com/zitadel/oidc/tree/main/example/server.
- */
+/*
+Package oidc_server is a modified version of the example server at https://github.com/zitadel/oidc/tree/main/example/server.
+*/
 package oidc_server
 
 import (
@@ -20,7 +20,7 @@ import (
 type Config[T storage.User] struct {
 	// SetUserInfoFunc overrides population of userinfo based on scope.
 	// Example:
-
+	//
 	// 	const (
 	// 		// CustomScope is an example for how to use custom scopes in this library
 	// 		// (in this scenario, when requested, it will return a custom claim)
@@ -126,7 +126,7 @@ func Run[T storage.User](config Config[T]) {
 
 	storage := storage.NewStorage(us, config.SetUserInfoFunc, config.GetPrivateClaimsFromScopesFunc)
 
-	router := exampleop.SetupServer(issuer, storage, config.PathPrefix)
+	router := exampleop.SetupServer(issuer, storage, config.PathPrefix, us.Users())
 
 	server := &http.Server{
 		Addr:    ":" + port,

@@ -526,6 +526,9 @@ func fileNames(ctx context.Context, mode string, set *xo.Set) (map[string]bool, 
 		// Filenames are always lowercase.
 		var prefix string
 		if schema != "public" {
+			// don't refactor to use schema + "_" + "name"
+			// since it will clash struct names regardless whether
+			// its cache.my_table or public.cache_my_table.
 			prefix = camel(schema)
 		}
 		filename = strings.ToLower(prefix + filename)
@@ -1671,12 +1674,12 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"recv_context_suffixed":      f.recv_context_suffixed,
 		"last_nth":                   f.last_nth,
 		// helpers
-		"combine_values":   combine_values,
-		"fields_to_goname": fields_to_goname,
-		"check_name":       checkName,
-		"eval":             eval,
-		"add":              add,
-		"not_updatable":    notUpdatable,
+		"combine_values":     combine_values,
+		"fields_to_goname":   fields_to_goname,
+		"check_name":         checkName,
+		"eval":               eval,
+		"add":                add,
+		"table_is_updatable": table_is_updatable,
 	}
 }
 
@@ -4533,13 +4536,13 @@ func add(b, a int) int {
 	return a + b
 }
 
-func notUpdatable(fields []Field) bool {
+func table_is_updatable(fields []Field) bool {
 	for _, field := range fields {
 		if !field.IsPrimary && !field.IsGenerated {
-			return false
+			return true // at least one field is updatable
 		}
 	}
-	return true
+	return false
 }
 
 // addInitialisms adds snaker initialisms from the context.

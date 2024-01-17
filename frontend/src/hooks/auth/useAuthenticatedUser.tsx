@@ -1,48 +1,69 @@
 import { QueryClient, useQueryClient } from '@tanstack/react-query'
+import axios from 'axios'
 import Cookies from 'js-cookie'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { AXIOS_INSTANCE } from 'src/api/mutator'
 import type { User } from 'src/gen/model'
 import { useGetCurrentUser } from 'src/gen/user/user'
+import useRenders from 'src/hooks/utils/useRenders'
 import { persister } from 'src/idb'
-import { ACCESS_TOKEN_COOKIE, UI_SLICE_PERSIST_KEY } from 'src/slices/ui'
+import { LOGIN_COOKIE_KEY, UI_SLICE_PERSIST_KEY, useUISlice } from 'src/slices/ui'
+import AxiosInterceptors from 'src/utils/axios'
 import { useIsFirstRender } from 'usehooks-ts'
 
 export default function useAuthenticatedUser() {
   const mountedRef = useMountedRef()
   const queryClient = useQueryClient()
-  const currentUser = useGetCurrentUser()
-  const isFirstRender = useIsFirstRender()
+  const [failedAuthentication, setFailedAuthentication] = useState(false)
+  const currentUser = useGetCurrentUser({
+    query: {
+      retryDelay: 500,
+      retry(failureCount, error) {
+        console.log(`retry on useAuthenticatedUser: ${failureCount}`)
+        const shouldRetry = ui.accessToken !== '' && failureCount < 2 && !failedAuthentication
+        if (!shouldRetry) setFailedAuthentication(true)
 
+        return shouldRetry
+      },
+    },
+  })
+  const renders = useRenders()
+  const isFirstRender = useIsFirstRender()
+  const ui = useUISlice()
   const isAuthenticated = !!currentUser.data?.userID
+  const isAuthenticating = currentUser.isFetching && ui.accessToken !== ''
+  // console.log({ isFirstRender })
 
   useEffect(() => {
     if (mountedRef.current && isFirstRender) {
-      console.log('would have triggered useAuthenticatedUser useEffect')
-      // if (!twitchValidateToken.isLoading) twitchValidateToken.refetch()
+      // FIXME: ... one-off logic (in theory, not working)
+      // console.log({ renders: renders })
     }
-  }, [currentUser.data, isFirstRender])
+    // console.log({ rendersOutside: renders })
 
-  const user: User = {
-    userID: 'c7fd2433-dbb7-4612-ab13-ddb0d3404728',
-    username: 'user_2',
-    email: 'user_2@email.com',
-    firstName: 'Name 2',
-    lastName: 'Surname 2',
-    fullName: 'Name 2 Surname 2',
-    hasPersonalNotifications: false,
-    hasGlobalNotifications: true,
-    createdAt: new Date('2023-04-01T06:24:22.390699Z'),
-    deletedAt: null,
+    if (!isAuthenticated && !isAuthenticating) {
+      currentUser.refetch()
+    }
 
-    role: 'user',
-    scopes: ['users:read', 'project-settings:write', 'team-settings:write', 'users:read', 'users:write'],
+    AxiosInterceptors.setupAxiosInstance(AXIOS_INSTANCE, ui.accessToken)
 
-    teams: null,
-    projects: null,
-  }
+    return () => {
+      AxiosInterceptors.teardownAxiosInstance(AXIOS_INSTANCE)
+    }
+  }, [currentUser.data, isFirstRender, isAuthenticated, ui.accessToken])
+
+  const user = currentUser.data
+
+  useEffect(() => {
+    if (user) {
+      setFailedAuthentication(false)
+    }
+  }, [user])
 
   return {
     isAuthenticated,
+    isAuthenticating,
+    isLoggingOut: ui.isLoggingOut,
     user,
   }
 }
@@ -50,14 +71,14 @@ export default function useAuthenticatedUser() {
 // TODO doesnt seem to clear react query
 export async function logUserOut(queryClient: QueryClient) {
   await persister.removeClient() // delete indexed db
-  await queryClient.cancelQueries()
-  await queryClient.invalidateQueries()
-  queryClient.clear()
-  Cookies.remove(ACCESS_TOKEN_COOKIE, {
+  Cookies.remove(LOGIN_COOKIE_KEY, {
     expires: 365,
     sameSite: 'none',
     secure: true,
   })
+  await queryClient.cancelQueries()
+  await queryClient.invalidateQueries()
+  queryClient.clear()
   localStorage.removeItem(UI_SLICE_PERSIST_KEY)
   window.location.reload()
 }

@@ -178,20 +178,23 @@ func AllRoleValues() []Role {
 
 // Scope is generated from scopes.json keys.
 const (
-	ScopeActivityCreate       Scope = "activity:create"
-	ScopeActivityDelete       Scope = "activity:delete"
-	ScopeActivityEdit         Scope = "activity:edit"
-	ScopeProjectMember        Scope = "project-member"
-	ScopeProjectSettingsWrite Scope = "project-settings:write"
-	ScopeScopesWrite          Scope = "scopes:write"
-	ScopeTeamSettingsWrite    Scope = "team-settings:write"
-	ScopeUsersDelete          Scope = "users:delete"
-	ScopeUsersRead            Scope = "users:read"
-	ScopeUsersWrite           Scope = "users:write"
-	ScopeWorkItemReview       Scope = "work-item:review"
-	ScopeWorkItemTagCreate    Scope = "work-item-tag:create"
-	ScopeWorkItemTagDelete    Scope = "work-item-tag:delete"
-	ScopeWorkItemTagEdit      Scope = "work-item-tag:edit"
+	ScopeActivityCreate        Scope = "activity:create"
+	ScopeActivityDelete        Scope = "activity:delete"
+	ScopeActivityEdit          Scope = "activity:edit"
+	ScopeProjectMember         Scope = "project-member"
+	ScopeProjectSettingsWrite  Scope = "project-settings:write"
+	ScopeScopesWrite           Scope = "scopes:write"
+	ScopeTeamSettingsWrite     Scope = "team-settings:write"
+	ScopeUsersDelete           Scope = "users:delete"
+	ScopeUsersRead             Scope = "users:read"
+	ScopeUsersWrite            Scope = "users:write"
+	ScopeWorkItemCommentCreate Scope = "work-item-comment:create"
+	ScopeWorkItemCommentDelete Scope = "work-item-comment:delete"
+	ScopeWorkItemCommentEdit   Scope = "work-item-comment:edit"
+	ScopeWorkItemReview        Scope = "work-item:review"
+	ScopeWorkItemTagCreate     Scope = "work-item-tag:create"
+	ScopeWorkItemTagDelete     Scope = "work-item-tag:delete"
+	ScopeWorkItemTagEdit       Scope = "work-item-tag:edit"
 )
 
 // AllScopeValues returns all possible values for Scope.
@@ -207,6 +210,9 @@ func AllScopeValues() []Scope {
 		ScopeUsersDelete,
 		ScopeUsersRead,
 		ScopeUsersWrite,
+		ScopeWorkItemCommentCreate,
+		ScopeWorkItemCommentDelete,
+		ScopeWorkItemCommentEdit,
 		ScopeWorkItemReview,
 		ScopeWorkItemTagCreate,
 		ScopeWorkItemTagDelete,
@@ -637,6 +643,15 @@ type InitializeProjectRequest struct {
 	Teams *[]DbTeamCreateParams        `json:"teams"`
 }
 
+// Notification defines the model for Notification.
+type Notification struct {
+	Notification       DbNotification `json:"notification"`
+	NotificationID     int            `json:"notificationID"`
+	Read               bool           `json:"read"`
+	UserID             DbUserID       `json:"userID"`
+	UserNotificationID int            `json:"userNotificationID"`
+}
+
 // NotificationType is generated from database enum 'notification_type'.
 type NotificationType string
 
@@ -644,6 +659,12 @@ type NotificationType string
 type PaginatedNotificationsResponse struct {
 	Items *[]RestNotification `json:"items"`
 	Page  RestPaginationPage  `json:"page"`
+}
+
+// PaginatedUsersResponse defines the model for PaginatedUsersResponse.
+type PaginatedUsersResponse struct {
+	Items *[]RestUser        `json:"items"`
+	Page  RestPaginationPage `json:"page"`
 }
 
 // Project is generated from projects table.
@@ -684,6 +705,9 @@ type RestNotification struct {
 type RestPaginationPage struct {
 	NextCursor *string `json:"nextCursor,omitempty"`
 }
+
+// RestUser defines the model for RestUser.
+type RestUser = User
 
 // Role is generated from roles.json keys.
 type Role string
@@ -743,6 +767,13 @@ type UpdateUserRequest struct {
 	LastName *string `json:"lastName,omitempty"`
 }
 
+// UpdateWorkItemCommentRequest defines the model for UpdateWorkItemCommentRequest.
+type UpdateWorkItemCommentRequest struct {
+	Message    *string   `json:"message,omitempty"`
+	UserID     *DbUserID `json:"userID,omitempty"`
+	WorkItemID *int      `json:"workItemID,omitempty"`
+}
+
 // UpdateWorkItemTagRequest defines the model for UpdateWorkItemTagRequest.
 type UpdateWorkItemTagRequest struct {
 	Color       *string `json:"color,omitempty"`
@@ -798,6 +829,16 @@ type ValidationError struct {
 	Msg string `json:"msg"`
 }
 
+// WorkItemComment defines the model for WorkItemComment.
+type WorkItemComment struct {
+	CreatedAt         time.Time `json:"createdAt"`
+	Message           string    `json:"message"`
+	UpdatedAt         time.Time `json:"updatedAt"`
+	UserID            DbUserID  `json:"userID"`
+	WorkItemCommentID int       `json:"workItemCommentID"`
+	WorkItemID        int       `json:"workItemID"`
+}
+
 // WorkItemRole is generated from database enum 'work_item_role'.
 type WorkItemRole string
 
@@ -829,6 +870,11 @@ type SerialID = int
 // UUID defines the model for UUID.
 type UUID = uuid.UUID
 
+// MyProviderLoginParams defines parameters for MyProviderLogin.
+type MyProviderLoginParams struct {
+	AuthRedirectUri string `form:"auth-redirect-uri" json:"auth-redirect-uri"`
+}
+
 // EventsParams defines parameters for Events.
 type EventsParams struct {
 	ProjectName Project `form:"projectName" json:"projectName"`
@@ -845,6 +891,13 @@ type GetPaginatedNotificationsParams struct {
 type GetProjectWorkitemsParams struct {
 	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
 	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
+}
+
+// GetPaginatedUsersParams defines parameters for GetPaginatedUsers.
+type GetPaginatedUsersParams struct {
+	Limit     int       `form:"limit" json:"limit"`
+	Direction Direction `form:"direction" json:"direction"`
+	Cursor    string    `form:"cursor" json:"cursor"`
 }
 
 // UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
@@ -887,6 +940,14 @@ type UpdateUserJSONRequestBody = UpdateUserRequest
 
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
+// CreateWorkItemCommentJSONRequestBody defines body for CreateWorkItemComment for application/json ContentType.
+
+type CreateWorkItemCommentJSONRequestBody = CreateWorkItemCommentRequest
+
+// UpdateWorkItemCommentJSONRequestBody defines body for UpdateWorkItemComment for application/json ContentType.
+
+type UpdateWorkItemCommentJSONRequestBody = UpdateWorkItemCommentRequest
+
 // UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
 
 type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
@@ -898,10 +959,6 @@ type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
 // CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
 
 type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
-
-// CreateWorkitemCommentJSONRequestBody defines body for CreateWorkitemComment for application/json ContentType.
-
-type CreateWorkitemCommentJSONRequestBody = CreateWorkItemCommentRequest
 
 // AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {

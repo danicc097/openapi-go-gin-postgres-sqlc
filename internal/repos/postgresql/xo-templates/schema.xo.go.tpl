@@ -229,6 +229,10 @@ type {{ $t.GoName }} struct {
 {{ join_fields $t $constraints $tables }}
 }
 {{/* NOTE: ensure sqlc does not generate clashing names */}}
+
+{{/* create params and helper only if theres PKs */}}
+{{ if $t.PrimaryKeys -}}
+
 // {{ $t.GoName }}CreateParams represents insert params for '{{ schema $t.SQLName }}'.
 type {{ $t.GoName }}CreateParams struct {
 {{ range sort_fields $t.Fields -}}
@@ -251,7 +255,14 @@ func Create{{ $t.GoName }}(ctx context.Context, db DB, params *{{ $t.GoName }}Cr
 
   return {{ short $t }}.Insert(ctx, db)
 }
+{{ end -}}
 
+{{ extratypes $t.GoName $t.SQLName $constraints $t $tables }}
+
+{{/* regular queries for a table. Ignored for mat views or views.
+ */}}
+
+{{ if $t.PrimaryKeys -}}
 
 // {{ $t.GoName }}UpdateParams represents update params for '{{ schema $t.SQLName }}'.
 type {{ $t.GoName }}UpdateParams struct {
@@ -266,13 +277,6 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	{{ set_field . "UpdateParams" $t -}}
 {{ end -}}
 }
-
-{{ extratypes $t.GoName $t.SQLName $constraints $t $tables }}
-
-{{/* regular queries for a table. Ignored for mat views or views.
- */}}
-
-{{ if $t.PrimaryKeys -}}
 
 // {{ func_name_context "Insert" "" }} inserts the {{ $t.GoName }} to the database.
 {{ recv_context $t "Insert" "" }} {
@@ -310,8 +314,8 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 }
 
 
-{{ if not_updatable $t.Fields -}}
-// ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
+{{ if not (table_is_updatable $t.Fields) -}}
+// ------ NOTE: Update statements omitted due to lack of fields other than primary key or generated fields
 {{- else -}}
 // {{ func_name_context "Update" "" }} updates a {{ $t.GoName }} in the database.
 {{ recv_context $t "Update" "" }}  {
@@ -384,7 +388,9 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 {{- end }}
 
-{{ if (has_deleted_at $t) }}
+{{ if $t.PrimaryKeys -}}
+{{ if and (has_deleted_at $t) (table_is_updatable $t.Fields) }}
+
 // {{ func_name_context "SoftDelete" "" }} soft deletes the {{ $t.GoName }} from the database via 'deleted_at'.
 {{ recv_context $t "SoftDelete" "" }} {
 	{{ if eq (len $t.PrimaryKeys) 1 -}}
@@ -418,6 +424,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	return new{{ short $t }}, nil
 }
 
+{{ end }}
 {{ end }}
 
 {{ range $cursor_fields := cursor_columns $t $constraints $tables }}

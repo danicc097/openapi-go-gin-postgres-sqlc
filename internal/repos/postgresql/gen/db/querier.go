@@ -10,12 +10,12 @@ import (
 
 type Querier interface {
 	// plpgsql-language-server:use-keyword-query-parameter
-	GetExtraSchemaNotifications(ctx context.Context, db DBTX, arg GetExtraSchemaNotificationsParams) ([]GetExtraSchemaNotificationsRow, error)
+	GetExtraSchemaNotifications(ctx context.Context, d DBTX, arg GetExtraSchemaNotificationsParams) ([]GetExtraSchemaNotificationsRow, error)
 	// plpgsql-language-server:use-keyword-query-parameter
-	GetUser(ctx context.Context, db DBTX, arg GetUserParams) (GetUserRow, error)
+	GetUser(ctx context.Context, d DBTX, arg GetUserParams) (GetUserRow, error)
 	// plpgsql-language-server:use-keyword-query-parameter
-	GetUserNotifications(ctx context.Context, db DBTX, arg GetUserNotificationsParams) ([]GetUserNotificationsRow, error)
-	IsTeamInProject(ctx context.Context, db DBTX, arg IsTeamInProjectParams) (bool, error)
+	GetUserNotifications(ctx context.Context, d DBTX, arg GetUserNotificationsParams) ([]GetUserNotificationsRow, error)
+	IsTeamInProject(ctx context.Context, d DBTX, arg IsTeamInProjectParams) (bool, error)
 }
 
 var _ Querier = (*Queries)(nil)

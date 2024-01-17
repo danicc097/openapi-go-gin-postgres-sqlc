@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
+	internal_testutil "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/oapi-codegen/testutil"
 
 	"github.com/getkin/kin-openapi/openapi3"
@@ -17,8 +18,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
 )
 
 func doGet(t *testing.T, handler http.Handler, rawURL string) *httptest.ResponseRecorder {
@@ -80,7 +79,7 @@ func TestOapiRequestValidator(t *testing.T) {
 		UserData: "hi!",
 	}
 
-	oasMw := rest.NewOpenapiMiddleware(zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar(), openapi)
+	oasMw := rest.NewOpenapiMiddleware(internal_testutil.NewLogger(t), openapi)
 	g.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	called := false
@@ -216,7 +215,7 @@ func TestRequestValidatorWithOptionsMultiError(t *testing.T) {
 		Options: kinopenapiOpts,
 	}
 
-	oasMw := rest.NewOpenapiMiddleware(zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar(), openapi)
+	oasMw := rest.NewOpenapiMiddleware(internal_testutil.NewLogger(t), openapi)
 	g.Use(oasMw.RequestValidatorWithOptions(&options))
 
 	called := false

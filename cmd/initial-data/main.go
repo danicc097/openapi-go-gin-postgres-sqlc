@@ -19,7 +19,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -66,6 +66,7 @@ func main() {
 	notifSvc := services.NewNotification(logger, repositories)
 	wiSvc := services.NewWorkItem(logger, repositories)
 	demoWiSvc := services.NewDemoWorkItem(logger, repositories)
+	demoTwoWiSvc := services.NewDemoTwoWorkItem(logger, repositories)
 	wiTagSvc := services.NewWorkItemTag(logger, repositories)
 
 	ctx := context.Background()
@@ -127,7 +128,8 @@ func main() {
 	for i := 0; i < 10; i++ {
 		u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
 			Username:   "user_" + strconv.Itoa(i),
-			FirstName:  pointers.New("Name " + strconv.Itoa(i)),
+			FirstName:  pointers.New(testutil.RandomFirstName()),
+			LastName:   pointers.New(testutil.RandomLastName()),
 			Email:      "user_" + strconv.Itoa(i) + "@mail.com",
 			ExternalID: "external_id_user_" + strconv.Itoa(i),
 			// Scopes: []models.Scope{models.}, // TODO:
@@ -177,12 +179,14 @@ func main() {
 		users[i], err = userSvc.AssignTeam(ctx, pool, u.UserID, teamDemo.TeamID)
 		handleError(err)
 	}
-	format.PrintJSONByTag(users, "db")
+	// format.PrintJSONByTag(users, "db")
 
-	superAdminCaller.User, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo.TeamID)
+	superAdmin, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo.TeamID)
 	handleError(err)
-	superAdminCaller.User, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo2.TeamID)
+	superAdmin, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo2.TeamID)
 	handleError(err)
+
+	superAdminCaller = *services.NewCtxUser(superAdmin)
 
 	/**
 	 *
@@ -243,7 +247,7 @@ func main() {
 
 	/**
 	 *
-	 * WORK ITEMS
+	 * DEMO WORK ITEMS
 	 *
 	 **/
 	logger.Info("Creating workitems...")
@@ -295,6 +299,51 @@ func main() {
 			KanbanStepID: pointers.New(internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsUnderReview]),
 		},
 	})
+
+	/**
+	 *
+	 * DEMO TWO WORK ITEMS
+	 *
+	 **/
+	demoTwoWorkItems := []*db.WorkItem{}
+	for i := 1; i <= 20; i++ {
+		semaphore <- struct{}{} // acquire
+		wg.Add(1)
+
+		go func(i int) {
+			defer wg.Done()
+
+			demoTwowi, err := demoTwoWiSvc.Create(ctx, pool, services.DemoTwoWorkItemCreateParams{
+				DemoTwoWorkItemCreateParams: repos.DemoTwoWorkItemCreateParams{
+					Base: db.WorkItemCreateParams{
+						TeamID:         teamDemo.TeamID,
+						Title:          fmt.Sprintf("A new work item (%d)", i),
+						Description:    fmt.Sprintf("Description for a new work item (%d)", i),
+						WorkItemTypeID: internal.DemoTwoWorkItemTypesIDByName[models.DemoTwoWorkItemTypesType1],
+						// TODO if not passed then query where step order = 0 for a given project and use that
+						// steporder could also be generated just like idByName and viceversa
+						KanbanStepID: internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsReceived],
+						TargetDate:   time.Now().Add(time.Duration(i) * day),
+						Metadata:     map[string]any{"key": true},
+					},
+					DemoTwoProject: db.DemoTwoWorkItemCreateParams{
+						CustomDateForProject2: pointers.New(time.Now().Add(time.Duration(i) * day)),
+					},
+				},
+				TagIDs: []db.WorkItemTagID{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
+				Members: []services.Member{
+					{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
+					{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
+				},
+			})
+			handleError(err)
+			demoTwoWorkItems = append(demoTwoWorkItems, demoTwowi)
+
+			<-semaphore // release
+		}(i)
+	}
+
+	wg.Wait()
 
 	/**
 	 *
@@ -377,16 +426,17 @@ func main() {
 	fmt.Printf("testUser.UserID: %v\n", testUser.UserID)
 	err = wiSvc.AssignUsers(ctx, pool, demoWorkItems[0].WorkItemID, []services.Member{{Role: models.WorkItemRolePreparer, UserID: testUser.UserID}})
 	handleError(err)
+	// TODO: tests later with paginated from cache.<project_name>
 	// paginated queries have sortable id. for first query include previous results (-1 or -1 second)
 	// and then use returned cursor.
-	wis, err := db.WorkItemPaginatedByWorkItemID(ctx, pool, demoWorkItems[0].WorkItemID-1, models.DirectionAsc, db.WithWorkItemHavingClause(map[string][]any{
-		// adding inside where clause yields `aggregate functions are not allowed in WHERE, since it makes no sense.
-		//  see https://www.postgresql.org/docs/current/tutorial-agg.html
-		"$i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id))": {testUser.UserID},
-	}), db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, DemoWorkItem: true}))
-	handleError(err)
-	fmt.Printf("wis len: %v - First workitem found:\n", len(wis))
-	format.PrintJSONByTag(wis[0], "db")
+	// wis, err := db.WorkItemPaginatedByWorkItemID(ctx, pool, demoWorkItems[0].WorkItemID-1, models.DirectionAsc, db.WithWorkItemHavingClause(map[string][]any{
+	// 	// adding inside where clause yields `aggregate functions are not allowed in WHERE, since it makes no sense.
+	// 	//  see https://www.postgresql.org/docs/current/tutorial-agg.html
+	// 	"$i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id))": {testUser.UserID},
+	// }), db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, DemoWorkItem: true}))
+	// handleError(err)
+	// fmt.Printf("wis len: %v - First workitem found:\n", len(wis))
+	// format.PrintJSONByTag(wis[0], "db")
 }
 
 func errAndExit(out []byte, err error) {

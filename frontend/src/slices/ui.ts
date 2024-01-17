@@ -1,16 +1,18 @@
 import Cookies from 'js-cookie'
 import { devtools, persist } from 'zustand/middleware'
 import { create } from 'zustand'
+import { CONFIG } from 'src/config'
 
-export const ACCESS_TOKEN_COOKIE = 'myAppAccessToken'
+export const LOGIN_COOKIE_KEY = CONFIG.LOGIN_COOKIE_KEY
 
 export const UI_SLICE_PERSIST_KEY = 'ui-slice'
 
 interface UIState {
-  twitchToken: string
-  setAccessToken: (token: string) => void
+  isLoggingOut: boolean
+  setIsLoggingOut: (v: boolean) => void
+  accessToken: string
   burgerOpened: boolean
-  setBurgerOpened: (opened: boolean) => void
+  setBurgerOpened: (v: boolean) => void
 }
 
 const useUISlice = create<UIState>()(
@@ -18,13 +20,21 @@ const useUISlice = create<UIState>()(
     persist(
       (set) => {
         return {
-          twitchToken: Cookies.get(ACCESS_TOKEN_COOKIE),
-          setAccessToken: (token: string) => set(setAccessToken(token), false, `setAccessToken`),
+          isLoggingOut: false,
+          setIsLoggingOut: (v: boolean) => set((state) => ({ isLoggingOut: v })),
+          accessToken: Cookies.get(LOGIN_COOKIE_KEY) ?? '',
           burgerOpened: false,
-          setBurgerOpened: (opened: boolean) => set(setBurgerOpened(opened), false, `setBurgerOpened`),
+          setBurgerOpened: (v: boolean) => set((state) => ({ burgerOpened: v })),
         }
       },
-      { version: 2, name: UI_SLICE_PERSIST_KEY },
+      {
+        version: 2,
+        name: UI_SLICE_PERSIST_KEY,
+        partialize(state) {
+          const { accessToken, ...rest } = state // always refetch access token from storage
+          return rest
+        },
+      },
     ),
     { enabled: true },
   ),
@@ -33,24 +43,3 @@ const useUISlice = create<UIState>()(
 export { useUISlice }
 
 type UIAction = (...args: any[]) => Partial<UIState>
-
-function setAccessToken(token: string): UIAction {
-  return (state: UIState) => {
-    Cookies.set(ACCESS_TOKEN_COOKIE, token, {
-      expires: 365,
-      sameSite: 'none',
-      secure: true,
-    })
-    return {
-      twitchToken: token,
-    }
-  }
-}
-
-function setBurgerOpened(opened: boolean): UIAction {
-  return (state: UIState) => {
-    return {
-      burgerOpened: opened,
-    }
-  }
-}

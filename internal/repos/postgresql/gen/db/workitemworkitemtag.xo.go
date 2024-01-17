@@ -46,22 +46,6 @@ func CreateWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkI
 	return wiwit.Insert(ctx, db)
 }
 
-// WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'.
-type WorkItemWorkItemTagUpdateParams struct {
-	WorkItemID    *WorkItemID    `json:"workItemID" nullable:"false"`    // work_item_id
-	WorkItemTagID *WorkItemTagID `json:"workItemTagID" nullable:"false"` // work_item_tag_id
-}
-
-// SetUpdateParams updates public.work_item_work_item_tag struct fields with the specified params.
-func (wiwit *WorkItemWorkItemTag) SetUpdateParams(params *WorkItemWorkItemTagUpdateParams) {
-	if params.WorkItemID != nil {
-		wiwit.WorkItemID = *params.WorkItemID
-	}
-	if params.WorkItemTagID != nil {
-		wiwit.WorkItemTagID = *params.WorkItemTagID
-	}
-}
-
 type WorkItemWorkItemTagSelectConfig struct {
 	limit   string
 	orderBy string
@@ -172,6 +156,22 @@ const workItemWorkItemTagTableWorkItemsWorkItemTagSelectSQL = `COALESCE(
 
 const workItemWorkItemTagTableWorkItemsWorkItemTagGroupBySQL = `work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id`
 
+// WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'.
+type WorkItemWorkItemTagUpdateParams struct {
+	WorkItemID    *WorkItemID    `json:"workItemID" nullable:"false"`    // work_item_id
+	WorkItemTagID *WorkItemTagID `json:"workItemTagID" nullable:"false"` // work_item_tag_id
+}
+
+// SetUpdateParams updates public.work_item_work_item_tag struct fields with the specified params.
+func (wiwit *WorkItemWorkItemTag) SetUpdateParams(params *WorkItemWorkItemTagUpdateParams) {
+	if params.WorkItemID != nil {
+		wiwit.WorkItemID = *params.WorkItemID
+	}
+	if params.WorkItemTagID != nil {
+		wiwit.WorkItemTagID = *params.WorkItemTagID
+	}
+}
+
 // Insert inserts the WorkItemWorkItemTag to the database.
 func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemWorkItemTag, error) {
 	// insert (manual)
@@ -196,7 +196,7 @@ func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemW
 	return wiwit, nil
 }
 
-// ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
+// ------ NOTE: Update statements omitted due to lack of fields other than primary key or generated fields
 
 // Delete deletes the WorkItemWorkItemTag from the database.
 func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {

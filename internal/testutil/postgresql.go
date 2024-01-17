@@ -57,7 +57,7 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 			return
 		}
 
-		// post-migration scripts not idempotent like up migration
+		// post-migration scripts may not be idempotent like up migration command
 		if _, err := os.Stat(markerFilePath); os.IsExist(err) {
 			fmt.Println("Marker file exists, skipping post-migrations.")
 			return

@@ -60,12 +60,11 @@ export default function Layout({ children }: LayoutProps) {
   const [opened, { toggle }] = useDisclosure(false)
   const [userMenuOpened, setUserMenuOpened] = useState(false)
   const { user } = useAuthenticatedUser()
-  const [loginOut, setLoginOut] = useState(false)
   const { colorScheme } = useMantineColorScheme() // TODO: app logo useffect
   const { burgerOpened, setBurgerOpened } = useUISlice()
 
   const tabs = []
-  const items = tabs.map((tab) => (
+  const tabComponents = tabs.map((tab) => (
     <Tabs.Tab value={tab} key={tab}>
       {tab}
     </Tabs.Tab>
@@ -74,6 +73,7 @@ export default function Layout({ children }: LayoutProps) {
   const [notify, setNotify] = useState<boolean>(false)
   const { showTestNotification } = useNotificationAPI()
   const [logo, setLogo] = useState<string>(colorScheme === 'dark' ? logoDark : logoLight)
+  const ui = useUISlice()
 
   useEffect(() => {
     setLogo(colorScheme === 'dark' ? logoDark : logoLight)
@@ -87,12 +87,12 @@ export default function Layout({ children }: LayoutProps) {
   }, [user, showTestNotification, notify])
 
   const onLogout = async () => {
-    setLoginOut(true)
+    ui.setIsLoggingOut(true)
     await logUserOut(queryClient)
   }
 
   function renderAvatarMenu() {
-    if (loginOut)
+    if (ui.isLoggingOut)
       return (
         <Group gap={'md'} align="center">
           <Loader size={'sm'} variant="dots"></Loader>
@@ -128,13 +128,11 @@ export default function Layout({ children }: LayoutProps) {
         footer={{ height: 60 }}
         navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}
         // aside={{ width: 300, breakpoint: 'md', collapsed: { desktop: false, mobile: true } }}
-        padding="md"
       >
         <AppShell.Header>
           <Group
-            m={6}
-            pl={10}
-            pr={10}
+            h="100%"
+            px="md"
             css={css`
               align-self: center;
               justify-content: space-between;
@@ -203,7 +201,7 @@ export default function Layout({ children }: LayoutProps) {
                 tab: classes.tab,
               }}
             >
-              <Tabs.List>{items}</Tabs.List>
+              <Tabs.List>{tabComponents}</Tabs.List>
             </Tabs>
           </Container>
         </AppShell.Header>

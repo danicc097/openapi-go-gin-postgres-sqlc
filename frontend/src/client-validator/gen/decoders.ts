@@ -39,7 +39,9 @@ import {
   DemoTwoWorkItems,
   InitializeProjectRequest,
   ProjectBoard,
+  PaginatedUsersResponse,
   User,
+  RestUser,
   HTTPValidationError,
   ErrorCode,
   HTTPError,
@@ -78,10 +80,13 @@ import {
   DbNotification,
   DbUserNotification,
   RestPaginationPage,
+  Notification,
   RestNotification,
   DbUserWIAUWorkItem,
   DemoKanbanSteps,
   DemoTwoKanbanSteps,
+  UpdateWorkItemCommentRequest,
+  WorkItemComment,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -462,6 +467,18 @@ export const ProjectBoardDecoder: Decoder<ProjectBoard> = {
     return validateJson(json, schema, ProjectBoardDecoder.definitionName)
   },
 }
+export const PaginatedUsersResponseDecoder: Decoder<PaginatedUsersResponse> = {
+  definitionName: 'PaginatedUsersResponse',
+  schemaRef: '#/definitions/PaginatedUsersResponse',
+
+  decode(json: unknown): PaginatedUsersResponse {
+    const schema = ajv.getSchema(PaginatedUsersResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${PaginatedUsersResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, PaginatedUsersResponseDecoder.definitionName)
+  },
+}
 export const UserDecoder: Decoder<User> = {
   definitionName: 'User',
   schemaRef: '#/definitions/User',
@@ -472,6 +489,18 @@ export const UserDecoder: Decoder<User> = {
       throw new Error(`Schema ${UserDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, UserDecoder.definitionName)
+  },
+}
+export const RestUserDecoder: Decoder<RestUser> = {
+  definitionName: 'RestUser',
+  schemaRef: '#/definitions/RestUser',
+
+  decode(json: unknown): RestUser {
+    const schema = ajv.getSchema(RestUserDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${RestUserDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, RestUserDecoder.definitionName)
   },
 }
 export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {
@@ -930,6 +959,18 @@ export const RestPaginationPageDecoder: Decoder<RestPaginationPage> = {
     return validateJson(json, schema, RestPaginationPageDecoder.definitionName)
   },
 }
+export const NotificationDecoder: Decoder<Notification> = {
+  definitionName: 'Notification',
+  schemaRef: '#/definitions/Notification',
+
+  decode(json: unknown): Notification {
+    const schema = ajv.getSchema(NotificationDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${NotificationDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, NotificationDecoder.definitionName)
+  },
+}
 export const RestNotificationDecoder: Decoder<RestNotification> = {
   definitionName: 'RestNotification',
   schemaRef: '#/definitions/RestNotification',
@@ -976,5 +1017,29 @@ export const DemoTwoKanbanStepsDecoder: Decoder<DemoTwoKanbanSteps> = {
       throw new Error(`Schema ${DemoTwoKanbanStepsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DemoTwoKanbanStepsDecoder.definitionName)
+  },
+}
+export const UpdateWorkItemCommentRequestDecoder: Decoder<UpdateWorkItemCommentRequest> = {
+  definitionName: 'UpdateWorkItemCommentRequest',
+  schemaRef: '#/definitions/UpdateWorkItemCommentRequest',
+
+  decode(json: unknown): UpdateWorkItemCommentRequest {
+    const schema = ajv.getSchema(UpdateWorkItemCommentRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${UpdateWorkItemCommentRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, UpdateWorkItemCommentRequestDecoder.definitionName)
+  },
+}
+export const WorkItemCommentDecoder: Decoder<WorkItemComment> = {
+  definitionName: 'WorkItemComment',
+  schemaRef: '#/definitions/WorkItemComment',
+
+  decode(json: unknown): WorkItemComment {
+    const schema = ajv.getSchema(WorkItemCommentDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${WorkItemCommentDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, WorkItemCommentDecoder.definitionName)
   },
 }

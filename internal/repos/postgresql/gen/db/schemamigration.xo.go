@@ -48,22 +48,6 @@ func CreateSchemaMigration(ctx context.Context, db DB, params *SchemaMigrationCr
 	return sm.Insert(ctx, db)
 }
 
-// SchemaMigrationUpdateParams represents update params for 'public.schema_migrations'.
-type SchemaMigrationUpdateParams struct {
-	Dirty   *bool              `json:"dirty" nullable:"false"`   // dirty
-	Version *SchemaMigrationID `json:"version" nullable:"false"` // version
-}
-
-// SetUpdateParams updates public.schema_migrations struct fields with the specified params.
-func (sm *SchemaMigration) SetUpdateParams(params *SchemaMigrationUpdateParams) {
-	if params.Dirty != nil {
-		sm.Dirty = *params.Dirty
-	}
-	if params.Version != nil {
-		sm.Version = *params.Version
-	}
-}
-
 type SchemaMigrationSelectConfig struct {
 	limit   string
 	orderBy string
@@ -122,6 +106,22 @@ func WithSchemaMigrationFilters(filters map[string][]any) SchemaMigrationSelectC
 func WithSchemaMigrationHavingClause(conditions map[string][]any) SchemaMigrationSelectConfigOption {
 	return func(s *SchemaMigrationSelectConfig) {
 		s.having = conditions
+	}
+}
+
+// SchemaMigrationUpdateParams represents update params for 'public.schema_migrations'.
+type SchemaMigrationUpdateParams struct {
+	Dirty   *bool              `json:"dirty" nullable:"false"`   // dirty
+	Version *SchemaMigrationID `json:"version" nullable:"false"` // version
+}
+
+// SetUpdateParams updates public.schema_migrations struct fields with the specified params.
+func (sm *SchemaMigration) SetUpdateParams(params *SchemaMigrationUpdateParams) {
+	if params.Dirty != nil {
+		sm.Dirty = *params.Dirty
+	}
+	if params.Version != nil {
+		sm.Version = *params.Version
 	}
 }
 

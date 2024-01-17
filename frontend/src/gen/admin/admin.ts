@@ -45,11 +45,20 @@ export const getAdminPingInfiniteQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof adminPing>>> = ({ signal }) =>
     adminPing(requestOptions, signal)
 
-  return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof adminPing>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type AdminPingInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof adminPing>>>
@@ -88,11 +97,20 @@ export const getAdminPingQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof adminPing>>> = ({ signal }) =>
     adminPing(requestOptions, signal)
 
-  return { queryKey, queryFn, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof adminPing>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type AdminPingQueryResult = NonNullable<Awaited<ReturnType<typeof adminPing>>>

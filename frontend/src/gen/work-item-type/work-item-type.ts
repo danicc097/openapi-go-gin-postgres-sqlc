@@ -120,11 +120,21 @@ export const getGetWorkItemTypeInfiniteQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItemType>>> = ({ signal }) =>
     getWorkItemType(id, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!id, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof getWorkItemType>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItemType>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetWorkItemTypeInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItemType>>>
@@ -169,11 +179,21 @@ export const getGetWorkItemTypeQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItemType>>> = ({ signal }) =>
     getWorkItemType(id, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!id, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getWorkItemType>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getWorkItemType>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetWorkItemTypeQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItemType>>>

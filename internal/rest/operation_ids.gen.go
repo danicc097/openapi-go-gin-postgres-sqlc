@@ -45,15 +45,21 @@ const (
 	// Operation IDs for the 'user' tag.
 	DeleteUser              OperationID = "DeleteUser"
 	GetCurrentUser          OperationID = "GetCurrentUser"
+	GetPaginatedUsers       OperationID = "GetPaginatedUsers"
 	UpdateUser              OperationID = "UpdateUser"
 	UpdateUserAuthorization OperationID = "UpdateUserAuthorization"
 
 	// Operation IDs for the 'workItem' tag.
-	CreateWorkitem        OperationID = "CreateWorkitem"
-	CreateWorkitemComment OperationID = "CreateWorkitemComment"
-	DeleteWorkitem        OperationID = "DeleteWorkitem"
-	GetWorkItem           OperationID = "GetWorkItem"
-	UpdateWorkitem        OperationID = "UpdateWorkitem"
+	CreateWorkitem OperationID = "CreateWorkitem"
+	DeleteWorkitem OperationID = "DeleteWorkitem"
+	GetWorkItem    OperationID = "GetWorkItem"
+	UpdateWorkitem OperationID = "UpdateWorkitem"
+
+	// Operation IDs for the 'workItemComment' tag.
+	CreateWorkItemComment OperationID = "CreateWorkItemComment"
+	DeleteWorkItemComment OperationID = "DeleteWorkItemComment"
+	GetWorkItemComment    OperationID = "GetWorkItemComment"
+	UpdateWorkItemComment OperationID = "UpdateWorkItemComment"
 
 	// Operation IDs for the 'workItemTag' tag.
 	CreateWorkItemTag OperationID = "CreateWorkItemTag"

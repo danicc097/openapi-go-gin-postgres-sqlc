@@ -43,10 +43,10 @@ jobs:
           source .envrc
 
           for i in {1..10}; do
-              POSTGRES_TRACE=true project test.backend -race -count=40 --x-env=ci
+              POSTGRES_TRACE=true project test.backend -v -race -count=40 --x-env=ci
           done
 
-          POSTGRES_TRACE=true project test.backend -count=40 --x-env=ci
+          POSTGRES_TRACE=true project test.backend -v -count=40 --x-env=ci
 
       - name: Test frontend
         run: |

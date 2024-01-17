@@ -14,17 +14,16 @@ import (
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil\"
+	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil\"
 	\"github.com/jackc/pgx/v5\"
 	\"github.com/stretchr/testify/assert\"
 	\"github.com/stretchr/testify/require\"
-	\"go.uber.org/zap\"
-	\"go.uber.org/zap/zaptest\"
 )
 
 func Test${pascal_name}_Update(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 
 	requiredProject := models.ProjectDemo
 
@@ -33,12 +32,11 @@ func Test${pascal_name}_Update(t *testing.T) {
 
 	team, err := svc.Team.Create(context.Background(), testPool, postgresqltestutil.RandomTeamCreateParams(t, internal.ProjectIDByName[requiredProject]))
 	require.NoError(t, err)
-	tagCreator, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+	creator := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		WithAPIKey: true,
 	})
-	require.NoError(t, err)
 
-	tagCreator.User, err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, team.TeamID)
+	creator.User, err = svc.User.AssignTeam(context.Background(), testPool, creator.User.UserID, team.TeamID)
 	require.NoError(t, err)
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
@@ -53,7 +51,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 		withUserInProject bool
 	}
 
-	random${pascal_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
+	wantParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
 
 	tests := []struct {
 		name          string
@@ -66,7 +64,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 			args: args{
 				params: &db.${pascal_name}UpdateParams{
 			$(for f in ${db_update_params_struct_fields[@]}; do
-  echo "		$f: &random${pascal_name}CreateParams.$f,"
+  echo "		$f: &wantParams.$f,"
 done)
 				},
 				withUserInProject: false, //
@@ -75,7 +73,7 @@ done)
 			want: db.${pascal_name}UpdateParams{
 				// generating fields based on randomized createparams since it's a superset of updateparams.
 			$(for f in ${db_update_params_struct_fields[@]}; do
-  echo "		$f: &random${pascal_name}CreateParams.$f,"
+  echo "		$f: &wantParams.$f,"
 done)
 			},
 		},
@@ -95,10 +93,9 @@ done)
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored
 
-			user, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			user := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				WithAPIKey: true,
 			})
-			require.NoError(t, err)
 
 			if tc.args.withUserInProject {
 				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)

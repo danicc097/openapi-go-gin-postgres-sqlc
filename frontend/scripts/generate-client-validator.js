@@ -10,7 +10,7 @@ const __dirname = path.dirname(__filename)
 const root = path.resolve(__dirname, '..')
 
 await generate({
-  schemaFile: join(root, '../openapi.yaml'),
+  schemaFile: join(root, '../openapi.exploded.yaml'),
   schemaType: 'yaml',
   directory: join(root, 'src/client-validator/gen'),
   prettierOptions: {

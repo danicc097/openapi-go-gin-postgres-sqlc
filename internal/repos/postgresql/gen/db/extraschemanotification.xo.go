@@ -58,30 +58,6 @@ func CreateExtraSchemaNotification(ctx context.Context, db DB, params *ExtraSche
 	return esn.Insert(ctx, db)
 }
 
-// ExtraSchemaNotificationUpdateParams represents update params for 'extra_schema.notifications'.
-type ExtraSchemaNotificationUpdateParams struct {
-	Body                        *string                      `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"`                                   // body
-	ExtraSchemaNotificationType *ExtraSchemaNotificationType `json:"notificationType" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
-	Receiver                    **ExtraSchemaUserID          `json:"receiver"`                                                                      // receiver
-	Sender                      *ExtraSchemaUserID           `json:"sender" nullable:"false"`                                                       // sender
-}
-
-// SetUpdateParams updates extra_schema.notifications struct fields with the specified params.
-func (esn *ExtraSchemaNotification) SetUpdateParams(params *ExtraSchemaNotificationUpdateParams) {
-	if params.Body != nil {
-		esn.Body = *params.Body
-	}
-	if params.ExtraSchemaNotificationType != nil {
-		esn.ExtraSchemaNotificationType = *params.ExtraSchemaNotificationType
-	}
-	if params.Receiver != nil {
-		esn.Receiver = *params.Receiver
-	}
-	if params.Sender != nil {
-		esn.Sender = *params.Sender
-	}
-}
-
 type ExtraSchemaNotificationSelectConfig struct {
 	limit   string
 	orderBy string
@@ -167,6 +143,30 @@ const extraSchemaNotificationTableUserSenderSelectSQL = `(case when _notificatio
 const extraSchemaNotificationTableUserSenderGroupBySQL = `_notifications_sender.user_id,
       _notifications_sender.user_id,
 	notifications.notification_id`
+
+// ExtraSchemaNotificationUpdateParams represents update params for 'extra_schema.notifications'.
+type ExtraSchemaNotificationUpdateParams struct {
+	Body                        *string                      `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"`                                   // body
+	ExtraSchemaNotificationType *ExtraSchemaNotificationType `json:"notificationType" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
+	Receiver                    **ExtraSchemaUserID          `json:"receiver"`                                                                      // receiver
+	Sender                      *ExtraSchemaUserID           `json:"sender" nullable:"false"`                                                       // sender
+}
+
+// SetUpdateParams updates extra_schema.notifications struct fields with the specified params.
+func (esn *ExtraSchemaNotification) SetUpdateParams(params *ExtraSchemaNotificationUpdateParams) {
+	if params.Body != nil {
+		esn.Body = *params.Body
+	}
+	if params.ExtraSchemaNotificationType != nil {
+		esn.ExtraSchemaNotificationType = *params.ExtraSchemaNotificationType
+	}
+	if params.Receiver != nil {
+		esn.Receiver = *params.Receiver
+	}
+	if params.Sender != nil {
+		esn.Sender = *params.Sender
+	}
+}
 
 // Insert inserts the ExtraSchemaNotification to the database.
 func (esn *ExtraSchemaNotification) Insert(ctx context.Context, db DB) (*ExtraSchemaNotification, error) {

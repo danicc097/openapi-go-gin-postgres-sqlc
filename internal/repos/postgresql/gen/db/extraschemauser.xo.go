@@ -72,22 +72,6 @@ func CreateExtraSchemaUser(ctx context.Context, db DB, params *ExtraSchemaUserCr
 	return esu.Insert(ctx, db)
 }
 
-// ExtraSchemaUserUpdateParams represents update params for 'extra_schema.users'.
-type ExtraSchemaUserUpdateParams struct {
-	APIKeyID **ExtraSchemaUserAPIKeyID `json:"apiKeyID"`              // api_key_id
-	Name     *string                   `json:"name" nullable:"false"` // name
-}
-
-// SetUpdateParams updates extra_schema.users struct fields with the specified params.
-func (esu *ExtraSchemaUser) SetUpdateParams(params *ExtraSchemaUserUpdateParams) {
-	if params.APIKeyID != nil {
-		esu.APIKeyID = *params.APIKeyID
-	}
-	if params.Name != nil {
-		esu.Name = *params.Name
-	}
-}
-
 type ExtraSchemaUserSelectConfig struct {
 	limit   string
 	orderBy string
@@ -382,6 +366,22 @@ const extraSchemaUserTableWorkItemsAssignedUserSelectSQL = `COALESCE(
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
 const extraSchemaUserTableWorkItemsAssignedUserGroupBySQL = `users.user_id, users.user_id`
+
+// ExtraSchemaUserUpdateParams represents update params for 'extra_schema.users'.
+type ExtraSchemaUserUpdateParams struct {
+	APIKeyID **ExtraSchemaUserAPIKeyID `json:"apiKeyID"`              // api_key_id
+	Name     *string                   `json:"name" nullable:"false"` // name
+}
+
+// SetUpdateParams updates extra_schema.users struct fields with the specified params.
+func (esu *ExtraSchemaUser) SetUpdateParams(params *ExtraSchemaUserUpdateParams) {
+	if params.APIKeyID != nil {
+		esu.APIKeyID = *params.APIKeyID
+	}
+	if params.Name != nil {
+		esu.Name = *params.Name
+	}
+}
 
 // Insert inserts the ExtraSchemaUser to the database.
 func (esu *ExtraSchemaUser) Insert(ctx context.Context, db DB) (*ExtraSchemaUser, error) {

@@ -16,6 +16,7 @@ $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgr
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil\"
+	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers\"
 	\"github.com/stretchr/testify/assert\"
 	\"github.com/stretchr/testify/require\"
@@ -25,7 +26,7 @@ func Test${pascal_name}_Update(t *testing.T) {
 	t.Parallel()
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-	${lower_name} := postgresqltestutil.NewRandom${pascal_name}(t, testPool $create_args)
+	${lower_name} := newRandom${pascal_name}(t, testPool $create_args)
 
 	type args struct {
 		id     db.${pascal_name}ID
@@ -90,7 +91,7 @@ func Test${pascal_name}_${delete_method}(t *testing.T) {
 	t.Parallel()
 
 	$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-	${lower_name} := postgresqltestutil.NewRandom${pascal_name}(t, testPool $create_args)
+	${lower_name} := newRandom${pascal_name}(t, testPool $create_args)
 
 	type args struct {
 		id db.${pascal_name}ID
@@ -133,9 +134,11 @@ func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
 	$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-	${lower_name} := postgresqltestutil.NewRandom${pascal_name}(t, testPool $create_args)
+	${lower_name} := newRandom${pascal_name}(t, testPool $create_args)
 
-	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), 10, 65*time.Millisecond)
+	logger := testutil.NewLogger(t)
+
+	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), logger, 10, 65*time.Millisecond)
 
 	uniqueCallback := func(t *testing.T, res *db.${pascal_name}) {
 		assert.Equal(t, res.${pascal_name}ID, ${lower_name}.${pascal_name}ID)
@@ -158,7 +161,9 @@ func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 func Test${pascal_name}_Create(t *testing.T) {
 	t.Parallel()
 
-	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), 10, 65*time.Millisecond)
+	logger := testutil.NewLogger(t)
+
+	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), logger, 10, 65*time.Millisecond)
 
 	type want struct {
 		// NOTE: include db-generated fields here to test equality as well

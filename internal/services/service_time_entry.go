@@ -61,9 +61,6 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller CtxUser, param
 			return nil, fmt.Errorf("repos.WorkItem.ByID: %w", err)
 		}
 
-		fmt.Printf("wi.WorkItemAssignedUsersJoin: %+v\n", wi.WorkItemAssignedUsersJoin)
-		fmt.Printf("wi.WorkItemTimeEntriesJoin: %+v\n", wi.WorkItemTimeEntriesJoin)
-
 		memberIDs := make(map[db.UserID]bool)
 		for _, m := range *wi.WorkItemAssignedUsersJoin {
 			memberIDs[m.User.UserID] = true

@@ -40,7 +40,7 @@ export interface paths {
     /** create team. */
     post: operations["CreateTeam"];
   };
-  "/team/{id}": {
+  [path: `/team/${number}`]: {
     /** get team. */
     get: operations["GetTeam"];
     /** delete team. */
@@ -56,7 +56,7 @@ export interface paths {
     /** create activity. */
     post: operations["CreateActivity"];
   };
-  "/activity/{id}": {
+  [path: `/activity/${number}`]: {
     /** get activity. */
     get: operations["GetActivity"];
     /** delete activity. */
@@ -64,7 +64,7 @@ export interface paths {
     /** update activity. */
     patch: operations["UpdateActivity"];
   };
-  "/workItemTag/{id}": {
+  [path: `/workItemTag/${number}`]: {
     /** get workitemtag. */
     get: operations["GetWorkItemTag"];
     /** delete workitemtag. */
@@ -76,13 +76,17 @@ export interface paths {
     /** create workitemtype. */
     post: operations["CreateWorkItemType"];
   };
-  "/workItemType/{id}": {
+  [path: `/workItemType/${number}`]: {
     /** get workitemtype. */
     get: operations["GetWorkItemType"];
     /** delete workitemtype. */
     delete: operations["DeleteWorkItemType"];
     /** update workitemtype. */
     patch: operations["UpdateWorkItemType"];
+  };
+  "/user/page": {
+    /** Get paginated users */
+    get: operations["GetPaginatedUsers"];
   };
   "/user/me": {
     /** returns the logged in user */
@@ -124,7 +128,7 @@ export interface paths {
     /** create workitem */
     post: operations["CreateWorkitem"];
   };
-  "/workitem/{id}/": {
+  [path: `/workitem/${number}/`]: {
     /** get workitem */
     get: operations["GetWorkItem"];
     /** delete workitem */
@@ -132,9 +136,17 @@ export interface paths {
     /** update workitem */
     patch: operations["UpdateWorkitem"];
   };
-  "/workitem/{id}/comments/": {
-    /** create workitem comment */
-    post: operations["CreateWorkitemComment"];
+  [path: `/work-item/${number}/comment/`]: {
+    /** create work item comment. */
+    post: operations["CreateWorkItemComment"];
+  };
+  [path: `/work-item/${number}/comment/${number}`]: {
+    /** get work item comment. */
+    get: operations["GetWorkItemComment"];
+    /** delete . */
+    delete: operations["DeleteWorkItemComment"];
+    /** update work item comment. */
+    patch: operations["UpdateWorkItemComment"];
   };
 }
 
@@ -396,6 +408,10 @@ export interface components {
     ProjectBoard: {
       projectName: components["schemas"]["Project"];
     };
+    PaginatedUsersResponse: {
+      items: components["schemas"]["RestUser"][] | null;
+      page: components["schemas"]["RestPaginationPage"];
+    };
     User: {
       apiKey?: components["schemas"]["DbUserAPIKey"];
       /** Format: date-time */
@@ -415,6 +431,7 @@ export interface components {
       userID: components["schemas"]["DbUserID"];
       username: string;
     };
+    RestUser: components["schemas"]["User"];
     /** HTTPValidationError */
     HTTPValidationError: {
       /**
@@ -459,7 +476,7 @@ export interface components {
      * @description is generated from scopes.json keys.
      * @enum {string}
      */
-    Scope: "project-member" | "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "activity:create" | "activity:edit" | "activity:delete" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review";
+    Scope: "project-member" | "users:read" | "users:write" | "users:delete" | "scopes:write" | "team-settings:write" | "project-settings:write" | "activity:create" | "activity:edit" | "activity:delete" | "work-item-tag:create" | "work-item-tag:edit" | "work-item-tag:delete" | "work-item:review" | "work-item-comment:create" | "work-item-comment:edit" | "work-item-comment:delete";
     Scopes: components["schemas"]["Scope"][];
     /**
      * @description is generated from roles.json keys.
@@ -659,6 +676,13 @@ export interface components {
     RestPaginationPage: {
       nextCursor?: string;
     };
+    Notification: {
+      notification: components["schemas"]["DbNotification"];
+      notificationID: number;
+      read: boolean;
+      userID: components["schemas"]["DbUserID"];
+      userNotificationID: number;
+    };
     RestNotification: {
       notification: components["schemas"]["DbNotification"];
       notificationID: number;
@@ -680,6 +704,21 @@ export interface components {
      * @enum {string}
      */
     DemoTwoKanbanSteps: "Received";
+    UpdateWorkItemCommentRequest: {
+      message?: string;
+      userID?: components["schemas"]["DbUserID"];
+      workItemID?: number;
+    };
+    WorkItemComment: {
+      /** Format: date-time */
+      createdAt: string;
+      message: string;
+      /** Format: date-time */
+      updatedAt: string;
+      userID: components["schemas"]["DbUserID"];
+      workItemCommentID: number;
+      workItemID: number;
+    };
   };
   responses: never;
   parameters: {
@@ -710,13 +749,18 @@ export interface operations {
 
   MyProviderCallback: {
     responses: {
-      /** @description callback for MyProvider auth server */
-      200: never;
+      /** @description Callback for MyProvider auth server */
+      302: never;
     };
   };
   MyProviderLogin: {
+    parameters: {
+      query: {
+        "auth-redirect-uri": string;
+      };
+    };
     responses: {
-      /** @description redirect to MyProvider auth server login */
+      /** @description Redirect to MyProvider auth server login */
       302: never;
     };
   };
@@ -851,7 +895,11 @@ export interface operations {
   GetTeam: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -877,7 +925,11 @@ export interface operations {
   DeleteTeam: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -899,7 +951,11 @@ export interface operations {
   UpdateTeam: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     requestBody: {
@@ -992,7 +1048,11 @@ export interface operations {
   GetActivity: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1018,7 +1078,11 @@ export interface operations {
   DeleteActivity: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1040,7 +1104,11 @@ export interface operations {
   UpdateActivity: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     requestBody: {
@@ -1071,7 +1139,11 @@ export interface operations {
   GetWorkItemTag: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1097,7 +1169,11 @@ export interface operations {
   DeleteWorkItemTag: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1119,7 +1195,11 @@ export interface operations {
   UpdateWorkItemTag: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     requestBody: {
@@ -1181,7 +1261,11 @@ export interface operations {
   GetWorkItemType: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1207,7 +1291,11 @@ export interface operations {
   DeleteWorkItemType: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1229,7 +1317,11 @@ export interface operations {
   UpdateWorkItemType: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     requestBody: {
@@ -1242,6 +1334,34 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["WorkItemType"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** Get paginated users */
+  GetPaginatedUsers: {
+    parameters: {
+      query: {
+        limit: number;
+        direction: components["schemas"]["Direction"];
+        cursor: string;
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PaginatedUsersResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1463,7 +1583,11 @@ export interface operations {
   GetWorkItem: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1479,7 +1603,11 @@ export interface operations {
   DeleteWorkitem: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1491,7 +1619,11 @@ export interface operations {
   UpdateWorkitem: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
       };
     };
     responses: {
@@ -1503,11 +1635,15 @@ export interface operations {
       };
     };
   };
-  /** create workitem comment */
-  CreateWorkitemComment: {
+  /** create work item comment. */
+  CreateWorkItemComment: {
     parameters: {
       path: {
-        id: components["parameters"]["SerialID"];
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        workItemID: number;
       };
     };
     requestBody: {
@@ -1517,9 +1653,125 @@ export interface operations {
     };
     responses: {
       /** @description Success. */
+      201: {
+        content: {
+          "application/json": components["schemas"]["WorkItemComment"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** get work item comment. */
+  GetWorkItemComment: {
+    parameters: {
+      path: {
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        workItemID: number;
+      };
+    };
+    responses: {
+      /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["DbWorkItemComment"];
+          "application/json": components["schemas"]["WorkItemComment"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** delete . */
+  DeleteWorkItemComment: {
+    parameters: {
+      path: {
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        workItemID: number;
+      };
+    };
+    responses: {
+      /** @description Success. */
+      204: never;
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** update work item comment. */
+  UpdateWorkItemComment: {
+    parameters: {
+      path: {
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        id: number;
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        workItemID: number;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateWorkItemCommentRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["WorkItemComment"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
         };
       };
     };

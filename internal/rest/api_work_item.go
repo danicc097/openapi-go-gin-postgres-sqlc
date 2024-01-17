@@ -11,15 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func (h *StrictHandlers) CreateWorkitemComment(c *gin.Context, request CreateWorkitemCommentRequestObject) (CreateWorkitemCommentResponseObject, error) {
-	// caller , _ := getUserFromCtx(c)
-	tx := GetTxFromCtx(c)
-	_ = tx
-
-	c.JSON(http.StatusNotImplemented, "not implemented")
-	return nil, nil
-}
-
 func (h *StrictHandlers) UpdateWorkitem(c *gin.Context, request UpdateWorkitemRequestObject) (UpdateWorkitemResponseObject, error) {
 	c.JSON(http.StatusNotImplemented, "not implemented")
 

@@ -1,14 +1,29 @@
 import { css } from '@emotion/react'
-import { Title, Text, Button, Container, Group, useMantineTheme, useMantineColorScheme } from '@mantine/core'
+import {
+  Title,
+  Text,
+  Button,
+  Container,
+  Group,
+  useMantineTheme,
+  useMantineColorScheme,
+  Flex,
+  Space,
+  Card,
+} from '@mantine/core'
 import { useNavigate } from 'react-router-dom'
 import HttpStatus from 'src/utils/httpStatus'
 import classes from './ErrorPage.module.css'
+import { IsAuthorizedResult } from 'src/services/authorization'
+import { sentenceCase } from 'src/utils/strings'
+import { upperFirst } from 'lodash'
 
 interface ErrorPageProps {
   status: number
+  authResult?: IsAuthorizedResult
 }
 
-export function ErrorPage({ status }: ErrorPageProps) {
+export function ErrorPage({ status, authResult }: ErrorPageProps) {
   const { colorScheme } = useMantineColorScheme()
   const navigate = useNavigate()
 
@@ -27,12 +42,20 @@ export function ErrorPage({ status }: ErrorPageProps) {
   }
 
   return (
-    <Container className={classes.root} miw={'100vw'}>
+    <Flex direction={'column'} align={'center'} className={classes.root}>
       <div className={classes.label}>{status}</div>
-      <Title className={classes.title}>You have found a secret place.</Title>
-      <Text color="dimmed" size="lg" ta="center" className={classes.description}>
+      <Text pb={30} color="dimmed" size="m" ta="center" className={classes.description}>
         {text}
       </Text>
+      {authResult && !authResult.isAuthorized && (
+        <>
+          <Flex justify={'center'} align={'center'}>
+            <Card shadow="sm" radius="md" ta="center" className={classes.errorMessage}>
+              <Text>{`${upperFirst(authResult.errorMessage)}.`}</Text>
+            </Card>
+          </Flex>
+        </>
+      )}
       <Group align="center">
         <Button
           size="md"
@@ -52,6 +75,6 @@ export function ErrorPage({ status }: ErrorPageProps) {
           Take me back to the previous page
         </Button>
       </Group>
-    </Container>
+    </Flex>
   )
 }

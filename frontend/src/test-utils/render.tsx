@@ -3,13 +3,14 @@ import { MantineProvider } from '@mantine/core'
 import { queryClient } from 'src/react-query'
 import { persister } from 'src/idb'
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
+import { QueryClientProvider } from '@tanstack/react-query'
 
 export function render(ui: React.ReactNode) {
   return testingLibraryRender(<>{ui}</>, {
     wrapper: ({ children }: { children: React.ReactNode }) => (
-      <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
+      <QueryClientProvider client={queryClient} /**persistOptions={{ persister }} */>
         <MantineProvider>{children}</MantineProvider>
-      </PersistQueryClientProvider>
+      </QueryClientProvider>
     ),
   })
 }

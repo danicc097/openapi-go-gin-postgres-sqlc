@@ -102,7 +102,7 @@ func (u *Notification) PaginatedNotifications(ctx context.Context, d db.DBTX, us
 
 	opts := []db.UserNotificationSelectConfigOption{
 		db.WithUserNotificationFilters(map[string][]any{
-			"user_id = $i": {userID},
+			"user_id = $i": {userID}, // further restrictions as desired
 		}),
 		db.WithUserNotificationJoin(db.UserNotificationJoins{Notification: true}),
 	}

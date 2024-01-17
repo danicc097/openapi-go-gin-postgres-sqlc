@@ -35,7 +35,7 @@ type Notification struct {
 
 // User represents an OpenAPI schema response for a User.
 type User struct {
-	db.User
+	*db.User
 	// Role replaces db RoleRank
 	Role Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 
@@ -43,6 +43,15 @@ type User struct {
 	Teams    *[]db.Team     `json:"teams"`
 	Projects *[]db.Project  `json:"projects"`
 }
+
+// type Users []User // cannot be handled by swaggest lib
+// panic: reflect: NumField of non-struct type rest.Users
+// should use below workaround as in paginated queries (all would be paginated queries in a way...)
+//
+//	type Users struct {
+//		Users []User `json:"users"`
+//	}
+type PaginatedUsersResponse = PaginationBaseResponse[User]
 
 type SharedWorkItemFields struct {
 	TimeEntries      *[]db.TimeEntry           `json:"timeEntries"`
@@ -135,6 +144,14 @@ type CreateDemoTwoWorkItemRequest struct {
 	services.DemoTwoWorkItemCreateParams
 }
 
+type WorkItemComment struct {
+	db.WorkItemComment
+}
+
 type CreateWorkItemCommentRequest struct {
 	db.WorkItemCommentCreateParams
+}
+
+type UpdateWorkItemCommentRequest struct {
+	db.WorkItemCommentUpdateParams
 }

@@ -36,6 +36,16 @@ x-uuidParameter: &x-uuidParameter
       path: github.com/google/uuid
   example: 123e4567-e89b-12d3-a456-426614174000
   style: simple
+x-serialIDParameter: &x-serialIDParameter
+  description: integer identifier
+  explode: false
+  in: path
+  name: id
+  required: true
+  schema:
+    type: integer
+  example: 41131
+  style: simple
 x-paginationLimitParameter: &x-paginationLimitParameter
   name: limit
   required: true
@@ -104,16 +114,32 @@ paths:
     get:
       operationId: MyProviderCallback
       responses:
-        200:
-          description: callback for MyProvider auth server
+        302:
+          description: Callback for MyProvider auth server
+          headers:
+            Location:
+              description: The URL to which the client should be redirected based on auth:redirect-uri cookie.
+              schema:
+                type: string
       tags:
         - oidc
   /auth/myprovider/login:
     get:
       operationId: MyProviderLogin
+      parameters:
+        - name: auth-redirect-uri
+          required: true
+          schema:
+            type: string
+          in: query
       responses:
-        "302":
-          description: redirect to MyProvider auth server login
+        302:
+          description: Redirect to MyProvider auth server login
+          headers:
+            Location:
+              description: MyProvider login screen.
+              schema:
+                type: string
       tags:
         - oidc
   /events:
@@ -226,7 +252,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetTeam
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         200:
           description: Success.
@@ -242,7 +268,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateTeam
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       requestBody:
         content:
           application/json:
@@ -264,7 +290,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteTeam
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         204:
           description: Success.
@@ -336,7 +362,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetActivity
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         200:
           description: Success.
@@ -354,7 +380,7 @@ paths:
       x-required-scopes:
         - activity:edit
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       requestBody:
         content:
           application/json:
@@ -378,7 +404,7 @@ paths:
       x-required-scopes:
         - activity:delete
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         204:
           description: Success.
@@ -391,7 +417,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemTag
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         200:
           description: Success.
@@ -407,7 +433,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkItemTag
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       requestBody:
         content:
           application/json:
@@ -429,7 +455,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkItemTag
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         204:
           description: Success.
@@ -465,7 +491,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemType
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         200:
           description: Success.
@@ -481,7 +507,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkItemType
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       requestBody:
         content:
           application/json:
@@ -503,13 +529,33 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkItemType
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         204:
           description: Success.
         !!merge <<: *x-error-response
       tags:
         - workItemType
+  /user/page:
+    get:
+      description: ""
+      summary: Get paginated users
+      operationId: GetPaginatedUsers
+      parameters:
+        - *x-paginationLimitParameter
+        - *x-paginationDirectionParameter
+        - *x-paginationCursorParameter
+      tags:
+        - user
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUsersResponse'
+        !!merge <<: *x-error-response
+      !!merge <<: *x-require-authenticated
   /user/me:
     get:
       summary: returns the logged in user
@@ -740,7 +786,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItem
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         200:
           description: Success.
@@ -756,7 +802,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkitem
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         200:
           description: Success.
@@ -772,35 +818,99 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkitem
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
       responses:
         204:
           description: Success.
       tags:
         - workItem
-  /workitem/{id}/comments/:
+  /work-item/{workItemID}/comment/:
     post:
-      summary: create workitem comment
+      summary: create work item comment.
       !!merge <<: *x-require-authenticated
-      operationId: CreateWorkitemComment
+      operationId: CreateWorkItemComment
+      parameters:
+        - !!merge <<: *x-serialIDParameter
+          name: workItemID
+      x-required-scopes:
+        - work-item-comment:create
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/CreateWorkItemCommentRequest'
         required: true
+      responses:
+        201:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemComment'
+        !!merge <<: *x-error-response
+      tags:
+        - workItemComment
+  /work-item/{workItemID}/comment/{id}:
+    get:
+      summary: get work item comment.
+      !!merge <<: *x-require-authenticated
+      operationId: GetWorkItemComment
       parameters:
-        - $ref: '#/components/parameters/SerialID'
+        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameter
+          name: workItemID
       responses:
         200:
           description: Success.
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: '#/components/schemas/DbWorkItemComment'
+                $ref: '#/components/schemas/WorkItemComment'
+        !!merge <<: *x-error-response
       tags:
-        - workItem
+        - workItemComment
+    patch:
+      summary: update work item comment.
+      !!merge <<: *x-require-authenticated
+      operationId: UpdateWorkItemComment
+      x-required-scopes:
+        - work-item-comment:edit
+      parameters:
+        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameter
+          name: workItemID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWorkItemCommentRequest'
+        required: true
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkItemComment'
+        !!merge <<: *x-error-response
+      tags:
+        - workItemComment
+    delete:
+      summary: delete .
+      !!merge <<: *x-require-authenticated
+      operationId: DeleteWorkItemComment
+      x-required-scopes:
+        - work-item-comment:delete
+      parameters:
+        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameter
+          name: workItemID
+      responses:
+        204:
+          description: Success.
+        !!merge <<: *x-error-response
+      tags:
+        - workItemComment
 components:
   parameters:
     ProjectName:
@@ -814,16 +924,7 @@ components:
       example: demo
       style: simple
     UUID: *x-uuidParameter
-    SerialID:
-      description: integer identifier
-      explode: false
-      in: path
-      name: id
-      required: true
-      schema:
-        type: integer
-      example: 41131
-      style: simple
+    SerialID: *x-serialIDParameter
   schemas:
     CreateActivityRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -1515,6 +1616,20 @@ components:
         - projectName
       type: object
       x-postgen-struct: RestProjectBoard
+    PaginatedUsersResponse: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/RestUser'
+          nullable: true
+          type: array
+        page:
+          $ref: '#/components/schemas/RestPaginationPage'
+      required:
+        - page
+        - items
+      type: object
+      x-postgen-struct: RestPaginatedUsersResponse
     User: # Generated from internal structs. DO NOT EDIT.
       properties:
         apiKey:
@@ -1570,6 +1685,8 @@ components:
         - role
       type: object
       x-postgen-struct: RestUser
+    RestUser: # TODO: generate automatically for all in structs.gen
+      $ref: '#/components/schemas/User'
     HTTPValidationError:
       title: HTTPValidationError
       type: object
@@ -1651,7 +1768,7 @@ components:
         - GlobalAlerts
     Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string
-      enum: ["project-member", "users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review"]
+      enum: ["project-member", "users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review", "work-item-comment:create", "work-item-comment:edit", "work-item-comment:delete"]
       x-generated: '-'
       description: is generated from scopes.json keys.
     Scopes: # workaround for openapi-go gen
@@ -2105,6 +2222,26 @@ components:
         nextCursor:
           type: string
       type: object
+    Notification: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        notification:
+          $ref: '#/components/schemas/DbNotification'
+        notificationID:
+          type: integer
+        read:
+          type: boolean
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        userNotificationID:
+          type: integer
+      required:
+        - userNotificationID
+        - notificationID
+        - read
+        - userID
+        - notification
+      type: object
+      x-postgen-struct: RestNotification
     RestNotification: # Generated from internal structs. DO NOT EDIT.
       properties:
         notification:
@@ -2144,6 +2281,41 @@ components:
       enum: ["Received"]
       x-generated: '-'
       description: is generated from kanban_steps table.
+    UpdateWorkItemCommentRequest: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        message:
+          type: string
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        workItemID:
+          type: integer
+      type: object
+      x-postgen-struct: RestUpdateWorkItemCommentRequest
+    WorkItemComment: # Generated from internal structs. DO NOT EDIT.
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        message:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        workItemCommentID:
+          type: integer
+        workItemID:
+          type: integer
+      required:
+        - workItemCommentID
+        - workItemID
+        - userID
+        - message
+        - createdAt
+        - updatedAt
+      type: object
+      x-postgen-struct: RestWorkItemComment
   examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:

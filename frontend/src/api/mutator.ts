@@ -1,8 +1,8 @@
 import Axios, { AxiosError, type AxiosRequestConfig } from 'axios'
-import CONFIG from 'src/config'
+import { CONFIG } from 'src/config'
 import { apiPath } from 'src/services/apiPaths'
 
-export const AXIOS_INSTANCE = Axios.create({ baseURL: '<BACKEND URL>' })
+export const AXIOS_INSTANCE = Axios.create()
 
 export class ApiError extends Error {
   response?: AxiosError['response']
@@ -19,7 +19,7 @@ export const customInstance = <T>(config: AxiosRequestConfig, options?: AxiosReq
     ...config,
     ...options,
     cancelToken: source.token,
-    baseURL: apiPath(null),
+    baseURL: apiPath(),
   })
     .then(({ data }) => data)
     .catch((error: AxiosError) => {

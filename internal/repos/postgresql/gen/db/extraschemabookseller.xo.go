@@ -45,22 +45,6 @@ func CreateExtraSchemaBookSeller(ctx context.Context, db DB, params *ExtraSchema
 	return esbs.Insert(ctx, db)
 }
 
-// ExtraSchemaBookSellerUpdateParams represents update params for 'extra_schema.book_sellers'.
-type ExtraSchemaBookSellerUpdateParams struct {
-	BookID *ExtraSchemaBookID `json:"bookID" nullable:"false"` // book_id
-	Seller *ExtraSchemaUserID `json:"seller" nullable:"false"` // seller
-}
-
-// SetUpdateParams updates extra_schema.book_sellers struct fields with the specified params.
-func (esbs *ExtraSchemaBookSeller) SetUpdateParams(params *ExtraSchemaBookSellerUpdateParams) {
-	if params.BookID != nil {
-		esbs.BookID = *params.BookID
-	}
-	if params.Seller != nil {
-		esbs.Seller = *params.Seller
-	}
-}
-
 type ExtraSchemaBookSellerSelectConfig struct {
 	limit   string
 	orderBy string
@@ -171,6 +155,22 @@ const extraSchemaBookSellerTableBooksSellerSelectSQL = `COALESCE(
 
 const extraSchemaBookSellerTableBooksSellerGroupBySQL = `book_sellers.seller, book_sellers.book_id, book_sellers.seller`
 
+// ExtraSchemaBookSellerUpdateParams represents update params for 'extra_schema.book_sellers'.
+type ExtraSchemaBookSellerUpdateParams struct {
+	BookID *ExtraSchemaBookID `json:"bookID" nullable:"false"` // book_id
+	Seller *ExtraSchemaUserID `json:"seller" nullable:"false"` // seller
+}
+
+// SetUpdateParams updates extra_schema.book_sellers struct fields with the specified params.
+func (esbs *ExtraSchemaBookSeller) SetUpdateParams(params *ExtraSchemaBookSellerUpdateParams) {
+	if params.BookID != nil {
+		esbs.BookID = *params.BookID
+	}
+	if params.Seller != nil {
+		esbs.Seller = *params.Seller
+	}
+}
+
 // Insert inserts the ExtraSchemaBookSeller to the database.
 func (esbs *ExtraSchemaBookSeller) Insert(ctx context.Context, db DB) (*ExtraSchemaBookSeller, error) {
 	// insert (manual)
@@ -195,7 +195,7 @@ func (esbs *ExtraSchemaBookSeller) Insert(ctx context.Context, db DB) (*ExtraSch
 	return esbs, nil
 }
 
-// ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
+// ------ NOTE: Update statements omitted due to lack of fields other than primary key or generated fields
 
 // Delete deletes the ExtraSchemaBookSeller from the database.
 func (esbs *ExtraSchemaBookSeller) Delete(ctx context.Context, db DB) error {

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
@@ -36,6 +38,30 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParam
 	}
 
 	return user, nil
+}
+
+func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPaginatedUsersParams) ([]db.User, error) {
+	createdAt, err := time.Parse(time.RFC3339, params.Cursor)
+	if err != nil {
+		return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid cursor for paginated notifications: %s", params.Cursor)
+	}
+
+	opts := []db.UserSelectConfigOption{
+		db.WithUserFilters(map[string][]any{
+			// restrict as desired
+		}),
+		db.WithUserJoin(db.UserJoins{TeamsMember: true, ProjectsMember: true}),
+	}
+	if params.Limit > 0 { // for users, allow 0 or less to fetch all
+		opts = append(opts, db.WithUserLimit(params.Limit))
+	}
+
+	users, err := db.UserPaginatedByCreatedAt(ctx, d, createdAt, params.Direction, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("could not get paginated users: %w", ParseDBErrorDetail(err))
+	}
+
+	return users, nil
 }
 
 func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (*db.User, error) {

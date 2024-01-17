@@ -70,22 +70,6 @@ func CreateXoTestsUser(ctx context.Context, db DB, params *XoTestsUserCreatePara
 	return xtu.Insert(ctx, db)
 }
 
-// XoTestsUserUpdateParams represents update params for 'xo_tests.users'.
-type XoTestsUserUpdateParams struct {
-	APIKeyID **XoTestsUserAPIKeyID `json:"apiKeyID"`              // api_key_id
-	Name     *string               `json:"name" nullable:"false"` // name
-}
-
-// SetUpdateParams updates xo_tests.users struct fields with the specified params.
-func (xtu *XoTestsUser) SetUpdateParams(params *XoTestsUserUpdateParams) {
-	if params.APIKeyID != nil {
-		xtu.APIKeyID = *params.APIKeyID
-	}
-	if params.Name != nil {
-		xtu.Name = *params.Name
-	}
-}
-
 type XoTestsUserSelectConfig struct {
 	limit   string
 	orderBy string
@@ -368,6 +352,22 @@ const xoTestsUserTableWorkItemsAssignedUserSelectSQL = `COALESCE(
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
 const xoTestsUserTableWorkItemsAssignedUserGroupBySQL = `users.user_id, users.user_id`
+
+// XoTestsUserUpdateParams represents update params for 'xo_tests.users'.
+type XoTestsUserUpdateParams struct {
+	APIKeyID **XoTestsUserAPIKeyID `json:"apiKeyID"`              // api_key_id
+	Name     *string               `json:"name" nullable:"false"` // name
+}
+
+// SetUpdateParams updates xo_tests.users struct fields with the specified params.
+func (xtu *XoTestsUser) SetUpdateParams(params *XoTestsUserUpdateParams) {
+	if params.APIKeyID != nil {
+		xtu.APIKeyID = *params.APIKeyID
+	}
+	if params.Name != nil {
+		xtu.Name = *params.Name
+	}
+}
 
 // Insert inserts the XoTestsUser to the database.
 func (xtu *XoTestsUser) Insert(ctx context.Context, db DB) (*XoTestsUser, error) {

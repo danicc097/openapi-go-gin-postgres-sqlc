@@ -51,18 +51,6 @@ func CreateExtraSchemaBook(ctx context.Context, db DB, params *ExtraSchemaBookCr
 	return esb.Insert(ctx, db)
 }
 
-// ExtraSchemaBookUpdateParams represents update params for 'extra_schema.books'.
-type ExtraSchemaBookUpdateParams struct {
-	Name *string `json:"name" nullable:"false"` // name
-}
-
-// SetUpdateParams updates extra_schema.books struct fields with the specified params.
-func (esb *ExtraSchemaBook) SetUpdateParams(params *ExtraSchemaBookUpdateParams) {
-	if params.Name != nil {
-		esb.Name = *params.Name
-	}
-}
-
 type ExtraSchemaBookSelectConfig struct {
 	limit   string
 	orderBy string
@@ -232,6 +220,18 @@ const extraSchemaBookTableSellersSelectSQL = `COALESCE(
 		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') as book_sellers_sellers`
 
 const extraSchemaBookTableSellersGroupBySQL = `books.book_id, books.book_id`
+
+// ExtraSchemaBookUpdateParams represents update params for 'extra_schema.books'.
+type ExtraSchemaBookUpdateParams struct {
+	Name *string `json:"name" nullable:"false"` // name
+}
+
+// SetUpdateParams updates extra_schema.books struct fields with the specified params.
+func (esb *ExtraSchemaBook) SetUpdateParams(params *ExtraSchemaBookUpdateParams) {
+	if params.Name != nil {
+		esb.Name = *params.Name
+	}
+}
 
 // Insert inserts the ExtraSchemaBook to the database.
 func (esb *ExtraSchemaBook) Insert(ctx context.Context, db DB) (*ExtraSchemaBook, error) {

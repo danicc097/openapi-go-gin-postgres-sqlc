@@ -3,14 +3,17 @@ package logging
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/exp/slog"
 )
 
 type Config struct {
 	Level       string    `json:"level"`
 	Formatter   formatter `json:"formatter"`
 	LocalLogger bool      `json:"localLogger"`
+	AddSource   bool      `json:"addSource"`
 }
 
 type formatter struct {
@@ -86,14 +89,48 @@ func (c *Config) parseLevel() error {
 	return nil
 }
 
+const (
+	FormatterText = "text"
+	FormatterJSON = "json"
+)
+
 func (c *Config) parseFormatter() error {
 	switch c.Formatter.Format {
-	case "json":
+	case FormatterJSON:
 		log.Formatter = &logrus.JSONFormatter{}
-	case "text", "":
+	case FormatterText, "":
 		log.Formatter = &logrus.TextFormatter{}
 	default:
 		return fmt.Errorf("%s formatter not supported", c.Formatter)
 	}
 	return nil
+}
+
+// Slog constructs a slog.Logger with the Formatter and Level from config.
+//
+// EXPERIMENTAL: Will change to log/slog import after we drop support for Go 1.20
+func (c *Config) Slog() *slog.Logger {
+	logger := slog.Default()
+
+	var level slog.Level
+	if err := level.UnmarshalText([]byte(c.Level)); err != nil {
+		logger.Warn("invalid config, using default slog", "err", err)
+		return logger
+	}
+	opts := &slog.HandlerOptions{
+		AddSource: c.AddSource,
+		Level:     level,
+	}
+
+	switch c.Formatter.Format {
+	case FormatterText:
+		return slog.New(slog.NewTextHandler(os.Stderr, opts))
+	case FormatterJSON:
+		return slog.New(slog.NewJSONHandler(os.Stderr, opts))
+	case "":
+		logger.Warn("no slog format in config, using text handler")
+	default:
+		logger.Warn("unknown slog format in config, using text handler", "format", c.Formatter.Format)
+	}
+	return slog.New(slog.NewTextHandler(os.Stderr, opts))
 }

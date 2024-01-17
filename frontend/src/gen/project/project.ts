@@ -123,11 +123,21 @@ export const getGetProjectInfiniteQueryOptions = <TData = Awaited<ReturnType<typ
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getProject>>> = ({ signal }) =>
     getProject(projectName, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!projectName, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof getProject>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!projectName,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProject>>>
@@ -166,11 +176,21 @@ export const getGetProjectQueryOptions = <TData = Awaited<ReturnType<typeof getP
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getProject>>> = ({ signal }) =>
     getProject(projectName, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!projectName, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getProject>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!projectName,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectQueryResult = NonNullable<Awaited<ReturnType<typeof getProject>>>
@@ -227,11 +247,21 @@ export const getGetProjectConfigInfiniteQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectConfig>>> = ({ signal }) =>
     getProjectConfig(projectName, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!projectName, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof getProjectConfig>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!projectName,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectConfigInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectConfig>>>
@@ -270,11 +300,21 @@ export const getGetProjectConfigQueryOptions = <TData = Awaited<ReturnType<typeo
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectConfig>>> = ({ signal }) =>
     getProjectConfig(projectName, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!projectName, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getProjectConfig>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!projectName,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectConfig>>>
@@ -398,11 +438,21 @@ export const getGetProjectBoardInfiniteQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectBoard>>> = ({ signal }) =>
     getProjectBoard(projectName, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!projectName, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof getProjectBoard>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!projectName,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectBoardInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectBoard>>>
@@ -441,11 +491,21 @@ export const getGetProjectBoardQueryOptions = <TData = Awaited<ReturnType<typeof
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectBoard>>> = ({ signal }) =>
     getProjectBoard(projectName, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!projectName, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getProjectBoard>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!projectName,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectBoardQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectBoard>>>
@@ -510,11 +570,21 @@ export const getGetProjectWorkitemsInfiniteQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectWorkitems>>> = ({ signal }) =>
     getProjectWorkitems(projectName, params, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!projectName, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof getProjectWorkitems>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!projectName,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectWorkitemsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectWorkitems>>>
@@ -561,11 +631,21 @@ export const getGetProjectWorkitemsQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectWorkitems>>> = ({ signal }) =>
     getProjectWorkitems(projectName, params, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!projectName, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getProjectWorkitems>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!projectName,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectWorkitemsQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectWorkitems>>>

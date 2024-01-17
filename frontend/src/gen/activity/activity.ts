@@ -120,11 +120,21 @@ export const getGetActivityInfiniteQueryOptions = <
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getActivity>>> = ({ signal }) =>
     getActivity(id, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!id, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof getActivity>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getActivity>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetActivityInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getActivity>>>
@@ -163,11 +173,21 @@ export const getGetActivityQueryOptions = <TData = Awaited<ReturnType<typeof get
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getActivity>>> = ({ signal }) =>
     getActivity(id, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!id, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getActivity>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getActivity>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetActivityQueryResult = NonNullable<Awaited<ReturnType<typeof getActivity>>>

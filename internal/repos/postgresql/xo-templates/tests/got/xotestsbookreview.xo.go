@@ -51,22 +51,6 @@ func CreateXoTestsBookReview(ctx context.Context, db DB, params *XoTestsBookRevi
 	return xtbr.Insert(ctx, db)
 }
 
-// XoTestsBookReviewUpdateParams represents update params for 'xo_tests.book_reviews'.
-type XoTestsBookReviewUpdateParams struct {
-	BookID   *XoTestsBookID `json:"bookID" nullable:"false"`   // book_id
-	Reviewer *XoTestsUserID `json:"reviewer" nullable:"false"` // reviewer
-}
-
-// SetUpdateParams updates xo_tests.book_reviews struct fields with the specified params.
-func (xtbr *XoTestsBookReview) SetUpdateParams(params *XoTestsBookReviewUpdateParams) {
-	if params.BookID != nil {
-		xtbr.BookID = *params.BookID
-	}
-	if params.Reviewer != nil {
-		xtbr.Reviewer = *params.Reviewer
-	}
-}
-
 type XoTestsBookReviewSelectConfig struct {
 	limit   string
 	orderBy string
@@ -150,6 +134,22 @@ const xoTestsBookReviewTableUserSelectSQL = `(case when _book_reviews_reviewer.u
 const xoTestsBookReviewTableUserGroupBySQL = `_book_reviews_reviewer.user_id,
       _book_reviews_reviewer.user_id,
 	book_reviews.book_review_id`
+
+// XoTestsBookReviewUpdateParams represents update params for 'xo_tests.book_reviews'.
+type XoTestsBookReviewUpdateParams struct {
+	BookID   *XoTestsBookID `json:"bookID" nullable:"false"`   // book_id
+	Reviewer *XoTestsUserID `json:"reviewer" nullable:"false"` // reviewer
+}
+
+// SetUpdateParams updates xo_tests.book_reviews struct fields with the specified params.
+func (xtbr *XoTestsBookReview) SetUpdateParams(params *XoTestsBookReviewUpdateParams) {
+	if params.BookID != nil {
+		xtbr.BookID = *params.BookID
+	}
+	if params.Reviewer != nil {
+		xtbr.Reviewer = *params.Reviewer
+	}
+}
 
 // Insert inserts the XoTestsBookReview to the database.
 func (xtbr *XoTestsBookReview) Insert(ctx context.Context, db DB) (*XoTestsBookReview, error) {

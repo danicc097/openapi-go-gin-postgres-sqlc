@@ -60,30 +60,6 @@ func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*
 	return a.Insert(ctx, db)
 }
 
-// ActivityUpdateParams represents update params for 'public.activities'.
-type ActivityUpdateParams struct {
-	Description  *string    `json:"description" nullable:"false"`  // description
-	IsProductive *bool      `json:"isProductive" nullable:"false"` // is_productive
-	Name         *string    `json:"name" nullable:"false"`         // name
-	ProjectID    *ProjectID `json:"-" openapi-go:"ignore"`         // project_id
-}
-
-// SetUpdateParams updates public.activities struct fields with the specified params.
-func (a *Activity) SetUpdateParams(params *ActivityUpdateParams) {
-	if params.Description != nil {
-		a.Description = *params.Description
-	}
-	if params.IsProductive != nil {
-		a.IsProductive = *params.IsProductive
-	}
-	if params.Name != nil {
-		a.Name = *params.Name
-	}
-	if params.ProjectID != nil {
-		a.ProjectID = *params.ProjectID
-	}
-}
-
 type ActivitySelectConfig struct {
 	limit   string
 	orderBy string
@@ -203,6 +179,30 @@ left join (
 const activityTableTimeEntriesSelectSQL = `COALESCE(joined_time_entries.time_entries, '{}') as time_entries`
 
 const activityTableTimeEntriesGroupBySQL = `joined_time_entries.time_entries, activities.activity_id`
+
+// ActivityUpdateParams represents update params for 'public.activities'.
+type ActivityUpdateParams struct {
+	Description  *string    `json:"description" nullable:"false"`  // description
+	IsProductive *bool      `json:"isProductive" nullable:"false"` // is_productive
+	Name         *string    `json:"name" nullable:"false"`         // name
+	ProjectID    *ProjectID `json:"-" openapi-go:"ignore"`         // project_id
+}
+
+// SetUpdateParams updates public.activities struct fields with the specified params.
+func (a *Activity) SetUpdateParams(params *ActivityUpdateParams) {
+	if params.Description != nil {
+		a.Description = *params.Description
+	}
+	if params.IsProductive != nil {
+		a.IsProductive = *params.IsProductive
+	}
+	if params.Name != nil {
+		a.Name = *params.Name
+	}
+	if params.ProjectID != nil {
+		a.ProjectID = *params.ProjectID
+	}
+}
 
 // Insert inserts the Activity to the database.
 func (a *Activity) Insert(ctx context.Context, db DB) (*Activity, error) {

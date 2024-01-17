@@ -64,10 +64,7 @@ func (a *Authentication) GetUserFromAPIKey(ctx context.Context, apiKey string) (
 
 // GetOrRegisterUserFromUserInfo returns a user from user info.
 func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, userinfo oidc.UserInfo) (*db.User, error) {
-	u, err := a.usvc.ByExternalID(ctx, a.pool, userinfo.Subject)
-	if err != nil {
-		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not get user from external id: %s", err)
-	}
+	u, _ := a.usvc.ByExternalID(ctx, a.pool, userinfo.Subject)
 	role := models.RoleUser
 
 	guestRole := a.usvc.authzsvc.RoleByName(models.RoleGuest)
@@ -95,9 +92,12 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 
 	// create user on first login
 	if u == nil {
+		// userInfo.AppendClaims(AuthClaim, map[string]interface{}{
+		// 	"is_admin": user.IsAdmin(),
+		// })
 		if auth, ok := userinfo.Claims["auth"].(map[string]any); ok {
 			if isAdmin, _ := auth["is_admin"].(bool); isAdmin {
-				role = models.RoleAdmin
+				role = models.RoleSuperAdmin
 			}
 		}
 
@@ -114,7 +114,7 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 			Role:       role,
 		})
 		if err != nil {
-			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not get register user from provider: %s", err)
+			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not register user from provider: %s", err)
 		}
 	}
 
@@ -157,7 +157,7 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	ss, err := token.SignedString(cfg.SigningKey)
+	ss, err := token.SignedString([]byte(cfg.SigningKey)) // cannot handle strings for some reason https://github.com/dgrijalva/jwt-go/issues/65
 	if err != nil {
 		return "", fmt.Errorf("could not sign token: %w", err)
 	}
@@ -179,7 +179,7 @@ func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User)
 func (a *Authentication) ParseToken(ctx context.Context, token string) (*AppClaims, error) {
 	cfg := internal.Config
 	jwtToken, err := jwt.ParseWithClaims(token, &AppClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return cfg.SigningKey, nil
+		return []byte(cfg.SigningKey), nil // can't handle string in signing keys here either
 	})
 	if err != nil || jwtToken == nil {
 		return nil, fmt.Errorf("could not parse token: %w", err)

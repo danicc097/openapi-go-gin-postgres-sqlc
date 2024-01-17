@@ -49,6 +49,7 @@ func (_d WorkItemCommentWithRetry) ByID(ctx context.Context, d db.DBTX, id db.Wo
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -87,6 +88,7 @@ func (_d WorkItemCommentWithRetry) Create(ctx context.Context, d db.DBTX, params
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -125,6 +127,7 @@ func (_d WorkItemCommentWithRetry) Delete(ctx context.Context, d db.DBTX, id db.
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return
@@ -163,6 +166,7 @@ func (_d WorkItemCommentWithRetry) Update(ctx context.Context, d db.DBTX, id db.
 	_ticker := time.NewTicker(_d._retryInterval)
 	defer _ticker.Stop()
 	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
 		select {
 		case <-ctx.Done():
 			return

@@ -52,26 +52,6 @@ func CreateWorkItemAssignedUser(ctx context.Context, db DB, params *WorkItemAssi
 	return wiau.Insert(ctx, db)
 }
 
-// WorkItemAssignedUserUpdateParams represents update params for 'public.work_item_assigned_user'.
-type WorkItemAssignedUserUpdateParams struct {
-	AssignedUser *UserID              `json:"assignedUser" nullable:"false"`                                 // assigned_user
-	Role         *models.WorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID   *WorkItemID          `json:"workItemID" nullable:"false"`                                   // work_item_id
-}
-
-// SetUpdateParams updates public.work_item_assigned_user struct fields with the specified params.
-func (wiau *WorkItemAssignedUser) SetUpdateParams(params *WorkItemAssignedUserUpdateParams) {
-	if params.AssignedUser != nil {
-		wiau.AssignedUser = *params.AssignedUser
-	}
-	if params.Role != nil {
-		wiau.Role = *params.Role
-	}
-	if params.WorkItemID != nil {
-		wiau.WorkItemID = *params.WorkItemID
-	}
-}
-
 type WorkItemAssignedUserSelectConfig struct {
 	limit   string
 	orderBy string
@@ -199,6 +179,26 @@ const workItemAssignedUserTableAssignedUsersSelectSQL = `COALESCE(
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const workItemAssignedUserTableAssignedUsersGroupBySQL = `work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
+
+// WorkItemAssignedUserUpdateParams represents update params for 'public.work_item_assigned_user'.
+type WorkItemAssignedUserUpdateParams struct {
+	AssignedUser *UserID              `json:"assignedUser" nullable:"false"`                                 // assigned_user
+	Role         *models.WorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
+	WorkItemID   *WorkItemID          `json:"workItemID" nullable:"false"`                                   // work_item_id
+}
+
+// SetUpdateParams updates public.work_item_assigned_user struct fields with the specified params.
+func (wiau *WorkItemAssignedUser) SetUpdateParams(params *WorkItemAssignedUserUpdateParams) {
+	if params.AssignedUser != nil {
+		wiau.AssignedUser = *params.AssignedUser
+	}
+	if params.Role != nil {
+		wiau.Role = *params.Role
+	}
+	if params.WorkItemID != nil {
+		wiau.WorkItemID = *params.WorkItemID
+	}
+}
 
 // Insert inserts the WorkItemAssignedUser to the database.
 func (wiau *WorkItemAssignedUser) Insert(ctx context.Context, db DB) (*WorkItemAssignedUser, error) {

@@ -47,18 +47,6 @@ func CreateXoTestsDemoWorkItem(ctx context.Context, db DB, params *XoTestsDemoWo
 	return xtdwi.Insert(ctx, db)
 }
 
-// XoTestsDemoWorkItemUpdateParams represents update params for 'xo_tests.demo_work_items'.
-type XoTestsDemoWorkItemUpdateParams struct {
-	Checked *bool `json:"checked" nullable:"false"` // checked
-}
-
-// SetUpdateParams updates xo_tests.demo_work_items struct fields with the specified params.
-func (xtdwi *XoTestsDemoWorkItem) SetUpdateParams(params *XoTestsDemoWorkItemUpdateParams) {
-	if params.Checked != nil {
-		xtdwi.Checked = *params.Checked
-	}
-}
-
 type XoTestsDemoWorkItemSelectConfig struct {
 	limit   string
 	orderBy string
@@ -130,6 +118,18 @@ const xoTestsDemoWorkItemTableWorkItemSelectSQL = `(case when _demo_work_items_w
 const xoTestsDemoWorkItemTableWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
       _demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id`
+
+// XoTestsDemoWorkItemUpdateParams represents update params for 'xo_tests.demo_work_items'.
+type XoTestsDemoWorkItemUpdateParams struct {
+	Checked *bool `json:"checked" nullable:"false"` // checked
+}
+
+// SetUpdateParams updates xo_tests.demo_work_items struct fields with the specified params.
+func (xtdwi *XoTestsDemoWorkItem) SetUpdateParams(params *XoTestsDemoWorkItemUpdateParams) {
+	if params.Checked != nil {
+		xtdwi.Checked = *params.Checked
+	}
+}
 
 // Insert inserts the XoTestsDemoWorkItem to the database.
 func (xtdwi *XoTestsDemoWorkItem) Insert(ctx context.Context, db DB) (*XoTestsDemoWorkItem, error) {

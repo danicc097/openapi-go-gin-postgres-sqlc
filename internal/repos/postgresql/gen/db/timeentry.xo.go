@@ -70,42 +70,6 @@ func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) 
 	return te.Insert(ctx, db)
 }
 
-// TimeEntryUpdateParams represents update params for 'public.time_entries'.
-type TimeEntryUpdateParams struct {
-	ActivityID      *ActivityID  `json:"activityID" nullable:"false"` // activity_id
-	Comment         *string      `json:"comment" nullable:"false"`    // comment
-	DurationMinutes **int        `json:"durationMinutes"`             // duration_minutes
-	Start           *time.Time   `json:"start" nullable:"false"`      // start
-	TeamID          **TeamID     `json:"teamID"`                      // team_id
-	UserID          *UserID      `json:"userID" nullable:"false"`     // user_id
-	WorkItemID      **WorkItemID `json:"workItemID"`                  // work_item_id
-}
-
-// SetUpdateParams updates public.time_entries struct fields with the specified params.
-func (te *TimeEntry) SetUpdateParams(params *TimeEntryUpdateParams) {
-	if params.ActivityID != nil {
-		te.ActivityID = *params.ActivityID
-	}
-	if params.Comment != nil {
-		te.Comment = *params.Comment
-	}
-	if params.DurationMinutes != nil {
-		te.DurationMinutes = *params.DurationMinutes
-	}
-	if params.Start != nil {
-		te.Start = *params.Start
-	}
-	if params.TeamID != nil {
-		te.TeamID = *params.TeamID
-	}
-	if params.UserID != nil {
-		te.UserID = *params.UserID
-	}
-	if params.WorkItemID != nil {
-		te.WorkItemID = *params.WorkItemID
-	}
-}
-
 type TimeEntrySelectConfig struct {
 	limit   string
 	orderBy string
@@ -234,6 +198,42 @@ const timeEntryTableWorkItemSelectSQL = `(case when _time_entries_work_item_id.w
 const timeEntryTableWorkItemGroupBySQL = `_time_entries_work_item_id.work_item_id,
       _time_entries_work_item_id.work_item_id,
 	time_entries.time_entry_id`
+
+// TimeEntryUpdateParams represents update params for 'public.time_entries'.
+type TimeEntryUpdateParams struct {
+	ActivityID      *ActivityID  `json:"activityID" nullable:"false"` // activity_id
+	Comment         *string      `json:"comment" nullable:"false"`    // comment
+	DurationMinutes **int        `json:"durationMinutes"`             // duration_minutes
+	Start           *time.Time   `json:"start" nullable:"false"`      // start
+	TeamID          **TeamID     `json:"teamID"`                      // team_id
+	UserID          *UserID      `json:"userID" nullable:"false"`     // user_id
+	WorkItemID      **WorkItemID `json:"workItemID"`                  // work_item_id
+}
+
+// SetUpdateParams updates public.time_entries struct fields with the specified params.
+func (te *TimeEntry) SetUpdateParams(params *TimeEntryUpdateParams) {
+	if params.ActivityID != nil {
+		te.ActivityID = *params.ActivityID
+	}
+	if params.Comment != nil {
+		te.Comment = *params.Comment
+	}
+	if params.DurationMinutes != nil {
+		te.DurationMinutes = *params.DurationMinutes
+	}
+	if params.Start != nil {
+		te.Start = *params.Start
+	}
+	if params.TeamID != nil {
+		te.TeamID = *params.TeamID
+	}
+	if params.UserID != nil {
+		te.UserID = *params.UserID
+	}
+	if params.WorkItemID != nil {
+		te.WorkItemID = *params.WorkItemID
+	}
+}
 
 // Insert inserts the TimeEntry to the database.
 func (te *TimeEntry) Insert(ctx context.Context, db DB) (*TimeEntry, error) {

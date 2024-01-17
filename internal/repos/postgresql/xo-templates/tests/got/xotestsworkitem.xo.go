@@ -51,22 +51,6 @@ func CreateXoTestsWorkItem(ctx context.Context, db DB, params *XoTestsWorkItemCr
 	return xtwi.Insert(ctx, db)
 }
 
-// XoTestsWorkItemUpdateParams represents update params for 'xo_tests.work_items'.
-type XoTestsWorkItemUpdateParams struct {
-	Description **string `json:"description"` // description
-	Title       **string `json:"title"`       // title
-}
-
-// SetUpdateParams updates xo_tests.work_items struct fields with the specified params.
-func (xtwi *XoTestsWorkItem) SetUpdateParams(params *XoTestsWorkItemUpdateParams) {
-	if params.Description != nil {
-		xtwi.Description = *params.Description
-	}
-	if params.Title != nil {
-		xtwi.Title = *params.Title
-	}
-}
-
 type XoTestsWorkItemSelectConfig struct {
 	limit   string
 	orderBy string
@@ -170,6 +154,22 @@ const xoTestsWorkItemTableAssignedUsersSelectSQL = `COALESCE(
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const xoTestsWorkItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
+
+// XoTestsWorkItemUpdateParams represents update params for 'xo_tests.work_items'.
+type XoTestsWorkItemUpdateParams struct {
+	Description **string `json:"description"` // description
+	Title       **string `json:"title"`       // title
+}
+
+// SetUpdateParams updates xo_tests.work_items struct fields with the specified params.
+func (xtwi *XoTestsWorkItem) SetUpdateParams(params *XoTestsWorkItemUpdateParams) {
+	if params.Description != nil {
+		xtwi.Description = *params.Description
+	}
+	if params.Title != nil {
+		xtwi.Title = *params.Title
+	}
+}
 
 // Insert inserts the XoTestsWorkItem to the database.
 func (xtwi *XoTestsWorkItem) Insert(ctx context.Context, db DB) (*XoTestsWorkItem, error) {

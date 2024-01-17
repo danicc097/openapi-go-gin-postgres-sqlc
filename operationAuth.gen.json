@@ -122,6 +122,11 @@
     "role": null,
     "requiresAuthentication": true
   },
+  "GetPaginatedUsers": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
   "GetCurrentUser": {
     "scopes": null,
     "role": null,
@@ -196,8 +201,29 @@
     "role": null,
     "requiresAuthentication": true
   },
-  "CreateWorkitemComment": {
+  "CreateWorkItemComment": {
+    "scopes": [
+      "work-item-comment:create"
+    ],
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "GetWorkItemComment": {
     "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "UpdateWorkItemComment": {
+    "scopes": [
+      "work-item-comment:edit"
+    ],
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "DeleteWorkItemComment": {
+    "scopes": [
+      "work-item-comment:delete"
+    ],
     "role": null,
     "requiresAuthentication": true
   }

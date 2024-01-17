@@ -6,5 +6,6 @@
   "API_PORT": "",
   "FRONTEND_PORT": "",
   "BUILD_VERSION": "",
+  "LOGIN_COOKIE_KEY": "",
   "AUTH_SERVER_UI_PROFILE": ""
 }

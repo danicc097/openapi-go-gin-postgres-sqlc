@@ -44,22 +44,6 @@ func CreateXoTestsBookSeller(ctx context.Context, db DB, params *XoTestsBookSell
 	return xtbs.Insert(ctx, db)
 }
 
-// XoTestsBookSellerUpdateParams represents update params for 'xo_tests.book_sellers'.
-type XoTestsBookSellerUpdateParams struct {
-	BookID *XoTestsBookID `json:"bookID" nullable:"false"` // book_id
-	Seller *XoTestsUserID `json:"seller" nullable:"false"` // seller
-}
-
-// SetUpdateParams updates xo_tests.book_sellers struct fields with the specified params.
-func (xtbs *XoTestsBookSeller) SetUpdateParams(params *XoTestsBookSellerUpdateParams) {
-	if params.BookID != nil {
-		xtbs.BookID = *params.BookID
-	}
-	if params.Seller != nil {
-		xtbs.Seller = *params.Seller
-	}
-}
-
 type XoTestsBookSellerSelectConfig struct {
 	limit   string
 	orderBy string
@@ -168,6 +152,22 @@ const xoTestsBookSellerTableBooksSellerSelectSQL = `COALESCE(
 
 const xoTestsBookSellerTableBooksSellerGroupBySQL = `book_sellers.seller, book_sellers.book_id, book_sellers.seller`
 
+// XoTestsBookSellerUpdateParams represents update params for 'xo_tests.book_sellers'.
+type XoTestsBookSellerUpdateParams struct {
+	BookID *XoTestsBookID `json:"bookID" nullable:"false"` // book_id
+	Seller *XoTestsUserID `json:"seller" nullable:"false"` // seller
+}
+
+// SetUpdateParams updates xo_tests.book_sellers struct fields with the specified params.
+func (xtbs *XoTestsBookSeller) SetUpdateParams(params *XoTestsBookSellerUpdateParams) {
+	if params.BookID != nil {
+		xtbs.BookID = *params.BookID
+	}
+	if params.Seller != nil {
+		xtbs.Seller = *params.Seller
+	}
+}
+
 // Insert inserts the XoTestsBookSeller to the database.
 func (xtbs *XoTestsBookSeller) Insert(ctx context.Context, db DB) (*XoTestsBookSeller, error) {
 	// insert (manual)
@@ -192,7 +192,7 @@ func (xtbs *XoTestsBookSeller) Insert(ctx context.Context, db DB) (*XoTestsBookS
 	return xtbs, nil
 }
 
-// ------ NOTE: Update statements omitted due to lack of fields other than primary key ------
+// ------ NOTE: Update statements omitted due to lack of fields other than primary key or generated fields
 
 // Delete deletes the XoTestsBookSeller from the database.
 func (xtbs *XoTestsBookSeller) Delete(ctx context.Context, db DB) error {

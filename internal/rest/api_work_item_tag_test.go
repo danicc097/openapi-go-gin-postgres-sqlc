@@ -11,15 +11,14 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/stretchr/testify/require"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zaptest"
 )
 
 func TestHandlers_CreateWorkItemTag(t *testing.T) {
 	t.Parallel()
 
-	logger := zaptest.NewLogger(t, zaptest.Level(zap.DebugLevel)).Sugar()
+	logger := testutil.NewLogger(t)
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
@@ -49,7 +48,7 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 
 			team, err := svc.Team.Create(context.Background(), testPool, postgresqltestutil.RandomTeamCreateParams(t, internal.ProjectIDByName[requiredProject]))
 			require.NoError(t, err)
-			ufixture, err := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				WithAPIKey: true,
 				Scopes:     tc.scopes,

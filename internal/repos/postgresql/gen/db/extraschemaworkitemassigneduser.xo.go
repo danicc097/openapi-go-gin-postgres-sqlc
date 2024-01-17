@@ -51,26 +51,6 @@ func CreateExtraSchemaWorkItemAssignedUser(ctx context.Context, db DB, params *E
 	return eswiau.Insert(ctx, db)
 }
 
-// ExtraSchemaWorkItemAssignedUserUpdateParams represents update params for 'extra_schema.work_item_assigned_user'.
-type ExtraSchemaWorkItemAssignedUserUpdateParams struct {
-	AssignedUser    *ExtraSchemaUserID        `json:"assignedUser" nullable:"false"`                                 // assigned_user
-	ExtraSchemaRole **ExtraSchemaWorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID      *ExtraSchemaWorkItemID    `json:"workItemID" nullable:"false"`                                   // work_item_id
-}
-
-// SetUpdateParams updates extra_schema.work_item_assigned_user struct fields with the specified params.
-func (eswiau *ExtraSchemaWorkItemAssignedUser) SetUpdateParams(params *ExtraSchemaWorkItemAssignedUserUpdateParams) {
-	if params.AssignedUser != nil {
-		eswiau.AssignedUser = *params.AssignedUser
-	}
-	if params.ExtraSchemaRole != nil {
-		eswiau.ExtraSchemaRole = *params.ExtraSchemaRole
-	}
-	if params.WorkItemID != nil {
-		eswiau.WorkItemID = *params.WorkItemID
-	}
-}
-
 type ExtraSchemaWorkItemAssignedUserSelectConfig struct {
 	limit   string
 	orderBy string
@@ -198,6 +178,26 @@ const extraSchemaWorkItemAssignedUserTableAssignedUsersSelectSQL = `COALESCE(
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const extraSchemaWorkItemAssignedUserTableAssignedUsersGroupBySQL = `work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
+
+// ExtraSchemaWorkItemAssignedUserUpdateParams represents update params for 'extra_schema.work_item_assigned_user'.
+type ExtraSchemaWorkItemAssignedUserUpdateParams struct {
+	AssignedUser    *ExtraSchemaUserID        `json:"assignedUser" nullable:"false"`                                 // assigned_user
+	ExtraSchemaRole **ExtraSchemaWorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
+	WorkItemID      *ExtraSchemaWorkItemID    `json:"workItemID" nullable:"false"`                                   // work_item_id
+}
+
+// SetUpdateParams updates extra_schema.work_item_assigned_user struct fields with the specified params.
+func (eswiau *ExtraSchemaWorkItemAssignedUser) SetUpdateParams(params *ExtraSchemaWorkItemAssignedUserUpdateParams) {
+	if params.AssignedUser != nil {
+		eswiau.AssignedUser = *params.AssignedUser
+	}
+	if params.ExtraSchemaRole != nil {
+		eswiau.ExtraSchemaRole = *params.ExtraSchemaRole
+	}
+	if params.WorkItemID != nil {
+		eswiau.WorkItemID = *params.WorkItemID
+	}
+}
 
 // Insert inserts the ExtraSchemaWorkItemAssignedUser to the database.
 func (eswiau *ExtraSchemaWorkItemAssignedUser) Insert(ctx context.Context, db DB) (*ExtraSchemaWorkItemAssignedUser, error) {

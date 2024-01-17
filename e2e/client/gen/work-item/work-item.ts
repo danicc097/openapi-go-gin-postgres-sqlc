@@ -5,10 +5,8 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { CreateWorkItemCommentRequest } from '../model/createWorkItemCommentRequest'
 import type { CreateWorkItemRequest } from '../model/createWorkItemRequest'
 import type { DbWorkItem } from '../model/dbWorkItem'
-import type { DbWorkItemComment } from '../model/dbWorkItemComment'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -44,26 +42,7 @@ export const updateWorkitem = (id: number, options?: SecondParameter<typeof cust
 export const deleteWorkitem = (id: number, options?: SecondParameter<typeof customInstance>) => {
   return customInstance<void>({ url: `/workitem/${id}/`, method: 'DELETE' }, options)
 }
-/**
- * @summary create workitem comment
- */
-export const createWorkitemComment = (
-  id: number,
-  createWorkItemCommentRequest: CreateWorkItemCommentRequest,
-  options?: SecondParameter<typeof customInstance>,
-) => {
-  return customInstance<DbWorkItemComment>(
-    {
-      url: `/workitem/${id}/comments/`,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: createWorkItemCommentRequest,
-    },
-    options,
-  )
-}
 export type CreateWorkitemResult = NonNullable<Awaited<ReturnType<typeof createWorkitem>>>
 export type GetWorkItemResult = NonNullable<Awaited<ReturnType<typeof getWorkItem>>>
 export type UpdateWorkitemResult = NonNullable<Awaited<ReturnType<typeof updateWorkitem>>>
 export type DeleteWorkitemResult = NonNullable<Awaited<ReturnType<typeof deleteWorkitem>>>
-export type CreateWorkitemCommentResult = NonNullable<Awaited<ReturnType<typeof createWorkitemComment>>>

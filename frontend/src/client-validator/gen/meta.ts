@@ -35,7 +35,9 @@ import {
   DemoTwoWorkItems,
   InitializeProjectRequest,
   ProjectBoard,
+  PaginatedUsersResponse,
   User,
+  RestUser,
   HTTPValidationError,
   ErrorCode,
   HTTPError,
@@ -74,10 +76,13 @@ import {
   DbNotification,
   DbUserNotification,
   RestPaginationPage,
+  Notification,
   RestNotification,
   DbUserWIAUWorkItem,
   DemoKanbanSteps,
   DemoTwoKanbanSteps,
+  UpdateWorkItemCommentRequest,
+  WorkItemComment,
 } from './models'
 
 export const schemaDefinitions = {
@@ -130,7 +135,12 @@ export const schemaDefinitions = {
     '#/definitions/InitializeProjectRequest',
   ),
   ProjectBoard: info<ProjectBoard>('ProjectBoard', '#/definitions/ProjectBoard'),
+  PaginatedUsersResponse: info<PaginatedUsersResponse>(
+    'PaginatedUsersResponse',
+    '#/definitions/PaginatedUsersResponse',
+  ),
   User: info<User>('User', '#/definitions/User'),
+  RestUser: info<RestUser>('RestUser', '#/definitions/RestUser'),
   HTTPValidationError: info<HTTPValidationError>('HTTPValidationError', '#/definitions/HTTPValidationError'),
   ErrorCode: info<ErrorCode>('ErrorCode', '#/definitions/ErrorCode'),
   HTTPError: info<HTTPError>('HTTPError', '#/definitions/HTTPError'),
@@ -193,10 +203,16 @@ export const schemaDefinitions = {
   DbNotification: info<DbNotification>('DbNotification', '#/definitions/DbNotification'),
   DbUserNotification: info<DbUserNotification>('DbUserNotification', '#/definitions/DbUserNotification'),
   RestPaginationPage: info<RestPaginationPage>('RestPaginationPage', '#/definitions/RestPaginationPage'),
+  Notification: info<Notification>('Notification', '#/definitions/Notification'),
   RestNotification: info<RestNotification>('RestNotification', '#/definitions/RestNotification'),
   DbUserWIAUWorkItem: info<DbUserWIAUWorkItem>('DbUserWIAUWorkItem', '#/definitions/DbUserWIAUWorkItem'),
   DemoKanbanSteps: info<DemoKanbanSteps>('DemoKanbanSteps', '#/definitions/DemoKanbanSteps'),
   DemoTwoKanbanSteps: info<DemoTwoKanbanSteps>('DemoTwoKanbanSteps', '#/definitions/DemoTwoKanbanSteps'),
+  UpdateWorkItemCommentRequest: info<UpdateWorkItemCommentRequest>(
+    'UpdateWorkItemCommentRequest',
+    '#/definitions/UpdateWorkItemCommentRequest',
+  ),
+  WorkItemComment: info<WorkItemComment>('WorkItemComment', '#/definitions/WorkItemComment'),
 }
 
 export interface SchemaInfo<T> {

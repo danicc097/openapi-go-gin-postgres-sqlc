@@ -16,10 +16,8 @@ import type {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query'
-import type { CreateWorkItemCommentRequest } from '../model/createWorkItemCommentRequest'
 import type { CreateWorkItemRequest } from '../model/createWorkItemRequest'
 import type { DbWorkItem } from '../model/dbWorkItem'
-import type { DbWorkItemComment } from '../model/dbWorkItemComment'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -110,11 +108,21 @@ export const getGetWorkItemInfiniteQueryOptions = <TData = Awaited<ReturnType<ty
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItem>>> = ({ signal }) =>
     getWorkItem(id, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!id, staleTime: 3600000, ...queryOptions } as UseInfiniteQueryOptions<
-    Awaited<ReturnType<typeof getWorkItem>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetWorkItemInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItem>>>
@@ -153,11 +161,21 @@ export const getGetWorkItemQueryOptions = <TData = Awaited<ReturnType<typeof get
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItem>>> = ({ signal }) =>
     getWorkItem(id, requestOptions, signal)
 
-  return { queryKey, queryFn, enabled: !!id, staleTime: 3600000, ...queryOptions } as UseQueryOptions<
-    Awaited<ReturnType<typeof getWorkItem>>,
-    TError,
-    TData
-  > & { queryKey: QueryKey }
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    cacheTime: 300000,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    retryOnMount: false,
+    staleTime: Infinity,
+    keepPreviousData: true,
+    retry: function (failureCount, error) {
+      return failureCount < 3
+    },
+    ...queryOptions,
+  } as UseQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetWorkItemQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItem>>>
@@ -253,73 +271,6 @@ export const useDeleteWorkitem = <TError = unknown, TContext = unknown>(options?
   request?: SecondParameter<typeof customInstance>
 }) => {
   const mutationOptions = getDeleteWorkitemMutationOptions(options)
-
-  return useMutation(mutationOptions)
-}
-/**
- * @summary create workitem comment
- */
-export const createWorkitemComment = (
-  id: number,
-  createWorkItemCommentRequest: CreateWorkItemCommentRequest,
-  options?: SecondParameter<typeof customInstance>,
-) => {
-  return customInstance<DbWorkItemComment>(
-    {
-      url: `/workitem/${id}/comments/`,
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      data: createWorkItemCommentRequest,
-    },
-    options,
-  )
-}
-
-export const getCreateWorkitemCommentMutationOptions = <TError = unknown, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createWorkitemComment>>,
-    TError,
-    { id: number; data: CreateWorkItemCommentRequest },
-    TContext
-  >
-  request?: SecondParameter<typeof customInstance>
-}): UseMutationOptions<
-  Awaited<ReturnType<typeof createWorkitemComment>>,
-  TError,
-  { id: number; data: CreateWorkItemCommentRequest },
-  TContext
-> => {
-  const { mutation: mutationOptions, request: requestOptions } = options ?? {}
-
-  const mutationFn: MutationFunction<
-    Awaited<ReturnType<typeof createWorkitemComment>>,
-    { id: number; data: CreateWorkItemCommentRequest }
-  > = (props) => {
-    const { id, data } = props ?? {}
-
-    return createWorkitemComment(id, data, requestOptions)
-  }
-
-  return { mutationFn, ...mutationOptions }
-}
-
-export type CreateWorkitemCommentMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkitemComment>>>
-export type CreateWorkitemCommentMutationBody = CreateWorkItemCommentRequest
-export type CreateWorkitemCommentMutationError = unknown
-
-/**
- * @summary create workitem comment
- */
-export const useCreateWorkitemComment = <TError = unknown, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<
-    Awaited<ReturnType<typeof createWorkitemComment>>,
-    TError,
-    { id: number; data: CreateWorkItemCommentRequest },
-    TContext
-  >
-  request?: SecondParameter<typeof customInstance>
-}) => {
-  const mutationOptions = getCreateWorkitemCommentMutationOptions(options)
 
   return useMutation(mutationOptions)
 }

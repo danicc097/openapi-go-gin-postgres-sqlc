@@ -19,7 +19,7 @@ export default defineConfig({
       },
     },
     input: {
-      target: '../openapi.yaml',
+      target: '../openapi.exploded.yaml',
       // validation: true, // https://github.com/IBM/openapi-validator/#configuration via .validaterc
     },
     hooks: {

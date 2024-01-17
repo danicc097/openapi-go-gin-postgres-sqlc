@@ -1,4 +1,4 @@
-import _, { capitalize, concat, random } from 'lodash'
+import _, { capitalize, concat, random, startCase, upperCase } from 'lodash'
 import React, { Fragment, forwardRef, memo, useEffect, useReducer, useState } from 'react'
 import type { Scope, Scopes, UpdateUserAuthRequest, User } from 'src/gen/model'
 import { getContrastYIQ, roleColor } from 'src/utils/colors'
@@ -54,12 +54,13 @@ import { isAuthorized } from 'src/services/authorization'
 import { asConst } from 'json-schema-to-ts'
 import type { components, schemas } from 'src/types/schema'
 import { FormProvider, useForm, useFormContext, useWatch } from 'react-hook-form'
-import { nameInitials } from 'src/utils/strings'
+import { nameInitials, sentenceCase } from 'src/utils/strings'
 import type { AppError } from 'src/types/ui'
 import classes from './UserPermissionsPage.module.css'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { useFormSlice } from 'src/slices/form'
 import { JSON_SCHEMA, ROLES, SCOPES } from 'src/config'
+import InfiniteLoader from 'src/components/Loading/InfiniteLoader'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -110,7 +111,7 @@ export default function UserPermissionsPage() {
   const roleOptions = entries(ROLES)
     .filter(([role, v]) => isAuthorized({ user, requiredRole: role }))
     .map(([role, v]) => ({
-      label: role,
+      label: upperCase(role),
       value: role,
     }))
 
@@ -243,6 +244,7 @@ export default function UserPermissionsPage() {
       combobox.focusSearchInput()
     },
   })
+
   const comboboxOptions =
     userOptions
       ?.filter((item: any) => JSON.stringify(item.value).toLowerCase().includes(search.toLowerCase().trim()))
@@ -256,8 +258,12 @@ export default function UserPermissionsPage() {
         )
       }) || []
 
+  if (!user) return null
+
   const element = (
     <FormProvider {...form}>
+      {/* should show "detail" key, e.g. "User not found" insteadit gives Request failed with status code 404
+      and its mistitled as Validation error */}
       <ErrorCallout title={extractCalloutTitle()} errors={concat(extractCalloutErrors())} />
       <Space pt={12} />
       <Title size={12}>
@@ -471,7 +477,7 @@ const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProp
         {title}
       </Title>
       {entries(scopes).map(([key, scope]) => {
-        const scopeName = key.split(':')[1]
+        const [scopeName, scopePermission] = key.split(':')
         const { allowed, message } = scopeChangeAllowed(key)
         const isChecked = form.getValues('scopes')?.includes(key)
 
@@ -486,11 +492,10 @@ const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProp
             >
               <Grid
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
                   marginBottom: '2px',
                   filter: !allowed ? 'grayscale(1)' : '',
                 }}
+                align="center"
               >
                 <Grid.Col span={2}>
                   <Flex direction="row">
@@ -502,14 +507,18 @@ const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProp
                       disabled={!allowed}
                       onChange={(e) => handleCheckboxChange(key, e.target.checked)}
                     />
-                    <Space pl={10} />
-                    <Badge radius={4} size="xs" color={scopeColor(scopeName)}>
-                      {scopeName}
-                    </Badge>
+                    {scopePermission && (
+                      <>
+                        <Space pl={10} />
+                        <Badge radius={4} size="xs" color={scopeColor(scopePermission)}>
+                          {scopePermission}
+                        </Badge>
+                      </>
+                    )}
                   </Flex>
                 </Grid.Col>
                 <Grid.Col span="auto">
-                  <Text size={'md'}>{scope.description}</Text>
+                  <Text size={'sm'}>{scope.description}</Text>
                 </Grid.Col>
               </Grid>
             </Tooltip>

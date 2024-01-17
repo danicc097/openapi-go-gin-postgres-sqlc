@@ -45,18 +45,6 @@ func CreateXoTestsDummyJoin(ctx context.Context, db DB, params *XoTestsDummyJoin
 	return xtdj.Insert(ctx, db)
 }
 
-// XoTestsDummyJoinUpdateParams represents update params for 'xo_tests.dummy_join'.
-type XoTestsDummyJoinUpdateParams struct {
-	Name **string `json:"name"` // name
-}
-
-// SetUpdateParams updates xo_tests.dummy_join struct fields with the specified params.
-func (xtdj *XoTestsDummyJoin) SetUpdateParams(params *XoTestsDummyJoinUpdateParams) {
-	if params.Name != nil {
-		xtdj.Name = *params.Name
-	}
-}
-
 type XoTestsDummyJoinSelectConfig struct {
 	limit   string
 	orderBy string
@@ -112,6 +100,18 @@ func WithXoTestsDummyJoinFilters(filters map[string][]any) XoTestsDummyJoinSelec
 func WithXoTestsDummyJoinHavingClause(conditions map[string][]any) XoTestsDummyJoinSelectConfigOption {
 	return func(s *XoTestsDummyJoinSelectConfig) {
 		s.having = conditions
+	}
+}
+
+// XoTestsDummyJoinUpdateParams represents update params for 'xo_tests.dummy_join'.
+type XoTestsDummyJoinUpdateParams struct {
+	Name **string `json:"name"` // name
+}
+
+// SetUpdateParams updates xo_tests.dummy_join struct fields with the specified params.
+func (xtdj *XoTestsDummyJoin) SetUpdateParams(params *XoTestsDummyJoinUpdateParams) {
+	if params.Name != nil {
+		xtdj.Name = *params.Name
 	}
 }
 

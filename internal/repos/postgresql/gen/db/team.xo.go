@@ -59,26 +59,6 @@ func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, er
 	return t.Insert(ctx, db)
 }
 
-// TeamUpdateParams represents update params for 'public.teams'.
-type TeamUpdateParams struct {
-	Description *string    `json:"description" nullable:"false"` // description
-	Name        *string    `json:"name" nullable:"false"`        // name
-	ProjectID   *ProjectID `json:"-" openapi-go:"ignore"`        // project_id
-}
-
-// SetUpdateParams updates public.teams struct fields with the specified params.
-func (t *Team) SetUpdateParams(params *TeamUpdateParams) {
-	if params.Description != nil {
-		t.Description = *params.Description
-	}
-	if params.Name != nil {
-		t.Name = *params.Name
-	}
-	if params.ProjectID != nil {
-		t.ProjectID = *params.ProjectID
-	}
-}
-
 type TeamSelectConfig struct {
 	limit   string
 	orderBy string
@@ -217,6 +197,26 @@ const teamTableMembersTeamSelectSQL = `COALESCE(
 		)) filter (where joined_user_team_members.__users_user_id is not null), '{}') as user_team_members`
 
 const teamTableMembersTeamGroupBySQL = `teams.team_id, teams.team_id`
+
+// TeamUpdateParams represents update params for 'public.teams'.
+type TeamUpdateParams struct {
+	Description *string    `json:"description" nullable:"false"` // description
+	Name        *string    `json:"name" nullable:"false"`        // name
+	ProjectID   *ProjectID `json:"-" openapi-go:"ignore"`        // project_id
+}
+
+// SetUpdateParams updates public.teams struct fields with the specified params.
+func (t *Team) SetUpdateParams(params *TeamUpdateParams) {
+	if params.Description != nil {
+		t.Description = *params.Description
+	}
+	if params.Name != nil {
+		t.Name = *params.Name
+	}
+	if params.ProjectID != nil {
+		t.ProjectID = *params.ProjectID
+	}
+}
 
 // Insert inserts the Team to the database.
 func (t *Team) Insert(ctx context.Context, db DB) (*Team, error) {

@@ -46,18 +46,6 @@ func CreateExtraSchemaDummyJoin(ctx context.Context, db DB, params *ExtraSchemaD
 	return esdj.Insert(ctx, db)
 }
 
-// ExtraSchemaDummyJoinUpdateParams represents update params for 'extra_schema.dummy_join'.
-type ExtraSchemaDummyJoinUpdateParams struct {
-	Name **string `json:"name"` // name
-}
-
-// SetUpdateParams updates extra_schema.dummy_join struct fields with the specified params.
-func (esdj *ExtraSchemaDummyJoin) SetUpdateParams(params *ExtraSchemaDummyJoinUpdateParams) {
-	if params.Name != nil {
-		esdj.Name = *params.Name
-	}
-}
-
 type ExtraSchemaDummyJoinSelectConfig struct {
 	limit   string
 	orderBy string
@@ -116,6 +104,18 @@ func WithExtraSchemaDummyJoinFilters(filters map[string][]any) ExtraSchemaDummyJ
 func WithExtraSchemaDummyJoinHavingClause(conditions map[string][]any) ExtraSchemaDummyJoinSelectConfigOption {
 	return func(s *ExtraSchemaDummyJoinSelectConfig) {
 		s.having = conditions
+	}
+}
+
+// ExtraSchemaDummyJoinUpdateParams represents update params for 'extra_schema.dummy_join'.
+type ExtraSchemaDummyJoinUpdateParams struct {
+	Name **string `json:"name"` // name
+}
+
+// SetUpdateParams updates extra_schema.dummy_join struct fields with the specified params.
+func (esdj *ExtraSchemaDummyJoin) SetUpdateParams(params *ExtraSchemaDummyJoinUpdateParams) {
+	if params.Name != nil {
+		esdj.Name = *params.Name
 	}
 }
 

@@ -31,6 +31,16 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
+	case CreateWorkItemComment:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					RequiredScopes: models.Scopes{
+						models.Scope("work-item-comment:create"),
+					},
+				}),
+		}
 	case CreateWorkItemTag:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
@@ -47,10 +57,6 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthenticated(),
 		}
 	case CreateWorkitem:
-		return []gin.HandlerFunc{
-			h.authmw.EnsureAuthenticated(),
-		}
-	case CreateWorkitemComment:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
@@ -76,6 +82,16 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 					MinimumRole: models.Role("admin"),
 					RequiredScopes: models.Scopes{
 						models.Scope("users:delete"),
+					},
+				}),
+		}
+	case DeleteWorkItemComment:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					RequiredScopes: models.Scopes{
+						models.Scope("work-item-comment:delete"),
 					},
 				}),
 		}
@@ -105,6 +121,10 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
+	case GetPaginatedUsers:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
 	case GetProject:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
@@ -130,6 +150,10 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthenticated(),
 		}
 	case GetWorkItem:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case GetWorkItemComment:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
@@ -195,6 +219,16 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 					MinimumRole: models.Role("admin"),
 					RequiredScopes: models.Scopes{
 						models.Scope("scopes:write"),
+					},
+				}),
+		}
+	case UpdateWorkItemComment:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+			h.authmw.EnsureAuthorized(
+				AuthRestriction{
+					RequiredScopes: models.Scopes{
+						models.Scope("work-item-comment:edit"),
 					},
 				}),
 		}

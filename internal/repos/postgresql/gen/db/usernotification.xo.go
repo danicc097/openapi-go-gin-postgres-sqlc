@@ -55,26 +55,6 @@ func CreateUserNotification(ctx context.Context, db DB, params *UserNotification
 	return un.Insert(ctx, db)
 }
 
-// UserNotificationUpdateParams represents update params for 'public.user_notifications'.
-type UserNotificationUpdateParams struct {
-	NotificationID *NotificationID `json:"notificationID" nullable:"false"` // notification_id
-	Read           *bool           `json:"read" nullable:"false"`           // read
-	UserID         *UserID         `json:"userID" nullable:"false"`         // user_id
-}
-
-// SetUpdateParams updates public.user_notifications struct fields with the specified params.
-func (un *UserNotification) SetUpdateParams(params *UserNotificationUpdateParams) {
-	if params.NotificationID != nil {
-		un.NotificationID = *params.NotificationID
-	}
-	if params.Read != nil {
-		un.Read = *params.Read
-	}
-	if params.UserID != nil {
-		un.UserID = *params.UserID
-	}
-}
-
 type UserNotificationSelectConfig struct {
 	limit   string
 	orderBy string
@@ -160,6 +140,26 @@ const userNotificationTableUserSelectSQL = `(case when _user_notifications_user_
 const userNotificationTableUserGroupBySQL = `_user_notifications_user_id.user_id,
       _user_notifications_user_id.user_id,
 	user_notifications.user_notification_id`
+
+// UserNotificationUpdateParams represents update params for 'public.user_notifications'.
+type UserNotificationUpdateParams struct {
+	NotificationID *NotificationID `json:"notificationID" nullable:"false"` // notification_id
+	Read           *bool           `json:"read" nullable:"false"`           // read
+	UserID         *UserID         `json:"userID" nullable:"false"`         // user_id
+}
+
+// SetUpdateParams updates public.user_notifications struct fields with the specified params.
+func (un *UserNotification) SetUpdateParams(params *UserNotificationUpdateParams) {
+	if params.NotificationID != nil {
+		un.NotificationID = *params.NotificationID
+	}
+	if params.Read != nil {
+		un.Read = *params.Read
+	}
+	if params.UserID != nil {
+		un.UserID = *params.UserID
+	}
+}
 
 // Insert inserts the UserNotification to the database.
 func (un *UserNotification) Insert(ctx context.Context, db DB) (*UserNotification, error) {

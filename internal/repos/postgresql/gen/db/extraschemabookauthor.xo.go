@@ -51,26 +51,6 @@ func CreateExtraSchemaBookAuthor(ctx context.Context, db DB, params *ExtraSchema
 	return esba.Insert(ctx, db)
 }
 
-// ExtraSchemaBookAuthorUpdateParams represents update params for 'extra_schema.book_authors'.
-type ExtraSchemaBookAuthorUpdateParams struct {
-	AuthorID  *ExtraSchemaUserID `json:"authorID" nullable:"false"` // author_id
-	BookID    *ExtraSchemaBookID `json:"bookID" nullable:"false"`   // book_id
-	Pseudonym **string           `json:"pseudonym"`                 // pseudonym
-}
-
-// SetUpdateParams updates extra_schema.book_authors struct fields with the specified params.
-func (esba *ExtraSchemaBookAuthor) SetUpdateParams(params *ExtraSchemaBookAuthorUpdateParams) {
-	if params.AuthorID != nil {
-		esba.AuthorID = *params.AuthorID
-	}
-	if params.BookID != nil {
-		esba.BookID = *params.BookID
-	}
-	if params.Pseudonym != nil {
-		esba.Pseudonym = *params.Pseudonym
-	}
-}
-
 type ExtraSchemaBookAuthorSelectConfig struct {
 	limit   string
 	orderBy string
@@ -198,6 +178,26 @@ const extraSchemaBookAuthorTableAuthorsBookSelectSQL = `COALESCE(
 		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
 
 const extraSchemaBookAuthorTableAuthorsBookGroupBySQL = `book_authors.book_id, book_authors.book_id, book_authors.author_id`
+
+// ExtraSchemaBookAuthorUpdateParams represents update params for 'extra_schema.book_authors'.
+type ExtraSchemaBookAuthorUpdateParams struct {
+	AuthorID  *ExtraSchemaUserID `json:"authorID" nullable:"false"` // author_id
+	BookID    *ExtraSchemaBookID `json:"bookID" nullable:"false"`   // book_id
+	Pseudonym **string           `json:"pseudonym"`                 // pseudonym
+}
+
+// SetUpdateParams updates extra_schema.book_authors struct fields with the specified params.
+func (esba *ExtraSchemaBookAuthor) SetUpdateParams(params *ExtraSchemaBookAuthorUpdateParams) {
+	if params.AuthorID != nil {
+		esba.AuthorID = *params.AuthorID
+	}
+	if params.BookID != nil {
+		esba.BookID = *params.BookID
+	}
+	if params.Pseudonym != nil {
+		esba.Pseudonym = *params.Pseudonym
+	}
+}
 
 // Insert inserts the ExtraSchemaBookAuthor to the database.
 func (esba *ExtraSchemaBookAuthor) Insert(ctx context.Context, db DB) (*ExtraSchemaBookAuthor, error) {

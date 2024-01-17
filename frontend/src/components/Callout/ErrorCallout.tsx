@@ -68,7 +68,6 @@ export const useCalloutErrors = (formName: string) => {
   }
 
   const extractCalloutTitle = () => {
-    console.log(formSlice.form)
     if (formSlice.form[formName]?.customErrors) {
       return 'Validation error'
     }

@@ -50,26 +50,6 @@ func CreateXoTestsBookAuthor(ctx context.Context, db DB, params *XoTestsBookAuth
 	return xtba.Insert(ctx, db)
 }
 
-// XoTestsBookAuthorUpdateParams represents update params for 'xo_tests.book_authors'.
-type XoTestsBookAuthorUpdateParams struct {
-	AuthorID  *XoTestsUserID `json:"authorID" nullable:"false"` // author_id
-	BookID    *XoTestsBookID `json:"bookID" nullable:"false"`   // book_id
-	Pseudonym **string       `json:"pseudonym"`                 // pseudonym
-}
-
-// SetUpdateParams updates xo_tests.book_authors struct fields with the specified params.
-func (xtba *XoTestsBookAuthor) SetUpdateParams(params *XoTestsBookAuthorUpdateParams) {
-	if params.AuthorID != nil {
-		xtba.AuthorID = *params.AuthorID
-	}
-	if params.BookID != nil {
-		xtba.BookID = *params.BookID
-	}
-	if params.Pseudonym != nil {
-		xtba.Pseudonym = *params.Pseudonym
-	}
-}
-
 type XoTestsBookAuthorSelectConfig struct {
 	limit   string
 	orderBy string
@@ -195,6 +175,26 @@ const xoTestsBookAuthorTableAuthorsBookSelectSQL = `COALESCE(
 		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
 
 const xoTestsBookAuthorTableAuthorsBookGroupBySQL = `book_authors.book_id, book_authors.book_id, book_authors.author_id`
+
+// XoTestsBookAuthorUpdateParams represents update params for 'xo_tests.book_authors'.
+type XoTestsBookAuthorUpdateParams struct {
+	AuthorID  *XoTestsUserID `json:"authorID" nullable:"false"` // author_id
+	BookID    *XoTestsBookID `json:"bookID" nullable:"false"`   // book_id
+	Pseudonym **string       `json:"pseudonym"`                 // pseudonym
+}
+
+// SetUpdateParams updates xo_tests.book_authors struct fields with the specified params.
+func (xtba *XoTestsBookAuthor) SetUpdateParams(params *XoTestsBookAuthorUpdateParams) {
+	if params.AuthorID != nil {
+		xtba.AuthorID = *params.AuthorID
+	}
+	if params.BookID != nil {
+		xtba.BookID = *params.BookID
+	}
+	if params.Pseudonym != nil {
+		xtba.Pseudonym = *params.Pseudonym
+	}
+}
 
 // Insert inserts the XoTestsBookAuthor to the database.
 func (xtba *XoTestsBookAuthor) Insert(ctx context.Context, db DB) (*XoTestsBookAuthor, error) {

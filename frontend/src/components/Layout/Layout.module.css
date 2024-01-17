@@ -13,7 +13,8 @@
 }
 
 .appShell {
-  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-9));
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
+  padding: 12px;
 }
 
 .inner {

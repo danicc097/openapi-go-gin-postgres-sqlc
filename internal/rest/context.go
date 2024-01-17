@@ -2,12 +2,15 @@ package rest
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
+	"github.com/zitadel/oidc/v2/pkg/oidc"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -62,13 +65,18 @@ func CtxWithUserCaller(c *gin.Context, user *db.User) {
 	})
 }
 
-func GetUserInfoFromCtx(c *gin.Context) []byte {
-	user, ok := c.Value(userInfoCtxKey).([]byte)
+func GetUserInfoFromCtx(c *gin.Context) (*oidc.UserInfo, error) {
+	userInfoBlob, ok := c.Value(userInfoCtxKey).([]byte)
 	if !ok {
-		return nil
+		return nil, errors.New("empty value")
+	}
+	var userInfo oidc.UserInfo
+	err := json.Unmarshal(userInfoBlob, &userInfo)
+	if err != nil {
+		return nil, fmt.Errorf("could not load user info: %w", err)
 	}
 
-	return user
+	return &userInfo, nil
 }
 
 func CtxWithUserInfo(c *gin.Context, userinfo []byte) {

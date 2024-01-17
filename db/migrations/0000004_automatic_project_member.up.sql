@@ -93,11 +93,9 @@ begin
     up.project_id = new.project_id
     -- automatically include user with these scopes in all new teams
     and users.scopes @> '{"project-member"}' into users_to_include;
-
   if (users_to_include is null) then
     return new;
   end if;
-
   FOREACH uid in array users_to_include loop
     execute FORMAT('
             INSERT INTO user_team (member, team_id)
@@ -106,9 +104,7 @@ begin
             DO NOTHING;
         ' , uid , new.team_id);
   end loop;
-
   raise notice 'team id % initialized with user ids: % ' , new.team_id , users_to_include;
-
   return NEW;
 end;
 $BODY$
@@ -135,9 +131,7 @@ begin
     ut.member = new.member
   on conflict
     do nothing;
-
   raise notice 'user_project for  new.member and teamid % % ' , new.member , new.team_id;
-
   return NEW;
 end;
 $BODY$
