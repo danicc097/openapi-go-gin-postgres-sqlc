@@ -188,7 +188,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	case internal.AppEnvProd, internal.AppEnvE2E:
 		rlMw := newRateLimitMiddleware(conf.Logger, 15, 5)
 		vg.Use(rlMw.Limit())
-	case internal.AppEnvDev:
+	case internal.AppEnvDev, internal.AppEnvCI:
 		rlMw := newRateLimitMiddleware(conf.Logger, 15, 5)
 		if os.Getenv("IS_TESTING") == "" {
 			vg.Use(rlMw.Limit())
