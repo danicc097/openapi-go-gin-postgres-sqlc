@@ -1,5 +1,6 @@
 .direnv
 openapi.exploded.yaml
+openapi.yaml.temp
 .generate.cache*
 .cache-stash
 __debug_bin*
