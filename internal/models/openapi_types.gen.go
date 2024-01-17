@@ -940,6 +940,10 @@ type UpdateUserJSONRequestBody = UpdateUserRequest
 
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
+// CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
+
+type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
+
 // CreateWorkItemCommentJSONRequestBody defines body for CreateWorkItemComment for application/json ContentType.
 
 type CreateWorkItemCommentJSONRequestBody = CreateWorkItemCommentRequest
@@ -955,10 +959,6 @@ type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
 // UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
 
 type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
-
-// CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
-
-type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
 
 // AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {

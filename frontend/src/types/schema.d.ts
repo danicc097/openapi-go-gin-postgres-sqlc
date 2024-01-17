@@ -124,11 +124,11 @@ export interface paths {
     /** returns workitems for a project */
     get: operations["GetProjectWorkitems"];
   };
-  "/workitem/": {
+  "/work-item/": {
     /** create workitem */
     post: operations["CreateWorkitem"];
   };
-  [path: `/workitem/${number}/`]: {
+  [path: `/work-item/${number}/`]: {
     /** get workitem */
     get: operations["GetWorkItem"];
     /** delete workitem */

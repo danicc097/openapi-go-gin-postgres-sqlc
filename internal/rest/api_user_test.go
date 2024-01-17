@@ -60,7 +60,6 @@ func TestHandlers_DeleteUser(t *testing.T) {
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
 			})
-			require.NoError(t, err, "ff.CreateUser: %s")
 
 			res, err := srv.client.DeleteUserWithResponse(context.Background(), ufixture.User.UserID.UUID, ReqWithAPIKey(ufixture.APIKey.APIKey))
 			fmt.Printf("res.Body: %v\n", string(res.Body))
@@ -170,7 +169,6 @@ func TestHandlers_UpdateUser(t *testing.T) {
 				Role:       models.Role(rest.RoleManager),
 				WithAPIKey: true,
 			})
-			require.NoError(t, err, "ff.CreateUser: %s")
 
 			updateAuthParams := rest.UpdateUserAuthRequest{
 				Role: pointers.New(models.RoleManager),
@@ -236,7 +234,6 @@ func TestHandlers_UpdateUser(t *testing.T) {
 				Role:       models.RoleUser,
 				WithAPIKey: true,
 			})
-			require.NoError(t, err, "ff.CreateUser: %s")
 
 			ures, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.User.UserID.UUID, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 

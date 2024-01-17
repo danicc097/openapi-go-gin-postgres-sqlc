@@ -759,7 +759,7 @@ paths:
                   - $ref: '#/components/schemas/DemoTwoWorkItems'
       tags:
         - project
-  /workitem/:
+  /work-item/:
     post:
       summary: create workitem
       !!merge <<: *x-require-authenticated
@@ -780,7 +780,7 @@ paths:
                   - $ref: '#/components/schemas/DbWorkItem'
       tags:
         - workItem
-  /workitem/{id}/:
+  /work-item/{id}/:
     get:
       summary: get workitem
       !!merge <<: *x-require-authenticated

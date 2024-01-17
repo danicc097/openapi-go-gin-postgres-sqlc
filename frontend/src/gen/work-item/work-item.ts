@@ -31,7 +31,12 @@ export const createWorkitem = (
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<DbWorkItem>(
-    { url: `/workitem/`, method: 'POST', headers: { 'Content-Type': 'application/json' }, data: createWorkItemRequest },
+    {
+      url: `/work-item/`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createWorkItemRequest,
+    },
     options,
   )
 }
@@ -87,11 +92,11 @@ export const useCreateWorkitem = <TError = unknown, TContext = unknown>(options?
  * @summary get workitem
  */
 export const getWorkItem = (id: number, options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
-  return customInstance<DbWorkItem>({ url: `/workitem/${id}/`, method: 'GET', signal }, options)
+  return customInstance<DbWorkItem>({ url: `/work-item/${id}/`, method: 'GET', signal }, options)
 }
 
 export const getGetWorkItemQueryKey = (id: number) => {
-  return [`/workitem/${id}/`] as const
+  return [`/work-item/${id}/`] as const
 }
 
 export const getGetWorkItemInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = unknown>(
@@ -204,7 +209,7 @@ export const useGetWorkItem = <TData = Awaited<ReturnType<typeof getWorkItem>>, 
  * @summary update workitem
  */
 export const updateWorkitem = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<DbWorkItem>({ url: `/workitem/${id}/`, method: 'PATCH' }, options)
+  return customInstance<DbWorkItem>({ url: `/work-item/${id}/`, method: 'PATCH' }, options)
 }
 
 export const getUpdateWorkitemMutationOptions = <TError = unknown, TContext = unknown>(options?: {
@@ -241,7 +246,7 @@ export const useUpdateWorkitem = <TError = unknown, TContext = unknown>(options?
  * @summary delete workitem
  */
 export const deleteWorkitem = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<void>({ url: `/workitem/${id}/`, method: 'DELETE' }, options)
+  return customInstance<void>({ url: `/work-item/${id}/`, method: 'DELETE' }, options)
 }
 
 export const getDeleteWorkitemMutationOptions = <TError = unknown, TContext = unknown>(options?: {
