@@ -1896,18 +1896,34 @@ x.generate_spec_helpers() {
     -v end="# <<<--- END OF DB ANCHORS GENERATION --->>>" \
     -v generated_anchors="$(join_by "" "${anchors[@]}")" \
     '
-  {
-    if (index($0, start)) {
-      print $0
-      print generated_anchors
-      next
-    }
-    if (index($0, end)) {
-      next
-    }
-    print
-  }
-' "$SPEC_PATH" >"$SPEC_PATH.temp"
+{
+        # Check if the current line matches the start marker
+        if ($0 ~ start) {
+          print "# FOUND START - Line Number:", NR
+          print start    # Print the start marker
+          print generated_anchors  # Print the generated anchors
+          print end    # Print the start marker
+          after_start=1  # start marker is found
+          next
+        }
+        # Check if the start marker is found and the current line matches the end marker
+        if (after_start && $0 ~ end) {
+          print "FOUND END - Line Number:", NR, $0
+
+          after_end=1 # already at end marker
+          next
+        }
+        # If the start marker is not found yet print as is
+        if (!after_start) {
+          print $0
+          next
+        }
+        # print whatever is left
+        if (after_start && after_end) {
+          print
+        }
+}
+' "$SPEC_PATH.temp" | sponge "$SPEC_PATH.temp"
 }
 
 # generate db structs for use with swaggest/openapi-go.
