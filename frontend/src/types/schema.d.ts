@@ -1678,7 +1678,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        commentId: number;
         /**
          * @description integer identifier
          * @example 41131
@@ -1713,7 +1713,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        commentId: number;
         /**
          * @description integer identifier
          * @example 41131
@@ -1744,7 +1744,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        commentId: number;
         /**
          * @description integer identifier
          * @example 41131

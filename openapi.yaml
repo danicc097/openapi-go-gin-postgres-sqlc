@@ -20,11 +20,10 @@
 #
 #
 #######################################
-x-uuidParameter: &x-uuidParameter
+x-uuidIDParameterBase: &x-uuidIDParameterBase
   description: UUID identifier
   explode: false
   in: path
-  name: id
   required: true
   schema:
     type: string
@@ -36,11 +35,13 @@ x-uuidParameter: &x-uuidParameter
       path: github.com/google/uuid
   example: 123e4567-e89b-12d3-a456-426614174000
   style: simple
-x-serialIDParameter: &x-serialIDParameter
+x-uuidParameter: &x-uuidParameter
+  !!merge <<: *x-uuidIDParameterBase
+  name: id
+x-serialIDParameterBase: &x-serialIDParameterBase # requires name (must be the same name in subpaths so gin can handle it)
   description: integer identifier
   explode: false
   in: path
-  name: id
   required: true
   schema:
     type: integer
@@ -83,8 +84,18 @@ x-error-response: &x-error-response
         schema:
           $ref: '#/components/schemas/HTTPError'
 #
+# Anchors must be defined before lines that use them. Also cannot use anchors from different files.
+# See https://docs.gitlab.com/ee/ci/yaml/yaml_optimization.html
 #
-#######################################
+# TODO: range db IDs and uuids (userID will need merge with uuidParameterBase).
+# Ideally in the future this also helps so that oapi-codegen and orval can generate typesafe ids
+# instead of primitives
+#
+# <<<--- GENERATED DB ANCHORS. DO NOT EDIT. --->>>
+x-teamIDParameter: &x-teamIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  name: teamID
+# <<<--- END OF ANCHORS DB GENERATION --->>>
 #
 #
 openapi: 3.0.3
@@ -246,13 +257,13 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - team
-  /team/{id}:
+  /team/{teamID}:
     get:
       summary: get team.
       !!merge <<: *x-require-authenticated
       operationId: GetTeam
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-teamIDParameter
       responses:
         200:
           description: Success.
@@ -268,7 +279,8 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateTeam
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-teamIDParameter
+        - *x-uuidParameter
       requestBody:
         content:
           application/json:
@@ -290,7 +302,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteTeam
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-teamIDParameter
       responses:
         204:
           description: Success.
@@ -362,7 +374,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetActivity
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
       responses:
         200:
           description: Success.
@@ -380,7 +392,7 @@ paths:
       x-required-scopes:
         - activity:edit
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
       requestBody:
         content:
           application/json:
@@ -404,7 +416,7 @@ paths:
       x-required-scopes:
         - activity:delete
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
       responses:
         204:
           description: Success.
@@ -417,7 +429,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemTag
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
       responses:
         200:
           description: Success.
@@ -433,7 +445,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkItemTag
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
       requestBody:
         content:
           application/json:
@@ -455,7 +467,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkItemTag
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
       responses:
         204:
           description: Success.
@@ -491,7 +503,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemType
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
       responses:
         200:
           description: Success.
@@ -507,7 +519,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkItemType
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
       requestBody:
         content:
           application/json:
@@ -529,7 +541,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkItemType
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
       responses:
         204:
           description: Success.
@@ -786,7 +798,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItem
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
       responses:
         200:
           description: Success.
@@ -802,7 +814,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkitem
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
       responses:
         200:
           description: Success.
@@ -818,7 +830,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkitem
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
       responses:
         204:
           description: Success.
@@ -830,7 +842,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: CreateWorkItemComment
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
           name: workItemID
       x-required-scopes:
         - work-item-comment:create
@@ -850,14 +862,15 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - workItemComment
-  /work-item/{workItemID}/comment/{id}:
+  /work-item/{workItemID}/comment/{commentId}:
     get:
       summary: get work item comment.
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemComment
       parameters:
-        - !!merge <<: *x-serialIDParameter
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
+          name: commentId # gin cannot handle if parameter names are the same in 2 routes with wildcards
+        - !!merge <<: *x-serialIDParameterBase
           name: workItemID
       responses:
         200:
@@ -876,8 +889,9 @@ paths:
       x-required-scopes:
         - work-item-comment:edit
       parameters:
-        - !!merge <<: *x-serialIDParameter
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
+          name: commentId # gin cannot handle if parameter names are the same in 2 routes with wildcards
+        - !!merge <<: *x-serialIDParameterBase
           name: workItemID
       requestBody:
         content:
@@ -902,8 +916,9 @@ paths:
       x-required-scopes:
         - work-item-comment:delete
       parameters:
-        - !!merge <<: *x-serialIDParameter
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
+          name: commentId # gin cannot handle if parameter names are the same in 2 routes with wildcards
+        - !!merge <<: *x-serialIDParameterBase
           name: workItemID
       responses:
         204:
@@ -924,7 +939,7 @@ components:
       example: demo
       style: simple
     UUID: *x-uuidParameter
-    SerialID: *x-serialIDParameter
+    SerialID: *x-serialIDParameterBase
   schemas:
     CreateActivityRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -2331,3 +2346,4 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+

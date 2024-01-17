@@ -45,7 +45,7 @@ export const getWorkItemCommentMock = () => [
       },
     })
   }),
-  http.get('*/work-item/:workItemID/comment/:id', async () => {
+  http.get('*/work-item/:workItemID/comment/:commentId', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getGetWorkItemCommentMock()), {
       status: 200,
@@ -54,7 +54,7 @@ export const getWorkItemCommentMock = () => [
       },
     })
   }),
-  http.patch('*/work-item/:workItemID/comment/:id', async () => {
+  http.patch('*/work-item/:workItemID/comment/:commentId', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getUpdateWorkItemCommentMock()), {
       status: 200,
@@ -63,7 +63,7 @@ export const getWorkItemCommentMock = () => [
       },
     })
   }),
-  http.delete('*/work-item/:workItemID/comment/:id', async () => {
+  http.delete('*/work-item/:workItemID/comment/:commentId', async () => {
     await delay(1000)
     return new HttpResponse(null, {
       status: 200,

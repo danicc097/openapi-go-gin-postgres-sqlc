@@ -663,6 +663,8 @@ x.gen.xo() {
     files=$(find "$PG_REPO_GEN/db" \
       -name "*.go")
     goimports -w $files
+
+    generate_spec_helpers
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
@@ -765,6 +767,7 @@ x.gen.client-server() {
     types_list=$(join_by "," ${all_types[*]})
     # hack to get separate types generation
     sed "s/\$ref: '\#\//\$ref: '$SPEC_PATH\#\//g" $SPEC_PATH >"$paths_file"
+
     # yq e 'del(.components)' -i "$paths_file" # dont delete since recent oapi-codegen does some checks even if we are not generating types
     go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # templates are embedded, required rebuild
 
@@ -1866,6 +1869,55 @@ run_shared_services() {
     --env-file ../.env."$X_ENV" \
     "$@" 2>&1 # https://github.com/docker/compose/issues/7346
   cd - >/dev/null
+}
+
+generate_spec_helpers() {
+  local int_ids=()
+  local anchors=()
+  go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/db"
+  for entity in ${int_ids[@]}; do
+    camel=$(to_camel $entity)
+    anchors+=("x-${camel}Parameter: &x-${camel}Parameter
+  !!merge <<: *x-serialIDParameterBase
+  name: ${camel}
+")
+  done
+  local uuid_ids=()
+  go-utils.find_db_ids_uuid uuid_ids "$PG_REPO_GEN/db"
+  for entity in ${uuid_ids[@]}; do
+    camel=$(to_camel $entity)
+    anchors+=("x-${camel}Parameter: &x-${camel}Parameter
+  !!merge <<: *x-uuidIDParameterBase
+  name: ${camel}
+")
+  done
+  # TODO: awk to add all anchors between these two in openapi.yaml
+  # (this should be done right after gen.xo at the moment, since it's the last dependency)
+  # if we have more generated anchors later on it might be easier to add different markers `<<<--- ...`
+  # (e.g. gen.client-server will depend on anchors generated from gen.xo so we cannot generate all at the same time)
+  # # <<<--- GENERATED DB ANCHORS. DO NOT EDIT. --->>>
+  # # <<<--- END OF ANCHORS DB GENERATION --->>>
+  local start_marker="# <<<--- GENERATED DB ANCHORS. DO NOT EDIT. --->>>"
+  local end_marker="# <<<--- END OF DB ANCHORS GENERATION --->>>"
+
+  local new_anchors="${anchors[*]}"
+
+  awk -v start="$start_marker" -v end="$end_marker" -v new_anchors="$new_anchors" '
+    NR==FNR {
+      if ($0 ~ start) {
+        print
+        print new_anchors
+        printing = 0
+      } else if ($0 ~ end) {
+        printing = 1
+        print
+      }
+      if (!printing) next
+    }
+    NR!=FNR && !printing {
+      print
+    }
+  ' "$SPEC_PATH" <(echo "$new_anchors") >"$SPEC_PATH"
 }
 
 # generate db structs for use with swaggest/openapi-go.

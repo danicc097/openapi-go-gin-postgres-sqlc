@@ -44,6 +44,9 @@ func (_d WorkItemTagWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkIt
 	}
 	wp1, err = _d.WorkItemTag.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTagWithRetryByID")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -60,14 +63,12 @@ func (_d WorkItemTagWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkIt
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		wp1, err = _d.WorkItemTag.ByID(ctx, d, id, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTagWithRetryByID")
 	}
 	return
 }
@@ -83,6 +84,9 @@ func (_d WorkItemTagWithRetry) ByName(ctx context.Context, d db.DBTX, name strin
 	}
 	wp1, err = _d.WorkItemTag.ByName(ctx, d, name, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTagWithRetryByName")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -99,14 +103,12 @@ func (_d WorkItemTagWithRetry) ByName(ctx context.Context, d db.DBTX, name strin
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		wp1, err = _d.WorkItemTag.ByName(ctx, d, name, projectID, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTagWithRetryByName")
 	}
 	return
 }
@@ -122,6 +124,9 @@ func (_d WorkItemTagWithRetry) Create(ctx context.Context, d db.DBTX, params *db
 	}
 	wp1, err = _d.WorkItemTag.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTagWithRetryCreate")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -138,14 +143,12 @@ func (_d WorkItemTagWithRetry) Create(ctx context.Context, d db.DBTX, params *db
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		wp1, err = _d.WorkItemTag.Create(ctx, d, params)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTagWithRetryCreate")
 	}
 	return
 }
@@ -161,6 +164,9 @@ func (_d WorkItemTagWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Work
 	}
 	wp1, err = _d.WorkItemTag.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTagWithRetryDelete")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -177,14 +183,12 @@ func (_d WorkItemTagWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Work
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		wp1, err = _d.WorkItemTag.Delete(ctx, d, id)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTagWithRetryDelete")
 	}
 	return
 }
@@ -200,6 +204,9 @@ func (_d WorkItemTagWithRetry) Update(ctx context.Context, d db.DBTX, id db.Work
 	}
 	wp1, err = _d.WorkItemTag.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTagWithRetryUpdate")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -216,14 +223,12 @@ func (_d WorkItemTagWithRetry) Update(ctx context.Context, d db.DBTX, id db.Work
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		wp1, err = _d.WorkItemTag.Update(ctx, d, id, params)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTagWithRetryUpdate")
 	}
 	return
 }

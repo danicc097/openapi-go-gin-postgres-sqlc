@@ -44,6 +44,9 @@ func (_d ActivityWithRetry) ByID(ctx context.Context, d db.DBTX, id db.ActivityI
 	}
 	ap1, err = _d.Activity.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryByID")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -60,14 +63,12 @@ func (_d ActivityWithRetry) ByID(ctx context.Context, d db.DBTX, id db.ActivityI
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		ap1, err = _d.Activity.ByID(ctx, d, id, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryByID")
 	}
 	return
 }
@@ -83,6 +84,9 @@ func (_d ActivityWithRetry) ByName(ctx context.Context, d db.DBTX, name string, 
 	}
 	ap1, err = _d.Activity.ByName(ctx, d, name, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryByName")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -99,14 +103,12 @@ func (_d ActivityWithRetry) ByName(ctx context.Context, d db.DBTX, name string, 
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		ap1, err = _d.Activity.ByName(ctx, d, name, projectID, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryByName")
 	}
 	return
 }
@@ -122,6 +124,9 @@ func (_d ActivityWithRetry) ByProjectID(ctx context.Context, d db.DBTX, projectI
 	}
 	aa1, err = _d.Activity.ByProjectID(ctx, d, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryByProjectID")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -138,14 +143,12 @@ func (_d ActivityWithRetry) ByProjectID(ctx context.Context, d db.DBTX, projectI
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		aa1, err = _d.Activity.ByProjectID(ctx, d, projectID, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryByProjectID")
 	}
 	return
 }
@@ -161,6 +164,9 @@ func (_d ActivityWithRetry) Create(ctx context.Context, d db.DBTX, params *db.Ac
 	}
 	ap1, err = _d.Activity.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryCreate")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -177,14 +183,12 @@ func (_d ActivityWithRetry) Create(ctx context.Context, d db.DBTX, params *db.Ac
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		ap1, err = _d.Activity.Create(ctx, d, params)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryCreate")
 	}
 	return
 }
@@ -200,6 +204,9 @@ func (_d ActivityWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Activit
 	}
 	ap1, err = _d.Activity.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryDelete")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -216,14 +223,12 @@ func (_d ActivityWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Activit
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		ap1, err = _d.Activity.Delete(ctx, d, id)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryDelete")
 	}
 	return
 }
@@ -239,6 +244,9 @@ func (_d ActivityWithRetry) Update(ctx context.Context, d db.DBTX, id db.Activit
 	}
 	ap1, err = _d.Activity.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryUpdate")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -255,14 +263,12 @@ func (_d ActivityWithRetry) Update(ctx context.Context, d db.DBTX, id db.Activit
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		ap1, err = _d.Activity.Update(ctx, d, id, params)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryUpdate")
 	}
 	return
 }

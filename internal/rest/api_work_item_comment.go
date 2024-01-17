@@ -28,7 +28,7 @@ func (h *StrictHandlers) CreateWorkItemComment(c *gin.Context, request CreateWor
 func (h *StrictHandlers) GetWorkItemComment(c *gin.Context, request GetWorkItemCommentRequestObject) (GetWorkItemCommentResponseObject, error) {
 	tx := GetTxFromCtx(c)
 
-	workItemComment, err := h.svc.WorkItemComment.ByID(c, tx, db.WorkItemCommentID(request.Id))
+	workItemComment, err := h.svc.WorkItemComment.ByID(c, tx, db.WorkItemCommentID(request.CommentId))
 	if err != nil {
 		renderErrorResponse(c, "Could not create work item comment", err)
 
@@ -48,7 +48,7 @@ func (h *StrictHandlers) UpdateWorkItemComment(c *gin.Context, request UpdateWor
 
 	params := request.Body.WorkItemCommentUpdateParams
 
-	workItemComment, err := h.svc.WorkItemComment.Update(c, tx, db.WorkItemCommentID(request.Id), &params)
+	workItemComment, err := h.svc.WorkItemComment.Update(c, tx, db.WorkItemCommentID(request.CommentId), &params)
 	if err != nil {
 		renderErrorResponse(c, "Could not update work item comment", err)
 
@@ -66,7 +66,7 @@ func (h *StrictHandlers) UpdateWorkItemComment(c *gin.Context, request UpdateWor
 func (h *StrictHandlers) DeleteWorkItemComment(c *gin.Context, request DeleteWorkItemCommentRequestObject) (DeleteWorkItemCommentResponseObject, error) {
 	tx := GetTxFromCtx(c)
 
-	_, err := h.svc.WorkItemComment.Delete(c, tx, db.WorkItemCommentID(request.Id))
+	_, err := h.svc.WorkItemComment.Delete(c, tx, db.WorkItemCommentID(request.CommentId))
 	if err != nil {
 		renderErrorResponse(c, "Could not delete work item comment", err)
 

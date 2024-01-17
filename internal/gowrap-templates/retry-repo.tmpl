@@ -39,6 +39,9 @@ func New{{$decorator}} (base {{.Interface.Type}}, logger *zap.SugaredLogger, ret
       }
       {{$method.ResultsNames}} = _d.{{$.Interface.Name}}.{{$method.Call}}
       if err == nil || _d._retryCount < 1 {
+        if tx, ok := d.(pgx.Tx); ok {
+          _, err = tx.Exec(ctx, "RELEASE SAVEPOINT {{$decorator}}{{$method.Name}}")
+        }
         return
       }
       _ticker:= time.NewTicker(_d._retryInterval)
@@ -61,14 +64,12 @@ func New{{$decorator}} (base {{.Interface.Type}}, logger *zap.SugaredLogger, ret
             err = fmt.Errorf("could not rollback to savepoint: %w", err)
             return
           }
-
-          if _, err = tx.Exec(ctx, "BEGIN"); err != nil{
-            err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-            return
-          }
         }
 
         {{$method.ResultsNames}} = _d.{{$.Interface.Name}}.{{$method.Call}}
+      }
+      if tx, ok := d.(pgx.Tx); ok {
+        _, err = tx.Exec(ctx, "RELEASE SAVEPOINT {{$decorator}}{{$method.Name}}")
       }
       return
     }

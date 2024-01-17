@@ -45,6 +45,9 @@ func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params *d
 	}
 	up1, err = _d.Notification.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT NotificationWithRetryCreate")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -61,14 +64,12 @@ func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params *d
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		up1, err = _d.Notification.Create(ctx, d, params)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT NotificationWithRetryCreate")
 	}
 	return
 }
@@ -84,6 +85,9 @@ func (_d NotificationWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Not
 	}
 	np1, err = _d.Notification.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT NotificationWithRetryDelete")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -100,14 +104,12 @@ func (_d NotificationWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Not
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		np1, err = _d.Notification.Delete(ctx, d, id)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT NotificationWithRetryDelete")
 	}
 	return
 }
@@ -123,6 +125,9 @@ func (_d NotificationWithRetry) LatestNotifications(ctx context.Context, d db.DB
 	}
 	ga1, err = _d.Notification.LatestNotifications(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT NotificationWithRetryLatestNotifications")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -139,14 +144,12 @@ func (_d NotificationWithRetry) LatestNotifications(ctx context.Context, d db.DB
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		ga1, err = _d.Notification.LatestNotifications(ctx, d, params)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT NotificationWithRetryLatestNotifications")
 	}
 	return
 }
@@ -162,6 +165,9 @@ func (_d NotificationWithRetry) PaginatedNotifications(ctx context.Context, d db
 	}
 	ua1, err = _d.Notification.PaginatedNotifications(ctx, d, userID, params)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT NotificationWithRetryPaginatedNotifications")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -178,14 +184,12 @@ func (_d NotificationWithRetry) PaginatedNotifications(ctx context.Context, d db
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		ua1, err = _d.Notification.PaginatedNotifications(ctx, d, userID, params)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT NotificationWithRetryPaginatedNotifications")
 	}
 	return
 }

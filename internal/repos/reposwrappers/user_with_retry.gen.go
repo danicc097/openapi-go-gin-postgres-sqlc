@@ -45,6 +45,9 @@ func (_d UserWithRetry) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) 
 	}
 	up1, err = _d.User.ByAPIKey(ctx, d, apiKey)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByAPIKey")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -61,14 +64,12 @@ func (_d UserWithRetry) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) 
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		up1, err = _d.User.ByAPIKey(ctx, d, apiKey)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByAPIKey")
 	}
 	return
 }
@@ -84,6 +85,9 @@ func (_d UserWithRetry) ByEmail(ctx context.Context, d db.DBTX, email string, op
 	}
 	up1, err = _d.User.ByEmail(ctx, d, email, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByEmail")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -100,14 +104,12 @@ func (_d UserWithRetry) ByEmail(ctx context.Context, d db.DBTX, email string, op
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		up1, err = _d.User.ByEmail(ctx, d, email, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByEmail")
 	}
 	return
 }
@@ -123,6 +125,9 @@ func (_d UserWithRetry) ByExternalID(ctx context.Context, d db.DBTX, extID strin
 	}
 	up1, err = _d.User.ByExternalID(ctx, d, extID, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByExternalID")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -139,14 +144,12 @@ func (_d UserWithRetry) ByExternalID(ctx context.Context, d db.DBTX, extID strin
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		up1, err = _d.User.ByExternalID(ctx, d, extID, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByExternalID")
 	}
 	return
 }
@@ -162,6 +165,9 @@ func (_d UserWithRetry) ByID(ctx context.Context, d db.DBTX, id db.UserID, opts 
 	}
 	up1, err = _d.User.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByID")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -178,14 +184,12 @@ func (_d UserWithRetry) ByID(ctx context.Context, d db.DBTX, id db.UserID, opts 
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		up1, err = _d.User.ByID(ctx, d, id, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByID")
 	}
 	return
 }
@@ -201,6 +205,9 @@ func (_d UserWithRetry) ByProject(ctx context.Context, d db.DBTX, projectID db.P
 	}
 	ua1, err = _d.User.ByProject(ctx, d, projectID)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByProject")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -217,14 +224,12 @@ func (_d UserWithRetry) ByProject(ctx context.Context, d db.DBTX, projectID db.P
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		ua1, err = _d.User.ByProject(ctx, d, projectID)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByProject")
 	}
 	return
 }
@@ -240,6 +245,9 @@ func (_d UserWithRetry) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamID)
 	}
 	ua1, err = _d.User.ByTeam(ctx, d, teamID)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByTeam")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -256,14 +264,12 @@ func (_d UserWithRetry) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamID)
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		ua1, err = _d.User.ByTeam(ctx, d, teamID)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByTeam")
 	}
 	return
 }
@@ -279,6 +285,9 @@ func (_d UserWithRetry) ByUsername(ctx context.Context, d db.DBTX, username stri
 	}
 	up1, err = _d.User.ByUsername(ctx, d, username, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByUsername")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -295,14 +304,12 @@ func (_d UserWithRetry) ByUsername(ctx context.Context, d db.DBTX, username stri
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		up1, err = _d.User.ByUsername(ctx, d, username, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryByUsername")
 	}
 	return
 }
@@ -318,6 +325,9 @@ func (_d UserWithRetry) Create(ctx context.Context, d db.DBTX, params *db.UserCr
 	}
 	up1, err = _d.User.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryCreate")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -334,14 +344,12 @@ func (_d UserWithRetry) Create(ctx context.Context, d db.DBTX, params *db.UserCr
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		up1, err = _d.User.Create(ctx, d, params)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryCreate")
 	}
 	return
 }
@@ -357,6 +365,9 @@ func (_d UserWithRetry) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.Us
 	}
 	up1, err = _d.User.CreateAPIKey(ctx, d, user)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryCreateAPIKey")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -373,14 +384,12 @@ func (_d UserWithRetry) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.Us
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		up1, err = _d.User.CreateAPIKey(ctx, d, user)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryCreateAPIKey")
 	}
 	return
 }
@@ -396,6 +405,9 @@ func (_d UserWithRetry) Delete(ctx context.Context, d db.DBTX, id db.UserID) (up
 	}
 	up1, err = _d.User.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryDelete")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -412,14 +424,12 @@ func (_d UserWithRetry) Delete(ctx context.Context, d db.DBTX, id db.UserID) (up
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		up1, err = _d.User.Delete(ctx, d, id)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryDelete")
 	}
 	return
 }
@@ -435,6 +445,9 @@ func (_d UserWithRetry) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey stri
 	}
 	up1, err = _d.User.DeleteAPIKey(ctx, d, apiKey)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryDeleteAPIKey")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -451,14 +464,12 @@ func (_d UserWithRetry) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey stri
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		up1, err = _d.User.DeleteAPIKey(ctx, d, apiKey)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryDeleteAPIKey")
 	}
 	return
 }
@@ -474,6 +485,9 @@ func (_d UserWithRetry) Paginated(ctx context.Context, d db.DBTX, params models.
 	}
 	ua1, err = _d.User.Paginated(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryPaginated")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -490,14 +504,12 @@ func (_d UserWithRetry) Paginated(ctx context.Context, d db.DBTX, params models.
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		ua1, err = _d.User.Paginated(ctx, d, params)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryPaginated")
 	}
 	return
 }
@@ -513,6 +525,9 @@ func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id db.UserID, par
 	}
 	up1, err = _d.User.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryUpdate")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -529,14 +544,12 @@ func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id db.UserID, par
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		up1, err = _d.User.Update(ctx, d, id, params)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT UserWithRetryUpdate")
 	}
 	return
 }

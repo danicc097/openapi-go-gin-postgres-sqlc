@@ -230,15 +230,15 @@ type ClientInterface interface {
 	CreateWorkItemComment(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteWorkItemComment request
-	DeleteWorkItemComment(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteWorkItemComment(ctx context.Context, workItemID int, commentId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetWorkItemComment request
-	GetWorkItemComment(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetWorkItemComment(ctx context.Context, workItemID int, commentId int, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateWorkItemComment request with any body
-	UpdateWorkItemCommentWithBody(ctx context.Context, workItemID int, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateWorkItemCommentWithBody(ctx context.Context, workItemID int, commentId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateWorkItemComment(ctx context.Context, workItemID int, id int, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateWorkItemComment(ctx context.Context, workItemID int, commentId int, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteWorkItemTag request
 	DeleteWorkItemTag(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1118,8 +1118,8 @@ func (c *Client) CreateWorkItemComment(ctx context.Context, workItemID int, body
 	}
 }
 
-func (c *Client) DeleteWorkItemComment(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteWorkItemCommentRequest(c.Server, workItemID, id)
+func (c *Client) DeleteWorkItemComment(ctx context.Context, workItemID int, commentId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteWorkItemCommentRequest(c.Server, workItemID, commentId)
 	if err != nil {
 		return nil, err
 	}
@@ -1137,8 +1137,8 @@ func (c *Client) DeleteWorkItemComment(ctx context.Context, workItemID int, id i
 	}
 }
 
-func (c *Client) GetWorkItemComment(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetWorkItemCommentRequest(c.Server, workItemID, id)
+func (c *Client) GetWorkItemComment(ctx context.Context, workItemID int, commentId int, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWorkItemCommentRequest(c.Server, workItemID, commentId)
 	if err != nil {
 		return nil, err
 	}
@@ -1156,8 +1156,8 @@ func (c *Client) GetWorkItemComment(ctx context.Context, workItemID int, id int,
 	}
 }
 
-func (c *Client) UpdateWorkItemCommentWithBody(ctx context.Context, workItemID int, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateWorkItemCommentRequestWithBody(c.Server, workItemID, id, contentType, body)
+func (c *Client) UpdateWorkItemCommentWithBody(ctx context.Context, workItemID int, commentId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWorkItemCommentRequestWithBody(c.Server, workItemID, commentId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1175,8 +1175,8 @@ func (c *Client) UpdateWorkItemCommentWithBody(ctx context.Context, workItemID i
 	}
 }
 
-func (c *Client) UpdateWorkItemComment(ctx context.Context, workItemID int, id int, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateWorkItemCommentRequest(c.Server, workItemID, id, body)
+func (c *Client) UpdateWorkItemComment(ctx context.Context, workItemID int, commentId int, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWorkItemCommentRequest(c.Server, workItemID, commentId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2713,7 +2713,7 @@ func NewCreateWorkItemCommentRequestWithBody(server string, workItemID int, cont
 }
 
 // NewDeleteWorkItemCommentRequest generates requests for DeleteWorkItemComment
-func NewDeleteWorkItemCommentRequest(server string, workItemID int, id int) (*http.Request, error) {
+func NewDeleteWorkItemCommentRequest(server string, workItemID int, commentId int) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2725,7 +2725,7 @@ func NewDeleteWorkItemCommentRequest(server string, workItemID int, id int) (*ht
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "commentId", runtime.ParamLocationPath, commentId)
 	if err != nil {
 		return nil, err
 	}
@@ -2754,7 +2754,7 @@ func NewDeleteWorkItemCommentRequest(server string, workItemID int, id int) (*ht
 }
 
 // NewGetWorkItemCommentRequest generates requests for GetWorkItemComment
-func NewGetWorkItemCommentRequest(server string, workItemID int, id int) (*http.Request, error) {
+func NewGetWorkItemCommentRequest(server string, workItemID int, commentId int) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2766,7 +2766,7 @@ func NewGetWorkItemCommentRequest(server string, workItemID int, id int) (*http.
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "commentId", runtime.ParamLocationPath, commentId)
 	if err != nil {
 		return nil, err
 	}
@@ -2795,18 +2795,18 @@ func NewGetWorkItemCommentRequest(server string, workItemID int, id int) (*http.
 }
 
 // NewUpdateWorkItemCommentRequest calls the generic UpdateWorkItemComment builder with application/json body
-func NewUpdateWorkItemCommentRequest(server string, workItemID int, id int, body UpdateWorkItemCommentJSONRequestBody) (*http.Request, error) {
+func NewUpdateWorkItemCommentRequest(server string, workItemID int, commentId int, body UpdateWorkItemCommentJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpdateWorkItemCommentRequestWithBody(server, workItemID, id, "application/json", bodyReader)
+	return NewUpdateWorkItemCommentRequestWithBody(server, workItemID, commentId, "application/json", bodyReader)
 }
 
 // NewUpdateWorkItemCommentRequestWithBody generates requests for UpdateWorkItemComment with any type of body
-func NewUpdateWorkItemCommentRequestWithBody(server string, workItemID int, id int, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateWorkItemCommentRequestWithBody(server string, workItemID int, commentId int, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2818,7 +2818,7 @@ func NewUpdateWorkItemCommentRequestWithBody(server string, workItemID int, id i
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "commentId", runtime.ParamLocationPath, commentId)
 	if err != nil {
 		return nil, err
 	}
@@ -3245,15 +3245,15 @@ type ClientWithResponsesInterface interface {
 	CreateWorkItemCommentWithResponse(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error)
 
 	// DeleteWorkItemComment request
-	DeleteWorkItemCommentWithResponse(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*DeleteWorkItemCommentResponse, error)
+	DeleteWorkItemCommentWithResponse(ctx context.Context, workItemID int, commentId int, reqEditors ...RequestEditorFn) (*DeleteWorkItemCommentResponse, error)
 
 	// GetWorkItemComment request
-	GetWorkItemCommentWithResponse(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*GetWorkItemCommentResponse, error)
+	GetWorkItemCommentWithResponse(ctx context.Context, workItemID int, commentId int, reqEditors ...RequestEditorFn) (*GetWorkItemCommentResponse, error)
 
 	// UpdateWorkItemComment request with any body
-	UpdateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID int, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
+	UpdateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID int, commentId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
 
-	UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID int, id int, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
+	UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID int, commentId int, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
 
 	// DeleteWorkItemTag request
 	DeleteWorkItemTagWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteWorkItemTagResponse, error)
@@ -4614,8 +4614,8 @@ func (c *ClientWithResponses) CreateWorkItemCommentWithResponse(ctx context.Cont
 }
 
 // DeleteWorkItemCommentWithResponse request returning *DeleteWorkItemCommentResponse
-func (c *ClientWithResponses) DeleteWorkItemCommentWithResponse(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*DeleteWorkItemCommentResponse, error) {
-	rsp, err := c.DeleteWorkItemComment(ctx, workItemID, id, reqEditors...)
+func (c *ClientWithResponses) DeleteWorkItemCommentWithResponse(ctx context.Context, workItemID int, commentId int, reqEditors ...RequestEditorFn) (*DeleteWorkItemCommentResponse, error) {
+	rsp, err := c.DeleteWorkItemComment(ctx, workItemID, commentId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4623,8 +4623,8 @@ func (c *ClientWithResponses) DeleteWorkItemCommentWithResponse(ctx context.Cont
 }
 
 // GetWorkItemCommentWithResponse request returning *GetWorkItemCommentResponse
-func (c *ClientWithResponses) GetWorkItemCommentWithResponse(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*GetWorkItemCommentResponse, error) {
-	rsp, err := c.GetWorkItemComment(ctx, workItemID, id, reqEditors...)
+func (c *ClientWithResponses) GetWorkItemCommentWithResponse(ctx context.Context, workItemID int, commentId int, reqEditors ...RequestEditorFn) (*GetWorkItemCommentResponse, error) {
+	rsp, err := c.GetWorkItemComment(ctx, workItemID, commentId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4632,16 +4632,16 @@ func (c *ClientWithResponses) GetWorkItemCommentWithResponse(ctx context.Context
 }
 
 // UpdateWorkItemCommentWithBodyWithResponse request with arbitrary body returning *UpdateWorkItemCommentResponse
-func (c *ClientWithResponses) UpdateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID int, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error) {
-	rsp, err := c.UpdateWorkItemCommentWithBody(ctx, workItemID, id, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID int, commentId int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error) {
+	rsp, err := c.UpdateWorkItemCommentWithBody(ctx, workItemID, commentId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpdateWorkItemCommentResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID int, id int, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error) {
-	rsp, err := c.UpdateWorkItemComment(ctx, workItemID, id, body, reqEditors...)
+func (c *ClientWithResponses) UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID int, commentId int, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error) {
+	rsp, err := c.UpdateWorkItemComment(ctx, workItemID, commentId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

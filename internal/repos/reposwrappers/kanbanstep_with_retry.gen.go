@@ -44,6 +44,9 @@ func (_d KanbanStepWithRetry) ByID(ctx context.Context, d db.DBTX, id db.KanbanS
 	}
 	kp1, err = _d.KanbanStep.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT KanbanStepWithRetryByID")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -60,14 +63,12 @@ func (_d KanbanStepWithRetry) ByID(ctx context.Context, d db.DBTX, id db.KanbanS
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		kp1, err = _d.KanbanStep.ByID(ctx, d, id, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT KanbanStepWithRetryByID")
 	}
 	return
 }
@@ -83,6 +84,9 @@ func (_d KanbanStepWithRetry) ByProject(ctx context.Context, d db.DBTX, projectI
 	}
 	ka1, err = _d.KanbanStep.ByProject(ctx, d, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT KanbanStepWithRetryByProject")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -99,14 +103,12 @@ func (_d KanbanStepWithRetry) ByProject(ctx context.Context, d db.DBTX, projectI
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		ka1, err = _d.KanbanStep.ByProject(ctx, d, projectID, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT KanbanStepWithRetryByProject")
 	}
 	return
 }

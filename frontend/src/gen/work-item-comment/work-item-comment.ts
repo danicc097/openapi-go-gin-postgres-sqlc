@@ -97,18 +97,18 @@ export const useCreateWorkItemComment = <TError = void | HTTPError, TContext = u
  */
 export const getWorkItemComment = (
   workItemID: number,
-  id: number,
+  commentId: number,
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal,
 ) => {
   return customInstance<WorkItemComment>(
-    { url: `/work-item/${workItemID}/comment/${id}`, method: 'GET', signal },
+    { url: `/work-item/${workItemID}/comment/${commentId}`, method: 'GET', signal },
     options,
   )
 }
 
-export const getGetWorkItemCommentQueryKey = (workItemID: number, id: number) => {
-  return [`/work-item/${workItemID}/comment/${id}`] as const
+export const getGetWorkItemCommentQueryKey = (workItemID: number, commentId: number) => {
+  return [`/work-item/${workItemID}/comment/${commentId}`] as const
 }
 
 export const getGetWorkItemCommentInfiniteQueryOptions = <
@@ -116,7 +116,7 @@ export const getGetWorkItemCommentInfiniteQueryOptions = <
   TError = void | HTTPError,
 >(
   workItemID: number,
-  id: number,
+  commentId: number,
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItemComment>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
@@ -124,15 +124,15 @@ export const getGetWorkItemCommentInfiniteQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetWorkItemCommentQueryKey(workItemID, id)
+  const queryKey = queryOptions?.queryKey ?? getGetWorkItemCommentQueryKey(workItemID, commentId)
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItemComment>>> = ({ signal }) =>
-    getWorkItemComment(workItemID, id, requestOptions, signal)
+    getWorkItemComment(workItemID, commentId, requestOptions, signal)
 
   return {
     queryKey,
     queryFn,
-    enabled: !!(workItemID && id),
+    enabled: !!(workItemID && commentId),
     cacheTime: 300000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -157,13 +157,13 @@ export const useGetWorkItemCommentInfinite = <
   TError = void | HTTPError,
 >(
   workItemID: number,
-  id: number,
+  commentId: number,
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItemComment>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
   },
 ): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetWorkItemCommentInfiniteQueryOptions(workItemID, id, options)
+  const queryOptions = getGetWorkItemCommentInfiniteQueryOptions(workItemID, commentId, options)
 
   const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
 
@@ -177,7 +177,7 @@ export const getGetWorkItemCommentQueryOptions = <
   TError = void | HTTPError,
 >(
   workItemID: number,
-  id: number,
+  commentId: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getWorkItemComment>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
@@ -185,15 +185,15 @@ export const getGetWorkItemCommentQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetWorkItemCommentQueryKey(workItemID, id)
+  const queryKey = queryOptions?.queryKey ?? getGetWorkItemCommentQueryKey(workItemID, commentId)
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItemComment>>> = ({ signal }) =>
-    getWorkItemComment(workItemID, id, requestOptions, signal)
+    getWorkItemComment(workItemID, commentId, requestOptions, signal)
 
   return {
     queryKey,
     queryFn,
-    enabled: !!(workItemID && id),
+    enabled: !!(workItemID && commentId),
     cacheTime: 300000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -218,13 +218,13 @@ export const useGetWorkItemComment = <
   TError = void | HTTPError,
 >(
   workItemID: number,
-  id: number,
+  commentId: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getWorkItemComment>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetWorkItemCommentQueryOptions(workItemID, id, options)
+  const queryOptions = getGetWorkItemCommentQueryOptions(workItemID, commentId, options)
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 
@@ -238,13 +238,13 @@ export const useGetWorkItemComment = <
  */
 export const updateWorkItemComment = (
   workItemID: number,
-  id: number,
+  commentId: number,
   updateWorkItemCommentRequest: UpdateWorkItemCommentRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemComment>(
     {
-      url: `/work-item/${workItemID}/comment/${id}`,
+      url: `/work-item/${workItemID}/comment/${commentId}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: updateWorkItemCommentRequest,
@@ -257,25 +257,25 @@ export const getUpdateWorkItemCommentMutationOptions = <TError = void | HTTPErro
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateWorkItemComment>>,
     TError,
-    { workItemID: number; id: number; data: UpdateWorkItemCommentRequest },
+    { workItemID: number; commentId: number; data: UpdateWorkItemCommentRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateWorkItemComment>>,
   TError,
-  { workItemID: number; id: number; data: UpdateWorkItemCommentRequest },
+  { workItemID: number; commentId: number; data: UpdateWorkItemCommentRequest },
   TContext
 > => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateWorkItemComment>>,
-    { workItemID: number; id: number; data: UpdateWorkItemCommentRequest }
+    { workItemID: number; commentId: number; data: UpdateWorkItemCommentRequest }
   > = (props) => {
-    const { workItemID, id, data } = props ?? {}
+    const { workItemID, commentId, data } = props ?? {}
 
-    return updateWorkItemComment(workItemID, id, data, requestOptions)
+    return updateWorkItemComment(workItemID, commentId, data, requestOptions)
   }
 
   return { mutationFn, ...mutationOptions }
@@ -292,7 +292,7 @@ export const useUpdateWorkItemComment = <TError = void | HTTPError, TContext = u
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateWorkItemComment>>,
     TError,
-    { workItemID: number; id: number; data: UpdateWorkItemCommentRequest },
+    { workItemID: number; commentId: number; data: UpdateWorkItemCommentRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
@@ -306,35 +306,35 @@ export const useUpdateWorkItemComment = <TError = void | HTTPError, TContext = u
  */
 export const deleteWorkItemComment = (
   workItemID: number,
-  id: number,
+  commentId: number,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<void>({ url: `/work-item/${workItemID}/comment/${id}`, method: 'DELETE' }, options)
+  return customInstance<void>({ url: `/work-item/${workItemID}/comment/${commentId}`, method: 'DELETE' }, options)
 }
 
 export const getDeleteWorkItemCommentMutationOptions = <TError = HTTPError, TContext = unknown>(options?: {
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof deleteWorkItemComment>>,
     TError,
-    { workItemID: number; id: number },
+    { workItemID: number; commentId: number },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof deleteWorkItemComment>>,
   TError,
-  { workItemID: number; id: number },
+  { workItemID: number; commentId: number },
   TContext
 > => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof deleteWorkItemComment>>,
-    { workItemID: number; id: number }
+    { workItemID: number; commentId: number }
   > = (props) => {
-    const { workItemID, id } = props ?? {}
+    const { workItemID, commentId } = props ?? {}
 
-    return deleteWorkItemComment(workItemID, id, requestOptions)
+    return deleteWorkItemComment(workItemID, commentId, requestOptions)
   }
 
   return { mutationFn, ...mutationOptions }
@@ -351,7 +351,7 @@ export const useDeleteWorkItemComment = <TError = HTTPError, TContext = unknown>
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof deleteWorkItemComment>>,
     TError,
-    { workItemID: number; id: number },
+    { workItemID: number; commentId: number },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
