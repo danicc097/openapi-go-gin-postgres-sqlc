@@ -1871,7 +1871,7 @@ run_shared_services() {
   cd - >/dev/null
 }
 
-x.generate_spec_helpers() {
+generate_spec_helpers() {
   local int_ids=()
   local anchors=()
   go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/db"

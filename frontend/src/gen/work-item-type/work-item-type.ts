@@ -35,7 +35,7 @@ export const createWorkItemType = (
 ) => {
   return customInstance<WorkItemType>(
     {
-      url: `/project/${projectName}/workItemType/`,
+      url: `/project/${projectName}/work-item-type/`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: createWorkItemTypeRequest,
@@ -95,19 +95,23 @@ export const useCreateWorkItemType = <TError = void | HTTPError, TContext = unkn
 /**
  * @summary get workitemtype.
  */
-export const getWorkItemType = (id: number, options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
-  return customInstance<WorkItemType>({ url: `/workItemType/${id}`, method: 'GET', signal }, options)
+export const getWorkItemType = (
+  workItemTypeID: number,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<WorkItemType>({ url: `/work-item-type/${workItemTypeID}`, method: 'GET', signal }, options)
 }
 
-export const getGetWorkItemTypeQueryKey = (id: number) => {
-  return [`/workItemType/${id}`] as const
+export const getGetWorkItemTypeQueryKey = (workItemTypeID: number) => {
+  return [`/work-item-type/${workItemTypeID}`] as const
 }
 
 export const getGetWorkItemTypeInfiniteQueryOptions = <
   TData = Awaited<ReturnType<typeof getWorkItemType>>,
   TError = void | HTTPError,
 >(
-  id: number,
+  workItemTypeID: number,
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItemType>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
@@ -115,15 +119,15 @@ export const getGetWorkItemTypeInfiniteQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetWorkItemTypeQueryKey(id)
+  const queryKey = queryOptions?.queryKey ?? getGetWorkItemTypeQueryKey(workItemTypeID)
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItemType>>> = ({ signal }) =>
-    getWorkItemType(id, requestOptions, signal)
+    getWorkItemType(workItemTypeID, requestOptions, signal)
 
   return {
     queryKey,
     queryFn,
-    enabled: !!id,
+    enabled: !!workItemTypeID,
     cacheTime: 300000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -147,13 +151,13 @@ export const useGetWorkItemTypeInfinite = <
   TData = Awaited<ReturnType<typeof getWorkItemType>>,
   TError = void | HTTPError,
 >(
-  id: number,
+  workItemTypeID: number,
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItemType>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
   },
 ): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetWorkItemTypeInfiniteQueryOptions(id, options)
+  const queryOptions = getGetWorkItemTypeInfiniteQueryOptions(workItemTypeID, options)
 
   const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
 
@@ -166,7 +170,7 @@ export const getGetWorkItemTypeQueryOptions = <
   TData = Awaited<ReturnType<typeof getWorkItemType>>,
   TError = void | HTTPError,
 >(
-  id: number,
+  workItemTypeID: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getWorkItemType>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
@@ -174,15 +178,15 @@ export const getGetWorkItemTypeQueryOptions = <
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetWorkItemTypeQueryKey(id)
+  const queryKey = queryOptions?.queryKey ?? getGetWorkItemTypeQueryKey(workItemTypeID)
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItemType>>> = ({ signal }) =>
-    getWorkItemType(id, requestOptions, signal)
+    getWorkItemType(workItemTypeID, requestOptions, signal)
 
   return {
     queryKey,
     queryFn,
-    enabled: !!id,
+    enabled: !!workItemTypeID,
     cacheTime: 300000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -203,13 +207,13 @@ export type GetWorkItemTypeQueryError = void | HTTPError
  * @summary get workitemtype.
  */
 export const useGetWorkItemType = <TData = Awaited<ReturnType<typeof getWorkItemType>>, TError = void | HTTPError>(
-  id: number,
+  workItemTypeID: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getWorkItemType>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetWorkItemTypeQueryOptions(id, options)
+  const queryOptions = getGetWorkItemTypeQueryOptions(workItemTypeID, options)
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 
@@ -222,13 +226,13 @@ export const useGetWorkItemType = <TData = Awaited<ReturnType<typeof getWorkItem
  * @summary update workitemtype.
  */
 export const updateWorkItemType = (
-  id: number,
+  workItemTypeID: number,
   updateWorkItemTypeRequest: UpdateWorkItemTypeRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemType>(
     {
-      url: `/workItemType/${id}`,
+      url: `/work-item-type/${workItemTypeID}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: updateWorkItemTypeRequest,
@@ -241,25 +245,25 @@ export const getUpdateWorkItemTypeMutationOptions = <TError = void | HTTPError, 
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateWorkItemType>>,
     TError,
-    { id: number; data: UpdateWorkItemTypeRequest },
+    { workItemTypeID: number; data: UpdateWorkItemTypeRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateWorkItemType>>,
   TError,
-  { id: number; data: UpdateWorkItemTypeRequest },
+  { workItemTypeID: number; data: UpdateWorkItemTypeRequest },
   TContext
 > => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateWorkItemType>>,
-    { id: number; data: UpdateWorkItemTypeRequest }
+    { workItemTypeID: number; data: UpdateWorkItemTypeRequest }
   > = (props) => {
-    const { id, data } = props ?? {}
+    const { workItemTypeID, data } = props ?? {}
 
-    return updateWorkItemType(id, data, requestOptions)
+    return updateWorkItemType(workItemTypeID, data, requestOptions)
   }
 
   return { mutationFn, ...mutationOptions }
@@ -276,7 +280,7 @@ export const useUpdateWorkItemType = <TError = void | HTTPError, TContext = unkn
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateWorkItemType>>,
     TError,
-    { id: number; data: UpdateWorkItemTypeRequest },
+    { workItemTypeID: number; data: UpdateWorkItemTypeRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
@@ -288,20 +292,32 @@ export const useUpdateWorkItemType = <TError = void | HTTPError, TContext = unkn
 /**
  * @summary delete workitemtype.
  */
-export const deleteWorkItemType = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<void>({ url: `/workItemType/${id}`, method: 'DELETE' }, options)
+export const deleteWorkItemType = (workItemTypeID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<void>({ url: `/work-item-type/${workItemTypeID}`, method: 'DELETE' }, options)
 }
 
 export const getDeleteWorkItemTypeMutationOptions = <TError = HTTPError, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteWorkItemType>>, TError, { id: number }, TContext>
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteWorkItemType>>,
+    TError,
+    { workItemTypeID: number },
+    TContext
+  >
   request?: SecondParameter<typeof customInstance>
-}): UseMutationOptions<Awaited<ReturnType<typeof deleteWorkItemType>>, TError, { id: number }, TContext> => {
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteWorkItemType>>,
+  TError,
+  { workItemTypeID: number },
+  TContext
+> => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteWorkItemType>>, { id: number }> = (props) => {
-    const { id } = props ?? {}
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteWorkItemType>>, { workItemTypeID: number }> = (
+    props,
+  ) => {
+    const { workItemTypeID } = props ?? {}
 
-    return deleteWorkItemType(id, requestOptions)
+    return deleteWorkItemType(workItemTypeID, requestOptions)
   }
 
   return { mutationFn, ...mutationOptions }
@@ -315,7 +331,12 @@ export type DeleteWorkItemTypeMutationError = HTTPError
  * @summary delete workitemtype.
  */
 export const useDeleteWorkItemType = <TError = HTTPError, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteWorkItemType>>, TError, { id: number }, TContext>
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteWorkItemType>>,
+    TError,
+    { workItemTypeID: number },
+    TContext
+  >
   request?: SecondParameter<typeof customInstance>
 }) => {
   const mutationOptions = getDeleteWorkItemTypeMutationOptions(options)

@@ -91,16 +91,20 @@ export const useCreateWorkitem = <TError = unknown, TContext = unknown>(options?
 /**
  * @summary get workitem
  */
-export const getWorkItem = (id: number, options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
-  return customInstance<DbWorkItem>({ url: `/work-item/${id}/`, method: 'GET', signal }, options)
+export const getWorkItem = (
+  workItemID: number,
+  options?: SecondParameter<typeof customInstance>,
+  signal?: AbortSignal,
+) => {
+  return customInstance<DbWorkItem>({ url: `/work-item/${workItemID}/`, method: 'GET', signal }, options)
 }
 
-export const getGetWorkItemQueryKey = (id: number) => {
-  return [`/work-item/${id}/`] as const
+export const getGetWorkItemQueryKey = (workItemID: number) => {
+  return [`/work-item/${workItemID}/`] as const
 }
 
 export const getGetWorkItemInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = unknown>(
-  id: number,
+  workItemID: number,
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
@@ -108,15 +112,15 @@ export const getGetWorkItemInfiniteQueryOptions = <TData = Awaited<ReturnType<ty
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetWorkItemQueryKey(id)
+  const queryKey = queryOptions?.queryKey ?? getGetWorkItemQueryKey(workItemID)
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItem>>> = ({ signal }) =>
-    getWorkItem(id, requestOptions, signal)
+    getWorkItem(workItemID, requestOptions, signal)
 
   return {
     queryKey,
     queryFn,
-    enabled: !!id,
+    enabled: !!workItemID,
     cacheTime: 300000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -137,13 +141,13 @@ export type GetWorkItemInfiniteQueryError = unknown
  * @summary get workitem
  */
 export const useGetWorkItemInfinite = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = unknown>(
-  id: number,
+  workItemID: number,
   options?: {
     query?: UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
   },
 ): UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetWorkItemInfiniteQueryOptions(id, options)
+  const queryOptions = getGetWorkItemInfiniteQueryOptions(workItemID, options)
 
   const query = useInfiniteQuery(queryOptions) as UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey }
 
@@ -153,7 +157,7 @@ export const useGetWorkItemInfinite = <TData = Awaited<ReturnType<typeof getWork
 }
 
 export const getGetWorkItemQueryOptions = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = unknown>(
-  id: number,
+  workItemID: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
@@ -161,15 +165,15 @@ export const getGetWorkItemQueryOptions = <TData = Awaited<ReturnType<typeof get
 ) => {
   const { query: queryOptions, request: requestOptions } = options ?? {}
 
-  const queryKey = queryOptions?.queryKey ?? getGetWorkItemQueryKey(id)
+  const queryKey = queryOptions?.queryKey ?? getGetWorkItemQueryKey(workItemID)
 
   const queryFn: QueryFunction<Awaited<ReturnType<typeof getWorkItem>>> = ({ signal }) =>
-    getWorkItem(id, requestOptions, signal)
+    getWorkItem(workItemID, requestOptions, signal)
 
   return {
     queryKey,
     queryFn,
-    enabled: !!id,
+    enabled: !!workItemID,
     cacheTime: 300000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
@@ -190,13 +194,13 @@ export type GetWorkItemQueryError = unknown
  * @summary get workitem
  */
 export const useGetWorkItem = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = unknown>(
-  id: number,
+  workItemID: number,
   options?: {
     query?: UseQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>
     request?: SecondParameter<typeof customInstance>
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
-  const queryOptions = getGetWorkItemQueryOptions(id, options)
+  const queryOptions = getGetWorkItemQueryOptions(workItemID, options)
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & { queryKey: QueryKey }
 
@@ -208,20 +212,20 @@ export const useGetWorkItem = <TData = Awaited<ReturnType<typeof getWorkItem>>, 
 /**
  * @summary update workitem
  */
-export const updateWorkitem = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<DbWorkItem>({ url: `/work-item/${id}/`, method: 'PATCH' }, options)
+export const updateWorkitem = (workItemID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<DbWorkItem>({ url: `/work-item/${workItemID}/`, method: 'PATCH' }, options)
 }
 
 export const getUpdateWorkitemMutationOptions = <TError = unknown, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateWorkitem>>, TError, { id: number }, TContext>
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateWorkitem>>, TError, { workItemID: number }, TContext>
   request?: SecondParameter<typeof customInstance>
-}): UseMutationOptions<Awaited<ReturnType<typeof updateWorkitem>>, TError, { id: number }, TContext> => {
+}): UseMutationOptions<Awaited<ReturnType<typeof updateWorkitem>>, TError, { workItemID: number }, TContext> => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateWorkitem>>, { id: number }> = (props) => {
-    const { id } = props ?? {}
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateWorkitem>>, { workItemID: number }> = (props) => {
+    const { workItemID } = props ?? {}
 
-    return updateWorkitem(id, requestOptions)
+    return updateWorkitem(workItemID, requestOptions)
   }
 
   return { mutationFn, ...mutationOptions }
@@ -235,7 +239,7 @@ export type UpdateWorkitemMutationError = unknown
  * @summary update workitem
  */
 export const useUpdateWorkitem = <TError = unknown, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateWorkitem>>, TError, { id: number }, TContext>
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateWorkitem>>, TError, { workItemID: number }, TContext>
   request?: SecondParameter<typeof customInstance>
 }) => {
   const mutationOptions = getUpdateWorkitemMutationOptions(options)
@@ -245,20 +249,20 @@ export const useUpdateWorkitem = <TError = unknown, TContext = unknown>(options?
 /**
  * @summary delete workitem
  */
-export const deleteWorkitem = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<void>({ url: `/work-item/${id}/`, method: 'DELETE' }, options)
+export const deleteWorkitem = (workItemID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<void>({ url: `/work-item/${workItemID}/`, method: 'DELETE' }, options)
 }
 
 export const getDeleteWorkitemMutationOptions = <TError = unknown, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteWorkitem>>, TError, { id: number }, TContext>
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteWorkitem>>, TError, { workItemID: number }, TContext>
   request?: SecondParameter<typeof customInstance>
-}): UseMutationOptions<Awaited<ReturnType<typeof deleteWorkitem>>, TError, { id: number }, TContext> => {
+}): UseMutationOptions<Awaited<ReturnType<typeof deleteWorkitem>>, TError, { workItemID: number }, TContext> => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
-  const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteWorkitem>>, { id: number }> = (props) => {
-    const { id } = props ?? {}
+  const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteWorkitem>>, { workItemID: number }> = (props) => {
+    const { workItemID } = props ?? {}
 
-    return deleteWorkitem(id, requestOptions)
+    return deleteWorkitem(workItemID, requestOptions)
   }
 
   return { mutationFn, ...mutationOptions }
@@ -272,7 +276,7 @@ export type DeleteWorkitemMutationError = unknown
  * @summary delete workitem
  */
 export const useDeleteWorkitem = <TError = unknown, TContext = unknown>(options?: {
-  mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteWorkitem>>, TError, { id: number }, TContext>
+  mutation?: UseMutationOptions<Awaited<ReturnType<typeof deleteWorkitem>>, TError, { workItemID: number }, TContext>
   request?: SecondParameter<typeof customInstance>
 }) => {
   const mutationOptions = getDeleteWorkitemMutationOptions(options)

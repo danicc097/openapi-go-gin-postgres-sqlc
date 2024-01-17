@@ -78,7 +78,7 @@ export const getWorkItemMock = () => [
       },
     })
   }),
-  http.get('*/work-item/:id/', async () => {
+  http.get('*/work-item/:workItemID/', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getGetWorkItemMock()), {
       status: 200,
@@ -87,7 +87,7 @@ export const getWorkItemMock = () => [
       },
     })
   }),
-  http.patch('*/work-item/:id/', async () => {
+  http.patch('*/work-item/:workItemID/', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getUpdateWorkitemMock()), {
       status: 200,
@@ -96,7 +96,7 @@ export const getWorkItemMock = () => [
       },
     })
   }),
-  http.delete('*/work-item/:id/', async () => {
+  http.delete('*/work-item/:workItemID/', async () => {
     await delay(1000)
     return new HttpResponse(null, {
       status: 200,

@@ -45,7 +45,7 @@ export const getTeamMock = () => [
       },
     })
   }),
-  http.get('*/team/:id', async () => {
+  http.get('*/team/:teamID', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getGetTeamMock()), {
       status: 200,
@@ -54,7 +54,7 @@ export const getTeamMock = () => [
       },
     })
   }),
-  http.patch('*/team/:id', async () => {
+  http.patch('*/team/:teamID', async () => {
     await delay(1000)
     return new HttpResponse(JSON.stringify(getUpdateTeamMock()), {
       status: 200,
@@ -63,7 +63,7 @@ export const getTeamMock = () => [
       },
     })
   }),
-  http.delete('*/team/:id', async () => {
+  http.delete('*/team/:teamID', async () => {
     await delay(1000)
     return new HttpResponse(null, {
       status: 200,

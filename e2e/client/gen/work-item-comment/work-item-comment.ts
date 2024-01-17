@@ -36,11 +36,11 @@ export const createWorkItemComment = (
  */
 export const getWorkItemComment = (
   workItemID: number,
-  commentId: number,
+  workItemCommentID: number,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemComment>(
-    { url: `/work-item/${workItemID}/comment/${commentId}`, method: 'GET' },
+    { url: `/work-item/${workItemID}/comment/${workItemCommentID}`, method: 'GET' },
     options,
   )
 }
@@ -49,13 +49,13 @@ export const getWorkItemComment = (
  */
 export const updateWorkItemComment = (
   workItemID: number,
-  commentId: number,
+  workItemCommentID: number,
   updateWorkItemCommentRequest: UpdateWorkItemCommentRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemComment>(
     {
-      url: `/work-item/${workItemID}/comment/${commentId}`,
+      url: `/work-item/${workItemID}/comment/${workItemCommentID}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: updateWorkItemCommentRequest,
@@ -68,10 +68,13 @@ export const updateWorkItemComment = (
  */
 export const deleteWorkItemComment = (
   workItemID: number,
-  commentId: number,
+  workItemCommentID: number,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<void>({ url: `/work-item/${workItemID}/comment/${commentId}`, method: 'DELETE' }, options)
+  return customInstance<void>(
+    { url: `/work-item/${workItemID}/comment/${workItemCommentID}`, method: 'DELETE' },
+    options,
+  )
 }
 export type CreateWorkItemCommentResult = NonNullable<Awaited<ReturnType<typeof createWorkItemComment>>>
 export type GetWorkItemCommentResult = NonNullable<Awaited<ReturnType<typeof getWorkItemComment>>>

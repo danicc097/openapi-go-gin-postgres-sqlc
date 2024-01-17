@@ -29,7 +29,7 @@ func (h *StrictHandlers) UpdateTeam(c *gin.Context, request UpdateTeamRequestObj
 
 	params := request.Body.TeamUpdateParams
 
-	team, err := h.svc.Team.Update(ctx, tx, db.TeamID(request.Id), &params)
+	team, err := h.svc.Team.Update(ctx, tx, db.TeamID(request.TeamID), &params)
 	if err != nil {
 		renderErrorResponse(c, "Could not update team", err)
 
@@ -43,7 +43,7 @@ func (h *StrictHandlers) GetTeam(c *gin.Context, request GetTeamRequestObject) (
 	ctx := c.Request.Context()
 	tx := GetTxFromCtx(c)
 
-	team, err := h.svc.Team.ByID(ctx, tx, db.TeamID(request.Id))
+	team, err := h.svc.Team.ByID(ctx, tx, db.TeamID(request.TeamID))
 	if err != nil {
 		renderErrorResponse(c, "Could not get team", err)
 
@@ -57,7 +57,7 @@ func (h *StrictHandlers) DeleteTeam(c *gin.Context, request DeleteTeamRequestObj
 	ctx := c.Request.Context()
 	tx := GetTxFromCtx(c)
 
-	_, err := h.svc.Team.Delete(ctx, tx, db.TeamID(request.Id))
+	_, err := h.svc.Team.Delete(ctx, tx, db.TeamID(request.TeamID))
 	if err != nil {
 		renderErrorResponse(c, "Could not delete team", err)
 

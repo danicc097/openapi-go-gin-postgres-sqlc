@@ -204,5 +204,5 @@ func TestTracing(t *testing.T) {
 		t.Logf("%+v", ros.Name())
 	}
 	require.NotEmpty(t, spans)
-	require.Equal(t, "/v2/work-item/:workItemID/comment/:id", spans[len(spans)-1].Name())
+	require.Equal(t, "/v2/work-item/:workItemID/comment/:workItemCommentID", spans[len(spans)-1].Name())
 }

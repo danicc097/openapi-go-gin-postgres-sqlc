@@ -38,8 +38,8 @@ x-uuidIDParameterBase: &x-uuidIDParameterBase
 x-uuidParameter: &x-uuidParameter
   !!merge <<: *x-uuidIDParameterBase
   name: id
-x-serialIDParameterBase: &x-serialIDParameterBase # requires name (must be the same name in subpaths so gin can handle it)
-  description: integer identifier
+x-serialIDParameterBase: &x-serialIDParameterBase
+  description: integer identifier # requires name (must be the same name in subpaths so gin can handle it)
   explode: false
   in: path
   required: true
@@ -87,84 +87,85 @@ x-error-response: &x-error-response
 # Anchors must be defined before lines that use them. Also cannot use anchors from different files.
 # See https://docs.gitlab.com/ee/ci/yaml/yaml_optimization.html
 #
-# Ideally in the future this also helps so that oapi-codegen and orval can generate typesafe ids instead of primitives
+# Ideally in the future this also helps so that oapi-codegen and orval can generate typesafe ids instead of primitives.
+# Gin also requires the same parameter names on subpaths, else it panics.
 #
 # <<<--- GENERATED DB ANCHORS. DO NOT EDIT. --->>>
-x-activityIDParameter: &x-activityIDParameter # Generated. DO NOT EDIT.
+x-activityIDParameter: &x-activityIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: activityID
-x-entityNotificationIDParameter: &x-entityNotificationIDParameter # Generated. DO NOT EDIT.
+  name: activityID # Generated. DO NOT EDIT.
+x-entityNotificationIDParameter: &x-entityNotificationIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: entityNotificationID
-x-extraSchemaBookAuthorsSurrogateKeyIDParameter: &x-extraSchemaBookAuthorsSurrogateKeyIDParameter # Generated. DO NOT EDIT.
+  name: entityNotificationID # Generated. DO NOT EDIT.
+x-extraSchemaBookAuthorsSurrogateKeyIDParameter: &x-extraSchemaBookAuthorsSurrogateKeyIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaBookAuthorsSurrogateKeyID
-x-extraSchemaBookIDParameter: &x-extraSchemaBookIDParameter # Generated. DO NOT EDIT.
+  name: extraSchemaBookAuthorsSurrogateKeyID # Generated. DO NOT EDIT.
+x-extraSchemaBookIDParameter: &x-extraSchemaBookIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaBookID
-x-extraSchemaBookReviewIDParameter: &x-extraSchemaBookReviewIDParameter # Generated. DO NOT EDIT.
+  name: extraSchemaBookID # Generated. DO NOT EDIT.
+x-extraSchemaBookReviewIDParameter: &x-extraSchemaBookReviewIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaBookReviewID
-x-extraSchemaDummyJoinIDParameter: &x-extraSchemaDummyJoinIDParameter # Generated. DO NOT EDIT.
+  name: extraSchemaBookReviewID # Generated. DO NOT EDIT.
+x-extraSchemaDummyJoinIDParameter: &x-extraSchemaDummyJoinIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaDummyJoinID
-x-extraSchemaNotificationIDParameter: &x-extraSchemaNotificationIDParameter # Generated. DO NOT EDIT.
+  name: extraSchemaDummyJoinID # Generated. DO NOT EDIT.
+x-extraSchemaNotificationIDParameter: &x-extraSchemaNotificationIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaNotificationID
-x-extraSchemaUserAPIKeyIDParameter: &x-extraSchemaUserAPIKeyIDParameter # Generated. DO NOT EDIT.
+  name: extraSchemaNotificationID # Generated. DO NOT EDIT.
+x-extraSchemaUserAPIKeyIDParameter: &x-extraSchemaUserAPIKeyIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaUserAPIKeyID
-x-extraSchemaWorkItemIDParameter: &x-extraSchemaWorkItemIDParameter # Generated. DO NOT EDIT.
+  name: extraSchemaUserAPIKeyID # Generated. DO NOT EDIT.
+x-extraSchemaWorkItemIDParameter: &x-extraSchemaWorkItemIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: extraSchemaWorkItemID
-x-kanbanStepIDParameter: &x-kanbanStepIDParameter # Generated. DO NOT EDIT.
+  name: extraSchemaWorkItemID # Generated. DO NOT EDIT.
+x-kanbanStepIDParameter: &x-kanbanStepIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: kanbanStepID
-x-movieIDParameter: &x-movieIDParameter # Generated. DO NOT EDIT.
+  name: kanbanStepID # Generated. DO NOT EDIT.
+x-movieIDParameter: &x-movieIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: movieID
-x-notificationIDParameter: &x-notificationIDParameter # Generated. DO NOT EDIT.
+  name: movieID # Generated. DO NOT EDIT.
+x-notificationIDParameter: &x-notificationIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: notificationID
-x-projectIDParameter: &x-projectIDParameter # Generated. DO NOT EDIT.
+  name: notificationID # Generated. DO NOT EDIT.
+x-projectIDParameter: &x-projectIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: projectID
-x-schemaMigrationIDParameter: &x-schemaMigrationIDParameter # Generated. DO NOT EDIT.
+  name: projectID # Generated. DO NOT EDIT.
+x-schemaMigrationIDParameter: &x-schemaMigrationIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: schemaMigrationID
-x-teamIDParameter: &x-teamIDParameter # Generated. DO NOT EDIT.
+  name: schemaMigrationID # Generated. DO NOT EDIT.
+x-teamIDParameter: &x-teamIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: teamID
-x-timeEntryIDParameter: &x-timeEntryIDParameter # Generated. DO NOT EDIT.
+  name: teamID # Generated. DO NOT EDIT.
+x-timeEntryIDParameter: &x-timeEntryIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: timeEntryID
-x-userAPIKeyIDParameter: &x-userAPIKeyIDParameter # Generated. DO NOT EDIT.
+  name: timeEntryID # Generated. DO NOT EDIT.
+x-userAPIKeyIDParameter: &x-userAPIKeyIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: userAPIKeyID
-x-userNotificationIDParameter: &x-userNotificationIDParameter # Generated. DO NOT EDIT.
+  name: userAPIKeyID # Generated. DO NOT EDIT.
+x-userNotificationIDParameter: &x-userNotificationIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: userNotificationID
-x-workItemCommentIDParameter: &x-workItemCommentIDParameter # Generated. DO NOT EDIT.
+  name: userNotificationID # Generated. DO NOT EDIT.
+x-workItemCommentIDParameter: &x-workItemCommentIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: workItemCommentID
-x-workItemIDParameter: &x-workItemIDParameter # Generated. DO NOT EDIT.
+  name: workItemCommentID # Generated. DO NOT EDIT.
+x-workItemIDParameter: &x-workItemIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: workItemID
-x-workItemTagIDParameter: &x-workItemTagIDParameter # Generated. DO NOT EDIT.
+  name: workItemID # Generated. DO NOT EDIT.
+x-workItemTagIDParameter: &x-workItemTagIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: workItemTagID
-x-workItemTypeIDParameter: &x-workItemTypeIDParameter # Generated. DO NOT EDIT.
+  name: workItemTagID # Generated. DO NOT EDIT.
+x-workItemTypeIDParameter: &x-workItemTypeIDParameter
   !!merge <<: *x-serialIDParameterBase
-  name: workItemTypeID
-x-extraSchemaPagElementIDParameter: &x-extraSchemaPagElementIDParameter # Generated. DO NOT EDIT.
+  name: workItemTypeID # Generated. DO NOT EDIT.
+x-extraSchemaPagElementIDParameter: &x-extraSchemaPagElementIDParameter
   !!merge <<: *x-uuidIDParameterBase
-  name: extraSchemaPagElementID
-x-extraSchemaUserIDParameter: &x-extraSchemaUserIDParameter # Generated. DO NOT EDIT.
+  name: extraSchemaPagElementID # Generated. DO NOT EDIT.
+x-extraSchemaUserIDParameter: &x-extraSchemaUserIDParameter
   !!merge <<: *x-uuidIDParameterBase
-  name: extraSchemaUserID
-x-userIDParameter: &x-userIDParameter # Generated. DO NOT EDIT.
+  name: extraSchemaUserID # Generated. DO NOT EDIT.
+x-userIDParameter: &x-userIDParameter
   !!merge <<: *x-uuidIDParameterBase
-  name: userID
+  name: userID # Generated. DO NOT EDIT.
 # <<<--- END OF ANCHORS DB GENERATION. DO NOT EDIT. --->>>
 #
 #
@@ -350,7 +351,6 @@ paths:
       operationId: UpdateTeam
       parameters:
         - *x-teamIDParameter
-        - *x-uuidParameter
       requestBody:
         content:
           application/json:
@@ -379,7 +379,7 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - team
-  /project/{projectName}/workItemTag/:
+  /project/{projectName}/work-item-tag/:
     post:
       summary: create workitemtag.
       !!merge <<: *x-require-authenticated
@@ -438,13 +438,13 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - activity
-  /activity/{id}:
+  /activity/{activityID}:
     get:
       summary: get activity.
       !!merge <<: *x-require-authenticated
       operationId: GetActivity
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
+        - *x-activityIDParameter
       responses:
         200:
           description: Success.
@@ -462,7 +462,7 @@ paths:
       x-required-scopes:
         - activity:edit
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
+        - *x-activityIDParameter
       requestBody:
         content:
           application/json:
@@ -486,20 +486,20 @@ paths:
       x-required-scopes:
         - activity:delete
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
+        - *x-activityIDParameter
       responses:
         204:
           description: Success.
         !!merge <<: *x-error-response
       tags:
         - activity
-  /workItemTag/{id}:
+  /work-item-tag/{workItemTagID}:
     get:
       summary: get workitemtag.
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemTag
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
+        - *x-workItemTagIDParameter
       responses:
         200:
           description: Success.
@@ -515,7 +515,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkItemTag
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
+        - *x-workItemTagIDParameter
       requestBody:
         content:
           application/json:
@@ -537,14 +537,14 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkItemTag
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
+        - *x-workItemTagIDParameter
       responses:
         204:
           description: Success.
         !!merge <<: *x-error-response
       tags:
         - workItemTag
-  /project/{projectName}/workItemType/:
+  /project/{projectName}/work-item-type/:
     post:
       summary: create workitemtype.
       !!merge <<: *x-require-authenticated
@@ -567,13 +567,13 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - workItemType
-  /workItemType/{id}:
+  /work-item-type/{workItemTypeID}:
     get:
       summary: get workitemtype.
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemType
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
+        - *x-workItemTypeIDParameter
       responses:
         200:
           description: Success.
@@ -589,7 +589,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkItemType
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
+        - *x-workItemTypeIDParameter
       requestBody:
         content:
           application/json:
@@ -611,7 +611,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkItemType
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
+        - *x-workItemTypeIDParameter
       responses:
         204:
           description: Success.
@@ -862,13 +862,13 @@ paths:
                   - $ref: '#/components/schemas/DbWorkItem'
       tags:
         - workItem
-  /work-item/{id}/:
+  /work-item/{workItemID}/:
     get:
       summary: get workitem
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItem
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
+        - *x-workItemIDParameter
       responses:
         200:
           description: Success.
@@ -884,7 +884,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkitem
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
+        - *x-workItemIDParameter
       responses:
         200:
           description: Success.
@@ -900,7 +900,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkitem
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
+        - *x-workItemIDParameter
       responses:
         204:
           description: Success.
@@ -932,16 +932,14 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - workItemComment
-  /work-item/{workItemID}/comment/{commentId}:
+  /work-item/{workItemID}/comment/{workItemCommentID}:
     get:
       summary: get work item comment.
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemComment
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
-          name: commentId # gin cannot handle if parameter names are the same in 2 routes with wildcards
-        - !!merge <<: *x-serialIDParameterBase
-          name: workItemID
+        - *x-workItemIDParameter
+        - *x-workItemCommentIDParameter
       responses:
         200:
           description: Success.
@@ -959,10 +957,8 @@ paths:
       x-required-scopes:
         - work-item-comment:edit
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
-          name: commentId # gin cannot handle if parameter names are the same in 2 routes with wildcards
-        - !!merge <<: *x-serialIDParameterBase
-          name: workItemID
+        - *x-workItemIDParameter
+        - *x-workItemCommentIDParameter
       requestBody:
         content:
           application/json:
@@ -986,10 +982,8 @@ paths:
       x-required-scopes:
         - work-item-comment:delete
       parameters:
-        - !!merge <<: *x-serialIDParameterBase
-          name: commentId # gin cannot handle if parameter names are the same in 2 routes with wildcards
-        - !!merge <<: *x-serialIDParameterBase
-          name: workItemID
+        - *x-workItemIDParameter
+        - *x-workItemCommentIDParameter
       responses:
         204:
           description: Success.
@@ -1009,7 +1003,6 @@ components:
       example: demo
       style: simple
     UUID: *x-uuidParameter
-    SerialID: *x-serialIDParameterBase
   schemas:
     CreateActivityRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -2416,4 +2409,3 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-

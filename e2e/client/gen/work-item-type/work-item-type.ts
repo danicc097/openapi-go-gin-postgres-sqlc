@@ -23,7 +23,7 @@ export const createWorkItemType = (
 ) => {
   return customInstance<WorkItemType>(
     {
-      url: `/project/${projectName}/workItemType/`,
+      url: `/project/${projectName}/work-item-type/`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: createWorkItemTypeRequest,
@@ -34,20 +34,20 @@ export const createWorkItemType = (
 /**
  * @summary get workitemtype.
  */
-export const getWorkItemType = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<WorkItemType>({ url: `/workItemType/${id}`, method: 'GET' }, options)
+export const getWorkItemType = (workItemTypeID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<WorkItemType>({ url: `/work-item-type/${workItemTypeID}`, method: 'GET' }, options)
 }
 /**
  * @summary update workitemtype.
  */
 export const updateWorkItemType = (
-  id: number,
+  workItemTypeID: number,
   updateWorkItemTypeRequest: UpdateWorkItemTypeRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemType>(
     {
-      url: `/workItemType/${id}`,
+      url: `/work-item-type/${workItemTypeID}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: updateWorkItemTypeRequest,
@@ -58,8 +58,8 @@ export const updateWorkItemType = (
 /**
  * @summary delete workitemtype.
  */
-export const deleteWorkItemType = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<void>({ url: `/workItemType/${id}`, method: 'DELETE' }, options)
+export const deleteWorkItemType = (workItemTypeID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<void>({ url: `/work-item-type/${workItemTypeID}`, method: 'DELETE' }, options)
 }
 export type CreateWorkItemTypeResult = NonNullable<Awaited<ReturnType<typeof createWorkItemType>>>
 export type GetWorkItemTypeResult = NonNullable<Awaited<ReturnType<typeof getWorkItemType>>>

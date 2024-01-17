@@ -919,9 +919,6 @@ type WorkItemType  struct {
 // ProjectName is generated from projects table.
 type ProjectName = externalRef0.Project
 
-// SerialID defines the model for SerialID.
-type SerialID = int
-
 // UUID defines the model for UUID.
 type UUID = uuid.UUID
 
@@ -995,6 +992,14 @@ type UpdateUserJSONRequestBody = UpdateUserRequest
 
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
+// UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
+
+type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
+
+// UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
+
+type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
+
 // CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
 
 type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
@@ -1006,14 +1011,6 @@ type CreateWorkItemCommentJSONRequestBody = CreateWorkItemCommentRequest
 // UpdateWorkItemCommentJSONRequestBody defines body for UpdateWorkItemComment for application/json ContentType.
 
 type UpdateWorkItemCommentJSONRequestBody = UpdateWorkItemCommentRequest
-
-// UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
-
-type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
-
-// UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
-
-type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
 
 // AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {
@@ -1065,14 +1062,14 @@ func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// delete activity.
-	// (DELETE /activity/{id})
-	DeleteActivity(c *gin.Context, id int)
+	// (DELETE /activity/{activityID})
+	DeleteActivity(c *gin.Context, activityID int)
 	// get activity.
-	// (GET /activity/{id})
-	GetActivity(c *gin.Context, id int)
+	// (GET /activity/{activityID})
+	GetActivity(c *gin.Context, activityID int)
 	// update activity.
-	// (PATCH /activity/{id})
-	UpdateActivity(c *gin.Context, id int)
+	// (PATCH /activity/{activityID})
+	UpdateActivity(c *gin.Context, activityID int)
 	// Ping pongs
 	// (GET /admin/ping)
 	AdminPing(c *gin.Context)
@@ -1116,23 +1113,23 @@ type ServerInterface interface {
 	// (POST /project/{projectName}/team/)
 	CreateTeam(c *gin.Context, projectName externalRef0.ProjectName)
 	// create workitemtag.
-	// (POST /project/{projectName}/workItemTag/)
+	// (POST /project/{projectName}/work-item-tag/)
 	CreateWorkItemTag(c *gin.Context, projectName externalRef0.ProjectName)
 	// create workitemtype.
-	// (POST /project/{projectName}/workItemType/)
+	// (POST /project/{projectName}/work-item-type/)
 	CreateWorkItemType(c *gin.Context, projectName externalRef0.ProjectName)
 	// returns workitems for a project
 	// (GET /project/{projectName}/workitems)
 	GetProjectWorkitems(c *gin.Context, projectName externalRef0.ProjectName, params externalRef0.GetProjectWorkitemsParams)
 	// delete team.
-	// (DELETE /team/{id})
-	DeleteTeam(c *gin.Context, id int)
+	// (DELETE /team/{teamID})
+	DeleteTeam(c *gin.Context, teamID int)
 	// get team.
-	// (GET /team/{id})
-	GetTeam(c *gin.Context, id int)
+	// (GET /team/{teamID})
+	GetTeam(c *gin.Context, teamID int)
 	// update team.
-	// (PATCH /team/{id})
-	UpdateTeam(c *gin.Context, id int)
+	// (PATCH /team/{teamID})
+	UpdateTeam(c *gin.Context, teamID int)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context)
@@ -1148,48 +1145,48 @@ type ServerInterface interface {
 	// updates user role and scopes by id
 	// (PATCH /user/{id}/authorization)
 	UpdateUserAuthorization(c *gin.Context, id uuid.UUID)
+	// delete workitemtag.
+	// (DELETE /work-item-tag/{workItemTagID})
+	DeleteWorkItemTag(c *gin.Context, workItemTagID int)
+	// get workitemtag.
+	// (GET /work-item-tag/{workItemTagID})
+	GetWorkItemTag(c *gin.Context, workItemTagID int)
+	// update workitemtag.
+	// (PATCH /work-item-tag/{workItemTagID})
+	UpdateWorkItemTag(c *gin.Context, workItemTagID int)
+	// delete workitemtype.
+	// (DELETE /work-item-type/{workItemTypeID})
+	DeleteWorkItemType(c *gin.Context, workItemTypeID int)
+	// get workitemtype.
+	// (GET /work-item-type/{workItemTypeID})
+	GetWorkItemType(c *gin.Context, workItemTypeID int)
+	// update workitemtype.
+	// (PATCH /work-item-type/{workItemTypeID})
+	UpdateWorkItemType(c *gin.Context, workItemTypeID int)
 	// create workitem
 	// (POST /work-item/)
 	CreateWorkitem(c *gin.Context)
 	// delete workitem
-	// (DELETE /work-item/{id}/)
-	DeleteWorkitem(c *gin.Context, id int)
+	// (DELETE /work-item/{workItemID}/)
+	DeleteWorkitem(c *gin.Context, workItemID int)
 	// get workitem
-	// (GET /work-item/{id}/)
-	GetWorkItem(c *gin.Context, id int)
+	// (GET /work-item/{workItemID}/)
+	GetWorkItem(c *gin.Context, workItemID int)
 	// update workitem
-	// (PATCH /work-item/{id}/)
-	UpdateWorkitem(c *gin.Context, id int)
+	// (PATCH /work-item/{workItemID}/)
+	UpdateWorkitem(c *gin.Context, workItemID int)
 	// create work item comment.
 	// (POST /work-item/{workItemID}/comment/)
 	CreateWorkItemComment(c *gin.Context, workItemID int)
 	// delete .
-	// (DELETE /work-item/{workItemID}/comment/{commentId})
-	DeleteWorkItemComment(c *gin.Context, workItemID int, commentId int)
+	// (DELETE /work-item/{workItemID}/comment/{workItemCommentID})
+	DeleteWorkItemComment(c *gin.Context, workItemID int, workItemCommentID int)
 	// get work item comment.
-	// (GET /work-item/{workItemID}/comment/{commentId})
-	GetWorkItemComment(c *gin.Context, workItemID int, commentId int)
+	// (GET /work-item/{workItemID}/comment/{workItemCommentID})
+	GetWorkItemComment(c *gin.Context, workItemID int, workItemCommentID int)
 	// update work item comment.
-	// (PATCH /work-item/{workItemID}/comment/{commentId})
-	UpdateWorkItemComment(c *gin.Context, workItemID int, commentId int)
-	// delete workitemtag.
-	// (DELETE /workItemTag/{id})
-	DeleteWorkItemTag(c *gin.Context, id int)
-	// get workitemtag.
-	// (GET /workItemTag/{id})
-	GetWorkItemTag(c *gin.Context, id int)
-	// update workitemtag.
-	// (PATCH /workItemTag/{id})
-	UpdateWorkItemTag(c *gin.Context, id int)
-	// delete workitemtype.
-	// (DELETE /workItemType/{id})
-	DeleteWorkItemType(c *gin.Context, id int)
-	// get workitemtype.
-	// (GET /workItemType/{id})
-	GetWorkItemType(c *gin.Context, id int)
-	// update workitemtype.
-	// (PATCH /workItemType/{id})
-	UpdateWorkItemType(c *gin.Context, id int)
+	// (PATCH /work-item/{workItemID}/comment/{workItemCommentID})
+	UpdateWorkItemComment(c *gin.Context, workItemID int, workItemCommentID int)
 
 	middlewares(opID OperationID) []gin.HandlerFunc
 	authMiddlewares(opID OperationID) []gin.HandlerFunc
@@ -1206,12 +1203,12 @@ type MiddlewareFunc func(c *gin.Context)
 func (siw *ServerInterfaceWrapper) DeleteActivity(c *gin.Context) {
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id int // int
+	// ------------- Path parameter "activityID" -------------
+	var activityID int // int
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "activityID", c.Param("activityID"), &activityID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter activityID: %s", err)})
 		return
 	}
 
@@ -1219,19 +1216,19 @@ func (siw *ServerInterfaceWrapper) DeleteActivity(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.DeleteActivity(c, id)
+	siw.Handler.DeleteActivity(c, activityID)
 }
 
 // GetActivity operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetActivity(c *gin.Context) {
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id int // int
+	// ------------- Path parameter "activityID" -------------
+	var activityID int // int
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "activityID", c.Param("activityID"), &activityID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter activityID: %s", err)})
 		return
 	}
 
@@ -1239,19 +1236,19 @@ func (siw *ServerInterfaceWrapper) GetActivity(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.GetActivity(c, id)
+	siw.Handler.GetActivity(c, activityID)
 }
 
 // UpdateActivity operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateActivity(c *gin.Context) {
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id int // int
+	// ------------- Path parameter "activityID" -------------
+	var activityID int // int
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "activityID", c.Param("activityID"), &activityID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter activityID: %s", err)})
 		return
 	}
 
@@ -1259,7 +1256,7 @@ func (siw *ServerInterfaceWrapper) UpdateActivity(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.UpdateActivity(c, id)
+	siw.Handler.UpdateActivity(c, activityID)
 }
 
 // AdminPing operation with its own middleware.
@@ -1613,12 +1610,12 @@ func (siw *ServerInterfaceWrapper) GetProjectWorkitems(c *gin.Context) {
 func (siw *ServerInterfaceWrapper) DeleteTeam(c *gin.Context) {
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id int // int
+	// ------------- Path parameter "teamID" -------------
+	var teamID int // int
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "teamID", c.Param("teamID"), &teamID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter teamID: %s", err)})
 		return
 	}
 
@@ -1626,19 +1623,19 @@ func (siw *ServerInterfaceWrapper) DeleteTeam(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.DeleteTeam(c, id)
+	siw.Handler.DeleteTeam(c, teamID)
 }
 
 // GetTeam operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetTeam(c *gin.Context) {
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id int // int
+	// ------------- Path parameter "teamID" -------------
+	var teamID int // int
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "teamID", c.Param("teamID"), &teamID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter teamID: %s", err)})
 		return
 	}
 
@@ -1646,19 +1643,19 @@ func (siw *ServerInterfaceWrapper) GetTeam(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.GetTeam(c, id)
+	siw.Handler.GetTeam(c, teamID)
 }
 
 // UpdateTeam operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id int // int
+	// ------------- Path parameter "teamID" -------------
+	var teamID int // int
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "teamID", c.Param("teamID"), &teamID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter teamID: %s", err)})
 		return
 	}
 
@@ -1666,7 +1663,7 @@ func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.UpdateTeam(c, id)
+	siw.Handler.UpdateTeam(c, teamID)
 }
 
 // GetCurrentUser operation with its own middleware.
@@ -1794,6 +1791,126 @@ func (siw *ServerInterfaceWrapper) UpdateUserAuthorization(c *gin.Context) {
 	siw.Handler.UpdateUserAuthorization(c, id)
 }
 
+// DeleteWorkItemTag operation with its own middleware.
+func (siw *ServerInterfaceWrapper) DeleteWorkItemTag(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "workItemTagID" -------------
+	var workItemTagID int // int
+
+	err = runtime.BindStyledParameter("simple", false, "workItemTagID", c.Param("workItemTagID"), &workItemTagID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemTagID: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.DeleteWorkItemTag(c, workItemTagID)
+}
+
+// GetWorkItemTag operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetWorkItemTag(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "workItemTagID" -------------
+	var workItemTagID int // int
+
+	err = runtime.BindStyledParameter("simple", false, "workItemTagID", c.Param("workItemTagID"), &workItemTagID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemTagID: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.GetWorkItemTag(c, workItemTagID)
+}
+
+// UpdateWorkItemTag operation with its own middleware.
+func (siw *ServerInterfaceWrapper) UpdateWorkItemTag(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "workItemTagID" -------------
+	var workItemTagID int // int
+
+	err = runtime.BindStyledParameter("simple", false, "workItemTagID", c.Param("workItemTagID"), &workItemTagID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemTagID: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.UpdateWorkItemTag(c, workItemTagID)
+}
+
+// DeleteWorkItemType operation with its own middleware.
+func (siw *ServerInterfaceWrapper) DeleteWorkItemType(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "workItemTypeID" -------------
+	var workItemTypeID int // int
+
+	err = runtime.BindStyledParameter("simple", false, "workItemTypeID", c.Param("workItemTypeID"), &workItemTypeID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemTypeID: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.DeleteWorkItemType(c, workItemTypeID)
+}
+
+// GetWorkItemType operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetWorkItemType(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "workItemTypeID" -------------
+	var workItemTypeID int // int
+
+	err = runtime.BindStyledParameter("simple", false, "workItemTypeID", c.Param("workItemTypeID"), &workItemTypeID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemTypeID: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.GetWorkItemType(c, workItemTypeID)
+}
+
+// UpdateWorkItemType operation with its own middleware.
+func (siw *ServerInterfaceWrapper) UpdateWorkItemType(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "workItemTypeID" -------------
+	var workItemTypeID int // int
+
+	err = runtime.BindStyledParameter("simple", false, "workItemTypeID", c.Param("workItemTypeID"), &workItemTypeID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemTypeID: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.UpdateWorkItemType(c, workItemTypeID)
+}
+
 // CreateWorkitem operation with its own middleware.
 func (siw *ServerInterfaceWrapper) CreateWorkitem(c *gin.Context) {
 	c.Set(externalRef0.Bearer_authScopes, []string{})
@@ -1807,12 +1924,12 @@ func (siw *ServerInterfaceWrapper) CreateWorkitem(c *gin.Context) {
 func (siw *ServerInterfaceWrapper) DeleteWorkitem(c *gin.Context) {
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id int // int
+	// ------------- Path parameter "workItemID" -------------
+	var workItemID int // int
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemID: %s", err)})
 		return
 	}
 
@@ -1820,19 +1937,19 @@ func (siw *ServerInterfaceWrapper) DeleteWorkitem(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.DeleteWorkitem(c, id)
+	siw.Handler.DeleteWorkitem(c, workItemID)
 }
 
 // GetWorkItem operation with its own middleware.
 func (siw *ServerInterfaceWrapper) GetWorkItem(c *gin.Context) {
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id int // int
+	// ------------- Path parameter "workItemID" -------------
+	var workItemID int // int
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemID: %s", err)})
 		return
 	}
 
@@ -1840,19 +1957,19 @@ func (siw *ServerInterfaceWrapper) GetWorkItem(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.GetWorkItem(c, id)
+	siw.Handler.GetWorkItem(c, workItemID)
 }
 
 // UpdateWorkitem operation with its own middleware.
 func (siw *ServerInterfaceWrapper) UpdateWorkitem(c *gin.Context) {
 	var err error
 
-	// ------------- Path parameter "id" -------------
-	var id int // int
+	// ------------- Path parameter "workItemID" -------------
+	var workItemID int // int
 
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
+	err = runtime.BindStyledParameter("simple", false, "workItemID", c.Param("workItemID"), &workItemID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemID: %s", err)})
 		return
 	}
 
@@ -1860,7 +1977,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkitem(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.UpdateWorkitem(c, id)
+	siw.Handler.UpdateWorkitem(c, workItemID)
 }
 
 // CreateWorkItemComment operation with its own middleware.
@@ -1896,12 +2013,12 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemComment(c *gin.Context) {
 		return
 	}
 
-	// ------------- Path parameter "commentId" -------------
-	var commentId int // int
+	// ------------- Path parameter "workItemCommentID" -------------
+	var workItemCommentID int // int
 
-	err = runtime.BindStyledParameter("simple", false, "commentId", c.Param("commentId"), &commentId)
+	err = runtime.BindStyledParameter("simple", false, "workItemCommentID", c.Param("workItemCommentID"), &workItemCommentID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter commentId: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemCommentID: %s", err)})
 		return
 	}
 
@@ -1909,7 +2026,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemComment(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.DeleteWorkItemComment(c, workItemID, commentId)
+	siw.Handler.DeleteWorkItemComment(c, workItemID, workItemCommentID)
 }
 
 // GetWorkItemComment operation with its own middleware.
@@ -1925,12 +2042,12 @@ func (siw *ServerInterfaceWrapper) GetWorkItemComment(c *gin.Context) {
 		return
 	}
 
-	// ------------- Path parameter "commentId" -------------
-	var commentId int // int
+	// ------------- Path parameter "workItemCommentID" -------------
+	var workItemCommentID int // int
 
-	err = runtime.BindStyledParameter("simple", false, "commentId", c.Param("commentId"), &commentId)
+	err = runtime.BindStyledParameter("simple", false, "workItemCommentID", c.Param("workItemCommentID"), &workItemCommentID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter commentId: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemCommentID: %s", err)})
 		return
 	}
 
@@ -1938,7 +2055,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemComment(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.GetWorkItemComment(c, workItemID, commentId)
+	siw.Handler.GetWorkItemComment(c, workItemID, workItemCommentID)
 }
 
 // UpdateWorkItemComment operation with its own middleware.
@@ -1954,12 +2071,12 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemComment(c *gin.Context) {
 		return
 	}
 
-	// ------------- Path parameter "commentId" -------------
-	var commentId int // int
+	// ------------- Path parameter "workItemCommentID" -------------
+	var workItemCommentID int // int
 
-	err = runtime.BindStyledParameter("simple", false, "commentId", c.Param("commentId"), &commentId)
+	err = runtime.BindStyledParameter("simple", false, "workItemCommentID", c.Param("workItemCommentID"), &workItemCommentID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter commentId: %s", err)})
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter workItemCommentID: %s", err)})
 		return
 	}
 
@@ -1967,127 +2084,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemComment(c *gin.Context) {
 
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
-	siw.Handler.UpdateWorkItemComment(c, workItemID, commentId)
-}
-
-// DeleteWorkItemTag operation with its own middleware.
-func (siw *ServerInterfaceWrapper) DeleteWorkItemTag(c *gin.Context) {
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id int // int
-
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
-		return
-	}
-
-	c.Set(externalRef0.Bearer_authScopes, []string{})
-
-	c.Set(externalRef0.Api_keyScopes, []string{})
-
-	siw.Handler.DeleteWorkItemTag(c, id)
-}
-
-// GetWorkItemTag operation with its own middleware.
-func (siw *ServerInterfaceWrapper) GetWorkItemTag(c *gin.Context) {
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id int // int
-
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
-		return
-	}
-
-	c.Set(externalRef0.Bearer_authScopes, []string{})
-
-	c.Set(externalRef0.Api_keyScopes, []string{})
-
-	siw.Handler.GetWorkItemTag(c, id)
-}
-
-// UpdateWorkItemTag operation with its own middleware.
-func (siw *ServerInterfaceWrapper) UpdateWorkItemTag(c *gin.Context) {
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id int // int
-
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
-		return
-	}
-
-	c.Set(externalRef0.Bearer_authScopes, []string{})
-
-	c.Set(externalRef0.Api_keyScopes, []string{})
-
-	siw.Handler.UpdateWorkItemTag(c, id)
-}
-
-// DeleteWorkItemType operation with its own middleware.
-func (siw *ServerInterfaceWrapper) DeleteWorkItemType(c *gin.Context) {
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id int // int
-
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
-		return
-	}
-
-	c.Set(externalRef0.Bearer_authScopes, []string{})
-
-	c.Set(externalRef0.Api_keyScopes, []string{})
-
-	siw.Handler.DeleteWorkItemType(c, id)
-}
-
-// GetWorkItemType operation with its own middleware.
-func (siw *ServerInterfaceWrapper) GetWorkItemType(c *gin.Context) {
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id int // int
-
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
-		return
-	}
-
-	c.Set(externalRef0.Bearer_authScopes, []string{})
-
-	c.Set(externalRef0.Api_keyScopes, []string{})
-
-	siw.Handler.GetWorkItemType(c, id)
-}
-
-// UpdateWorkItemType operation with its own middleware.
-func (siw *ServerInterfaceWrapper) UpdateWorkItemType(c *gin.Context) {
-	var err error
-
-	// ------------- Path parameter "id" -------------
-	var id int // int
-
-	err = runtime.BindStyledParameter("simple", false, "id", c.Param("id"), &id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter id: %s", err)})
-		return
-	}
-
-	c.Set(externalRef0.Bearer_authScopes, []string{})
-
-	c.Set(externalRef0.Api_keyScopes, []string{})
-
-	siw.Handler.UpdateWorkItemType(c, id)
+	siw.Handler.UpdateWorkItemComment(c, workItemID, workItemCommentID)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -2107,17 +2104,17 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	}
 
 	// calling mw(c) directly has unexpected consequences: closed channels, etc.
-	router.DELETE(options.BaseURL+"/activity/:id", append(
+	router.DELETE(options.BaseURL+"/activity/:activityID", append(
 		wrapper.Handler.authMiddlewares(DeleteActivity),
 		append(wrapper.Handler.middlewares(DeleteActivity), wrapper.DeleteActivity)...,
 	)...)
 
-	router.GET(options.BaseURL+"/activity/:id", append(
+	router.GET(options.BaseURL+"/activity/:activityID", append(
 		wrapper.Handler.authMiddlewares(GetActivity),
 		append(wrapper.Handler.middlewares(GetActivity), wrapper.GetActivity)...,
 	)...)
 
-	router.PATCH(options.BaseURL+"/activity/:id", append(
+	router.PATCH(options.BaseURL+"/activity/:activityID", append(
 		wrapper.Handler.authMiddlewares(UpdateActivity),
 		append(wrapper.Handler.middlewares(UpdateActivity), wrapper.UpdateActivity)...,
 	)...)
@@ -2192,12 +2189,12 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(CreateTeam), wrapper.CreateTeam)...,
 	)...)
 
-	router.POST(options.BaseURL+"/project/:projectName/workItemTag/", append(
+	router.POST(options.BaseURL+"/project/:projectName/work-item-tag/", append(
 		wrapper.Handler.authMiddlewares(CreateWorkItemTag),
 		append(wrapper.Handler.middlewares(CreateWorkItemTag), wrapper.CreateWorkItemTag)...,
 	)...)
 
-	router.POST(options.BaseURL+"/project/:projectName/workItemType/", append(
+	router.POST(options.BaseURL+"/project/:projectName/work-item-type/", append(
 		wrapper.Handler.authMiddlewares(CreateWorkItemType),
 		append(wrapper.Handler.middlewares(CreateWorkItemType), wrapper.CreateWorkItemType)...,
 	)...)
@@ -2207,17 +2204,17 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(GetProjectWorkitems), wrapper.GetProjectWorkitems)...,
 	)...)
 
-	router.DELETE(options.BaseURL+"/team/:id", append(
+	router.DELETE(options.BaseURL+"/team/:teamID", append(
 		wrapper.Handler.authMiddlewares(DeleteTeam),
 		append(wrapper.Handler.middlewares(DeleteTeam), wrapper.DeleteTeam)...,
 	)...)
 
-	router.GET(options.BaseURL+"/team/:id", append(
+	router.GET(options.BaseURL+"/team/:teamID", append(
 		wrapper.Handler.authMiddlewares(GetTeam),
 		append(wrapper.Handler.middlewares(GetTeam), wrapper.GetTeam)...,
 	)...)
 
-	router.PATCH(options.BaseURL+"/team/:id", append(
+	router.PATCH(options.BaseURL+"/team/:teamID", append(
 		wrapper.Handler.authMiddlewares(UpdateTeam),
 		append(wrapper.Handler.middlewares(UpdateTeam), wrapper.UpdateTeam)...,
 	)...)
@@ -2247,22 +2244,52 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(UpdateUserAuthorization), wrapper.UpdateUserAuthorization)...,
 	)...)
 
+	router.DELETE(options.BaseURL+"/work-item-tag/:workItemTagID", append(
+		wrapper.Handler.authMiddlewares(DeleteWorkItemTag),
+		append(wrapper.Handler.middlewares(DeleteWorkItemTag), wrapper.DeleteWorkItemTag)...,
+	)...)
+
+	router.GET(options.BaseURL+"/work-item-tag/:workItemTagID", append(
+		wrapper.Handler.authMiddlewares(GetWorkItemTag),
+		append(wrapper.Handler.middlewares(GetWorkItemTag), wrapper.GetWorkItemTag)...,
+	)...)
+
+	router.PATCH(options.BaseURL+"/work-item-tag/:workItemTagID", append(
+		wrapper.Handler.authMiddlewares(UpdateWorkItemTag),
+		append(wrapper.Handler.middlewares(UpdateWorkItemTag), wrapper.UpdateWorkItemTag)...,
+	)...)
+
+	router.DELETE(options.BaseURL+"/work-item-type/:workItemTypeID", append(
+		wrapper.Handler.authMiddlewares(DeleteWorkItemType),
+		append(wrapper.Handler.middlewares(DeleteWorkItemType), wrapper.DeleteWorkItemType)...,
+	)...)
+
+	router.GET(options.BaseURL+"/work-item-type/:workItemTypeID", append(
+		wrapper.Handler.authMiddlewares(GetWorkItemType),
+		append(wrapper.Handler.middlewares(GetWorkItemType), wrapper.GetWorkItemType)...,
+	)...)
+
+	router.PATCH(options.BaseURL+"/work-item-type/:workItemTypeID", append(
+		wrapper.Handler.authMiddlewares(UpdateWorkItemType),
+		append(wrapper.Handler.middlewares(UpdateWorkItemType), wrapper.UpdateWorkItemType)...,
+	)...)
+
 	router.POST(options.BaseURL+"/work-item/", append(
 		wrapper.Handler.authMiddlewares(CreateWorkitem),
 		append(wrapper.Handler.middlewares(CreateWorkitem), wrapper.CreateWorkitem)...,
 	)...)
 
-	router.DELETE(options.BaseURL+"/work-item/:id/", append(
+	router.DELETE(options.BaseURL+"/work-item/:workItemID/", append(
 		wrapper.Handler.authMiddlewares(DeleteWorkitem),
 		append(wrapper.Handler.middlewares(DeleteWorkitem), wrapper.DeleteWorkitem)...,
 	)...)
 
-	router.GET(options.BaseURL+"/work-item/:id/", append(
+	router.GET(options.BaseURL+"/work-item/:workItemID/", append(
 		wrapper.Handler.authMiddlewares(GetWorkItem),
 		append(wrapper.Handler.middlewares(GetWorkItem), wrapper.GetWorkItem)...,
 	)...)
 
-	router.PATCH(options.BaseURL+"/work-item/:id/", append(
+	router.PATCH(options.BaseURL+"/work-item/:workItemID/", append(
 		wrapper.Handler.authMiddlewares(UpdateWorkitem),
 		append(wrapper.Handler.middlewares(UpdateWorkitem), wrapper.UpdateWorkitem)...,
 	)...)
@@ -2272,54 +2299,24 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		append(wrapper.Handler.middlewares(CreateWorkItemComment), wrapper.CreateWorkItemComment)...,
 	)...)
 
-	router.DELETE(options.BaseURL+"/work-item/:workItemID/comment/:commentId", append(
+	router.DELETE(options.BaseURL+"/work-item/:workItemID/comment/:workItemCommentID", append(
 		wrapper.Handler.authMiddlewares(DeleteWorkItemComment),
 		append(wrapper.Handler.middlewares(DeleteWorkItemComment), wrapper.DeleteWorkItemComment)...,
 	)...)
 
-	router.GET(options.BaseURL+"/work-item/:workItemID/comment/:commentId", append(
+	router.GET(options.BaseURL+"/work-item/:workItemID/comment/:workItemCommentID", append(
 		wrapper.Handler.authMiddlewares(GetWorkItemComment),
 		append(wrapper.Handler.middlewares(GetWorkItemComment), wrapper.GetWorkItemComment)...,
 	)...)
 
-	router.PATCH(options.BaseURL+"/work-item/:workItemID/comment/:commentId", append(
+	router.PATCH(options.BaseURL+"/work-item/:workItemID/comment/:workItemCommentID", append(
 		wrapper.Handler.authMiddlewares(UpdateWorkItemComment),
 		append(wrapper.Handler.middlewares(UpdateWorkItemComment), wrapper.UpdateWorkItemComment)...,
-	)...)
-
-	router.DELETE(options.BaseURL+"/workItemTag/:id", append(
-		wrapper.Handler.authMiddlewares(DeleteWorkItemTag),
-		append(wrapper.Handler.middlewares(DeleteWorkItemTag), wrapper.DeleteWorkItemTag)...,
-	)...)
-
-	router.GET(options.BaseURL+"/workItemTag/:id", append(
-		wrapper.Handler.authMiddlewares(GetWorkItemTag),
-		append(wrapper.Handler.middlewares(GetWorkItemTag), wrapper.GetWorkItemTag)...,
-	)...)
-
-	router.PATCH(options.BaseURL+"/workItemTag/:id", append(
-		wrapper.Handler.authMiddlewares(UpdateWorkItemTag),
-		append(wrapper.Handler.middlewares(UpdateWorkItemTag), wrapper.UpdateWorkItemTag)...,
-	)...)
-
-	router.DELETE(options.BaseURL+"/workItemType/:id", append(
-		wrapper.Handler.authMiddlewares(DeleteWorkItemType),
-		append(wrapper.Handler.middlewares(DeleteWorkItemType), wrapper.DeleteWorkItemType)...,
-	)...)
-
-	router.GET(options.BaseURL+"/workItemType/:id", append(
-		wrapper.Handler.authMiddlewares(GetWorkItemType),
-		append(wrapper.Handler.middlewares(GetWorkItemType), wrapper.GetWorkItemType)...,
-	)...)
-
-	router.PATCH(options.BaseURL+"/workItemType/:id", append(
-		wrapper.Handler.authMiddlewares(UpdateWorkItemType),
-		append(wrapper.Handler.middlewares(UpdateWorkItemType), wrapper.UpdateWorkItemType)...,
 	)...)
 }
 
 type DeleteActivityRequestObject struct {
-	Id int `json:"id"`
+	ActivityID int `json:"activityID"`
 }
 
 type DeleteActivityResponseObject interface {
@@ -2360,7 +2357,7 @@ func (response DeleteActivity4XXJSONResponse) VisitDeleteActivityResponse(w http
 }
 
 type GetActivityRequestObject struct {
-	Id int `json:"id"`
+	ActivityID int `json:"activityID"`
 }
 
 type GetActivityResponseObject interface {
@@ -2403,8 +2400,8 @@ func (response GetActivity4XXJSONResponse) VisitGetActivityResponse(w http.Respo
 }
 
 type UpdateActivityRequestObject struct {
-	Id   int `json:"id"`
-	Body *UpdateActivityRequest
+	ActivityID int `json:"activityID"`
+	Body       *UpdateActivityRequest
 }
 
 type UpdateActivityResponseObject interface {
@@ -2947,7 +2944,7 @@ func (response GetProjectWorkitems200JSONResponse) VisitGetProjectWorkitemsRespo
 }
 
 type DeleteTeamRequestObject struct {
-	Id int `json:"id"`
+	TeamID int `json:"teamID"`
 }
 
 type DeleteTeamResponseObject interface {
@@ -2988,7 +2985,7 @@ func (response DeleteTeam4XXJSONResponse) VisitDeleteTeamResponse(w http.Respons
 }
 
 type GetTeamRequestObject struct {
-	Id int `json:"id"`
+	TeamID int `json:"teamID"`
 }
 
 type GetTeamResponseObject interface {
@@ -3031,8 +3028,8 @@ func (response GetTeam4XXJSONResponse) VisitGetTeamResponse(w http.ResponseWrite
 }
 
 type UpdateTeamRequestObject struct {
-	Id   int `json:"id"`
-	Body *UpdateTeamRequest
+	TeamID int `json:"teamID"`
+	Body   *UpdateTeamRequest
 }
 
 type UpdateTeamResponseObject interface {
@@ -3207,6 +3204,262 @@ func (response UpdateUserAuthorization204Response) VisitUpdateUserAuthorizationR
 	return nil
 }
 
+type DeleteWorkItemTagRequestObject struct {
+	WorkItemTagID int `json:"workItemTagID"`
+}
+
+type DeleteWorkItemTagResponseObject interface {
+	VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error
+}
+
+type DeleteWorkItemTag204Response struct{}
+
+func (response DeleteWorkItemTag204Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteWorkItemTag401Response struct{}
+
+func (response DeleteWorkItemTag401Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteWorkItemTag403Response struct{}
+
+func (response DeleteWorkItemTag403Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteWorkItemTag4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteWorkItemTag4XXJSONResponse) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetWorkItemTagRequestObject struct {
+	WorkItemTagID int `json:"workItemTagID"`
+}
+
+type GetWorkItemTagResponseObject interface {
+	VisitGetWorkItemTagResponse(w http.ResponseWriter) error
+}
+
+type GetWorkItemTag200JSONResponse WorkItemTag
+
+func (response GetWorkItemTag200JSONResponse) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWorkItemTag401Response struct{}
+
+func (response GetWorkItemTag401Response) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetWorkItemTag403Response struct{}
+
+func (response GetWorkItemTag403Response) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetWorkItemTag4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetWorkItemTag4XXJSONResponse) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateWorkItemTagRequestObject struct {
+	WorkItemTagID int `json:"workItemTagID"`
+	Body          *UpdateWorkItemTagRequest
+}
+
+type UpdateWorkItemTagResponseObject interface {
+	VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error
+}
+
+type UpdateWorkItemTag200JSONResponse WorkItemTag
+
+func (response UpdateWorkItemTag200JSONResponse) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateWorkItemTag401Response struct{}
+
+func (response UpdateWorkItemTag401Response) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateWorkItemTag403Response struct{}
+
+func (response UpdateWorkItemTag403Response) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type UpdateWorkItemTag4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response UpdateWorkItemTag4XXJSONResponse) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeleteWorkItemTypeRequestObject struct {
+	WorkItemTypeID int `json:"workItemTypeID"`
+}
+
+type DeleteWorkItemTypeResponseObject interface {
+	VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error
+}
+
+type DeleteWorkItemType204Response struct{}
+
+func (response DeleteWorkItemType204Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteWorkItemType401Response struct{}
+
+func (response DeleteWorkItemType401Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteWorkItemType403Response struct{}
+
+func (response DeleteWorkItemType403Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteWorkItemType4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteWorkItemType4XXJSONResponse) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetWorkItemTypeRequestObject struct {
+	WorkItemTypeID int `json:"workItemTypeID"`
+}
+
+type GetWorkItemTypeResponseObject interface {
+	VisitGetWorkItemTypeResponse(w http.ResponseWriter) error
+}
+
+type GetWorkItemType200JSONResponse WorkItemType
+
+func (response GetWorkItemType200JSONResponse) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWorkItemType401Response struct{}
+
+func (response GetWorkItemType401Response) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetWorkItemType403Response struct{}
+
+func (response GetWorkItemType403Response) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetWorkItemType4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetWorkItemType4XXJSONResponse) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateWorkItemTypeRequestObject struct {
+	WorkItemTypeID int `json:"workItemTypeID"`
+	Body           *UpdateWorkItemTypeRequest
+}
+
+type UpdateWorkItemTypeResponseObject interface {
+	VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error
+}
+
+type UpdateWorkItemType200JSONResponse WorkItemType
+
+func (response UpdateWorkItemType200JSONResponse) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateWorkItemType401Response struct{}
+
+func (response UpdateWorkItemType401Response) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateWorkItemType403Response struct{}
+
+func (response UpdateWorkItemType403Response) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type UpdateWorkItemType4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response UpdateWorkItemType4XXJSONResponse) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
 type CreateWorkitemRequestObject struct {
 	Body *externalRef0.CreateWorkitemJSONRequestBody
 }
@@ -3227,7 +3480,7 @@ func (response CreateWorkitem201JSONResponse) VisitCreateWorkitemResponse(w http
 }
 
 type DeleteWorkitemRequestObject struct {
-	Id int `json:"id"`
+	WorkItemID int `json:"workItemID"`
 }
 
 type DeleteWorkitemResponseObject interface {
@@ -3242,7 +3495,7 @@ func (response DeleteWorkitem204Response) VisitDeleteWorkitemResponse(w http.Res
 }
 
 type GetWorkItemRequestObject struct {
-	Id int `json:"id"`
+	WorkItemID int `json:"workItemID"`
 }
 
 type GetWorkItemResponseObject interface {
@@ -3261,7 +3514,7 @@ func (response GetWorkItem200JSONResponse) VisitGetWorkItemResponse(w http.Respo
 }
 
 type UpdateWorkitemRequestObject struct {
-	Id int `json:"id"`
+	WorkItemID int `json:"workItemID"`
 }
 
 type UpdateWorkitemResponseObject interface {
@@ -3324,8 +3577,8 @@ func (response CreateWorkItemComment4XXJSONResponse) VisitCreateWorkItemCommentR
 }
 
 type DeleteWorkItemCommentRequestObject struct {
-	WorkItemID int `json:"workItemID"`
-	CommentId  int `json:"commentId"`
+	WorkItemID        int `json:"workItemID"`
+	WorkItemCommentID int `json:"workItemCommentID"`
 }
 
 type DeleteWorkItemCommentResponseObject interface {
@@ -3366,8 +3619,8 @@ func (response DeleteWorkItemComment4XXJSONResponse) VisitDeleteWorkItemCommentR
 }
 
 type GetWorkItemCommentRequestObject struct {
-	WorkItemID int `json:"workItemID"`
-	CommentId  int `json:"commentId"`
+	WorkItemID        int `json:"workItemID"`
+	WorkItemCommentID int `json:"workItemCommentID"`
 }
 
 type GetWorkItemCommentResponseObject interface {
@@ -3410,9 +3663,9 @@ func (response GetWorkItemComment4XXJSONResponse) VisitGetWorkItemCommentRespons
 }
 
 type UpdateWorkItemCommentRequestObject struct {
-	WorkItemID int `json:"workItemID"`
-	CommentId  int `json:"commentId"`
-	Body       *UpdateWorkItemCommentRequest
+	WorkItemID        int `json:"workItemID"`
+	WorkItemCommentID int `json:"workItemCommentID"`
+	Body              *UpdateWorkItemCommentRequest
 }
 
 type UpdateWorkItemCommentResponseObject interface {
@@ -3454,272 +3707,16 @@ func (response UpdateWorkItemComment4XXJSONResponse) VisitUpdateWorkItemCommentR
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
-type DeleteWorkItemTagRequestObject struct {
-	Id int `json:"id"`
-}
-
-type DeleteWorkItemTagResponseObject interface {
-	VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error
-}
-
-type DeleteWorkItemTag204Response struct{}
-
-func (response DeleteWorkItemTag204Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
-	w.WriteHeader(204)
-	return nil
-}
-
-type DeleteWorkItemTag401Response struct{}
-
-func (response DeleteWorkItemTag401Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
-	w.WriteHeader(401)
-	return nil
-}
-
-type DeleteWorkItemTag403Response struct{}
-
-func (response DeleteWorkItemTag403Response) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
-	w.WriteHeader(403)
-	return nil
-}
-
-type DeleteWorkItemTag4XXJSONResponse struct {
-	Body       externalRef0.HTTPError
-	StatusCode int
-}
-
-func (response DeleteWorkItemTag4XXJSONResponse) VisitDeleteWorkItemTagResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
-
-	return json.NewEncoder(w).Encode(response.Body)
-}
-
-type GetWorkItemTagRequestObject struct {
-	Id int `json:"id"`
-}
-
-type GetWorkItemTagResponseObject interface {
-	VisitGetWorkItemTagResponse(w http.ResponseWriter) error
-}
-
-type GetWorkItemTag200JSONResponse WorkItemTag
-
-func (response GetWorkItemTag200JSONResponse) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetWorkItemTag401Response struct{}
-
-func (response GetWorkItemTag401Response) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
-	w.WriteHeader(401)
-	return nil
-}
-
-type GetWorkItemTag403Response struct{}
-
-func (response GetWorkItemTag403Response) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
-	w.WriteHeader(403)
-	return nil
-}
-
-type GetWorkItemTag4XXJSONResponse struct {
-	Body       externalRef0.HTTPError
-	StatusCode int
-}
-
-func (response GetWorkItemTag4XXJSONResponse) VisitGetWorkItemTagResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
-
-	return json.NewEncoder(w).Encode(response.Body)
-}
-
-type UpdateWorkItemTagRequestObject struct {
-	Id   int `json:"id"`
-	Body *UpdateWorkItemTagRequest
-}
-
-type UpdateWorkItemTagResponseObject interface {
-	VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error
-}
-
-type UpdateWorkItemTag200JSONResponse WorkItemTag
-
-func (response UpdateWorkItemTag200JSONResponse) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type UpdateWorkItemTag401Response struct{}
-
-func (response UpdateWorkItemTag401Response) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
-	w.WriteHeader(401)
-	return nil
-}
-
-type UpdateWorkItemTag403Response struct{}
-
-func (response UpdateWorkItemTag403Response) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
-	w.WriteHeader(403)
-	return nil
-}
-
-type UpdateWorkItemTag4XXJSONResponse struct {
-	Body       externalRef0.HTTPError
-	StatusCode int
-}
-
-func (response UpdateWorkItemTag4XXJSONResponse) VisitUpdateWorkItemTagResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
-
-	return json.NewEncoder(w).Encode(response.Body)
-}
-
-type DeleteWorkItemTypeRequestObject struct {
-	Id int `json:"id"`
-}
-
-type DeleteWorkItemTypeResponseObject interface {
-	VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error
-}
-
-type DeleteWorkItemType204Response struct{}
-
-func (response DeleteWorkItemType204Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
-	w.WriteHeader(204)
-	return nil
-}
-
-type DeleteWorkItemType401Response struct{}
-
-func (response DeleteWorkItemType401Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
-	w.WriteHeader(401)
-	return nil
-}
-
-type DeleteWorkItemType403Response struct{}
-
-func (response DeleteWorkItemType403Response) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
-	w.WriteHeader(403)
-	return nil
-}
-
-type DeleteWorkItemType4XXJSONResponse struct {
-	Body       externalRef0.HTTPError
-	StatusCode int
-}
-
-func (response DeleteWorkItemType4XXJSONResponse) VisitDeleteWorkItemTypeResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
-
-	return json.NewEncoder(w).Encode(response.Body)
-}
-
-type GetWorkItemTypeRequestObject struct {
-	Id int `json:"id"`
-}
-
-type GetWorkItemTypeResponseObject interface {
-	VisitGetWorkItemTypeResponse(w http.ResponseWriter) error
-}
-
-type GetWorkItemType200JSONResponse WorkItemType
-
-func (response GetWorkItemType200JSONResponse) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type GetWorkItemType401Response struct{}
-
-func (response GetWorkItemType401Response) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
-	w.WriteHeader(401)
-	return nil
-}
-
-type GetWorkItemType403Response struct{}
-
-func (response GetWorkItemType403Response) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
-	w.WriteHeader(403)
-	return nil
-}
-
-type GetWorkItemType4XXJSONResponse struct {
-	Body       externalRef0.HTTPError
-	StatusCode int
-}
-
-func (response GetWorkItemType4XXJSONResponse) VisitGetWorkItemTypeResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
-
-	return json.NewEncoder(w).Encode(response.Body)
-}
-
-type UpdateWorkItemTypeRequestObject struct {
-	Id   int `json:"id"`
-	Body *UpdateWorkItemTypeRequest
-}
-
-type UpdateWorkItemTypeResponseObject interface {
-	VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error
-}
-
-type UpdateWorkItemType200JSONResponse WorkItemType
-
-func (response UpdateWorkItemType200JSONResponse) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type UpdateWorkItemType401Response struct{}
-
-func (response UpdateWorkItemType401Response) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
-	w.WriteHeader(401)
-	return nil
-}
-
-type UpdateWorkItemType403Response struct{}
-
-func (response UpdateWorkItemType403Response) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
-	w.WriteHeader(403)
-	return nil
-}
-
-type UpdateWorkItemType4XXJSONResponse struct {
-	Body       externalRef0.HTTPError
-	StatusCode int
-}
-
-func (response UpdateWorkItemType4XXJSONResponse) VisitUpdateWorkItemTypeResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(response.StatusCode)
-
-	return json.NewEncoder(w).Encode(response.Body)
-}
-
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// delete activity.
-	// (DELETE /activity/{id})
+	// (DELETE /activity/{activityID})
 	DeleteActivity(c *gin.Context, request DeleteActivityRequestObject) (DeleteActivityResponseObject, error)
 	// get activity.
-	// (GET /activity/{id})
+	// (GET /activity/{activityID})
 	GetActivity(c *gin.Context, request GetActivityRequestObject) (GetActivityResponseObject, error)
 	// update activity.
-	// (PATCH /activity/{id})
+	// (PATCH /activity/{activityID})
 	UpdateActivity(c *gin.Context, request UpdateActivityRequestObject) (UpdateActivityResponseObject, error)
 	// Ping pongs
 	// (GET /admin/ping)
@@ -3764,22 +3761,22 @@ type StrictServerInterface interface {
 	// (POST /project/{projectName}/team/)
 	CreateTeam(c *gin.Context, request CreateTeamRequestObject) (CreateTeamResponseObject, error)
 	// create workitemtag.
-	// (POST /project/{projectName}/workItemTag/)
+	// (POST /project/{projectName}/work-item-tag/)
 	CreateWorkItemTag(c *gin.Context, request CreateWorkItemTagRequestObject) (CreateWorkItemTagResponseObject, error)
 	// create workitemtype.
-	// (POST /project/{projectName}/workItemType/)
+	// (POST /project/{projectName}/work-item-type/)
 	CreateWorkItemType(c *gin.Context, request CreateWorkItemTypeRequestObject) (CreateWorkItemTypeResponseObject, error)
 	// returns workitems for a project
 	// (GET /project/{projectName}/workitems)
 	GetProjectWorkitems(c *gin.Context, request GetProjectWorkitemsRequestObject) (GetProjectWorkitemsResponseObject, error)
 	// delete team.
-	// (DELETE /team/{id})
+	// (DELETE /team/{teamID})
 	DeleteTeam(c *gin.Context, request DeleteTeamRequestObject) (DeleteTeamResponseObject, error)
 	// get team.
-	// (GET /team/{id})
+	// (GET /team/{teamID})
 	GetTeam(c *gin.Context, request GetTeamRequestObject) (GetTeamResponseObject, error)
 	// update team.
-	// (PATCH /team/{id})
+	// (PATCH /team/{teamID})
 	UpdateTeam(c *gin.Context, request UpdateTeamRequestObject) (UpdateTeamResponseObject, error)
 	// returns the logged in user
 	// (GET /user/me)
@@ -3796,48 +3793,48 @@ type StrictServerInterface interface {
 	// updates user role and scopes by id
 	// (PATCH /user/{id}/authorization)
 	UpdateUserAuthorization(c *gin.Context, request UpdateUserAuthorizationRequestObject) (UpdateUserAuthorizationResponseObject, error)
+	// delete workitemtag.
+	// (DELETE /work-item-tag/{workItemTagID})
+	DeleteWorkItemTag(c *gin.Context, request DeleteWorkItemTagRequestObject) (DeleteWorkItemTagResponseObject, error)
+	// get workitemtag.
+	// (GET /work-item-tag/{workItemTagID})
+	GetWorkItemTag(c *gin.Context, request GetWorkItemTagRequestObject) (GetWorkItemTagResponseObject, error)
+	// update workitemtag.
+	// (PATCH /work-item-tag/{workItemTagID})
+	UpdateWorkItemTag(c *gin.Context, request UpdateWorkItemTagRequestObject) (UpdateWorkItemTagResponseObject, error)
+	// delete workitemtype.
+	// (DELETE /work-item-type/{workItemTypeID})
+	DeleteWorkItemType(c *gin.Context, request DeleteWorkItemTypeRequestObject) (DeleteWorkItemTypeResponseObject, error)
+	// get workitemtype.
+	// (GET /work-item-type/{workItemTypeID})
+	GetWorkItemType(c *gin.Context, request GetWorkItemTypeRequestObject) (GetWorkItemTypeResponseObject, error)
+	// update workitemtype.
+	// (PATCH /work-item-type/{workItemTypeID})
+	UpdateWorkItemType(c *gin.Context, request UpdateWorkItemTypeRequestObject) (UpdateWorkItemTypeResponseObject, error)
 	// create workitem
 	// (POST /work-item/)
 	CreateWorkitem(c *gin.Context, request CreateWorkitemRequestObject) (CreateWorkitemResponseObject, error)
 	// delete workitem
-	// (DELETE /work-item/{id}/)
+	// (DELETE /work-item/{workItemID}/)
 	DeleteWorkitem(c *gin.Context, request DeleteWorkitemRequestObject) (DeleteWorkitemResponseObject, error)
 	// get workitem
-	// (GET /work-item/{id}/)
+	// (GET /work-item/{workItemID}/)
 	GetWorkItem(c *gin.Context, request GetWorkItemRequestObject) (GetWorkItemResponseObject, error)
 	// update workitem
-	// (PATCH /work-item/{id}/)
+	// (PATCH /work-item/{workItemID}/)
 	UpdateWorkitem(c *gin.Context, request UpdateWorkitemRequestObject) (UpdateWorkitemResponseObject, error)
 	// create work item comment.
 	// (POST /work-item/{workItemID}/comment/)
 	CreateWorkItemComment(c *gin.Context, request CreateWorkItemCommentRequestObject) (CreateWorkItemCommentResponseObject, error)
 	// delete .
-	// (DELETE /work-item/{workItemID}/comment/{commentId})
+	// (DELETE /work-item/{workItemID}/comment/{workItemCommentID})
 	DeleteWorkItemComment(c *gin.Context, request DeleteWorkItemCommentRequestObject) (DeleteWorkItemCommentResponseObject, error)
 	// get work item comment.
-	// (GET /work-item/{workItemID}/comment/{commentId})
+	// (GET /work-item/{workItemID}/comment/{workItemCommentID})
 	GetWorkItemComment(c *gin.Context, request GetWorkItemCommentRequestObject) (GetWorkItemCommentResponseObject, error)
 	// update work item comment.
-	// (PATCH /work-item/{workItemID}/comment/{commentId})
+	// (PATCH /work-item/{workItemID}/comment/{workItemCommentID})
 	UpdateWorkItemComment(c *gin.Context, request UpdateWorkItemCommentRequestObject) (UpdateWorkItemCommentResponseObject, error)
-	// delete workitemtag.
-	// (DELETE /workItemTag/{id})
-	DeleteWorkItemTag(c *gin.Context, request DeleteWorkItemTagRequestObject) (DeleteWorkItemTagResponseObject, error)
-	// get workitemtag.
-	// (GET /workItemTag/{id})
-	GetWorkItemTag(c *gin.Context, request GetWorkItemTagRequestObject) (GetWorkItemTagResponseObject, error)
-	// update workitemtag.
-	// (PATCH /workItemTag/{id})
-	UpdateWorkItemTag(c *gin.Context, request UpdateWorkItemTagRequestObject) (UpdateWorkItemTagResponseObject, error)
-	// delete workitemtype.
-	// (DELETE /workItemType/{id})
-	DeleteWorkItemType(c *gin.Context, request DeleteWorkItemTypeRequestObject) (DeleteWorkItemTypeResponseObject, error)
-	// get workitemtype.
-	// (GET /workItemType/{id})
-	GetWorkItemType(c *gin.Context, request GetWorkItemTypeRequestObject) (GetWorkItemTypeResponseObject, error)
-	// update workitemtype.
-	// (PATCH /workItemType/{id})
-	UpdateWorkItemType(c *gin.Context, request UpdateWorkItemTypeRequestObject) (UpdateWorkItemTypeResponseObject, error)
 	middlewares(opID OperationID) []gin.HandlerFunc
 	authMiddlewares(opID OperationID) []gin.HandlerFunc
 }
@@ -3865,10 +3862,10 @@ func (sh *strictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 }
 
 // DeleteActivity operation middleware
-func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, id int) {
+func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, activityID int) {
 	var request DeleteActivityRequestObject
 
-	request.Id = id
+	request.ActivityID = activityID
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.DeleteActivity(ctx, request.(DeleteActivityRequestObject))
@@ -3892,10 +3889,10 @@ func (sh *strictHandlers) DeleteActivity(ctx *gin.Context, id int) {
 }
 
 // GetActivity operation middleware
-func (sh *strictHandlers) GetActivity(ctx *gin.Context, id int) {
+func (sh *strictHandlers) GetActivity(ctx *gin.Context, activityID int) {
 	var request GetActivityRequestObject
 
-	request.Id = id
+	request.ActivityID = activityID
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetActivity(ctx, request.(GetActivityRequestObject))
@@ -3919,10 +3916,10 @@ func (sh *strictHandlers) GetActivity(ctx *gin.Context, id int) {
 }
 
 // UpdateActivity operation middleware
-func (sh *strictHandlers) UpdateActivity(ctx *gin.Context, id int) {
+func (sh *strictHandlers) UpdateActivity(ctx *gin.Context, activityID int) {
 	var request UpdateActivityRequestObject
 
-	request.Id = id
+	request.ActivityID = activityID
 
 	// UpdateActivityRequest
 	var body UpdateActivityRequest
@@ -4461,10 +4458,10 @@ func (sh *strictHandlers) GetProjectWorkitems(ctx *gin.Context, projectName exte
 }
 
 // DeleteTeam operation middleware
-func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, id int) {
+func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, teamID int) {
 	var request DeleteTeamRequestObject
 
-	request.Id = id
+	request.TeamID = teamID
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.DeleteTeam(ctx, request.(DeleteTeamRequestObject))
@@ -4488,10 +4485,10 @@ func (sh *strictHandlers) DeleteTeam(ctx *gin.Context, id int) {
 }
 
 // GetTeam operation middleware
-func (sh *strictHandlers) GetTeam(ctx *gin.Context, id int) {
+func (sh *strictHandlers) GetTeam(ctx *gin.Context, teamID int) {
 	var request GetTeamRequestObject
 
-	request.Id = id
+	request.TeamID = teamID
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetTeam(ctx, request.(GetTeamRequestObject))
@@ -4515,10 +4512,10 @@ func (sh *strictHandlers) GetTeam(ctx *gin.Context, id int) {
 }
 
 // UpdateTeam operation middleware
-func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, id int) {
+func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, teamID int) {
 	var request UpdateTeamRequestObject
 
-	request.Id = id
+	request.TeamID = teamID
 
 	// UpdateTeamRequest
 	var body UpdateTeamRequest
@@ -4701,6 +4698,186 @@ func (sh *strictHandlers) UpdateUserAuthorization(ctx *gin.Context, id uuid.UUID
 	}
 }
 
+// DeleteWorkItemTag operation middleware
+func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, workItemTagID int) {
+	var request DeleteWorkItemTagRequestObject
+
+	request.WorkItemTagID = workItemTagID
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteWorkItemTag(ctx, request.(DeleteWorkItemTagRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "DeleteWorkItemTag")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteWorkItemTagResponseObject); ok {
+		if err := validResponse.VisitDeleteWorkItemTagResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWorkItemTag operation middleware
+func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, workItemTagID int) {
+	var request GetWorkItemTagRequestObject
+
+	request.WorkItemTagID = workItemTagID
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWorkItemTag(ctx, request.(GetWorkItemTagRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetWorkItemTag")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWorkItemTagResponseObject); ok {
+		if err := validResponse.VisitGetWorkItemTagResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateWorkItemTag operation middleware
+func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, workItemTagID int) {
+	var request UpdateWorkItemTagRequestObject
+
+	request.WorkItemTagID = workItemTagID
+
+	// UpdateWorkItemTagRequest
+	var body UpdateWorkItemTagRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateWorkItemTag(ctx, request.(UpdateWorkItemTagRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateWorkItemTag")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateWorkItemTagResponseObject); ok {
+		if err := validResponse.VisitUpdateWorkItemTagResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteWorkItemType operation middleware
+func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, workItemTypeID int) {
+	var request DeleteWorkItemTypeRequestObject
+
+	request.WorkItemTypeID = workItemTypeID
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteWorkItemType(ctx, request.(DeleteWorkItemTypeRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "DeleteWorkItemType")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteWorkItemTypeResponseObject); ok {
+		if err := validResponse.VisitDeleteWorkItemTypeResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWorkItemType operation middleware
+func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, workItemTypeID int) {
+	var request GetWorkItemTypeRequestObject
+
+	request.WorkItemTypeID = workItemTypeID
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWorkItemType(ctx, request.(GetWorkItemTypeRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetWorkItemType")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWorkItemTypeResponseObject); ok {
+		if err := validResponse.VisitGetWorkItemTypeResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateWorkItemType operation middleware
+func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, workItemTypeID int) {
+	var request UpdateWorkItemTypeRequestObject
+
+	request.WorkItemTypeID = workItemTypeID
+
+	// UpdateWorkItemTypeRequest
+	var body UpdateWorkItemTypeRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateWorkItemType(ctx, request.(UpdateWorkItemTypeRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateWorkItemType")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateWorkItemTypeResponseObject); ok {
+		if err := validResponse.VisitUpdateWorkItemTypeResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // CreateWorkitem operation middleware
 func (sh *strictHandlers) CreateWorkitem(ctx *gin.Context) {
 	var request CreateWorkitemRequestObject
@@ -4736,10 +4913,10 @@ func (sh *strictHandlers) CreateWorkitem(ctx *gin.Context) {
 }
 
 // DeleteWorkitem operation middleware
-func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, id int) {
+func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, workItemID int) {
 	var request DeleteWorkitemRequestObject
 
-	request.Id = id
+	request.WorkItemID = workItemID
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.DeleteWorkitem(ctx, request.(DeleteWorkitemRequestObject))
@@ -4763,10 +4940,10 @@ func (sh *strictHandlers) DeleteWorkitem(ctx *gin.Context, id int) {
 }
 
 // GetWorkItem operation middleware
-func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, id int) {
+func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, workItemID int) {
 	var request GetWorkItemRequestObject
 
-	request.Id = id
+	request.WorkItemID = workItemID
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetWorkItem(ctx, request.(GetWorkItemRequestObject))
@@ -4790,10 +4967,10 @@ func (sh *strictHandlers) GetWorkItem(ctx *gin.Context, id int) {
 }
 
 // UpdateWorkitem operation middleware
-func (sh *strictHandlers) UpdateWorkitem(ctx *gin.Context, id int) {
+func (sh *strictHandlers) UpdateWorkitem(ctx *gin.Context, workItemID int) {
 	var request UpdateWorkitemRequestObject
 
-	request.Id = id
+	request.WorkItemID = workItemID
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.UpdateWorkitem(ctx, request.(UpdateWorkitemRequestObject))
@@ -4853,11 +5030,11 @@ func (sh *strictHandlers) CreateWorkItemComment(ctx *gin.Context, workItemID int
 }
 
 // DeleteWorkItemComment operation middleware
-func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID int, commentId int) {
+func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID int, workItemCommentID int) {
 	var request DeleteWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
-	request.CommentId = commentId
+	request.WorkItemCommentID = workItemCommentID
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.DeleteWorkItemComment(ctx, request.(DeleteWorkItemCommentRequestObject))
@@ -4881,11 +5058,11 @@ func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID int
 }
 
 // GetWorkItemComment operation middleware
-func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID int, commentId int) {
+func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID int, workItemCommentID int) {
 	var request GetWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
-	request.CommentId = commentId
+	request.WorkItemCommentID = workItemCommentID
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetWorkItemComment(ctx, request.(GetWorkItemCommentRequestObject))
@@ -4909,11 +5086,11 @@ func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID int, c
 }
 
 // UpdateWorkItemComment operation middleware
-func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, workItemID int, commentId int) {
+func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, workItemID int, workItemCommentID int) {
 	var request UpdateWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
-	request.CommentId = commentId
+	request.WorkItemCommentID = workItemCommentID
 
 	// UpdateWorkItemCommentRequest
 	var body UpdateWorkItemCommentRequest
@@ -4938,186 +5115,6 @@ func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, workItemID int
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(UpdateWorkItemCommentResponseObject); ok {
 		if err := validResponse.VisitUpdateWorkItemCommentResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// DeleteWorkItemTag operation middleware
-func (sh *strictHandlers) DeleteWorkItemTag(ctx *gin.Context, id int) {
-	var request DeleteWorkItemTagRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteWorkItemTag(ctx, request.(DeleteWorkItemTagRequestObject))
-	}
-	for _, middleware := range sh.strictMiddlewares {
-		handler = middleware(handler, "DeleteWorkItemTag")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(DeleteWorkItemTagResponseObject); ok {
-		if err := validResponse.VisitDeleteWorkItemTagResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetWorkItemTag operation middleware
-func (sh *strictHandlers) GetWorkItemTag(ctx *gin.Context, id int) {
-	var request GetWorkItemTagRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetWorkItemTag(ctx, request.(GetWorkItemTagRequestObject))
-	}
-	for _, middleware := range sh.strictMiddlewares {
-		handler = middleware(handler, "GetWorkItemTag")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetWorkItemTagResponseObject); ok {
-		if err := validResponse.VisitGetWorkItemTagResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// UpdateWorkItemTag operation middleware
-func (sh *strictHandlers) UpdateWorkItemTag(ctx *gin.Context, id int) {
-	var request UpdateWorkItemTagRequestObject
-
-	request.Id = id
-
-	// UpdateWorkItemTagRequest
-	var body UpdateWorkItemTagRequest
-	if err := ctx.ShouldBind(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.UpdateWorkItemTag(ctx, request.(UpdateWorkItemTagRequestObject))
-	}
-	for _, middleware := range sh.strictMiddlewares {
-		handler = middleware(handler, "UpdateWorkItemTag")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(UpdateWorkItemTagResponseObject); ok {
-		if err := validResponse.VisitUpdateWorkItemTagResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// DeleteWorkItemType operation middleware
-func (sh *strictHandlers) DeleteWorkItemType(ctx *gin.Context, id int) {
-	var request DeleteWorkItemTypeRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.DeleteWorkItemType(ctx, request.(DeleteWorkItemTypeRequestObject))
-	}
-	for _, middleware := range sh.strictMiddlewares {
-		handler = middleware(handler, "DeleteWorkItemType")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(DeleteWorkItemTypeResponseObject); ok {
-		if err := validResponse.VisitDeleteWorkItemTypeResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// GetWorkItemType operation middleware
-func (sh *strictHandlers) GetWorkItemType(ctx *gin.Context, id int) {
-	var request GetWorkItemTypeRequestObject
-
-	request.Id = id
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.GetWorkItemType(ctx, request.(GetWorkItemTypeRequestObject))
-	}
-	for _, middleware := range sh.strictMiddlewares {
-		handler = middleware(handler, "GetWorkItemType")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(GetWorkItemTypeResponseObject); ok {
-		if err := validResponse.VisitGetWorkItemTypeResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
-	}
-}
-
-// UpdateWorkItemType operation middleware
-func (sh *strictHandlers) UpdateWorkItemType(ctx *gin.Context, id int) {
-	var request UpdateWorkItemTypeRequestObject
-
-	request.Id = id
-
-	// UpdateWorkItemTypeRequest
-	var body UpdateWorkItemTypeRequest
-	if err := ctx.ShouldBind(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.UpdateWorkItemType(ctx, request.(UpdateWorkItemTypeRequestObject))
-	}
-	for _, middleware := range sh.strictMiddlewares {
-		handler = middleware(handler, "UpdateWorkItemType")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-		ctx.Status(http.StatusInternalServerError)
-	} else if validResponse, ok := response.(UpdateWorkItemTypeResponseObject); ok {
-		if err := validResponse.VisitUpdateWorkItemTypeResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
