@@ -28,7 +28,7 @@ func (h *StrictHandlers) CreateWorkItemComment(c *gin.Context, request CreateWor
 func (h *StrictHandlers) GetWorkItemComment(c *gin.Context, request GetWorkItemCommentRequestObject) (GetWorkItemCommentResponseObject, error) {
 	tx := GetTxFromCtx(c)
 
-	workItemComment, err := h.svc.WorkItemComment.ByID(c, tx, db.WorkItemCommentID(request.WorkItemCommentID))
+	workItemComment, err := h.svc.WorkItemComment.ByID(c, tx, request.WorkItemCommentID)
 	if err != nil {
 		renderErrorResponse(c, "Could not create work item comment", err)
 

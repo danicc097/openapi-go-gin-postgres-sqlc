@@ -12,6 +12,7 @@ import (
 	"time"
 
 	externalRef0 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/google/uuid"
@@ -1180,13 +1181,13 @@ type ServerInterface interface {
 	CreateWorkItemComment(c *gin.Context, workItemID int)
 	// delete .
 	// (DELETE /work-item/{workItemID}/comment/{workItemCommentID})
-	DeleteWorkItemComment(c *gin.Context, workItemID int, workItemCommentID int)
+	DeleteWorkItemComment(c *gin.Context, workItemID int, workItemCommentID db.WorkItemCommentID)
 	// get work item comment.
 	// (GET /work-item/{workItemID}/comment/{workItemCommentID})
-	GetWorkItemComment(c *gin.Context, workItemID int, workItemCommentID int)
+	GetWorkItemComment(c *gin.Context, workItemID int, workItemCommentID db.WorkItemCommentID)
 	// update work item comment.
 	// (PATCH /work-item/{workItemID}/comment/{workItemCommentID})
-	UpdateWorkItemComment(c *gin.Context, workItemID int, workItemCommentID int)
+	UpdateWorkItemComment(c *gin.Context, workItemID int, workItemCommentID db.WorkItemCommentID)
 
 	middlewares(opID OperationID) []gin.HandlerFunc
 	authMiddlewares(opID OperationID) []gin.HandlerFunc
@@ -2014,7 +2015,7 @@ func (siw *ServerInterfaceWrapper) DeleteWorkItemComment(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "workItemCommentID" -------------
-	var workItemCommentID int // int
+	var workItemCommentID db.WorkItemCommentID // db.WorkItemCommentID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemCommentID", c.Param("workItemCommentID"), &workItemCommentID)
 	if err != nil {
@@ -2043,7 +2044,7 @@ func (siw *ServerInterfaceWrapper) GetWorkItemComment(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "workItemCommentID" -------------
-	var workItemCommentID int // int
+	var workItemCommentID db.WorkItemCommentID // db.WorkItemCommentID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemCommentID", c.Param("workItemCommentID"), &workItemCommentID)
 	if err != nil {
@@ -2072,7 +2073,7 @@ func (siw *ServerInterfaceWrapper) UpdateWorkItemComment(c *gin.Context) {
 	}
 
 	// ------------- Path parameter "workItemCommentID" -------------
-	var workItemCommentID int // int
+	var workItemCommentID db.WorkItemCommentID // db.WorkItemCommentID
 
 	err = runtime.BindStyledParameter("simple", false, "workItemCommentID", c.Param("workItemCommentID"), &workItemCommentID)
 	if err != nil {
@@ -3577,8 +3578,8 @@ func (response CreateWorkItemComment4XXJSONResponse) VisitCreateWorkItemCommentR
 }
 
 type DeleteWorkItemCommentRequestObject struct {
-	WorkItemID        int `json:"workItemID"`
-	WorkItemCommentID int `json:"workItemCommentID"`
+	WorkItemID        int                  `json:"workItemID"`
+	WorkItemCommentID db.WorkItemCommentID `json:"workItemCommentID"`
 }
 
 type DeleteWorkItemCommentResponseObject interface {
@@ -3619,8 +3620,8 @@ func (response DeleteWorkItemComment4XXJSONResponse) VisitDeleteWorkItemCommentR
 }
 
 type GetWorkItemCommentRequestObject struct {
-	WorkItemID        int `json:"workItemID"`
-	WorkItemCommentID int `json:"workItemCommentID"`
+	WorkItemID        int                  `json:"workItemID"`
+	WorkItemCommentID db.WorkItemCommentID `json:"workItemCommentID"`
 }
 
 type GetWorkItemCommentResponseObject interface {
@@ -3663,8 +3664,8 @@ func (response GetWorkItemComment4XXJSONResponse) VisitGetWorkItemCommentRespons
 }
 
 type UpdateWorkItemCommentRequestObject struct {
-	WorkItemID        int `json:"workItemID"`
-	WorkItemCommentID int `json:"workItemCommentID"`
+	WorkItemID        int                  `json:"workItemID"`
+	WorkItemCommentID db.WorkItemCommentID `json:"workItemCommentID"`
 	Body              *UpdateWorkItemCommentRequest
 }
 
@@ -5030,7 +5031,7 @@ func (sh *strictHandlers) CreateWorkItemComment(ctx *gin.Context, workItemID int
 }
 
 // DeleteWorkItemComment operation middleware
-func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID int, workItemCommentID int) {
+func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID int, workItemCommentID db.WorkItemCommentID) {
 	var request DeleteWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
@@ -5058,7 +5059,7 @@ func (sh *strictHandlers) DeleteWorkItemComment(ctx *gin.Context, workItemID int
 }
 
 // GetWorkItemComment operation middleware
-func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID int, workItemCommentID int) {
+func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID int, workItemCommentID db.WorkItemCommentID) {
 	var request GetWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID
@@ -5086,7 +5087,7 @@ func (sh *strictHandlers) GetWorkItemComment(ctx *gin.Context, workItemID int, w
 }
 
 // UpdateWorkItemComment operation middleware
-func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, workItemID int, workItemCommentID int) {
+func (sh *strictHandlers) UpdateWorkItemComment(ctx *gin.Context, workItemID int, workItemCommentID db.WorkItemCommentID) {
 	var request UpdateWorkItemCommentRequestObject
 
 	request.WorkItemID = workItemID

@@ -147,6 +147,12 @@ x-userNotificationIDParameter: &x-userNotificationIDParameter
   name: userNotificationID # Generated. DO NOT EDIT.
 x-workItemCommentIDParameter: &x-workItemCommentIDParameter
   !!merge <<: *x-serialIDParameterBase
+  schema:
+    type: integer
+    x-go-type: db.WorkItemCommentID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: workItemCommentID # Generated. DO NOT EDIT.
 x-workItemIDParameter: &x-workItemIDParameter
   !!merge <<: *x-serialIDParameterBase
