@@ -1381,7 +1381,6 @@ orval_branded_types() {
   local sed_commands=("${import_command[@]}" "${replace_commands[@]}")
 
   find $FRONTEND_GEN -type f -name '*.ts' -exec sed -i "${sed_commands[@]}" {} +
-  frontend/node_modules/.bin/prettier --write $FRONTEND_GEN &>/dev/null
 
   local exports=()
   for entity in "${int_ids[@]}"; do
@@ -1400,6 +1399,8 @@ import { Branded } from 'src/types/utils'
 
 $(printf "%s\n" "${exports[@]}")
 EOF
+
+  git diff --name-only $FRONTEND_GEN | xargs --no-run-if-empty prettier --write --
 
   # TODO: msw:
   # refactor regular files gen to use EntityIDs as well. that way a single sed does everything

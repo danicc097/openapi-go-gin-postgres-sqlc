@@ -345,7 +345,7 @@ cache_all() {
   shift
 
   if md5sum -c "$output_file" &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
-    echo "Skipping generation (cached). Force regen with --x-force-regen"
+    echo "${CYAN}Skipping generation (cached).${OFF} Regenerate with ${RED}--x-force-regen${OFF}"
     return 0
   fi
 
