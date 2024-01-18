@@ -1400,7 +1400,8 @@ import { Branded } from 'src/types/utils'
 $(printf "%s\n" "${exports[@]}")
 EOF
 
-  git diff --name-only $FRONTEND_GEN | xargs --no-run-if-empty prettier --write --
+  # cheapest way to update both new and previous files that need formatting
+  git diff --name-only $FRONTEND_GEN | xargs --no-run-if-empty prettier --write -- &>/dev/null
 
   # TODO: msw:
   # refactor regular files gen to use EntityIDs as well. that way a single sed does everything
