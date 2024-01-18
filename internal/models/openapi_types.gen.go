@@ -864,9 +864,6 @@ type WorkItemType struct {
 // ProjectName is generated from projects table.
 type ProjectName = Project
 
-// SerialID defines the model for SerialID.
-type SerialID = int
-
 // UUID defines the model for UUID.
 type UUID = uuid.UUID
 
@@ -940,14 +937,6 @@ type UpdateUserJSONRequestBody = UpdateUserRequest
 
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
-// CreateWorkItemCommentJSONRequestBody defines body for CreateWorkItemComment for application/json ContentType.
-
-type CreateWorkItemCommentJSONRequestBody = CreateWorkItemCommentRequest
-
-// UpdateWorkItemCommentJSONRequestBody defines body for UpdateWorkItemComment for application/json ContentType.
-
-type UpdateWorkItemCommentJSONRequestBody = UpdateWorkItemCommentRequest
-
 // UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
 
 type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
@@ -959,6 +948,14 @@ type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
 // CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
 
 type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
+
+// CreateWorkItemCommentJSONRequestBody defines body for CreateWorkItemComment for application/json ContentType.
+
+type CreateWorkItemCommentJSONRequestBody = CreateWorkItemCommentRequest
+
+// UpdateWorkItemCommentJSONRequestBody defines body for UpdateWorkItemComment for application/json ContentType.
+
+type UpdateWorkItemCommentJSONRequestBody = UpdateWorkItemCommentRequest
 
 // AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {

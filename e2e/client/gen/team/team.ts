@@ -34,27 +34,32 @@ export const createTeam = (
 /**
  * @summary get team.
  */
-export const getTeam = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<Team>({ url: `/team/${id}`, method: 'GET' }, options)
+export const getTeam = (teamID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<Team>({ url: `/team/${teamID}`, method: 'GET' }, options)
 }
 /**
  * @summary update team.
  */
 export const updateTeam = (
-  id: number,
+  teamID: number,
   updateTeamRequest: UpdateTeamRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<Team>(
-    { url: `/team/${id}`, method: 'PATCH', headers: { 'Content-Type': 'application/json' }, data: updateTeamRequest },
+    {
+      url: `/team/${teamID}`,
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      data: updateTeamRequest,
+    },
     options,
   )
 }
 /**
  * @summary delete team.
  */
-export const deleteTeam = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<void>({ url: `/team/${id}`, method: 'DELETE' }, options)
+export const deleteTeam = (teamID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<void>({ url: `/team/${teamID}`, method: 'DELETE' }, options)
 }
 export type CreateTeamResult = NonNullable<Awaited<ReturnType<typeof createTeam>>>
 export type GetTeamResult = NonNullable<Awaited<ReturnType<typeof getTeam>>>

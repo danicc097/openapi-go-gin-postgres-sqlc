@@ -48,7 +48,7 @@ export interface paths {
     /** update team. */
     patch: operations["UpdateTeam"];
   };
-  "/project/{projectName}/workItemTag/": {
+  "/project/{projectName}/work-item-tag/": {
     /** create workitemtag. */
     post: operations["CreateWorkItemTag"];
   };
@@ -64,7 +64,7 @@ export interface paths {
     /** update activity. */
     patch: operations["UpdateActivity"];
   };
-  [path: `/workItemTag/${number}`]: {
+  [path: `/work-item-tag/${number}`]: {
     /** get workitemtag. */
     get: operations["GetWorkItemTag"];
     /** delete workitemtag. */
@@ -72,11 +72,11 @@ export interface paths {
     /** update workitemtag. */
     patch: operations["UpdateWorkItemTag"];
   };
-  "/project/{projectName}/workItemType/": {
+  "/project/{projectName}/work-item-type/": {
     /** create workitemtype. */
     post: operations["CreateWorkItemType"];
   };
-  [path: `/workItemType/${number}`]: {
+  [path: `/work-item-type/${number}`]: {
     /** get workitemtype. */
     get: operations["GetWorkItemType"];
     /** delete workitemtype. */
@@ -124,11 +124,11 @@ export interface paths {
     /** returns workitems for a project */
     get: operations["GetProjectWorkitems"];
   };
-  "/workitem/": {
+  "/work-item/": {
     /** create workitem */
     post: operations["CreateWorkitem"];
   };
-  [path: `/workitem/${number}/`]: {
+  [path: `/work-item/${number}/`]: {
     /** get workitem */
     get: operations["GetWorkItem"];
     /** delete workitem */
@@ -732,11 +732,6 @@ export interface components {
      * @example 123e4567-e89b-12d3-a456-426614174000
      */
     UUID: string;
-    /**
-     * @description integer identifier
-     * @example 41131
-     */
-    SerialID: number;
   };
   requestBodies: never;
   headers: never;
@@ -899,7 +894,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        teamID: number;
       };
     };
     responses: {
@@ -929,7 +924,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        teamID: number;
       };
     };
     responses: {
@@ -955,7 +950,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        teamID: number;
       };
     };
     requestBody: {
@@ -1052,7 +1047,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        activityID: number;
       };
     };
     responses: {
@@ -1082,7 +1077,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        activityID: number;
       };
     };
     responses: {
@@ -1108,7 +1103,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        activityID: number;
       };
     };
     requestBody: {
@@ -1143,7 +1138,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        workItemTagID: number;
       };
     };
     responses: {
@@ -1173,7 +1168,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        workItemTagID: number;
       };
     };
     responses: {
@@ -1199,7 +1194,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        workItemTagID: number;
       };
     };
     requestBody: {
@@ -1265,7 +1260,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        workItemTypeID: number;
       };
     };
     responses: {
@@ -1295,7 +1290,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        workItemTypeID: number;
       };
     };
     responses: {
@@ -1321,7 +1316,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        workItemTypeID: number;
       };
     };
     requestBody: {
@@ -1587,7 +1582,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        workItemID: number;
       };
     };
     responses: {
@@ -1607,7 +1602,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        workItemID: number;
       };
     };
     responses: {
@@ -1623,7 +1618,7 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        workItemID: number;
       };
     };
     responses: {
@@ -1678,12 +1673,12 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        workItemID: number;
         /**
          * @description integer identifier
          * @example 41131
          */
-        workItemID: number;
+        workItemCommentID: number;
       };
     };
     responses: {
@@ -1713,12 +1708,12 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        workItemID: number;
         /**
          * @description integer identifier
          * @example 41131
          */
-        workItemID: number;
+        workItemCommentID: number;
       };
     };
     responses: {
@@ -1744,12 +1739,12 @@ export interface operations {
          * @description integer identifier
          * @example 41131
          */
-        id: number;
+        workItemID: number;
         /**
          * @description integer identifier
          * @example 41131
          */
-        workItemID: number;
+        workItemCommentID: number;
       };
     };
     requestBody: {

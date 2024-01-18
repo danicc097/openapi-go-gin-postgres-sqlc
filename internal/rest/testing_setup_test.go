@@ -23,6 +23,8 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	"go.opentelemetry.io/otel/sdk/trace/tracetest"
 
 	_ "embed"
 )
@@ -41,7 +43,6 @@ func TestMain(m *testing.M) {
 
 func testMain(m *testing.M) int {
 	testutil.Setup()
-
 	// call flag.Parse() here if TestMain uses flags
 	var err error
 
@@ -59,13 +60,16 @@ func testMain(m *testing.M) int {
 }
 
 type testServer struct {
-	server *http.Server
-	client *ClientWithResponses
+	server       *http.Server
+	client       *ClientWithResponses
+	tp           *sdktrace.TracerProvider
+	spanRecorder *tracetest.SpanRecorder
 }
 
 func (s *testServer) setupCleanup(t *testing.T) {
 	t.Cleanup(func() {
 		s.server.Close()
+		s.tp.Shutdown(context.Background())
 	})
 }
 
@@ -76,18 +80,11 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 	t.Helper()
 
 	ctx := context.Background()
-
-	// race. also already done in testutils setup.
-	// if err := envvar.Load(fmt.Sprintf("../../.env.%s", os.Getenv("APP_ENV"))); err != nil {
-	// 	return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "envvar.Load")
-	// }
-
-	// provider, err := vault.New()
-	// if err != nil {
-	// 	return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "internal.NewVaultProvider")
-	// }
-
-	// conf := envvar.New(provider)
+	spanRecorder := tracetest.NewSpanRecorder()
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(tracetest.NewInMemoryExporter()),
+		sdktrace.WithSpanProcessor(spanRecorder),
+	)
 
 	s := miniredis.RunT(t)
 	rdb := redis.NewClient(&redis.Options{
@@ -123,5 +120,10 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewTestClient")
 	}
 
-	return &testServer{server: srv.Httpsrv, client: client}, nil
+	return &testServer{
+		server:       srv.Httpsrv,
+		client:       client,
+		tp:           tp,
+		spanRecorder: spanRecorder,
+	}, nil
 }

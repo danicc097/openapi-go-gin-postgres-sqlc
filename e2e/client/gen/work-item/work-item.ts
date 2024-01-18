@@ -20,27 +20,32 @@ export const createWorkitem = (
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<DbWorkItem>(
-    { url: `/workitem/`, method: 'POST', headers: { 'Content-Type': 'application/json' }, data: createWorkItemRequest },
+    {
+      url: `/work-item/`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      data: createWorkItemRequest,
+    },
     options,
   )
 }
 /**
  * @summary get workitem
  */
-export const getWorkItem = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<DbWorkItem>({ url: `/workitem/${id}/`, method: 'GET' }, options)
+export const getWorkItem = (workItemID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<DbWorkItem>({ url: `/work-item/${workItemID}/`, method: 'GET' }, options)
 }
 /**
  * @summary update workitem
  */
-export const updateWorkitem = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<DbWorkItem>({ url: `/workitem/${id}/`, method: 'PATCH' }, options)
+export const updateWorkitem = (workItemID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<DbWorkItem>({ url: `/work-item/${workItemID}/`, method: 'PATCH' }, options)
 }
 /**
  * @summary delete workitem
  */
-export const deleteWorkitem = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<void>({ url: `/workitem/${id}/`, method: 'DELETE' }, options)
+export const deleteWorkitem = (workItemID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<void>({ url: `/work-item/${workItemID}/`, method: 'DELETE' }, options)
 }
 export type CreateWorkitemResult = NonNullable<Awaited<ReturnType<typeof createWorkitem>>>
 export type GetWorkItemResult = NonNullable<Awaited<ReturnType<typeof getWorkItem>>>

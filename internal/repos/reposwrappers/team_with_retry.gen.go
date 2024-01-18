@@ -44,6 +44,9 @@ func (_d TeamWithRetry) ByID(ctx context.Context, d db.DBTX, id db.TeamID, opts 
 	}
 	tp1, err = _d.Team.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT TeamWithRetryByID")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -60,14 +63,12 @@ func (_d TeamWithRetry) ByID(ctx context.Context, d db.DBTX, id db.TeamID, opts 
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		tp1, err = _d.Team.ByID(ctx, d, id, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT TeamWithRetryByID")
 	}
 	return
 }
@@ -83,6 +84,9 @@ func (_d TeamWithRetry) ByName(ctx context.Context, d db.DBTX, name string, proj
 	}
 	tp1, err = _d.Team.ByName(ctx, d, name, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT TeamWithRetryByName")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -99,14 +103,12 @@ func (_d TeamWithRetry) ByName(ctx context.Context, d db.DBTX, name string, proj
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		tp1, err = _d.Team.ByName(ctx, d, name, projectID, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT TeamWithRetryByName")
 	}
 	return
 }
@@ -122,6 +124,9 @@ func (_d TeamWithRetry) Create(ctx context.Context, d db.DBTX, params *db.TeamCr
 	}
 	tp1, err = _d.Team.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT TeamWithRetryCreate")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -138,14 +143,12 @@ func (_d TeamWithRetry) Create(ctx context.Context, d db.DBTX, params *db.TeamCr
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		tp1, err = _d.Team.Create(ctx, d, params)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT TeamWithRetryCreate")
 	}
 	return
 }
@@ -161,6 +164,9 @@ func (_d TeamWithRetry) Delete(ctx context.Context, d db.DBTX, id db.TeamID) (tp
 	}
 	tp1, err = _d.Team.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT TeamWithRetryDelete")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -177,14 +183,12 @@ func (_d TeamWithRetry) Delete(ctx context.Context, d db.DBTX, id db.TeamID) (tp
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		tp1, err = _d.Team.Delete(ctx, d, id)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT TeamWithRetryDelete")
 	}
 	return
 }
@@ -200,6 +204,9 @@ func (_d TeamWithRetry) Update(ctx context.Context, d db.DBTX, id db.TeamID, par
 	}
 	tp1, err = _d.Team.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT TeamWithRetryUpdate")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -216,14 +223,12 @@ func (_d TeamWithRetry) Update(ctx context.Context, d db.DBTX, id db.TeamID, par
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		tp1, err = _d.Team.Update(ctx, d, id, params)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT TeamWithRetryUpdate")
 	}
 	return
 }

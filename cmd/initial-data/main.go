@@ -58,16 +58,7 @@ func main() {
 	repositories := services.CreateRepos()
 
 	// TODO: services.Create(logger, repositories, pool)
-	userSvc := services.NewUser(logger, repositories)
-	authnSvc := services.NewAuthentication(logger, repositories, pool)
-	activitySvc := services.NewActivity(logger, repositories)
-	teamSvc := services.NewTeam(logger, repositories)
-	teSvc := services.NewTimeEntry(logger, repositories)
-	notifSvc := services.NewNotification(logger, repositories)
-	wiSvc := services.NewWorkItem(logger, repositories)
-	demoWiSvc := services.NewDemoWorkItem(logger, repositories)
-	demoTwoWiSvc := services.NewDemoTwoWorkItem(logger, repositories)
-	wiTagSvc := services.NewWorkItemTag(logger, repositories)
+	svc := services.New(logger, repositories, pool)
 
 	ctx := context.Background()
 
@@ -84,17 +75,17 @@ func main() {
 	// register superAdmin, which is used for internal calls that require a (super)admin caller.
 	// e.g. first user registration via auth callback requires an existing admin,
 	// which wouldn't be possible without a registered admin beforehand.
-	superAdmin, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
+	superAdmin, err := svc.User.Register(ctx, pool, services.UserRegisterParams{
 		Username:   "superadmin",
 		Email:      cfg.SuperAdmin.DefaultEmail,
 		ExternalID: "", // will be updated on login
 		Role:       models.RoleSuperAdmin,
 	})
 	handleError(err)
-	_, err = authnSvc.CreateAPIKeyForUser(ctx, superAdmin)
+	_, err = svc.Authentication.CreateAPIKeyForUser(ctx, superAdmin)
 	handleError(err)
 
-	superAdmin, err = userSvc.ByID(ctx, pool, superAdmin.UserID) // get joins
+	superAdmin, err = svc.User.ByID(ctx, pool, superAdmin.UserID) // get joins
 	handleError(err)
 
 	superAdminCaller := services.CtxUser{
@@ -126,7 +117,7 @@ func main() {
 
 	logger.Info("Creating users...")
 	for i := 0; i < 10; i++ {
-		u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
+		u, err := svc.User.Register(ctx, pool, services.UserRegisterParams{
 			Username:   "user_" + strconv.Itoa(i),
 			FirstName:  pointers.New(testutil.RandomFirstName()),
 			LastName:   pointers.New(testutil.RandomLastName()),
@@ -135,15 +126,15 @@ func main() {
 			// Scopes: []models.Scope{models.}, // TODO:
 		})
 		handleError(err)
-		_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
+		_, err = svc.Authentication.CreateAPIKeyForUser(ctx, u)
 		handleError(err)
 
-		u, err = userSvc.ByID(ctx, pool, u.UserID) // get joins
+		u, err = svc.User.ByID(ctx, pool, u.UserID) // get joins
 		handleError(err)
 
 		users = append(users, u)
 	}
-	u, err := userSvc.Register(ctx, pool, services.UserRegisterParams{
+	u, err := svc.User.Register(ctx, pool, services.UserRegisterParams{
 		Username:   "manager_1",
 		FirstName:  pointers.New("MrManager"),
 		Email:      "manager_1" + "@mail.com",
@@ -151,7 +142,7 @@ func main() {
 		Role:       models.RoleManager,
 	})
 	handleError(err)
-	_, err = authnSvc.CreateAPIKeyForUser(ctx, u)
+	_, err = svc.Authentication.CreateAPIKeyForUser(ctx, u)
 	handleError(err)
 	users = append(users, u)
 
@@ -162,13 +153,13 @@ func main() {
 	 **/
 	logger.Info("Creating teams...")
 
-	teamDemo, err := teamSvc.Create(ctx, pool, &db.TeamCreateParams{
+	teamDemo, err := svc.Team.Create(ctx, pool, &db.TeamCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Team 1",
 		Description: "Team 1 description",
 	})
 	handleError(err, teamDemo)
-	teamDemo2, err := teamSvc.Create(ctx, pool, &db.TeamCreateParams{
+	teamDemo2, err := svc.Team.Create(ctx, pool, &db.TeamCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
 		Name:        "Team 2",
 		Description: "Team 2 description",
@@ -176,14 +167,14 @@ func main() {
 	handleError(err, teamDemo2)
 
 	for i, u := range users {
-		users[i], err = userSvc.AssignTeam(ctx, pool, u.UserID, teamDemo.TeamID)
+		users[i], err = svc.User.AssignTeam(ctx, pool, u.UserID, teamDemo.TeamID)
 		handleError(err)
 	}
 	// format.PrintJSONByTag(users, "db")
 
-	superAdmin, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo.TeamID)
+	superAdmin, err = svc.User.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo.TeamID)
 	handleError(err)
-	superAdmin, err = userSvc.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo2.TeamID)
+	superAdmin, err = svc.User.AssignTeam(ctx, pool, superAdmin.UserID, teamDemo2.TeamID)
 	handleError(err)
 
 	superAdminCaller = *services.NewCtxUser(superAdmin)
@@ -195,20 +186,20 @@ func main() {
 	 **/
 	logger.Info("Creating activities...")
 
-	activity1, err := activitySvc.Create(ctx, pool, &db.ActivityCreateParams{
+	activity1, err := svc.Activity.Create(ctx, pool, &db.ActivityCreateParams{
 		ProjectID:    internal.ProjectIDByName[models.ProjectDemo],
 		Name:         "Activity 1",
 		Description:  "Activity 1 description",
 		IsProductive: true,
 	})
 	handleError(err, activity1)
-	activity2, err := activitySvc.Create(ctx, pool, &db.ActivityCreateParams{
+	activity2, err := svc.Activity.Create(ctx, pool, &db.ActivityCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Activity 2",
 		Description: "Activity 2 description",
 	})
 	handleError(err, activity2)
-	activity3, err := activitySvc.Create(ctx, pool, &db.ActivityCreateParams{
+	activity3, err := svc.Activity.Create(ctx, pool, &db.ActivityCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Activity 3",
 		Description: "Activity 3 description",
@@ -221,7 +212,7 @@ func main() {
 	 *
 	 **/
 	logger.Info("Creating workitem tags...")
-	wiTag1, err := wiTagSvc.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
+	wiTag1, err := svc.WorkItemTag.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Tag 1",
 		Description: "Tag 1 description",
@@ -229,7 +220,7 @@ func main() {
 	})
 	handleError(err, wiTag1)
 
-	wiTag2, err := wiTagSvc.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
+	wiTag2, err := svc.WorkItemTag.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
 		Name:        "Tag 2",
 		Description: "Tag 2 description",
@@ -237,7 +228,7 @@ func main() {
 	})
 	handleError(err, wiTag2)
 
-	wiTagDemo2_1, err := wiTagSvc.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
+	wiTagDemo2_1, err := svc.WorkItemTag.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
 		Name:        "Tag 1",
 		Description: "Tag 1 description",
@@ -262,7 +253,7 @@ func main() {
 		go func(i int) {
 			defer wg.Done()
 
-			demowi, err := demoWiSvc.Create(ctx, pool, services.DemoWorkItemCreateParams{
+			demowi, err := svc.DemoWorkItem.Create(ctx, pool, services.DemoWorkItemCreateParams{
 				DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
 					Base: db.WorkItemCreateParams{
 						TeamID:         teamDemo.TeamID,
@@ -294,7 +285,7 @@ func main() {
 
 	wg.Wait()
 
-	demoWiSvc.Update(ctx, pool, demoWorkItems[0].WorkItemID, repos.DemoWorkItemUpdateParams{
+	svc.DemoWorkItem.Update(ctx, pool, demoWorkItems[0].WorkItemID, repos.DemoWorkItemUpdateParams{
 		Base: &db.WorkItemUpdateParams{
 			KanbanStepID: pointers.New(internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsUnderReview]),
 		},
@@ -313,7 +304,7 @@ func main() {
 		go func(i int) {
 			defer wg.Done()
 
-			demoTwowi, err := demoTwoWiSvc.Create(ctx, pool, services.DemoTwoWorkItemCreateParams{
+			demoTwowi, err := svc.DemoTwoWorkItem.Create(ctx, pool, services.DemoTwoWorkItemCreateParams{
 				DemoTwoWorkItemCreateParams: repos.DemoTwoWorkItemCreateParams{
 					Base: db.WorkItemCreateParams{
 						TeamID:         teamDemo.TeamID,
@@ -357,7 +348,7 @@ func main() {
 		Teams:    *users[0].MemberTeamsJoin,
 		Projects: *users[0].MemberProjectsJoin,
 	}
-	te1, err := teSvc.Create(ctx, pool, ucaller, &db.TimeEntryCreateParams{
+	te1, err := svc.TimeEntry.Create(ctx, pool, ucaller, &db.TimeEntryCreateParams{
 		WorkItemID:      &demoWorkItems[0].WorkItemID,
 		ActivityID:      activity1.ActivityID,
 		UserID:          users[0].UserID,
@@ -367,7 +358,7 @@ func main() {
 	})
 	handleError(err, te1)
 
-	te2, err := teSvc.Create(ctx, pool, ucaller, &db.TimeEntryCreateParams{
+	te2, err := svc.TimeEntry.Create(ctx, pool, ucaller, &db.TimeEntryCreateParams{
 		ActivityID:      activity2.ActivityID,
 		UserID:          users[0].UserID,
 		TeamID:          &teamDemo.TeamID,
@@ -378,7 +369,7 @@ func main() {
 	handleError(err, te2)
 
 	for _, u := range users {
-		_, err := teSvc.Create(ctx, pool, services.CtxUser{User: u, Teams: *u.MemberTeamsJoin}, &db.TimeEntryCreateParams{
+		_, err := svc.TimeEntry.Create(ctx, pool, services.CtxUser{User: u, Teams: *u.MemberTeamsJoin}, &db.TimeEntryCreateParams{
 			ActivityID: activity2.ActivityID,
 			UserID:     u.UserID,
 			TeamID:     &teamDemo.TeamID,
@@ -395,7 +386,7 @@ func main() {
 	 **/
 
 	for _, u := range users {
-		_, err := notifSvc.CreateNotification(ctx, pool, &services.NotificationCreateParams{
+		_, err := svc.Notification.CreateNotification(ctx, pool, &services.NotificationCreateParams{
 			NotificationCreateParams: db.NotificationCreateParams{
 				Body:             "Notification for " + u.Email,
 				Labels:           []string{"label 1", "label 2"},
@@ -409,7 +400,7 @@ func main() {
 		handleError(err)
 	}
 
-	_, err = notifSvc.CreateNotification(ctx, pool, &services.NotificationCreateParams{
+	_, err = svc.Notification.CreateNotification(ctx, pool, &services.NotificationCreateParams{
 		NotificationCreateParams: db.NotificationCreateParams{
 			Body:             "Global notification for all users",
 			Labels:           []string{"label 4"},
@@ -424,7 +415,7 @@ func main() {
 
 	testUser := users[10]
 	fmt.Printf("testUser.UserID: %v\n", testUser.UserID)
-	err = wiSvc.AssignUsers(ctx, pool, demoWorkItems[0].WorkItemID, []services.Member{{Role: models.WorkItemRolePreparer, UserID: testUser.UserID}})
+	err = svc.WorkItem.AssignUsers(ctx, pool, demoWorkItems[0].WorkItemID, []services.Member{{Role: models.WorkItemRolePreparer, UserID: testUser.UserID}})
 	handleError(err)
 	// TODO: tests later with paginated from cache.<project_name>
 	// paginated queries have sortable id. for first query include previous results (-1 or -1 second)

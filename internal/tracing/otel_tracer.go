@@ -2,7 +2,6 @@ package tracing
 
 import (
 	"log"
-	"os"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	jaegerp "go.opentelemetry.io/contrib/propagators/jaeger"
@@ -15,19 +14,11 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.12.0"
-	"go.opentelemetry.io/otel/trace"
 )
 
 // https://www.timescale.com/blog/using-postgresql-as-a-scalable-durable-and-reliable-storage-for-jaeger-tracing/
 
 func InitOTelTracer() *sdktrace.TracerProvider {
-	if os.Getenv("IS_TESTING") != "" {
-		tp := trace.NewNoopTracerProvider()
-		otel.SetTracerProvider(tp)
-
-		return sdktrace.NewTracerProvider()
-	}
-
 	jaegerEndpoint := "http://localhost:14268/api/traces"
 
 	jaegerExporter, err := jaeger.New(

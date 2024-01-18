@@ -41,6 +41,7 @@ readonly PG_REPO_GEN="$PG_REPO_DIR/gen"
 readonly CACHE=".generate.cache"
 readonly CACHE_BACKUP="$CACHE-backup"
 readonly SWAGGER_UI_DIR="internal/static/swagger-ui"
+readonly FRONTEND_GEN="frontend/src/gen"
 readonly MAX_FNAME_LOG_LEN=13
 
 GEN_POSTGRES_DB="gen_db"
@@ -663,6 +664,8 @@ x.gen.xo() {
     files=$(find "$PG_REPO_GEN/db" \
       -name "*.go")
     goimports -w $files
+
+    xo_generate_spec_helpers
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
@@ -765,6 +768,7 @@ x.gen.client-server() {
     types_list=$(join_by "," ${all_types[*]})
     # hack to get separate types generation
     sed "s/\$ref: '\#\//\$ref: '$SPEC_PATH\#\//g" $SPEC_PATH >"$paths_file"
+
     # yq e 'del(.components)' -i "$paths_file" # dont delete since recent oapi-codegen does some checks even if we are not generating types
     go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # templates are embedded, required rebuild
 
@@ -881,7 +885,7 @@ x.gen.frontend() {
     config_template_setup frontend # no need to run if cached .env
 
     mkdir -p frontend/src/types
-    rm -rf frontend/src/gen
+    rm -rf $FRONTEND_GEN
 
     yq 'explode(.)' $SPEC_PATH >$exploded_spec # js-lib won't support anchors - used by most gen libs
 
@@ -906,6 +910,8 @@ export type schemas = components['schemas']
     orval --config $orval_config &
 
     wait_without_error || err Failed jobs
+
+    orval_branded_types
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
@@ -1343,6 +1349,68 @@ x.backend.typecheck() {
   golangci-lint run --no-config --disable-all --enable=typecheck --timeout=10m
 }
 
+# depends on gen.xo output
+orval_branded_types() {
+  local import_string="import type { Branded } from 'src/types/utils'"
+  local escaped_import_string=$(escape_sed "$import_string")
+
+  local import_command=("-e" "/$escaped_import_string/!{1s/^/$escaped_import_string\n/}")
+  local replace_commands=()
+
+  local int_ids=()
+  go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/db"
+  for entity in "${int_ids[@]}"; do
+    local camel=$(to_camel "$entity")
+    replace_commands+=(
+      "-e" "s/${camel}?: number/${camel}?: Branded<number, '${camel}'>/g"
+      "-e" "s/${camel}: number/${camel}: Branded<number, '${camel}'>/g"
+    )
+  done
+
+  local uuid_ids=()
+  go-utils.find_db_ids_uuid uuid_ids "$PG_REPO_GEN/db"
+  for entity in "${uuid_ids[@]}"; do
+    local camel=$(to_camel "$entity")
+    local pascal=$(to_pascal "$entity")
+    replace_commands+=(
+      "-e" "s/${camel}?: Db${pascal}/${camel}?: Branded<string, '${camel}'>/g"
+      "-e" "s/${camel}: Db${pascal}/${camel}: Branded<string, '${camel}'>/g"
+    )
+  done
+
+  local sed_commands=("${import_command[@]}" "${replace_commands[@]}")
+
+  find $FRONTEND_GEN -type f -name '*.ts' -exec sed -i "${sed_commands[@]}" {} +
+
+  local exports=()
+  for entity in "${int_ids[@]}"; do
+    local camel=$(to_camel "$entity")
+    local pascal=$(to_pascal "$entity")
+    exports+=("export type ${pascal} = Branded<number, '${camel}'>") # swaggest requires pointer to struct
+  done
+  for entity in "${uuid_ids[@]}"; do
+    local camel=$(to_camel "$entity")
+    local pascal=$(to_pascal "$entity")
+    exports+=("export type ${pascal} = Branded<string, '${camel}'>") # swaggest requires pointer to struct
+  done
+  out="$FRONTEND_GEN/entity-ids.ts"
+  cat <<EOF >$out
+import { Branded } from 'src/types/utils'
+
+$(printf "%s\n" "${exports[@]}")
+EOF
+
+  # cheapest way to update both new and previous files that need formatting
+  git diff --name-only $FRONTEND_GEN | xargs --no-run-if-empty prettier --write -- &>/dev/null
+
+  # TODO: msw:
+  # refactor regular files gen to use EntityIDs as well. that way a single sed does everything
+  # prepend if not exists
+  # local import_string="import * as EntityIDs from 'src/gen/entity-ids'"
+  # ${camel}: faker.number.int({ min: undefined, max: undefined }) += `as EntityIDs.${pascal}`
+  # ${camel}: faker.word.sample() += `as EntityIDs.${pascal}`
+}
+
 x.dev-utils.create-crud() { # Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a
   # given db table by struct name.
   # Accepts flags:
@@ -1448,7 +1516,7 @@ ${pascal_name} *${pascal_name}" "$services_path"
 	)"
     modified_string="${string//$'\n'/}"
     newline_count=$((${#string} - ${#modified_string}))
-    formatted_string="${string//$'\n'/\\n}"
+    formatted_string="${string//$'\n'/\\n}" # for sed
 
     sed -i "$((line - 2))a\\
 $formatted_string" "$service_repos_path"
@@ -1866,6 +1934,52 @@ run_shared_services() {
     --env-file ../.env."$X_ENV" \
     "$@" 2>&1 # https://github.com/docker/compose/issues/7346
   cd - >/dev/null
+}
+
+xo_generate_spec_helpers() {
+  local int_ids=()
+  local anchors=()
+  go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/db"
+  for entity in ${int_ids[@]}; do
+    camel=$(to_camel $entity)
+    pascal=$(to_pascal $entity)
+    anchors+=("x-${camel}Parameter: &x-${camel}Parameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-serialIDParameterBase
+  schema:
+    type: integer
+    x-go-type: db.${pascal}
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: ${camel}
+")
+  done
+  local uuid_ids=()
+  go-utils.find_db_ids_uuid uuid_ids "$PG_REPO_GEN/db"
+  for entity in ${uuid_ids[@]}; do
+    camel=$(to_camel $entity)
+    anchors+=("x-${camel}Parameter: &x-${camel}Parameter # Generated. DO NOT EDIT.
+  !!merge <<: *x-uuidIDParameterBase
+  schema:
+    type: integer
+    x-go-type: db.${pascal}
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: ${camel}
+")
+  done
+
+  local start_pattern="# <<<--- GENERATED DB ANCHORS. DO NOT EDIT. --->>>"
+  local end_pattern="# <<<--- END OF ANCHORS DB GENERATION. DO NOT EDIT. --->>>"
+  local generated_anchors="$start_pattern
+$(join_by "" "${anchors[@]}")
+$end_pattern"
+
+  formatted_string="${generated_anchors//$'\n'/\\n}" # for sed
+  sed -i -e "/$start_pattern/,/$end_pattern/c\\
+$formatted_string
+" "$SPEC_PATH"
 }
 
 # generate db structs for use with swaggest/openapi-go.

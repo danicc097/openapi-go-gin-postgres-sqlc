@@ -34,20 +34,20 @@ export const createActivity = (
 /**
  * @summary get activity.
  */
-export const getActivity = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<Activity>({ url: `/activity/${id}`, method: 'GET' }, options)
+export const getActivity = (activityID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<Activity>({ url: `/activity/${activityID}`, method: 'GET' }, options)
 }
 /**
  * @summary update activity.
  */
 export const updateActivity = (
-  id: number,
+  activityID: number,
   updateActivityRequest: UpdateActivityRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<Activity>(
     {
-      url: `/activity/${id}`,
+      url: `/activity/${activityID}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: updateActivityRequest,
@@ -58,8 +58,8 @@ export const updateActivity = (
 /**
  * @summary delete activity.
  */
-export const deleteActivity = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<void>({ url: `/activity/${id}`, method: 'DELETE' }, options)
+export const deleteActivity = (activityID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<void>({ url: `/activity/${activityID}`, method: 'DELETE' }, options)
 }
 export type CreateActivityResult = NonNullable<Awaited<ReturnType<typeof createActivity>>>
 export type GetActivityResult = NonNullable<Awaited<ReturnType<typeof getActivity>>>

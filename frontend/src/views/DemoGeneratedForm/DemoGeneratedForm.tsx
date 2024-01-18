@@ -60,6 +60,7 @@ import { useGetPaginatedUsers } from 'src/gen/user/user'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import { useFormSlice } from 'src/slices/form'
 import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
+import { WorkItemTagID, ProjectID } from 'src/gen/entity-ids'
 
 const schema = {
   properties: {
@@ -187,8 +188,8 @@ const tags = [...Array(1000)].map((x, i) => {
   const tag: DbWorkItemTag = {
     name: `tag #${i}`,
     color: _.sample(colorBlindPalette)!,
-    workItemTagID: i,
-    projectID: 1,
+    workItemTagID: 1 as WorkItemTagID,
+    projectID: 1 as ProjectID,
     description: `description for tag #${i}`,
   } // TODO: get workitem tags endpoint
   return tag

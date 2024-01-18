@@ -345,7 +345,7 @@ cache_all() {
   shift
 
   if md5sum -c "$output_file" &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
-    echo "Skipping generation (cached). Force regen with --x-force-regen"
+    echo "${CYAN}Skipping generation (cached).${OFF} Regenerate with ${RED}--x-force-regen${OFF}"
     return 0
   fi
 
@@ -519,6 +519,26 @@ go-utils.find_structs() {
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
 }
 
+go-utils.find_db_ids_int() {
+  local -n __arr="$1"
+  local pkg="$2"
+  mapfile -t __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+    sed -ne 's/[\s]*type[[:space:]]*\([^[:space:]]*\)ID[[:space:]]*int.*/\1ID/p')
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    err "No db int IDs found in package $pkg"
+  fi
+  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
+}
+go-utils.find_db_ids_uuid() {
+  local -n __arr="$1"
+  local pkg="$2"
+  mapfile -t __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+    sed -n -E 's/func New(.*)ID\(id uuid.UUID\) (.*)ID.*/\1ID/p')
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    err "No db uuid IDs found in package $pkg"
+  fi
+  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
+}
 # Stores go struct fields to a given array.
 # Parameters:
 #    Struct name
@@ -620,4 +640,9 @@ go-utils.find_all_types() {
     echo "No types found in package $pkg"
   fi
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+}
+
+# Escape regular string for sed commands
+escape_sed() {
+  echo "$1" | sed -e 's/[\/&]/\\&/g'
 }

@@ -17,6 +17,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	. "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	openapi_types "github.com/deepmap/oapi-codegen/pkg/types"
 	uuid "github.com/google/uuid"
@@ -107,15 +108,15 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 // The interface specification for the client above.
 type ClientInterface interface {
 	// DeleteActivity request
-	DeleteActivity(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteActivity(ctx context.Context, activityID db.ActivityID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetActivity request
-	GetActivity(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetActivity(ctx context.Context, activityID db.ActivityID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateActivity request with any body
-	UpdateActivityWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateActivityWithBody(ctx context.Context, activityID db.ActivityID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateActivity(ctx context.Context, id int, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateActivity(ctx context.Context, activityID db.ActivityID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// AdminPing request
 	AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -181,15 +182,15 @@ type ClientInterface interface {
 	GetProjectWorkitems(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteTeam request
-	DeleteTeam(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteTeam(ctx context.Context, teamID db.TeamID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetTeam request
-	GetTeam(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetTeam(ctx context.Context, teamID db.TeamID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateTeam request with any body
-	UpdateTeamWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateTeamWithBody(ctx context.Context, teamID db.TeamID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateTeam(ctx context.Context, id int, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateTeam(ctx context.Context, teamID db.TeamID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetCurrentUser request
 	GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -210,43 +211,27 @@ type ClientInterface interface {
 
 	UpdateUserAuthorization(ctx context.Context, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// CreateWorkItemComment request with any body
-	CreateWorkItemCommentWithBody(ctx context.Context, workItemID int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	CreateWorkItemComment(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// DeleteWorkItemComment request
-	DeleteWorkItemComment(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetWorkItemComment request
-	GetWorkItemComment(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// UpdateWorkItemComment request with any body
-	UpdateWorkItemCommentWithBody(ctx context.Context, workItemID int, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	UpdateWorkItemComment(ctx context.Context, workItemID int, id int, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// DeleteWorkItemTag request
-	DeleteWorkItemTag(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteWorkItemTag(ctx context.Context, workItemTagID db.WorkItemTagID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetWorkItemTag request
-	GetWorkItemTag(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetWorkItemTag(ctx context.Context, workItemTagID db.WorkItemTagID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateWorkItemTag request with any body
-	UpdateWorkItemTagWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateWorkItemTagWithBody(ctx context.Context, workItemTagID db.WorkItemTagID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateWorkItemTag(ctx context.Context, id int, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateWorkItemTag(ctx context.Context, workItemTagID db.WorkItemTagID, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteWorkItemType request
-	DeleteWorkItemType(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteWorkItemType(ctx context.Context, workItemTypeID db.WorkItemTypeID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetWorkItemType request
-	GetWorkItemType(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetWorkItemType(ctx context.Context, workItemTypeID db.WorkItemTypeID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateWorkItemType request with any body
-	UpdateWorkItemTypeWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateWorkItemTypeWithBody(ctx context.Context, workItemTypeID db.WorkItemTypeID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	UpdateWorkItemType(ctx context.Context, id int, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateWorkItemType(ctx context.Context, workItemTypeID db.WorkItemTypeID, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// CreateWorkitem request with any body
 	CreateWorkitemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -254,17 +239,33 @@ type ClientInterface interface {
 	CreateWorkitem(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// DeleteWorkitem request
-	DeleteWorkitem(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteWorkitem(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetWorkItem request
-	GetWorkItem(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	GetWorkItem(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateWorkitem request
-	UpdateWorkitem(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateWorkitem(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateWorkItemComment request with any body
+	CreateWorkItemCommentWithBody(ctx context.Context, workItemID int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateWorkItemComment(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteWorkItemComment request
+	DeleteWorkItemComment(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetWorkItemComment request
+	GetWorkItemComment(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateWorkItemComment request with any body
+	UpdateWorkItemCommentWithBody(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateWorkItemComment(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) DeleteActivity(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteActivityRequest(c.Server, id)
+func (c *Client) DeleteActivity(ctx context.Context, activityID db.ActivityID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteActivityRequest(c.Server, activityID)
 	if err != nil {
 		return nil, err
 	}
@@ -282,8 +283,8 @@ func (c *Client) DeleteActivity(ctx context.Context, id int, reqEditors ...Reque
 	}
 }
 
-func (c *Client) GetActivity(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetActivityRequest(c.Server, id)
+func (c *Client) GetActivity(ctx context.Context, activityID db.ActivityID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetActivityRequest(c.Server, activityID)
 	if err != nil {
 		return nil, err
 	}
@@ -301,8 +302,8 @@ func (c *Client) GetActivity(ctx context.Context, id int, reqEditors ...RequestE
 	}
 }
 
-func (c *Client) UpdateActivityWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateActivityRequestWithBody(c.Server, id, contentType, body)
+func (c *Client) UpdateActivityWithBody(ctx context.Context, activityID db.ActivityID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateActivityRequestWithBody(c.Server, activityID, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -320,8 +321,8 @@ func (c *Client) UpdateActivityWithBody(ctx context.Context, id int, contentType
 	}
 }
 
-func (c *Client) UpdateActivity(ctx context.Context, id int, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateActivityRequest(c.Server, id, body)
+func (c *Client) UpdateActivity(ctx context.Context, activityID db.ActivityID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateActivityRequest(c.Server, activityID, body)
 	if err != nil {
 		return nil, err
 	}
@@ -776,8 +777,8 @@ func (c *Client) GetProjectWorkitems(ctx context.Context, projectName ProjectNam
 	}
 }
 
-func (c *Client) DeleteTeam(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteTeamRequest(c.Server, id)
+func (c *Client) DeleteTeam(ctx context.Context, teamID db.TeamID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteTeamRequest(c.Server, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -795,8 +796,8 @@ func (c *Client) DeleteTeam(ctx context.Context, id int, reqEditors ...RequestEd
 	}
 }
 
-func (c *Client) GetTeam(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetTeamRequest(c.Server, id)
+func (c *Client) GetTeam(ctx context.Context, teamID db.TeamID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTeamRequest(c.Server, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -814,8 +815,8 @@ func (c *Client) GetTeam(ctx context.Context, id int, reqEditors ...RequestEdito
 	}
 }
 
-func (c *Client) UpdateTeamWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateTeamRequestWithBody(c.Server, id, contentType, body)
+func (c *Client) UpdateTeamWithBody(ctx context.Context, teamID db.TeamID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTeamRequestWithBody(c.Server, teamID, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -833,8 +834,8 @@ func (c *Client) UpdateTeamWithBody(ctx context.Context, id int, contentType str
 	}
 }
 
-func (c *Client) UpdateTeam(ctx context.Context, id int, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateTeamRequest(c.Server, id, body)
+func (c *Client) UpdateTeam(ctx context.Context, teamID db.TeamID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTeamRequest(c.Server, teamID, body)
 	if err != nil {
 		return nil, err
 	}
@@ -985,8 +986,8 @@ func (c *Client) UpdateUserAuthorization(ctx context.Context, id uuid.UUID, body
 	}
 }
 
-func (c *Client) CreateWorkItemCommentWithBody(ctx context.Context, workItemID int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateWorkItemCommentRequestWithBody(c.Server, workItemID, contentType, body)
+func (c *Client) DeleteWorkItemTag(ctx context.Context, workItemTagID db.WorkItemTagID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteWorkItemTagRequest(c.Server, workItemTagID)
 	if err != nil {
 		return nil, err
 	}
@@ -1004,8 +1005,8 @@ func (c *Client) CreateWorkItemCommentWithBody(ctx context.Context, workItemID i
 	}
 }
 
-func (c *Client) CreateWorkItemComment(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewCreateWorkItemCommentRequest(c.Server, workItemID, body)
+func (c *Client) GetWorkItemTag(ctx context.Context, workItemTagID db.WorkItemTagID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWorkItemTagRequest(c.Server, workItemTagID)
 	if err != nil {
 		return nil, err
 	}
@@ -1023,8 +1024,8 @@ func (c *Client) CreateWorkItemComment(ctx context.Context, workItemID int, body
 	}
 }
 
-func (c *Client) DeleteWorkItemComment(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteWorkItemCommentRequest(c.Server, workItemID, id)
+func (c *Client) UpdateWorkItemTagWithBody(ctx context.Context, workItemTagID db.WorkItemTagID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWorkItemTagRequestWithBody(c.Server, workItemTagID, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1042,8 +1043,8 @@ func (c *Client) DeleteWorkItemComment(ctx context.Context, workItemID int, id i
 	}
 }
 
-func (c *Client) GetWorkItemComment(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetWorkItemCommentRequest(c.Server, workItemID, id)
+func (c *Client) UpdateWorkItemTag(ctx context.Context, workItemTagID db.WorkItemTagID, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWorkItemTagRequest(c.Server, workItemTagID, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1061,8 +1062,8 @@ func (c *Client) GetWorkItemComment(ctx context.Context, workItemID int, id int,
 	}
 }
 
-func (c *Client) UpdateWorkItemCommentWithBody(ctx context.Context, workItemID int, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateWorkItemCommentRequestWithBody(c.Server, workItemID, id, contentType, body)
+func (c *Client) DeleteWorkItemType(ctx context.Context, workItemTypeID db.WorkItemTypeID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteWorkItemTypeRequest(c.Server, workItemTypeID)
 	if err != nil {
 		return nil, err
 	}
@@ -1080,8 +1081,8 @@ func (c *Client) UpdateWorkItemCommentWithBody(ctx context.Context, workItemID i
 	}
 }
 
-func (c *Client) UpdateWorkItemComment(ctx context.Context, workItemID int, id int, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateWorkItemCommentRequest(c.Server, workItemID, id, body)
+func (c *Client) GetWorkItemType(ctx context.Context, workItemTypeID db.WorkItemTypeID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWorkItemTypeRequest(c.Server, workItemTypeID)
 	if err != nil {
 		return nil, err
 	}
@@ -1099,8 +1100,8 @@ func (c *Client) UpdateWorkItemComment(ctx context.Context, workItemID int, id i
 	}
 }
 
-func (c *Client) DeleteWorkItemTag(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteWorkItemTagRequest(c.Server, id)
+func (c *Client) UpdateWorkItemTypeWithBody(ctx context.Context, workItemTypeID db.WorkItemTypeID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWorkItemTypeRequestWithBody(c.Server, workItemTypeID, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1118,122 +1119,8 @@ func (c *Client) DeleteWorkItemTag(ctx context.Context, id int, reqEditors ...Re
 	}
 }
 
-func (c *Client) GetWorkItemTag(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetWorkItemTagRequest(c.Server, id)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	if c.testHandler != nil {
-		resp := httptest.NewRecorder()
-		c.testHandler.ServeHTTP(resp, req)
-
-		return resp.Result(), nil
-	} else {
-		return c.Client.Do(req)
-	}
-}
-
-func (c *Client) UpdateWorkItemTagWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateWorkItemTagRequestWithBody(c.Server, id, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	if c.testHandler != nil {
-		resp := httptest.NewRecorder()
-		c.testHandler.ServeHTTP(resp, req)
-
-		return resp.Result(), nil
-	} else {
-		return c.Client.Do(req)
-	}
-}
-
-func (c *Client) UpdateWorkItemTag(ctx context.Context, id int, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateWorkItemTagRequest(c.Server, id, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	if c.testHandler != nil {
-		resp := httptest.NewRecorder()
-		c.testHandler.ServeHTTP(resp, req)
-
-		return resp.Result(), nil
-	} else {
-		return c.Client.Do(req)
-	}
-}
-
-func (c *Client) DeleteWorkItemType(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteWorkItemTypeRequest(c.Server, id)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	if c.testHandler != nil {
-		resp := httptest.NewRecorder()
-		c.testHandler.ServeHTTP(resp, req)
-
-		return resp.Result(), nil
-	} else {
-		return c.Client.Do(req)
-	}
-}
-
-func (c *Client) GetWorkItemType(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetWorkItemTypeRequest(c.Server, id)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	if c.testHandler != nil {
-		resp := httptest.NewRecorder()
-		c.testHandler.ServeHTTP(resp, req)
-
-		return resp.Result(), nil
-	} else {
-		return c.Client.Do(req)
-	}
-}
-
-func (c *Client) UpdateWorkItemTypeWithBody(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateWorkItemTypeRequestWithBody(c.Server, id, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	if c.testHandler != nil {
-		resp := httptest.NewRecorder()
-		c.testHandler.ServeHTTP(resp, req)
-
-		return resp.Result(), nil
-	} else {
-		return c.Client.Do(req)
-	}
-}
-
-func (c *Client) UpdateWorkItemType(ctx context.Context, id int, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateWorkItemTypeRequest(c.Server, id, body)
+func (c *Client) UpdateWorkItemType(ctx context.Context, workItemTypeID db.WorkItemTypeID, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWorkItemTypeRequest(c.Server, workItemTypeID, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1289,8 +1176,8 @@ func (c *Client) CreateWorkitem(ctx context.Context, body CreateWorkitemJSONRequ
 	}
 }
 
-func (c *Client) DeleteWorkitem(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteWorkitemRequest(c.Server, id)
+func (c *Client) DeleteWorkitem(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteWorkitemRequest(c.Server, workItemID)
 	if err != nil {
 		return nil, err
 	}
@@ -1308,8 +1195,8 @@ func (c *Client) DeleteWorkitem(ctx context.Context, id int, reqEditors ...Reque
 	}
 }
 
-func (c *Client) GetWorkItem(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetWorkItemRequest(c.Server, id)
+func (c *Client) GetWorkItem(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWorkItemRequest(c.Server, workItemID)
 	if err != nil {
 		return nil, err
 	}
@@ -1327,8 +1214,122 @@ func (c *Client) GetWorkItem(ctx context.Context, id int, reqEditors ...RequestE
 	}
 }
 
-func (c *Client) UpdateWorkitem(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateWorkitemRequest(c.Server, id)
+func (c *Client) UpdateWorkitem(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWorkitemRequest(c.Server, workItemID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) CreateWorkItemCommentWithBody(ctx context.Context, workItemID int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkItemCommentRequestWithBody(c.Server, workItemID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) CreateWorkItemComment(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWorkItemCommentRequest(c.Server, workItemID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) DeleteWorkItemComment(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteWorkItemCommentRequest(c.Server, workItemID, workItemCommentID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) GetWorkItemComment(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWorkItemCommentRequest(c.Server, workItemID, workItemCommentID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) UpdateWorkItemCommentWithBody(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWorkItemCommentRequestWithBody(c.Server, workItemID, workItemCommentID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) UpdateWorkItemComment(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWorkItemCommentRequest(c.Server, workItemID, workItemCommentID, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1347,12 +1348,12 @@ func (c *Client) UpdateWorkitem(ctx context.Context, id int, reqEditors ...Reque
 }
 
 // NewDeleteActivityRequest generates requests for DeleteActivity
-func NewDeleteActivityRequest(server string, id int) (*http.Request, error) {
+func NewDeleteActivityRequest(server string, activityID db.ActivityID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "activityID", runtime.ParamLocationPath, activityID)
 	if err != nil {
 		return nil, err
 	}
@@ -1381,12 +1382,12 @@ func NewDeleteActivityRequest(server string, id int) (*http.Request, error) {
 }
 
 // NewGetActivityRequest generates requests for GetActivity
-func NewGetActivityRequest(server string, id int) (*http.Request, error) {
+func NewGetActivityRequest(server string, activityID db.ActivityID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "activityID", runtime.ParamLocationPath, activityID)
 	if err != nil {
 		return nil, err
 	}
@@ -1415,23 +1416,23 @@ func NewGetActivityRequest(server string, id int) (*http.Request, error) {
 }
 
 // NewUpdateActivityRequest calls the generic UpdateActivity builder with application/json body
-func NewUpdateActivityRequest(server string, id int, body UpdateActivityJSONRequestBody) (*http.Request, error) {
+func NewUpdateActivityRequest(server string, activityID db.ActivityID, body UpdateActivityJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpdateActivityRequestWithBody(server, id, "application/json", bodyReader)
+	return NewUpdateActivityRequestWithBody(server, activityID, "application/json", bodyReader)
 }
 
 // NewUpdateActivityRequestWithBody generates requests for UpdateActivity with any type of body
-func NewUpdateActivityRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateActivityRequestWithBody(server string, activityID db.ActivityID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "activityID", runtime.ParamLocationPath, activityID)
 	if err != nil {
 		return nil, err
 	}
@@ -2045,7 +2046,7 @@ func NewCreateWorkItemTagRequestWithBody(server string, projectName ProjectName,
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/project/%s/workItemTag/", pathParam0)
+	operationPath := fmt.Sprintf("/project/%s/work-item-tag/", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -2092,7 +2093,7 @@ func NewCreateWorkItemTypeRequestWithBody(server string, projectName ProjectName
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/project/%s/workItemType/", pathParam0)
+	operationPath := fmt.Sprintf("/project/%s/work-item-type/", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -2185,12 +2186,12 @@ func NewGetProjectWorkitemsRequest(server string, projectName ProjectName, param
 }
 
 // NewDeleteTeamRequest generates requests for DeleteTeam
-func NewDeleteTeamRequest(server string, id int) (*http.Request, error) {
+func NewDeleteTeamRequest(server string, teamID db.TeamID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "teamID", runtime.ParamLocationPath, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -2219,12 +2220,12 @@ func NewDeleteTeamRequest(server string, id int) (*http.Request, error) {
 }
 
 // NewGetTeamRequest generates requests for GetTeam
-func NewGetTeamRequest(server string, id int) (*http.Request, error) {
+func NewGetTeamRequest(server string, teamID db.TeamID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "teamID", runtime.ParamLocationPath, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -2253,23 +2254,23 @@ func NewGetTeamRequest(server string, id int) (*http.Request, error) {
 }
 
 // NewUpdateTeamRequest calls the generic UpdateTeam builder with application/json body
-func NewUpdateTeamRequest(server string, id int, body UpdateTeamJSONRequestBody) (*http.Request, error) {
+func NewUpdateTeamRequest(server string, teamID db.TeamID, body UpdateTeamJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpdateTeamRequestWithBody(server, id, "application/json", bodyReader)
+	return NewUpdateTeamRequestWithBody(server, teamID, "application/json", bodyReader)
 }
 
 // NewUpdateTeamRequestWithBody generates requests for UpdateTeam with any type of body
-func NewUpdateTeamRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateTeamRequestWithBody(server string, teamID db.TeamID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
 
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "teamID", runtime.ParamLocationPath, teamID)
 	if err != nil {
 		return nil, err
 	}
@@ -2523,6 +2524,378 @@ func NewUpdateUserAuthorizationRequestWithBody(server string, id uuid.UUID, cont
 	return req, nil
 }
 
+// NewDeleteWorkItemTagRequest generates requests for DeleteWorkItemTag
+func NewDeleteWorkItemTagRequest(server string, workItemTagID db.WorkItemTagID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "workItemTagID", runtime.ParamLocationPath, workItemTagID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/work-item-tag/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetWorkItemTagRequest generates requests for GetWorkItemTag
+func NewGetWorkItemTagRequest(server string, workItemTagID db.WorkItemTagID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "workItemTagID", runtime.ParamLocationPath, workItemTagID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/work-item-tag/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateWorkItemTagRequest calls the generic UpdateWorkItemTag builder with application/json body
+func NewUpdateWorkItemTagRequest(server string, workItemTagID db.WorkItemTagID, body UpdateWorkItemTagJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateWorkItemTagRequestWithBody(server, workItemTagID, "application/json", bodyReader)
+}
+
+// NewUpdateWorkItemTagRequestWithBody generates requests for UpdateWorkItemTag with any type of body
+func NewUpdateWorkItemTagRequestWithBody(server string, workItemTagID db.WorkItemTagID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "workItemTagID", runtime.ParamLocationPath, workItemTagID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/work-item-tag/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteWorkItemTypeRequest generates requests for DeleteWorkItemType
+func NewDeleteWorkItemTypeRequest(server string, workItemTypeID db.WorkItemTypeID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "workItemTypeID", runtime.ParamLocationPath, workItemTypeID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/work-item-type/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetWorkItemTypeRequest generates requests for GetWorkItemType
+func NewGetWorkItemTypeRequest(server string, workItemTypeID db.WorkItemTypeID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "workItemTypeID", runtime.ParamLocationPath, workItemTypeID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/work-item-type/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateWorkItemTypeRequest calls the generic UpdateWorkItemType builder with application/json body
+func NewUpdateWorkItemTypeRequest(server string, workItemTypeID db.WorkItemTypeID, body UpdateWorkItemTypeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateWorkItemTypeRequestWithBody(server, workItemTypeID, "application/json", bodyReader)
+}
+
+// NewUpdateWorkItemTypeRequestWithBody generates requests for UpdateWorkItemType with any type of body
+func NewUpdateWorkItemTypeRequestWithBody(server string, workItemTypeID db.WorkItemTypeID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "workItemTypeID", runtime.ParamLocationPath, workItemTypeID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/work-item-type/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewCreateWorkitemRequest calls the generic CreateWorkitem builder with application/json body
+func NewCreateWorkitemRequest(server string, body CreateWorkitemJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateWorkitemRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateWorkitemRequestWithBody generates requests for CreateWorkitem with any type of body
+func NewCreateWorkitemRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/work-item/")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteWorkitemRequest generates requests for DeleteWorkitem
+func NewDeleteWorkitemRequest(server string, workItemID db.WorkItemID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "workItemID", runtime.ParamLocationPath, workItemID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/work-item/%s/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetWorkItemRequest generates requests for GetWorkItem
+func NewGetWorkItemRequest(server string, workItemID db.WorkItemID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "workItemID", runtime.ParamLocationPath, workItemID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/work-item/%s/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateWorkitemRequest generates requests for UpdateWorkitem
+func NewUpdateWorkitemRequest(server string, workItemID db.WorkItemID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "workItemID", runtime.ParamLocationPath, workItemID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/work-item/%s/", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewCreateWorkItemCommentRequest calls the generic CreateWorkItemComment builder with application/json body
 func NewCreateWorkItemCommentRequest(server string, workItemID int, body CreateWorkItemCommentJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
@@ -2571,7 +2944,7 @@ func NewCreateWorkItemCommentRequestWithBody(server string, workItemID int, cont
 }
 
 // NewDeleteWorkItemCommentRequest generates requests for DeleteWorkItemComment
-func NewDeleteWorkItemCommentRequest(server string, workItemID int, id int) (*http.Request, error) {
+func NewDeleteWorkItemCommentRequest(server string, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2583,7 +2956,7 @@ func NewDeleteWorkItemCommentRequest(server string, workItemID int, id int) (*ht
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "workItemCommentID", runtime.ParamLocationPath, workItemCommentID)
 	if err != nil {
 		return nil, err
 	}
@@ -2612,7 +2985,7 @@ func NewDeleteWorkItemCommentRequest(server string, workItemID int, id int) (*ht
 }
 
 // NewGetWorkItemCommentRequest generates requests for GetWorkItemComment
-func NewGetWorkItemCommentRequest(server string, workItemID int, id int) (*http.Request, error) {
+func NewGetWorkItemCommentRequest(server string, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2624,7 +2997,7 @@ func NewGetWorkItemCommentRequest(server string, workItemID int, id int) (*http.
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "workItemCommentID", runtime.ParamLocationPath, workItemCommentID)
 	if err != nil {
 		return nil, err
 	}
@@ -2653,18 +3026,18 @@ func NewGetWorkItemCommentRequest(server string, workItemID int, id int) (*http.
 }
 
 // NewUpdateWorkItemCommentRequest calls the generic UpdateWorkItemComment builder with application/json body
-func NewUpdateWorkItemCommentRequest(server string, workItemID int, id int, body UpdateWorkItemCommentJSONRequestBody) (*http.Request, error) {
+func NewUpdateWorkItemCommentRequest(server string, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, body UpdateWorkItemCommentJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpdateWorkItemCommentRequestWithBody(server, workItemID, id, "application/json", bodyReader)
+	return NewUpdateWorkItemCommentRequestWithBody(server, workItemID, workItemCommentID, "application/json", bodyReader)
 }
 
 // NewUpdateWorkItemCommentRequestWithBody generates requests for UpdateWorkItemComment with any type of body
-func NewUpdateWorkItemCommentRequestWithBody(server string, workItemID int, id int, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateWorkItemCommentRequestWithBody(server string, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2676,7 +3049,7 @@ func NewUpdateWorkItemCommentRequestWithBody(server string, workItemID int, id i
 
 	var pathParam1 string
 
-	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "workItemCommentID", runtime.ParamLocationPath, workItemCommentID)
 	if err != nil {
 		return nil, err
 	}
@@ -2702,378 +3075,6 @@ func NewUpdateWorkItemCommentRequestWithBody(server string, workItemID int, id i
 	}
 
 	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewDeleteWorkItemTagRequest generates requests for DeleteWorkItemTag
-func NewDeleteWorkItemTagRequest(server string, id int) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/workItemTag/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetWorkItemTagRequest generates requests for GetWorkItemTag
-func NewGetWorkItemTagRequest(server string, id int) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/workItemTag/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewUpdateWorkItemTagRequest calls the generic UpdateWorkItemTag builder with application/json body
-func NewUpdateWorkItemTagRequest(server string, id int, body UpdateWorkItemTagJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewUpdateWorkItemTagRequestWithBody(server, id, "application/json", bodyReader)
-}
-
-// NewUpdateWorkItemTagRequestWithBody generates requests for UpdateWorkItemTag with any type of body
-func NewUpdateWorkItemTagRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/workItemTag/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("PATCH", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewDeleteWorkItemTypeRequest generates requests for DeleteWorkItemType
-func NewDeleteWorkItemTypeRequest(server string, id int) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/workItemType/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetWorkItemTypeRequest generates requests for GetWorkItemType
-func NewGetWorkItemTypeRequest(server string, id int) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/workItemType/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewUpdateWorkItemTypeRequest calls the generic UpdateWorkItemType builder with application/json body
-func NewUpdateWorkItemTypeRequest(server string, id int, body UpdateWorkItemTypeJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewUpdateWorkItemTypeRequestWithBody(server, id, "application/json", bodyReader)
-}
-
-// NewUpdateWorkItemTypeRequestWithBody generates requests for UpdateWorkItemType with any type of body
-func NewUpdateWorkItemTypeRequestWithBody(server string, id int, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/workItemType/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("PATCH", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewCreateWorkitemRequest calls the generic CreateWorkitem builder with application/json body
-func NewCreateWorkitemRequest(server string, body CreateWorkitemJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewCreateWorkitemRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewCreateWorkitemRequestWithBody generates requests for CreateWorkitem with any type of body
-func NewCreateWorkitemRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/workitem/")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewDeleteWorkitemRequest generates requests for DeleteWorkitem
-func NewDeleteWorkitemRequest(server string, id int) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/workitem/%s/", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetWorkItemRequest generates requests for GetWorkItem
-func NewGetWorkItemRequest(server string, id int) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/workitem/%s/", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewUpdateWorkitemRequest generates requests for UpdateWorkitem
-func NewUpdateWorkitemRequest(server string, id int) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "id", runtime.ParamLocationPath, id)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/workitem/%s/", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("PATCH", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
 
 	return req, nil
 }
@@ -3122,15 +3123,15 @@ func WithBaseURL(baseURL string) ClientOption {
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
 	// DeleteActivity request
-	DeleteActivityWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteActivityResponse, error)
+	DeleteActivityWithResponse(ctx context.Context, activityID db.ActivityID, reqEditors ...RequestEditorFn) (*DeleteActivityResponse, error)
 
 	// GetActivity request
-	GetActivityWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetActivityResponse, error)
+	GetActivityWithResponse(ctx context.Context, activityID db.ActivityID, reqEditors ...RequestEditorFn) (*GetActivityResponse, error)
 
 	// UpdateActivity request with any body
-	UpdateActivityWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error)
+	UpdateActivityWithBodyWithResponse(ctx context.Context, activityID db.ActivityID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error)
 
-	UpdateActivityWithResponse(ctx context.Context, id int, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error)
+	UpdateActivityWithResponse(ctx context.Context, activityID db.ActivityID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error)
 
 	// AdminPing request
 	AdminPingWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*AdminPingResponse, error)
@@ -3196,15 +3197,15 @@ type ClientWithResponsesInterface interface {
 	GetProjectWorkitemsWithResponse(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*GetProjectWorkitemsResponse, error)
 
 	// DeleteTeam request
-	DeleteTeamWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteTeamResponse, error)
+	DeleteTeamWithResponse(ctx context.Context, teamID db.TeamID, reqEditors ...RequestEditorFn) (*DeleteTeamResponse, error)
 
 	// GetTeam request
-	GetTeamWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetTeamResponse, error)
+	GetTeamWithResponse(ctx context.Context, teamID db.TeamID, reqEditors ...RequestEditorFn) (*GetTeamResponse, error)
 
 	// UpdateTeam request with any body
-	UpdateTeamWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
+	UpdateTeamWithBodyWithResponse(ctx context.Context, teamID db.TeamID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
 
-	UpdateTeamWithResponse(ctx context.Context, id int, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
+	UpdateTeamWithResponse(ctx context.Context, teamID db.TeamID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
 
 	// GetCurrentUser request
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
@@ -3225,43 +3226,27 @@ type ClientWithResponsesInterface interface {
 
 	UpdateUserAuthorizationWithResponse(ctx context.Context, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateUserAuthorizationResponse, error)
 
-	// CreateWorkItemComment request with any body
-	CreateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error)
-
-	CreateWorkItemCommentWithResponse(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error)
-
-	// DeleteWorkItemComment request
-	DeleteWorkItemCommentWithResponse(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*DeleteWorkItemCommentResponse, error)
-
-	// GetWorkItemComment request
-	GetWorkItemCommentWithResponse(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*GetWorkItemCommentResponse, error)
-
-	// UpdateWorkItemComment request with any body
-	UpdateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID int, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
-
-	UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID int, id int, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
-
 	// DeleteWorkItemTag request
-	DeleteWorkItemTagWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteWorkItemTagResponse, error)
+	DeleteWorkItemTagWithResponse(ctx context.Context, workItemTagID db.WorkItemTagID, reqEditors ...RequestEditorFn) (*DeleteWorkItemTagResponse, error)
 
 	// GetWorkItemTag request
-	GetWorkItemTagWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetWorkItemTagResponse, error)
+	GetWorkItemTagWithResponse(ctx context.Context, workItemTagID db.WorkItemTagID, reqEditors ...RequestEditorFn) (*GetWorkItemTagResponse, error)
 
 	// UpdateWorkItemTag request with any body
-	UpdateWorkItemTagWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error)
+	UpdateWorkItemTagWithBodyWithResponse(ctx context.Context, workItemTagID db.WorkItemTagID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error)
 
-	UpdateWorkItemTagWithResponse(ctx context.Context, id int, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error)
+	UpdateWorkItemTagWithResponse(ctx context.Context, workItemTagID db.WorkItemTagID, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error)
 
 	// DeleteWorkItemType request
-	DeleteWorkItemTypeWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteWorkItemTypeResponse, error)
+	DeleteWorkItemTypeWithResponse(ctx context.Context, workItemTypeID db.WorkItemTypeID, reqEditors ...RequestEditorFn) (*DeleteWorkItemTypeResponse, error)
 
 	// GetWorkItemType request
-	GetWorkItemTypeWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetWorkItemTypeResponse, error)
+	GetWorkItemTypeWithResponse(ctx context.Context, workItemTypeID db.WorkItemTypeID, reqEditors ...RequestEditorFn) (*GetWorkItemTypeResponse, error)
 
 	// UpdateWorkItemType request with any body
-	UpdateWorkItemTypeWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error)
+	UpdateWorkItemTypeWithBodyWithResponse(ctx context.Context, workItemTypeID db.WorkItemTypeID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error)
 
-	UpdateWorkItemTypeWithResponse(ctx context.Context, id int, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error)
+	UpdateWorkItemTypeWithResponse(ctx context.Context, workItemTypeID db.WorkItemTypeID, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error)
 
 	// CreateWorkitem request with any body
 	CreateWorkitemWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
@@ -3269,13 +3254,29 @@ type ClientWithResponsesInterface interface {
 	CreateWorkitemWithResponse(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkitemResponse, error)
 
 	// DeleteWorkitem request
-	DeleteWorkitemWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteWorkitemResponse, error)
+	DeleteWorkitemWithResponse(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*DeleteWorkitemResponse, error)
 
 	// GetWorkItem request
-	GetWorkItemWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetWorkItemResponse, error)
+	GetWorkItemWithResponse(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*GetWorkItemResponse, error)
 
 	// UpdateWorkitem request
-	UpdateWorkitemWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*UpdateWorkitemResponse, error)
+	UpdateWorkitemWithResponse(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*UpdateWorkitemResponse, error)
+
+	// CreateWorkItemComment request with any body
+	CreateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error)
+
+	CreateWorkItemCommentWithResponse(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error)
+
+	// DeleteWorkItemComment request
+	DeleteWorkItemCommentWithResponse(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, reqEditors ...RequestEditorFn) (*DeleteWorkItemCommentResponse, error)
+
+	// GetWorkItemComment request
+	GetWorkItemCommentWithResponse(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, reqEditors ...RequestEditorFn) (*GetWorkItemCommentResponse, error)
+
+	// UpdateWorkItemComment request with any body
+	UpdateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
+
+	UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error)
 }
 
 type DeleteActivityResponse struct {
@@ -3900,97 +3901,6 @@ func (r UpdateUserAuthorizationResponse) StatusCode() int {
 	return 0
 }
 
-type CreateWorkItemCommentResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON201      *WorkItemComment
-	JSON4XX      *HTTPError
-}
-
-// Status returns HTTPResponse.Status
-func (r CreateWorkItemCommentResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r CreateWorkItemCommentResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type DeleteWorkItemCommentResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON4XX      *HTTPError
-}
-
-// Status returns HTTPResponse.Status
-func (r DeleteWorkItemCommentResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r DeleteWorkItemCommentResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetWorkItemCommentResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *WorkItemComment
-	JSON4XX      *HTTPError
-}
-
-// Status returns HTTPResponse.Status
-func (r GetWorkItemCommentResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetWorkItemCommentResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type UpdateWorkItemCommentResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *WorkItemComment
-	JSON4XX      *HTTPError
-}
-
-// Status returns HTTPResponse.Status
-func (r UpdateWorkItemCommentResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r UpdateWorkItemCommentResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type DeleteWorkItemTagResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -4220,9 +4130,100 @@ func (r UpdateWorkitemResponse) StatusCode() int {
 	return 0
 }
 
+type CreateWorkItemCommentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *WorkItemComment
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateWorkItemCommentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateWorkItemCommentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteWorkItemCommentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteWorkItemCommentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteWorkItemCommentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetWorkItemCommentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WorkItemComment
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetWorkItemCommentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetWorkItemCommentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateWorkItemCommentResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WorkItemComment
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateWorkItemCommentResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateWorkItemCommentResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // DeleteActivityWithResponse request returning *DeleteActivityResponse
-func (c *ClientWithResponses) DeleteActivityWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteActivityResponse, error) {
-	rsp, err := c.DeleteActivity(ctx, id, reqEditors...)
+func (c *ClientWithResponses) DeleteActivityWithResponse(ctx context.Context, activityID db.ActivityID, reqEditors ...RequestEditorFn) (*DeleteActivityResponse, error) {
+	rsp, err := c.DeleteActivity(ctx, activityID, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4230,8 +4231,8 @@ func (c *ClientWithResponses) DeleteActivityWithResponse(ctx context.Context, id
 }
 
 // GetActivityWithResponse request returning *GetActivityResponse
-func (c *ClientWithResponses) GetActivityWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetActivityResponse, error) {
-	rsp, err := c.GetActivity(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetActivityWithResponse(ctx context.Context, activityID db.ActivityID, reqEditors ...RequestEditorFn) (*GetActivityResponse, error) {
+	rsp, err := c.GetActivity(ctx, activityID, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4239,16 +4240,16 @@ func (c *ClientWithResponses) GetActivityWithResponse(ctx context.Context, id in
 }
 
 // UpdateActivityWithBodyWithResponse request with arbitrary body returning *UpdateActivityResponse
-func (c *ClientWithResponses) UpdateActivityWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error) {
-	rsp, err := c.UpdateActivityWithBody(ctx, id, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateActivityWithBodyWithResponse(ctx context.Context, activityID db.ActivityID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error) {
+	rsp, err := c.UpdateActivityWithBody(ctx, activityID, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpdateActivityResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateActivityWithResponse(ctx context.Context, id int, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error) {
-	rsp, err := c.UpdateActivity(ctx, id, body, reqEditors...)
+func (c *ClientWithResponses) UpdateActivityWithResponse(ctx context.Context, activityID db.ActivityID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateActivityResponse, error) {
+	rsp, err := c.UpdateActivity(ctx, activityID, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4457,8 +4458,8 @@ func (c *ClientWithResponses) GetProjectWorkitemsWithResponse(ctx context.Contex
 }
 
 // DeleteTeamWithResponse request returning *DeleteTeamResponse
-func (c *ClientWithResponses) DeleteTeamWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteTeamResponse, error) {
-	rsp, err := c.DeleteTeam(ctx, id, reqEditors...)
+func (c *ClientWithResponses) DeleteTeamWithResponse(ctx context.Context, teamID db.TeamID, reqEditors ...RequestEditorFn) (*DeleteTeamResponse, error) {
+	rsp, err := c.DeleteTeam(ctx, teamID, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4466,8 +4467,8 @@ func (c *ClientWithResponses) DeleteTeamWithResponse(ctx context.Context, id int
 }
 
 // GetTeamWithResponse request returning *GetTeamResponse
-func (c *ClientWithResponses) GetTeamWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetTeamResponse, error) {
-	rsp, err := c.GetTeam(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetTeamWithResponse(ctx context.Context, teamID db.TeamID, reqEditors ...RequestEditorFn) (*GetTeamResponse, error) {
+	rsp, err := c.GetTeam(ctx, teamID, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4475,16 +4476,16 @@ func (c *ClientWithResponses) GetTeamWithResponse(ctx context.Context, id int, r
 }
 
 // UpdateTeamWithBodyWithResponse request with arbitrary body returning *UpdateTeamResponse
-func (c *ClientWithResponses) UpdateTeamWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error) {
-	rsp, err := c.UpdateTeamWithBody(ctx, id, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateTeamWithBodyWithResponse(ctx context.Context, teamID db.TeamID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error) {
+	rsp, err := c.UpdateTeamWithBody(ctx, teamID, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpdateTeamResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateTeamWithResponse(ctx context.Context, id int, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error) {
-	rsp, err := c.UpdateTeam(ctx, id, body, reqEditors...)
+func (c *ClientWithResponses) UpdateTeamWithResponse(ctx context.Context, teamID db.TeamID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error) {
+	rsp, err := c.UpdateTeam(ctx, teamID, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4552,61 +4553,9 @@ func (c *ClientWithResponses) UpdateUserAuthorizationWithResponse(ctx context.Co
 	return ParseUpdateUserAuthorizationResponse(rsp)
 }
 
-// CreateWorkItemCommentWithBodyWithResponse request with arbitrary body returning *CreateWorkItemCommentResponse
-func (c *ClientWithResponses) CreateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error) {
-	rsp, err := c.CreateWorkItemCommentWithBody(ctx, workItemID, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateWorkItemCommentResponse(rsp)
-}
-
-func (c *ClientWithResponses) CreateWorkItemCommentWithResponse(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error) {
-	rsp, err := c.CreateWorkItemComment(ctx, workItemID, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseCreateWorkItemCommentResponse(rsp)
-}
-
-// DeleteWorkItemCommentWithResponse request returning *DeleteWorkItemCommentResponse
-func (c *ClientWithResponses) DeleteWorkItemCommentWithResponse(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*DeleteWorkItemCommentResponse, error) {
-	rsp, err := c.DeleteWorkItemComment(ctx, workItemID, id, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeleteWorkItemCommentResponse(rsp)
-}
-
-// GetWorkItemCommentWithResponse request returning *GetWorkItemCommentResponse
-func (c *ClientWithResponses) GetWorkItemCommentWithResponse(ctx context.Context, workItemID int, id int, reqEditors ...RequestEditorFn) (*GetWorkItemCommentResponse, error) {
-	rsp, err := c.GetWorkItemComment(ctx, workItemID, id, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetWorkItemCommentResponse(rsp)
-}
-
-// UpdateWorkItemCommentWithBodyWithResponse request with arbitrary body returning *UpdateWorkItemCommentResponse
-func (c *ClientWithResponses) UpdateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID int, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error) {
-	rsp, err := c.UpdateWorkItemCommentWithBody(ctx, workItemID, id, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdateWorkItemCommentResponse(rsp)
-}
-
-func (c *ClientWithResponses) UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID int, id int, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error) {
-	rsp, err := c.UpdateWorkItemComment(ctx, workItemID, id, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdateWorkItemCommentResponse(rsp)
-}
-
 // DeleteWorkItemTagWithResponse request returning *DeleteWorkItemTagResponse
-func (c *ClientWithResponses) DeleteWorkItemTagWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteWorkItemTagResponse, error) {
-	rsp, err := c.DeleteWorkItemTag(ctx, id, reqEditors...)
+func (c *ClientWithResponses) DeleteWorkItemTagWithResponse(ctx context.Context, workItemTagID db.WorkItemTagID, reqEditors ...RequestEditorFn) (*DeleteWorkItemTagResponse, error) {
+	rsp, err := c.DeleteWorkItemTag(ctx, workItemTagID, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4614,8 +4563,8 @@ func (c *ClientWithResponses) DeleteWorkItemTagWithResponse(ctx context.Context,
 }
 
 // GetWorkItemTagWithResponse request returning *GetWorkItemTagResponse
-func (c *ClientWithResponses) GetWorkItemTagWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetWorkItemTagResponse, error) {
-	rsp, err := c.GetWorkItemTag(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetWorkItemTagWithResponse(ctx context.Context, workItemTagID db.WorkItemTagID, reqEditors ...RequestEditorFn) (*GetWorkItemTagResponse, error) {
+	rsp, err := c.GetWorkItemTag(ctx, workItemTagID, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4623,16 +4572,16 @@ func (c *ClientWithResponses) GetWorkItemTagWithResponse(ctx context.Context, id
 }
 
 // UpdateWorkItemTagWithBodyWithResponse request with arbitrary body returning *UpdateWorkItemTagResponse
-func (c *ClientWithResponses) UpdateWorkItemTagWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error) {
-	rsp, err := c.UpdateWorkItemTagWithBody(ctx, id, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateWorkItemTagWithBodyWithResponse(ctx context.Context, workItemTagID db.WorkItemTagID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error) {
+	rsp, err := c.UpdateWorkItemTagWithBody(ctx, workItemTagID, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpdateWorkItemTagResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateWorkItemTagWithResponse(ctx context.Context, id int, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error) {
-	rsp, err := c.UpdateWorkItemTag(ctx, id, body, reqEditors...)
+func (c *ClientWithResponses) UpdateWorkItemTagWithResponse(ctx context.Context, workItemTagID db.WorkItemTagID, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTagResponse, error) {
+	rsp, err := c.UpdateWorkItemTag(ctx, workItemTagID, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4640,8 +4589,8 @@ func (c *ClientWithResponses) UpdateWorkItemTagWithResponse(ctx context.Context,
 }
 
 // DeleteWorkItemTypeWithResponse request returning *DeleteWorkItemTypeResponse
-func (c *ClientWithResponses) DeleteWorkItemTypeWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteWorkItemTypeResponse, error) {
-	rsp, err := c.DeleteWorkItemType(ctx, id, reqEditors...)
+func (c *ClientWithResponses) DeleteWorkItemTypeWithResponse(ctx context.Context, workItemTypeID db.WorkItemTypeID, reqEditors ...RequestEditorFn) (*DeleteWorkItemTypeResponse, error) {
+	rsp, err := c.DeleteWorkItemType(ctx, workItemTypeID, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4649,8 +4598,8 @@ func (c *ClientWithResponses) DeleteWorkItemTypeWithResponse(ctx context.Context
 }
 
 // GetWorkItemTypeWithResponse request returning *GetWorkItemTypeResponse
-func (c *ClientWithResponses) GetWorkItemTypeWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetWorkItemTypeResponse, error) {
-	rsp, err := c.GetWorkItemType(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetWorkItemTypeWithResponse(ctx context.Context, workItemTypeID db.WorkItemTypeID, reqEditors ...RequestEditorFn) (*GetWorkItemTypeResponse, error) {
+	rsp, err := c.GetWorkItemType(ctx, workItemTypeID, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4658,16 +4607,16 @@ func (c *ClientWithResponses) GetWorkItemTypeWithResponse(ctx context.Context, i
 }
 
 // UpdateWorkItemTypeWithBodyWithResponse request with arbitrary body returning *UpdateWorkItemTypeResponse
-func (c *ClientWithResponses) UpdateWorkItemTypeWithBodyWithResponse(ctx context.Context, id int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error) {
-	rsp, err := c.UpdateWorkItemTypeWithBody(ctx, id, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateWorkItemTypeWithBodyWithResponse(ctx context.Context, workItemTypeID db.WorkItemTypeID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error) {
+	rsp, err := c.UpdateWorkItemTypeWithBody(ctx, workItemTypeID, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpdateWorkItemTypeResponse(rsp)
 }
 
-func (c *ClientWithResponses) UpdateWorkItemTypeWithResponse(ctx context.Context, id int, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error) {
-	rsp, err := c.UpdateWorkItemType(ctx, id, body, reqEditors...)
+func (c *ClientWithResponses) UpdateWorkItemTypeWithResponse(ctx context.Context, workItemTypeID db.WorkItemTypeID, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemTypeResponse, error) {
+	rsp, err := c.UpdateWorkItemType(ctx, workItemTypeID, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4692,8 +4641,8 @@ func (c *ClientWithResponses) CreateWorkitemWithResponse(ctx context.Context, bo
 }
 
 // DeleteWorkitemWithResponse request returning *DeleteWorkitemResponse
-func (c *ClientWithResponses) DeleteWorkitemWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*DeleteWorkitemResponse, error) {
-	rsp, err := c.DeleteWorkitem(ctx, id, reqEditors...)
+func (c *ClientWithResponses) DeleteWorkitemWithResponse(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*DeleteWorkitemResponse, error) {
+	rsp, err := c.DeleteWorkitem(ctx, workItemID, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4701,8 +4650,8 @@ func (c *ClientWithResponses) DeleteWorkitemWithResponse(ctx context.Context, id
 }
 
 // GetWorkItemWithResponse request returning *GetWorkItemResponse
-func (c *ClientWithResponses) GetWorkItemWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*GetWorkItemResponse, error) {
-	rsp, err := c.GetWorkItem(ctx, id, reqEditors...)
+func (c *ClientWithResponses) GetWorkItemWithResponse(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*GetWorkItemResponse, error) {
+	rsp, err := c.GetWorkItem(ctx, workItemID, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -4710,12 +4659,64 @@ func (c *ClientWithResponses) GetWorkItemWithResponse(ctx context.Context, id in
 }
 
 // UpdateWorkitemWithResponse request returning *UpdateWorkitemResponse
-func (c *ClientWithResponses) UpdateWorkitemWithResponse(ctx context.Context, id int, reqEditors ...RequestEditorFn) (*UpdateWorkitemResponse, error) {
-	rsp, err := c.UpdateWorkitem(ctx, id, reqEditors...)
+func (c *ClientWithResponses) UpdateWorkitemWithResponse(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*UpdateWorkitemResponse, error) {
+	rsp, err := c.UpdateWorkitem(ctx, workItemID, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
 	return ParseUpdateWorkitemResponse(rsp)
+}
+
+// CreateWorkItemCommentWithBodyWithResponse request with arbitrary body returning *CreateWorkItemCommentResponse
+func (c *ClientWithResponses) CreateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error) {
+	rsp, err := c.CreateWorkItemCommentWithBody(ctx, workItemID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWorkItemCommentResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateWorkItemCommentWithResponse(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWorkItemCommentResponse, error) {
+	rsp, err := c.CreateWorkItemComment(ctx, workItemID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWorkItemCommentResponse(rsp)
+}
+
+// DeleteWorkItemCommentWithResponse request returning *DeleteWorkItemCommentResponse
+func (c *ClientWithResponses) DeleteWorkItemCommentWithResponse(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, reqEditors ...RequestEditorFn) (*DeleteWorkItemCommentResponse, error) {
+	rsp, err := c.DeleteWorkItemComment(ctx, workItemID, workItemCommentID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteWorkItemCommentResponse(rsp)
+}
+
+// GetWorkItemCommentWithResponse request returning *GetWorkItemCommentResponse
+func (c *ClientWithResponses) GetWorkItemCommentWithResponse(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, reqEditors ...RequestEditorFn) (*GetWorkItemCommentResponse, error) {
+	rsp, err := c.GetWorkItemComment(ctx, workItemID, workItemCommentID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetWorkItemCommentResponse(rsp)
+}
+
+// UpdateWorkItemCommentWithBodyWithResponse request with arbitrary body returning *UpdateWorkItemCommentResponse
+func (c *ClientWithResponses) UpdateWorkItemCommentWithBodyWithResponse(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error) {
+	rsp, err := c.UpdateWorkItemCommentWithBody(ctx, workItemID, workItemCommentID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateWorkItemCommentResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateWorkItemCommentWithResponse(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWorkItemCommentResponse, error) {
+	rsp, err := c.UpdateWorkItemComment(ctx, workItemID, workItemCommentID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateWorkItemCommentResponse(rsp)
 }
 
 // ParseDeleteActivityResponse parses an HTTP response from a DeleteActivityWithResponse call
@@ -5458,131 +5459,6 @@ func ParseUpdateUserAuthorizationResponse(rsp *http.Response) (*UpdateUserAuthor
 	return response, nil
 }
 
-// ParseCreateWorkItemCommentResponse parses an HTTP response from a CreateWorkItemCommentWithResponse call
-func ParseCreateWorkItemCommentResponse(rsp *http.Response) (*CreateWorkItemCommentResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &CreateWorkItemCommentResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest WorkItemComment
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON201 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
-		var dest HTTPError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON4XX = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseDeleteWorkItemCommentResponse parses an HTTP response from a DeleteWorkItemCommentWithResponse call
-func ParseDeleteWorkItemCommentResponse(rsp *http.Response) (*DeleteWorkItemCommentResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &DeleteWorkItemCommentResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
-		var dest HTTPError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON4XX = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetWorkItemCommentResponse parses an HTTP response from a GetWorkItemCommentWithResponse call
-func ParseGetWorkItemCommentResponse(rsp *http.Response) (*GetWorkItemCommentResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetWorkItemCommentResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest WorkItemComment
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
-		var dest HTTPError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON4XX = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseUpdateWorkItemCommentResponse parses an HTTP response from a UpdateWorkItemCommentWithResponse call
-func ParseUpdateWorkItemCommentResponse(rsp *http.Response) (*UpdateWorkItemCommentResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &UpdateWorkItemCommentResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest WorkItemComment
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
-		var dest HTTPError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON4XX = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseDeleteWorkItemTagResponse parses an HTTP response from a DeleteWorkItemTagWithResponse call
 func ParseDeleteWorkItemTagResponse(rsp *http.Response) (*DeleteWorkItemTagResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -5861,6 +5737,131 @@ func ParseUpdateWorkitemResponse(rsp *http.Response) (*UpdateWorkitemResponse, e
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateWorkItemCommentResponse parses an HTTP response from a CreateWorkItemCommentWithResponse call
+func ParseCreateWorkItemCommentResponse(rsp *http.Response) (*CreateWorkItemCommentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateWorkItemCommentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest WorkItemComment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteWorkItemCommentResponse parses an HTTP response from a DeleteWorkItemCommentWithResponse call
+func ParseDeleteWorkItemCommentResponse(rsp *http.Response) (*DeleteWorkItemCommentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteWorkItemCommentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetWorkItemCommentResponse parses an HTTP response from a GetWorkItemCommentWithResponse call
+func ParseGetWorkItemCommentResponse(rsp *http.Response) (*GetWorkItemCommentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetWorkItemCommentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WorkItemComment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateWorkItemCommentResponse parses an HTTP response from a UpdateWorkItemCommentWithResponse call
+func ParseUpdateWorkItemCommentResponse(rsp *http.Response) (*UpdateWorkItemCommentResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateWorkItemCommentResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WorkItemComment
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
 
 	}
 

@@ -181,14 +181,14 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	}
 
 	oasMw := NewOpenapiMiddleware(conf.Logger, openapi)
-	oaOptions := createOpenAPIValidatorOptions()
+	oaOptions := CreateOpenAPIValidatorOptions()
 	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
 
 	switch cfg.AppEnv {
 	case internal.AppEnvProd, internal.AppEnvE2E:
 		rlMw := newRateLimitMiddleware(conf.Logger, 15, 5)
 		vg.Use(rlMw.Limit())
-	case internal.AppEnvDev:
+	case internal.AppEnvDev, internal.AppEnvCI:
 		rlMw := newRateLimitMiddleware(conf.Logger, 15, 5)
 		if os.Getenv("IS_TESTING") == "" {
 			vg.Use(rlMw.Limit())
@@ -356,7 +356,7 @@ func Run(env, specPath string) (<-chan error, error) {
 	return errC, nil
 }
 
-func createOpenAPIValidatorOptions() OAValidatorOptions {
+func CreateOpenAPIValidatorOptions() OAValidatorOptions {
 	// TODO if env != prod so that no values are shown in `details` (secrets, passwords)
 	// openapi3.SchemaErrorDetailsDisabled = true
 

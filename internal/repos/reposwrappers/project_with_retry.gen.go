@@ -45,6 +45,9 @@ func (_d ProjectWithRetry) ByID(ctx context.Context, d db.DBTX, id db.ProjectID,
 	}
 	pp1, err = _d.Project.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ProjectWithRetryByID")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -61,14 +64,12 @@ func (_d ProjectWithRetry) ByID(ctx context.Context, d db.DBTX, id db.ProjectID,
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		pp1, err = _d.Project.ByID(ctx, d, id, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ProjectWithRetryByID")
 	}
 	return
 }
@@ -84,6 +85,9 @@ func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name models.Pr
 	}
 	pp1, err = _d.Project.ByName(ctx, d, name, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ProjectWithRetryByName")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -100,14 +104,12 @@ func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name models.Pr
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		pp1, err = _d.Project.ByName(ctx, d, name, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ProjectWithRetryByName")
 	}
 	return
 }
@@ -123,6 +125,9 @@ func (_d ProjectWithRetry) IsTeamInProject(ctx context.Context, d db.DBTX, arg d
 	}
 	b1, err = _d.Project.IsTeamInProject(ctx, d, arg)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ProjectWithRetryIsTeamInProject")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -139,14 +144,12 @@ func (_d ProjectWithRetry) IsTeamInProject(ctx context.Context, d db.DBTX, arg d
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		b1, err = _d.Project.IsTeamInProject(ctx, d, arg)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ProjectWithRetryIsTeamInProject")
 	}
 	return
 }

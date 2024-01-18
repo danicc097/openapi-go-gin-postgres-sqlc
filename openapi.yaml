@@ -20,11 +20,10 @@
 #
 #
 #######################################
-x-uuidParameter: &x-uuidParameter
+x-uuidIDParameterBase: &x-uuidIDParameterBase
   description: UUID identifier
   explode: false
   in: path
-  name: id
   required: true
   schema:
     type: string
@@ -36,11 +35,13 @@ x-uuidParameter: &x-uuidParameter
       path: github.com/google/uuid
   example: 123e4567-e89b-12d3-a456-426614174000
   style: simple
-x-serialIDParameter: &x-serialIDParameter
-  description: integer identifier
+x-uuidParameter: &x-uuidParameter
+  !!merge <<: *x-uuidIDParameterBase
+  name: id
+x-serialIDParameterBase: &x-serialIDParameterBase
+  description: integer identifier # requires name (must be the same name in subpaths so gin can handle it)
   explode: false
   in: path
-  name: id
   required: true
   schema:
     type: integer
@@ -83,8 +84,239 @@ x-error-response: &x-error-response
         schema:
           $ref: '#/components/schemas/HTTPError'
 #
+# Anchors must be defined before lines that use them. Also cannot use anchors from different files.
+# See https://docs.gitlab.com/ee/ci/yaml/yaml_optimization.html
 #
-#######################################
+# Ideally in the future this also helps so that oapi-codegen and orval can generate typesafe ids instead of primitives.
+# Gin also requires the same parameter names on subpaths, else it panics.
+#
+# <<<--- GENERATED DB ANCHORS. DO NOT EDIT. --->>>
+x-activityIDParameter: &x-activityIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ActivityID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: activityID
+x-entityNotificationIDParameter: &x-entityNotificationIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.EntityNotificationID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: entityNotificationID
+x-extraSchemaBookAuthorsSurrogateKeyIDParameter: &x-extraSchemaBookAuthorsSurrogateKeyIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaBookAuthorsSurrogateKeyID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaBookAuthorsSurrogateKeyID
+x-extraSchemaBookIDParameter: &x-extraSchemaBookIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaBookID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaBookID
+x-extraSchemaBookReviewIDParameter: &x-extraSchemaBookReviewIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaBookReviewID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaBookReviewID
+x-extraSchemaDummyJoinIDParameter: &x-extraSchemaDummyJoinIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaDummyJoinID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaDummyJoinID
+x-extraSchemaNotificationIDParameter: &x-extraSchemaNotificationIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaNotificationID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaNotificationID
+x-extraSchemaUserAPIKeyIDParameter: &x-extraSchemaUserAPIKeyIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaUserAPIKeyID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaUserAPIKeyID
+x-extraSchemaWorkItemIDParameter: &x-extraSchemaWorkItemIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ExtraSchemaWorkItemID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaWorkItemID
+x-kanbanStepIDParameter: &x-kanbanStepIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.KanbanStepID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: kanbanStepID
+x-movieIDParameter: &x-movieIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.MovieID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: movieID
+x-notificationIDParameter: &x-notificationIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.NotificationID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: notificationID
+x-projectIDParameter: &x-projectIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.ProjectID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: projectID
+x-schemaMigrationIDParameter: &x-schemaMigrationIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.SchemaMigrationID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: schemaMigrationID
+x-teamIDParameter: &x-teamIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.TeamID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: teamID
+x-timeEntryIDParameter: &x-timeEntryIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.TimeEntryID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: timeEntryID
+x-userAPIKeyIDParameter: &x-userAPIKeyIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.UserAPIKeyID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: userAPIKeyID
+x-userNotificationIDParameter: &x-userNotificationIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.UserNotificationID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: userNotificationID
+x-workItemCommentIDParameter: &x-workItemCommentIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.WorkItemCommentID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: workItemCommentID
+x-workItemIDParameter: &x-workItemIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.WorkItemID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: workItemID
+x-workItemTagIDParameter: &x-workItemTagIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.WorkItemTagID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: workItemTagID
+x-workItemTypeIDParameter: &x-workItemTypeIDParameter
+  !!merge <<: *x-serialIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.WorkItemTypeID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: workItemTypeID
+x-extraSchemaPagElementIDParameter: &x-extraSchemaPagElementIDParameter
+  !!merge <<: *x-uuidIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.WorkItemTypeID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaPagElementID
+x-extraSchemaUserIDParameter: &x-extraSchemaUserIDParameter
+  !!merge <<: *x-uuidIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.WorkItemTypeID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: extraSchemaUserID
+x-userIDParameter: &x-userIDParameter
+  !!merge <<: *x-uuidIDParameterBase
+  schema: # Generated. DO NOT EDIT.
+    type: integer
+    x-go-type: db.WorkItemTypeID
+    x-go-type-import:
+      name: db
+      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  name: userID
+# <<<--- END OF ANCHORS DB GENERATION. DO NOT EDIT. --->>>
 #
 #
 openapi: 3.0.3
@@ -246,13 +478,13 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - team
-  /team/{id}:
+  /team/{teamID}:
     get:
       summary: get team.
       !!merge <<: *x-require-authenticated
       operationId: GetTeam
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-teamIDParameter
       responses:
         200:
           description: Success.
@@ -268,7 +500,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateTeam
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-teamIDParameter
       requestBody:
         content:
           application/json:
@@ -290,14 +522,14 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteTeam
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-teamIDParameter
       responses:
         204:
           description: Success.
         !!merge <<: *x-error-response
       tags:
         - team
-  /project/{projectName}/workItemTag/:
+  /project/{projectName}/work-item-tag/:
     post:
       summary: create workitemtag.
       !!merge <<: *x-require-authenticated
@@ -356,13 +588,13 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - activity
-  /activity/{id}:
+  /activity/{activityID}:
     get:
       summary: get activity.
       !!merge <<: *x-require-authenticated
       operationId: GetActivity
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-activityIDParameter
       responses:
         200:
           description: Success.
@@ -380,7 +612,7 @@ paths:
       x-required-scopes:
         - activity:edit
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-activityIDParameter
       requestBody:
         content:
           application/json:
@@ -404,20 +636,20 @@ paths:
       x-required-scopes:
         - activity:delete
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-activityIDParameter
       responses:
         204:
           description: Success.
         !!merge <<: *x-error-response
       tags:
         - activity
-  /workItemTag/{id}:
+  /work-item-tag/{workItemTagID}:
     get:
       summary: get workitemtag.
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemTag
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-workItemTagIDParameter
       responses:
         200:
           description: Success.
@@ -433,7 +665,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkItemTag
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-workItemTagIDParameter
       requestBody:
         content:
           application/json:
@@ -455,14 +687,14 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkItemTag
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-workItemTagIDParameter
       responses:
         204:
           description: Success.
         !!merge <<: *x-error-response
       tags:
         - workItemTag
-  /project/{projectName}/workItemType/:
+  /project/{projectName}/work-item-type/:
     post:
       summary: create workitemtype.
       !!merge <<: *x-require-authenticated
@@ -485,13 +717,13 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - workItemType
-  /workItemType/{id}:
+  /work-item-type/{workItemTypeID}:
     get:
       summary: get workitemtype.
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemType
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-workItemTypeIDParameter
       responses:
         200:
           description: Success.
@@ -507,7 +739,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkItemType
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-workItemTypeIDParameter
       requestBody:
         content:
           application/json:
@@ -529,7 +761,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkItemType
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-workItemTypeIDParameter
       responses:
         204:
           description: Success.
@@ -759,7 +991,7 @@ paths:
                   - $ref: '#/components/schemas/DemoTwoWorkItems'
       tags:
         - project
-  /workitem/:
+  /work-item/:
     post:
       summary: create workitem
       !!merge <<: *x-require-authenticated
@@ -780,13 +1012,13 @@ paths:
                   - $ref: '#/components/schemas/DbWorkItem'
       tags:
         - workItem
-  /workitem/{id}/:
+  /work-item/{workItemID}/:
     get:
       summary: get workitem
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItem
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-workItemIDParameter
       responses:
         200:
           description: Success.
@@ -802,7 +1034,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: UpdateWorkitem
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-workItemIDParameter
       responses:
         200:
           description: Success.
@@ -818,7 +1050,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: DeleteWorkitem
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - *x-workItemIDParameter
       responses:
         204:
           description: Success.
@@ -830,7 +1062,7 @@ paths:
       !!merge <<: *x-require-authenticated
       operationId: CreateWorkItemComment
       parameters:
-        - !!merge <<: *x-serialIDParameter
+        - !!merge <<: *x-serialIDParameterBase
           name: workItemID
       x-required-scopes:
         - work-item-comment:create
@@ -850,15 +1082,14 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - workItemComment
-  /work-item/{workItemID}/comment/{id}:
+  /work-item/{workItemID}/comment/{workItemCommentID}:
     get:
       summary: get work item comment.
       !!merge <<: *x-require-authenticated
       operationId: GetWorkItemComment
       parameters:
-        - !!merge <<: *x-serialIDParameter
-        - !!merge <<: *x-serialIDParameter
-          name: workItemID
+        - *x-workItemIDParameter
+        - *x-workItemCommentIDParameter
       responses:
         200:
           description: Success.
@@ -876,9 +1107,8 @@ paths:
       x-required-scopes:
         - work-item-comment:edit
       parameters:
-        - !!merge <<: *x-serialIDParameter
-        - !!merge <<: *x-serialIDParameter
-          name: workItemID
+        - *x-workItemIDParameter
+        - *x-workItemCommentIDParameter
       requestBody:
         content:
           application/json:
@@ -902,9 +1132,8 @@ paths:
       x-required-scopes:
         - work-item-comment:delete
       parameters:
-        - !!merge <<: *x-serialIDParameter
-        - !!merge <<: *x-serialIDParameter
-          name: workItemID
+        - *x-workItemIDParameter
+        - *x-workItemCommentIDParameter
       responses:
         204:
           description: Success.
@@ -924,7 +1153,6 @@ components:
       example: demo
       style: simple
     UUID: *x-uuidParameter
-    SerialID: *x-serialIDParameter
   schemas:
     CreateActivityRequest: # Generated from internal structs. DO NOT EDIT.
       properties:

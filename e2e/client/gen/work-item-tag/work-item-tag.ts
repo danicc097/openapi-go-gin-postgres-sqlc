@@ -23,7 +23,7 @@ export const createWorkItemTag = (
 ) => {
   return customInstance<WorkItemTag>(
     {
-      url: `/project/${projectName}/workItemTag/`,
+      url: `/project/${projectName}/work-item-tag/`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       data: createWorkItemTagRequest,
@@ -34,20 +34,20 @@ export const createWorkItemTag = (
 /**
  * @summary get workitemtag.
  */
-export const getWorkItemTag = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<WorkItemTag>({ url: `/workItemTag/${id}`, method: 'GET' }, options)
+export const getWorkItemTag = (workItemTagID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<WorkItemTag>({ url: `/work-item-tag/${workItemTagID}`, method: 'GET' }, options)
 }
 /**
  * @summary update workitemtag.
  */
 export const updateWorkItemTag = (
-  id: number,
+  workItemTagID: number,
   updateWorkItemTagRequest: UpdateWorkItemTagRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<WorkItemTag>(
     {
-      url: `/workItemTag/${id}`,
+      url: `/work-item-tag/${workItemTagID}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       data: updateWorkItemTagRequest,
@@ -58,8 +58,8 @@ export const updateWorkItemTag = (
 /**
  * @summary delete workitemtag.
  */
-export const deleteWorkItemTag = (id: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<void>({ url: `/workItemTag/${id}`, method: 'DELETE' }, options)
+export const deleteWorkItemTag = (workItemTagID: number, options?: SecondParameter<typeof customInstance>) => {
+  return customInstance<void>({ url: `/work-item-tag/${workItemTagID}`, method: 'DELETE' }, options)
 }
 export type CreateWorkItemTagResult = NonNullable<Awaited<ReturnType<typeof createWorkItemTag>>>
 export type GetWorkItemTagResult = NonNullable<Awaited<ReturnType<typeof getWorkItemTag>>>

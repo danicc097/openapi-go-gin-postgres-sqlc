@@ -44,6 +44,9 @@ func (_d WorkItemTypeWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkI
 	}
 	wp1, err = _d.WorkItemType.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTypeWithRetryByID")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -60,14 +63,12 @@ func (_d WorkItemTypeWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkI
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		wp1, err = _d.WorkItemType.ByID(ctx, d, id, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTypeWithRetryByID")
 	}
 	return
 }
@@ -83,6 +84,9 @@ func (_d WorkItemTypeWithRetry) ByName(ctx context.Context, d db.DBTX, name stri
 	}
 	wp1, err = _d.WorkItemType.ByName(ctx, d, name, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTypeWithRetryByName")
+		}
 		return
 	}
 	_ticker := time.NewTicker(_d._retryInterval)
@@ -99,14 +103,12 @@ func (_d WorkItemTypeWithRetry) ByName(ctx context.Context, d db.DBTX, name stri
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
-
-			if _, err = tx.Exec(ctx, "BEGIN"); err != nil {
-				err = fmt.Errorf("could not begin transaction after rollback: %w", err)
-				return
-			}
 		}
 
 		wp1, err = _d.WorkItemType.ByName(ctx, d, name, projectID, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT WorkItemTypeWithRetryByName")
 	}
 	return
 }
