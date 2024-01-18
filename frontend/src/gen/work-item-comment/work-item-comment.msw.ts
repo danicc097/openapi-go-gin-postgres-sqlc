@@ -12,7 +12,7 @@ export const getCreateWorkItemCommentMock = () => ({
   createdAt: (() => faker.date.past())(),
   message: faker.word.sample(),
   updatedAt: (() => faker.date.past())(),
-  userID: (() => faker.datatype.uuid())(),
+  userID: faker.word.sample(),
   workItemCommentID: faker.number.int({ min: undefined, max: undefined }),
   workItemID: faker.number.int({ min: undefined, max: undefined }),
 })
@@ -21,7 +21,7 @@ export const getGetWorkItemCommentMock = () => ({
   createdAt: (() => faker.date.past())(),
   message: faker.word.sample(),
   updatedAt: (() => faker.date.past())(),
-  userID: (() => faker.datatype.uuid())(),
+  userID: faker.word.sample(),
   workItemCommentID: faker.number.int({ min: undefined, max: undefined }),
   workItemID: faker.number.int({ min: undefined, max: undefined }),
 })
@@ -30,7 +30,7 @@ export const getUpdateWorkItemCommentMock = () => ({
   createdAt: (() => faker.date.past())(),
   message: faker.word.sample(),
   updatedAt: (() => faker.date.past())(),
-  userID: (() => faker.datatype.uuid())(),
+  userID: faker.word.sample(),
   workItemCommentID: faker.number.int({ min: undefined, max: undefined }),
   workItemID: faker.number.int({ min: undefined, max: undefined }),
 })

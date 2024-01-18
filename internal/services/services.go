@@ -9,6 +9,7 @@ import (
 )
 
 type Services struct {
+	Activity        *Activity
 	WorkItemComment *WorkItemComment
 	User            *User
 	Project         *Project
@@ -21,14 +22,17 @@ type Services struct {
 	Notification    *Notification
 	TimeEntry       *TimeEntry
 	WorkItemType    *WorkItemType
+	WorkItem        *WorkItem
 }
 
 func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Services {
 	usersvc := NewUser(logger, repos)
 	teamsvc := NewTeam(logger, repos)
 	projectsvc := NewProject(logger, repos)
+	activitysvc := NewActivity(logger, repos)
 	demoworkitemsvc := NewDemoWorkItem(logger, repos)
 	demotwoworkitemsvc := NewDemoTwoWorkItem(logger, repos)
+	workitemsvc := NewWorkItem(logger, repos)
 	workitemtagsvc := NewWorkItemTag(logger, repos)
 	timeentrysvc := NewTimeEntry(logger, repos)
 	workitemtypesvc := NewWorkItemType(logger, repos)
@@ -50,11 +54,13 @@ func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Ser
 
 	return &Services{
 		WorkItemComment: workitemcommentsvc,
+		Activity:        activitysvc,
 		User:            usersvc,
 		Team:            teamsvc,
 		Project:         projectsvc,
 		DemoWorkItem:    demoworkitemsvc,
 		DemoTwoWorkItem: demotwoworkitemsvc,
+		WorkItem:        workitemsvc,
 		WorkItemTag:     workitemtagsvc,
 		Authorization:   authzsvc,
 		Authentication:  authnsvc,

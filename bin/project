@@ -664,7 +664,7 @@ x.gen.xo() {
       -name "*.go")
     goimports -w $files
 
-    generate_spec_helpers
+    xo_generate_spec_helpers
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
@@ -1346,6 +1346,35 @@ x.backend.typecheck() {
   golangci-lint run --no-config --disable-all --enable=typecheck --timeout=10m
 }
 
+x.branded_orval() {
+  local import_string="import type { Branded } from 'src/types/utils'"
+  local escaped_import_string=$(escape_sed "$import_string")
+  # local import_command="-e '/$escaped_import_string/!{1s/^/$escaped_import_string\n/}'"
+  local replace_commands=""
+
+  local int_ids=()
+  go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/db"
+  for entity in ${int_ids[@]}; do
+    local camel=$(to_camel $entity)
+    replace_commands="$replace_commands -e \"s/${camel}?: number/${camel}?: Branded<number, \'${camel}\'>/g\" -e \"s/${camel}: number/${camel}: Branded<number, \'${camel}\'>/g\""
+  done
+
+  local uuid_ids=()
+  go-utils.find_db_ids_uuid uuid_ids "$PG_REPO_GEN/db"
+  for entity in ${uuid_ids[@]}; do
+    local camel=$(to_camel $entity)
+    local pascal=$(to_pascal $entity)
+    replace_commands="$replace_commands -e \"s/${camel}?: Db${pascal}/${camel}?: Branded<string, \'${camel}\'>/g\" -e \"s/${camel}: Db${pascal}/${camel}: Branded<string, \'${camel}\'>/g\""
+  done
+
+  # works standalone, but broken find exec
+  sed_command="$import_command $replace_commands"
+
+  echo "sed_command: sed -i $sed_command frontend/src/gen/work-item/work-item.ts"
+
+  find frontend/src/gen/ -type f -name '*.ts' -exec sh -c "sed -i $sed_command" {} +
+}
+
 x.dev-utils.create-crud() { # Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a
   # given db table by struct name.
   # Accepts flags:
@@ -1871,7 +1900,7 @@ run_shared_services() {
   cd - >/dev/null
 }
 
-generate_spec_helpers() {
+xo_generate_spec_helpers() {
   local int_ids=()
   local anchors=()
   go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/db"

@@ -176,6 +176,9 @@ func TestValidationErrorsResponse(t *testing.T) {
 }
 
 func TestTracing(t *testing.T) {
+	// for better architecture see
+	// https://github.com/open-telemetry/opentelemetry-go/discussions/4532
+	// (still not suitable for unit tests)-> https://github.com/open-telemetry/opentelemetry-go/pull/4539
 	t.Skip("fails with -count= higher than 1 since we are using a global tracer provider.")
 
 	t.Parallel()
@@ -206,6 +209,5 @@ func TestTracing(t *testing.T) {
 		t.Logf("%+v", ros.Name())
 	}
 	require.NotEmpty(t, spans)
-	// FIXME: fails with -count= higher than 1 since we are using a global tracer provider -> spans out of order and mixed.
 	require.Equal(t, "/v2/work-item/:workItemID/comment/:workItemCommentID", spans[len(spans)-1].Name())
 }

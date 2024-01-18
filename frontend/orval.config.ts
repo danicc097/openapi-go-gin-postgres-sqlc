@@ -31,7 +31,8 @@ export default defineConfig({
             'date-time': () => faker.date.past(),
           },
           properties: {
-            userID: () => faker.datatype.uuid(),
+            // will use basic string replace to get BrandedTypes.
+            // userID: () => faker.datatype.uuid(),
             email: () => faker.internet.email(),
             metadata: () => ({
               key: faker.color.hsl(),

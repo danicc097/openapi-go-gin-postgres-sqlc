@@ -641,3 +641,8 @@ go-utils.find_all_types() {
   fi
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
 }
+
+# Escape regular string for sed commands
+escape_sed() {
+  echo "$1" | sed -e 's/[\/&]/\\&/g'
+}
