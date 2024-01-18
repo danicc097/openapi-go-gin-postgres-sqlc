@@ -1400,6 +1400,13 @@ import { Branded } from 'src/types/utils'
 
 $(printf "%s\n" "${exports[@]}")
 EOF
+
+  # TODO: msw:
+  # refactor regular files gen to use EntityIDs as well. that way a single sed does everything
+  # prepend if not exists
+  # local import_string="import * as EntityIDs from 'src/gen/entity-ids'"
+  # ${camel}: faker.number.int({ min: undefined, max: undefined }) += `as EntityIDs.${pascal}`
+  # ${camel}: faker.word.sample() += `as EntityIDs.${pascal}`
 }
 
 x.dev-utils.create-crud() { # Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a
