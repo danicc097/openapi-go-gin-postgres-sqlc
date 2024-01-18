@@ -1351,7 +1351,7 @@ x.backend.typecheck() {
 
 # depends on gen.xo output
 orval_branded_types() {
-  local import_string="import type { Branded } from 'src/types/utils'"
+  local import_string="import type * as EntityIDs from 'src/gen/entity-ids'"
   local escaped_import_string=$(escape_sed "$import_string")
 
   local import_command=("-e" "/$escaped_import_string/!{1s/^/$escaped_import_string\n/}")
@@ -1361,9 +1361,11 @@ orval_branded_types() {
   go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/db"
   for entity in "${int_ids[@]}"; do
     local camel=$(to_camel "$entity")
+    local pascal=$(to_pascal "$entity")
     replace_commands+=(
-      "-e" "s/${camel}?: number/${camel}?: Branded<number, '${camel}'>/g"
-      "-e" "s/${camel}: number/${camel}: Branded<number, '${camel}'>/g"
+      "-e" "s/${camel}?: number/${camel}?: EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: number/${camel}: EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: faker.number.int({ min: undefined, max: undefined })/${camel}: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.${pascal}/g"
     )
   done
 
@@ -1373,8 +1375,9 @@ orval_branded_types() {
     local camel=$(to_camel "$entity")
     local pascal=$(to_pascal "$entity")
     replace_commands+=(
-      "-e" "s/${camel}?: Db${pascal}/${camel}?: Branded<string, '${camel}'>/g"
-      "-e" "s/${camel}: Db${pascal}/${camel}: Branded<string, '${camel}'>/g"
+      "-e" "s/${camel}?: Db${pascal}/${camel}?: EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: Db${pascal}/${camel}: EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: faker.word.sample()/${camel}: faker.word.sample() as EntityIDs.${pascal}/g"
     )
   done
 
@@ -1402,13 +1405,6 @@ EOF
 
   # cheapest way to update both new and previous files that need formatting
   git diff --name-only $FRONTEND_GEN | xargs --no-run-if-empty prettier --write -- &>/dev/null
-
-  # TODO: msw:
-  # refactor regular files gen to use EntityIDs as well. that way a single sed does everything
-  # prepend if not exists
-  # local import_string="import * as EntityIDs from 'src/gen/entity-ids'"
-  # ${camel}: faker.number.int({ min: undefined, max: undefined }) += `as EntityIDs.${pascal}`
-  # ${camel}: faker.word.sample() += `as EntityIDs.${pascal}`
 }
 
 x.dev-utils.create-crud() { # Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a
