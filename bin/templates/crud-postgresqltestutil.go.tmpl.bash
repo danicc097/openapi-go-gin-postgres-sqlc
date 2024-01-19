@@ -2,7 +2,7 @@ create_params="$(test -n "$with_project" && echo ", projectID db.ProjectID")"
 create_args="$(test -n "$with_project" && echo ", projectID")"
 
 # shellcheck disable=SC2028,SC2154
-echo "package postgresqltestutil
+echo "package postgresqlrandom
 
 import (
 	\"context\"
@@ -17,9 +17,7 @@ import (
 )
 
 // NOTE: FKs should always be passed explicitly.
-func Random${pascal_name}CreateParams(t *testing.T $create_params) *db.${pascal_name}CreateParams {
-	t.Helper()
-
+func ${pascal_name}CreateParams(t *testing.T $create_params) *db.${pascal_name}CreateParams {
 	return &db.${pascal_name}CreateParams{
 		// TODO: fill in with testutil randomizer helpers or add parameters accordingly
 $(test -n "$with_project" && echo "		ProjectID: projectID,")

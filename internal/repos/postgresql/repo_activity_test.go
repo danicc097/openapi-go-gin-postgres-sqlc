@@ -9,7 +9,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,7 +25,7 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 	if err != nil {
 		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
 	}
-	tcp := postgresqltestutil.RandomActivityCreateParams(t, project.ProjectID)
+	tcp := postgresqlrandom.ActivityCreateParams(project.ProjectID)
 
 	activity, err := activityRepo.Create(ctx, testPool, tcp)
 	if err != nil {

@@ -9,7 +9,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
@@ -320,7 +320,7 @@ func TestUser_Create(t *testing.T) {
 	t.Run("correct_user", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := postgresqltestutil.RandomUserCreateParams(t)
+		ucp := postgresqlrandom.UserCreateParams(t)
 
 		want := want{
 			FullName:         pointers.New(*ucp.FirstName + " " + *ucp.LastName), // repo responsibility
@@ -347,7 +347,7 @@ func TestUser_Create(t *testing.T) {
 	t.Run("role_rank_less_than_zero", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := postgresqltestutil.RandomUserCreateParams(t)
+		ucp := postgresqlrandom.UserCreateParams(t)
 		ucp.RoleRank = -1
 
 		args := args{

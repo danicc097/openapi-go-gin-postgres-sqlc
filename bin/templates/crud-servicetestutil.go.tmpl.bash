@@ -8,7 +8,7 @@ import (
   $(test -n "$has_deleted_at" && echo "\"time\"")
 
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil\"
+	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom\"
 )
 
 type Create${pascal_name}Params struct {
@@ -24,7 +24,7 @@ type Create${pascal_name}Fixture struct {
 
 // Create${pascal_name} creates a new random ${sentence_name} with the given configuration.
 func (ff *FixtureFactory) Create${pascal_name}(ctx context.Context, params Create${pascal_name}Params) (*Create${pascal_name}Fixture, error) {
-	randomRepoCreateParams := postgresqltestutil.Random${pascal_name}CreateParams(ff.t $create_args)
+	randomRepoCreateParams := postgresqlrandom.${pascal_name}CreateParams(ff.t $create_args)
 	// don't use repos for test fixtures, useservice logic
 	${camel_name}, err := ff.svc.${pascal_name}.Create(ctx, ff.d, randomRepoCreateParams)
 	if err != nil {

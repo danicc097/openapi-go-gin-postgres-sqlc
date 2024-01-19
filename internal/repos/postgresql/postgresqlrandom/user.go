@@ -1,4 +1,4 @@
-package postgresqltestutil
+package postgresqlrandom
 
 import (
 	"testing"
@@ -10,9 +10,7 @@ import (
 )
 
 // NOTE: FKs should always be passed explicitly.
-func RandomUserCreateParams(t *testing.T) *db.UserCreateParams {
-	t.Helper()
-
+func UserCreateParams(t *testing.T) *db.UserCreateParams {
 	return &db.UserCreateParams{
 		Username:                 testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
 		Email:                    testutil.RandomEmail(),

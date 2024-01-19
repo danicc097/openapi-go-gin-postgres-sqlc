@@ -6,7 +6,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
@@ -25,7 +25,7 @@ func TestNotification_Create(t *testing.T) {
 
 		receiver := newRandomUser(t, testPool)
 
-		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, pointers.New(receiver.UserID), db.NotificationTypePersonal)
+		ncp := postgresqlrandom.NotificationCreateParams(nil, sender.UserID, pointers.New(receiver.UserID), db.NotificationTypePersonal)
 
 		ctx := context.Background()
 		// prevent fan out trigger from affecting other tests
@@ -62,7 +62,7 @@ func TestNotification_Create(t *testing.T) {
 
 		receiverRank := pointers.New(3)
 
-		ncp := postgresqltestutil.RandomNotificationCreateParams(t, receiverRank, sender.UserID, nil, db.NotificationTypeGlobal)
+		ncp := postgresqlrandom.NotificationCreateParams(receiverRank, sender.UserID, nil, db.NotificationTypeGlobal)
 
 		ctx := context.Background()
 		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{}) // prevent fan out trigger from affecting other tests
@@ -89,7 +89,7 @@ func TestNotification_Create(t *testing.T) {
 	t.Run("error_with_no_receiver_with_personal_notification", func(t *testing.T) {
 		t.Parallel()
 
-		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, nil, db.NotificationTypePersonal)
+		ncp := postgresqlrandom.NotificationCreateParams(nil, sender.UserID, nil, db.NotificationTypePersonal)
 
 		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
 		assert.ErrorContains(t, err, errViolatesCheckConstraint)
@@ -98,7 +98,7 @@ func TestNotification_Create(t *testing.T) {
 	t.Run("error_with_no_rank_with_global_notification", func(t *testing.T) {
 		t.Parallel()
 
-		ncp := postgresqltestutil.RandomNotificationCreateParams(t, nil, sender.UserID, nil, db.NotificationTypeGlobal)
+		ncp := postgresqlrandom.NotificationCreateParams(nil, sender.UserID, nil, db.NotificationTypeGlobal)
 
 		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
 		assert.ErrorContains(t, err, errViolatesCheckConstraint)

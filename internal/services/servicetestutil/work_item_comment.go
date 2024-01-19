@@ -5,7 +5,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/stretchr/testify/require"
 )
@@ -26,7 +26,7 @@ type CreateWorkItemCommentFixture struct {
 func (ff *FixtureFactory) CreateWorkItemComment(ctx context.Context, params CreateWorkItemCommentParams) *CreateWorkItemCommentFixture {
 	workItemf := ff.CreateWorkItem(ctx, CreateWorkItemParams{Project: params.Project})
 
-	randomRepoCreateParams := postgresqltestutil.RandomWorkItemCommentCreateParams(ff.t, params.UserID, workItemf.WorkItem.WorkItemID)
+	randomRepoCreateParams := postgresqlrandom.WorkItemCommentCreateParams(params.UserID, workItemf.WorkItem.WorkItemID)
 	// don't use repos for test fixtures, use service logic
 	workItemComment, err := ff.svc.WorkItemComment.Create(ctx, ff.d, randomRepoCreateParams)
 	require.NoError(ff.t, err)

@@ -7,7 +7,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
@@ -27,7 +27,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	team, err := svc.Team.Create(context.Background(), testPool, postgresqltestutil.RandomTeamCreateParams(t, internal.ProjectIDByName[requiredProject]))
+	team, err := svc.Team.Create(context.Background(), testPool, postgresqlrandom.TeamCreateParams(internal.ProjectIDByName[requiredProject]))
 	require.NoError(t, err)
 	creator := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		WithAPIKey: true,
@@ -39,7 +39,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 	creator.User, err = svc.User.AssignTeam(context.Background(), testPool, creator.User.UserID, demoWorkItemf.WorkItem.TeamID)
 	require.NoError(t, err)
 
-	workItemCommentCreateParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t, creator.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
+	workItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(creator.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
 	workitemcomment, err := svc.WorkItemComment.Create(context.Background(), testPool, workItemCommentCreateParams)
 	require.NoError(t, err)
 
@@ -49,7 +49,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 		withUserInProject bool
 	}
 
-	wantParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t, creator.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
+	wantParams := postgresqlrandom.WorkItemCommentCreateParams(creator.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
 
 	tests := []struct {
 		name          string

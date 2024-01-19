@@ -5,7 +5,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/stretchr/testify/require"
 )
@@ -27,9 +27,9 @@ func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, params CreateWorkI
 
 	switch params.Project {
 	case models.ProjectDemo:
-		params := postgresqltestutil.RandomDemoWorkItemCreateParams(ff.t,
-			postgresqltestutil.RandomKanbanStepID(params.Project),
-			postgresqltestutil.RandomWorkItemTypeID(params.Project),
+		params := postgresqlrandom.DemoWorkItemCreateParams(
+			postgresqlrandom.KanbanStepID(params.Project),
+			postgresqlrandom.WorkItemTypeID(params.Project),
 			teamf.Team.TeamID,
 		)
 		workItem, err = ff.svc.DemoWorkItem.Create(ctx, ff.d, services.DemoWorkItemCreateParams{
@@ -37,9 +37,9 @@ func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, params CreateWorkI
 		})
 		require.NoError(ff.t, err)
 	case models.ProjectDemoTwo:
-		params := postgresqltestutil.RandomDemoTwoWorkItemCreateParams(ff.t,
-			postgresqltestutil.RandomKanbanStepID(params.Project),
-			postgresqltestutil.RandomWorkItemTypeID(params.Project),
+		params := postgresqlrandom.DemoTwoWorkItemCreateParams(
+			postgresqlrandom.KanbanStepID(params.Project),
+			postgresqlrandom.WorkItemTypeID(params.Project),
 			teamf.Team.TeamID,
 		)
 		workItem, err = ff.svc.DemoTwoWorkItem.Create(ctx, ff.d, services.DemoTwoWorkItemCreateParams{

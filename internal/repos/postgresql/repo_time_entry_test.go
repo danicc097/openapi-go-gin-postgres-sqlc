@@ -8,7 +8,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -42,7 +42,7 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 		t.Parallel()
 
 		// test num_nonnulls which is repo's responsibility
-		ucp := postgresqltestutil.RandomTimeEntryCreateParams(t, activity.ActivityID, user.UserID, nil, nil)
+		ucp := postgresqlrandom.TimeEntryCreateParams(activity.ActivityID, user.UserID, nil, nil)
 
 		_, err := timeEntryRepo.Create(context.Background(), testPool, ucp)
 		assert.ErrorContains(t, err, errViolatesCheckConstraint)

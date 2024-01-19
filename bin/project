@@ -1055,13 +1055,13 @@ linters-settings:
 EOF
   )
 
-  # postgresqltestutil: ideally tests in rest, service and repo  use Random<...>CreateParams directly or indirectly
+  # postgresqlrandom: ideally tests in rest, service and repo  use Random<...>CreateParams directly or indirectly
   #                     via fixture factories, so we always want these up to date when a new field is added.
   # services: may construct db createparams from specific service models
   # repos: ensure all repos initialized (TODO: same for services)
   local packages=("
   internal/services
-  internal/repos/postgresql/postgresqltestutil
+  internal/repos/postgresql/postgresqlrandom
   internal/repos
   ")
 
@@ -1468,9 +1468,9 @@ type Update${pascal_name}Request struct {
     file="internal/services/service_${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-service.go.tmpl.bash >"$file" && gofumpt -w $file
-    file="internal/repos/postgresql/postgresqltestutil/${snake_name}.go"
+    file="internal/repos/postgresql/postgresqlrandom/${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
-    bash "$BIN_TEMPLATES_DIR"/crud-postgresqltestutil.go.tmpl.bash >"$file" && gofumpt -w $file
+    bash "$BIN_TEMPLATES_DIR"/crud-postgresqlrandom.go.tmpl.bash >"$file" && gofumpt -w $file
     file="internal/services/servicetestutil/${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-servicetestutil.go.tmpl.bash >"$file" && gofumpt -w $file

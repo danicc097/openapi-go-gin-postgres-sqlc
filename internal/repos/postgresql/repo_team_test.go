@@ -9,7 +9,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -26,7 +26,7 @@ func TestTeam_ByIndexedQueries(t *testing.T) {
 	project, err := projectRepo.ByName(ctx, testPool, models.ProjectDemo)
 	require.NoError(t, err)
 
-	tcp := postgresqltestutil.RandomTeamCreateParams(t, project.ProjectID)
+	tcp := postgresqlrandom.TeamCreateParams(project.ProjectID)
 
 	team, err := teamRepo.Create(ctx, testPool, tcp)
 	require.NoError(t, err)

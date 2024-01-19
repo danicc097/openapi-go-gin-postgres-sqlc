@@ -1,6 +1,6 @@
 /**
- * Previously defined in postgresqltestutil. However, these should just be used in repo layer tests (private) and use
- * postgresqltestutil create params for fixture factories in service and api layer so that actual service logic is used
+ * Previously defined in postgresqlrandom. However, these should just be used in repo layer tests (private) and use
+ * postgresqlrandom create params for fixture factories in service and api layer so that actual service logic is used
  * for creation.
  */
 
@@ -15,7 +15,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/stretchr/testify/require"
@@ -27,7 +27,7 @@ func newRandomActivity(t *testing.T, d db.DBTX, project models.Project) *db.Acti
 	activityRepo := postgresql.NewActivity()
 
 	// shared between projects, will require one as params.
-	ucp := postgresqltestutil.RandomActivityCreateParams(t, internal.ProjectIDByName[project])
+	ucp := postgresqlrandom.ActivityCreateParams(internal.ProjectIDByName[project])
 
 	activity, err := activityRepo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
@@ -44,7 +44,7 @@ func newRandomDemoWorkItem(t *testing.T, d db.DBTX) *db.WorkItem {
 
 	kanbanStepID := internal.DemoKanbanStepsIDByName[testutil.RandomFrom(models.AllDemoKanbanStepsValues())]
 	workItemTypeID := internal.DemoWorkItemTypesIDByName[testutil.RandomFrom(models.AllDemoWorkItemTypesValues())]
-	cp := postgresqltestutil.RandomDemoWorkItemCreateParams(t, kanbanStepID, workItemTypeID, team.TeamID)
+	cp := postgresqlrandom.DemoWorkItemCreateParams(kanbanStepID, workItemTypeID, team.TeamID)
 	dpwi, err := dpwiRepo.Create(context.Background(), d, cp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
@@ -56,7 +56,7 @@ func newRandomWorkItemTag(t *testing.T, d db.DBTX, projectID db.ProjectID) *db.W
 
 	witRepo := postgresql.NewWorkItemTag()
 
-	ucp := postgresqltestutil.RandomWorkItemTagCreateParams(t, projectID)
+	ucp := postgresqlrandom.WorkItemTagCreateParams(projectID)
 
 	wit, err := witRepo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
@@ -69,7 +69,7 @@ func newRandomTeam(t *testing.T, d db.DBTX, projectID db.ProjectID) *db.Team {
 
 	teamRepo := reposwrappers.NewTeamWithRetry(postgresql.NewTeam(), testutil.NewLogger(t), 3, 200*time.Millisecond)
 
-	ucp := postgresqltestutil.RandomTeamCreateParams(t, projectID)
+	ucp := postgresqlrandom.TeamCreateParams(projectID)
 
 	team, err := teamRepo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
@@ -86,7 +86,7 @@ func newRandomDemoTwoWorkItem(t *testing.T, d db.DBTX) *db.WorkItem {
 
 	kanbanStepID := internal.DemoTwoKanbanStepsIDByName[testutil.RandomFrom(models.AllDemoTwoKanbanStepsValues())]
 	workItemTypeID := internal.DemoTwoWorkItemTypesIDByName[testutil.RandomFrom(models.AllDemoTwoWorkItemTypesValues())]
-	cp := postgresqltestutil.RandomDemoTwoWorkItemCreateParams(t, kanbanStepID, workItemTypeID, team.TeamID)
+	cp := postgresqlrandom.DemoTwoWorkItemCreateParams(kanbanStepID, workItemTypeID, team.TeamID)
 	dpwi, err := dpwiRepo.Create(context.Background(), d, cp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
 
@@ -100,7 +100,7 @@ func newRandomUser(t *testing.T, d db.DBTX) *db.User {
 
 	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 5, 65*time.Millisecond)
 
-	ucp := postgresqltestutil.RandomUserCreateParams(t)
+	ucp := postgresqlrandom.UserCreateParams(t)
 
 	user, err := userRepo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
@@ -113,7 +113,7 @@ func newRandomTimeEntry(t *testing.T, d db.DBTX, activityID db.ActivityID, userI
 
 	teRepo := reposwrappers.NewTimeEntryWithRetry(postgresql.NewTimeEntry(), testutil.NewLogger(t), 5, 65*time.Millisecond)
 
-	ucp := postgresqltestutil.RandomTimeEntryCreateParams(t, activityID, userID, workItemID, teamID)
+	ucp := postgresqlrandom.TimeEntryCreateParams(activityID, userID, workItemID, teamID)
 
 	te, err := teRepo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead
@@ -142,7 +142,7 @@ func newRandomWorkItemComment(t *testing.T, d db.DBTX, project models.Project) *
 	// services and api should use fixture factory instead so that it uses specific service logic for creation.
 	// TODO: add project script checking newRandom* strings are not found outside repos
 
-	cp := postgresqltestutil.RandomWorkItemCommentCreateParams(t, user.UserID, workItemID)
+	cp := postgresqlrandom.WorkItemCommentCreateParams(user.UserID, workItemID)
 
 	workItemComment, err := workItemCommentRepo.Create(context.Background(), d, cp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead

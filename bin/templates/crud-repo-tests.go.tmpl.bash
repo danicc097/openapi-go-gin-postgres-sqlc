@@ -15,7 +15,7 @@ $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgr
 $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal\"")
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil\"
+	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers\"
 	\"github.com/stretchr/testify/assert\"
@@ -178,7 +178,7 @@ func Test${pascal_name}_Create(t *testing.T) {
 		t.Parallel()
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-		${camel_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
+		${camel_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(t $create_args)
 
 		want := want{
 			${pascal_name}CreateParams: *${camel_name}CreateParams,
@@ -202,7 +202,7 @@ done)
 		t.Parallel()
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-		${camel_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
+		${camel_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(t $create_args)
 		// NOTE: update params to trigger check error
 
 		args := args{

@@ -12,7 +12,7 @@ import (
 $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal\"")
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil\"
+	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services\"
 	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil\"
@@ -103,7 +103,7 @@ func TestHandlers_Create${pascal_name}(t *testing.T) {
 $(test -n "$with_project" && echo "		pj := models.ProjectDemo
 		projectID := internal.ProjectIDByName[pj]")
 
-		random${pascal_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
+		random${pascal_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(t $create_args)
 		body := rest.Create${pascal_name}Request{
 			${pascal_name}CreateParams: *random${pascal_name}CreateParams,
 		}
@@ -189,7 +189,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 			name:   \"valid ${sentence_name} update\",
 			status: http.StatusOK,
 			body: func() rest.Update${pascal_name}Request {
-				random${pascal_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
+				random${pascal_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(t $create_args)
 
 				return rest.Update${pascal_name}Request{
 					${pascal_name}UpdateParams: db.${pascal_name}UpdateParams{
