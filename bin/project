@@ -1615,6 +1615,7 @@ x.test.create-crud-gen() {
     x.dev-utils.create-crud TestCrudGenDeletedAtProject --project
 
     for name in "TestCrudGenBase" "TestCrudGenDeletedAt" "TestCrudGenDeletedAtProject"; do
+      local snake_name="$(to_snake $name)"
       local pg_random_file="$PG_REPO_DIR/postgresqlrandom/${snake_name}.go"
       local line=$(awk "/return &db.${name}CreateParams{/{print NR}" "$pg_random_file")
       test -z line && err "No line found"
