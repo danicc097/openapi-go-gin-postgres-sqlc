@@ -11,14 +11,14 @@ create table test_crud_gen_base (
 );
 
 create table test_crud_gen_deleted_at (
-  test_crud_gen_base_id serial primary key
+  test_crud_gen_deleted_at_id serial primary key
   , message text not null
   , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
   , deleted_at timestamp with time zone default CLOCK_TIMESTAMP()
 );
 
 create table test_crud_gen_deleted_at_project (
-  test_crud_gen_base_id serial primary key
+  test_crud_gen_deleted_at_project_id serial primary key
   , message text not null
   , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
   , deleted_at timestamp with time zone default CLOCK_TIMESTAMP()

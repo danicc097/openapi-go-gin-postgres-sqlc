@@ -30,6 +30,9 @@ func TestHandlers_Delete${pascal_name}(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
+$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+		projectID := internal.ProjectIDByName[pj]")
+
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
@@ -64,14 +67,13 @@ func TestHandlers_Delete${pascal_name}(t *testing.T) {
 			})
 			require.NoError(t, err, "ff.CreateUser: %s")
 
-$(test -n "$with_project" && echo "		projectID := internal.ProjectIDByName[models.ProjectDemo]")
 			${camel_name}f := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
         $(test -n "$with_project" && echo "		ProjectID: projectID,")
       })
 			require.NoError(t, err, "ff.Create${pascal_name}: %s")
 
 			id := ${camel_name}f.${pascal_name}.${pascal_name}ID
-			res, err := srv.client.Delete${pascal_name}WithResponse(context.Background(), id, ReqWithAPIKey(ufixture.APIKey.APIKey))
+			res, err := srv.client.Delete${pascal_name}WithResponse(context.Background() $(test -n "$with_project" && echo ", pj"), id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 			require.NoError(t, err)
 			require.Equal(t, tc.status, res.StatusCode(), string(res.Body))
 		})
@@ -90,6 +92,9 @@ func TestHandlers_Create${pascal_name}(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
+$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+		projectID := internal.ProjectIDByName[pj]")
+
 	t.Run("authenticated_user", func(t *testing.T) {
 		t.Parallel()
 
@@ -102,10 +107,8 @@ func TestHandlers_Create${pascal_name}(t *testing.T) {
 			Scopes:     scopes,
 		})
 
-$(test -n "$with_project" && echo "		pj := models.ProjectDemo
-		projectID := internal.ProjectIDByName[pj]")
 
-		random${pascal_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams($create_args)
+		random${pascal_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(${create_args#,})
 		body := rest.Create${pascal_name}Request{
 			${pascal_name}CreateParams: *random${pascal_name}CreateParams,
 		}
@@ -131,6 +134,9 @@ func TestHandlers_Get${pascal_name}(t *testing.T) {
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
+$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+		projectID := internal.ProjectIDByName[pj]")
+
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
@@ -146,14 +152,14 @@ func TestHandlers_Get${pascal_name}(t *testing.T) {
 			Scopes:     scopes,
 		})
 
-$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+
 		${camel_name}f := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
       $(test -n "$with_project" && echo "		ProjectID: projectID,")
     })
 		require.NoError(t, err, "ff.Create${pascal_name}: %s")
 
 		id := ${camel_name}f.${pascal_name}.${pascal_name}ID
-		res, err := srv.client.Get${pascal_name}WithResponse(context.Background(), id, ReqWithAPIKey(ufixture.APIKey.APIKey))
+		res, err := srv.client.Get${pascal_name}WithResponse(context.Background() $(test -n "$with_project" && echo ", pj"), id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))
@@ -172,14 +178,15 @@ func TestHandlers_Update${pascal_name}(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
+$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+		projectID := internal.ProjectIDByName[pj]")
+
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
-
-$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
 
 	tests := []struct {
 		name                    string
@@ -191,7 +198,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 			name:   "valid ${sentence_name} update",
 			status: http.StatusOK,
 			body: func() rest.Update${pascal_name}Request {
-				random${pascal_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams($create_args)
+				random${pascal_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(${create_args#,})
 
 				return rest.Update${pascal_name}Request{
 					${pascal_name}UpdateParams: db.${pascal_name}UpdateParams{
@@ -224,14 +231,14 @@ done)
 			})
 			require.NoError(t, err, "ff.CreateUser: %s")
 
-$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+
 			${camel_name}f := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
         $(test -n "$with_project" && echo "		ProjectID: projectID,")
       })
 			require.NoError(t, err, "ff.Create${pascal_name}: %s")
 
 			id := ${camel_name}f.${pascal_name}.${pascal_name}ID
-			updateRes, err := srv.client.Update${pascal_name}WithResponse(context.Background(), id, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
+			updateRes, err := srv.client.Update${pascal_name}WithResponse(context.Background() $(test -n "$with_project" && echo ", pj"), id, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			require.EqualValues(t, tc.status, updateRes.StatusCode(), string(updateRes.Body))
@@ -246,7 +253,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 
 			assert.EqualValues(t, id, updateRes.JSON200.${pascal_name}ID)
 
-			res, err := srv.client.Get${pascal_name}WithResponse(context.Background(), id, ReqWithAPIKey(normalUser.APIKey.APIKey))
+			res, err := srv.client.Get${pascal_name}WithResponse(context.Background() $(test -n "$with_project" && echo ", pj"), id, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 $(for f in ${db_update_params_struct_fields[@]}; do

@@ -2,7 +2,7 @@
 
 # shellcheck disable=SC2028,SC2154
 delete_method=$(test -n "$has_deleted_at" && echo "SoftDelete" || echo "Delete")
-create_args="$(test -n "$with_project" && echo "projectID")"
+create_args="$(test -n "$with_project" && echo ", projectID")"
 
 cat <<EOF
 package postgresql_test
@@ -180,7 +180,7 @@ func Test${pascal_name}_Create(t *testing.T) {
 		t.Parallel()
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-		${camel_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams($create_args)
+		${camel_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(${create_args#,})
 
 		want := want{
 			${pascal_name}CreateParams: *${camel_name}CreateParams,
@@ -204,7 +204,7 @@ done)
 		t.Parallel()
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
-		${camel_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams($create_args)
+		${camel_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(${create_args#,})
 		// NOTE: update params to trigger check error
 
 		args := args{

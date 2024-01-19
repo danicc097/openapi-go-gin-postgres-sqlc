@@ -1,6 +1,6 @@
 #!/bin/bash
 
-create_params="$(test -n "$with_project" && echo ", projectID db.ProjectID")"
+create_params="$(test -n "$with_project" && echo "projectID db.ProjectID")"
 create_args="$(test -n "$with_project" && echo "projectID")"
 
 cat <<EOF

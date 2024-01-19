@@ -5,7 +5,6 @@ cat <<EOF
 package rest
 
 import (
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
 $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal\"")
 )
@@ -34,7 +33,7 @@ $(test -n "$with_project" && echo "	params.ProjectID = internal.ProjectIDByName[
 func (h *StrictHandlers) Get${pascal_name}(c *gin.Context, request Get${pascal_name}RequestObject) (Get${pascal_name}ResponseObject, error) {
 	tx := GetTxFromCtx(c)
 
-	${camel_name}, err := h.svc.${pascal_name}.ByID(c, tx, db.${pascal_name}ID(request.${pascal_name}ID))
+	${camel_name}, err := h.svc.${pascal_name}.ByID(c, tx, request.${pascal_name}ID)
 	if err != nil {
 		renderErrorResponse(c, "Could not create ${sentence_name}", err)
 
@@ -54,7 +53,7 @@ func (h *StrictHandlers) Update${pascal_name}(c *gin.Context, request Update${pa
 
 	params := request.Body.${pascal_name}UpdateParams
 
-	${camel_name}, err := h.svc.${pascal_name}.Update(c, tx, db.${pascal_name}ID(request.${pascal_name}ID), &params)
+	${camel_name}, err := h.svc.${pascal_name}.Update(c, tx, request.${pascal_name}ID, &params)
 	if err != nil {
 		renderErrorResponse(c, "Could not update ${sentence_name}", err)
 
@@ -72,7 +71,7 @@ func (h *StrictHandlers) Update${pascal_name}(c *gin.Context, request Update${pa
 func (h *StrictHandlers) Delete${pascal_name}(c *gin.Context, request Delete${pascal_name}RequestObject) (Delete${pascal_name}ResponseObject, error) {
 	tx := GetTxFromCtx(c)
 
-	_, err := h.svc.${pascal_name}.Delete(c, tx, db.${pascal_name}ID(request.${pascal_name}ID))
+	_, err := h.svc.${pascal_name}.Delete(c, tx, request.${pascal_name}ID)
 	if err != nil {
 		renderErrorResponse(c, "Could not delete ${sentence_name}", err)
 

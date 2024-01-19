@@ -1029,7 +1029,7 @@ x.lint.go() {
       -name "*.go")
     goimports -w $files || echo "Linting failed"
     gofumpt -w $files || echo "Linting failed"
-    golangci-lint run --config=.golangci.yml --fix &>/dev/null || true
+    golangci-lint run --config=.golangci.yml --allow-parallel-runners --fix &>/dev/null || true
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1066,7 +1066,7 @@ EOF
   ")
 
   for package in ${packages[@]}; do
-    LOG_LEVEL=error golangci-lint run --config <(echo "$lint_config") $package
+    LOG_LEVEL=error golangci-lint run --allow-parallel-runners --config <(echo "$lint_config") $package
   done
 
   lint_config=$(
@@ -1346,7 +1346,7 @@ x.release() {
 
 # Runs the go type checker.
 x.backend.typecheck() {
-  golangci-lint run --no-config --disable-all --enable=typecheck --timeout=10m
+  golangci-lint run --no-config --disable-all --enable=typecheck --allow-parallel-runners --timeout=10m
 }
 
 # depends on gen.xo output
@@ -1408,16 +1408,23 @@ EOF
 }
 
 # Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a
+# given db table by struct name.
+# Accepts flags:
+# --project - Generate as entity under a parameterized project.
+# Args: name
 x.dev-utils.create-crud() {
-  # given db table by struct name.
-  # Accepts flags:
-  # --project - Generate as entity under a project.
-  # Args: name
   xsetup.backup
   { { {
-    x.gen.xo
-
     load_exported_crud_gen_vars ${@}
+
+    for arg in "${@:2}"; do
+      case $arg in
+      --testing)
+        export testing=1
+        ;;
+      *) ;;
+      esac
+    done
 
     local new_crud_schema="$(bash "$BIN_TEMPLATES_DIR"/crud-openapi.yaml.tmpl.bash)"
     yq eval-all "(
@@ -1523,22 +1530,18 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
     generate_repo_constructor
     x.gen.gowrap $pascal_name
 
+    test -n "$testing" && return 0 # will gen and run tests afterwards
+
     if gofumpt -w "$services_path" "$service_repos_path" && x.backend.typecheck; then
       x.gen
-      x.dev-utils.create-crud-tests ${@}
-
-      # now that generated api models exist
-      file="internal/rest/api_${snake_name}.go"
-      rm -f "$file"
-      test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
-      bash "$BIN_TEMPLATES_DIR"/crud-api.go.tmpl.bash >"$file" && gofumpt -w $file
+      x.dev-utils.create-crud-after-gen ${@}
     else
       err "Typecheck failed after CRUD gen. To debug:
       1. Commit current changes
       2. Run $CMD again with --x-no-backup flag
       3. Fix typecheck errors manually
       4. Run 'project gen', fix errors if any
-      5. Run 'project dev-utils.create-crud-tests $*'"
+      5. Run 'project dev-utils.create-crud-after-gen $*'"
     fi
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1602,19 +1605,28 @@ x.test.create-crud-gen() {
     local migration_file=$(find $MIGRATIONS_DIR -name "*${migration_name}.up.sql")
     test -e $migration_file
     cp $BIN_TEMPLATES_DIR/testdata/schema.sql $migration_file
-    # could parallelize calls if gen.xo is called externally.
+    # could parallelize calls if gen.xo is called externally (would be called concurrently before caching).
     # create-crud already runs in subshell. However it calls x.gen before generating tests.
-    # Should pass internal flag to create-crud --no-gen which will not run gen + create-crud-tests
+    # Should pass internal flag to create-crud --testing which will not run gen + create-crud-after-gen
     # so that crud tests are all generated in parallel as well.
     # The whole pipeline (excluding x.gen) will just create or append to files so there shouldn't be any issue.
     # Run x.dev-utils.create-crud TestCrudGenBase
     # Run x.dev-utils.create-crud TestCrudGenDeletedAt
     # Run x.dev-utils.create-crud TestCrudGenDeletedAtProject --project
-    x.dev-utils.create-crud TestCrudGenBase
-    x.dev-utils.create-crud TestCrudGenDeletedAt
-    x.dev-utils.create-crud TestCrudGenDeletedAtProject --project
+    x.gen.xo
 
-    for name in "TestCrudGenBase" "TestCrudGenDeletedAt" "TestCrudGenDeletedAtProject"; do
+    x.dev-utils.create-crud TestCrudGenBase --testing
+    x.dev-utils.create-crud TestCrudGenDeletedAt --testing
+    x.dev-utils.create-crud TestCrudGenDeletedAtProject --project --testing
+
+    x.gen
+
+    x.dev-utils.create-crud-after-gen TestCrudGenBase
+    x.dev-utils.create-crud-after-gen TestCrudGenDeletedAt
+    x.dev-utils.create-crud-after-gen TestCrudGenDeletedAtProject --project
+
+    local names=("TestCrudGenBase" "TestCrudGenDeletedAt" "TestCrudGenDeletedAtProject")
+    for name in ${names[@]}; do
       local snake_name="$(to_snake $name)"
       local pg_random_file="$PG_REPO_DIR/postgresqlrandom/${snake_name}.go"
       local line=$(awk "/return &db.${name}CreateParams{/{print NR}" "$pg_random_file")
@@ -1634,7 +1646,7 @@ x.test.create-crud-gen() {
 }
 
 # Create CRUD gen tests manually. Use only when prompted to do so.
-x.dev-utils.create-crud-tests() {
+x.dev-utils.create-crud-after-gen() {
   { { {
     load_exported_crud_gen_vars ${@}
 
@@ -1671,6 +1683,12 @@ func newRandom${pascal_name}(t *testing.T, d db.DBTX $nr_create_params) *db.${pa
     local file="internal/rest/api_${snake_name}_test.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-api-tests.go.tmpl.bash >"$file" && gofumpt -w $file
+
+    # now that generated api models exist at this point (backend.typecheck would have failed)
+    file="internal/rest/api_${snake_name}.go"
+    rm -f "$file"
+    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+    bash "$BIN_TEMPLATES_DIR"/crud-api.go.tmpl.bash >"$file" && gofumpt -w $file
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
