@@ -12,7 +12,7 @@ import (
 $(test -n "$has_deleted_at" && echo "	\"time\"")
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
-	"github.com/stretchr/testify/require"
+  "github.com/stretchr/testify/require"
 )
 
 type Create${pascal_name}Params struct {
@@ -27,26 +27,22 @@ type Create${pascal_name}Fixture struct {
 }
 
 // Create${pascal_name} creates a new random ${sentence_name} with the given configuration.
-func (ff *FixtureFactory) Create${pascal_name}(ctx context.Context, params Create${pascal_name}Params) (*Create${pascal_name}Fixture, error) {
+func (ff *FixtureFactory) Create${pascal_name}(ctx context.Context, params Create${pascal_name}Params) *Create${pascal_name}Fixture {
 	randomRepoCreateParams := postgresqlrandom.${pascal_name}CreateParams($create_args)
 	// don't use repos for test fixtures, use service logic
 	${camel_name}, err := ff.svc.${pascal_name}.Create(ctx, ff.d, randomRepoCreateParams)
-	if err != nil {
-		return nil, fmt.Errorf("svc.${pascal_name}.Create: %w", err)
-	}
+	require.NoError(ff.t, err)
 
 $(test -n "$has_deleted_at" && echo "
 	if params.DeletedAt != nil {
 		${camel_name}, err = ff.svc.${pascal_name}.Delete(ctx, ff.d, ${camel_name}.${pascal_name}ID)
-		if err != nil {
-			return nil, fmt.Errorf(\"svc.${pascal_name}.Delete: %w\", err)
-		}
+	  require.NoError(ff.t, err)
 	}
 ")
 
 	return &Create${pascal_name}Fixture{
 		${pascal_name}:   ${camel_name},
-	}, nil
+	}
 }
 
 EOF

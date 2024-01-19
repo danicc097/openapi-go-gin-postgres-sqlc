@@ -48,6 +48,8 @@ jobs:
 
           POSTGRES_TRACE=true project test.backend -v -count=40 --x-env=ci
 
+          POSTGRES_TRACE=true project test.create-crud-gen --x-env=ci
+
       - name: Test frontend
         run: |
           source .envrc

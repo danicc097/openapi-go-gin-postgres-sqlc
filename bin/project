@@ -1407,7 +1407,8 @@ EOF
   git diff --name-only $FRONTEND_GEN | xargs --no-run-if-empty prettier --write -- &>/dev/null
 }
 
-x.dev-utils.create-crud() { # Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a
+# Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a
+x.dev-utils.create-crud() {
   # given db table by struct name.
   # Accepts flags:
   # --project - Generate as entity under a project.
@@ -1461,13 +1462,13 @@ type Update${pascal_name}Request struct {
 
     update_roles_and_scopes
 
-    local file="internal/repos/postgresql/repo_${snake_name}.go"
+    local file="$PG_REPO_DIR/repo_${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-repo.go.tmpl.bash >"$file" && gofumpt -w $file
     file="internal/services/service_${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-service.go.tmpl.bash >"$file" && gofumpt -w $file
-    file="internal/repos/postgresql/postgresqlrandom/${snake_name}.go"
+    file="$PG_REPO_DIR/postgresqlrandom/${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-postgresqlrandom.go.tmpl.bash >"$file" && gofumpt -w $file
     file="internal/services/servicetestutil/${snake_name}.go"
@@ -1582,6 +1583,14 @@ load_exported_crud_gen_vars() {
   export db_update_params_struct_fields
 }
 
+dummy() {
+  xsetup.backup
+  { { {
+    echo Dummy function with xsetup branch backup
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  xsetup.backup.cleanup
+}
+
 # Test CRUD+tests generator.
 x.test.create-crud-gen() {
   xsetup.backup
@@ -1592,20 +1601,33 @@ x.test.create-crud-gen() {
     x.migrate.create "$migration_name"
     local migration_file=$(find $MIGRATIONS_DIR -name "*${migration_name}.up.sql")
     test -e $migration_file
-    echo "<random table sql to test
-  1: without deleted_at
-  2. with deleted_at
-  3. with --project flag and deleted_at
-  "
+    cp $BIN_TEMPLATES_DIR/testdata/schema.sql $migration_file
+    # could parallelize calls if gen.xo is called externally.
+    # create-crud already runs in subshell. However it calls x.gen before generating tests.
+    # Should pass internal flag to create-crud --no-gen which will not run gen + create-crud-tests
+    # so that crud tests are all generated in parallel as well.
+    # The whole pipeline (excluding x.gen) will just create or append to files so there shouldn't be any issue.
+    # Run x.dev-utils.create-crud TestCrudGenBase
+    # Run x.dev-utils.create-crud TestCrudGenDeletedAt
+    # Run x.dev-utils.create-crud TestCrudGenDeletedAtProject --project
+    x.dev-utils.create-crud TestCrudGenBase
+    x.dev-utils.create-crud TestCrudGenDeletedAt
+    x.dev-utils.create-crud TestCrudGenDeletedAtProject --project
 
-    echo "${GREEN}✅ Tests passing. Forcing exit to restore previous branch.${OFF}"
-    # TODO: let CI keep the changes so that it runs all tests with new crud gen --> don't need snapshot tests,
-    # just update random CreateParams based on tables manually:
-    #     local line=$(awk '/<line to find>/{print NR}' "$postgresqlrandom_path")
-    #     test -z line && err "No line found"
-    #     sed -i "$((line))a\\
-    # <lines to append>"
-    [[ $X_ENV != "ci" ]] && project test.backend && exit 1 # always restores branch if we're running locally
+    for name in "TestCrudGenBase" "TestCrudGenDeletedAt" "TestCrudGenDeletedAtProject"; do
+      local pg_random_file="$PG_REPO_DIR/postgresqlrandom/${snake_name}.go"
+      local line=$(awk "/return &db.${name}CreateParams{/{print NR}" "$pg_random_file")
+      test -z line && err "No line found"
+      sed -i "$((line))a\\
+    Message: \"Some message\"," $pg_random_file
+    done
+
+    x.test.backend
+
+    if [[ $X_ENV != "ci" ]]; then # always restore branch if we're running locally
+      echo "${GREEN}✅ Tests passing. Forcing exit to restore previous branch.${OFF}"
+      exit 1
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
@@ -1615,9 +1637,15 @@ x.dev-utils.create-crud-tests() {
   { { {
     load_exported_crud_gen_vars ${@}
 
-    local file="internal/repos/postgresql/new_random_test.go"
-    nr_create_params="$(test -n "$with_project" && echo ", projectID db.ProjectID")"
-    nr_create_args="$(test -n "$with_project" && echo "projectID")"
+    local file="$PG_REPO_DIR/new_random_test.go"
+    nr_create_params=""
+    nr_create_args=""
+
+    if [[ -n "$with_project" ]]; then
+      nr_create_params=", projectID db.ProjectID"
+      nr_create_args="projectID"
+    fi
+
     echo "
 func newRandom${pascal_name}(t *testing.T, d db.DBTX $nr_create_params) *db.${pascal_name} {
 	t.Helper()
@@ -1633,7 +1661,7 @@ func newRandom${pascal_name}(t *testing.T, d db.DBTX $nr_create_params) *db.${pa
 }
     " >>"$file" && gofumpt -w $file
 
-    local file="internal/repos/postgresql/repo_${snake_name}_test.go"
+    local file="$PG_REPO_DIR/repo_${snake_name}_test.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-repo-tests.go.tmpl.bash >"$file" && gofumpt -w $file
     local file="internal/services/service_${snake_name}_test.go"
