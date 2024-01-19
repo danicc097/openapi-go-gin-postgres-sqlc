@@ -1034,7 +1034,7 @@ x.lint.go() {
 }
 
 exhaustruct_lint() {
-  lint_config=$(
+  local lint_config=$(
     cat <<EOF
 linters:
   disable-all: true
@@ -1057,7 +1057,7 @@ EOF
 
   # postgresqlrandom: ideally tests in rest, service and repo  use Random<...>CreateParams directly or indirectly
   #                     via fixture factories, so we always want these up to date when a new field is added.
-  # services: may construct db createparams from specific service models
+  # services: may construct db CreateParams from specific service models
   # repos: ensure all repos initialized (TODO: same for services)
   local packages=("
   internal/services
@@ -1419,7 +1419,6 @@ x.dev-utils.create-crud() { # Creates a generic CRUD endpoint in the OpenAPI spe
     load_exported_crud_gen_vars ${@}
 
     local new_crud_schema="$(bash "$BIN_TEMPLATES_DIR"/crud-openapi.yaml.tmpl.bash)"
-
     yq eval-all "(
         select(fi == 1).paths
         ) as \$paths
@@ -1588,13 +1587,15 @@ x.dev-utils.create-crud-tests() {
     load_exported_crud_gen_vars ${@}
 
     local file="internal/repos/postgresql/new_random_test.go"
+    nr_create_params="$(test -n "$with_project" && echo ", projectID db.ProjectID")"
+    nr_create_args="$(test -n "$with_project" && echo "projectID")"
     echo "
-func newRandom${pascal_name}(t *testing.T, d db.DBTX $create_params) *db.${pascal_name} {
+func newRandom${pascal_name}(t *testing.T, d db.DBTX $nr_create_params) *db.${pascal_name} {
 	t.Helper()
 
 	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), testutil.NewLogger(t), 3, 200*time.Millisecond)
 
-	cp := Random${pascal_name}CreateParams(t $create_args)
+	cp := postgresqlrandom.${pascal_name}CreateParams($nr_create_args)
 
 	${camel_name}, err := ${camel_name}Repo.Create(context.Background(), d, cp)
 	require.NoError(t, err, \"failed to create random entity\") // IMPORTANT: must fail. If testing actual failures use random create params instead
@@ -2331,6 +2332,10 @@ while [[ "$#" -gt 0 ]]; do
     # Skips code generation steps.
     export X_NO_GEN=1
     ;;
+  --x-debug)
+    # Debug bash script with -x flag.
+    export X_DEBUG=1
+    ;;
   --x-no-backup)
     # Backup stash is not restored on failure.
     # Please ensure there are no uncommitted changes in the current branch beforehand.
@@ -2359,9 +2364,13 @@ done
 
 export BUILD_VERSION="$X_ENV-$(git rev-parse --verify HEAD)"
 
-readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV
+readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG
 
 ######################## INIT ########################
+
+if test -n "$X_DEBUG"; then
+  set -x
+fi
 
 # applicable to any command
 ensure_envvars_set ".env.template" ".env.${X_ENV}"

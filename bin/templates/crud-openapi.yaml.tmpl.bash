@@ -4,6 +4,7 @@
 cat <<EOF
 x-require-authenticated: &x-require-authenticated
 x-error-response: &x-error-response
+x-${camel_name}IDParameter: &x-${camel_name}IDParameter
 paths:
 $(if test -n "$with_project"; then
   echo "  /project/{projectName}/${kebab_name}/:"
@@ -37,13 +38,20 @@ fi)
         !!merge <<: *x-error-response
       tags:
         - ${camel_name}
-  /${kebab_name}/{id}:
+$(if test -n "$with_project"; then
+  echo "  /project/{projectName}/${kebab_name}/{${camel_name}ID}:"
+else
+  echo "  /${kebab_name}/{${camel_name}ID}:"
+fi)
     get:
       summary: get ${sentence_name}.
       !!merge <<: *x-require-authenticated
       operationId: Get${pascal_name}
       parameters:
-        - \$ref: '#/components/parameters/SerialID'
+$(if test -n "$with_project"; then
+  echo "        - \$ref: '#/components/parameters/ProjectName'"
+fi)
+        - *x-${camel_name}IDParameter
       responses:
         200:
           description: Success.
@@ -61,7 +69,10 @@ fi)
       x-required-scopes:
         - ${kebab_name}:edit
       parameters:
-        - \$ref: '#/components/parameters/SerialID'
+$(if test -n "$with_project"; then
+  echo "        - \$ref: '#/components/parameters/ProjectName'"
+fi)
+        - *x-${camel_name}IDParameter
       requestBody:
         content:
           application/json:
@@ -85,7 +96,10 @@ fi)
       x-required-scopes:
         - ${kebab_name}:delete
       parameters:
-        - \$ref: '#/components/parameters/SerialID'
+$(if test -n "$with_project"; then
+  echo "        - \$ref: '#/components/parameters/ProjectName'"
+fi)
+        - *x-${camel_name}IDParameter
       responses:
         204:
           description: Success.

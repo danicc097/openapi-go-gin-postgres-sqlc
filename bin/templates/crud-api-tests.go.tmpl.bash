@@ -71,7 +71,7 @@ $(test -n "$with_project" && echo "		projectID := internal.ProjectIDByName[model
 			require.NoError(t, err, "ff.Create${pascal_name}: %s")
 
 			id := ${camel_name}f.${pascal_name}.${pascal_name}ID
-			res, err := srv.client.Delete${pascal_name}WithResponse(context.Background(), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
+			res, err := srv.client.Delete${pascal_name}WithResponse(context.Background(), id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 			require.NoError(t, err)
 			require.Equal(t, tc.status, res.StatusCode(), string(res.Body))
 		})
@@ -153,7 +153,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 		require.NoError(t, err, "ff.Create${pascal_name}: %s")
 
 		id := ${camel_name}f.${pascal_name}.${pascal_name}ID
-		res, err := srv.client.Get${pascal_name}WithResponse(context.Background(), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
+		res, err := srv.client.Get${pascal_name}WithResponse(context.Background(), id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))
@@ -231,7 +231,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 			require.NoError(t, err, "ff.Create${pascal_name}: %s")
 
 			id := ${camel_name}f.${pascal_name}.${pascal_name}ID
-			updateRes, err := srv.client.Update${pascal_name}WithResponse(context.Background(), int(id), tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
+			updateRes, err := srv.client.Update${pascal_name}WithResponse(context.Background(), id, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			require.EqualValues(t, tc.status, updateRes.StatusCode(), string(updateRes.Body))
@@ -246,7 +246,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 
 			assert.EqualValues(t, id, updateRes.JSON200.${pascal_name}ID)
 
-			res, err := srv.client.Get${pascal_name}WithResponse(context.Background(), int(id), ReqWithAPIKey(normalUser.APIKey.APIKey))
+			res, err := srv.client.Get${pascal_name}WithResponse(context.Background(), id, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 $(for f in ${db_update_params_struct_fields[@]}; do

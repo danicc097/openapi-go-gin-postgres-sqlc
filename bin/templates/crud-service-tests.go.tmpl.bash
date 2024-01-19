@@ -1,6 +1,6 @@
 #!/bin/bash
 
-create_args="$(test -n "$with_project" && echo ", projectID")"
+create_args="$(test -n "$with_project" && echo "projectID")"
 
 # shellcheck disable=SC2028,SC2154
 cat <<EOF
@@ -44,7 +44,7 @@ func Test${pascal_name}_Update(t *testing.T) {
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
 
-	${camel_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(t $create_args)
+	${camel_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams($create_args)
 	${lower_name}, err := svc.${pascal_name}.Create(context.Background(), testPool, ${camel_name}CreateParams)
 	require.NoError(t, err)
 
@@ -54,7 +54,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 		withUserInProject bool
 	}
 
-	wantParams := postgresqlrandom.${pascal_name}CreateParams(t $create_args)
+	wantParams := postgresqlrandom.${pascal_name}CreateParams($create_args)
 
 	tests := []struct {
 		name          string
@@ -74,7 +74,7 @@ done)
 				id:                ${lower_name}.${pascal_name}ID,
 			},
 			want: db.${pascal_name}UpdateParams{
-				// generating fields based on randomized createparams since it's a superset of updateparams.
+				// generating fields based on randomized CreateParams since it's a superset of updateparams.
 				$(for f in ${db_update_params_struct_fields[@]}; do
   echo "		$f: &wantParams.$f,"
 done)

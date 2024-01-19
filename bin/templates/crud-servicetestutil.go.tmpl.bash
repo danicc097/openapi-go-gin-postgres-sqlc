@@ -1,6 +1,6 @@
 #!/bin/bash
 
-create_args="$(test -n "$with_project" && echo ", params.ProjectID")"
+create_args="$(test -n "$with_project" && echo "params.ProjectID")"
 
 # shellcheck disable=SC2028,SC2154
 cat <<EOF
@@ -8,11 +8,11 @@ package servicetestutil
 
 import (
 	"context"
-	"fmt"
-$(test -n "$has_deleted_at" && echo "	\"time\"")
 
+$(test -n "$has_deleted_at" && echo "	\"time\"")
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
+	"github.com/stretchr/testify/require"
 )
 
 type Create${pascal_name}Params struct {
@@ -28,7 +28,7 @@ type Create${pascal_name}Fixture struct {
 
 // Create${pascal_name} creates a new random ${sentence_name} with the given configuration.
 func (ff *FixtureFactory) Create${pascal_name}(ctx context.Context, params Create${pascal_name}Params) (*Create${pascal_name}Fixture, error) {
-	randomRepoCreateParams := postgresqlrandom.${pascal_name}CreateParams(ff.t $create_args)
+	randomRepoCreateParams := postgresqlrandom.${pascal_name}CreateParams($create_args)
 	// don't use repos for test fixtures, use service logic
 	${camel_name}, err := ff.svc.${pascal_name}.Create(ctx, ff.d, randomRepoCreateParams)
 	if err != nil {

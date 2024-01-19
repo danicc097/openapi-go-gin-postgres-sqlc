@@ -1,8 +1,6 @@
 package postgresqlrandom
 
 import (
-	"testing"
-
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
@@ -10,7 +8,7 @@ import (
 )
 
 // NOTE: FKs should always be passed explicitly.
-func UserCreateParams(t *testing.T) *db.UserCreateParams {
+func UserCreateParams() *db.UserCreateParams {
 	return &db.UserCreateParams{
 		Username:                 testutil.RandomNameIdentifier(1, "-") + testutil.RandomName(),
 		Email:                    testutil.RandomEmail(),

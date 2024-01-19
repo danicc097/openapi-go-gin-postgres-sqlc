@@ -100,7 +100,7 @@ func newRandomUser(t *testing.T, d db.DBTX) *db.User {
 
 	userRepo := reposwrappers.NewUserWithRetry(postgresql.NewUser(), logger, 5, 65*time.Millisecond)
 
-	ucp := postgresqlrandom.UserCreateParams(t)
+	ucp := postgresqlrandom.UserCreateParams()
 
 	user, err := userRepo.Create(context.Background(), d, ucp)
 	require.NoError(t, err, "failed to create random entity") // IMPORTANT: must fail. If testing actual failures use random create params instead

@@ -27,7 +27,7 @@ type CreateUserFixture struct {
 
 // CreateUser creates a new random user with the given configuration.
 func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParams) *CreateUserFixture {
-	randomRepoCreateParams := postgresqlrandom.UserCreateParams(ff.t)
+	randomRepoCreateParams := postgresqlrandom.UserCreateParams()
 	ucp := services.UserRegisterParams{
 		Username:   randomRepoCreateParams.Username,
 		Email:      randomRepoCreateParams.Email,

@@ -320,7 +320,7 @@ func TestUser_Create(t *testing.T) {
 	t.Run("correct_user", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := postgresqlrandom.UserCreateParams(t)
+		ucp := postgresqlrandom.UserCreateParams()
 
 		want := want{
 			FullName:         pointers.New(*ucp.FirstName + " " + *ucp.LastName), // repo responsibility
@@ -347,7 +347,7 @@ func TestUser_Create(t *testing.T) {
 	t.Run("role_rank_less_than_zero", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := postgresqlrandom.UserCreateParams(t)
+		ucp := postgresqlrandom.UserCreateParams()
 		ucp.RoleRank = -1
 
 		args := args{
