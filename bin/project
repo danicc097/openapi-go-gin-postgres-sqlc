@@ -1582,6 +1582,35 @@ load_exported_crud_gen_vars() {
   export db_update_params_struct_fields
 }
 
+# Test CRUD+tests generator.
+x.test.create-crud-gen() {
+  xsetup.backup
+  { { {
+    # IMPORTANT: we rely on cleanup based on xsetup forced exit, so do not call this
+    # function along any others, only as a standalone command `project test.create-crud-gen`
+    local migration_name="$(uuidgen)_create_crud_gen"
+    x.migrate.create "$migration_name"
+    local migration_file=$(find $MIGRATIONS_DIR -name "*${migration_name}.up.sql")
+    test -e $migration_file
+    echo "<random table sql to test
+  1: without deleted_at
+  2. with deleted_at
+  3. with --project flag and deleted_at
+  "
+
+    echo "${GREEN}✅ Tests passing. Forcing exit to restore previous branch.${OFF}"
+    # TODO: let CI keep the changes so that it runs all tests with new crud gen --> don't need snapshot tests,
+    # just update random CreateParams based on tables manually:
+    #     local line=$(awk '/<line to find>/{print NR}' "$postgresqlrandom_path")
+    #     test -z line && err "No line found"
+    #     sed -i "$((line))a\\
+    # <lines to append>"
+    [[ $X_ENV != "ci" ]] && project test.backend && exit 1 # always restores branch if we're running locally
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  xsetup.backup.cleanup
+}
+
+# Create CRUD gen tests manually. Use only when prompted to do so.
 x.dev-utils.create-crud-tests() {
   { { {
     load_exported_crud_gen_vars ${@}
