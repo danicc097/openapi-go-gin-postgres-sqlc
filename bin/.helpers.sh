@@ -154,9 +154,10 @@ to_pascal() {
   local pascal_case=""
 
   # Replace spaces with nothing and capitalize the following letter
-  string=$(echo "$string" | sed 's/ \([a-z]\)/\U\1/g')
+  string="${string// \([a-z]\)/\U\1}"
+
   # Replace upper letters with space + lower
-  string=$(echo "$string" | sed 's/\([A-Z]\)/ \L\1/g')
+  string="${string//\([A-Z]\)/ \L\1}"
 
   string=${string//[_-]/ }
 
