@@ -1,19 +1,16 @@
+#!/bin/bash
+
 create_params="$(test -n "$with_project" && echo ", projectID db.ProjectID")"
 create_args="$(test -n "$with_project" && echo ", projectID")"
 
-# shellcheck disable=SC2028,SC2154
-echo "package postgresqlrandom
+cat <<EOF
+package postgresqlrandom
 
 import (
-	\"context\"
-	\"testing\"
+	"context"
+	"testing"
 
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
-	\"github.com/stretchr/testify/require\"
-  \"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil\"
-
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
 // NOTE: FKs should always be passed explicitly.
@@ -23,4 +20,4 @@ func ${pascal_name}CreateParams(t *testing.T $create_params) *db.${pascal_name}C
 $(test -n "$with_project" && echo "		ProjectID: projectID,")
 	}
 }
-"
+EOF

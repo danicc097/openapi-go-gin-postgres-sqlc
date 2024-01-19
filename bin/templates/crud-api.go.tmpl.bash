@@ -1,11 +1,13 @@
+#!/bin/bash
+
 # shellcheck disable=SC2028,SC2154
-echo "package rest
+cat <<EOF
+package rest
 
 import (
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
-	\"github.com/gin-gonic/gin\"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/gin-gonic/gin"
 $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal\"")
-
 )
 
 func (h *StrictHandlers) Create${pascal_name}(c *gin.Context, request Create${pascal_name}RequestObject) (Create${pascal_name}ResponseObject, error) {
@@ -16,14 +18,14 @@ $(test -n "$with_project" && echo "	params.ProjectID = internal.ProjectIDByName[
 
 	${camel_name}, err := h.svc.${pascal_name}.Create(c, tx, &params)
 	if err != nil {
-		renderErrorResponse(c, \"Could not create ${sentence_name}\", err)
+		renderErrorResponse(c, "Could not create ${sentence_name}", err)
 
 		return nil, nil
 	}
 
 	res := ${pascal_name}{
 		${pascal_name}: *${camel_name},
-    // joins, if any
+		// joins, if any
 	}
 
 	return Create${pascal_name}201JSONResponse(res), nil
@@ -34,14 +36,14 @@ func (h *StrictHandlers) Get${pascal_name}(c *gin.Context, request Get${pascal_n
 
 	${camel_name}, err := h.svc.${pascal_name}.ByID(c, tx, db.${pascal_name}ID(request.Id))
 	if err != nil {
-		renderErrorResponse(c, \"Could not create ${sentence_name}\", err)
+		renderErrorResponse(c, "Could not create ${sentence_name}", err)
 
 		return nil, nil
 	}
 
 	res := ${pascal_name}{
 		${pascal_name}: *${camel_name},
-    // joins, if any
+		// joins, if any
 	}
 
 	return Get${pascal_name}200JSONResponse(res), nil
@@ -54,14 +56,14 @@ func (h *StrictHandlers) Update${pascal_name}(c *gin.Context, request Update${pa
 
 	${camel_name}, err := h.svc.${pascal_name}.Update(c, tx, db.${pascal_name}ID(request.Id), &params)
 	if err != nil {
-		renderErrorResponse(c, \"Could not update ${sentence_name}\", err)
+		renderErrorResponse(c, "Could not update ${sentence_name}", err)
 
 		return nil, nil
 	}
 
 	res := ${pascal_name}{
 		${pascal_name}: *${camel_name},
-    // joins, if any
+		// joins, if any
 	}
 
 	return Update${pascal_name}200JSONResponse(res), nil
@@ -72,11 +74,11 @@ func (h *StrictHandlers) Delete${pascal_name}(c *gin.Context, request Delete${pa
 
 	_, err := h.svc.${pascal_name}.Delete(c, tx, db.${pascal_name}ID(request.Id))
 	if err != nil {
-		renderErrorResponse(c, \"Could not delete ${sentence_name}\", err)
+		renderErrorResponse(c, "Could not delete ${sentence_name}", err)
 
 		return nil, nil
 	}
 
 	return Delete${pascal_name}204Response{}, nil
 }
-"
+EOF

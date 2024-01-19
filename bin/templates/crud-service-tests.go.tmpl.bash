@@ -1,23 +1,26 @@
+#!/bin/bash
+
 create_args="$(test -n "$with_project" && echo ", projectID")"
 
 # shellcheck disable=SC2028,SC2154
-echo "package services_test
+cat <<EOF
+package services_test
 
 import (
-	\"context\"
-	\"testing\"
+	"context"
+	"testing"
 
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil\"
-	\"github.com/jackc/pgx/v5\"
-	\"github.com/stretchr/testify/assert\"
-	\"github.com/stretchr/testify/require\"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/jackc/pgx/v5"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test${pascal_name}_Update(t *testing.T) {
@@ -60,10 +63,10 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 		errorContains []string
 	}{
 		{
-			name: \"updated correctly\",
+			name: "updated correctly",
 			args: args{
 				params: &db.${pascal_name}UpdateParams{
-			$(for f in ${db_update_params_struct_fields[@]}; do
+					$(for f in ${db_update_params_struct_fields[@]}; do
   echo "		$f: &wantParams.$f,"
 done)
 				},
@@ -72,7 +75,7 @@ done)
 			},
 			want: db.${pascal_name}UpdateParams{
 				// generating fields based on randomized createparams since it's a superset of updateparams.
-			$(for f in ${db_update_params_struct_fields[@]}; do
+				$(for f in ${db_update_params_struct_fields[@]}; do
   echo "		$f: &wantParams.$f,"
 done)
 			},
@@ -106,7 +109,7 @@ done)
 			got, err := w.Update(ctx, tx, tc.args.id, tc.args.params)
 
 			if (err != nil) && len(tc.errorContains) == 0 {
-				t.Fatalf(\"unexpected error = %v\", err)
+				t.Fatalf("unexpected error = %v", err)
 			}
 
 			if len(tc.errorContains) > 0 {
@@ -125,4 +128,4 @@ done)
 		})
 	}
 }
-"
+EOF

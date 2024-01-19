@@ -1,25 +1,27 @@
+#!/bin/bash
+
 # shellcheck disable=SC2028,SC2154
 delete_method=$(test -n "$has_deleted_at" && echo "SoftDelete" || echo "Delete")
 create_args="$(test -n "$with_project" && echo ", projectID")"
 
-echo "package postgresql_test
+cat <<EOF
+package postgresql_test
 
 import (
-	\"context\"
-	\"reflect\"
-	\"testing\"
-	\"time\"
-
+	"context"
+	"reflect"
+	"testing"
+	"time"
 
 $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models\"")
 $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal\"")
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers\"
-	\"github.com/stretchr/testify/assert\"
-	\"github.com/stretchr/testify/require\"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func Test${pascal_name}_Update(t *testing.T) {
@@ -41,7 +43,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 
 	tests := []params{
 		{
-			name: \"updated\",
+			name: "updated",
 			args: args{
 				id:     ${lower_name}.${pascal_name}ID,
 				params: db.${pascal_name}UpdateParams{
@@ -63,14 +65,14 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 
 			r := postgresql.New${pascal_name}()
 			got, err := r.Update(context.Background(), testPool, tc.args.id, &tc.args.params)
-			if err != nil && tc.errContains == \"\" {
-				t.Errorf(\"unexpected error: %v\", err)
+			if err != nil && tc.errContains == "" {
+				t.Errorf("unexpected error: %v", err)
 
 				return
 			}
-			if tc.errContains != \"\" {
+			if tc.errContains != "" {
 				if err == nil {
-					t.Errorf(\"expected error but got nothing\")
+					t.Errorf("expected error but got nothing")
 
 					return
 				}
@@ -104,7 +106,7 @@ func Test${pascal_name}_${delete_method}(t *testing.T) {
 
 	tests := []params{
 		{
-			name: \"deleted ${sentence_name} not found\",
+			name: "deleted ${sentence_name} not found",
 			args: args{
 				id: ${lower_name}.${pascal_name}ID,
 			},
@@ -146,7 +148,7 @@ func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 
 	uniqueTestCases := []filterTestCase[*db.${pascal_name}]{
 		{
-			name:       \"id\",
+			name:       "id",
 			filter:     ${lower_name}.${pascal_name}ID,
 			repoMethod: reflect.ValueOf(${camel_name}Repo.ByID),
 			callback:   uniqueCallback,
@@ -174,7 +176,7 @@ func Test${pascal_name}_Create(t *testing.T) {
 		params db.${pascal_name}CreateParams
 	}
 
-	t.Run(\"correct_${camel_name}\", func(t *testing.T) {
+	t.Run("correct_${camel_name}", func(t *testing.T) {
 		t.Parallel()
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
@@ -197,8 +199,8 @@ done)
 	})
 
 	// implement if needed
-	t.Run(\"check constraint raises violation error\", func(t *testing.T) {
-		t.Skip(\"not implemented\")
+	t.Run("check constraint raises violation error", func(t *testing.T) {
+		t.Skip("not implemented")
 		t.Parallel()
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
@@ -215,4 +217,4 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 		assert.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 }
-"
+EOF

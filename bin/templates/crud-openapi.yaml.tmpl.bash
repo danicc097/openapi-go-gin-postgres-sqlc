@@ -1,5 +1,7 @@
+#!/bin/bash
+
 # shellcheck disable=SC2028,SC2154
-echo "
+cat <<EOF
 x-require-authenticated: &x-require-authenticated
 x-error-response: &x-error-response
 paths:
@@ -98,4 +100,4 @@ components:
       x-postgen-struct: RestUpdate${pascal_name}Request
     ${pascal_name}:
       x-postgen-struct: Rest${pascal_name}
-"
+EOF
