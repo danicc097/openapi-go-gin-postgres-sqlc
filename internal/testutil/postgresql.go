@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"strings"
 	"sync"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
@@ -29,32 +30,28 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 
 	pool, sqlpool, err := postgresql.New(logger.Sugar())
 	if err != nil {
-		fmt.Printf("Couldn't create pool: %s\n", err)
-		return nil, nil, err
+		panic(fmt.Sprintf("Couldn't create pool: %s\n", err))
 	}
 
 	instance, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{})
 	if err != nil {
-		fmt.Printf("Couldn't migrate (1): %s\n", err)
-		return nil, nil, err
+		panic(fmt.Sprintf("Couldn't migrate (1): %s\n", err))
 	}
 
 	_, src, _, ok := runtime.Caller(0)
 	if !ok {
-		panic("No caller information")
+		panic("No runtime caller information")
 	}
 
 	once.Do(func() {
 		m, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/migrations/"), "postgres", instance)
 		if err != nil {
-			fmt.Printf("Couldn't migrate (2): %s\n", err)
-			return
+			panic(fmt.Sprintf("Couldn't migrate (2): %s\n", err))
 		}
 
 		// NOTE: migrate down before tests only externally.
 		if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-			fmt.Printf("Couldnt' migrate (3): %s\n", err)
-			return
+			panic(fmt.Sprintf("Couldnt' migrate (3): %s\n", err))
 		}
 
 		// post-migration scripts may not be idempotent like up migration command
@@ -65,34 +62,30 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 
 		markerFile, err := os.Create(markerFilePath)
 		if err != nil {
-			fmt.Printf("Error creating marker file: %s\n", err)
-			return
+			panic(fmt.Sprintf("Error creating marker file: %s\n", err))
 		}
 		defer markerFile.Close()
 
 		postMigrationPath := path.Join(path.Dir(src), "../../db/post-migration/")
 		files, err := os.ReadDir(postMigrationPath)
 		if err != nil {
-			fmt.Printf("Error reading post-migration directory: %s\n", err)
-			return
+			panic(fmt.Sprintf("Error reading post-migration directory: %s\n", err))
 		}
 
 		for _, file := range files {
-			if file.IsDir() {
+			if file.IsDir() || !strings.HasPrefix(file.Name(), ".sql") {
 				continue
 			}
 
 			filePath := path.Join(postMigrationPath, file.Name())
 			script, err := os.ReadFile(filePath)
 			if err != nil {
-				fmt.Printf("Error reading post-migration script %s: %s\n", file.Name(), err)
-				return
+				panic(fmt.Sprintf("Error reading post-migration script %s: %s\n", file.Name(), err))
 			}
 
 			_, err = sqlpool.Exec(string(script))
 			if err != nil {
-				fmt.Printf("Error executing post-migration script %s: %s\n", file.Name(), err)
-				return
+				panic(fmt.Sprintf("Error executing post-migration script %s: %s\n", file.Name(), err))
 			}
 
 			fmt.Printf("Run post-migration script: %s\n", file.Name())
