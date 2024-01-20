@@ -1600,6 +1600,11 @@ x.test.create-crud-gen() {
   { { {
     # IMPORTANT: we rely on cleanup based on xsetup forced exit, so do not call this
     # function along any others, only as a standalone command `project test.create-crud-gen`
+
+    cache_all "$CACHE/xo-debug-1.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/* || true
+    echo xo-debug-1 before migration
+    cat "$CACHE/xo-debug-1.md5"
+
     local migration_name="$(uuidgen)_create_crud_gen"
     x.migrate.create "$migration_name"
     local migration_file=$(find $MIGRATIONS_DIR -name "*${migration_name}.up.sql")
@@ -1613,6 +1618,11 @@ x.test.create-crud-gen() {
     # Run x.dev-utils.create-crud TestCrudGenBase
     # Run x.dev-utils.create-crud TestCrudGenDeletedAt
     # Run x.dev-utils.create-crud TestCrudGenDeletedAtProject --project
+    echo regular cache.xo after migration
+    cat "$CACHE/xo.md5"
+    cache_all "$CACHE/xo-debug-2.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/* || true
+    echo xo-debug-2 after migration
+    cat "$CACHE/xo-debug-2.md5"
     x.gen.xo
 
     x.dev-utils.create-crud TestCrudGenBase --testing
