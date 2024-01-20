@@ -1604,15 +1604,8 @@ x.test.create-crud-gen() {
     x.migrate.create "$migration_name"
     local migration_file=$(find $MIGRATIONS_DIR -name "*${migration_name}.up.sql")
     test -e $migration_file
-    cp $BIN_TEMPLATES_DIR/testdata/schema.sql $migration_file
-    # could parallelize calls if gen.xo is called externally (would be called concurrently before caching).
-    # create-crud already runs in subshell. However it calls x.gen before generating tests.
-    # Should pass internal flag to create-crud --testing which will not run gen + create-crud-after-gen
-    # so that crud tests are all generated in parallel as well.
-    # The whole pipeline (excluding x.gen) will just create or append to files so there shouldn't be any issue.
-    # Run x.dev-utils.create-crud TestCrudGenBase
-    # Run x.dev-utils.create-crud TestCrudGenDeletedAt
-    # Run x.dev-utils.create-crud TestCrudGenDeletedAtProject --project
+    cp $BIN_TEMPLATES_DIR/testdata/crud-schema.sql $migration_file
+
     x.gen.xo
 
     x.dev-utils.create-crud TestCrudGenBase --testing
