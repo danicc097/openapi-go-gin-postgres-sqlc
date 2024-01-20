@@ -2314,6 +2314,7 @@ done
 
 if [[ -n $COMP_LINE ]]; then
   pre="${COMP_LINE##* }" # the part after the last space in the current command
+  pre="${pre,,}"         # autocomplete regardless of user input case
   cur_commands=(${COMP_LINE%"$pre"})
 
   for c in "${COMMANDS[@]}"; do
