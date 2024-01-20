@@ -14,14 +14,14 @@ create table test_crud_gen_deleted_at (
   test_crud_gen_deleted_at_id serial primary key
   , message text not null
   , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
-  , deleted_at timestamp with time zone default CLOCK_TIMESTAMP()
+  , deleted_at timestamp with time zone
 );
 
 create table test_crud_gen_deleted_at_project (
   test_crud_gen_deleted_at_project_id serial primary key
   , message text not null
   , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
-  , deleted_at timestamp with time zone default CLOCK_TIMESTAMP()
+  , deleted_at timestamp with time zone
   , project_id int not null
   , foreign key (project_id) references projects (project_id) on delete cascade
 );
