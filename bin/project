@@ -1415,6 +1415,8 @@ EOF
 x.dev-utils.create-crud() {
   xsetup.backup
   { { {
+    # TODO: restore endpoint if has_deleted_at
+
     load_exported_crud_gen_vars ${@}
 
     for arg in "${@:2}"; do
