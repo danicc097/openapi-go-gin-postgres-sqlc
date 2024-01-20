@@ -48,6 +48,9 @@ jobs:
               project test.backend -v -race -count=10 -timeout 10m --x-env=ci
           done
 
+      - name: Postgres logs
+        if: always() # run even on previous step failure
+        run: docker logs postgres_db_openapi-go-gin
 
       - name: Test frontend
         run: |
