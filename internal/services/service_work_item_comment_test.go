@@ -87,6 +87,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 
 			ctx := context.Background()
 
+			t.Logf("testPool.Stat(): %v\n", testPool.Stat())
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored

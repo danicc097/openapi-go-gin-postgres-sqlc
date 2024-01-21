@@ -92,6 +92,7 @@ func TestUser_UpdateUser(t *testing.T) {
 			repos.Notification = &repostesting.FakeNotification{} // ignore
 
 			ctx := context.Background()
+			t.Logf("testPool.Stat(): %v\n", testPool.Stat())
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored
@@ -269,6 +270,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			repos.Notification = &repostesting.FakeNotification{} // ignore
 
 			ctx := context.Background()
+			t.Logf("testPool.Stat(): %v\n", testPool.Stat())
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored
