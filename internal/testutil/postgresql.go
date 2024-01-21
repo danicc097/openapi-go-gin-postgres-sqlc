@@ -102,18 +102,20 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 }
 
 func printConnections(d time.Duration) {
+	cwd := GetFileRuntimeDirectory()
+	projectPath := path.Join(cwd, "../..", "bin/project")
+
 	go func() {
 		ticker := time.NewTicker(d)
 		defer ticker.Stop()
 
 		for range ticker.C {
 			go func() {
-				cmd := exec.Command("/home/daniel/Repos/github.com/danicc097/openapi-go-gin-postgres-sqlc/bin/project", "db.conns-db", "postgres_test")
+				cmd := exec.Command(projectPath, "db.conns-db", "postgres_test")
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
 
-				err := cmd.Run()
-				if err != nil {
+				if err := cmd.Run(); err != nil {
 					fmt.Println("Error executing command:", err)
 				}
 			}()
