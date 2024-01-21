@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/golang-migrate/migrate/v4"
@@ -31,6 +33,10 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	pool, sqlpool, err := postgresql.New(logger.Sugar())
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't create pool: %s\n", err))
+	}
+
+	if os.Getenv("IS_TESTING") != "" {
+		printConnections(500 * time.Millisecond)
 	}
 
 	instance, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{})
@@ -93,4 +99,24 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	})
 
 	return pool, sqlpool, nil
+}
+
+func printConnections(d time.Duration) {
+	go func() {
+		ticker := time.NewTicker(d)
+		defer ticker.Stop()
+
+		for range ticker.C {
+			go func() {
+				cmd := exec.Command("/home/daniel/Repos/github.com/danicc097/openapi-go-gin-postgres-sqlc/bin/project", "db.conns-db", "postgres_test")
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+
+				err := cmd.Run()
+				if err != nil {
+					fmt.Println("Error executing command:", err)
+				}
+			}()
+		}
+	}()
 }
