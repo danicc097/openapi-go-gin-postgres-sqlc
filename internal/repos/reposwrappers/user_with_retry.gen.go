@@ -13,6 +13,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
@@ -42,6 +43,8 @@ func (_d UserWithRetry) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) 
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	up1, err = _d.User.ByAPIKey(ctx, d, apiKey)
 	if err == nil || _d._retryCount < 1 {
@@ -82,6 +85,8 @@ func (_d UserWithRetry) ByEmail(ctx context.Context, d db.DBTX, email string, op
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	up1, err = _d.User.ByEmail(ctx, d, email, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -122,6 +127,8 @@ func (_d UserWithRetry) ByExternalID(ctx context.Context, d db.DBTX, extID strin
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	up1, err = _d.User.ByExternalID(ctx, d, extID, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -162,6 +169,8 @@ func (_d UserWithRetry) ByID(ctx context.Context, d db.DBTX, id db.UserID, opts 
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	up1, err = _d.User.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -202,6 +211,8 @@ func (_d UserWithRetry) ByProject(ctx context.Context, d db.DBTX, projectID db.P
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	ua1, err = _d.User.ByProject(ctx, d, projectID)
 	if err == nil || _d._retryCount < 1 {
@@ -242,6 +253,8 @@ func (_d UserWithRetry) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamID)
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	ua1, err = _d.User.ByTeam(ctx, d, teamID)
 	if err == nil || _d._retryCount < 1 {
@@ -282,6 +295,8 @@ func (_d UserWithRetry) ByUsername(ctx context.Context, d db.DBTX, username stri
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	up1, err = _d.User.ByUsername(ctx, d, username, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -322,6 +337,8 @@ func (_d UserWithRetry) Create(ctx context.Context, d db.DBTX, params *db.UserCr
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	up1, err = _d.User.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
@@ -362,6 +379,8 @@ func (_d UserWithRetry) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.Us
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	up1, err = _d.User.CreateAPIKey(ctx, d, user)
 	if err == nil || _d._retryCount < 1 {
@@ -402,6 +421,8 @@ func (_d UserWithRetry) Delete(ctx context.Context, d db.DBTX, id db.UserID) (up
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	up1, err = _d.User.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
@@ -442,6 +463,8 @@ func (_d UserWithRetry) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey stri
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	up1, err = _d.User.DeleteAPIKey(ctx, d, apiKey)
 	if err == nil || _d._retryCount < 1 {
@@ -482,6 +505,8 @@ func (_d UserWithRetry) Paginated(ctx context.Context, d db.DBTX, params models.
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	ua1, err = _d.User.Paginated(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
@@ -522,6 +547,8 @@ func (_d UserWithRetry) Update(ctx context.Context, d db.DBTX, id db.UserID, par
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	up1, err = _d.User.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {

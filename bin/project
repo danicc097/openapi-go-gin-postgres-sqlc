@@ -1639,7 +1639,7 @@ x.test.create-crud-gen() {
     Message: \"Some message\"," $pg_random_file
     done
 
-    x.test.backend
+    x.test.backend -timeout 10m
 
     if [[ $X_ENV != "ci" ]]; then # always restore branch if we're running locally
       echo "${GREEN}✅ Tests passing. Forcing exit to restore previous branch.${OFF}"

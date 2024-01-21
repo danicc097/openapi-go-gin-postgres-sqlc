@@ -13,6 +13,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
@@ -42,6 +43,8 @@ func (_d ProjectWithRetry) ByID(ctx context.Context, d db.DBTX, id db.ProjectID,
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	pp1, err = _d.Project.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -82,6 +85,8 @@ func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name models.Pr
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	pp1, err = _d.Project.ByName(ctx, d, name, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -122,6 +127,8 @@ func (_d ProjectWithRetry) IsTeamInProject(ctx context.Context, d db.DBTX, arg d
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	b1, err = _d.Project.IsTeamInProject(ctx, d, arg)
 	if err == nil || _d._retryCount < 1 {

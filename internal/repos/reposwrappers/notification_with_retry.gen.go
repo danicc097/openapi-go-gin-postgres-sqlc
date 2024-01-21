@@ -13,6 +13,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
@@ -42,6 +43,8 @@ func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params *d
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	up1, err = _d.Notification.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
@@ -82,6 +85,8 @@ func (_d NotificationWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Not
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	np1, err = _d.Notification.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
@@ -122,6 +127,8 @@ func (_d NotificationWithRetry) LatestNotifications(ctx context.Context, d db.DB
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	ga1, err = _d.Notification.LatestNotifications(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
@@ -162,6 +169,8 @@ func (_d NotificationWithRetry) PaginatedNotifications(ctx context.Context, d db
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	ua1, err = _d.Notification.PaginatedNotifications(ctx, d, userID, params)
 	if err == nil || _d._retryCount < 1 {

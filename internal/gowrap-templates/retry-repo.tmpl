@@ -36,7 +36,9 @@ func New{{$decorator}} (base {{.Interface.Type}}, logger *zap.SugaredLogger, ret
           err = fmt.Errorf("could not store savepoint: %w", err)
           return
         }
-      }
+      }  else if p, ok := d.(*pgxpool.Pool); ok{
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+	}
       {{$method.ResultsNames}} = _d.{{$.Interface.Name}}.{{$method.Call}}
       if err == nil || _d._retryCount < 1 {
         if tx, ok := d.(pgx.Tx); ok {

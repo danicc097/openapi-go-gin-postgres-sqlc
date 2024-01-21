@@ -12,6 +12,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
@@ -41,6 +42,8 @@ func (_d TimeEntryWithRetry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntr
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	tp1, err = _d.TimeEntry.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -81,6 +84,8 @@ func (_d TimeEntryWithRetry) Create(ctx context.Context, d db.DBTX, params *db.T
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	tp1, err = _d.TimeEntry.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
@@ -121,6 +126,8 @@ func (_d TimeEntryWithRetry) Delete(ctx context.Context, d db.DBTX, id db.TimeEn
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	tp1, err = _d.TimeEntry.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
@@ -161,6 +168,8 @@ func (_d TimeEntryWithRetry) Update(ctx context.Context, d db.DBTX, id db.TimeEn
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	tp1, err = _d.TimeEntry.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {

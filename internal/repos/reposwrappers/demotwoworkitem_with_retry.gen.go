@@ -12,6 +12,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
@@ -41,6 +42,8 @@ func (_d DemoTwoWorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id db.Wo
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	wp1, err = _d.DemoTwoWorkItem.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -81,6 +84,8 @@ func (_d DemoTwoWorkItemWithRetry) Create(ctx context.Context, d db.DBTX, params
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	wp1, err = _d.DemoTwoWorkItem.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
@@ -121,6 +126,8 @@ func (_d DemoTwoWorkItemWithRetry) Update(ctx context.Context, d db.DBTX, id db.
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
+	} else if p, ok := d.(*pgxpool.Pool); ok {
+		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
 	}
 	wp1, err = _d.DemoTwoWorkItem.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {
