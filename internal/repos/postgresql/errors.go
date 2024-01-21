@@ -90,7 +90,11 @@ func ParseDBErrorDetail(err error) error {
 
 			newErr = internal.NewErrorWithLocf(code, loc, msg+msgSuffix)
 		default:
-			newErr = internal.NewErrorf(models.ErrorCodeUnknown, fmt.Sprintf("%s | %s", pgErr.Detail, pgErr.Message))
+			msg := pgErr.Message // always set
+			if pgErr.Detail != "" {
+				msg += fmt.Sprintf(" (%s)", pgErr.Detail)
+			}
+			newErr = internal.NewErrorf(models.ErrorCodeUnknown, msg)
 		}
 	}
 

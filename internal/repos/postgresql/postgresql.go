@@ -74,7 +74,7 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 	if os.Getenv("IS_TESTING") != "" {
 		// random update queries that use transactions get stuck in CI and time out
 		// real issue still not pinpointed
-		poolConfig.ConnConfig.RuntimeParams["statement_timeout"] = "1s"
+		poolConfig.ConnConfig.RuntimeParams["statement_timeout"] = "10s"
 	}
 
 	// called after a connection is established, but before it is added to the pool.
