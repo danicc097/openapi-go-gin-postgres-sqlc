@@ -44,7 +44,10 @@ func (_d NotificationWithRetry) Create(ctx context.Context, d db.DBTX, params *d
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	up1, err = _d.Notification.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
@@ -86,7 +89,10 @@ func (_d NotificationWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Not
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	np1, err = _d.Notification.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
@@ -128,7 +134,10 @@ func (_d NotificationWithRetry) LatestNotifications(ctx context.Context, d db.DB
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	ga1, err = _d.Notification.LatestNotifications(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
@@ -170,7 +179,10 @@ func (_d NotificationWithRetry) PaginatedNotifications(ctx context.Context, d db
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	ua1, err = _d.Notification.PaginatedNotifications(ctx, d, userID, params)
 	if err == nil || _d._retryCount < 1 {

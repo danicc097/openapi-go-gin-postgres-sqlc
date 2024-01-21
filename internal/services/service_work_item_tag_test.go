@@ -89,7 +89,14 @@ func TestWorkItemTag_Update(t *testing.T) {
 			repos.Notification = repostesting.NewFakeNotification()
 
 			ctx := context.Background()
-			t.Logf("testPool.Stat(): %v\n", testPool.Stat())
+			t.Logf("IdleConns: %v\n", testPool.Stat().IdleConns())
+			t.Logf("AcquiredConns: %v\n", testPool.Stat().AcquiredConns())
+			t.Logf("ConstructingConns: %v\n", testPool.Stat().ConstructingConns())
+			t.Logf("TotalConns: %v\n", testPool.Stat().TotalConns())
+			t.Logf("IdleConns: %v\n", testPool.Stat().IdleConns())
+			t.Logf("AcquiredConns: %v\n", testPool.Stat().AcquiredConns())
+			t.Logf("ConstructingConns: %v\n", testPool.Stat().ConstructingConns())
+			t.Logf("TotalConns: %v\n", testPool.Stat().TotalConns())
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored

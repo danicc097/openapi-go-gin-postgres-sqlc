@@ -43,7 +43,10 @@ func (_d ActivityWithRetry) ByID(ctx context.Context, d db.DBTX, id db.ActivityI
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	ap1, err = _d.Activity.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -85,7 +88,10 @@ func (_d ActivityWithRetry) ByName(ctx context.Context, d db.DBTX, name string, 
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	ap1, err = _d.Activity.ByName(ctx, d, name, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -127,7 +133,10 @@ func (_d ActivityWithRetry) ByProjectID(ctx context.Context, d db.DBTX, projectI
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	aa1, err = _d.Activity.ByProjectID(ctx, d, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -169,7 +178,10 @@ func (_d ActivityWithRetry) Create(ctx context.Context, d db.DBTX, params *db.Ac
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	ap1, err = _d.Activity.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
@@ -211,7 +223,10 @@ func (_d ActivityWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Activit
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	ap1, err = _d.Activity.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
@@ -253,7 +268,10 @@ func (_d ActivityWithRetry) Update(ctx context.Context, d db.DBTX, id db.Activit
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	ap1, err = _d.Activity.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {

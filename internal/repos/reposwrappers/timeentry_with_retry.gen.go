@@ -43,7 +43,10 @@ func (_d TimeEntryWithRetry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntr
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	tp1, err = _d.TimeEntry.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -85,7 +88,10 @@ func (_d TimeEntryWithRetry) Create(ctx context.Context, d db.DBTX, params *db.T
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	tp1, err = _d.TimeEntry.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
@@ -127,7 +133,10 @@ func (_d TimeEntryWithRetry) Delete(ctx context.Context, d db.DBTX, id db.TimeEn
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	tp1, err = _d.TimeEntry.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
@@ -169,7 +178,10 @@ func (_d TimeEntryWithRetry) Update(ctx context.Context, d db.DBTX, id db.TimeEn
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	tp1, err = _d.TimeEntry.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {

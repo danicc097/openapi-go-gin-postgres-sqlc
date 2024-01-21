@@ -43,7 +43,10 @@ func (_d WorkItemTypeWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkI
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	wp1, err = _d.WorkItemType.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -85,7 +88,10 @@ func (_d WorkItemTypeWithRetry) ByName(ctx context.Context, d db.DBTX, name stri
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	wp1, err = _d.WorkItemType.ByName(ctx, d, name, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {

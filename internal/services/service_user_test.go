@@ -92,7 +92,10 @@ func TestUser_UpdateUser(t *testing.T) {
 			repos.Notification = &repostesting.FakeNotification{} // ignore
 
 			ctx := context.Background()
-			t.Logf("testPool.Stat(): %v\n", testPool.Stat())
+			t.Logf("IdleConns: %v\n", testPool.Stat().IdleConns())
+			t.Logf("AcquiredConns: %v\n", testPool.Stat().AcquiredConns())
+			t.Logf("ConstructingConns: %v\n", testPool.Stat().ConstructingConns())
+			t.Logf("TotalConns: %v\n", testPool.Stat().TotalConns())
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored
@@ -270,7 +273,10 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			repos.Notification = &repostesting.FakeNotification{} // ignore
 
 			ctx := context.Background()
-			t.Logf("testPool.Stat(): %v\n", testPool.Stat())
+			t.Logf("IdleConns: %v\n", testPool.Stat().IdleConns())
+			t.Logf("AcquiredConns: %v\n", testPool.Stat().AcquiredConns())
+			t.Logf("ConstructingConns: %v\n", testPool.Stat().ConstructingConns())
+			t.Logf("TotalConns: %v\n", testPool.Stat().TotalConns())
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored

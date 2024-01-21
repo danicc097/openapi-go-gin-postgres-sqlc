@@ -43,7 +43,10 @@ func (_d WorkItemWithRetry) AssignTag(ctx context.Context, d db.DBTX, params *db
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	err = _d.WorkItem.AssignTag(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
@@ -85,7 +88,10 @@ func (_d WorkItemWithRetry) AssignUser(ctx context.Context, d db.DBTX, params *d
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	err = _d.WorkItem.AssignUser(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
@@ -127,7 +133,10 @@ func (_d WorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkItemI
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	wp1, err = _d.WorkItem.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -169,7 +178,10 @@ func (_d WorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id db.WorkIte
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	wp1, err = _d.WorkItem.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
@@ -211,7 +223,10 @@ func (_d WorkItemWithRetry) RemoveAssignedUser(ctx context.Context, d db.DBTX, m
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	err = _d.WorkItem.RemoveAssignedUser(ctx, d, memberID, workItemID)
 	if err == nil || _d._retryCount < 1 {
@@ -253,7 +268,10 @@ func (_d WorkItemWithRetry) RemoveTag(ctx context.Context, d db.DBTX, tagID db.W
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	err = _d.WorkItem.RemoveTag(ctx, d, tagID, workItemID)
 	if err == nil || _d._retryCount < 1 {
@@ -295,7 +313,10 @@ func (_d WorkItemWithRetry) Restore(ctx context.Context, d db.DBTX, id db.WorkIt
 			return
 		}
 	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("p.Stat(): %v\n", p.Stat())
+		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
+		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
+		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
+		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	wp1, err = _d.WorkItem.Restore(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
