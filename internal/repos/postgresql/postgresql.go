@@ -80,6 +80,12 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 	// called after a connection is established, but before it is added to the pool.
 	// Will run once.
 	const retries = 5
+	poolConfig.BeforeAcquire = func(ctx context.Context, c *pgx.Conn) bool {
+		logger.Infof("before acquire")
+
+		return true
+	}
+
 	poolConfig.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
 		pgxAfterConnectLock.Lock()
 		defer pgxAfterConnectLock.Unlock()
