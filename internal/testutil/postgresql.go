@@ -5,12 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"os/exec"
 	"path"
 	"runtime"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/golang-migrate/migrate/v4"
@@ -35,9 +33,9 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		panic(fmt.Sprintf("Couldn't create pool: %s\n", err))
 	}
 
-	if os.Getenv("IS_TESTING") != "" {
-		printConnections(500 * time.Millisecond)
-	}
+	// if os.Getenv("IS_TESTING") != "" {
+	// 	printConnections(500 * time.Millisecond)
+	// }
 
 	instance, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{})
 	if err != nil {
@@ -101,24 +99,25 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	return pool, sqlpool, nil
 }
 
-func printConnections(d time.Duration) {
-	cwd := GetFileRuntimeDirectory()
-	projectPath := path.Join(cwd, "../..", "bin/project")
+// NOTE: debug directly in project script, can reuse the same process - much faster and efficient.
+// func printConnections(d time.Duration) {
+// 	cwd := GetFileRuntimeDirectory()
+// 	projectPath := path.Join(cwd, "../..", "bin/project")
 
-	go func() {
-		ticker := time.NewTicker(d)
-		defer ticker.Stop()
+// 	go func() {
+// 		ticker := time.NewTicker(d)
+// 		defer ticker.Stop()
 
-		for range ticker.C {
-			go func() {
-				cmd := exec.Command(projectPath, "db.conns-db", "postgres_test")
-				cmd.Stdout = os.Stdout
-				cmd.Stderr = os.Stderr
+// 		for range ticker.C {
+// 			go func() {
+// 				cmd := exec.Command(projectPath, "db.conns-db", "postgres_test")
+// 				cmd.Stdout = os.Stdout
+// 				cmd.Stderr = os.Stderr
 
-				if err := cmd.Run(); err != nil {
-					fmt.Println("Error executing command:", err)
-				}
-			}()
-		}
-	}()
-}
+// 				if err := cmd.Run(); err != nil {
+// 					fmt.Println("Error executing command:", err)
+// 				}
+// 			}()
+// 		}
+// 	}()
+// }

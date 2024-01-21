@@ -1009,7 +1009,7 @@ x.lint() {
     x.lint.sql &
     x.lint.go &
     x.lint.frontend &
-    wait
+    wait # wait_without_error -  don't care about errors yet
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1141,12 +1141,21 @@ x.test.backend() {
     local cache_opt="-count=1"
     cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
 
+    local bg_pid
+    if [[ $X_ENV == "ci" ]]; then
+      {
+        while sleep 0.2; do x.db.conns-db postgres_test; done
+      } &
+      bg_pid=$!
+    fi
+
     rm -f /tmp/migration_marker
 
     set -x
     APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo $cache_opt "$@" ./...
     set +x
 
+    test -n $bg_pid && kill $bg_pid
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
