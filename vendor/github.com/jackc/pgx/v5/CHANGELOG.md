@@ -1,3 +1,23 @@
+# 5.5.2 (January 13, 2024)
+
+* Allow NamedArgs to start with underscore
+* pgproto3: Maximum message body length support (jeremy.spriet)
+* Upgrade golang.org/x/crypto to v0.17.0
+* Add snake_case support to RowToStructByName (Tikhon Fedulov)
+* Fix: update description cache after exec prepare (James Hartig)
+* Fix: pipeline checks if it is closed (James Hartig and Ryan Fowler)
+* Fix: normalize timeout / context errors during TLS startup (Samuel Stauffer)
+* Add OnPgError for easier centralized error handling (James Hartig)
+
+# 5.5.1 (December 9, 2023)
+
+* Add CopyFromFunc helper function. (robford)
+* Add PgConn.Deallocate method that uses PostgreSQL protocol Close message.
+* pgx uses new PgConn.Deallocate method. This allows deallocating statements to work in a failed transaction. This fixes a case where the prepared statement map could become invalid.
+* Fix: Prefer driver.Valuer over json.Marshaler for json fields. (Jacopo)
+* Fix: simple protocol SQL sanitizer previously panicked if an invalid $0 placeholder was used. This now returns an error instead. (maksymnevajdev)
+* Add pgtype.Numeric.ScanScientific (Eshton Robateau)
+
 # 5.5.0 (November 4, 2023)
 
 * Add CollectExactlyOneRow. (Julien GOTTELAND)
