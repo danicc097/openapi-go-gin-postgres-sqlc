@@ -144,9 +144,15 @@ check.bin.pg_format() {
 
 install.bin.pg_format() {
   { { {
-    sudo apt-get update
-    sudo apt-get install pgformatter
-    sudo apt-get install --only-upgrade pgformatter
+    local version="5.2"
+    wget https://github.com/darold/pgFormatter/archive/refs/tags/v"$version".tar.gz
+    tar xzf v"$version".tar.gz
+    cd pgFormatter-"$version"/ || exit 1
+    perl Makefile.PL
+    sudo make install
+    cd ..
+    sudo rm -rf pgFormatter-"$version"/
+    sudo rm v"$version".tar.gz
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
