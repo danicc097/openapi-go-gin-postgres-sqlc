@@ -144,7 +144,9 @@ check.bin.pg_format() {
 
 install.bin.pg_format() {
   { { {
+    sudo apt-get update
     sudo apt-get install pgformatter
+    sudo apt-get install --only-upgrade pgformatter
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
