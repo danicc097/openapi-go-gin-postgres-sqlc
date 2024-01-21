@@ -1155,7 +1155,7 @@ x.test.backend() {
     APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo $cache_opt "$@" ./...
     set +x
 
-    test -n $bg_pid && kill $bg_pid
+    test -n "$bg_pid" && kill $bg_pid
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
