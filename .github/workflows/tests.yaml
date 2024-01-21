@@ -45,7 +45,7 @@ jobs:
           POSTGRES_TRACE=true project test.create-crud-gen --x-env=ci
 
           for i in {1..2}; do
-              project test.backend -v -race -count=10 -timeout 20m --x-env=ci
+              POSTGRES_TRACE=true project test.backend -v -race -count=30 -timeout 20m --x-env=ci
           done
 
       - name: Postgres logs
