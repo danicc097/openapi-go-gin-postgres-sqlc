@@ -71,9 +71,12 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 
 	afterConnectRun := false
 
+	if os.Getenv("IS_TESTING") != "" {
+		poolConfig.ConnConfig.RuntimeParams["statement_timeout"] = "1s"
+	}
+
 	// called after a connection is established, but before it is added to the pool.
 	// Will run once.
-
 	const retries = 5
 	poolConfig.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
 		pgxAfterConnectLock.Lock()
@@ -94,12 +97,6 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 
 		if err != nil {
 			return internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not register data types")
-		}
-
-		if os.Getenv("IS_TESTING") != "" {
-			if _, err := c.Exec(ctx, "SET statement_timeout TO '1s';"); err != nil {
-				return internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not set statement timeout")
-			}
 		}
 
 		afterConnectRun = true
