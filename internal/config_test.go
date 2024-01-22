@@ -6,6 +6,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // nolint: paralleltest // cannot set env in parallel tests
@@ -82,7 +83,7 @@ func TestNewAppConfig(t *testing.T) {
 
 					return
 				}
-				assert.ErrorContains(t, err, tc.errContains)
+				require.ErrorContains(t, err, tc.errContains)
 
 				return
 			}
@@ -165,7 +166,7 @@ func TestEnumDecoderConfig(t *testing.T) {
 
 					return
 				}
-				assert.ErrorContains(t, err, tc.errContains)
+				require.ErrorContains(t, err, tc.errContains)
 
 				return
 			}
@@ -175,37 +176,24 @@ func TestEnumDecoderConfig(t *testing.T) {
 	}
 }
 
+// nolint: paralleltest // cannot set env in parallel tests
 func TestBadAppConfig(t *testing.T) {
-	type nestedCfg struct {
-		Name string `env:"TEST_CFG_NAME"`
-	}
-
 	t.Run("struct_has_env_tag", func(t *testing.T) {
+		type nestedCfg struct {
+			Name string `env:"TEST_CFG_NAME"`
+		}
+		type cfg struct {
+			NestedCfg nestedCfg `env:"ENV_ON_STRUCT"`
+		}
+
 		errContains := "unsupported type for env tag"
 		environ := map[string]string{"ENV_ON_STRUCT": "10", "TEST_CFG_NAME": "name"}
 		for k, v := range environ {
 			t.Setenv(k, v)
 		}
 
-		type cfg struct {
-			NestedCfg nestedCfg `env:"ENV_ON_STRUCT"`
-		}
 		c := &cfg{}
 		err := loadEnvToConfig(c)
-		if err != nil && errContains == "" {
-			t.Errorf("unexpected error: %v", err)
-
-			return
-		}
-		if errContains != "" {
-			if err == nil {
-				t.Errorf("expected error but got nothing")
-
-				return
-			}
-			assert.ErrorContains(t, err, errContains)
-
-			return
-		}
+		require.ErrorContains(t, err, errContains)
 	})
 }
