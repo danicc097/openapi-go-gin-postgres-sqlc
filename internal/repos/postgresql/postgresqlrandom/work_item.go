@@ -1,16 +1,12 @@
-package postgresqltestutil
+package postgresqlrandom
 
 import (
-	"testing"
-
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 )
 
 // NOTE: Base work items never created via WorkItem repo, always through specific project struct.
-func RandomWorkItemCreateParams(t *testing.T, kanbanStepID db.KanbanStepID, workItemTypeID db.WorkItemTypeID, teamID db.TeamID) *db.WorkItemCreateParams {
-	t.Helper()
-
+func RandomWorkItemCreateParams(kanbanStepID db.KanbanStepID, workItemTypeID db.WorkItemTypeID, teamID db.TeamID) *db.WorkItemCreateParams {
 	return &db.WorkItemCreateParams{
 		Title:          testutil.RandomNameIdentifier(3, "-"),
 		Description:    "Description",

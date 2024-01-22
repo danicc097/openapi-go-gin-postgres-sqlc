@@ -154,9 +154,10 @@ to_pascal() {
   local pascal_case=""
 
   # Replace spaces with nothing and capitalize the following letter
-  string=$(echo "$string" | sed 's/ \([a-z]\)/\U\1/g')
+  string="${string// \([a-z]\)/\U\1}"
+
   # Replace upper letters with space + lower
-  string=$(echo "$string" | sed 's/\([A-Z]\)/ \L\1/g')
+  string="${string//\([A-Z]\)/ \L\1}"
 
   string=${string//[_-]/ }
 
@@ -344,23 +345,25 @@ cache_all() {
   output_file="$1"
   shift
 
-  if md5sum -c "$output_file" &>/dev/null && [[ $X_FORCE_REGEN -eq 0 ]]; then
-    echo "${CYAN}Skipping generation (cached).${OFF} Regenerate with ${RED}--x-force-regen${OFF}"
-    return 0
-  fi
-
-  true >"$output_file"
+  true >"$output_file.tmp"
 
   for arg in "$@"; do
     if test -d "$arg"; then
-      find "$arg" -type f -exec md5sum {} + >>"$output_file"
+      find "$arg" -type f -exec md5sum {} + >>"$output_file.tmp"
     elif test -f "$arg"; then
-      md5sum "$arg" >>"$output_file"
+      md5sum "$arg" >>"$output_file.tmp"
     else
       err "Invalid argument: $arg"
     fi
   done
 
+  if cmp -s "$output_file" "$output_file.tmp" && [[ $X_FORCE_REGEN -eq 0 ]]; then
+    echo "${CYAN}Skipping generation (cached).${OFF} Regenerate with ${RED}--x-force-regen${OFF}"
+    mv "$output_file.tmp" "$output_file"
+    return 0
+  fi
+
+  mv "$output_file.tmp" "$output_file"
   return 1
 }
 

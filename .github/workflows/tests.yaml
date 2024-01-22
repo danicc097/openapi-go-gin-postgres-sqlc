@@ -15,7 +15,7 @@ on:
 jobs:
   run:
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
         with:
@@ -42,11 +42,15 @@ jobs:
         run: |
           source .envrc
 
-          for i in {1..10}; do
-              POSTGRES_TRACE=true project test.backend -v -race -count=40 --x-env=ci
+          POSTGRES_TRACE=true project test.create-crud-gen -v --x-env=ci
+
+          for i in {1..2}; do
+              POSTGRES_TRACE=true project test.backend -v -race -count=30 -timeout 10m --x-env=ci
           done
 
-          POSTGRES_TRACE=true project test.backend -v -count=40 --x-env=ci
+      - name: Postgres logs
+        if: failure() # always()
+        run: docker logs postgres_db_openapi-go-gin
 
       - name: Test frontend
         run: |

@@ -10,7 +10,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/stretchr/testify/assert"
@@ -33,7 +33,7 @@ func TestUserFriendlyPgErrors(t *testing.T) {
 	t.Run("unique and foreign key violations show user-friendly errors", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := postgresqltestutil.RandomWorkItemTagCreateParams(t, internal.ProjectIDByName[models.ProjectDemo])
+		ucp := postgresqlrandom.WorkItemTagCreateParams(internal.ProjectIDByName[models.ProjectDemo])
 
 		want := want{
 			WorkItemTagCreateParams: *ucp,

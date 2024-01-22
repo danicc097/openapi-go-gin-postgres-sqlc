@@ -1,4 +1,4 @@
-package postgresqltestutil
+package postgresqlrandom
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 )
 
-func RandomKanbanStepID(project models.Project) db.KanbanStepID {
+func KanbanStepID(project models.Project) db.KanbanStepID {
 	switch project {
 	case models.ProjectDemo:
 		return internal.DemoKanbanStepsIDByName[testutil.RandomFrom(models.AllDemoKanbanStepsValues())]
@@ -20,7 +20,7 @@ func RandomKanbanStepID(project models.Project) db.KanbanStepID {
 	}
 }
 
-func RandomWorkItemTypeID(project models.Project) db.WorkItemTypeID {
+func WorkItemTypeID(project models.Project) db.WorkItemTypeID {
 	switch project {
 	case models.ProjectDemo:
 		return internal.DemoWorkItemTypesIDByName[testutil.RandomFrom(models.AllDemoWorkItemTypesValues())]

@@ -50,6 +50,8 @@ runs:
       run: |
         source .envrc
 
+        sudo apt-get update
+
         { yes || :; } | project bootstrap --x-env=ci
 
         # project e2e.sync-deps --x-env=ci # won't use python playwright

@@ -1009,7 +1009,7 @@ x.lint() {
     x.lint.sql &
     x.lint.go &
     x.lint.frontend &
-    wait
+    wait # wait_without_error -  don't care about errors yet
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1029,12 +1029,12 @@ x.lint.go() {
       -name "*.go")
     goimports -w $files || echo "Linting failed"
     gofumpt -w $files || echo "Linting failed"
-    golangci-lint run --config=.golangci.yml --fix &>/dev/null || true
+    golangci-lint run --config=.golangci.yml --allow-parallel-runners --fix &>/dev/null || true
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 exhaustruct_lint() {
-  lint_config=$(
+  local lint_config=$(
     cat <<EOF
 linters:
   disable-all: true
@@ -1055,18 +1055,18 @@ linters-settings:
 EOF
   )
 
-  # postgresqltestutil: ideally tests in rest, service and repo  use Random<...>CreateParams directly or indirectly
+  # postgresqlrandom: ideally tests in rest, service and repo  use Random<...>CreateParams directly or indirectly
   #                     via fixture factories, so we always want these up to date when a new field is added.
-  # services: may construct db createparams from specific service models
+  # services: may construct db CreateParams from specific service models
   # repos: ensure all repos initialized (TODO: same for services)
   local packages=("
   internal/services
-  internal/repos/postgresql/postgresqltestutil
+  internal/repos/postgresql/postgresqlrandom
   internal/repos
   ")
 
   for package in ${packages[@]}; do
-    LOG_LEVEL=error golangci-lint run --config <(echo "$lint_config") $package
+    LOG_LEVEL=error golangci-lint run --allow-parallel-runners --config <(echo "$lint_config") $package
   done
 
   lint_config=$(
@@ -1141,12 +1141,24 @@ x.test.backend() {
     local cache_opt="-count=1"
     cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
 
+    # FIXME: issue not in pg itself, pgxpool acquires max conns (4 default) and won't release.
+    # only happens in CI with tx. ie, 4 txs stuck.
+    #
+    # local bg_pid
+    # if [[ $X_ENV == "ci" ]]; then
+    #   {
+    #     while sleep 0.2; do x.db.conns-db postgres_test; done
+    #   } &
+    #   bg_pid=$!
+    # fi
+
     rm -f /tmp/migration_marker
 
     set -x
     APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo $cache_opt "$@" ./...
     set +x
 
+    # { test -n "$bg_pid" && kill $bg_pid; } || true
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
@@ -1190,6 +1202,8 @@ x.test.xo() {
     rm -rf "$test_dir/got"
     mkdir -p "$test_dir/got"
 
+    echo Generating xo code...
+
     xo_schema -o "$test_dir/got" --debug \
       --ignore "*.created_at" \
       --ignore "*.updated_at" >/dev/null || err "Failed xo xo_tests schema generation"
@@ -1222,7 +1236,7 @@ x.test.xo() {
 x.test.backend.watch() {
   clear
 
-  latency=2
+  latency=3
   while true; do
     inotifywait \
       --monitor ./internal/**/* \
@@ -1346,12 +1360,12 @@ x.release() {
 
 # Runs the go type checker.
 x.backend.typecheck() {
-  golangci-lint run --no-config --disable-all --enable=typecheck --timeout=10m
+  golangci-lint run --no-config --disable-all --enable=typecheck --allow-parallel-runners --timeout=10m
 }
 
 # depends on gen.xo output
 orval_branded_types() {
-  local import_string="import type { Branded } from 'src/types/utils'"
+  local import_string="import type * as EntityIDs from 'src/gen/entity-ids'"
   local escaped_import_string=$(escape_sed "$import_string")
 
   local import_command=("-e" "/$escaped_import_string/!{1s/^/$escaped_import_string\n/}")
@@ -1361,9 +1375,11 @@ orval_branded_types() {
   go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/db"
   for entity in "${int_ids[@]}"; do
     local camel=$(to_camel "$entity")
+    local pascal=$(to_pascal "$entity")
     replace_commands+=(
-      "-e" "s/${camel}?: number/${camel}?: Branded<number, '${camel}'>/g"
-      "-e" "s/${camel}: number/${camel}: Branded<number, '${camel}'>/g"
+      "-e" "s/${camel}?: number/${camel}?: EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: number/${camel}: EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: faker.number.int({ min: undefined, max: undefined })/${camel}: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.${pascal}/g"
     )
   done
 
@@ -1373,8 +1389,9 @@ orval_branded_types() {
     local camel=$(to_camel "$entity")
     local pascal=$(to_pascal "$entity")
     replace_commands+=(
-      "-e" "s/${camel}?: Db${pascal}/${camel}?: Branded<string, '${camel}'>/g"
-      "-e" "s/${camel}: Db${pascal}/${camel}: Branded<string, '${camel}'>/g"
+      "-e" "s/${camel}?: Db${pascal}/${camel}?: EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: Db${pascal}/${camel}: EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: faker.word.sample()/${camel}: faker.word.sample() as EntityIDs.${pascal}/g"
     )
   done
 
@@ -1402,28 +1419,30 @@ EOF
 
   # cheapest way to update both new and previous files that need formatting
   git diff --name-only $FRONTEND_GEN | xargs --no-run-if-empty prettier --write -- &>/dev/null
-
-  # TODO: msw:
-  # refactor regular files gen to use EntityIDs as well. that way a single sed does everything
-  # prepend if not exists
-  # local import_string="import * as EntityIDs from 'src/gen/entity-ids'"
-  # ${camel}: faker.number.int({ min: undefined, max: undefined }) += `as EntityIDs.${pascal}`
-  # ${camel}: faker.word.sample() += `as EntityIDs.${pascal}`
 }
 
-x.dev-utils.create-crud() { # Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a
-  # given db table by struct name.
-  # Accepts flags:
-  # --project - Generate as entity under a project.
-  # Args: name
+# Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a
+# given db table by struct name.
+# Accepts flags:
+# --project - Generate as entity under a parameterized project.
+# Args: name
+x.dev-utils.create-crud() {
   xsetup.backup
   { { {
-    x.gen.xo
+    # TODO: restore endpoint if has_deleted_at
 
     load_exported_crud_gen_vars ${@}
 
-    local new_crud_schema="$(bash "$BIN_TEMPLATES_DIR"/crud-openapi.yaml.tmpl.bash)"
+    for arg in "${@:2}"; do
+      case $arg in
+      --testing)
+        export testing=1
+        ;;
+      *) ;;
+      esac
+    done
 
+    local new_crud_schema="$(bash "$BIN_TEMPLATES_DIR"/crud-openapi.yaml.tmpl.bash)"
     yq eval-all "(
         select(fi == 1).paths
         ) as \$paths
@@ -1466,15 +1485,15 @@ type Update${pascal_name}Request struct {
 
     update_roles_and_scopes
 
-    local file="internal/repos/postgresql/repo_${snake_name}.go"
+    local file="$PG_REPO_DIR/repo_${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-repo.go.tmpl.bash >"$file" && gofumpt -w $file
     file="internal/services/service_${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-service.go.tmpl.bash >"$file" && gofumpt -w $file
-    file="internal/repos/postgresql/postgresqltestutil/${snake_name}.go"
+    file="$PG_REPO_DIR/postgresqlrandom/${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
-    bash "$BIN_TEMPLATES_DIR"/crud-postgresqltestutil.go.tmpl.bash >"$file" && gofumpt -w $file
+    bash "$BIN_TEMPLATES_DIR"/crud-postgresqlrandom.go.tmpl.bash >"$file" && gofumpt -w $file
     file="internal/services/servicetestutil/${snake_name}.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-servicetestutil.go.tmpl.bash >"$file" && gofumpt -w $file
@@ -1527,22 +1546,18 @@ ${pascal_name}: ${lower_name}repo," "$service_repos_path"
     generate_repo_constructor
     x.gen.gowrap $pascal_name
 
+    test -n "$testing" && return 0 # will gen and run tests afterwards
+
     if gofumpt -w "$services_path" "$service_repos_path" && x.backend.typecheck; then
       x.gen
-      x.dev-utils.create-crud-tests ${@}
-
-      # now that generated api models exist
-      file="internal/rest/api_${snake_name}.go"
-      rm -f "$file"
-      test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
-      bash "$BIN_TEMPLATES_DIR"/crud-api.go.tmpl.bash >"$file" && gofumpt -w $file
+      x.dev-utils.create-crud-after-gen ${@}
     else
       err "Typecheck failed after CRUD gen. To debug:
       1. Commit current changes
       2. Run $CMD again with --x-no-backup flag
       3. Fix typecheck errors manually
       4. Run 'project gen', fix errors if any
-      5. Run 'project dev-utils.create-crud-tests $*'"
+      5. Run 'project dev-utils.create-crud-after-gen $*'"
     fi
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1587,18 +1602,80 @@ load_exported_crud_gen_vars() {
   export db_update_params_struct_fields
 }
 
-x.dev-utils.create-crud-tests() {
+dummy() {
+  xsetup.backup
+  { { {
+    echo Dummy function with xsetup branch backup
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  xsetup.backup.cleanup
+}
+
+# Test CRUD+tests generator. Accepts `go test` parameters.
+# Args: [...]
+x.test.create-crud-gen() {
+  xsetup.backup
+  { { {
+    # IMPORTANT: we rely on cleanup based on xsetup forced exit, so do not call this
+    # function along any others, only as a standalone command `project test.create-crud-gen`
+    local migration_name="$(uuidgen)_create_crud_gen"
+    x.migrate.create "$migration_name"
+    local migration_file=$(find $MIGRATIONS_DIR -name "*${migration_name}.up.sql")
+    test -e $migration_file
+    cp $BIN_TEMPLATES_DIR/testdata/crud-schema.sql $migration_file
+
+    x.gen.xo
+
+    x.dev-utils.create-crud TestCrudGenBase --testing
+    x.dev-utils.create-crud TestCrudGenDeletedAt --testing
+    x.dev-utils.create-crud TestCrudGenDeletedAtProject --project --testing
+
+    x.gen
+
+    x.dev-utils.create-crud-after-gen TestCrudGenBase
+    x.dev-utils.create-crud-after-gen TestCrudGenDeletedAt
+    x.dev-utils.create-crud-after-gen TestCrudGenDeletedAtProject --project
+
+    local names=("TestCrudGenBase" "TestCrudGenDeletedAt" "TestCrudGenDeletedAtProject")
+    for name in ${names[@]}; do
+      local snake_name="$(to_snake $name)"
+      local pg_random_file="$PG_REPO_DIR/postgresqlrandom/${snake_name}.go"
+      local line=$(awk "/return &db.${name}CreateParams{/{print NR}" "$pg_random_file")
+      test -z line && err "No line found"
+      sed -i "$((line))a\\
+    Message: \"Some message\"," $pg_random_file
+    done
+
+    x.test.backend -timeout 10m "$@"
+
+    if [[ $X_ENV != "ci" ]]; then # always restore branch if we're running locally
+      echo "${GREEN}✅ Tests passing. Forcing exit to restore previous branch.${OFF}"
+      exit 1
+    fi
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  xsetup.backup.cleanup
+}
+
+# Create CRUD gen tests manually. Use only when prompted to do so.
+x.dev-utils.create-crud-after-gen() {
   { { {
     load_exported_crud_gen_vars ${@}
 
-    local file="internal/repos/postgresql/new_random_test.go"
+    local file="$PG_REPO_DIR/new_random_test.go"
+    nr_create_params=""
+    nr_create_args=""
+
+    if [[ -n "$with_project" ]]; then
+      nr_create_params=", projectID db.ProjectID"
+      nr_create_args="projectID"
+    fi
+
     echo "
-func newRandom${pascal_name}(t *testing.T, d db.DBTX $create_params) *db.${pascal_name} {
+func newRandom${pascal_name}(t *testing.T, d db.DBTX $nr_create_params) *db.${pascal_name} {
 	t.Helper()
 
 	${camel_name}Repo := reposwrappers.New${pascal_name}WithRetry(postgresql.New${pascal_name}(), testutil.NewLogger(t), 3, 200*time.Millisecond)
 
-	cp := Random${pascal_name}CreateParams(t $create_args)
+	cp := postgresqlrandom.${pascal_name}CreateParams($nr_create_args)
 
 	${camel_name}, err := ${camel_name}Repo.Create(context.Background(), d, cp)
 	require.NoError(t, err, \"failed to create random entity\") // IMPORTANT: must fail. If testing actual failures use random create params instead
@@ -1607,7 +1684,7 @@ func newRandom${pascal_name}(t *testing.T, d db.DBTX $create_params) *db.${pasca
 }
     " >>"$file" && gofumpt -w $file
 
-    local file="internal/repos/postgresql/repo_${snake_name}_test.go"
+    local file="$PG_REPO_DIR/repo_${snake_name}_test.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-repo-tests.go.tmpl.bash >"$file" && gofumpt -w $file
     local file="internal/services/service_${snake_name}_test.go"
@@ -1616,6 +1693,12 @@ func newRandom${pascal_name}(t *testing.T, d db.DBTX $create_params) *db.${pasca
     local file="internal/rest/api_${snake_name}_test.go"
     test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
     bash "$BIN_TEMPLATES_DIR"/crud-api-tests.go.tmpl.bash >"$file" && gofumpt -w $file
+
+    # now that generated api models exist at this point (backend.typecheck would have failed)
+    file="internal/rest/api_${snake_name}.go"
+    rm -f "$file"
+    test -e "$file" && err "File $file exists. Please rename to avoid overwrite"
+    bash "$BIN_TEMPLATES_DIR"/crud-api.go.tmpl.bash >"$file" && gofumpt -w $file
 
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -2246,6 +2329,7 @@ done
 
 if [[ -n $COMP_LINE ]]; then
   pre="${COMP_LINE##* }" # the part after the last space in the current command
+  pre="${pre,,}"         # autocomplete regardless of user input case
   cur_commands=(${COMP_LINE%"$pre"})
 
   for c in "${COMMANDS[@]}"; do
@@ -2335,6 +2419,10 @@ while [[ "$#" -gt 0 ]]; do
     # Skips code generation steps.
     export X_NO_GEN=1
     ;;
+  --x-debug)
+    # Debug bash script with -x flag.
+    export X_DEBUG=1
+    ;;
   --x-no-backup)
     # Backup stash is not restored on failure.
     # Please ensure there are no uncommitted changes in the current branch beforehand.
@@ -2363,9 +2451,13 @@ done
 
 export BUILD_VERSION="$X_ENV-$(git rev-parse --verify HEAD)"
 
-readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV
+readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG
 
 ######################## INIT ########################
+
+if test -n "$X_DEBUG"; then
+  set -x
+fi
 
 # applicable to any command
 ensure_envvars_set ".env.template" ".env.${X_ENV}"

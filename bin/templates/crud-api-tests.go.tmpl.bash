@@ -1,25 +1,28 @@
+#!/bin/bash
+
 create_args="$(test -n "$with_project" && echo ", projectID")"
 
 # shellcheck disable=SC2028,SC2154
-echo "package rest_test
+cat <<EOF
+package rest_test
 
 import (
-	\"context\"
-	\"encoding/json\"
-	\"net/http\"
-	\"testing\"
+	"context"
+	"encoding/json"
+	"net/http"
+	"testing"
 
 $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal\"")
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil\"
-	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers\"
-	\"github.com/stretchr/testify/assert\"
-	\"github.com/stretchr/testify/require\"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestHandlers_Delete${pascal_name}(t *testing.T) {
@@ -27,9 +30,12 @@ func TestHandlers_Delete${pascal_name}(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
+$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+		projectID := internal.ProjectIDByName[pj]")
+
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
-	require.NoError(t, err, \"Couldn't run test server: %s\n\")
+	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
@@ -41,12 +47,12 @@ func TestHandlers_Delete${pascal_name}(t *testing.T) {
 		scopes models.Scopes
 	}{
 		{
-			name:   \"valid ${sentence_name} deletion\",
+			name:   "valid ${sentence_name} deletion",
 			status: http.StatusNoContent,
 			scopes: []models.Scope{models.Scope${pascal_name}Delete},
 		},
 		{
-			name:   \"unauthorized ${sentence_name} call\",
+			name:   "unauthorized ${sentence_name} call",
 			status: http.StatusForbidden,
 		},
 	}
@@ -59,22 +65,20 @@ func TestHandlers_Delete${pascal_name}(t *testing.T) {
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
 			})
-			require.NoError(t, err, \"ff.CreateUser: %s\")
+			require.NoError(t, err, "ff.CreateUser: %s")
 
-$(test -n "$with_project" && echo "		projectID := internal.ProjectIDByName[models.ProjectDemo]")
 			${camel_name}f := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
         $(test -n "$with_project" && echo "		ProjectID: projectID,")
       })
-			require.NoError(t, err, \"ff.Create${pascal_name}: %s\")
+			require.NoError(t, err, "ff.Create${pascal_name}: %s")
 
 			id := ${camel_name}f.${pascal_name}.${pascal_name}ID
-			res, err := srv.client.Delete${pascal_name}WithResponse(context.Background(), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
+			res, err := srv.client.Delete${pascal_name}WithResponse(context.Background() $(test -n "$with_project" && echo ", pj"), id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 			require.NoError(t, err)
 			require.Equal(t, tc.status, res.StatusCode(), string(res.Body))
 		})
 	}
 }
-
 
 func TestHandlers_Create${pascal_name}(t *testing.T) {
 	t.Parallel()
@@ -83,12 +87,15 @@ func TestHandlers_Create${pascal_name}(t *testing.T) {
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
-	require.NoError(t, err, \"Couldn't run test server: %s\n\")
+	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	t.Run(\"authenticated_user\", func(t *testing.T) {
+$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+		projectID := internal.ProjectIDByName[pj]")
+
+	t.Run("authenticated_user", func(t *testing.T) {
 		t.Parallel()
 
 		role := models.RoleUser
@@ -100,10 +107,8 @@ func TestHandlers_Create${pascal_name}(t *testing.T) {
 			Scopes:     scopes,
 		})
 
-$(test -n "$with_project" && echo "		pj := models.ProjectDemo
-		projectID := internal.ProjectIDByName[pj]")
 
-		random${pascal_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
+		random${pascal_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(${create_args#,})
 		body := rest.Create${pascal_name}Request{
 			${pascal_name}CreateParams: *random${pascal_name}CreateParams,
 		}
@@ -127,12 +132,15 @@ func TestHandlers_Get${pascal_name}(t *testing.T) {
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
-	require.NoError(t, err, \"Couldn't run test server: %s\n\")
+	require.NoError(t, err, "Couldn't run test server: %s\n")
+
+$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+		projectID := internal.ProjectIDByName[pj]")
 
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	t.Run(\"authenticated_user\", func(t *testing.T) {
+	t.Run("authenticated_user", func(t *testing.T) {
 		t.Parallel()
 
 		role := models.RoleUser
@@ -144,14 +152,14 @@ func TestHandlers_Get${pascal_name}(t *testing.T) {
 			Scopes:     scopes,
 		})
 
-$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+
 		${camel_name}f := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
       $(test -n "$with_project" && echo "		ProjectID: projectID,")
     })
-		require.NoError(t, err, \"ff.Create${pascal_name}: %s\")
+		require.NoError(t, err, "ff.Create${pascal_name}: %s")
 
 		id := ${camel_name}f.${pascal_name}.${pascal_name}ID
-		res, err := srv.client.Get${pascal_name}WithResponse(context.Background(), int(id), ReqWithAPIKey(ufixture.APIKey.APIKey))
+		res, err := srv.client.Get${pascal_name}WithResponse(context.Background() $(test -n "$with_project" && echo ", pj"), id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))
@@ -161,7 +169,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 		want, err := json.Marshal(&rest.${pascal_name}{${pascal_name}: *${camel_name}f.${pascal_name}})
 		require.NoError(t, err)
 
-		assert.JSONEqf(t, string(want), string(got), \"\") // ignore private JSON fields
+		assert.JSONEqf(t, string(want), string(got), "") // ignore private JSON fields
 	})
 }
 
@@ -170,14 +178,15 @@ func TestHandlers_Update${pascal_name}(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
+$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+		projectID := internal.ProjectIDByName[pj]")
+
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
-	require.NoError(t, err, \"Couldn't run test server: %s\n\")
+	require.NoError(t, err, "Couldn't run test server: %s\n")
 
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
-
-$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
 
 	tests := []struct {
 		name                    string
@@ -186,10 +195,10 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 		validationErrorContains []string
 	}{
 		{
-			name:   \"valid ${sentence_name} update\",
+			name:   "valid ${sentence_name} update",
 			status: http.StatusOK,
 			body: func() rest.Update${pascal_name}Request {
-				random${pascal_name}CreateParams := postgresqltestutil.Random${pascal_name}CreateParams(t $create_args)
+				random${pascal_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(${create_args#,})
 
 				return rest.Update${pascal_name}Request{
 					${pascal_name}UpdateParams: db.${pascal_name}UpdateParams{
@@ -202,10 +211,10 @@ done)
 		},
 		// NOTE: we do need to test spec validation
 		// {
-		// 	name:                    \"invalid ${sentence_name} update param\",
+		// 	name:                    "invalid ${sentence_name} update param",
 		// 	status:                  http.StatusBadRequest,
 		// 	body:                    rest.Update${pascal_name}Request{},
-		// 	validationErrorContains: []string{\"[\\\" field <JSON >\\\"]\", \"<error>\"},
+		// 	validationErrorContains: []string{"[\" field <JSON >\"]", "<error>"},
 		// },
 	}
 	for _, tc := range tests {
@@ -220,16 +229,16 @@ done)
 				WithAPIKey: true,
 				Scopes:     []models.Scope{models.Scope${pascal_name}Edit},
 			})
-			require.NoError(t, err, \"ff.CreateUser: %s\")
+			require.NoError(t, err, "ff.CreateUser: %s")
 
-$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+
 			${camel_name}f := ff.Create${pascal_name}(context.Background(), servicetestutil.Create${pascal_name}Params{
         $(test -n "$with_project" && echo "		ProjectID: projectID,")
       })
-			require.NoError(t, err, \"ff.Create${pascal_name}: %s\")
+			require.NoError(t, err, "ff.Create${pascal_name}: %s")
 
 			id := ${camel_name}f.${pascal_name}.${pascal_name}ID
-			updateRes, err := srv.client.Update${pascal_name}WithResponse(context.Background(), int(id), tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
+			updateRes, err := srv.client.Update${pascal_name}WithResponse(context.Background() $(test -n "$with_project" && echo ", pj"), id, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			require.EqualValues(t, tc.status, updateRes.StatusCode(), string(updateRes.Body))
@@ -244,7 +253,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 
 			assert.EqualValues(t, id, updateRes.JSON200.${pascal_name}ID)
 
-			res, err := srv.client.Get${pascal_name}WithResponse(context.Background(), int(id), ReqWithAPIKey(normalUser.APIKey.APIKey))
+			res, err := srv.client.Get${pascal_name}WithResponse(context.Background() $(test -n "$with_project" && echo ", pj"), id, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 $(for f in ${db_update_params_struct_fields[@]}; do
@@ -254,4 +263,4 @@ done)
 	}
 }
 
-"
+EOF

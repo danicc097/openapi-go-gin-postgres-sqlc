@@ -6,7 +6,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/stretchr/testify/require"
 )
@@ -27,7 +27,7 @@ type CreateUserFixture struct {
 
 // CreateUser creates a new random user with the given configuration.
 func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParams) *CreateUserFixture {
-	randomRepoCreateParams := postgresqltestutil.RandomUserCreateParams(ff.t)
+	randomRepoCreateParams := postgresqlrandom.UserCreateParams()
 	ucp := services.UserRegisterParams{
 		Username:   randomRepoCreateParams.Username,
 		Email:      randomRepoCreateParams.Email,

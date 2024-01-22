@@ -1,3 +1,4 @@
+// nolint: gosec
 package testutil
 
 import (
@@ -9,15 +10,6 @@ import (
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
-// alternative r = rand.New(rand.NewSource(time.Now().UnixNano()))
-// is not concurrency safe. Would need something like:
-// https://github.com/cilium/cilium/blob/32118ccaa8677a3b836e60542a52a2af94693533/pkg/rand/safe_rand.go#L23
-// we don't really care since these are exclusively used for tests
-// nolint: gochecknoinits
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 // RandomInt64 generates a random int64 between min and max.
 func RandomInt64(min, max int64) int64 {
 	return min + rand.Int63n(max-min+1)
@@ -26,6 +18,11 @@ func RandomInt64(min, max int64) int64 {
 // RandomInt generates a random int between min and max.
 func RandomInt(min, max int) int {
 	return min + rand.Intn(max-min+1)
+}
+
+// RandomColor generates a random color in hexadecimal format (#RRGGBB).
+func RandomColor() string {
+	return fmt.Sprintf("#%02X%02X%02X", rand.Intn(256), rand.Intn(256), rand.Intn(256))
 }
 
 // RandomBool generates a random boolean.

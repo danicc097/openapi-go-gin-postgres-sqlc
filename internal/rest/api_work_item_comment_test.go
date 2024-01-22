@@ -8,7 +8,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqltestutil"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
@@ -96,7 +96,7 @@ func TestHandlers_CreateWorkItemComment(t *testing.T) {
 		ufixture.User, err = svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, demoWorkItemf.WorkItem.TeamID)
 		require.NoError(t, err)
 
-		randomWorkItemCommentCreateParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t, ufixture.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
+		randomWorkItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(ufixture.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
 		body := rest.CreateWorkItemCommentRequest{
 			WorkItemCommentCreateParams: *randomWorkItemCommentCreateParams,
 		}
@@ -185,7 +185,7 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 			name:   "valid work item comment update",
 			status: http.StatusOK,
 			body: func() rest.UpdateWorkItemCommentRequest {
-				randomWorkItemCommentCreateParams := postgresqltestutil.RandomWorkItemCommentCreateParams(t, ufixture.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
+				randomWorkItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(ufixture.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
 
 				return rest.UpdateWorkItemCommentRequest{
 					WorkItemCommentUpdateParams: db.WorkItemCommentUpdateParams{
