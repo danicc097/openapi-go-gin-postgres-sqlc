@@ -277,6 +277,9 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 			t.Logf("AcquiredConns: %v\n", testPool.Stat().AcquiredConns())
 			t.Logf("ConstructingConns: %v\n", testPool.Stat().ConstructingConns())
 			t.Logf("TotalConns: %v\n", testPool.Stat().TotalConns())
+			t.Logf("MinConns: %v\n", testPool.Config().MinConns)
+			t.Logf("MaxConns: %v\n", testPool.Config().MaxConns)
+			// FIXME: pgxpool acquired hangs
 			tx, err := testPool.BeginTx(ctx, pgx.TxOptions{})
 			require.NoError(t, err)
 			defer tx.Rollback(ctx) // rollback errors should be ignored

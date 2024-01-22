@@ -1141,13 +1141,16 @@ x.test.backend() {
     local cache_opt="-count=1"
     cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
 
-    local bg_pid
-    if [[ $X_ENV == "ci" ]]; then
-      {
-        while sleep 0.2; do x.db.conns-db postgres_test; done
-      } &
-      bg_pid=$!
-    fi
+    # FIXME: issue not in pg itself, pgxpool acquires max conns (4 default) and won't release.
+    # only happens in CI with tx. ie, 4 txs stuck.
+    #
+    # local bg_pid
+    # if [[ $X_ENV == "ci" ]]; then
+    #   {
+    #     while sleep 0.2; do x.db.conns-db postgres_test; done
+    #   } &
+    #   bg_pid=$!
+    # fi
 
     rm -f /tmp/migration_marker
 
@@ -1155,7 +1158,7 @@ x.test.backend() {
     APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo $cache_opt "$@" ./...
     set +x
 
-    test -n "$bg_pid" && kill $bg_pid
+    # { test -n "$bg_pid" && kill $bg_pid; } || true
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
@@ -1605,7 +1608,8 @@ dummy() {
   xsetup.backup.cleanup
 }
 
-# Test CRUD+tests generator.
+# Test CRUD+tests generator. Accepts `go test` parameters.
+# Args: [...]
 x.test.create-crud-gen() {
   xsetup.backup
   { { {
@@ -1639,7 +1643,7 @@ x.test.create-crud-gen() {
     Message: \"Some message\"," $pg_random_file
     done
 
-    x.test.backend -timeout 10m
+    x.test.backend -timeout 10m "$@"
 
     if [[ $X_ENV != "ci" ]]; then # always restore branch if we're running locally
       echo "${GREEN}✅ Tests passing. Forcing exit to restore previous branch.${OFF}"
