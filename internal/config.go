@@ -46,8 +46,7 @@ type SuperAdminConfig struct {
 	DefaultEmail string `env:"DEFAULT_SUPERADMIN_EMAIL"`
 }
 
-// TODO: handle actual custom types in config.
-type AppEnv = string
+type AppEnv string
 
 const (
 	AppEnvDev  AppEnv = "dev"

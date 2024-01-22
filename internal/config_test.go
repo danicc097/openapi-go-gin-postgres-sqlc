@@ -115,7 +115,8 @@ func (e *MyEnum) Decode(value string) error {
 // nolint: paralleltest // cannot set env in parallel tests
 func TestEnumDecoderConfig(t *testing.T) {
 	type cfg struct {
-		EnumWithDefault MyEnum  `env:"TEST_CFG_ENUM,1"`
+		Enum            MyEnum  `env:"TEST_CFG_ENUM"`
+		EnumWithDefault MyEnum  `env:"TEST_CFG_ENUM_DFT,1"`
 		OptionalEnum    *MyEnum `env:"TEST_CFG_ENUM_OPT"`
 	}
 
@@ -129,18 +130,19 @@ func TestEnumDecoderConfig(t *testing.T) {
 	tests := []params{
 		{
 			name:    "correct enum field value",
-			want:    &cfg{OptionalEnum: pointers.New(Value2), EnumWithDefault: Value1},
-			environ: map[string]string{"TEST_CFG_ENUM_OPT": "2"},
+			want:    &cfg{Enum: Value1, OptionalEnum: pointers.New(Value2), EnumWithDefault: Value1},
+			environ: map[string]string{"TEST_CFG_ENUM": "1", "TEST_CFG_ENUM_OPT": "2"},
 		},
 		{
 			name:    "correct default override",
-			want:    &cfg{EnumWithDefault: Value2},
-			environ: map[string]string{"TEST_CFG_ENUM": "2"},
+			want:    &cfg{Enum: Value1, EnumWithDefault: Value2},
+			environ: map[string]string{"TEST_CFG_ENUM": "1", "TEST_CFG_ENUM_DFT": "2"},
 		},
 		{
 			name:        "invalid enum field value",
 			errContains: `invalid value for MyEnum: badvalue`,
-			environ:     map[string]string{"TEST_CFG_ENUM": "badvalue"},
+			want:        &cfg{Enum: Value1},
+			environ:     map[string]string{"TEST_CFG_ENUM": "1", "TEST_CFG_ENUM_DFT": "badvalue"},
 		},
 	}
 	// nolint: paralleltest // cannot set env in parallel tests
