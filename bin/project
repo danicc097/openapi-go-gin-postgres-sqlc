@@ -1234,7 +1234,7 @@ x.test.xo() {
 x.test.backend.watch() {
   clear
 
-  latency=2
+  latency=3
   while true; do
     inotifywait \
       --monitor ./internal/**/* \

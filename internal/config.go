@@ -94,6 +94,12 @@ func NewAppConfig() error {
 	return nil
 }
 
+var decoderType = reflect.TypeOf((*Decoder)(nil)).Elem()
+
+type Decoder interface {
+	Decode(value string) error
+}
+
 // loadEnvToConfig loads env vars to a given struct based on an `env` tag.
 func loadEnvToConfig(config any) error {
 	cfg := reflect.ValueOf(config)
@@ -111,23 +117,84 @@ func loadEnvToConfig(config any) error {
 				continue
 			}
 			if err := loadEnvToConfig(fld.Addr().Interface()); err != nil {
-				return fmt.Errorf("nested struct %q env loading: %w", cfg.Type().Field(idx).Name, err)
+				return fmt.Errorf("nested struct %q env loading: %w", fType.Name, err)
 			}
 		}
+		// fmt.Printf("fld: %+v\n", fld.Kind())
+		// if fld.Kind() == reflect.Ptr {
+		// 	if fld.Type().Elem().Kind() == reflect.String {
+		// 		// Check if it's a pointer to a custom type (e.g., *MyEnum)
+		// 		if !fld.IsNil() {
+		// 			// Instantiate a new instance of the custom type
+		// 			newCustomType := reflect.New(fld.Type().Elem()).Elem()
+		// 			fld.Set(newCustomType)
+
+		// 			// Set the value using the decoder
+		// 			if err := setDecoderValue(newCustomType.Addr().Interface().(Decoder), fType.Tag.Get("env"), newCustomType.Addr()); err != nil {
+		// 				return fmt.Errorf("could not set %q to %q: %w", fType.Tag.Get("env"), fType.Name, err)
+		// 			}
+		// 		}
+		// 	}
+
+		// 	continue
+		// }
 
 		if !fld.CanSet() {
 			continue
 		}
 
+		fmt.Println(fType.Name)
 		if env, ok := fType.Tag.Lookup("env"); ok && len(env) > 0 {
+			var ptr reflect.Type
+			if fld.Kind() == reflect.Ptr {
+				ptr = fld.Type() // already was
+			} else {
+				ptr = reflect.PtrTo(fType.Type)
+			}
+			fmt.Printf("%s implements decoder: %v\n", fType.Name, ptr.Implements(decoderType))
+			if ptr.Implements(decoderType) {
+				decoder, _ := fld.Addr().Interface().(Decoder)
+
+				if err := setDecoderValue(decoder, fType.Tag.Get("env"), fld); err != nil {
+					return fmt.Errorf("could decode %q: %w", fType.Name, err)
+				}
+
+				continue
+			}
 			err := setEnvToField(env, fld)
 			if err != nil {
-				return fmt.Errorf("could not set %q to %q: %w", env, cfg.Type().Field(idx).Name, err)
+				return fmt.Errorf("could not set %q to %q: %w", env, fType.Name, err)
 			}
 		}
 	}
 
 	return nil
+}
+
+func setDecoderValue(decoder Decoder, envTag string, field reflect.Value) error {
+	envvar, defaultVal := splitEnvTag(envTag)
+	val, present := os.LookupEnv(envvar)
+
+	if !present && field.Kind() != reflect.Ptr {
+		if defaultVal == "" {
+			return fmt.Errorf("%s is not set but required", envvar)
+		}
+		val = defaultVal
+	}
+
+	var isPtr bool
+	kind := field.Kind()
+
+	if kind == reflect.Ptr {
+		kind = field.Type().Elem().Kind()
+		isPtr = true
+	}
+
+	if val == "" && isPtr && kind != reflect.String { // ignore optional pointer fields
+		return nil
+	}
+
+	return decoder.Decode(val)
 }
 
 func splitEnvTag(s string) (string, string) {
@@ -142,11 +209,10 @@ func setEnvToField(envTag string, field reflect.Value) error {
 	envvar, defaultVal := splitEnvTag(envTag)
 	val, present := os.LookupEnv(envvar)
 
-	if !present && field.Kind() != reflect.Pointer && defaultVal == "" {
-		return fmt.Errorf("%s is not set but required", envvar)
-	}
-
-	if !present && field.Kind() != reflect.Pointer && defaultVal != "" {
+	if !present && field.Kind() != reflect.Pointer {
+		if defaultVal == "" {
+			return fmt.Errorf("%s is not set but required", envvar)
+		}
 		val = defaultVal
 	}
 
