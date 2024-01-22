@@ -145,12 +145,29 @@ func loadEnvToConfig(config any) error {
 				if !ok {
 					return fmt.Errorf("%q: could not find Decoder method", ptr.Elem())
 				}
+
+				// TODO: ignore when actually not set
+				// if isPtr {
+				// 	val := reflect.ValueOf(decoder)
+				// 	if val.IsZero() {
+				// 		continue
+				// 	}
+				// } else {
+				// 	val := reflect.ValueOf(decoder).Elem()
+				// 	if val.IsZero() {
+				// 		continue
+				// 	}
+				// }
+
 				if err := setDecoderValue(decoder, fType.Tag.Get("env"), fld); err != nil {
 					return fmt.Errorf("could not decode %q: %w", fType.Name, err)
 				}
-				value := reflect.ValueOf(decoder).Elem()
-				fmt.Printf("value: %+v\n", value)
-				// fld.Set(reflect.ValueOf(decoder).Elem())
+
+				if isPtr {
+					fld.Set(reflect.ValueOf(decoder))
+				} else {
+					fld.Set(reflect.ValueOf(decoder).Elem())
+				}
 				continue
 			}
 			err := setEnvToField(env, fld)
