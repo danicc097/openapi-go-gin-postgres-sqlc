@@ -120,45 +120,37 @@ func loadEnvToConfig(config any) error {
 				return fmt.Errorf("nested struct %q env loading: %w", fType.Name, err)
 			}
 		}
-		// fmt.Printf("fld: %+v\n", fld.Kind())
-		// if fld.Kind() == reflect.Ptr {
-		// 	if fld.Type().Elem().Kind() == reflect.String {
-		// 		// Check if it's a pointer to a custom type (e.g., *MyEnum)
-		// 		if !fld.IsNil() {
-		// 			// Instantiate a new instance of the custom type
-		// 			newCustomType := reflect.New(fld.Type().Elem()).Elem()
-		// 			fld.Set(newCustomType)
-
-		// 			// Set the value using the decoder
-		// 			if err := setDecoderValue(newCustomType.Addr().Interface().(Decoder), fType.Tag.Get("env"), newCustomType.Addr()); err != nil {
-		// 				return fmt.Errorf("could not set %q to %q: %w", fType.Tag.Get("env"), fType.Name, err)
-		// 			}
-		// 		}
-		// 	}
-
-		// 	continue
-		// }
 
 		if !fld.CanSet() {
 			continue
 		}
 
-		fmt.Println(fType.Name)
 		if env, ok := fType.Tag.Lookup("env"); ok && len(env) > 0 {
+			isPtr := fld.Kind() == reflect.Ptr
 			var ptr reflect.Type
-			if fld.Kind() == reflect.Ptr {
+			if isPtr {
 				ptr = fld.Type() // already was
 			} else {
 				ptr = reflect.PtrTo(fType.Type)
 			}
-			fmt.Printf("%s implements decoder: %v\n", fType.Name, ptr.Implements(decoderType))
 			if ptr.Implements(decoderType) {
-				decoder, _ := fld.Addr().Interface().(Decoder)
-
-				if err := setDecoderValue(decoder, fType.Tag.Get("env"), fld); err != nil {
-					return fmt.Errorf("could decode %q: %w", fType.Name, err)
+				fmt.Printf("%s implements decoder\n", fType.Name)
+				var decoder Decoder
+				var ok bool
+				if isPtr {
+					decoder, ok = reflect.New(ptr.Elem()).Interface().(Decoder)
+				} else {
+					decoder, ok = fld.Addr().Interface().(Decoder)
 				}
-
+				if !ok {
+					return fmt.Errorf("%q: could not find Decoder method", ptr.Elem())
+				}
+				if err := setDecoderValue(decoder, fType.Tag.Get("env"), fld); err != nil {
+					return fmt.Errorf("could not decode %q: %w", fType.Name, err)
+				}
+				value := reflect.ValueOf(decoder).Elem()
+				fmt.Printf("value: %+v\n", value)
+				// fld.Set(reflect.ValueOf(decoder).Elem())
 				continue
 			}
 			err := setEnvToField(env, fld)
