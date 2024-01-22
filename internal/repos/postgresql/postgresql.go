@@ -77,6 +77,7 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 		poolConfig.ConnConfig.RuntimeParams["statement_timeout"] = "10s"
 	}
 	poolConfig.MinConns = 12
+	// NOTE: CI fails using default of 4
 	poolConfig.MaxConns = 20
 
 	// called after a connection is established, but before it is added to the pool.

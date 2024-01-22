@@ -12,7 +12,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
@@ -42,11 +41,6 @@ func (_d WorkItemTagWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkIt
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
-	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
-		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
-		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
-		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	wp1, err = _d.WorkItemTag.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -87,11 +81,6 @@ func (_d WorkItemTagWithRetry) ByName(ctx context.Context, d db.DBTX, name strin
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
-	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
-		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
-		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
-		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	wp1, err = _d.WorkItemTag.ByName(ctx, d, name, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -132,11 +121,6 @@ func (_d WorkItemTagWithRetry) Create(ctx context.Context, d db.DBTX, params *db
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
-	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
-		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
-		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
-		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	wp1, err = _d.WorkItemTag.Create(ctx, d, params)
 	if err == nil || _d._retryCount < 1 {
@@ -177,11 +161,6 @@ func (_d WorkItemTagWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Work
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
-	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
-		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
-		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
-		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	wp1, err = _d.WorkItemTag.Delete(ctx, d, id)
 	if err == nil || _d._retryCount < 1 {
@@ -222,11 +201,6 @@ func (_d WorkItemTagWithRetry) Update(ctx context.Context, d db.DBTX, id db.Work
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
-	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
-		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
-		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
-		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	wp1, err = _d.WorkItemTag.Update(ctx, d, id, params)
 	if err == nil || _d._retryCount < 1 {

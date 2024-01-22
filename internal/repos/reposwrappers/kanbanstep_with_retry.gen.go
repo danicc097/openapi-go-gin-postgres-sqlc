@@ -12,7 +12,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
 
@@ -42,11 +41,6 @@ func (_d KanbanStepWithRetry) ByID(ctx context.Context, d db.DBTX, id db.KanbanS
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
-	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
-		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
-		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
-		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	kp1, err = _d.KanbanStep.ByID(ctx, d, id, opts...)
 	if err == nil || _d._retryCount < 1 {
@@ -87,11 +81,6 @@ func (_d KanbanStepWithRetry) ByProject(ctx context.Context, d db.DBTX, projectI
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
-	} else if p, ok := d.(*pgxpool.Pool); ok {
-		_d.logger.Infof("IdleConns: %v\n", p.Stat().IdleConns())
-		_d.logger.Infof("AcquiredConns: %v\n", p.Stat().AcquiredConns())
-		_d.logger.Infof("ConstructingConns: %v\n", p.Stat().ConstructingConns())
-		_d.logger.Infof("TotalConns: %v\n", p.Stat().TotalConns())
 	}
 	ka1, err = _d.KanbanStep.ByProject(ctx, d, projectID, opts...)
 	if err == nil || _d._retryCount < 1 {

@@ -42,14 +42,14 @@ jobs:
         run: |
           source .envrc
 
-          project test.create-crud-gen -v --x-env=ci
+          POSTGRES_TRACE=true project test.create-crud-gen -v --x-env=ci
 
           for i in {1..2}; do
-              project test.backend -v -race -count=30 -timeout 10m --x-env=ci
+              POSTGRES_TRACE=true project test.backend -v -race -count=30 -timeout 10m --x-env=ci
           done
 
       - name: Postgres logs
-        if: always() # run even on previous step failure
+        if: failure() # always()
         run: docker logs postgres_db_openapi-go-gin
 
       - name: Test frontend
