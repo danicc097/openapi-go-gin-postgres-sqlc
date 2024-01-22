@@ -55,6 +55,17 @@ const (
 	AppEnvE2E  AppEnv = "e2e"
 )
 
+// Decode decodes an env var value.
+func (e *AppEnv) Decode(value string) error {
+	switch value {
+	case "dev", "prod", "ci", "e2e":
+		*e = AppEnv(value)
+	default:
+		return fmt.Errorf("invalid value for AppEnv: %v", value)
+	}
+	return nil
+}
+
 // AppConfig contains app settings.
 type AppConfig struct {
 	Postgres   PostgresConfig
