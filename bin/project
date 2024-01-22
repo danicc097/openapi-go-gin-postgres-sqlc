@@ -1202,6 +1202,8 @@ x.test.xo() {
     rm -rf "$test_dir/got"
     mkdir -p "$test_dir/got"
 
+    echo Generating xo code...
+
     xo_schema -o "$test_dir/got" --debug \
       --ignore "*.created_at" \
       --ignore "*.updated_at" >/dev/null || err "Failed xo xo_tests schema generation"

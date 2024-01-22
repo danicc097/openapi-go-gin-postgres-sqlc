@@ -133,8 +133,17 @@ func loadEnvToConfig(config any) error {
 			} else {
 				ptr = reflect.PtrTo(fType.Type)
 			}
+
 			if ptr.Implements(decoderType) {
 				fmt.Printf("%s implements decoder\n", fType.Name)
+
+				envvar, _ := splitEnvTag(env)
+				val, _ := os.LookupEnv(envvar)
+				// ignore pointers without unset envvar
+				if val == "" && isPtr {
+					return nil
+				}
+
 				var decoder Decoder
 				var ok bool
 				if isPtr {
@@ -145,19 +154,6 @@ func loadEnvToConfig(config any) error {
 				if !ok {
 					return fmt.Errorf("%q: could not find Decoder method", ptr.Elem())
 				}
-
-				// TODO: ignore when actually not set
-				// if isPtr {
-				// 	val := reflect.ValueOf(decoder)
-				// 	if val.IsZero() {
-				// 		continue
-				// 	}
-				// } else {
-				// 	val := reflect.ValueOf(decoder).Elem()
-				// 	if val.IsZero() {
-				// 		continue
-				// 	}
-				// }
 
 				if err := setDecoderValue(decoder, fType.Tag.Get("env"), fld); err != nil {
 					return fmt.Errorf("could not decode %q: %w", fType.Name, err)
@@ -170,8 +166,8 @@ func loadEnvToConfig(config any) error {
 				}
 				continue
 			}
-			err := setEnvToField(env, fld)
-			if err != nil {
+
+			if err := setEnvToField(env, fld); err != nil {
 				return fmt.Errorf("could not set %q to %q: %w", env, fType.Name, err)
 			}
 		}
