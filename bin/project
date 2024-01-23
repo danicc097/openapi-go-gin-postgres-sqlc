@@ -1236,19 +1236,21 @@ x.test.xo() {
 x.test.backend.watch() {
   clear
 
-  latency=3
+  echo "Waiting for changes..."
+
+  trap 'exit' SIGINT # overrides exit-cleanup
+
+  # example: test.backend.watch github.com/danicc097/openapi-go-gin-postgres-sqlc/internal -run "^TestNewAppConfig$"
+  # TODO: helper x.test.backend.watch-for "internal/nested/dir" "fn1|fn2"
+  # Args: dir, function-regex
   while true; do
     inotifywait \
-      --monitor ./internal/**/* \
+      --recursive \
+      -qq \
       --event=close_write \
       --format='%T %f' \
-      --timefmt='%s' |
-      while read -r event_time event_file 2>/dev/null || sleep $latency; do
-        clear
-
-        # NOTE: no count=1 default to allow caching
-        { APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo "$@" ./...; } && echo "${GREEN}✓ All tests passing${OFF}"
-      done
+      --timefmt='%s' \
+      ./internal && clear && { APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo "$@" ./...; } && echo "${GREEN}✓ All tests passing${OFF}"
   done
 }
 

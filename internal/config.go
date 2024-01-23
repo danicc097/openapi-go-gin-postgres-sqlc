@@ -135,7 +135,7 @@ func loadEnvToConfig(config any) error {
 			continue
 		}
 
-		if env, ok := fType.Tag.Lookup("env"); ok && len(env) > 0 {
+		if envtag, ok := fType.Tag.Lookup("env"); ok && len(envtag) > 0 {
 			isPtr := fld.Kind() == reflect.Ptr
 			var ptr reflect.Type
 			if isPtr {
@@ -145,13 +145,11 @@ func loadEnvToConfig(config any) error {
 			}
 
 			if ptr.Implements(decoderType) {
-				fmt.Printf("%s implements decoder\n", fType.Name)
-
-				envvar, _ := splitEnvTag(env)
+				envvar, _ := splitEnvTag(envtag)
 				val, _ := os.LookupEnv(envvar)
 				// ignore pointers without unset envvar
 				if val == "" && isPtr {
-					return nil
+					continue
 				}
 
 				var decoder Decoder
@@ -174,11 +172,12 @@ func loadEnvToConfig(config any) error {
 				} else {
 					fld.Set(reflect.ValueOf(decoder).Elem())
 				}
+
 				continue
 			}
 
-			if err := setEnvToField(env, fld); err != nil {
-				return fmt.Errorf("could not set %q to %q: %w", env, fType.Name, err)
+			if err := setEnvToField(envtag, fld); err != nil {
+				return fmt.Errorf("could not set %q to %q: %w", envtag, fType.Name, err)
 			}
 		}
 	}
