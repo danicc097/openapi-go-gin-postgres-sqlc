@@ -2315,6 +2315,20 @@ X_ENV="dev"
 # --------------------- completion and delegation --------------------
 #      `complete -o nospace -C foo foo` > `source <(foo bloated_completion)`
 
+declare -A X_FUNCTIONS_COMPLETION
+declare -A X_OPTIONS_COMPLETION
+
+# NOTE: to allow x option completion later, if
+# pre starts with "-" OR an x option has been specified
+# then ignore function completion and show all x options
+X_FUNCTIONS_COMPLETION=(
+  ["my_function1"]="_complete_my_function1"
+)
+
+X_OPTIONS_COMPLETION=(
+  ["--x-option1"]="_complete_x_option1"
+)
+
 while IFS= read -r line; do
   [[ $line =~ ^declare\ -f\ x\. ]] || continue
   COMMANDS+=("${line##declare -f x.}")
@@ -2346,8 +2360,6 @@ if [[ -n $COMP_LINE ]]; then
     test -z "${pre}" -o "${c}" != "${c#"${pre}"}" -a "${pre}" != "${c}" && echo "${c} "
   done
 
-  test -z "${xfn_specified}" && exit
-
   declare __x_options x_options_lines
 
   parse_x_options x_options_lines
@@ -2367,6 +2379,20 @@ if [[ -n $COMP_LINE ]]; then
       fi
     done
   done
+
+  if [[ -n "${xfn_specified}" && "${pre}" != -* && ${#__x_opts_seen[@]} -eq 0 ]]; then
+    echo "would-have-completed-x.function"
+    exit
+    # Execute custom completion function for x function if defined
+    [[ -n "${X_FUNCTIONS[${xfn_name}]}" ]] && "${X_FUNCTIONS[${xfn_name}]}"
+  elif [[ ${#__x_opts_seen[@]} -gt 0 ]]; then
+    echo "would-have-completed-x.option"
+    exit
+    # Execute custom completion function for x option if defined
+    [[ -n "${X_OPTIONS[${xopt_name}]}" ]] && "${X_OPTIONS[${xopt_name}]}"
+  fi
+
+  test -z "${xfn_specified}" && exit
 
   for opt in ${__x_options[@]}; do
     [[ -n "${__x_opts_seen[$opt]}" ]] && continue
