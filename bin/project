@@ -2334,7 +2334,12 @@ _completion_x_function__db.gen() {
 # can get as fancy as we want.
 # TODO: will have access to already passed options after last command via nameref
 _completion_x_function__function1() {
-  find . -mindepth 1 -maxdepth 1 -type d | sed 's|^\./||'
+  find . -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sed 's|$|/|'
+  # TODO: if $pre matches one of them exactly (appending / so we match properly, dir and dir1 would break)
+  # then execute `find $pre ...`
+  # this way we get recursive directory completion for test.backend.watch-for
+  # later on we could even autocomplete N function names indefinitely if we wanted to,
+  # just by using a new go-utils on a given directory matching func Test.*() stripping go comments.
 }
 
 X_CUSTOM_COMPLETION=(
