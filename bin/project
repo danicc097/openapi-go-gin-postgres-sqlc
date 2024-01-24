@@ -1850,7 +1850,6 @@ x.db.drop() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
-readonly _X_DB_GEN__COMP="up up-1 drop"
 # Drop and recreate the database used for code generation up to N, N-1 revisions or none.
 # Args: mode
 x.db.gen() {
@@ -1868,7 +1867,7 @@ x.db.gen() {
       ;;
     drop) ;;
     *)
-      err "Valid options: \"$(join_by , ${_X_DB_GEN__COMP})\" but got: \"$1\""
+      err "Valid options: \"$(join_by , ${X_FUNC_DB_GEN__COMP})\" but got: \"$1\""
       ;;
     esac
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -2322,35 +2321,53 @@ X_ENV="dev"
 declare -A X_CUSTOM_COMPLETION
 
 readonly X_OPT_ENV__COMP="dev prod ci"
+readonly X_FUNC_DB_GEN__COMP="up up-1 drop"
 
 _completion_x_option__env() {
-  echo ${X_OPT_ENV__COMP[@]}
+  local pre="$1"
+  local items=${X_OPT_ENV__COMP[@]}
+  for i in ${items[@]}; do
+    [[ $i == ${pre}* || " ${__x_options[*]} " =~ " ${pre} " ]] && echo "$i"
+  done
 }
 
 _completion_x_function__db.gen() {
-  echo ${_X_DB_GEN__COMP[@]}
-}
-
-# can get as fancy as we want.
-# TODO: will have access to already passed options after last command via nameref
-_completion_x_function__function1() {
   local pre="$1"
 
-  local dirs=()
-
-  while IFS= read -r -d '' dir; do
-    str="${dir%/}/"
-    str="${dir##\./}/"
-    dirs+=("$str")
-  done < <(find . -mindepth 1 -maxdepth 1 -type d -print0)
-  echo ${dirs[@]}
-  # TODO: if $pre matches one of them exactly (appending / so we match properly, dir and dir1 would break)
-  # then execute `find $pre ...`
-  # this way we get recursive directory completion for test.backend.watch-for
-  # later on we could even autocomplete N function names indefinitely if we wanted to,
-  # just by using a new go-utils on a given directory matching func Test.*() stripping go comments.
+  local items=${X_FUNC_DB_GEN__COMP[@]}
+  for i in ${items[@]}; do
+    [[ $i == ${pre}* ]] && echo "$i"
+  done
 }
 
+# TODO: we could even autocomplete N function names indefinitely if we wanted to,
+# just by using a new go-utils on a given directory matching func Test.*() stripping go comments.
+_completion_x_function__function1() {
+  local pre="$1" items=()
+
+  function find_dirs() {
+    while IFS= read -r -d '' dir; do
+      str="${dir%/}/"
+      str="${dir##\./}/"
+      items+=("$str")
+    done < <(find "$1" -mindepth 1 -maxdepth 1 -type d -print0)
+  }
+
+  find_dirs .
+
+  for dir in "${items[@]}"; do
+    [[ "${pre}" =~ "${dir%/}/" ]] && find_dirs "$dir"
+  done
+
+  for i in "${items[@]}"; do
+    [[ $i == ${pre}* ]] && echo "$i"
+  done
+}
+
+# should echo an array of possible options.
+# args received by completion functions:
+# 1. pre string
+# 2. current completion items array # TODO:
 X_CUSTOM_COMPLETION=(
   ["db.gen"]="_completion_x_function__db.gen"
   ["my_function1"]="_completion_x_function__function1"
@@ -2418,18 +2435,17 @@ if [[ -n $COMP_LINE ]]; then
   done
 
   # completion for functions may be filepath completion, single or multiple selection from list of items...
-  # theres no way to abstract to main autocomplete. this should be passed as nameref to comp functions
-  # and let them decide.
-  declare -A __x_custom_completion_x_options_seen
-  declare -A __x_custom_completion_x_function_seen
+  # theres no way to abstract to main autocomplete.
+  declare -A __x_completion_x_options_items_seen
+  declare -A __x_completion_x_function_items_seen
   for _ in 1; do
     # show completion for an x function if it specifies a completion func
     if [[ -n "${xfn_specified}" && "${pre}" != -* && ${#__x_opts_seen[@]} -eq 0 ]]; then
       fn=${X_CUSTOM_COMPLETION["$xfn_specified"]}
-      items=$($fn)
+      items=$($fn $pre || true)
       test -z "$items" && break
       for i in ${items[@]}; do
-        [[ $i == ${pre}* ]] && echo "$i"
+        echo "$i"
       done
       exit
     # show completion for last --x-(.*)= if it specifies a completion func
@@ -2437,10 +2453,10 @@ if [[ -n $COMP_LINE ]]; then
       xopt="${pre//\*/}"
       ! [[ " ${__x_options[*]} " =~ " ${xopt} " ]] && xopt="$__x_last_opt_seen"
       fn=${X_CUSTOM_COMPLETION["${xopt}"]}
-      items=$($fn)
+      items=$($fn $pre || true)
       test -z "$items" && break
       for i in ${items[@]}; do
-        [[ $i == ${pre}* || " ${__x_options[*]} " =~ " ${pre} " ]] && echo "$i"
+        echo "$i"
       done
       exit
     fi
