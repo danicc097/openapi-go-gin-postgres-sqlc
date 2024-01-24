@@ -1141,7 +1141,7 @@ x.test.backend() {
     local cache_opt="-count=1"
     cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
 
-    # FIXME: issue not in pg itself, pgxpool acquires max conns (4 default) and won't release.
+    # issue not in pg itself, pgxpool acquires max conns (4 default) and won't release.
     # only happens in CI with tx. ie, 4 txs stuck.
     #
     # local bg_pid
@@ -1657,6 +1657,10 @@ x.test.create-crud-gen() {
   xsetup.backup.cleanup
 }
 
+x.my_function1() {
+  :
+}
+
 # Create CRUD gen tests manually. Use only when prompted to do so.
 x.dev-utils.create-crud-after-gen() {
   { { {
@@ -1846,25 +1850,25 @@ x.db.drop() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
+readonly _X_DB_GEN__COMP="up up-1 drop"
 # Drop and recreate the database used for code generation up to N, N-1 revisions or none.
-# Args: {up|up-1|drop}
+# Args: mode
 x.db.gen() {
   { { {
     latest_rev=$(find $MIGRATIONS_DIR/*.sql -maxdepth 0 | wc -l)
     second_latest_rev=$(((latest_rev - 2) / 2)) # up+down
     POSTGRES_DB=$GEN_POSTGRES_DB x.db.drop
-    # TODO should be able to autocomplete x function nested cases
-    # if it's called as $CMD
     case $1 in
     up)
       POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up
       ;;
     up-1)
+      echo "Migrating up to penultimate revision..."
       POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up $second_latest_rev
       ;;
     drop) ;;
     *)
-      err "Valid options {up|up-1|drop}, got: $1"
+      err "Valid options: \"$(join_by , ${_X_DB_GEN__COMP})\" but got: \"$1\""
       ;;
     esac
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -2315,18 +2319,28 @@ X_ENV="dev"
 # --------------------- completion and delegation --------------------
 #      `complete -o nospace -C foo foo` > `source <(foo bloated_completion)`
 
-declare -A X_FUNCTIONS_COMPLETION
-declare -A X_OPTIONS_COMPLETION
+declare -A X_CUSTOM_COMPLETION
 
-# NOTE: to allow x option completion later, if
-# pre starts with "-" OR an x option has been specified
-# then ignore function completion and show all x options
-X_FUNCTIONS_COMPLETION=(
-  ["my_function1"]="_complete_my_function1"
-)
+readonly X_OPT_ENV__COMP="dev prod ci"
 
-X_OPTIONS_COMPLETION=(
-  ["--x-option1"]="_complete_x_option1"
+_completion_x_option__env() {
+  echo ${X_OPT_ENV__COMP[@]}
+}
+
+_completion_x_function__db.gen() {
+  echo ${_X_DB_GEN__COMP[@]}
+}
+
+# can get as fancy as we want.
+# TODO: will have access to already passed options after last command via nameref
+_completion_x_function__function1() {
+  find . -mindepth 1 -maxdepth 1 -type d | sed 's|^\./||'
+}
+
+X_CUSTOM_COMPLETION=(
+  ["db.gen"]="_completion_x_function__db.gen"
+  ["my_function1"]="_completion_x_function__function1"
+  ["--x-env="]="_completion_x_option__env"
 )
 
 while IFS= read -r line; do
@@ -2347,10 +2361,17 @@ if [[ -n $COMP_LINE ]]; then
   pre="${COMP_LINE##* }" # the part after the last space in the current command
   pre="${pre,,}"         # autocomplete regardless of user input case
   cur_commands=(${COMP_LINE%"$pre"})
+  # x option that accepts a single completion string needs special handling like --x-env=
+  if [[ "$COMP_LINE" =~ =$ ]]; then # ends with =
+    cur_commands=(${COMP_LINE})
+  elif [[ "$COMP_LINE" =~ =([^[:space:]]+)$ ]]; then # started typing option
+    pre=${BASH_REMATCH[1]}
+    cur_commands=("${COMP_LINE%%=*}=")
+  fi
 
   for c in "${COMMANDS[@]}"; do
     if [[ " ${cur_commands[*]} " =~ " ${c} " ]]; then
-      xfn_specified=true
+      xfn_specified=$c
       break
     fi
   done
@@ -2370,27 +2391,46 @@ if [[ -n $COMP_LINE ]]; then
     __x_options+=("$xopt")
   done
 
+  # will jump directly to x options completion if we start typing "-"
   declare -A __x_opts_seen
-  for cmd in "${cur_commands[@]}"; do
+  for cmd in ${cur_commands[@]}; do
     for opt in ${__x_options[@]}; do
       if [[ "$cmd" == *"$opt"* ]]; then
         __x_opts_seen[$opt]=true
+        __x_last_opt_seen=$opt
         break
       fi
     done
   done
 
-  if [[ -n "${xfn_specified}" && "${pre}" != -* && ${#__x_opts_seen[@]} -eq 0 ]]; then
-    echo "would-have-completed-x.function"
-    exit
-    # Execute custom completion function for x function if defined
-    [[ -n "${X_FUNCTIONS[${xfn_name}]}" ]] && "${X_FUNCTIONS[${xfn_name}]}"
-  elif [[ ${#__x_opts_seen[@]} -gt 0 ]]; then
-    echo "would-have-completed-x.option"
-    exit
-    # Execute custom completion function for x option if defined
-    [[ -n "${X_OPTIONS[${xopt_name}]}" ]] && "${X_OPTIONS[${xopt_name}]}"
-  fi
+  # completion for functions may be filepath completion, single or multiple selection from list of items...
+  # theres no way to abstract to main autocomplete. this should be passed as nameref to comp functions
+  # and let them decide.
+  declare -A __x_custom_completion_x_options_seen
+  declare -A __x_custom_completion_x_function_seen
+  for _ in 1; do
+    # show completion for an x function if it specifies a completion func
+    if [[ -n "${xfn_specified}" && "${pre}" != -* && ${#__x_opts_seen[@]} -eq 0 ]]; then
+      fn=${X_CUSTOM_COMPLETION["$xfn_specified"]}
+      items=$($fn)
+      test -z "$items" && break
+      for i in ${items[@]}; do
+        [[ $i == ${pre}* ]] && echo "$i"
+      done
+      exit
+    # show completion for last --x-(.*)= if it specifies a completion func
+    elif [[ ${#__x_opts_seen[@]} -gt 0 ]] && [[ -n "$pre" ]]; then
+      xopt="${pre//\*/}"
+      ! [[ " ${__x_options[*]} " =~ " ${xopt} " ]] && xopt="$__x_last_opt_seen"
+      fn=${X_CUSTOM_COMPLETION["${xopt}"]}
+      items=$($fn)
+      test -z "$items" && break
+      for i in ${items[@]}; do
+        [[ $i == ${pre}* || " ${__x_options[*]} " =~ " ${pre} " ]] && echo "$i"
+      done
+      exit
+    fi
+  done
 
   test -z "${xfn_specified}" && exit
 
@@ -2399,14 +2439,6 @@ if [[ -n $COMP_LINE ]]; then
     if [[ ${opt:0:${#pre}} == "${pre,,}" ]]; then
       [[ "$opt" == "${pre,,}" ]] && continue # will have to be removed for inner completion
       if [[ "${opt,,}" =~ ^.*= ]]; then
-        # TODO: could complete if choices found for opt (assoc array) eg --x-env has # Options: "dev prod ci"
-        # which gets added to usage docs as arg: dev|prod|ci instead of using # Args: env
-        # for validation, it can be generic:
-        # if [[ ! " ${opts[${--x-(flag)}]} " =~ " $val " ]]; then
-        #   err "Invalid value for --x-(flag): val. Allowed values: opts[${--x-(flag)}]"
-        # fi`
-        # and for completion itself we cycle through echo "${opt}<val1>", "${opt}<val2>",...
-        # (can handle inner pre here, ie --x-env=de <TAB> outputs possible nested opts as well)
         echo "${opt}"
       else
         echo "${opt} "
@@ -2460,9 +2492,8 @@ while [[ "$#" -gt 0 ]]; do
     # Environment to run commands in. Defaults to "dev".
     # Args: env
     export X_ENV="${1#--x-env=}"
-    valid_envs="dev prod ci"
-    if [[ ! " ${valid_envs[*]} " =~ " $X_ENV " ]]; then
-      err "Valid environments: $valid_envs"
+    if [[ ! " ${X_OPT_ENV__COMP[*]} " =~ " $X_ENV " ]]; then
+      err "Valid environments: $X_OPT_ENV__COMP"
     fi
     ;;
   *)
