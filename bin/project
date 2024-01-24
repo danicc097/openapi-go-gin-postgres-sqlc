@@ -2400,6 +2400,16 @@ if [[ -n $COMP_LINE ]]; then
     cur_commands=("${COMP_LINE%%=*}=")
   fi
 
+  complete_with_fn() {
+    local fn=${X_CUSTOM_COMPLETION["$1"]}
+    local items=$($fn $pre || true)
+    test -z "$items" && return
+    for i in ${items[@]}; do
+      echo "$i"
+    done
+    exit
+  }
+
   for c in "${COMMANDS[@]}"; do
     if [[ " ${cur_commands[*]} " =~ " ${c} " ]]; then
       xfn_specified=$c
@@ -2438,29 +2448,16 @@ if [[ -n $COMP_LINE ]]; then
   # theres no way to abstract to main autocomplete.
   declare -A __x_completion_x_options_items_seen
   declare -A __x_completion_x_function_items_seen
-  for _ in 1; do
-    # show completion for an x function if it specifies a completion func
-    if [[ -n "${xfn_specified}" && "${pre}" != -* && ${#__x_opts_seen[@]} -eq 0 ]]; then
-      fn=${X_CUSTOM_COMPLETION["$xfn_specified"]}
-      items=$($fn $pre || true)
-      test -z "$items" && break
-      for i in ${items[@]}; do
-        echo "$i"
-      done
-      exit
-    # show completion for last --x-(.*)= if it specifies a completion func
-    elif [[ ${#__x_opts_seen[@]} -gt 0 ]] && [[ -n "$pre" ]]; then
-      xopt="${pre//\*/}"
-      ! [[ " ${__x_options[*]} " =~ " ${xopt} " ]] && xopt="$__x_last_opt_seen"
-      fn=${X_CUSTOM_COMPLETION["${xopt}"]}
-      items=$($fn $pre || true)
-      test -z "$items" && break
-      for i in ${items[@]}; do
-        echo "$i"
-      done
-      exit
-    fi
-  done
+
+  # show completion for an x function
+  if [[ -n "${xfn_specified}" && "${pre}" != -* && ${#__x_opts_seen[@]} -eq 0 ]]; then
+    complete_with_fn $xfn_specified
+  # show completion for last --x-(.*)= if it specifies a completion func
+  elif [[ ${#__x_opts_seen[@]} -gt 0 ]] && [[ -n "$pre" ]]; then
+    xopt="${pre//\*/}"
+    ! [[ " ${__x_options[*]} " =~ " ${xopt} " ]] && xopt="$__x_last_opt_seen"
+    complete_with_fn $xopt
+  fi
 
   test -z "${xfn_specified}" && exit
 
