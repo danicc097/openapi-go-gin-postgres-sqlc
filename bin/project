@@ -1254,6 +1254,23 @@ x.test.backend.watch() {
   done
 }
 
+x.test.backend.watch-for() {
+  local dir="$1"
+  local fns=${@:2}
+
+  clear
+
+  echo "Waiting for changes..."
+  echo "Directory: $dir"
+  echo "Functions: ${fns[*]}"
+
+  trap 'exit' SIGINT # overrides exit-cleanup
+
+  # TODO: construct go test args
+  # github.com/danicc097/openapi-go-gin-postgres-sqlc/$dir -run "^$(join_by | ${fns[@]})$"
+  #x.test.backend.watch ...
+}
+
 # Run backend with hot-reloading.
 x.run.backend-hr() {
   # TODO replace healthcheck with adhoc calls and bring services up in btaches
@@ -2340,7 +2357,7 @@ _completion_x_function__db.gen() {
   done
 }
 
-_completion_x_function__function1() {
+_completion_x_function__test.backend.watch-for() {
   local pre="$1"
   local items=()
   local -n __previous_x_fn_items="$2"
@@ -2387,7 +2404,7 @@ _completion_x_function__function1() {
 # 2. current completion items array
 X_CUSTOM_COMPLETION=(
   ["db.gen"]="_completion_x_function__db.gen"
-  ["my_function1"]="_completion_x_function__function1"
+  ["test.backend.watch-for"]="_completion_x_function__test.backend.watch-for"
   ["--x-env="]="_completion_x_option__env"
 )
 
