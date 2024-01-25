@@ -2345,6 +2345,9 @@ _completion_x_function__db.gen() {
 _completion_x_function__function1() {
   local pre="$1" items=()
 
+  # TODO: jump directly to complete test functions found in previous item (folder from find_dirs (ie ends with /))
+  # with go-utils.find_test_functions
+
   function find_dirs() {
     while IFS= read -r -d '' dir; do
       str="${dir%/}/"
