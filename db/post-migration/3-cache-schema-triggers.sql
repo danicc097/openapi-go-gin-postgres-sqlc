@@ -67,15 +67,6 @@ create or replace function sync_work_items ()
   as $$
 declare
   project_name text;
-  project_table_cols text[];
-  work_items_cols text[];
-  sync_cols text[];
-  update_cols text[];
-  project_table_col_values text;
-  all_cols_names text;
-  all_values record;
-  all_values_columns text[];
-  res record;
   all_columns_with_type text;
   all_columns text;
   conflict_update_columns text;
@@ -125,7 +116,7 @@ select
   , ARRAY_TO_STRING(array (
       select
         FORMAT('%s = EXCLUDED.%s' , c , c)
-      from data) , ', ') into all_columns
+    from data) , ', ') into all_columns
   , all_columns_with_type
   , conflict_update_columns;
 
@@ -141,13 +132,19 @@ insert into cache.%I
   on conflict (work_item_id)
   do update set
     %s -- construct for all rows c = EXCLUDED.c (excluded is populated with all rows)
-  ' , project_name , all_columns , all_columns_with_type , project_name , conflict_update_columns)
+  '
+    , project_name , all_columns , all_columns_with_type , project_name , conflict_update_columns)
   using new.work_item_id;
   return NEW;
 end;
 $$
 language plpgsql;
 
+--
+--
+-- Sync project work item tables cache
+--
+--
 do $BODY$
 declare
   project_name text;
