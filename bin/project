@@ -1252,10 +1252,12 @@ x.test.backend.watch() {
       --event=close_write \
       --format='%T %f' \
       --timefmt='%s' \
-      ./internal && clear && { APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo "$@" ./...; } && echo "${GREEN}✓ All tests passing${OFF}"
+      ./internal && clear && { APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo "$@"; } && echo "${GREEN}✓ All tests passing${OFF}"
   done
 }
 
+# Watch specific functions in a given dir.
+# Args: dir [fn ...]
 x.test.backend.watch-for() {
   local dir="$1"
   local fns=("${@:2}")
@@ -1263,6 +1265,8 @@ x.test.backend.watch-for() {
 
   #FIXME: -run "^(TestNewAppConfig|TestEnumDecoderConfig|TestBadAppConfig)$" github.com/danicc097/openapi-go-gin-postgres-sqlc/internal
   # got   -run "^(TestAuthentication|TestAuthorization_Roles)$" github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/
+  # TODO: abstract away internal x.test.backend.watch to be used as a call to a generic watcher with just `@args ./...`
+  # so that watch-for and watch work properly
   x.test.backend.watch -count=1 -run "\"^($fn_re)$\"" "$GOMOD_PKG/$dir"
 }
 
