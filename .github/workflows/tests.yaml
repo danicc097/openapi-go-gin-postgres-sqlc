@@ -32,6 +32,8 @@ jobs:
           project test.backend.setup --x-env=ci
 
           project lint --x-env=ci
+          echo pg_format version:
+          pg_format --version
 
       - name: Diff check
         run: |
