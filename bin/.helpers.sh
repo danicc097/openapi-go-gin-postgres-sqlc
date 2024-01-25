@@ -551,15 +551,14 @@ go-utils.find_db_ids_uuid() {
 go-utils.find_test_functions() {
   local -n __arr="$1"
   local pkg="$2"
-  local test_file_pattern="*_test.go"
 
   mapfile -t __arr < <(
-    find "$pkg" -name "$test_file_pattern" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+    find "$pkg" -name "*_test.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
       sed -n -E 's/^\s*func\s*(Test[a-zA-Z0-9_]*)\(.*/\1/p'
   )
 
   if [[ ${#__arr[@]} -eq 0 ]]; then
-    echo "No test functions found in package in directory: $pkg"
+    err "No test functions found in package in directory: $pkg"
   fi
 
   mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
@@ -666,26 +665,6 @@ go-utils.find_all_types() {
     echo "No types found in package $pkg"
   fi
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
-}
-
-# Stores go test functions in package to a given array.
-# Parameters:
-#    Test function array (nameref)
-#    Package directory
-go-utils.find-test-functions() {
-  local -n __arr="$1"
-  local pkg="$2"
-  local test_file_pattern="*_test.go"
-
-  mapfile -t __arr < <(find "$pkg" -name "$test_file_pattern" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
-    grep -E '^\s*func\s+Test[A-Z][a-zA-Z0-9_]*\(' |
-    sed -e 's/^\s*func\s*\(Test[A-Z][a-zA-Z0-9_]*\)\(.*/\1/')
-
-  if [[ ${#__arr[@]} -eq 0 ]]; then
-    echo "No test functions found in package $pkg"
-  fi
-
-  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
 }
 
 # Escape regular string for sed commands
