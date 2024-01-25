@@ -1152,7 +1152,7 @@ x.test.backend() {
     #   bg_pid=$!
     # fi
 
-    rm -f /tmp/migration_marker
+    rm -f /tmp/migration_marker # TODO: get rid of this. use a postgres lock instead.
 
     set -x
     APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo $cache_opt "$@" ./...
@@ -1237,12 +1237,14 @@ x.test.backend.watch() {
   clear
 
   echo "Waiting for changes..."
+  echo "Test args: $*"
 
   trap 'exit' SIGINT # overrides exit-cleanup
 
   # example: test.backend.watch github.com/danicc097/openapi-go-gin-postgres-sqlc/internal -run "^TestNewAppConfig$"
   # TODO: helper x.test.backend.watch-for "internal/nested/dir" "fn1|fn2"
   # Args: dir, function-regex
+  rm -f /tmp/migration_marker # TODO: get rid of this. use a postgres lock instead.
   while true; do
     inotifywait \
       --recursive \
@@ -1256,19 +1258,12 @@ x.test.backend.watch() {
 
 x.test.backend.watch-for() {
   local dir="$1"
-  local fns=${@:2}
+  local fns=("${@:2}")
+  local fn_re=$(join_by "|" ${fns[@]})
 
-  clear
-
-  echo "Waiting for changes..."
-  echo "Directory: $dir"
-  echo "Functions: ${fns[*]}"
-
-  trap 'exit' SIGINT # overrides exit-cleanup
-
-  # TODO: construct go test args
-  # github.com/danicc097/openapi-go-gin-postgres-sqlc/$dir -run "^$(join_by | ${fns[@]})$"
-  #x.test.backend.watch ...
+  #FIXME: -run "^(TestNewAppConfig|TestEnumDecoderConfig|TestBadAppConfig)$" github.com/danicc097/openapi-go-gin-postgres-sqlc/internal
+  # got   -run "^(TestAuthentication|TestAuthorization_Roles)$" github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/
+  x.test.backend.watch -count=1 -run "\"^($fn_re)$\"" "$GOMOD_PKG/$dir"
 }
 
 # Run backend with hot-reloading.
