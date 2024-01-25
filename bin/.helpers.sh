@@ -553,7 +553,7 @@ go-utils.find_test_functions() {
   local pkg="$2"
 
   mapfile -t __arr < <(
-    find "$pkg" -name "*_test.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+    find "$pkg" -maxdepth 1 -name "*_test.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
       sed -n -E 's/^\s*func\s*(Test[a-zA-Z0-9_]*)\(.*/\1/p'
   )
 

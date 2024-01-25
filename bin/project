@@ -1231,9 +1231,7 @@ x.test.xo() {
   xsetup.backup.cleanup
 }
 
-# Test backend on file changes. Accepts `go test` parameters.
-# Args: [...]
-x.test.backend.watch() {
+test_backend_watch() {
   clear
 
   echo "Waiting for changes..."
@@ -1241,9 +1239,6 @@ x.test.backend.watch() {
 
   trap 'exit' SIGINT # overrides exit-cleanup
 
-  # example: test.backend.watch github.com/danicc097/openapi-go-gin-postgres-sqlc/internal -run "^TestNewAppConfig$"
-  # TODO: helper x.test.backend.watch-for "internal/nested/dir" "fn1|fn2"
-  # Args: dir, function-regex
   rm -f /tmp/migration_marker # TODO: get rid of this. use a postgres lock instead.
   while true; do
     inotifywait \
@@ -1252,22 +1247,24 @@ x.test.backend.watch() {
       --event=close_write \
       --format='%T %f' \
       --timefmt='%s' \
-      ./internal && clear && { APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo "$@"; } && echo "${GREEN}✓ All tests passing${OFF}"
+      ./internal && clear && { APP_ENV="$X_ENV" go test -count=1 -shuffle=on -tags skipxo "$@"; } && echo "${GREEN}✓ All tests passing${OFF}"
   done
+}
+
+# Test backend on file changes. Accepts `go test` parameters.
+# Args: [...]
+x.test.backend.watch() {
+  test_backend_watch "$@" ./...
 }
 
 # Watch specific functions in a given dir.
 # Args: dir [fn ...]
 x.test.backend.watch-for() {
   local dir="$1"
-  local fns=("${@:2}")
-  local fn_re=$(join_by "|" ${fns[@]})
+  local fns="$(join_by "|" ${@:2})"
+  local fn_re="^($fns)$"
 
-  #FIXME: -run "^(TestNewAppConfig|TestEnumDecoderConfig|TestBadAppConfig)$" github.com/danicc097/openapi-go-gin-postgres-sqlc/internal
-  # got   -run "^(TestAuthentication|TestAuthorization_Roles)$" github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/
-  # TODO: abstract away internal x.test.backend.watch to be used as a call to a generic watcher with just `@args ./...`
-  # so that watch-for and watch work properly
-  x.test.backend.watch -count=1 -run "\"^($fn_re)$\"" "$GOMOD_PKG/$dir"
+  test_backend_watch -count=1 -run "$fn_re" "$GOMOD_PKG/$dir"
 }
 
 # Run backend with hot-reloading.
