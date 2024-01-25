@@ -2356,7 +2356,10 @@ _completion_x_function__function1() {
   find_dirs .
 
   for dir in "${items[@]}"; do
-    [[ "${pre}" =~ "${dir%/}/" ]] && find_dirs "$dir"
+    if [[ "${pre}" =~ "${dir%/}/" ]]; then
+      find_dirs "$dir"
+      break
+    fi
   done
 
   for i in "${items[@]}"; do
