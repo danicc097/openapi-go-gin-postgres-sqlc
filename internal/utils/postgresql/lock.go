@@ -9,6 +9,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+const checkLockQuery = `
+SELECT EXISTS (
+		SELECT 1
+		FROM pg_locks
+		JOIN pg_stat_activity USING (pid)
+		WHERE locktype = 'advisory' AND objid = $1
+) AS lock_acquired;
+`
+
 // AdvisoryLock represents an advisory lock.
 // See https://www.postgresql.org/docs/current/explicit-locking.html#ADVISORY-LOCKS
 type AdvisoryLock struct {
@@ -47,15 +56,6 @@ func (al *AdvisoryLock) TryLock(ctx context.Context) (bool, error) {
 // WaitForRelease waits for the advisory lock to be released by another process.
 // Returns an error if the wait times out.
 func (al *AdvisoryLock) WaitForRelease(ctx context.Context) error {
-	checkLockQuery := `
-	SELECT EXISTS (
-			SELECT 1
-			FROM pg_locks
-			JOIN pg_stat_activity USING (pid)
-			WHERE locktype = 'advisory' AND objid = $1
-	) AS lock_acquired;
-`
-
 	for i := 0; i < 100; i++ {
 		lockExists := true
 
@@ -80,9 +80,13 @@ func (al *AdvisoryLock) Release(ctx context.Context) error {
 
 	for i := 0; i < 100 && locked; i++ {
 		// sometimes it won't unlock on the first call, neither here nor in psql
-		row := al.conn.QueryRow(ctx, `SELECT pg_advisory_unlock($1)`, al.lockID)
-		if err := row.Scan(&locked); err != nil {
+		if _, err := al.conn.Exec(ctx, `SELECT pg_advisory_unlock($1)`, al.lockID); err != nil {
 			return fmt.Errorf("lock query: %w", err)
+		}
+
+		row := al.conn.QueryRow(ctx, checkLockQuery, al.lockID)
+		if err := row.Scan(&locked); err != nil {
+			return fmt.Errorf("query: %w", err)
 		}
 
 		time.Sleep(200 * time.Millisecond)
