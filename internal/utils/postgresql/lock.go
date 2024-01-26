@@ -76,8 +76,19 @@ func (al *AdvisoryLock) WaitForRelease(ctx context.Context) error {
 
 // Release releases the advisory lock and the acquired connection.
 func (al *AdvisoryLock) Release(ctx context.Context) error {
-	_, err := al.conn.Exec(ctx, `SELECT pg_advisory_unlock($1)`, al.lockID)
+	locked := true // assume was locked
+
+	for i := 0; i < 100 && locked; i++ {
+		// sometimes it won't unlock on the first call, neither here nor in psql
+		row := al.conn.QueryRow(ctx, `SELECT pg_advisory_unlock($1)`, al.lockID)
+		if err := row.Scan(&locked); err != nil {
+			return fmt.Errorf("lock query: %w", err)
+		}
+
+		time.Sleep(200 * time.Millisecond)
+	}
+
 	al.conn.Release()
 
-	return err
+	return nil
 }
