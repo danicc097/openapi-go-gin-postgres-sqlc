@@ -10,9 +10,9 @@ import (
 	"runtime"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	postgresqlutils "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/postgresql"
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -35,28 +35,28 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		panic(fmt.Sprintf("Couldn't create pool: %s\n", err))
 	}
 
-	ctx := context.Background()
-
-	conn, err := pool.Acquire(ctx)
+	advisoryLock, err := postgresqlutils.NewAdvisoryLock(pool, migrationsLockID)
 	if err != nil {
-		panic("could not acquire connection")
+		panic(fmt.Sprintf("NewAdvisoryLock: %s\n", err))
 	}
 
-	mustMigrate, err := tryAdvisoryLock(ctx, conn, pool, migrationsLockID)
+	mustMigrate, err := advisoryLock.TryLock(context.Background())
 	if err != nil {
-		panic(fmt.Sprintf("advisory lock: %s\n", err))
+		panic(fmt.Sprintf("advisoryLock.TryLock: %s\n", err))
 	}
 	fmt.Printf("mustMigrate: %v\n", mustMigrate)
 	if !mustMigrate {
 		return pool, sqlpool, nil
 	}
 	defer func() {
-		if _, err := conn.Exec(ctx, `SELECT pg_advisory_unlock($1)`, migrationsLockID); err != nil {
-			panic(fmt.Sprintf("Error in advisory lock cleanup: %s\n", err))
+		if err := advisoryLock.Release(context.Background()); err != nil {
+			panic(fmt.Sprintf("advisoryLock.Release: %s\n", err))
 		}
-		conn.Release()
 	}()
 
+	if err := advisoryLock.WaitForRelease(context.Background()); err != nil {
+		panic(fmt.Sprintf("advisoryLock.WaitForRelease: %s\n", err))
+	}
 	instance, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{})
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't migrate (1): %s\n", err))
@@ -103,46 +103,4 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	}
 
 	return pool, sqlpool, nil
-}
-
-// Returns whether we must migrate or not, and a cleanup func.
-// If we must migrate, it acquires a lock which should be released afterwards
-// If we must not migrate, it waits until lock is released, meaning migrations
-// have been run by a concurrent process.
-func tryAdvisoryLock(ctx context.Context, conn *pgxpool.Conn, pool *pgxpool.Pool, lockID int) (bool, error) {
-	var lockExists bool
-
-	// must use this same conn for release later if successful
-	row := conn.QueryRow(ctx, `SELECT pg_try_advisory_lock($1)`, lockID)
-	if err := row.Scan(&lockExists); err != nil {
-		return false, fmt.Errorf("lock query: %w", err)
-	}
-
-	if !lockExists {
-		return true, nil
-	}
-
-	checkLockQuery := `
-	SELECT EXISTS (
-			SELECT 1
-			FROM pg_locks
-			JOIN pg_stat_activity USING (pid)
-			WHERE locktype = 'advisory' AND objid = $1
-	) AS lock_acquired;
-`
-	for i := 0; i < 30; i++ {
-		// Check if the lock is acquired using a separate connection
-		row := pool.QueryRow(ctx, checkLockQuery, lockID)
-		if err := row.Scan(&lockExists); err != nil {
-			return false, fmt.Errorf("query: %w", err)
-		}
-
-		if !lockExists {
-			return false, nil
-		}
-
-		time.Sleep(200 * time.Millisecond)
-	}
-
-	return false, fmt.Errorf("timeout waiting for lock release with objid %d", lockID)
 }
