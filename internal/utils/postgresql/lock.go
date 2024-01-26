@@ -3,17 +3,19 @@ package postgresql
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // AdvisoryLock represents an advisory lock.
-// See https://www.postgresql.org/docs/9.1/functions-admin.html
+// See https://www.postgresql.org/docs/current/explicit-locking.html#ADVISORY-LOCKS
 type AdvisoryLock struct {
-	pool   *pgxpool.Pool
 	conn   *pgxpool.Conn
 	lockID int
+
+	mu sync.Mutex
 }
 
 // NewAdvisoryLock creates a new AdvisoryLock.
@@ -24,7 +26,6 @@ func NewAdvisoryLock(pool *pgxpool.Pool, lockID int) (*AdvisoryLock, error) {
 	}
 
 	return &AdvisoryLock{
-		pool:   pool,
 		conn:   conn,
 		lockID: lockID,
 	}, nil
@@ -33,14 +34,14 @@ func NewAdvisoryLock(pool *pgxpool.Pool, lockID int) (*AdvisoryLock, error) {
 // TryLock tries to acquire the advisory lock.
 // Returns whether the lock was acquired and any error.
 func (al *AdvisoryLock) TryLock(ctx context.Context) (bool, error) {
-	var lockExists bool
+	var lockSuccess bool
 
 	row := al.conn.QueryRow(ctx, `SELECT pg_try_advisory_lock($1)`, al.lockID)
-	if err := row.Scan(&lockExists); err != nil {
+	if err := row.Scan(&lockSuccess); err != nil {
 		return false, fmt.Errorf("lock query: %w", err)
 	}
 
-	return lockExists, nil
+	return lockSuccess, nil
 }
 
 // WaitForRelease waits for the advisory lock to be released by another process.
@@ -55,11 +56,10 @@ func (al *AdvisoryLock) WaitForRelease(ctx context.Context) error {
 	) AS lock_acquired;
 `
 
-	for i := 0; i < 30; i++ {
+	for i := 0; i < 100; i++ {
 		lockExists := true
 
-		// Check if the lock is acquired using a separate connection
-		row := al.pool.QueryRow(ctx, checkLockQuery, al.lockID)
+		row := al.conn.QueryRow(ctx, checkLockQuery, al.lockID)
 		if err := row.Scan(&lockExists); err != nil {
 			return fmt.Errorf("query: %w", err)
 		}
