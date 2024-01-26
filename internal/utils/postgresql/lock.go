@@ -21,8 +21,9 @@ SELECT EXISTS (
 // AdvisoryLock represents an advisory lock.
 // See https://www.postgresql.org/docs/current/explicit-locking.html#ADVISORY-LOCKS
 type AdvisoryLock struct {
-	conn   *pgxpool.Conn
-	lockID int
+	conn    *pgxpool.Conn
+	lockID  int
+	hasLock bool
 
 	mu sync.Mutex
 }
@@ -44,11 +45,17 @@ func NewAdvisoryLock(pool *pgxpool.Pool, lockID int) (*AdvisoryLock, error) {
 // Returns whether the lock was acquired and any error.
 func (al *AdvisoryLock) TryLock(ctx context.Context) (bool, error) {
 	var lockSuccess bool
+	if al.hasLock {
+		// prevent multiple calls to pg_try_advisory_lock.
+		// if it succeeded n times, we would have had to unlock it n times too to release it.
+		return true, nil
+	}
 
 	row := al.conn.QueryRow(ctx, `SELECT pg_try_advisory_lock($1)`, al.lockID)
 	if err := row.Scan(&lockSuccess); err != nil {
 		return false, fmt.Errorf("lock query: %w", err)
 	}
+	al.hasLock = lockSuccess
 
 	return lockSuccess, nil
 }
@@ -91,7 +98,7 @@ func (al *AdvisoryLock) Release(ctx context.Context) error {
 
 		time.Sleep(200 * time.Millisecond)
 	}
-
+	al.hasLock = false
 	al.conn.Release()
 
 	return nil
