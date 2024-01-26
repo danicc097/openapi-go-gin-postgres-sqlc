@@ -14,7 +14,7 @@ import (
 func TestAdvisoryLock(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Locking and releasing", func(t *testing.T) {
+	t.Run("Locking and releasing in same instance", func(t *testing.T) {
 		t.Parallel()
 
 		lockID := testutil.RandomInt(124342232, 999945323)
@@ -29,17 +29,18 @@ func TestAdvisoryLock(t *testing.T) {
 		time.Sleep(3000 * time.Millisecond)
 		acquiredTwice, err := lock.TryLock(context.Background())
 		require.NoError(t, err)
-		assert.False(t, acquiredTwice, "Lock was acquired again unexpectedly")
+		assert.True(t, acquiredTwice)
 
 		err = lock.Release(context.Background())
 		require.NoError(t, err)
 
+		// should not need two Release calls since we ignore consecutive lock calls
 		acquiredAfterRelease, err := lock.TryLock(context.Background())
 		require.NoError(t, err)
 		assert.True(t, acquiredAfterRelease, "Failed to acquire lock after release")
 	})
 
-	t.Run("Wait for release", func(t *testing.T) {
+	t.Run("Wait for release in concurrent calls", func(t *testing.T) {
 		t.Parallel()
 
 		lockID := testutil.RandomInt(124342232, 999945323)
@@ -54,26 +55,12 @@ func TestAdvisoryLock(t *testing.T) {
 		require.NoError(t, err)
 		require.True(t, acquired, "Could not acquire lock for the first time")
 
+		time.Sleep(2000 * time.Millisecond)
 		err = lock.WaitForRelease(context.Background())
 		require.NoError(t, err)
 
 		lockAcquiredAfterWait, err := lock.TryLock(context.Background())
 		require.NoError(t, err)
 		assert.True(t, lockAcquiredAfterWait, "Failed to acquire lock after waiting")
-	})
-
-	t.Run("Connection closed after release", func(t *testing.T) {
-		t.Parallel()
-
-		lockID := testutil.RandomInt(124342232, 999945323)
-
-		lock, err := postgresql.NewAdvisoryLock(pool, lockID)
-		require.NoError(t, err)
-		require.NotNil(t, lock)
-
-		err = lock.Release(context.Background())
-		require.NoError(t, err)
-
-		require.Panics(t, func() { lock.TryLock(context.Background()) })
 	})
 }

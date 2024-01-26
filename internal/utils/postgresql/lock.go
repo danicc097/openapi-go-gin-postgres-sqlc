@@ -22,6 +22,7 @@ SELECT EXISTS (
 // See https://www.postgresql.org/docs/current/explicit-locking.html#ADVISORY-LOCKS
 type AdvisoryLock struct {
 	conn    *pgxpool.Conn
+	pool    *pgxpool.Pool
 	lockID  int
 	hasLock bool
 
@@ -37,6 +38,7 @@ func NewAdvisoryLock(pool *pgxpool.Pool, lockID int) (*AdvisoryLock, error) {
 
 	return &AdvisoryLock{
 		conn:   conn,
+		pool:   pool,
 		lockID: lockID,
 	}, nil
 }
@@ -44,6 +46,8 @@ func NewAdvisoryLock(pool *pgxpool.Pool, lockID int) (*AdvisoryLock, error) {
 // TryLock tries to acquire the advisory lock.
 // Returns whether the lock was acquired and any error.
 func (al *AdvisoryLock) TryLock(ctx context.Context) (bool, error) {
+	al.checkConn()
+
 	var lockSuccess bool
 	if al.hasLock {
 		// prevent multiple calls to pg_try_advisory_lock.
@@ -60,9 +64,25 @@ func (al *AdvisoryLock) TryLock(ctx context.Context) (bool, error) {
 	return lockSuccess, nil
 }
 
+func (al *AdvisoryLock) checkConn() error {
+	if al.conn == nil {
+		conn, err := al.pool.Acquire(context.Background())
+		if err != nil {
+			return fmt.Errorf("could not acquire connection: %w", err)
+		}
+		al.conn = conn
+
+		return nil
+	}
+
+	return nil
+}
+
 // WaitForRelease waits for the advisory lock to be released by another process.
 // Returns an error if the wait times out.
 func (al *AdvisoryLock) WaitForRelease(ctx context.Context) error {
+	al.checkConn()
+
 	for i := 0; i < 100; i++ {
 		lockExists := true
 
@@ -100,6 +120,7 @@ func (al *AdvisoryLock) Release(ctx context.Context) error {
 	}
 	al.hasLock = false
 	al.conn.Release()
+	al.conn = nil
 
 	return nil
 }
