@@ -71,12 +71,13 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 
 	afterConnectRun := false
 
-	if os.Getenv("IS_TESTING") != "" {
-		poolConfig.ConnConfig.RuntimeParams["statement_timeout"] = "60s"
-	}
 	poolConfig.MinConns = 4
 	// NOTE: CI fails using default of 4
 	poolConfig.MaxConns = 20
+	if os.Getenv("IS_TESTING") != "" {
+		poolConfig.ConnConfig.RuntimeParams["statement_timeout"] = "60s"
+		poolConfig.MaxConns = 50
+	}
 
 	// called after a connection is established, but before it is added to the pool.
 	// Will run once.
