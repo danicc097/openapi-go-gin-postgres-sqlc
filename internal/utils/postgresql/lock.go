@@ -69,7 +69,6 @@ func (al *AdvisoryLock) TryLock(ctx context.Context) (bool, error) {
 
 func (al *AdvisoryLock) ensureConnAcquired() error {
 	if al.conn == nil {
-		fmt.Printf("WARNING: reacquiring conn (lock id %d)", al.lockID)
 		conn, err := al.pool.Acquire(context.Background())
 		if err != nil {
 			return fmt.Errorf("could not acquire connection: %w", err)
@@ -107,9 +106,9 @@ func (al *AdvisoryLock) WaitForRelease(ctx context.Context, retryCount int, d ti
 
 // Release releases the advisory lock and the acquired connection.
 func (al *AdvisoryLock) Release(ctx context.Context) error {
-	locked := true // assume was locked
+	locked := true // assume it was locked to at least check once
 
-	// sometimes it won't unlock on the first call if it is was locked multiple times by the same owner
+	// it won't unlock on the first call if it is was locked multiple times by the same owner
 	for i := 0; i < 10 && locked; i++ {
 		if _, err := al.conn.Exec(ctx, `SELECT pg_advisory_unlock($1)`, al.lockID); err != nil {
 			return fmt.Errorf("lock query: %w", err)

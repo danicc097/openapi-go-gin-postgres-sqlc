@@ -5,7 +5,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/postgresql"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,8 +16,7 @@ func TestAdvisoryLock(t *testing.T) {
 	t.Run("Locking and releasing in same instance", func(t *testing.T) {
 		t.Parallel()
 
-		lockID := testutil.RandomInt(124342232, 999945323)
-		t.Log(lockID)
+		lockID := 912345323
 
 		lock, err := postgresql.NewAdvisoryLock(pool, lockID)
 		require.NoError(t, err)
@@ -45,8 +43,7 @@ func TestAdvisoryLock(t *testing.T) {
 	t.Run("Wait for release in concurrent calls", func(t *testing.T) {
 		t.Parallel()
 
-		lockID := testutil.RandomInt(124342232, 999945323)
-		t.Log(lockID)
+		lockID := 999945323
 
 		lock, err := postgresql.NewAdvisoryLock(pool, lockID)
 		require.NoError(t, err)
@@ -64,6 +61,10 @@ func TestAdvisoryLock(t *testing.T) {
 			require.NoError(t, err)
 			require.False(t, lockOwner.HasLock)
 		}()
+
+		acquired, err = lock.TryLock(context.Background())
+		require.False(t, acquired)
+		require.NoError(t, err)
 
 		require.False(t, lock.HasLock)
 		err = lock.WaitForRelease(context.Background(), 100, 50*time.Millisecond)
