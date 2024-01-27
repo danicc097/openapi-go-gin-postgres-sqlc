@@ -36,28 +36,30 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		panic(fmt.Sprintf("Couldn't create pool: %s\n", err))
 	}
 
-	advisoryLock, err := postgresqlutils.NewAdvisoryLock(pool, migrationsLockID)
+	lock, err := postgresqlutils.NewAdvisoryLock(pool, migrationsLockID)
 	if err != nil {
 		panic(fmt.Sprintf("NewAdvisoryLock: %s\n", err))
 	}
 
-	mustMigrate, err := advisoryLock.TryLock(context.Background())
+	acquired, err := lock.TryLock(context.Background())
 	if err != nil {
 		panic(fmt.Sprintf("advisoryLock.TryLock: %s\n", err))
 	}
-	fmt.Printf("mustMigrate: %v\n", mustMigrate)
-	if !mustMigrate {
+	if !acquired {
+		// wait for migrations
+		if err := lock.WaitForRelease(context.Background(), 50, 200*time.Millisecond); err != nil {
+			panic(fmt.Sprintf("advisoryLock.WaitForRelease: %s\n", err))
+		}
+
 		return pool, sqlpool, nil
 	}
+
 	defer func() {
-		if err := advisoryLock.Release(context.Background()); err != nil {
+		if err := lock.Release(context.Background()); err != nil {
 			panic(fmt.Sprintf("advisoryLock.Release: %s\n", err))
 		}
 	}()
 
-	if err := advisoryLock.WaitForRelease(context.Background(), 50, 200*time.Millisecond); err != nil {
-		panic(fmt.Sprintf("advisoryLock.WaitForRelease: %s\n", err))
-	}
 	instance, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{})
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't migrate (1): %s\n", err))

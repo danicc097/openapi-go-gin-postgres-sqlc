@@ -110,7 +110,7 @@ func (al *AdvisoryLock) Release(ctx context.Context) error {
 	locked := true // assume was locked
 
 	// sometimes it won't unlock on the first call if it is was locked multiple times by the same owner
-	for i := 0; i < 100 && locked; i++ {
+	for i := 0; i < 10 && locked; i++ {
 		if _, err := al.conn.Exec(ctx, `SELECT pg_advisory_unlock($1)`, al.lockID); err != nil {
 			return fmt.Errorf("lock query: %w", err)
 		}
@@ -121,6 +121,9 @@ func (al *AdvisoryLock) Release(ctx context.Context) error {
 		}
 
 		time.Sleep(200 * time.Millisecond)
+	}
+	if locked {
+		return fmt.Errorf("could not release lock with id %d", al.lockID)
 	}
 	al.HasLock = false
 	al.conn.Release()

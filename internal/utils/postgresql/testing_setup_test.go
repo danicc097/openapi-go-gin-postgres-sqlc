@@ -37,8 +37,9 @@ func testMain(m *testing.M) int {
 		panic(fmt.Sprintf("Couldn't create pool: %s\n", err))
 	}
 
-	defer pool.Close()
-	defer sqlPool.Close()
+	// FIXME: for some reason blocks forever testing advisory locks
+	// defer pool.Close()
+	// defer sqlPool.Close()
 
 	return m.Run()
 }
