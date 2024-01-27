@@ -48,6 +48,9 @@ jobs:
               POSTGRES_TRACE=true project test.backend -v -race -count=30 -timeout 10m --x-env=ci
           done
 
+          # some tests are skipped from race
+          POSTGRES_TRACE=true project test.backend -v -count=3 -timeout 10m --x-env=ci
+
       - name: Postgres logs
         if: failure() # always()
         run: docker logs postgres_db_openapi-go-gin

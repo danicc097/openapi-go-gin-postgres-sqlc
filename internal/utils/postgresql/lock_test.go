@@ -21,6 +21,7 @@ func TestAdvisoryLock(t *testing.T) {
 		lockID := testutil.RandomInt(124342232, 999945323)
 
 		lock, err := postgresql.NewAdvisoryLock(pool, lockID)
+		defer lock.Release(context.Background())
 		require.NoError(t, err)
 
 		acquired, err := lock.TryLock(context.Background())
@@ -49,9 +50,11 @@ func TestAdvisoryLock(t *testing.T) {
 		lockID := testutil.RandomInt(124342232, 999945323)
 
 		lock, err := postgresql.NewAdvisoryLock(pool, lockID)
+		defer lock.Release(context.Background())
 		require.NoError(t, err)
 
 		lockOwner, err := postgresql.NewAdvisoryLock(pool, lockID)
+		defer lockOwner.Release(context.Background())
 		require.NoError(t, err)
 
 		acquired, err := lockOwner.TryLock(context.Background())
