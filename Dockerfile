@@ -1,5 +1,4 @@
-# TODO :1.20.3-buster, ensure vendor up to date
-FROM golang:1.20.12-alpine3.18 AS build
+FROM golang:1.21-alpine3.18 AS build
 
 ARG DOCKER_UID
 ARG DOCKER_GID
