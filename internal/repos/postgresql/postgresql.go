@@ -83,6 +83,7 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 	// Will run once.
 	const retries = 10
 	poolConfig.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
+		// DATA RACE for some reason
 		pgxAfterConnectLock.Lock()
 		defer pgxAfterConnectLock.Unlock()
 

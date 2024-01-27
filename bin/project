@@ -1852,10 +1852,10 @@ x.db.conns.watch-db() {
   trap 'exit' SIGINT # overrides exit-cleanup
 
   while true; do
-    out=$(x.db.conns-db $1)
+    out=$(x.db.conns-db $1 || echo "${RED}Connection error ($1)${OFF}")
     clear
     echo $out
-    sleep 0.5
+    sleep 0.2
   done
 }
 
