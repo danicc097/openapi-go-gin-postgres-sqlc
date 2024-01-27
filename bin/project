@@ -1139,6 +1139,7 @@ x.test.backend() {
     # POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # post-migration scripts now run automatically in testutil db setup
 
     local cache_opt="-count=1"
+    # we must only invalidate cache if database schema changes
     cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
 
     # issue not in pg itself, pgxpool acquires max conns (4 default) and won't release.
@@ -1152,10 +1153,9 @@ x.test.backend() {
     #   bg_pid=$!
     # fi
 
-    rm -f /tmp/migration_marker # TODO: get rid of this. use a postgres lock instead.
-
     set -x
     APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo $cache_opt "$@" ./...
+    APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo "$@" -run=CountOne_ -count=1 ./...
     set +x
 
     # { test -n "$bg_pid" && kill $bg_pid; } || true
@@ -1239,7 +1239,6 @@ test_backend_watch() {
 
   trap 'exit' SIGINT # overrides exit-cleanup
 
-  rm -f /tmp/migration_marker # TODO: get rid of this. use a postgres lock instead.
   while true; do
     inotifywait \
       --recursive \
