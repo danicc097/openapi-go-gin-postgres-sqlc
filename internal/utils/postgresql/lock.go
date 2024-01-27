@@ -70,8 +70,6 @@ func (al *AdvisoryLock) ensureConnAcquired() error {
 			return fmt.Errorf("could not acquire connection: %w", err)
 		}
 		al.conn = conn
-
-		return nil
 	}
 
 	return nil
@@ -105,11 +103,11 @@ func (al *AdvisoryLock) WaitForRelease(ctx context.Context, retryCount int, d ti
 // Release releases the advisory lock and the acquired connection.
 func (al *AdvisoryLock) Release(ctx context.Context) error {
 	if al.conn == nil {
-		// pg_advisory_unlock was called beforehand or was never locked
+		// AdvisoryLock.Release was called beforehand or was never locked
 		return nil
 	}
 
-	locked := true // assume it was locked to at least check once
+	locked := true // assume it was locked at least check once
 
 	// it won't unlock on the first call if it is was locked multiple times by the same owner
 	for i := 0; i < 10 && locked; i++ {

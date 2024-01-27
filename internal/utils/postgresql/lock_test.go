@@ -65,7 +65,6 @@ func TestAdvisoryLock(t *testing.T) {
 			require.False(t, lockOwner.HasLock)
 		}()
 
-		time.Sleep(50 * time.Millisecond)
 		acquired, err = lock.TryLock(context.Background())
 		require.False(t, acquired)
 		require.NoError(t, err)
