@@ -1821,20 +1821,31 @@ x.db.psql() {
 }
 
 # psql session for `database`.
-# Args: database
+# Args: db
 x.db.psql-with-db() {
   docker exec -it postgres_db_"$PROJECT_PREFIX" psql -d $1
 }
 
 # Show active and max number of connections for the current environment.
 x.db.conns() {
-  { { {
-    x.db.conns-db $POSTGRES_DB
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  x.db.conns-db $POSTGRES_DB
+}
+
+# Poll db connections in database.
+# Args: db
+x.db.conns.watch-db() {
+  trap 'exit' SIGINT # overrides exit-cleanup
+
+  while true; do
+    out=$(x.db.conns-db $1)
+    clear
+    echo $out
+    sleep 0.5
+  done
 }
 
 # Show active and max number of connections for `database`.
-# Args: database
+# Args: db
 x.db.conns-db() {
   { { {
     current_conns=$(docker.postgres.psql -d $1 -c "SELECT count(*) FROM pg_stat_activity WHERE datname = '$1';")
@@ -2610,6 +2621,8 @@ exit_cleanup_calls=0
 
 exit-cleanup() {
   # prevent exiting in foreground while we check if we should run cleanup
+  # for monitoring functions, a top level "trap 'exit' SIGINT"
+  # is necessary. Handle cleanup calls manually, if any
   trap 'echo ignoring SIGINT' SIGINT
   [[ "$exit_cleanup_calls" -gt 0 ]] && return
   ((exit_cleanup_calls++)) || true
