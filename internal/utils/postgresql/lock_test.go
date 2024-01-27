@@ -36,22 +36,22 @@ func TestAdvisoryLock(t *testing.T) {
 		require.NoError(t, err)
 		assert.True(t, acquiredTwice)
 
-		locked := lock.Release(context.Background())
+		locked := lock.Release()
 		require.True(t, locked)
 
 		acquired, err = lock2.TryLock(context.Background())
 		require.NoError(t, err)
 		require.False(t, acquired, "Should have failed to acquire lock after only one release")
 
-		locked = lock.Release(context.Background())
+		locked = lock.Release()
 		require.False(t, locked)
 
 		acquired, err = lock2.TryLock(context.Background())
 		require.NoError(t, err)
 		require.True(t, acquired, "Should have acquired lock after second release")
 
-		lock.ReleaseConn()
-		lock2.ReleaseConn()
+		lock.Release()  // TODO: check if upon return to pgxpool its gone
+		lock2.Release() // TODO: check if upon return to pgxpool its gone
 	})
 
 	/**
@@ -81,7 +81,7 @@ func TestAdvisoryLock(t *testing.T) {
 		require.NoError(t, err)
 		require.False(t, acquired)
 
-		locked := lockOwner.Release(context.Background())
+		locked := lockOwner.Release()
 		require.NoError(t, err)
 		require.False(t, locked)
 
@@ -92,7 +92,7 @@ func TestAdvisoryLock(t *testing.T) {
 		require.NoError(t, err)
 		require.True(t, lockAcquiredAfterWait)
 
-		lock.ReleaseConn()
-		lockOwner.ReleaseConn()
+		lock.Release()      // TODO: check if upon return to pgxpool its gone
+		lockOwner.Release() // TODO: check if upon return to pgxpool its gone
 	})
 }

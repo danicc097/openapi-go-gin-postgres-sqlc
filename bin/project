@@ -1257,14 +1257,28 @@ x.test.backend.watch() {
   test_backend_watch "$@" ./...
 }
 
-# Watch specific functions in a given dir.
+# Watch specific functions in a given dir. Accepts `go test` parameters.
+# Example: internal/repos/postgresql/ TestUser_Create TestUser_Update -count=5
 # Args: dir [fn ...]
 x.test.backend.watch-for() {
   local dir="$1"
-  local fns="$(join_by "|" ${@:2})"
-  local fn_re="^($fns)$"
+  local tests=()
+  local gotest_args=()
 
-  test_backend_watch -count=1 -run "$fn_re" "$GOMOD_PKG/$dir"
+  for arg in "${@:2}"; do
+    if [[ $arg == Test* ]]; then
+      tests+=("$arg")
+    else
+      gotest_args+=("$arg")
+    fi
+  done
+
+  local fns=$(
+    IFS='|'
+    echo "${tests[*]}"
+  )
+
+  test_backend_watch -count=1 -run "^($fns)$" "$GOMOD_PKG/$dir" "${gotest_args[@]}"
 }
 
 # Run backend with hot-reloading.
@@ -1326,6 +1340,7 @@ x.run.all() {
   # done
 }
 
+# Syncs backend dependencies.
 x.backend.sync-deps() {
   go mod tidy
   go mod vendor

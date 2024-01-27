@@ -55,7 +55,7 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	}
 
 	defer func() {
-		lock.Release(context.Background())
+		lock.Release()
 		lock.ReleaseConn()
 
 		if lock.IsLocked() {

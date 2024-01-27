@@ -101,7 +101,8 @@ func (al *AdvisoryLock) IsLocked() bool {
 
 // Release releases a single advisory lock.
 // Note that multiple lock requests stack.
-func (al *AdvisoryLock) Release(ctx context.Context) bool {
+func (al *AdvisoryLock) Release() bool {
+	ctx := context.Background()
 	if al.conn == nil {
 		// ReleaseConn was called beforehand and conn back in the pool,
 		// so there's no way to release its locks, if any
