@@ -24,6 +24,7 @@ import (
 
 var once sync.Once
 
+// cannot be random since we want to lock parallel test suites.
 const migrationsLockID = 12341234
 
 // NewDB returns a new (shared) testing Postgres pool with up-to-date migrations.
