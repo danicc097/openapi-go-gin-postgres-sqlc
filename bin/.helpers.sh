@@ -557,6 +557,8 @@ go-utils.find_test_functions() {
       sed -n -E 's/^\s*func\s*(Test[a-zA-Z0-9_]*)\(.*/\1/p'
   )
 
+  mapfile -t __arr < <(printf "%s\n" "${__arr[@]}" | grep -v "TestMain")
+
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No test functions found in package in directory: $pkg"
   fi
