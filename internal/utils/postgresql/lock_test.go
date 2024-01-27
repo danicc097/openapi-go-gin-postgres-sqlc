@@ -18,6 +18,7 @@ func TestAdvisoryLock(t *testing.T) {
 		t.Parallel()
 
 		lockID := testutil.RandomInt(124342232, 999945323)
+		t.Log(lockID)
 
 		lock, err := postgresql.NewAdvisoryLock(pool, lockID)
 		require.NoError(t, err)
@@ -26,15 +27,16 @@ func TestAdvisoryLock(t *testing.T) {
 		require.NoError(t, err)
 		require.True(t, acquired, "Could not acquire lock for the first time")
 
-		time.Sleep(3000 * time.Millisecond)
 		acquiredTwice, err := lock.TryLock(context.Background())
 		require.NoError(t, err)
 		assert.True(t, acquiredTwice)
 
 		err = lock.Release(context.Background())
 		require.NoError(t, err)
+		assert.False(t, lock.HasLock)
 
 		// should not need two Release calls since we ignore consecutive lock calls
+		// and also spam call unlock if needed
 		acquiredAfterRelease, err := lock.TryLock(context.Background())
 		require.NoError(t, err)
 		assert.True(t, acquiredAfterRelease, "Failed to acquire lock after release")
@@ -44,23 +46,31 @@ func TestAdvisoryLock(t *testing.T) {
 		t.Parallel()
 
 		lockID := testutil.RandomInt(124342232, 999945323)
+		t.Log(lockID)
 
 		lock, err := postgresql.NewAdvisoryLock(pool, lockID)
 		require.NoError(t, err)
 
-		lock2, err := postgresql.NewAdvisoryLock(pool, lockID)
+		lockOwner, err := postgresql.NewAdvisoryLock(pool, lockID)
 		require.NoError(t, err)
 
-		acquired, err := lock2.TryLock(context.Background())
+		acquired, err := lockOwner.TryLock(context.Background())
 		require.NoError(t, err)
 		require.True(t, acquired, "Could not acquire lock for the first time")
 
-		time.Sleep(2000 * time.Millisecond)
-		err = lock.WaitForRelease(context.Background())
+		go func() {
+			time.Sleep(200 * time.Millisecond)
+			err := lockOwner.Release(context.Background())
+			require.NoError(t, err)
+			require.False(t, lockOwner.HasLock)
+		}()
+
+		require.False(t, lock.HasLock)
+		err = lock.WaitForRelease(context.Background(), 100, 50*time.Millisecond)
 		require.NoError(t, err)
 
 		lockAcquiredAfterWait, err := lock.TryLock(context.Background())
 		require.NoError(t, err)
-		assert.True(t, lockAcquiredAfterWait, "Failed to acquire lock after waiting")
+		require.True(t, lockAcquiredAfterWait)
 	})
 }

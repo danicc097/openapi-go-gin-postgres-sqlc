@@ -24,7 +24,7 @@ type AdvisoryLock struct {
 	conn    *pgxpool.Conn
 	pool    *pgxpool.Pool
 	lockID  int
-	hasLock bool
+	HasLock bool
 
 	mu sync.Mutex
 }
@@ -46,10 +46,13 @@ func NewAdvisoryLock(pool *pgxpool.Pool, lockID int) (*AdvisoryLock, error) {
 // TryLock tries to acquire the advisory lock.
 // Returns whether the lock was acquired and any error.
 func (al *AdvisoryLock) TryLock(ctx context.Context) (bool, error) {
-	al.checkConn()
+	al.mu.Lock()
+	defer al.mu.Unlock()
+
+	_ = al.ensureConnAcquired()
 
 	var lockSuccess bool
-	if al.hasLock {
+	if al.HasLock {
 		// prevent multiple calls to pg_try_advisory_lock.
 		// if it succeeded n times, we would have had to unlock it n times too to release it.
 		return true, nil
@@ -59,13 +62,14 @@ func (al *AdvisoryLock) TryLock(ctx context.Context) (bool, error) {
 	if err := row.Scan(&lockSuccess); err != nil {
 		return false, fmt.Errorf("lock query: %w", err)
 	}
-	al.hasLock = lockSuccess
+	al.HasLock = lockSuccess
 
 	return lockSuccess, nil
 }
 
-func (al *AdvisoryLock) checkConn() error {
+func (al *AdvisoryLock) ensureConnAcquired() error {
 	if al.conn == nil {
+		fmt.Printf("WARNING: reacquiring conn (lock id %d)", al.lockID)
 		conn, err := al.pool.Acquire(context.Background())
 		if err != nil {
 			return fmt.Errorf("could not acquire connection: %w", err)
@@ -80,10 +84,10 @@ func (al *AdvisoryLock) checkConn() error {
 
 // WaitForRelease waits for the advisory lock to be released by another process.
 // Returns an error if the wait times out.
-func (al *AdvisoryLock) WaitForRelease(ctx context.Context) error {
-	al.checkConn()
+func (al *AdvisoryLock) WaitForRelease(ctx context.Context, retryCount int, d time.Duration) error {
+	_ = al.ensureConnAcquired()
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < retryCount; i++ {
 		lockExists := true
 
 		row := al.conn.QueryRow(ctx, checkLockQuery, al.lockID)
@@ -95,7 +99,7 @@ func (al *AdvisoryLock) WaitForRelease(ctx context.Context) error {
 			return nil
 		}
 
-		time.Sleep(200 * time.Millisecond)
+		time.Sleep(d)
 	}
 
 	return fmt.Errorf("timeout waiting for lock release with objid %d", al.lockID)
@@ -105,8 +109,8 @@ func (al *AdvisoryLock) WaitForRelease(ctx context.Context) error {
 func (al *AdvisoryLock) Release(ctx context.Context) error {
 	locked := true // assume was locked
 
+	// sometimes it won't unlock on the first call if it is was locked multiple times by the same owner
 	for i := 0; i < 100 && locked; i++ {
-		// sometimes it won't unlock on the first call, neither here nor in psql
 		if _, err := al.conn.Exec(ctx, `SELECT pg_advisory_unlock($1)`, al.lockID); err != nil {
 			return fmt.Errorf("lock query: %w", err)
 		}
@@ -118,7 +122,7 @@ func (al *AdvisoryLock) Release(ctx context.Context) error {
 
 		time.Sleep(200 * time.Millisecond)
 	}
-	al.hasLock = false
+	al.HasLock = false
 	al.conn.Release()
 	al.conn = nil
 

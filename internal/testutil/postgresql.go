@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	postgresqlutils "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/postgresql"
@@ -54,7 +55,7 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		}
 	}()
 
-	if err := advisoryLock.WaitForRelease(context.Background()); err != nil {
+	if err := advisoryLock.WaitForRelease(context.Background(), 50, 200*time.Millisecond); err != nil {
 		panic(fmt.Sprintf("advisoryLock.WaitForRelease: %s\n", err))
 	}
 	instance, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{})
