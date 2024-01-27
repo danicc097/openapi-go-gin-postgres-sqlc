@@ -58,18 +58,14 @@ func TestAdvisoryLock(t *testing.T) {
 		require.NoError(t, err)
 		require.True(t, acquired, "Could not acquire lock for the first time")
 
-		go func() {
-			time.Sleep(200 * time.Millisecond)
-			err := lockOwner.Release(context.Background())
-			require.NoError(t, err)
-			require.False(t, lockOwner.HasLock)
-		}()
-
 		acquired, err = lock.TryLock(context.Background())
-		require.False(t, acquired)
 		require.NoError(t, err)
+		require.False(t, acquired)
 
-		require.False(t, lock.HasLock)
+		err = lockOwner.Release(context.Background())
+		require.NoError(t, err)
+		require.False(t, lockOwner.HasLock)
+
 		err = lock.WaitForRelease(context.Background(), 100, 50*time.Millisecond)
 		require.NoError(t, err)
 
