@@ -14,14 +14,18 @@ import (
 func TestAdvisoryLock(t *testing.T) {
 	t.Parallel()
 
-	t.Run("Locking and releasing in same instance", func(t *testing.T) {
+	t.Run("Locking twice in same session", func(t *testing.T) {
 		t.Parallel()
 
 		// for test count>1 must be unique...
 		lockID := testutil.RandomInt(124342232, 999945323)
 
 		lock, err := postgresql.NewAdvisoryLock(pool, lockID)
-		defer lock.Release(context.Background())
+		defer lock.ReleaseConn()
+		require.NoError(t, err)
+
+		lock2, err := postgresql.NewAdvisoryLock(pool, lockID)
+		defer lock2.ReleaseConn()
 		require.NoError(t, err)
 
 		acquired, err := lock.TryLock(context.Background())
@@ -32,16 +36,28 @@ func TestAdvisoryLock(t *testing.T) {
 		require.NoError(t, err)
 		assert.True(t, acquiredTwice)
 
-		err = lock.Release(context.Background())
-		require.NoError(t, err)
-		assert.False(t, lock.HasLock)
+		locked := lock.Release(context.Background())
+		require.True(t, locked)
 
-		// should not need two Release calls since we ignore consecutive lock calls
-		// and also spam call unlock if needed
-		acquiredAfterRelease, err := lock.TryLock(context.Background())
+		acquired, err = lock2.TryLock(context.Background())
 		require.NoError(t, err)
-		assert.True(t, acquiredAfterRelease, "Failed to acquire lock after release")
+		require.False(t, acquired, "Should have failed to acquire lock after only one release")
+
+		locked = lock.Release(context.Background())
+		require.False(t, locked)
+
+		acquired, err = lock2.TryLock(context.Background())
+		require.NoError(t, err)
+		require.True(t, acquired, "Should have acquired lock after second release")
+
+		lock.ReleaseConn()
+		lock2.ReleaseConn()
 	})
+
+	/**
+	 *
+	 * TODO: test ReleaseConn
+	 */
 
 	t.Run("Wait for release in concurrent calls", func(t *testing.T) {
 		t.Parallel()
@@ -50,11 +66,11 @@ func TestAdvisoryLock(t *testing.T) {
 		lockID := testutil.RandomInt(124342232, 999945323)
 
 		lock, err := postgresql.NewAdvisoryLock(pool, lockID)
-		defer lock.Release(context.Background())
+		defer lock.ReleaseConn()
 		require.NoError(t, err)
 
 		lockOwner, err := postgresql.NewAdvisoryLock(pool, lockID)
-		defer lockOwner.Release(context.Background())
+		defer lockOwner.ReleaseConn()
 		require.NoError(t, err)
 
 		acquired, err := lockOwner.TryLock(context.Background())
@@ -65,15 +81,18 @@ func TestAdvisoryLock(t *testing.T) {
 		require.NoError(t, err)
 		require.False(t, acquired)
 
-		err = lockOwner.Release(context.Background())
+		locked := lockOwner.Release(context.Background())
 		require.NoError(t, err)
-		require.False(t, lockOwner.HasLock)
+		require.False(t, locked)
 
-		err = lock.WaitForRelease(context.Background(), 100, 50*time.Millisecond)
+		err = lock.WaitForRelease(100, 50*time.Millisecond)
 		require.NoError(t, err)
 
 		lockAcquiredAfterWait, err := lock.TryLock(context.Background())
 		require.NoError(t, err)
 		require.True(t, lockAcquiredAfterWait)
+
+		lock.ReleaseConn()
+		lockOwner.ReleaseConn()
 	})
 }

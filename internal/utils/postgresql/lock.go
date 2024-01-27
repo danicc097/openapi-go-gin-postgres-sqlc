@@ -21,10 +21,9 @@ SELECT EXISTS (
 // AdvisoryLock represents an advisory lock.
 // See https://www.postgresql.org/docs/current/explicit-locking.html#ADVISORY-LOCKS
 type AdvisoryLock struct {
-	conn    *pgxpool.Conn
-	pool    *pgxpool.Pool
-	LockID  int
-	HasLock bool
+	conn   *pgxpool.Conn
+	pool   *pgxpool.Pool
+	LockID int
 
 	mu sync.Mutex
 }
@@ -48,17 +47,11 @@ func (al *AdvisoryLock) TryLock(ctx context.Context) (bool, error) {
 	}
 
 	var lockSuccess bool
-	if al.HasLock {
-		// prevent multiple calls to pg_try_advisory_lock.
-		// if it succeeded n times, we would have had to unlock it n times too to release it.
-		return true, nil
-	}
 
 	row := al.conn.QueryRow(ctx, `SELECT pg_try_advisory_lock($1)`, al.LockID)
 	if err := row.Scan(&lockSuccess); err != nil {
 		return false, fmt.Errorf("lock query: %w", err)
 	}
-	al.HasLock = lockSuccess
 
 	return lockSuccess, nil
 }
@@ -77,20 +70,13 @@ func (al *AdvisoryLock) ensureConnAcquired() error {
 
 // WaitForRelease waits for the advisory lock to be released by another process.
 // Returns an error if the wait times out.
-func (al *AdvisoryLock) WaitForRelease(ctx context.Context, retryCount int, d time.Duration) error {
+func (al *AdvisoryLock) WaitForRelease(retryCount int, d time.Duration) error {
 	if err := al.ensureConnAcquired(); err != nil {
 		return fmt.Errorf("conn: %w", err)
 	}
 
 	for i := 0; i < retryCount; i++ {
-		lockExists := true
-
-		row := al.conn.QueryRow(ctx, checkLockQuery, al.LockID)
-		if err := row.Scan(&lockExists); err != nil {
-			return fmt.Errorf("query: %w", err)
-		}
-
-		if !lockExists {
+		if !al.IsLocked() {
 			return nil
 		}
 
@@ -100,35 +86,50 @@ func (al *AdvisoryLock) WaitForRelease(ctx context.Context, retryCount int, d ti
 	return fmt.Errorf("timeout waiting for lock release with objid %d", al.LockID)
 }
 
-// Release releases the advisory lock and the acquired connection.
-func (al *AdvisoryLock) Release(ctx context.Context) error {
+func (al *AdvisoryLock) IsLocked() bool {
+	var lockExists bool
+
+	row := al.pool.QueryRow(context.Background(), checkLockQuery, al.LockID)
+	if err := row.Scan(&lockExists); err != nil {
+		fmt.Printf("lock check error: %v\n", err)
+
+		return true
+	}
+
+	return lockExists
+}
+
+// Release releases a single advisory lock.
+// Note that multiple lock requests stack.
+func (al *AdvisoryLock) Release(ctx context.Context) bool {
 	if al.conn == nil {
-		// AdvisoryLock.Release was called beforehand or was never locked
-		return nil
+		// ReleaseConn was called beforehand and conn back in the pool,
+		// so there's no way to release its locks, if any
+		// TODO: test if pgx really doesn't clean them up, by acquiring then calling ReleaseConn
+		// and then attempt TryLock with a new instance
+		return false
 	}
 
-	locked := true // assume it was locked at least check once
+	locked := true
 
-	// it won't unlock on the first call if it is was locked multiple times by the same owner
-	for i := 0; i < 10 && locked; i++ {
-		if _, err := al.conn.Exec(ctx, `SELECT pg_advisory_unlock($1)`, al.LockID); err != nil {
-			return fmt.Errorf("lock query: %w", err)
-		}
-
-		row := al.conn.QueryRow(ctx, checkLockQuery, al.LockID)
-		if err := row.Scan(&locked); err != nil {
-			return fmt.Errorf("query: %w", err)
-		}
-
-		time.Sleep(200 * time.Millisecond)
+	if _, err := al.conn.Exec(ctx, `SELECT pg_advisory_unlock($1)`, al.LockID); err != nil {
+		return locked
 	}
-	if locked {
-		return fmt.Errorf("could not release lock with id %d", al.LockID)
+
+	row := al.conn.QueryRow(ctx, checkLockQuery, al.LockID)
+	if err := row.Scan(&locked); err != nil {
+		return locked
 	}
-	al.HasLock = false
-	// conn.Release just returns it to the pool, lock would still be there.
+
+	return locked
+}
+
+// ReleaseConn releases the connection to the pool.
+// It will not guarantee lock release.
+func (al *AdvisoryLock) ReleaseConn() {
+	if al.conn == nil {
+		return
+	}
 	al.conn.Release()
 	al.conn = nil
-
-	return nil
 }

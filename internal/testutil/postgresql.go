@@ -47,7 +47,7 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	}
 	if !acquired {
 		// wait for migrations
-		if err := lock.WaitForRelease(context.Background(), 50, 200*time.Millisecond); err != nil {
+		if err := lock.WaitForRelease(50, 200*time.Millisecond); err != nil {
 			panic(fmt.Sprintf("advisoryLock.WaitForRelease: %s\n", err))
 		}
 
@@ -55,8 +55,11 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	}
 
 	defer func() {
-		if err := lock.Release(context.Background()); err != nil {
-			panic(fmt.Sprintf("advisoryLock.Release: %s\n", err))
+		lock.Release(context.Background())
+		lock.ReleaseConn()
+
+		if lock.IsLocked() {
+			panic(fmt.Sprintf("advisory lock was not released\n"))
 		}
 	}()
 
