@@ -364,16 +364,40 @@ show_tracebacks() {
 
 # Cache given files and return if checksums match or an error code otherwise.
 cache_all() {
+  local excludes=()
+  while [[ "$#" -gt 0 ]]; do
+    case $1 in
+    --exclude)
+      shift
+      excludes+=("$1")
+      ;;
+    *)
+      # will set everything else back later
+      args+=("$1")
+      ;;
+    esac
+    shift
+  done
+
+  for arg in ${args[@]:1}; do
+    set -- "$@" "$arg"
+  done
+
   if [ $# -lt 2 ]; then
-    err "Usage: ${FUNCNAME[0]} <output_cache_md5_path> <file_or_directory> [<file_or_directory> ...]"
+    err "Usage: ${FUNCNAME[0]} [--exclude <pattern>] <output_cache_md5_path> <file_or_directory> [<file_or_directory> ...]"
   fi
 
   output_file="$1"
-  shift
-
   true >"$output_file.tmp"
 
-  for arg in "$@"; do
+  for arg in "${@:2}"; do
+    # TODO: advanced glob with /** or /*
+    for exclude in "${excludes[@]}"; do
+      if [[ "$arg" == $exclude ]]; then
+        continue
+      fi
+    done
+
     if test -d "$arg"; then
       find "$arg" -type f -exec md5sum {} + >>"$output_file.tmp"
     elif test -f "$arg"; then

@@ -1182,6 +1182,10 @@ x.test.xo() {
     POSTGRES_DB="$POSTGRES_TEST_DB"
     GEN_POSTGRES_DB="$POSTGRES_TEST_DB"
 
+    cache_all "$CACHE/test-xo.md5" bin/project bin/.helpers.sh $XO_TEMPLATES_DIR/ \
+      --exclude "$XO_TEMPLATES_DIR/tests/got/*" \
+      --exclude "$XO_TEMPLATES_DIR/tests/want/*" && return 0
+
     docker.postgres.drop_and_recreate_db $POSTGRES_DB # FIXME wrong xo gen when tables with equal names in public schema exist as well
 
     echo "Running xo template tests"
@@ -2588,7 +2592,7 @@ while [[ "$#" -gt 0 ]]; do
     fi
     ;;
   *)
-    # will set everything else back
+    # will set everything else back later
     args+=("$1")
     ;;
   esac
