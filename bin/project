@@ -1217,7 +1217,9 @@ x.test.xo() {
 test_backend_watch() {
   clear
 
+  local tags="skip_xo,skip_countone"
   echo "Waiting for changes..."
+  echo "Default test tags: $tags"
   echo "Test args: $*"
 
   trap 'exit' SIGINT # overrides exit-cleanup
@@ -1229,7 +1231,7 @@ test_backend_watch() {
       --event=close_write \
       --format='%T %f' \
       --timefmt='%s' \
-      ./internal && clear && { APP_ENV="$X_ENV" go test -count=1 -shuffle=on -tags skip_xo "$@"; } && echo "${GREEN}✓ All tests passing${OFF}"
+      ./internal && clear && { APP_ENV="$X_ENV" go test -shuffle=on -count=1 -tags $tags "$@"; } && echo "${GREEN}✓ All tests passing${OFF}"
   done
 }
 
