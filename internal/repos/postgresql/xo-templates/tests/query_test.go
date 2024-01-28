@@ -1,4 +1,4 @@
-//go:build !skipxo
+//go:build !skip_xo
 
 // Package tests is meant to be run via `project test.xo` and excluded from test runs
 package tests
