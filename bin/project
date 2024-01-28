@@ -686,7 +686,8 @@ x.gen.jet() {
     local schema=public
     rm -rf "$gen_path"
     {
-      jet -dbname="$GEN_POSTGRES_DB" -env=.env."$X_ENV" --out=./"$gen_path" --schema=$schema
+      jet -dbname="$GEN_POSTGRES_DB" -env=.env."$X_ENV" --out=./"$gen_path" --schema="$schema" \
+        --ignore-tables "schema_migrations,schema_post_migrations"
       mv "./$gen_path"/$GEN_POSTGRES_DB/* "$gen_path"
       rm -r "./$gen_path/$GEN_POSTGRES_DB/"
     }
@@ -2303,6 +2304,8 @@ xo_schema() {
   # Also use a unique db to prevent cosmic accidents
   xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
     --src "$XO_TEMPLATES_DIR" \
+    --exclude schema_migrations \
+    --exclude schema_post_migrations \
     "$@"
 }
 

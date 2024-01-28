@@ -106,7 +106,7 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	// we would still have the issue to remove that file before running go tests out of `project` (vscode, regular shell call...)
 	//
 	if err = mPostMigrations.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		panic(fmt.Sprintf("Couldnt' migrate up (post-migrations): %s\n", err))
+		panic(fmt.Sprintf("Couldnt' migrate down (post-migrations): %s\n", err))
 	}
 	if err = mPostMigrations.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		panic(fmt.Sprintf("Couldnt' migrate up (post-migrations): %s\n", err))

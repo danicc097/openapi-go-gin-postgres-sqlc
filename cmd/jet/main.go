@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"path"
+	"slices"
+	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
@@ -15,15 +17,20 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// clear && go run cmd/cli/main.go -env .env.dev.
 func main() {
-	var out, env, schema, dbname string
+	var out, env, schema, dbname, ignoreTables string
+
+	// see https://github.com/go-jet/jet/blob/master/cmd/jet/main.go
+	// for advanced usage and if any flags are needed, e.g. ignore-tables
 
 	flag.StringVar(&dbname, "dbname", "public", "Database name to generate from")
 	flag.StringVar(&schema, "schema", "public", "Database schema to generate from")
 	flag.StringVar(&env, "env", ".env", "Environment Variables filename")
 	flag.StringVar(&out, "out", "", "Out dir for generated files")
+	flag.StringVar(&ignoreTables, "ignore-tables", "", `Comma-separated list of tables to ignore`)
 	flag.Parse()
+
+	ignoreTablesList := strings.Split(ignoreTables, ",")
 
 	if out == "" {
 		log.Fatal("--out flag is required")
@@ -49,6 +56,10 @@ func main() {
 		SslMode:    "disable",
 	}
 
+	shouldSkipTable := func(table metadata.Table) bool {
+		return slices.Contains(ignoreTablesList, strings.ToLower(table.Name))
+	}
+
 	err := postgres.Generate(
 		out,
 		dbConnection,
@@ -59,6 +70,9 @@ func main() {
 					// UseSQLBuilder(template.DefaultSQLBuilder().UsePath("/" + schema)).
 					UseModel(template.DefaultModel().
 						UseTable(func(table metadata.Table) template.TableModel {
+							if shouldSkipTable(table) {
+								return template.TableModel{Skip: true}
+							}
 							return template.DefaultTableModel(table).
 								UseField(func(columnMetaData metadata.Column) template.TableModelField {
 									defaultTableModelField := template.DefaultTableModelField(columnMetaData)

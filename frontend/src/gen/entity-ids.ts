@@ -13,7 +13,6 @@ export type KanbanStepID = Branded<number, 'kanbanStepID'>
 export type MovieID = Branded<number, 'movieID'>
 export type NotificationID = Branded<number, 'notificationID'>
 export type ProjectID = Branded<number, 'projectID'>
-export type SchemaMigrationID = Branded<number, 'schemaMigrationID'>
 export type TeamID = Branded<number, 'teamID'>
 export type TimeEntryID = Branded<number, 'timeEntryID'>
 export type UserAPIKeyID = Branded<number, 'userAPIKeyID'>

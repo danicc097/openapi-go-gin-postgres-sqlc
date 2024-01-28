@@ -208,15 +208,6 @@ x-projectIDParameter: &x-projectIDParameter
       name: db
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: projectID
-x-schemaMigrationIDParameter: &x-schemaMigrationIDParameter
-  !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
-    type: integer
-    x-go-type: db.SchemaMigrationID
-    x-go-type-import:
-      name: db
-      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
-  name: schemaMigrationID
 x-teamIDParameter: &x-teamIDParameter
   !!merge <<: *x-serialIDParameterBase
   schema: # Generated. DO NOT EDIT.
