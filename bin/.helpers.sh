@@ -369,29 +369,28 @@ show_tracebacks() {
 #   - Optionally pass glob patterns to exclude.
 cache_all() {
   local excludes=()
-  while [[ "$#" -gt 0 ]]; do
-    case $1 in
+  local args=()
+
+  #i=0 is still program name in "$@"
+  for ((i = 1; i < ${#@}; i++)); do
+    arg="${!i}"
+    case $arg in
     --exclude)
-      shift
-      excludes+=("$1")
+      ((i++))
+      excludes+=("${!i}")
       ;;
     *)
-      # will set everything else back later
-      args+=("$1")
+      args+=("$arg")
       ;;
     esac
-    shift
   done
 
-  for arg in ${args[@]:1}; do
-    set -- "$@" "$arg"
-  done
-
-  if [ $# -lt 2 ]; then
-    err "Usage: ${FUNCNAME[0]} [--exclude <pattern>] <output_cache_md5_path> <file_or_directory> [<file_or_directory> ...]"
+  if [ "${#args[@]}" -lt 2 ]; then
+    echo "Usage: ${FUNCNAME[0]} [--exclude <pattern>] <output_cache_md5_path> <file_or_directory> [<file_or_directory> ...]" >&2
+    return 1
   fi
 
-  output_file="$1"
+  local output_file="${args[0]}"
   true >"$output_file.tmp"
 
   exclude_args=()
@@ -399,21 +398,14 @@ cache_all() {
     exclude_args+=('!' -path "$exclude")
   done
 
-  for arg in "${@:2}"; do
-    # TODO: advanced glob with /** or /*
-    # $arg may be an expanded bash glob -> need split
-    for exclude in "${excludes[@]}"; do
-      if [[ "$arg" == $exclude ]]; then
-        continue
-      fi
-    done
-
-    if test -d "$arg"; then
+  for arg in "${args[@]:1}"; do
+    if [ -d "$arg" ]; then
       find "$arg" -type f "${exclude_args[@]}" -exec md5sum {} + >>"$output_file.tmp"
-    elif test -f "$arg"; then
+    elif [ -f "$arg" ]; then
       md5sum "$arg" >>"$output_file.tmp"
     else
-      err "Invalid argument: $arg"
+      echo "Invalid argument: $arg" >&2
+      return 1
     fi
   done
 
