@@ -12,6 +12,7 @@
     "-count=1",
     "-v"
   ],
+  // "go.testEnvFile": null,
   // --
   "shellcheck.executablePath": "shellcheck",
   "shellcheck.customArgs": [

@@ -104,7 +104,8 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	// test suite that got the lock ran them and released it (next suite wouldn't be aware and run this again,
 	// we would need the first suite to run indefinitely until all others end, and only then remove the marker file.)
 	// we would still have the issue to remove that file before running go tests out of `project` (vscode, regular shell call...)
-	//
+	// TODO: may use "go.testEnvFile": null,
+	// which will be read by all .env will
 	if err = mPostMigrations.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		panic(fmt.Sprintf("Couldnt' migrate down (post-migrations): %s\n", err))
 	}

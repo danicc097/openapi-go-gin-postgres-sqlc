@@ -1797,7 +1797,7 @@ x.migrate() {
       "$@" 2>&1
 
     echo "Running post-migrations"
-    { yes || :; } | migrate \
+    migrate \
       -path $POST_MIGRATIONS_DIR/ \
       -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable&x-migrations-table=$POST_MIGRATIONS_TABLE" \
       "$@" 2>&1
