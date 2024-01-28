@@ -1184,7 +1184,7 @@ x.test.xo() {
 
     cache_all "$CACHE/test-xo.md5" bin/project bin/.helpers.sh $XO_TEMPLATES_DIR/ \
       --exclude "$XO_TEMPLATES_DIR/tests/got/*" \
-      --exclude "$XO_TEMPLATES_DIR/tests/want/*" && return 0
+      --exclude "$XO_TEMPLATES_DIR/tests/snapshot/*" && return 0
 
     docker.postgres.drop_and_recreate_db $POSTGRES_DB # FIXME wrong xo gen when tables with equal names in public schema exist as well
 

@@ -363,6 +363,10 @@ show_tracebacks() {
 }
 
 # Cache given files and return if checksums match or an error code otherwise.
+# Parameters:
+#   - Output .md5 file
+#   - Files or directories to cache
+#   - Optionally pass glob patterns to exclude.
 cache_all() {
   local excludes=()
   while [[ "$#" -gt 0 ]]; do
@@ -390,8 +394,14 @@ cache_all() {
   output_file="$1"
   true >"$output_file.tmp"
 
+  exclude_args=()
+  for exclude in "${excludes[@]}"; do
+    exclude_args+=('!' -path "$exclude")
+  done
+
   for arg in "${@:2}"; do
     # TODO: advanced glob with /** or /*
+    # $arg may be an expanded bash glob -> need split
     for exclude in "${excludes[@]}"; do
       if [[ "$arg" == $exclude ]]; then
         continue
@@ -399,7 +409,7 @@ cache_all() {
     done
 
     if test -d "$arg"; then
-      find "$arg" -type f -exec md5sum {} + >>"$output_file.tmp"
+      find "$arg" -type f "${exclude_args[@]}" -exec md5sum {} + >>"$output_file.tmp"
     elif test -f "$arg"; then
       md5sum "$arg" >>"$output_file.tmp"
     else
