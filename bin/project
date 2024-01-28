@@ -1138,24 +1138,11 @@ x.test.backend() {
     # we must only invalidate cache if database schema changes
     cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
 
-    # issue not in pg itself, pgxpool acquires max conns (4 default) and won't release.
-    # only happens in CI with tx. ie, 4 txs stuck.
-    #
-    # local bg_pid
-    # if [[ $X_ENV == "ci" ]]; then
-    #   {
-    #     while sleep 0.2; do x.db.conns-db postgres_test; done
-    #   } &
-    #   bg_pid=$!
-    # fi
-
     set -x
     # TODO: shared -run flag that accepts extra regexes on top
     APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo -run '!^CountOne_' $cache_opt "$@" ./...
     APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo "$@" -run 'CountOne_' -count=1 ./...
     set +x
-
-    # { test -n "$bg_pid" && kill $bg_pid; } || true
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
