@@ -1796,11 +1796,13 @@ x.migrate() {
       -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable" \
       "$@" 2>&1
 
-    echo "Running post-migrations"
-    migrate \
-      -path $POST_MIGRATIONS_DIR/ \
-      -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable&x-migrations-table=$POST_MIGRATIONS_TABLE" \
-      "$@" 2>&1
+    if [[ "${*:1}" =~ (up)+ ]]; then
+      echo "Running post-migrations"
+      migrate \
+        -path $POST_MIGRATIONS_DIR/ \
+        -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable&x-migrations-table=$POST_MIGRATIONS_TABLE" \
+        "$@" 2>&1
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
