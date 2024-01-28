@@ -493,7 +493,6 @@ type Repos struct {
 EOF
 
   gofumpt -w $out_path
-
 }
 
 # for manually inserted elements via migrations, e.g. projects, kanban_steps, work_item_type,
@@ -948,15 +947,12 @@ x.gen() {
 
     x.lint.sql
 
-    # TODO try use gnu parallel and exit when anyone fails
-    # (with current setup the whole x.gen is executed and only then
-    # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
-    # shopt -s inherit_errexit
     go generate ./... &
     x.gen.gowrap &
     x.gen.proto &
-    x.gen.xo &
-    x.gen.sqlc &
+    # might be race between xo and sqlc
+    { retry 5 x.gen.xo; } &
+    { retry 5 x.gen.sqlc; } &
     x.gen.jet &
     generate_repo_constructor &
 

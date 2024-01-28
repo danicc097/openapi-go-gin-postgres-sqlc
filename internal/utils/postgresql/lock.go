@@ -68,7 +68,7 @@ func (al *AdvisoryLock) ensureConnAcquired() error {
 	return nil
 }
 
-// WaitForRelease waits for the advisory lock to be released by another process.
+// WaitForRelease waits for the advisory lock to be released by another session.
 // Returns an error if the wait times out.
 func (al *AdvisoryLock) WaitForRelease(retryCount int, d time.Duration) error {
 	if err := al.ensureConnAcquired(); err != nil {

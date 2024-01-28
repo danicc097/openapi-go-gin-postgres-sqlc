@@ -100,6 +100,32 @@ wait_without_error() {
   fi
 }
 
+retry() {
+  local retries="$1"
+  local command="${@:2}"
+  local options="$-" # Get the current "set" options
+
+  # disable set -e
+  if [[ $options == *e* ]]; then
+    set +e
+  fi
+  # disable custom tracebacks
+  trap ':' ERR
+
+  $command
+  local exit_code=$?
+
+  if [[ $options == *e* ]]; then
+    set -e
+  fi
+
+  if [[ $exit_code -ne 0 && $retries -gt 0 ]]; then
+    retry $((retries - 1)) "$command"
+  else
+    return $exit_code
+  fi
+}
+
 # Retrieve environment variable `var` from `env_file`
 get_envvar() {
   local env_file="$1"
