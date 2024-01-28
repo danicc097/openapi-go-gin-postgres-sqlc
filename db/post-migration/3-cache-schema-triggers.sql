@@ -67,15 +67,6 @@ create or replace function sync_work_items ()
   as $$
 declare
   project_name text;
-  project_table_cols text[];
-  work_items_cols text[];
-  sync_cols text[];
-  update_cols text[];
-  project_table_col_values text;
-  all_cols_names text;
-  all_values record;
-  all_values_columns text[];
-  res record;
   all_columns_with_type text;
   all_columns text;
   conflict_update_columns text;
@@ -148,6 +139,11 @@ end;
 $$
 language plpgsql;
 
+--
+--
+-- Sync project work item tables cache
+--
+--
 do $BODY$
 declare
   project_name text;

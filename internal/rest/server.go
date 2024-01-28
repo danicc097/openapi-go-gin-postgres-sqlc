@@ -256,6 +256,9 @@ func Run(env, specPath string) (<-chan error, error) {
 		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "postgresql.New")
 	}
 
+	// TODO: automatic migrations and post migrations. abstract testutil NewDB
+	// once postgres locks are set.
+
 	rdb, err := redis.New()
 	if err != nil {
 		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "redis.New")

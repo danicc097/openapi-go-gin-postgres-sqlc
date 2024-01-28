@@ -1,6 +1,6 @@
 module github.com/danicc097/openapi-go-gin-postgres-sqlc
 
-go 1.20
+go 1.21
 
 require (
 	github.com/danicc097/oidc-server/v3 v3.5.0

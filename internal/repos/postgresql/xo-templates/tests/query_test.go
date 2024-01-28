@@ -38,13 +38,29 @@ func TestCursorPagination_Timestamp(t *testing.T) {
 	ee, err := db.XoTestsPagElementPaginatedByCreatedAt(ctx, testPool, time.Now().Add(-(24+1)*time.Hour), models.DirectionDesc, db.WithXoTestsPagElementLimit(1), db.WithXoTestsPagElementJoin(db.XoTestsPagElementJoins{}))
 	require.NoError(t, err)
 	require.Len(t, ee, 1)
-	assert.Equal(t, ee[0].Name, "element -2 days")
+	assert.Equal(t, "element -2 days", ee[0].Name)
 
 	ee, err = db.XoTestsPagElementPaginatedByCreatedAt(ctx, testPool, ee[0].CreatedAt, models.DirectionDesc, db.WithXoTestsPagElementLimit(2))
 	require.NoError(t, err)
 	require.Len(t, ee, 2)
-	assert.Equal(t, ee[0].Name, "element -3 days")
-	assert.Equal(t, ee[1].Name, "element -4 days")
+	assert.Equal(t, "element -3 days", ee[0].Name)
+	assert.Equal(t, "element -4 days", ee[1].Name)
+}
+
+// due to created_at unique.
+func createUserWithRetry(t *testing.T, params *db.XoTestsUserCreateParams) *db.XoTestsUser {
+	var err error
+
+	u, err := db.CreateXoTestsUser(context.Background(), testPool, params)
+
+	retries := 0
+	for err != nil && retries < 10 {
+		u, err = db.CreateXoTestsUser(context.Background(), testPool, params)
+		retries++
+	}
+	require.NoError(t, err)
+
+	return u
 }
 
 func TestCursorPagination_HavingClause(t *testing.T) {
@@ -52,10 +68,8 @@ func TestCursorPagination_HavingClause(t *testing.T) {
 
 	ctx := context.Background()
 
-	u1, err := db.CreateXoTestsUser(ctx, testPool, &db.XoTestsUserCreateParams{Name: t.Name() + "_1"})
-	require.NoError(t, err)
-	u2, err := db.CreateXoTestsUser(ctx, testPool, &db.XoTestsUserCreateParams{Name: t.Name() + "_2"})
-	require.NoError(t, err)
+	u1 := createUserWithRetry(t, &db.XoTestsUserCreateParams{Name: t.Name() + "_1"})
+	u2 := createUserWithRetry(t, &db.XoTestsUserCreateParams{Name: t.Name() + "_2"})
 
 	wi, err := db.CreateXoTestsWorkItem(ctx, testPool, &db.XoTestsWorkItemCreateParams{})
 	require.NoError(t, err)
@@ -279,13 +293,12 @@ func TestCustomFilters(t *testing.T) {
 func TestCRUD_UniqueIndex(t *testing.T) {
 	t.Parallel()
 
+	var err error
+
 	ctx := context.Background()
 
-	u1, err := db.CreateXoTestsUser(ctx, testPool, &db.XoTestsUserCreateParams{Name: "test_user_1"})
-	require.NoError(t, err)
-	assert.Equal(t, "test_user_1", u1.Name)
-	u2, err := db.CreateXoTestsUser(ctx, testPool, &db.XoTestsUserCreateParams{Name: "test_user_2"})
-	require.NoError(t, err)
+	u1 := createUserWithRetry(t, &db.XoTestsUserCreateParams{Name: "test_user_1"})
+	u2 := createUserWithRetry(t, &db.XoTestsUserCreateParams{Name: "test_user_2"})
 
 	u1.Name = "test_user_1_update"
 	u1, err = u1.Update(ctx, testPool)

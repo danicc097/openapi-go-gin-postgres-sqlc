@@ -1,0 +1,47 @@
+#!/bin/bash
+AWK_REMOVE_GO_COMMENTS='
+     /\/\*/ { f=1 } # set flag that is a block comment
+
+     f==0 && !/^\s*(\/\/|\/\*)/ {
+        print  # print non-commented lines
+     }
+     /\*\// { f=0 } # reset flag at end of comment
+'
+# Stores go test functions in package to a given array.
+# Parameters:
+#    Test function array (nameref)
+#    Package directory
+go-utils.find-test-functions() {
+  local -n __arr="$1"
+  local pkg="$2"
+  local test_file_pattern="*_test.go"
+
+  mapfile -t __arr < <(
+    find "$pkg" -name "$test_file_pattern" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+      sed -n -E 's/^\s*func\s*(Test[a-zA-Z0-9_]*)\(.*/\1/p'
+  )
+
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    echo "No test functions found in package in directory: $pkg"
+  fi
+
+  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
+}
+
+# Assuming the go-utils script is sourced or included in the current script
+
+# Define an array to store test function names
+declare -a test_functions
+
+# Call the find-test-functions function
+go-utils.find-test-functions test_functions "internal/services"
+
+# Check if any test functions were found
+if [[ ${#test_functions[@]} -gt 0 ]]; then
+  echo "Found test functions:"
+  for func in "${test_functions[@]}"; do
+    echo "$func"
+  done
+else
+  echo "No test functions found."
+fi

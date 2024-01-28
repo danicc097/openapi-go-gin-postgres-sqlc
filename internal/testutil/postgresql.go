@@ -1,6 +1,7 @@
 package testutil
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -9,8 +10,10 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	postgresqlutils "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/postgresql"
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,12 +22,13 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-var (
-	once           sync.Once
-	markerFilePath = "/tmp/migration_marker"
-)
+var once sync.Once
+
+// cannot be random since we want to lock parallel test suites.
+const migrationsLockID = 12341234
 
 // NewDB returns a new (shared) testing Postgres pool with up-to-date migrations.
+// Panics on error.
 func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	logger, _ := zap.NewDevelopment()
 
@@ -33,9 +37,32 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		panic(fmt.Sprintf("Couldn't create pool: %s\n", err))
 	}
 
-	// if os.Getenv("IS_TESTING") != "" {
-	// 	printConnections(500 * time.Millisecond)
-	// }
+	lock, err := postgresqlutils.NewAdvisoryLock(pool, migrationsLockID)
+	if err != nil {
+		panic(fmt.Sprintf("NewAdvisoryLock: %s\n", err))
+	}
+
+	acquired, err := lock.TryLock(context.Background())
+	if err != nil {
+		panic(fmt.Sprintf("advisoryLock.TryLock: %s\n", err))
+	}
+	if !acquired {
+		// wait for migrations
+		if err := lock.WaitForRelease(50, 200*time.Millisecond); err != nil {
+			panic(fmt.Sprintf("advisoryLock.WaitForRelease: %s\n", err))
+		}
+
+		return pool, sqlpool, nil
+	}
+
+	defer func() {
+		lock.Release()
+		lock.ReleaseConn()
+
+		if lock.IsLocked() {
+			panic(fmt.Sprintf("advisory lock was not released\n"))
+		}
+	}()
 
 	instance, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{})
 	if err != nil {
@@ -47,77 +74,40 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		panic("No runtime caller information")
 	}
 
-	once.Do(func() {
-		m, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/migrations/"), "postgres", instance)
+	m, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/migrations/"), "postgres", instance)
+	if err != nil {
+		panic(fmt.Sprintf("Couldn't migrate (2): %s\n", err))
+	}
+
+	// NOTE: drop table before tests only externally.
+	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		panic(fmt.Sprintf("Couldnt' migrate (3): %s\n", err))
+	}
+
+	postMigrationPath := path.Join(path.Dir(src), "../../db/post-migration/")
+	files, err := os.ReadDir(postMigrationPath)
+	if err != nil {
+		panic(fmt.Sprintf("Error reading post-migration directory: %s\n", err))
+	}
+
+	for _, file := range files {
+		if file.IsDir() || !strings.HasPrefix(file.Name(), ".sql") {
+			continue
+		}
+
+		filePath := path.Join(postMigrationPath, file.Name())
+		script, err := os.ReadFile(filePath)
 		if err != nil {
-			panic(fmt.Sprintf("Couldn't migrate (2): %s\n", err))
+			panic(fmt.Sprintf("Error reading post-migration script %s: %s\n", file.Name(), err))
 		}
 
-		// NOTE: migrate down before tests only externally.
-		if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-			panic(fmt.Sprintf("Couldnt' migrate (3): %s\n", err))
-		}
-
-		// post-migration scripts may not be idempotent like up migration command
-		if _, err := os.Stat(markerFilePath); os.IsExist(err) {
-			fmt.Println("Marker file exists, skipping post-migrations.")
-			return
-		}
-
-		markerFile, err := os.Create(markerFilePath)
+		_, err = sqlpool.Exec(string(script))
 		if err != nil {
-			panic(fmt.Sprintf("Error creating marker file: %s\n", err))
-		}
-		defer markerFile.Close()
-
-		postMigrationPath := path.Join(path.Dir(src), "../../db/post-migration/")
-		files, err := os.ReadDir(postMigrationPath)
-		if err != nil {
-			panic(fmt.Sprintf("Error reading post-migration directory: %s\n", err))
+			panic(fmt.Sprintf("Error executing post-migration script %s: %s\n", file.Name(), err))
 		}
 
-		for _, file := range files {
-			if file.IsDir() || !strings.HasPrefix(file.Name(), ".sql") {
-				continue
-			}
-
-			filePath := path.Join(postMigrationPath, file.Name())
-			script, err := os.ReadFile(filePath)
-			if err != nil {
-				panic(fmt.Sprintf("Error reading post-migration script %s: %s\n", file.Name(), err))
-			}
-
-			_, err = sqlpool.Exec(string(script))
-			if err != nil {
-				panic(fmt.Sprintf("Error executing post-migration script %s: %s\n", file.Name(), err))
-			}
-
-			fmt.Printf("Run post-migration script: %s\n", file.Name())
-		}
-	})
+		fmt.Printf("Run post-migration script: %s\n", file.Name())
+	}
 
 	return pool, sqlpool, nil
 }
-
-// NOTE: debug directly in project script, can reuse the same process - much faster and efficient.
-// func printConnections(d time.Duration) {
-// 	cwd := GetFileRuntimeDirectory()
-// 	projectPath := path.Join(cwd, "../..", "bin/project")
-
-// 	go func() {
-// 		ticker := time.NewTicker(d)
-// 		defer ticker.Stop()
-
-// 		for range ticker.C {
-// 			go func() {
-// 				cmd := exec.Command(projectPath, "db.conns-db", "postgres_test")
-// 				cmd.Stdout = os.Stdout
-// 				cmd.Stderr = os.Stderr
-
-// 				if err := cmd.Run(); err != nil {
-// 					fmt.Println("Error executing command:", err)
-// 				}
-// 			}()
-// 		}
-// 	}()
-// }

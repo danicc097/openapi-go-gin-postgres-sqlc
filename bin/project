@@ -493,7 +493,6 @@ type Repos struct {
 EOF
 
   gofumpt -w $out_path
-
 }
 
 # for manually inserted elements via migrations, e.g. projects, kanban_steps, work_item_type,
@@ -948,15 +947,12 @@ x.gen() {
 
     x.lint.sql
 
-    # TODO try use gnu parallel and exit when anyone fails
-    # (with current setup the whole x.gen is executed and only then
-    # the trap on SIGUSR1 coming from `err` is run - now temporarily using kill 0 in `err` instead on sending SIGUSR1)
-    # shopt -s inherit_errexit
     go generate ./... &
     x.gen.gowrap &
     x.gen.proto &
-    x.gen.xo &
-    x.gen.sqlc &
+    # might be race between xo and sqlc
+    { retry 5 x.gen.xo; } &
+    { retry 5 x.gen.sqlc; } &
     x.gen.jet &
     generate_repo_constructor &
 
@@ -1139,9 +1135,10 @@ x.test.backend() {
     # POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # post-migration scripts now run automatically in testutil db setup
 
     local cache_opt="-count=1"
+    # we must only invalidate cache if database schema changes
     cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
 
-    # FIXME: issue not in pg itself, pgxpool acquires max conns (4 default) and won't release.
+    # issue not in pg itself, pgxpool acquires max conns (4 default) and won't release.
     # only happens in CI with tx. ie, 4 txs stuck.
     #
     # local bg_pid
@@ -1152,10 +1149,10 @@ x.test.backend() {
     #   bg_pid=$!
     # fi
 
-    rm -f /tmp/migration_marker
-
     set -x
-    APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo $cache_opt "$@" ./...
+    # TODO: shared -run flag that accepts extra regexes on top
+    APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo -run '!^CountOne_' $cache_opt "$@" ./...
+    APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo "$@" -run 'CountOne_' -count=1 ./...
     set +x
 
     # { test -n "$bg_pid" && kill $bg_pid; } || true
@@ -1231,25 +1228,53 @@ x.test.xo() {
   xsetup.backup.cleanup
 }
 
+test_backend_watch() {
+  clear
+
+  echo "Waiting for changes..."
+  echo "Test args: $*"
+
+  trap 'exit' SIGINT # overrides exit-cleanup
+
+  while true; do
+    inotifywait \
+      --recursive \
+      -qq \
+      --event=close_write \
+      --format='%T %f' \
+      --timefmt='%s' \
+      ./internal && clear && { APP_ENV="$X_ENV" go test -count=1 -shuffle=on -tags skipxo "$@"; } && echo "${GREEN}✓ All tests passing${OFF}"
+  done
+}
+
 # Test backend on file changes. Accepts `go test` parameters.
 # Args: [...]
 x.test.backend.watch() {
-  clear
+  test_backend_watch "$@" ./...
+}
 
-  latency=3
-  while true; do
-    inotifywait \
-      --monitor ./internal/**/* \
-      --event=close_write \
-      --format='%T %f' \
-      --timefmt='%s' |
-      while read -r event_time event_file 2>/dev/null || sleep $latency; do
-        clear
+# Watch specific functions in a given dir. Accepts `go test` parameters.
+# Example: internal/repos/postgresql/ TestUser_Create TestUser_Update -count=5
+# Args: dir [fn ...]
+x.test.backend.watch-for() {
+  local dir="$1"
+  local tests=()
+  local gotest_args=()
 
-        # NOTE: no count=1 default to allow caching
-        { APP_ENV="$X_ENV" go test -shuffle=on -tags skipxo "$@" ./...; } && echo "${GREEN}✓ All tests passing${OFF}"
-      done
+  for arg in "${@:2}"; do
+    if [[ $arg == Test* ]]; then
+      tests+=("$arg")
+    else
+      gotest_args+=("$arg")
+    fi
   done
+
+  local fns=$(
+    IFS='|'
+    echo "${tests[*]}"
+  )
+
+  test_backend_watch -count=1 -run "^($fns)$" "$GOMOD_PKG/$dir" "${gotest_args[@]}"
 }
 
 # Run backend with hot-reloading.
@@ -1311,6 +1336,7 @@ x.run.all() {
   # done
 }
 
+# Syncs backend dependencies.
 x.backend.sync-deps() {
   go mod tidy
   go mod vendor
@@ -1645,7 +1671,7 @@ x.test.create-crud-gen() {
     Message: \"Some message\"," $pg_random_file
     done
 
-    x.test.backend -timeout 10m "$@"
+    x.test.backend -count=1 "$@" -run '!^CountOne_'
 
     if [[ $X_ENV != "ci" ]]; then # always restore branch if we're running locally
       echo "${GREEN}✅ Tests passing. Forcing exit to restore previous branch.${OFF}"
@@ -1806,20 +1832,31 @@ x.db.psql() {
 }
 
 # psql session for `database`.
-# Args: database
+# Args: db
 x.db.psql-with-db() {
   docker exec -it postgres_db_"$PROJECT_PREFIX" psql -d $1
 }
 
 # Show active and max number of connections for the current environment.
 x.db.conns() {
-  { { {
-    x.db.conns-db $POSTGRES_DB
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  x.db.conns-db $POSTGRES_DB
+}
+
+# Poll db connections in database.
+# Args: db
+x.db.conns.watch-db() {
+  trap 'exit' SIGINT # overrides exit-cleanup
+
+  while true; do
+    out=$(x.db.conns-db $1 || echo "${RED}Connection error ($1)${OFF}")
+    clear
+    echo $out
+    sleep 0.2
+  done
 }
 
 # Show active and max number of connections for `database`.
-# Args: database
+# Args: db
 x.db.conns-db() {
   { { {
     current_conns=$(docker.postgres.psql -d $1 -c "SELECT count(*) FROM pg_stat_activity WHERE datname = '$1';")
@@ -1845,24 +1882,23 @@ x.db.drop() {
 }
 
 # Drop and recreate the database used for code generation up to N, N-1 revisions or none.
-# Args: {up|up-1|drop}
+# Args: mode
 x.db.gen() {
   { { {
     latest_rev=$(find $MIGRATIONS_DIR/*.sql -maxdepth 0 | wc -l)
     second_latest_rev=$(((latest_rev - 2) / 2)) # up+down
     POSTGRES_DB=$GEN_POSTGRES_DB x.db.drop
-    # TODO should be able to autocomplete x function nested cases
-    # if it's called as $CMD
     case $1 in
     up)
       POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up
       ;;
     up-1)
+      echo "Migrating up to penultimate revision..."
       POSTGRES_DB=$GEN_POSTGRES_DB x.migrate up $second_latest_rev
       ;;
     drop) ;;
     *)
-      err "Valid options {up|up-1|drop}, got: $1"
+      err "Valid options: \"$(join_by , ${X_FUNC_DB_GEN__COMP})\" but got: \"$1\""
       ;;
     esac
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -2313,6 +2349,80 @@ X_ENV="dev"
 # --------------------- completion and delegation --------------------
 #      `complete -o nospace -C foo foo` > `source <(foo bloated_completion)`
 
+declare -A X_CUSTOM_COMPLETION
+
+readonly X_OPT_ENV__COMP="dev prod ci"
+readonly X_FUNC_DB_GEN__COMP="up up-1 drop"
+
+_completion_x_option__env() {
+  local pre="$1"
+  local items=${X_OPT_ENV__COMP[@]}
+  for i in ${items[@]}; do
+    [[ ${i,,} == ${pre}* || " ${__x_options[*]} " =~ " ${pre} " ]] && echo "$i"
+  done
+}
+
+_completion_x_function__db.gen() {
+  local pre="$1"
+
+  local items=${X_FUNC_DB_GEN__COMP[@]}
+  for i in ${items[@]}; do
+    [[ ${i,,} == ${pre}* ]] && echo "$i"
+  done
+}
+
+_completion_x_function__test.backend.watch-for() {
+  local pre="$1"
+  local dirs=()
+  local -n __previous_x_fn_items="$2"
+  # local -n __previous_x_opt_items="$3" # not worth it, we wont have multiple completion for options, too convoluted. create multiple x options instead if at all
+
+  dir=${__previous_x_fn_items[0]}
+  seenfns=("${__previous_x_fn_items[@]:1}")
+  if [[ "${dir}" =~ "${dir%/}/" ]]; then
+    declare -a fns
+    go-utils.find_test_functions fns "$dir" 2>/dev/null || true
+
+    for i in "${fns[@]}"; do
+      [[ ${i,,} == ${pre}* && ! " ${seenfns[*]} " =~ " ${i} " ]] && echo "$i"
+    done
+
+    return
+  fi
+
+  # TODO abstract away for all completion functions to use
+  function find_dirs() {
+    while IFS= read -r -d '' dir; do
+      str="${dir%/}/"
+      str="${dir##\./}/"
+      dirs+=("$str")
+    done < <(find "$1" -mindepth 1 -maxdepth 1 -type d -print0)
+  }
+
+  find_dirs .
+
+  for dir in "${dirs[@]}"; do
+    if [[ "${pre}" == "${dir%/}"/* ]]; then
+      find_dirs "${pre%/*}"
+      break
+    fi
+  done
+
+  for dir in "${dirs[@]}"; do
+    [[ ${dir,,} == ${pre}* ]] && echo "$dir"
+  done
+}
+
+# should echo an array of possible options.
+# args received by completion functions:
+# 1. pre string
+# 2. current completion items array
+X_CUSTOM_COMPLETION=(
+  ["db.gen"]="_completion_x_function__db.gen"
+  ["test.backend.watch-for"]="_completion_x_function__test.backend.watch-for"
+  ["--x-env="]="_completion_x_option__env"
+)
+
 while IFS= read -r line; do
   [[ $line =~ ^declare\ -f\ x\. ]] || continue
   COMMANDS+=("${line##declare -f x.}")
@@ -2331,10 +2441,27 @@ if [[ -n $COMP_LINE ]]; then
   pre="${COMP_LINE##* }" # the part after the last space in the current command
   pre="${pre,,}"         # autocomplete regardless of user input case
   cur_commands=(${COMP_LINE%"$pre"})
+  # x option that accepts a single completion string needs special handling like --x-env=
+  if [[ "$COMP_LINE" =~ =$ ]]; then # ends with =
+    cur_commands=(${COMP_LINE})
+  elif [[ "$COMP_LINE" =~ =([^[:space:]]+)$ ]]; then # started typing option
+    pre=${BASH_REMATCH[1]}
+    cur_commands=("${COMP_LINE%%=*}=")
+  fi
+
+  complete_with_fn() {
+    local fn=${X_CUSTOM_COMPLETION["$1"]}
+    local items=$($fn "$pre" previous_x_fn_items || true)
+    test -z "$items" && return
+    for i in ${items[@]}; do
+      echo "$i"
+    done
+    exit
+  }
 
   for c in "${COMMANDS[@]}"; do
     if [[ " ${cur_commands[*]} " =~ " ${c} " ]]; then
-      xfn_specified=true
+      xfn_specified=$c
       break
     fi
   done
@@ -2343,8 +2470,6 @@ if [[ -n $COMP_LINE ]]; then
     test -z "${xfn_specified}" || break
     test -z "${pre}" -o "${c}" != "${c#"${pre}"}" -a "${pre}" != "${c}" && echo "${c} "
   done
-
-  test -z "${xfn_specified}" && exit
 
   declare __x_options x_options_lines
 
@@ -2356,29 +2481,55 @@ if [[ -n $COMP_LINE ]]; then
     __x_options+=("$xopt")
   done
 
+  # will jump directly to x options completion if we start typing "-"
   declare -A __x_opts_seen
-  for cmd in "${cur_commands[@]}"; do
+  for cmd in ${cur_commands[@]}; do
     for opt in ${__x_options[@]}; do
       if [[ "$cmd" == *"$opt"* ]]; then
         __x_opts_seen[$opt]=true
+        __x_last_opt_seen=$opt
         break
       fi
     done
   done
+
+  # completion for functions may be filepath completion, single or multiple selection from list of items...
+  # theres no way to abstract to main autocomplete.
+  declare -A __x_completion_x_options_items_seen
+  declare -A __x_completion_x_function_items_seen
+
+  previous_x_fn_items=()
+  save_flag=false
+  for i in "${!cur_commands[@]}"; do
+    cmd="${cur_commands[$i]}"
+
+    if [ "$cmd" == "$xfn_specified" ]; then
+      save_flag=true
+      continue # start matching rest of args passed
+    fi
+
+    if [ "$save_flag" == true ]; then
+      previous_x_fn_items+=("$cmd")
+    fi
+  done
+
+  # show completion for an x function
+  if [[ -n "${xfn_specified}" && "${pre}" != -* && ${#__x_opts_seen[@]} -eq 0 ]]; then
+    complete_with_fn $xfn_specified
+  # show completion for last --x-(.*)= if it specifies a completion func
+  elif [[ ${#__x_opts_seen[@]} -gt 0 ]] && [[ -n "$pre" ]]; then
+    xopt="${pre//\*/}"
+    ! [[ " ${__x_options[*]} " =~ " ${xopt} " ]] && xopt="$__x_last_opt_seen"
+    complete_with_fn $xopt
+  fi
+
+  test -z "${xfn_specified}" && exit
 
   for opt in ${__x_options[@]}; do
     [[ -n "${__x_opts_seen[$opt]}" ]] && continue
     if [[ ${opt:0:${#pre}} == "${pre,,}" ]]; then
       [[ "$opt" == "${pre,,}" ]] && continue # will have to be removed for inner completion
       if [[ "${opt,,}" =~ ^.*= ]]; then
-        # TODO: could complete if choices found for opt (assoc array) eg --x-env has # Options: "dev prod ci"
-        # which gets added to usage docs as arg: dev|prod|ci instead of using # Args: env
-        # for validation, it can be generic:
-        # if [[ ! " ${opts[${--x-(flag)}]} " =~ " $val " ]]; then
-        #   err "Invalid value for --x-(flag): val. Allowed values: opts[${--x-(flag)}]"
-        # fi`
-        # and for completion itself we cycle through echo "${opt}<val1>", "${opt}<val2>",...
-        # (can handle inner pre here, ie --x-env=de <TAB> outputs possible nested opts as well)
         echo "${opt}"
       else
         echo "${opt} "
@@ -2432,9 +2583,8 @@ while [[ "$#" -gt 0 ]]; do
     # Environment to run commands in. Defaults to "dev".
     # Args: env
     export X_ENV="${1#--x-env=}"
-    valid_envs="dev prod ci"
-    if [[ ! " ${valid_envs[*]} " =~ " $X_ENV " ]]; then
-      err "Valid environments: $valid_envs"
+    if [[ ! " ${X_OPT_ENV__COMP[*]} " =~ " $X_ENV " ]]; then
+      err "Valid environments: $X_OPT_ENV__COMP"
     fi
     ;;
   *)
@@ -2482,6 +2632,8 @@ exit_cleanup_calls=0
 
 exit-cleanup() {
   # prevent exiting in foreground while we check if we should run cleanup
+  # for monitoring functions, a top level "trap 'exit' SIGINT"
+  # is necessary. Handle cleanup calls manually, if any
   trap 'echo ignoring SIGINT' SIGINT
   [[ "$exit_cleanup_calls" -gt 0 ]] && return
   ((exit_cleanup_calls++)) || true

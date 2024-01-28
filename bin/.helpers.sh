@@ -100,6 +100,32 @@ wait_without_error() {
   fi
 }
 
+retry() {
+  local retries="$1"
+  local command="${@:2}"
+  local options="$-" # Get the current "set" options
+
+  # disable set -e
+  if [[ $options == *e* ]]; then
+    set +e
+  fi
+  # disable custom tracebacks
+  trap ':' ERR
+
+  $command
+  local exit_code=$?
+
+  if [[ $options == *e* ]]; then
+    set -e
+  fi
+
+  if [[ $exit_code -ne 0 && $retries -gt 0 ]]; then
+    retry $((retries - 1)) "$command"
+  else
+    return $exit_code
+  fi
+}
+
 # Retrieve environment variable `var` from `env_file`
 get_envvar() {
   local env_file="$1"
@@ -532,6 +558,7 @@ go-utils.find_db_ids_int() {
   fi
   mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
 }
+
 go-utils.find_db_ids_uuid() {
   local -n __arr="$1"
   local pkg="$2"
@@ -542,6 +569,29 @@ go-utils.find_db_ids_uuid() {
   fi
   mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
 }
+
+# Stores go test functions in package to a given array.
+# Parameters:
+#    Test function array (nameref)
+#    Package directory
+go-utils.find_test_functions() {
+  local -n __arr="$1"
+  local pkg="$2"
+
+  mapfile -t __arr < <(
+    find "$pkg" -maxdepth 1 -name "*_test.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+      sed -n -E 's/^\s*func\s*(Test[a-zA-Z0-9_]*)\(.*/\1/p'
+  )
+
+  mapfile -t __arr < <(printf "%s\n" "${__arr[@]}" | grep -v "TestMain")
+
+  if [[ ${#__arr[@]} -eq 0 ]]; then
+    err "No test functions found in package in directory: $pkg"
+  fi
+
+  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
+}
+
 # Stores go struct fields to a given array.
 # Parameters:
 #    Struct name

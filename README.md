@@ -59,6 +59,8 @@ autocompletion (`complete -C project project`) for
 free (from your own source itself and comments)
 so they're always up to date without any repetitive work: add/remove functions
 and flags at will.
+Custom internal autocompletion functions for each `x` function or `x` option can be
+easily setup.
 
 ![](.github/autodocs.png)
 
@@ -93,7 +95,7 @@ cp openapi-go.code-workspace.example openapi-go.code-workspace # edit as desired
 
 project bootstrap # dependency and tools interactive installation
 project gen
-project run-dev 
+project run-dev
 ```
 
 ### Tracing, monitoring...

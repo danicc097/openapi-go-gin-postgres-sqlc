@@ -69,53 +69,50 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not query database types")
 	}
 
-	afterConnectRun := false
+	atLeastOneConnInPool := false
 
-	if os.Getenv("IS_TESTING") != "" {
-		// random update queries that use transactions get stuck in CI and time out
-		// real issue still not pinpointed
-		poolConfig.ConnConfig.RuntimeParams["statement_timeout"] = "1s"
-	}
-	poolConfig.MinConns = 12
+	poolConfig.MinConns = 4
 	// NOTE: CI fails using default of 4
 	poolConfig.MaxConns = 20
+	if os.Getenv("IS_TESTING") != "" {
+		poolConfig.ConnConfig.RuntimeParams["statement_timeout"] = "60s"
+		poolConfig.MaxConns = 50
+	}
 
 	// called after a connection is established, but before it is added to the pool.
 	// Will run once.
-	const retries = 5
+	const retries = 10
 	poolConfig.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
+		// DATA RACE for some reason
 		pgxAfterConnectLock.Lock()
 		defer pgxAfterConnectLock.Unlock()
 
 		var err error
 
-		for attempt := 1; attempt <= retries; attempt++ {
-			err = registerDataTypes(ctx, c, typeNames)
-			if err == nil {
+		for i := 1; i <= retries; i++ {
+			if err = registerDataTypes(ctx, c, typeNames); err == nil {
 				break
 			}
 
-			if attempt < retries {
-				time.Sleep(500 * time.Millisecond)
-			}
+			time.Sleep(100 * time.Millisecond)
 		}
 
 		if err != nil {
 			return internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not register data types")
 		}
 
-		afterConnectRun = true
+		atLeastOneConnInPool = true
 
 		return nil
 	}
 
 	pgxPool, err := pgxpool.NewWithConfig(context.Background(), poolConfig)
 	if err != nil {
-		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "pgxpool.New")
+		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "pgxpool.NewWithConfig")
 	}
 
 	if err := pgxPool.Ping(context.Background()); err != nil {
-		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "db.Ping")
+		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "pgxPool.Ping")
 	}
 
 	sqlPool, err := sql.Open("pgx", pgxPool.Config().ConnString())
@@ -123,8 +120,8 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "sql.Open")
 	}
 
-	for !afterConnectRun {
-		time.Sleep(200 * time.Millisecond)
+	for !atLeastOneConnInPool {
+		time.Sleep(50 * time.Millisecond)
 	}
 
 	return pgxPool, sqlPool, nil
