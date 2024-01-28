@@ -22,6 +22,7 @@ readonly BUILD_DIR="bin/build"
 readonly TOOLS_DIR="bin/tools"
 readonly PROTO_DIR="internal/pb"
 readonly MIGRATIONS_DIR="db/migrations"
+readonly POST_MIGRATIONS_DIR="db/post-migrations"
 readonly CERTIFICATES_DIR="certificates"
 readonly GOWRAP_TEMPLATES_DIR="internal/gowrap-templates"
 readonly REPOS_DIR="internal/repos"
@@ -1132,7 +1133,6 @@ x.test.backend() {
     x.test.xo
 
     yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true # nochange exits
-    # POSTGRES_DB=$POSTGRES_TEST_DB x.migrate up # post-migration scripts now run automatically in testutil db setup
 
     local cache_opt="-count=1"
     # we must only invalidate cache if database schema changes
@@ -1786,17 +1786,17 @@ x.setup.mkcert() {
 # Wrapper for golang-migrate with predefined configuration.
 x.migrate() {
   { { {
+    echo "Running migrations"
     migrate \
       -path $MIGRATIONS_DIR/ \
       -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable" \
       "$@" 2>&1
 
-    if [[ "${*:1}" =~ (up)+ ]]; then
-      echo "Running post-migration scripts"
-      for file in $(find db/post-migration -maxdepth 1 -name '*.sql' | sort); do
-        docker.postgres.psql -U postgres -d "$POSTGRES_DB" <$file
-      done
-    fi
+    echo "Running post-migrations"
+    { yes || :; } | migrate \
+      -path $POST_MIGRATIONS_DIR/ \
+      -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable&x-migrations-table=schema_post_migrations" \
+      "$@" 2>&1
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -2439,7 +2439,7 @@ if [[ -n $COMP_LINE ]]; then
 
   complete_with_fn() {
     local fn=${X_CUSTOM_COMPLETION["$1"]}
-    local items=$($fn "$pre" previous_x_fn_items || true)
+    local items=$($fn "$pre" previous_x_fn_items 2>/dev/null || true)
     test -z "$items" && return
     for i in ${items[@]}; do
       echo "$i"
@@ -2503,12 +2503,12 @@ if [[ -n $COMP_LINE ]]; then
 
   # show completion for an x function
   if [[ -n "${xfn_specified}" && "${pre}" != -* && ${#__x_opts_seen[@]} -eq 0 ]]; then
-    complete_with_fn $xfn_specified
+    complete_with_fn $xfn_specified || true
   # show completion for last --x-(.*)= if it specifies a completion func
   elif [[ ${#__x_opts_seen[@]} -gt 0 ]] && [[ -n "$pre" ]]; then
     xopt="${pre//\*/}"
     ! [[ " ${__x_options[*]} " =~ " ${xopt} " ]] && xopt="$__x_last_opt_seen"
-    complete_with_fn $xopt
+    complete_with_fn $xopt || true
   fi
 
   test -z "${xfn_specified}" && exit

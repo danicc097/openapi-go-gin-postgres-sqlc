@@ -66,30 +66,46 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		}
 	}()
 
-	instance, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{})
+	driver, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{})
 	if err != nil {
-		panic(fmt.Sprintf("Couldn't migrate (1): %s\n", err))
+		panic(fmt.Sprintf("Couldn't migrate (1.1): %s\n", err))
 	}
-
+	postDriver, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{MigrationsTable: "schema_post_migrations"})
+	if err != nil {
+		panic(fmt.Sprintf("Couldn't migrate (1.2): %s\n", err))
+	}
 	_, src, _, ok := runtime.Caller(0)
 	if !ok {
 		panic("No runtime caller information")
 	}
-
-	m, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/migrations/"), "postgres", instance)
+	mPostMigrations, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/post-migrations/"), "postgres", driver)
 	if err != nil {
-		panic(fmt.Sprintf("Couldn't migrate (2): %s\n", err))
+		panic(fmt.Sprintf("Couldn't migrate (2.1): %s\n", err))
+	}
+	_ = mPostMigrations
+
+	mMigrations, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/migrations/"), "postgres", postDriver)
+	if err != nil {
+		panic(fmt.Sprintf("Couldn't migrate (2.2): %s\n", err))
 	}
 
-	// NOTE: drop table before tests only externally.
-	if err = m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		panic(fmt.Sprintf("Couldnt' migrate (3): %s\n", err))
+	// FIXME: this is being ran multiple times. refactor post-migrations to instead use x-migrations-table=schema_post_migrations pool connection string
+	// since all we care about is post migrations being executed in order after the main ones
+	fmt.Println("RUNNING DOWN MIGRATIONS")
+	// ~~~~ NOTE: drop table before tests only externally.
+	// ^ now that we use a lock for test migrations with parallel tests, we can run m.Down
+	// instead of dropping
+	// if err = m.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+	// 	panic(fmt.Sprintf("Couldnt' migrate down: %s\n", err))
+	// }
+	if err = mMigrations.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		panic(fmt.Sprintf("Couldnt' migrate up: %s\n", err))
 	}
 
-	postMigrationPath := path.Join(path.Dir(src), "../../db/post-migration/")
+	postMigrationPath := path.Join(path.Dir(src), "../../db/post-migrations/")
 	files, err := os.ReadDir(postMigrationPath)
 	if err != nil {
-		panic(fmt.Sprintf("Error reading post-migration directory: %s\n", err))
+		panic(fmt.Sprintf("Error reading post-migrations directory: %s\n", err))
 	}
 
 	for _, file := range files {
@@ -100,15 +116,14 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		filePath := path.Join(postMigrationPath, file.Name())
 		script, err := os.ReadFile(filePath)
 		if err != nil {
-			panic(fmt.Sprintf("Error reading post-migration script %s: %s\n", file.Name(), err))
+			panic(fmt.Sprintf("Error reading post-migrations script %s: %s\n", file.Name(), err))
 		}
 
-		_, err = sqlpool.Exec(string(script))
-		if err != nil {
-			panic(fmt.Sprintf("Error executing post-migration script %s: %s\n", file.Name(), err))
+		if _, err := sqlpool.Exec(string(script)); err != nil {
+			panic(fmt.Sprintf("Error executing post-migrations script %s: %s\n", file.Name(), err))
 		}
 
-		fmt.Printf("Run post-migration script: %s\n", file.Name())
+		fmt.Printf("Run post-migrations script: %s\n", file.Name())
 	}
 
 	return pool, sqlpool, nil
