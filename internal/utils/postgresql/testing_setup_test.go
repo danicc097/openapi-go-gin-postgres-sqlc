@@ -39,8 +39,8 @@ func testMain(m *testing.M) int {
 
 	// if it blocks here, we are not properly releasing connections in tests
 	// leading to max conn count reached
-	// defer pool.Close()
-	// defer sqlPool.Close()
+	defer pool.Close()
+	defer sqlPool.Close()
 
 	return m.Run()
 }
