@@ -68,7 +68,7 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		// }
 	}()
 
-	driver, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{})
+	driver, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{MigrationsTable: "schema_migrations"})
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't migrate (migrations): %s\n", err))
 	}
@@ -109,10 +109,21 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	// we would still have the issue to remove that file before running go tests out of `project` (vscode, regular shell call...)
 	// TODO: may use "go.testEnvFile": null,
 	// which will be read by all .env will
-	if err = mPostMigrations.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		panic(fmt.Sprintf("Couldnt' migrate down (post-migrations): %s\n", err))
+	// TODO: should just be done once, like regular migrations table down
+	// if err = mPostMigrations.Force(1); err != nil && !errors.Is(err, migrate.ErrNoChange) { // no down.sql files on purpose
+	// 	panic(fmt.Sprintf("Couldnt' force migrate down to 1 (post-migrations): %s\n", err))
+	// }
+
+	printMigrationsState(pool)
+
+	if err = mPostMigrations.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		panic(fmt.Sprintf("Couldnt' migrate up (post-migrations): %s\n", err))
 	}
 
+	return pool, sqlpool, nil
+}
+
+func printMigrationsState(pool *pgxpool.Pool) {
 	query := `
 	select
 		row_to_json(schema_migrations.*) as sm,
@@ -123,13 +134,8 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 `
 	res, err := postgresql.DynamicQuery(pool, query)
 	if err != nil {
-		panic(fmt.Sprintf("query error: %s\n", err))
+		fmt.Printf("postgresql.DynamicQuery error: %s\n", err)
 	}
+
 	fmt.Printf("res: %s\n", res)
-
-	if err = mPostMigrations.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		panic(fmt.Sprintf("Couldnt' migrate up (post-migrations): %s\n", err))
-	}
-
-	return pool, sqlpool, nil
 }

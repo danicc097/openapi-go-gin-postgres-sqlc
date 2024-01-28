@@ -1799,6 +1799,12 @@ x.setup.mkcert() {
 
 ########################## migrations ##########################
 
+migrate_post() {
+  migrate \
+    -path $POST_MIGRATIONS_DIR/ \
+    -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable&x-migrations-table=$POST_MIGRATIONS_TABLE" $@
+}
+
 # Wrapper for golang-migrate with predefined configuration.
 x.migrate() {
   { { {
@@ -1808,12 +1814,13 @@ x.migrate() {
       -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable" \
       "$@" 2>&1
 
-    if [[ "${*:1}" =~ (up)+ ]]; then # don't want to pass over create, etc.
+    if [[ "${*:1}" =~ (up|down)+ ]]; then # don't want to pass over create, etc.
       echo "Running post-migrations"
-      migrate \
-        -path $POST_MIGRATIONS_DIR/ \
-        -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable&x-migrations-table=$POST_MIGRATIONS_TABLE" \
-        "$@" 2>&1
+      if [[ "${*:1}" =~ (down)+ ]]; then
+        migrate_post force 1 2>&1 # no down revisions. Post migrations should be idempotent
+      else
+        migrate_post $@ 2>&1
+      fi
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -2579,16 +2586,16 @@ while [[ "$#" -gt 0 ]]; do
     export X_NO_GEN=1
     ;;
   --x-debug)
-    # Debug bash script with -x flag.
+    # Debug bash script with -x shell option.
     export X_DEBUG=1
     ;;
   --x-no-backup)
     # Backup stash is not restored on failure.
-    # Please ensure there are no uncommitted changes in the current branch beforehand.
+    # Please ensure there are no important uncommitted changes in the current branch beforehand.
     export X_NO_BACKUP=1
     ;;
   --x-env=*)
-    # Environment to run commands in. Defaults to "dev".
+    # Environment to run commands in. Defaults to "dev" locally.
     # Args: env
     export X_ENV="${1#--x-env=}"
     if [[ ! " ${X_OPT_ENV__COMP[*]} " =~ " $X_ENV " ]]; then
