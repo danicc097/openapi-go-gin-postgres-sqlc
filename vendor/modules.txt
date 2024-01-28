@@ -75,8 +75,8 @@ github.com/chenzhuoyu/iasm/x86_64
 github.com/danicc097/oidc-server/v3
 github.com/danicc097/oidc-server/v3/exampleop
 github.com/danicc097/oidc-server/v3/storage
-# github.com/danicc097/xo/v5 v5.1.0
-## explicit; go 1.19
+# github.com/danicc097/xo/v5 v5.3.0
+## explicit; go 1.20
 github.com/danicc097/xo/v5/loader
 github.com/danicc097/xo/v5/models
 github.com/danicc097/xo/v5/types
