@@ -44,21 +44,23 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 
 	acquired, err := lock.TryLock(context.Background())
 	if err != nil {
-		panic(fmt.Sprintf("advisoryLock.TryLock: %s\n", err))
+		panic(fmt.Sprintf("lock.TryLock: %s\n", err))
 	}
 	if !acquired {
 		// wait for migrations
 		if err := lock.WaitForRelease(50, 200*time.Millisecond); err != nil {
-			panic(fmt.Sprintf("advisoryLock.WaitForRelease: %s\n", err))
+			panic(fmt.Sprintf("lock.WaitForRelease: %s\n", err))
 		}
 
 		return pool, sqlpool, nil
 	}
 
 	defer func() {
-		lock.Release()
+		unlockSuccess := lock.Release()
+		for i := 0; !unlockSuccess && i < 10; i++ {
+			unlockSuccess = lock.Release()
+		}
 		lock.ReleaseConn()
-
 		if lock.IsLocked() {
 			panic(fmt.Sprintf("advisory lock was not released\n"))
 		}
