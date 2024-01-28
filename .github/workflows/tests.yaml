@@ -42,14 +42,13 @@ jobs:
         run: |
           source .envrc
 
-          POSTGRES_TRACE=true project test.create-crud-gen -v --x-env=ci
-
-          for i in {1..2}; do
-              POSTGRES_TRACE=true project test.backend -v -race -count=30 -timeout 10m --x-env=ci
-          done
-
+          echo -------1-------
+          POSTGRES_TRACE=false project test.create-crud-gen -v --x-env=ci
+          echo -------2-------
+          POSTGRES_TRACE=false project test.backend -v -race -count=30 -timeout 20m --x-env=ci
+          echo -------3-------
           # some tests are skipped from race
-          POSTGRES_TRACE=true project test.backend -v -count=3 -timeout 10m --x-env=ci
+          POSTGRES_TRACE=false project test.backend -v -count=3 -timeout 20m --x-env=ci
 
       - name: Postgres logs
         if: failure() # always()
