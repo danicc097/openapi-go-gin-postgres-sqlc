@@ -1796,7 +1796,7 @@ x.migrate() {
       -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable" \
       "$@" 2>&1
 
-    if [[ "${*:1}" =~ (up)+ ]]; then
+    if [[ "${*:1}" =~ (up)+ ]]; then # don't want to pass over create, etc.
       echo "Running post-migrations"
       migrate \
         -path $POST_MIGRATIONS_DIR/ \
