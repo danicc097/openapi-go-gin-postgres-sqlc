@@ -49,6 +49,10 @@ readonly MAX_FNAME_LOG_LEN=13
 
 GEN_POSTGRES_DB="gen_db"
 
+dynamic_test_flags=""
+# shuffle disables go test caching. Definitely don't want in dev.
+test -n "$CI" && dynamic_test_flags="$dynamic_test_flags"
+
 # determines whether gen cache should be restored at program exit, i.e. failed commands.
 # cache folder must be cleaned at exit if true.
 # only restores if true.
@@ -1143,8 +1147,8 @@ x.test.backend() {
     cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
 
     set -x
-    APP_ENV="$X_ENV" go test -shuffle=on -tags skip_xo,skip_countone $cache_opt "$@" ./...
-    APP_ENV="$X_ENV" go test -shuffle=on -tags skip_xo,!skip_countone "$@" -count=1 ./...
+    APP_ENV="$X_ENV" go test $dynamic_test_flags -tags skip_xo,skip_countone $cache_opt "$@" ./...
+    APP_ENV="$X_ENV" go test $dynamic_test_flags -tags skip_xo,!skip_countone "$@" -count=1 ./...
     set +x
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
@@ -1205,7 +1209,7 @@ x.test.xo() {
     goimports -w $files
     gofumpt -w $files
 
-    APP_ENV="$X_ENV" go test -shuffle=on -count=1 "$XO_TESTS_PKG" "$@" ||
+    APP_ENV="$X_ENV" go test $dynamic_test_flags -count=1 "$XO_TESTS_PKG" "$@" ||
       err "xo tests failed"
 
     if ! $test_dir/diff_check; then
@@ -1235,7 +1239,7 @@ test_backend_watch() {
       --event=close_write \
       --format='%T %f' \
       --timefmt='%s' \
-      ./internal && clear && { APP_ENV="$X_ENV" go test -shuffle=on -count=1 -tags $tags "$@"; } && echo "${GREEN}✓ All tests passing${OFF}"
+      ./internal && clear && { APP_ENV="$X_ENV" go test $dynamic_test_flags -count=1 -tags $tags "$@"; } && echo "${GREEN}✓ All tests passing${OFF}"
   done
 }
 
