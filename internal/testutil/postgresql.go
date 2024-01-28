@@ -5,10 +5,8 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"os"
 	"path"
 	"runtime"
-	"strings"
 	"sync"
 	"time"
 
@@ -68,11 +66,11 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 
 	driver, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{})
 	if err != nil {
-		panic(fmt.Sprintf("Couldn't migrate (1.1): %s\n", err))
+		panic(fmt.Sprintf("Couldn't migrate (migrations): %s\n", err))
 	}
 	postDriver, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{MigrationsTable: "schema_post_migrations"})
 	if err != nil {
-		panic(fmt.Sprintf("Couldn't migrate (1.2): %s\n", err))
+		panic(fmt.Sprintf("Couldn't migrate (post-migrations): %s\n", err))
 	}
 	_, src, _, ok := runtime.Caller(0)
 	if !ok {
@@ -80,17 +78,15 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	}
 	mPostMigrations, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/post-migrations/"), "postgres", driver)
 	if err != nil {
-		panic(fmt.Sprintf("Couldn't migrate (2.1): %s\n", err))
+		panic(fmt.Sprintf("Couldn't migrate (migrations): %s\n", err))
 	}
 	_ = mPostMigrations
 
 	mMigrations, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/migrations/"), "postgres", postDriver)
 	if err != nil {
-		panic(fmt.Sprintf("Couldn't migrate (2.2): %s\n", err))
+		panic(fmt.Sprintf("Couldn't migrate (post-migrations): %s\n", err))
 	}
 
-	// FIXME: this is being ran multiple times. refactor post-migrations to instead use x-migrations-table=schema_post_migrations pool connection string
-	// since all we care about is post migrations being executed in order after the main ones
 	fmt.Println("RUNNING DOWN MIGRATIONS")
 	// ~~~~ NOTE: drop table before tests only externally.
 	// ^ now that we use a lock for test migrations with parallel tests, we can run m.Down
@@ -99,31 +95,21 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	// 	panic(fmt.Sprintf("Couldnt' migrate down: %s\n", err))
 	// }
 	if err = mMigrations.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		panic(fmt.Sprintf("Couldnt' migrate up: %s\n", err))
+		panic(fmt.Sprintf("Couldnt' migrate up (migrations): %s\n", err))
 	}
-
-	postMigrationPath := path.Join(path.Dir(src), "../../db/post-migrations/")
-	files, err := os.ReadDir(postMigrationPath)
-	if err != nil {
-		panic(fmt.Sprintf("Error reading post-migrations directory: %s\n", err))
+	// Down must be a noop (no .down.sql files)
+	// Up should be idempotent so they don't break running tests.
+	// NOTE: might have deadlocks, ideally should use some marker file like before
+	// to prevent both migrations and post-migrations being run after the first
+	// test suite that got the lock ran them and released it (next suite wouldn't be aware and run this again,
+	// we would need the first suite to run indefinitely until all others end, and only then remove the marker file.)
+	// we would still have the issue to remove that file before running go tests out of `project` (vscode, regular shell call...)
+	//
+	if err = mPostMigrations.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		panic(fmt.Sprintf("Couldnt' migrate up (post-migrations): %s\n", err))
 	}
-
-	for _, file := range files {
-		if file.IsDir() || !strings.HasPrefix(file.Name(), ".sql") {
-			continue
-		}
-
-		filePath := path.Join(postMigrationPath, file.Name())
-		script, err := os.ReadFile(filePath)
-		if err != nil {
-			panic(fmt.Sprintf("Error reading post-migrations script %s: %s\n", file.Name(), err))
-		}
-
-		if _, err := sqlpool.Exec(string(script)); err != nil {
-			panic(fmt.Sprintf("Error executing post-migrations script %s: %s\n", file.Name(), err))
-		}
-
-		fmt.Printf("Run post-migrations script: %s\n", file.Name())
+	if err = mPostMigrations.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		panic(fmt.Sprintf("Couldnt' migrate up (post-migrations): %s\n", err))
 	}
 
 	return pool, sqlpool, nil
