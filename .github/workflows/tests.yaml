@@ -45,10 +45,10 @@ jobs:
           echo -------1-------
           POSTGRES_TRACE=false project test.create-crud-gen -v --x-env=ci
           echo -------2-------
-          POSTGRES_TRACE=false project test.backend -v -race -count=30 -timeout 40m --x-env=ci
+          POSTGRES_TRACE=false project test.backend -v -race -count=30 -timeout=40m --x-env=ci
           echo -------3-------
           # some tests are skipped from race
-          POSTGRES_TRACE=false project test.backend -v -count=3 -timeout 40m --x-env=ci
+          POSTGRES_TRACE=false project test.backend -v -count=3 -timeout=40m --x-env=ci
 
       - name: Postgres logs
         if: failure() # always()
