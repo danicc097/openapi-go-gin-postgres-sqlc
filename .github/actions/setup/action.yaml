@@ -52,9 +52,9 @@ runs:
 
         sudo apt-get update
 
-        { yes || :; } | project bootstrap --x-env=ci
+        { yes || :; } | project bootstrap
 
-        # project e2e.sync-deps --x-env=ci # won't use python playwright
+        # project e2e.sync-deps # won't use python playwright
 
         echo "$HOME/.local/bin" >> $GITHUB_PATH
         echo "$HOME/bin" >> $GITHUB_PATH
