@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAdvisoryLock(t *testing.T) {
+func TestCountOne_AdvisoryLock(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Locking twice in same session", func(t *testing.T) {
