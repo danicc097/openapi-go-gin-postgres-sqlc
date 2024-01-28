@@ -22,7 +22,9 @@ readonly BUILD_DIR="bin/build"
 readonly TOOLS_DIR="bin/tools"
 readonly PROTO_DIR="internal/pb"
 readonly MIGRATIONS_DIR="db/migrations"
+readonly MIGRATIONS_TABLE="schema_migrations"
 readonly POST_MIGRATIONS_DIR="db/post-migrations"
+readonly POST_MIGRATIONS_TABLE="schema_post_migrations"
 readonly CERTIFICATES_DIR="certificates"
 readonly GOWRAP_TEMPLATES_DIR="internal/gowrap-templates"
 readonly REPOS_DIR="internal/repos"
@@ -686,8 +688,9 @@ x.gen.jet() {
     local schema=public
     rm -rf "$gen_path"
     {
-      jet -dbname="$GEN_POSTGRES_DB" -env=.env."$X_ENV" --out=./"$gen_path" --schema="$schema" \
-        --ignore-tables "schema_migrations,schema_post_migrations"
+      jet -dbname="$GEN_POSTGRES_DB" --env=.env."$X_ENV" --out=./"$gen_path" \
+        --schema="$schema" \
+        --ignore-tables="$MIGRATIONS_TABLE,$POST_MIGRATIONS_TABLE"
       mv "./$gen_path"/$GEN_POSTGRES_DB/* "$gen_path"
       rm -r "./$gen_path/$GEN_POSTGRES_DB/"
     }
@@ -1796,7 +1799,7 @@ x.migrate() {
     echo "Running post-migrations"
     { yes || :; } | migrate \
       -path $POST_MIGRATIONS_DIR/ \
-      -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable&x-migrations-table=schema_post_migrations" \
+      -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable&x-migrations-table=$POST_MIGRATIONS_TABLE" \
       "$@" 2>&1
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1923,7 +1926,7 @@ x.db.dump() {
 
     mkdir -p "$DUMPS_DIR"
     schema_v=$(docker.postgres.psql -P pager=off -U postgres -d "postgres_$x_env" \
-      -c "SELECT version FROM schema_migrations;")
+      -c "SELECT version FROM $MIGRATIONS_TABLE;")
     dump_file="${dump_prefix}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
 
     echo "Dumping database to $dump_file"
@@ -1956,7 +1959,7 @@ x.db.restore() {
   x.db.drop
   gunzip -c "$dump_file" | docker.postgres.psql -U postgres -d "postgres_$x_env"
   # sanity check, but probably better to do it before restoring...
-  dump_schema_v=$(docker.postgres.psql -P pager=off -U postgres -d "postgres_$x_env" -c "SELECT version FROM schema_migrations;")
+  dump_schema_v=$(docker.postgres.psql -P pager=off -U postgres -d "postgres_$x_env" -c "SELECT version FROM $MIGRATIONS_TABLE;")
   file_schema_v=$(echo "$dump_file" | sed -E 's/.*_version([0-9]+)\..*/\1/')
   echo "Migration revision: $dump_schema_v"
   if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
@@ -2304,8 +2307,8 @@ xo_schema() {
   # Also use a unique db to prevent cosmic accidents
   xo schema "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$GEN_POSTGRES_DB?sslmode=disable" \
     --src "$XO_TEMPLATES_DIR" \
-    --exclude schema_migrations \
-    --exclude schema_post_migrations \
+    --exclude $MIGRATIONS_TABLE \
+    --exclude $POST_MIGRATIONS_TABLE \
     "$@"
 }
 
