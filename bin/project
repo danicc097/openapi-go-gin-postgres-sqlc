@@ -2341,7 +2341,7 @@ set -Eeo pipefail
 set -o errtrace
 
 X_ENV="dev"
-
+test -n "$CI" && X_ENV="ci"
 # --------------------- completion and delegation --------------------
 #      `complete -o nospace -C foo foo` > `source <(foo bloated_completion)`
 

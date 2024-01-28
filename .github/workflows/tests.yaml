@@ -1,5 +1,6 @@
 name: Tests
-
+env:
+  CI: true
 on:
   push:
     branches:
@@ -29,9 +30,9 @@ jobs:
           # go mod download # it will access network/cache, which is not necessary with -mod=vendor
           go mod verify
 
-          project test.backend.setup --x-env=ci
+          project test.backend.setup
 
-          project lint --x-env=ci
+          project lint
 
       - name: Diff check
         run: |
@@ -48,12 +49,12 @@ jobs:
           bg_pid=$!
 
           echo -------1-------
-          POSTGRES_TRACE=false project test.create-crud-gen -v --x-env=ci
+          POSTGRES_TRACE=false project test.create-crud-gen -v
           echo -------2-------
-          POSTGRES_TRACE=false project test.backend -v -race -count=30 -timeout=40m --x-env=ci
+          POSTGRES_TRACE=false project test.backend -v -race -count=30 -timeout=40m
           echo -------3-------
           # some tests are skipped from race
-          POSTGRES_TRACE=false project test.backend -v -count=3 -timeout=40m --x-env=ci
+          POSTGRES_TRACE=false project test.backend -v -count=3 -timeout=40m
 
           { test -n "$bg_pid" && kill $bg_pid; } || true
 
@@ -66,13 +67,13 @@ jobs:
         run: |
           source .envrc
 
-          project test.frontend --x-env=ci
+          project test.frontend
 
       - name: Test E2E
         run: |
           source .envrc
 
-          project e2e.run --x-env=ci
+          project e2e.run
 
       - uses: actions/upload-artifact@v3
         if: always()
