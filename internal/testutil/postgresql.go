@@ -59,9 +59,13 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 			unlockSuccess = lock.Release()
 		}
 		lock.ReleaseConn()
-		if lock.IsLocked() {
-			panic(fmt.Sprintf("advisory lock was not released\n"))
-		}
+		// if lock.IsLocked() {
+		// 	// FIXME: race condition -> lock.IsLocked() was false right above when releasing,
+		// 	// but then a new test suite came in and grabbed it.
+		// 	// should use transactions internally for Release(), and instead of unlockSuccess
+		// 	// it should check that indeed the lock was released (at the time)
+		// 	panic(fmt.Sprintf("advisory lock was not released\n"))
+		// }
 	}()
 
 	driver, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{})
