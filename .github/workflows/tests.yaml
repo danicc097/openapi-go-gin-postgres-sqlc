@@ -43,7 +43,7 @@ jobs:
           source .envrc
 
           {
-            while sleep 1; do x.db.conns-db postgres_test; done
+            while sleep 1; do project db.conns-db postgres_test; done
           } &
           bg_pid=$!
 
