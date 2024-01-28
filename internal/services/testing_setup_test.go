@@ -38,7 +38,7 @@ func testMain(m *testing.M) int {
 		os.Exit(1)
 	}
 
-	defer testPool.Close()
+	// defer testPool.Close()
 
 	return m.Run()
 }
