@@ -80,13 +80,12 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	if !ok {
 		panic("No runtime caller information")
 	}
-	mPostMigrations, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/post-migrations/"), "postgres", driver)
+	mPostMigrations, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/post-migrations/"), "postgres", postDriver)
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't migrate (migrations): %s\n", err))
 	}
-	_ = mPostMigrations
 
-	mMigrations, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/migrations/"), "postgres", postDriver)
+	mMigrations, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/migrations/"), "postgres", driver)
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't migrate (post-migrations): %s\n", err))
 	}
@@ -113,6 +112,21 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	if err = mPostMigrations.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		panic(fmt.Sprintf("Couldnt' migrate down (post-migrations): %s\n", err))
 	}
+
+	query := `
+	select
+		row_to_json(schema_migrations.*) as sm,
+		row_to_json(schema_post_migrations.*) as spm
+	from
+		schema_migrations,
+		schema_post_migrations
+`
+	res, err := postgresql.DynamicQuery(pool, query)
+	if err != nil {
+		panic(fmt.Sprintf("query error: %s\n", err))
+	}
+	fmt.Printf("res: %s\n", res)
+
 	if err = mPostMigrations.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		panic(fmt.Sprintf("Couldnt' migrate up (post-migrations): %s\n", err))
 	}
