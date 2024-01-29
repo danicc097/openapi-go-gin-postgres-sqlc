@@ -146,6 +146,8 @@ xsetup.backup() {
 
   xsetup_backup_gen_caller="${FUNCNAME[1]}"
 
+  echo "xsetup_backup_gen_caller:$xsetup_backup_gen_caller"
+
   mkdir -p "$CACHE"
 
   backup_stash_name="backup-stash-$backup_branch"
@@ -2658,7 +2660,7 @@ exit-cleanup() {
 
   {
     if [[ $need_backup_restore = true ]]; then
-      test -z $X_NO_BACKUP && xsetup.backup.restore
+      test -z "$X_NO_BACKUP" && xsetup.backup.restore
       # IMPORTANT: if any command failed always restore gen cache, regardless of flags passed.
       gen-cache.restore
     fi
