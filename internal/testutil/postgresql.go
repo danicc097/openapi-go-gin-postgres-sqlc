@@ -29,9 +29,6 @@ import (
 
 var once sync.Once
 
-// cannot be random since we want to lock parallel test suites.
-const migrationsLockID = 12341234
-
 type TestDBOptions struct {
 	WithMigrations bool
 }
@@ -77,7 +74,9 @@ func NewDB(options ...TestDBOption) (*pgxpool.Pool, *sql.DB, error) {
 		return pool, sqlpool, nil
 	}
 
-	lock, err := postgresqlutils.NewAdvisoryLock(pool, migrationsLockID)
+	migrationsLockID, _ := strconv.ParseInt(dbName, 10, 32)
+
+	lock, err := postgresqlutils.NewAdvisoryLock(pool, int(migrationsLockID))
 	if err != nil {
 		panic(fmt.Sprintf("NewAdvisoryLock: %s\n", err))
 	}
