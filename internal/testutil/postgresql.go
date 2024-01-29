@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"path"
 	"runtime"
-	"strings"
 	"sync"
 	"time"
 
@@ -37,7 +36,7 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	_, b, _, _ := runtime.Caller(1)
 	dir := path.Join(path.Dir(b))
 
-	dbName := strcase.ToSnake("postgres_test_" + strcase.ToCamel(strings.Split(dir, "github.com/danicc097/openapi-go-gin-postgres-sqlc")[1]))
+	dbName := strcase.ToSnake("postgres_test_" + strcase.ToCamel(dir))
 
 	logger, _ := zap.NewDevelopment()
 

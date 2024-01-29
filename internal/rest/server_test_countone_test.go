@@ -48,9 +48,6 @@ func TestTracing(t *testing.T) {
 	require.Equal(t, http.StatusNoContent, res.StatusCode(), string(res.Body))
 
 	spans := srv.spanRecorder.Ended()
-	for _, ros := range spans {
-		t.Logf("%+v", ros.Name())
-	}
 	require.NotEmpty(t, spans)
 	// otelgin's tracer sometimes doesn't contain first call
 	// require.True(t, slices.ContainsMatch(spans, func(item trace.ReadOnlySpan) bool {
