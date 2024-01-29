@@ -1356,6 +1356,12 @@ x.run-dockerized() {
   run_shared_services up -d --build --wait
   x.db.recreate
 
+  # TODO: migrations:
+  # 1. Prevent insert/update/delete
+  # 2. Backup
+  # 3. Run up migrations
+  # 5. Allow insert/update/delete again
+
   # x.gen
 
   setup_swagger_ui
