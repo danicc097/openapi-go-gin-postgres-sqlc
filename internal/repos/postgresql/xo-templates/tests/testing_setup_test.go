@@ -63,7 +63,7 @@ func testMain(m *testing.M) int {
 		fmt.Fprintf(os.Stderr, "Couldn't create testPool: %s\n", err)
 		return 1
 	}
-	// defer testPool.Close()
+	defer testPool.Close()
 
 	return m.Run()
 }

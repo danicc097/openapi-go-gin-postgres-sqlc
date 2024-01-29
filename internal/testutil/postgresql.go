@@ -35,8 +35,16 @@ const migrationsLockID = 12341234
 func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	_, b, _, _ := runtime.Caller(1)
 	dir := path.Join(path.Dir(b))
+	fmt.Println("Test suite: " + dir)
 
-	dbName := strcase.ToSnake("postgres_test_" + strcase.ToCamel(dir))
+	pre := "postgres_test_"
+	d := strcase.ToSnake(strcase.ToCamel(dir))
+	dbName := pre + d
+	if len(dbName) > 63 {
+		dbName = pre + d[len(d)-63+len(pre):] // max postgres identifier length
+	}
+
+	fmt.Printf("dbName: %v\n", dbName)
 
 	logger, _ := zap.NewDevelopment()
 
