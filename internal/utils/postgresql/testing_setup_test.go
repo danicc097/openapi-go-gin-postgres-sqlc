@@ -1,9 +1,11 @@
 package postgresql_test
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
@@ -31,8 +33,22 @@ func testMain(m *testing.M) int {
 
 	// call flag.Parse() here if TestMain uses flags
 	var err error
+
 	logger, _ := zap.NewDevelopment()
-	pool, sqlPool, err = postgresql.New(logger.Sugar())
+	defaultPool, _, err := postgresql.New(logger.Sugar())
+	if err != nil {
+		panic(fmt.Sprintf("Couldn't create default pool: %s\n", err))
+	}
+	defer defaultPool.Close()
+
+	dbName := "postgres_test"
+	if _, err := defaultPool.Exec(context.Background(), fmt.Sprintf("CREATE DATABASE %s;", dbName)); err != nil {
+		if !strings.Contains(err.Error(), "already exists") {
+			panic(fmt.Sprintf("Couldn't create database: %s\n", err))
+		}
+	}
+
+	pool, sqlPool, err = postgresql.New(logger.Sugar(), postgresql.WithDBName(dbName))
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't create pool: %s\n", err))
 	}
