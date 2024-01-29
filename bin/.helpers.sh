@@ -371,8 +371,8 @@ cache_all() {
   local excludes=()
   local args=()
 
-  #i=0 is still program name in "$@"
-  for ((i = 1; i < ${#@}; i++)); do
+  #i=0 is still program name in "$@". Therefore continue up to <= too.
+  for ((i = 1; i <= ${#@}; i++)); do
     arg="${!i}"
     case $arg in
     --exclude)
