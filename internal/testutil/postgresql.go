@@ -7,13 +7,18 @@ import (
 	"fmt"
 	"path"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	postgresqlutils "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/postgresql"
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/iancoleman/strcase"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
@@ -25,33 +30,34 @@ var once sync.Once
 // cannot be random since we want to lock parallel test suites.
 const migrationsLockID = 12341234
 
-type TestDBOptions struct {
-	DBName string
-}
-
-type TestDBOption func(*TestDBOptions)
-
-// WithDBName sets the postgres database to connect to.
-func WithDBName(db string) TestDBOption {
-	return func(opt *TestDBOptions) {
-		opt.DBName = db
-	}
-}
-
-// NewDB returns a new (shared) testing Postgres pool with up-to-date migrations.
-// Panics on error.
-func NewDB(options ...TestDBOption) (*pgxpool.Pool, *sql.DB, error) {
-	testDbOptions := &TestDBOptions{}
-	for _, option := range options {
-		option(testDbOptions)
-	}
-
+// NewDB returns a new testing Postgres pool with up-to-date migrations.
+// It is shared within the test suite package.
+// Panics on any error encountered.
+func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	_, b, _, _ := runtime.Caller(1)
 	dir := path.Join(path.Dir(b))
 
+	dbName := strcase.ToSnake("postgres_test_" + strcase.ToCamel(strings.Split(dir, "github.com/danicc097/openapi-go-gin-postgres-sqlc")[1]))
+
 	logger, _ := zap.NewDevelopment()
 
-	pool, sqlpool, err := postgresql.New(logger.Sugar(), testDbOptions.DBName)
+	defaultPool, _, err := postgresql.New(logger.Sugar())
+	if err != nil {
+		panic(fmt.Sprintf("Couldn't create default pool: %s\n", err))
+	}
+	defer defaultPool.Close()
+	var pgErr *pgconn.PgError
+	createDBQuery := fmt.Sprintf("CREATE DATABASE %s;", dbName)
+	_, err = defaultPool.Exec(context.Background(), createDBQuery)
+	if err != nil {
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				panic(fmt.Sprintf("Couldn't create database: %s\n", err))
+			}
+		}
+	}
+
+	pool, sqlpool, err := postgresql.New(logger.Sugar(), postgresql.WithDBName(dbName))
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't create pool: %s\n", err))
 	}
@@ -65,7 +71,7 @@ func NewDB(options ...TestDBOption) (*pgxpool.Pool, *sql.DB, error) {
 	if err != nil {
 		panic(fmt.Sprintf("lock.TryLock: %s\n", err))
 	}
-	if !acquired {
+	if !acquired { // this probably won't be a path anymore since using test suite name for db name
 		fmt.Println("Waiting for migrations to run in test suite: " + dir)
 		if err := lock.WaitForRelease(50, 200*time.Millisecond); err != nil {
 			panic(fmt.Sprintf("lock.WaitForRelease: %s\n", err))
@@ -83,13 +89,17 @@ func NewDB(options ...TestDBOption) (*pgxpool.Pool, *sql.DB, error) {
 		}
 		lock.ReleaseConn()
 		// if lock.IsLocked() {
-		// 	// FIXME: race condition -> lock.IsLocked() was false right above when releasing,
+		// 	// FIXME: if sharing db for all test suices: race condition -> lock.IsLocked() was false right above when releasing,
 		// 	// but then a new test suite came in and grabbed it.
 		// 	// should use transactions internally for Release(), and instead of unlockSuccess
 		// 	// it should check that indeed the lock was released (at the time)
 		// 	panic(fmt.Sprintf("advisory lock was not released\n"))
 		// }
 	}()
+
+	if internal.Config.AppEnv == internal.AppEnvCI {
+		printMigrationsState(pool)
+	}
 
 	driver, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{MigrationsTable: "schema_migrations"})
 	if err != nil {
@@ -113,12 +123,9 @@ func NewDB(options ...TestDBOption) (*pgxpool.Pool, *sql.DB, error) {
 		panic(fmt.Sprintf("Couldn't migrate (post-migrations): %s\n", err))
 	}
 
-	// ~~~~ NOTE: drop table before tests only externally.
-	// ^ now that we use a lock for test migrations with parallel tests, we can run m.Down
-	// instead of dropping
-	// if err = m.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-	// 	panic(fmt.Sprintf("Couldnt' migrate down: %s\n", err))
-	// }
+	if err = mMigrations.Down(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		panic(fmt.Sprintf("Couldnt' migrate down: %s\n", err))
+	}
 	if err = mMigrations.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		panic(fmt.Sprintf("Couldnt' migrate up (migrations): %s\n", err))
 	}
@@ -135,8 +142,6 @@ func NewDB(options ...TestDBOption) (*pgxpool.Pool, *sql.DB, error) {
 	// if err = mPostMigrations.Force(1); err != nil && !errors.Is(err, migrate.ErrNoChange) { // no down.sql files on purpose
 	// 	panic(fmt.Sprintf("Couldnt' force migrate down to 1 (post-migrations): %s\n", err))
 	// }
-
-	printMigrationsState(pool)
 
 	if err = mPostMigrations.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		panic(fmt.Sprintf("Couldnt' migrate up (post-migrations): %s\n", err))

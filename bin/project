@@ -1144,7 +1144,8 @@ x.test.backend() {
 
     x.test.xo
 
-    yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true # nochange exits
+    # done per test suite database automatically
+    # yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true # nochange exits
 
     local cache_opt="-count=1"
     # we must only invalidate cache if database schema changes

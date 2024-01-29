@@ -18,13 +18,12 @@ import (
 // TODO: exclude CountOne_ in -run flag by default.
 // need to pass default flag when doing watch-for later with AND.
 // -run uses go regex so see: https://pkg.go.dev/regexp/syntax
+// nolint: paralleltest
 func TestTracing(t *testing.T) {
 	// for better architecture see
 	// https://github.com/open-telemetry/opentelemetry-go/discussions/4532
 	// (still not suitable for unit tests), see this instead -> https://github.com/open-telemetry/opentelemetry-go/pull/4539
-	// as of now must run with count=1
-
-	t.Parallel()
+	// as of now must run with count=1 and not calling t.Parallel
 
 	srv, err := runTestServer(t, testPool)
 	srv.setupCleanup(t)
