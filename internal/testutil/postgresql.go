@@ -5,8 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/url"
+	"os"
 	"path"
 	"runtime"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -17,6 +20,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/iancoleman/strcase"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
@@ -28,13 +32,30 @@ var once sync.Once
 // cannot be random since we want to lock parallel test suites.
 const migrationsLockID = 12341234
 
+type TestDBOptions struct {
+	WithMigrations bool
+}
+
+type TestDBOption func(*TestDBOptions)
+
+// WithMigrations runs migrations on top of the database.
+func WithMigrations() TestDBOption {
+	return func(opt *TestDBOptions) {
+		opt.WithMigrations = true
+	}
+}
+
 // NewDB returns a new testing Postgres pool with up-to-date migrations.
 // It is shared within the test suite package.
 // Panics on any error encountered.
-func NewDB() (*pgxpool.Pool, *sql.DB, error) {
+func NewDB(options ...TestDBOption) (*pgxpool.Pool, *sql.DB, error) {
 	_, b, _, _ := runtime.Caller(1)
 	dir := path.Join(path.Dir(b))
-	fmt.Println("Test suite: " + dir)
+
+	opts := &TestDBOptions{}
+	for _, option := range options {
+		option(opts)
+	}
 
 	pre := "postgres_test_"
 	d := strcase.ToSnake(strcase.ToCamel(dir))
@@ -43,25 +64,17 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		dbName = pre + d[len(d)-63+len(pre):] // max postgres identifier length
 	}
 
-	fmt.Printf("dbName: %v\n", dbName)
-
 	logger, _ := zap.NewDevelopment()
 
-	defaultPool, _, err := postgresql.New(logger.Sugar())
-	if err != nil {
-		panic(fmt.Sprintf("Couldn't create default pool: %s\n", err))
-	}
-	defer defaultPool.Close()
-
-	if _, err := defaultPool.Exec(context.Background(), fmt.Sprintf("CREATE DATABASE %s;", dbName)); err != nil {
-		if !strings.Contains(err.Error(), "already exists") {
-			panic(fmt.Sprintf("Couldn't create database: %s\n", err))
-		}
-	}
+	DropAndRecreateDB(dbName)
 
 	pool, sqlpool, err := postgresql.New(logger.Sugar(), postgresql.WithDBName(dbName))
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't create pool: %s\n", err))
+	}
+
+	if !opts.WithMigrations {
+		return pool, sqlpool, nil
 	}
 
 	lock, err := postgresqlutils.NewAdvisoryLock(pool, migrationsLockID)
@@ -150,6 +163,44 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 	}
 
 	return pool, sqlpool, nil
+}
+
+// DropAndRecreateDB drops and recreates a given database.
+func DropAndRecreateDB(dbName string) {
+	defaultDb := "postgres"
+	if dbName == defaultDb {
+		panic(fmt.Sprintf("cannot drop default %q database", defaultDb))
+	}
+
+	cfg := internal.Config
+	dsn := url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(cfg.Postgres.User, cfg.Postgres.Password),
+		Host:   fmt.Sprintf("%s:%s", cfg.Postgres.Server, strconv.Itoa(cfg.Postgres.Port)),
+		Path:   defaultDb,
+	}
+
+	q := dsn.Query()
+	q.Add("sslmode", os.Getenv("DATABASE_SSLMODE"))
+	dsn.RawQuery = q.Encode()
+
+	conn, err := pgx.Connect(context.Background(), dsn.String())
+	if err != nil {
+		panic(fmt.Sprintf("Couldn't connect to the database: %s\n", err))
+	}
+	defer conn.Close(context.Background())
+
+	_, err = conn.Exec(context.Background(), fmt.Sprintf("DROP DATABASE IF EXISTS %s;", dbName))
+	if err != nil {
+		panic(fmt.Sprintf("Couldn't drop database %q: %s\n", dbName, err))
+	}
+
+	_, err = conn.Exec(context.Background(), fmt.Sprintf("CREATE DATABASE %s;", dbName))
+	if err != nil {
+		if !strings.Contains(err.Error(), "already exists") {
+			panic(fmt.Sprintf("Couldn't create database %q: %s\n", dbName, err))
+		}
+	}
 }
 
 func printMigrationsState(pool *pgxpool.Pool) {

@@ -467,7 +467,7 @@ docker.postgres.drop_and_recreate_db() {
   docker.postgres psql --no-psqlrc \
     -U "$POSTGRES_USER" \
     -d "postgres" \
-    -c "CREATE DATABASE test OWNER $POSTGRES_USER;" 2>/dev/null || true
+    -c "CREATE DATABASE IF NOT EXISTS test OWNER $POSTGRES_USER;" 2>/dev/null || true
 
   echo "${RED}${BOLD}Dropping database $db.${OFF}"
   docker.postgres \

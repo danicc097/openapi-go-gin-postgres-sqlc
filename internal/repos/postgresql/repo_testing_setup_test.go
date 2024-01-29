@@ -30,7 +30,7 @@ func testMain(m *testing.M) int {
 	// call flag.Parse() here if TestMain uses flags
 	var err error
 
-	testPool, testSQLPool, err = testutil.NewDB()
+	testPool, testSQLPool, err = testutil.NewDB(testutil.WithMigrations())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't create testPool: %s\n", err)
 		os.Exit(1)
