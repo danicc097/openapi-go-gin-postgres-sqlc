@@ -2665,12 +2665,15 @@ exit-cleanup() {
     fi
 
     # shared cleanup regardless of gen success
-    # FIXME: fails consistently on ci where CURRENT_BRANCH is the gen branch for some reason
-    git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
-    rm -f backup-gen-stash-dummy.txt
-    # FIXME: in ci:
-    # + git branch -D backup-gen-c7b51d95-1d59-4bfe-ac0d-5616948a1fd2
-    # and further down CURRENT_BRANCH was the above, leading to: Could not checkout backup-gen-c7b51d95-1d59-4bfe-ac0d-5616948a1fd2 branch
+    # caveat: watch out for background processes that call project script
+
+    # when we run something in the background that calls project,
+    # e.g. project db.conns-db postgres_test
+    # it gets whatever CURRENT_BRANCH was set atm, therefore fails.
+    # override exit-cleanup with something like trap 'echo exit-cleanup dummy' EXIT HUP INT TERM with flag:
+    # TODO: --x-no-exit-cleanup
+    git checkout "$CURRENT_BRANCH" &>/dev/null || err "[WARNING] Could not checkout $CURRENT_BRANCH branch" >&2
+    rm -f backup-gen-stash-dummy.txt || true
     git branch -D "$backup_branch" &>/dev/null || true
 
     cd "$starting_cwd" || true
