@@ -146,8 +146,6 @@ xsetup.backup() {
 
   xsetup_backup_gen_caller="${FUNCNAME[1]}"
 
-  echo "xsetup_backup_gen_caller:$xsetup_backup_gen_caller"
-
   mkdir -p "$CACHE"
 
   backup_stash_name="backup-stash-$backup_branch"
@@ -1153,8 +1151,8 @@ x.test.backend() {
     cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
 
     set -x
-    go_test -tags skip_xo,skip_countone $cache_opt "$@" ./...
-    go_test -tags skip_xo,!skip_countone "$@" -count=1 ./...
+    go_test -tags 'skip_xo,skip_countone' $cache_opt "$@" ./...
+    go_test -tags 'skip_xo,!skip_countone' "$@" -count=1 ./...
     set +x
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
@@ -1235,7 +1233,7 @@ x.test.xo() {
 test_backend_watch() {
   clear
 
-  local tags="skip_xo,skip_countone"
+  local tags='skip_xo,skip_countone'
   echo "Waiting for changes..."
   echo "Default test tags: $tags"
   echo "Test args: $*"
@@ -2669,6 +2667,9 @@ exit-cleanup() {
     # FIXME: fails consistently on ci where CURRENT_BRANCH is the gen branch for some reason
     git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
     rm -f backup-gen-stash-dummy.txt
+    # FIXME: in ci:
+    # + git branch -D backup-gen-c7b51d95-1d59-4bfe-ac0d-5616948a1fd2
+    # and further down CURRENT_BRANCH was the above, leading to: Could not checkout backup-gen-c7b51d95-1d59-4bfe-ac0d-5616948a1fd2 branch
     git branch -D "$backup_branch" &>/dev/null || true
 
     cd "$starting_cwd" || true

@@ -13,13 +13,16 @@ func rowsToJSON(rows pgx.Rows) []byte {
 	var result any
 
 	for rows.Next() {
-		values, _ := rows.Values()
+		values, err := rows.Values()
+		if err != nil {
+			result = "rows.Values: " + err.Error()
+		}
 		for _, v := range values {
 			result = v
 		}
 	}
 
-	json, _ := json.Marshal(result)
+	json, _ := json.MarshalIndent(result, "", "  ")
 
 	return json
 }

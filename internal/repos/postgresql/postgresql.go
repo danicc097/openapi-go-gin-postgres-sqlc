@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -28,14 +29,37 @@ import (
 
 var pgxAfterConnectLock = sync.Mutex{}
 
+type DBOptions struct {
+	DBName string
+}
+
+type Option func(*DBOptions)
+
+// WithDBName sets the postgres database to connect to.
+func WithDBName(db string) Option {
+	return func(opt *DBOptions) {
+		opt.DBName = db
+	}
+}
+
 // New instantiates the PostgreSQL database using configuration defined in environment variables.
-func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
+func New(logger *zap.SugaredLogger, options ...Option) (*pgxpool.Pool, *sql.DB, error) {
 	cfg := internal.Config
+
+	dbOptions := &DBOptions{}
+	for _, option := range options {
+		option(dbOptions)
+	}
+
+	if dbOptions.DBName == "" {
+		dbOptions.DBName = cfg.Postgres.DB
+	}
+
 	dsn := url.URL{
 		Scheme: "postgres",
 		User:   url.UserPassword(cfg.Postgres.User, cfg.Postgres.Password),
-		Host:   fmt.Sprintf("%s:%s", cfg.Postgres.Server, fmt.Sprint(cfg.Postgres.Port)),
-		Path:   cfg.Postgres.DB,
+		Host:   fmt.Sprintf("%s:%s", cfg.Postgres.Server, strconv.Itoa(cfg.Postgres.Port)),
+		Path:   dbOptions.DBName,
 	}
 
 	q := dsn.Query()

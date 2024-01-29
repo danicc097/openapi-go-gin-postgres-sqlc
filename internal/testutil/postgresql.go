@@ -25,12 +25,33 @@ var once sync.Once
 // cannot be random since we want to lock parallel test suites.
 const migrationsLockID = 12341234
 
+type TestDBOptions struct {
+	DBName string
+}
+
+type TestDBOption func(*TestDBOptions)
+
+// WithDBName sets the postgres database to connect to.
+func WithDBName(db string) TestDBOption {
+	return func(opt *TestDBOptions) {
+		opt.DBName = db
+	}
+}
+
 // NewDB returns a new (shared) testing Postgres pool with up-to-date migrations.
 // Panics on error.
-func NewDB() (*pgxpool.Pool, *sql.DB, error) {
+func NewDB(options ...TestDBOption) (*pgxpool.Pool, *sql.DB, error) {
+	testDbOptions := &TestDBOptions{}
+	for _, option := range options {
+		option(testDbOptions)
+	}
+
+	_, b, _, _ := runtime.Caller(1)
+	dir := path.Join(path.Dir(b))
+
 	logger, _ := zap.NewDevelopment()
 
-	pool, sqlpool, err := postgresql.New(logger.Sugar())
+	pool, sqlpool, err := postgresql.New(logger.Sugar(), testDbOptions.DBName)
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't create pool: %s\n", err))
 	}
@@ -45,13 +66,15 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		panic(fmt.Sprintf("lock.TryLock: %s\n", err))
 	}
 	if !acquired {
-		// wait for migrations
+		fmt.Println("Waiting for migrations to run in test suite: " + dir)
 		if err := lock.WaitForRelease(50, 200*time.Millisecond); err != nil {
 			panic(fmt.Sprintf("lock.WaitForRelease: %s\n", err))
 		}
 
 		return pool, sqlpool, nil
 	}
+
+	fmt.Println("Running migrations in test suite: " + dir)
 
 	defer func() {
 		unlockSuccess := lock.Release()
@@ -90,7 +113,6 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		panic(fmt.Sprintf("Couldn't migrate (post-migrations): %s\n", err))
 	}
 
-	fmt.Println("RUNNING DOWN MIGRATIONS")
 	// ~~~~ NOTE: drop table before tests only externally.
 	// ^ now that we use a lock for test migrations with parallel tests, we can run m.Down
 	// instead of dropping
@@ -126,8 +148,8 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 func printMigrationsState(pool *pgxpool.Pool) {
 	query := `
 	select
-		row_to_json(schema_migrations.*) as sm,
-		row_to_json(schema_post_migrations.*) as spm
+		row_to_json(schema_migrations.*) as schema_migrations,
+		row_to_json(schema_post_migrations.*) as schema_post_migrations
 	from
 		schema_migrations,
 		schema_post_migrations
@@ -137,5 +159,5 @@ func printMigrationsState(pool *pgxpool.Pool) {
 		fmt.Printf("postgresql.DynamicQuery error: %s\n", err)
 	}
 
-	fmt.Printf("res: %s\n", res)
+	fmt.Printf("Current migrations:\n%s\n", res)
 }

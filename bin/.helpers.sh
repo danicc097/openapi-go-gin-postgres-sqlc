@@ -455,14 +455,14 @@ docker.postgres() {
 }
 
 docker.postgres.psql() {
-  docker exec -i postgres_db_"$PROJECT_PREFIX" psql -qtAX -v ON_ERROR_STOP=on "$@"
+  docker.postgres psql -qtAX -v ON_ERROR_STOP=on "$@"
 }
 
 # Drop and recreate database `db`. Defaults to POSTGRES_DB.
 docker.postgres.drop_and_recreate_db() {
   local db="${1:POSTGRES_DB}"
 
-  docker.postgres.isready
+  docker.postgres.wait_until_ready
 
   docker.postgres psql --no-psqlrc \
     -U "$POSTGRES_USER" \
@@ -484,7 +484,7 @@ docker.postgres.drop_and_recreate_db() {
 docker.postgres.create_db() {
   local db="$1"
 
-  docker.postgres.isready
+  docker.postgres.wait_until_ready
 
   echo "${BLUE}${BOLD}Creating database $db.${OFF}"
   {
@@ -500,7 +500,7 @@ docker.postgres.create_db() {
 docker.postgres.stop_db_processes() {
   local db="$1"
 
-  docker.postgres.isready
+  docker.postgres.wait_until_ready
 
   echo "${BLUE}${BOLD}Stopping any running processes for database $db.${OFF}"
   docker.postgres psql --no-psqlrc \
@@ -511,13 +511,13 @@ docker.postgres.stop_db_processes() {
         where datname='$db'" >/dev/null
 }
 
-docker.postgres.isready() {
+docker.postgres.wait_until_ready() {
   pg_ready=0
   while [[ ! $pg_ready -eq 1 ]]; do
     docker.postgres \
       pg_isready -U "$POSTGRES_USER" || {
       echo "${YELLOW}Waiting for postgres database to be ready...${OFF}"
-      sleep 2
+      sleep 1
       continue
     }
     pg_ready=1
