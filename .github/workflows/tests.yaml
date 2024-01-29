@@ -49,12 +49,12 @@ jobs:
           bg_pid=$!
 
           echo -------1-------
-          POSTGRES_TRACE=false project test.create-crud-gen -v --x-debug
+          POSTGRES_TRACE=false project test.create-crud-gen -v
           echo -------2-------
-          POSTGRES_TRACE=false project test.backend -v -race -count=30 -timeout=40m --x-debug
+          POSTGRES_TRACE=false project test.backend -v -race -count=30 -timeout=40m
           echo -------3-------
           # some tests are skipped from race
-          POSTGRES_TRACE=false project test.backend -v -count=3 -timeout=40m --x-debug
+          POSTGRES_TRACE=false project test.backend -v -count=3 -timeout=40m
 
           { test -n "$bg_pid" && kill $bg_pid; } || true
 
