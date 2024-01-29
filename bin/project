@@ -150,7 +150,7 @@ xsetup.backup() {
 
   backup_stash_name="backup-stash-$backup_branch"
 
-  echo "$backup_branch" >backup-gen-stash-dummy.txt
+  echo "$backup_branch" >backup-gen-stash-dummy.txt # make sure something unique and not gitignored is in the current branch
   gen-cache.backup
   git stash push -m "$backup_stash_name" --include-untracked || err "Could not backup untracked changes before codegen"
   git checkout -b "$backup_branch" &>/dev/null
@@ -1247,7 +1247,9 @@ test_backend_watch() {
       --event=close_write \
       --format='%T %f' \
       --timefmt='%s' \
-      ./internal && clear && { go_test -count=1 -tags $tags "$@"; } && echo "${GREEN}✓ All tests passing${OFF}"
+      . && clear &&
+      go_test -count=1 -tags $tags "$@" &&
+      echo "${GREEN}✓ All tests passing${OFF}"
   done
 }
 
@@ -1259,6 +1261,7 @@ x.test.backend.watch() {
 
 # Watch specific functions in a given dir. Accepts `go test` parameters.
 # Example: internal/repos/postgresql/ TestUser_Create TestUser_Update -count=5
+# Example: internal/repos/postgresql/ "TestUser_.*"
 # Args: dir [fn ...]
 x.test.backend.watch-for() {
   local dir="$1"
@@ -2661,7 +2664,7 @@ exit-cleanup() {
     fi
 
     # shared cleanup regardless of gen success
-    # FIXME: might fail on success, especially in ci where CURRENT_BRANCH is the gen branch for some reason
+    # FIXME: fails consistently on ci where CURRENT_BRANCH is the gen branch for some reason
     git checkout "$CURRENT_BRANCH" &>/dev/null || err "Could not checkout $CURRENT_BRANCH branch"
     rm -f backup-gen-stash-dummy.txt
     git branch -D "$backup_branch" &>/dev/null || true
