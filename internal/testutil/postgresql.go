@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"path"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -16,8 +17,6 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/iancoleman/strcase"
-	"github.com/jackc/pgconn"
-	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 
@@ -53,14 +52,10 @@ func NewDB() (*pgxpool.Pool, *sql.DB, error) {
 		panic(fmt.Sprintf("Couldn't create default pool: %s\n", err))
 	}
 	defer defaultPool.Close()
-	var pgErr *pgconn.PgError
-	createDBQuery := fmt.Sprintf("CREATE DATABASE %s;", dbName)
-	_, err = defaultPool.Exec(context.Background(), createDBQuery)
-	if err != nil {
-		if errors.As(err, &pgErr) {
-			if pgErr.Code != pgerrcode.UniqueViolation {
-				panic(fmt.Sprintf("Couldn't create database: %s\n", err))
-			}
+
+	if _, err := defaultPool.Exec(context.Background(), fmt.Sprintf("CREATE DATABASE %s;", dbName)); err != nil {
+		if !strings.Contains(err.Error(), "already exists") {
+			panic(fmt.Sprintf("Couldn't create database: %s\n", err))
 		}
 	}
 
