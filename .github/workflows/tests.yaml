@@ -44,7 +44,7 @@ jobs:
           source .envrc
 
           {
-            while sleep 1; do project db.conns-db postgres_test; done
+            while sleep 1; do project db.conns-db postgres_test --x-no-exit-cleanup; done
           } &
           bg_pid=$!
 

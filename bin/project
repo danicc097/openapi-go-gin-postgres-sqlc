@@ -11,7 +11,7 @@ source ".helpers.sh"
 starting_cwd=$(pwd)
 ensure_pwd_is_top_level
 
-declare X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV
+declare X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG X_NO_EXIT_CLEANUP
 declare BUILD_VERSION
 
 readonly CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -2589,6 +2589,10 @@ while [[ "$#" -gt 0 ]]; do
     # Skips code generation steps.
     export X_NO_GEN=1
     ;;
+  --x-no-exit-cleanup)
+    # Skip default cleanup on exit.
+    export X_NO_EXIT_CLEANUP=1
+    ;;
   --x-debug)
     # Debug bash script with -x shell option.
     export X_DEBUG=1
@@ -2620,7 +2624,7 @@ done
 
 export BUILD_VERSION="$X_ENV-$(git rev-parse --verify HEAD)"
 
-readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG
+readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG X_NO_EXIT_CLEANUP
 
 ######################## INIT ########################
 
@@ -2646,7 +2650,9 @@ trap killgroup EXIT HUP INT TERM
 trap errtrap SIGUSR1
 # may get called multiple times
 trap 'exit-cleanup $LINENO' EXIT HUP INT TERM # EXIT (0) executed on exit from the shell
-
+if test -n "$X_NO_EXIT_CLEANUP"; then
+  trap 'echo Skipped exit-cleanup' EXIT HUP INT TERM
+fi
 exit_cleanup_calls=0
 
 exit-cleanup() {
