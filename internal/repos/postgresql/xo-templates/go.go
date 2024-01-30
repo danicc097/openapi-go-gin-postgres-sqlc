@@ -1406,6 +1406,28 @@ func overloadedName(sqlTypes []string, proc Proc) string {
 	return fmt.Sprintf("%sBy%sAnd%s", proc.GoName, front, last)
 }
 
+func parseAnnotations(comment string) (map[annotation]string, error) {
+	annotations := make(map[annotation]string)
+	for _, a := range strings.Split(comment, annotationJoinOperator) {
+		if a == "" {
+			continue
+		}
+		typ, val, found := strings.Cut(a, annotationAssignmentOperator)
+		if !found {
+			return nil, fmt.Errorf("invalid column comment annotation format: %s", a)
+		}
+		typ = annotation(strings.TrimSpace(typ))
+		switch typ {
+		case cardinalityAnnot, tagsAnnot, typeAnnot, propertiesAnnot:
+			annotations[typ] = strings.TrimSpace(val)
+		default:
+			return nil, fmt.Errorf("invalid column comment annotation type: %s", typ)
+		}
+	}
+
+	return annotations, nil
+}
+
 func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, error) {
 	typ, zero, err := goType(ctx, f.Type)
 	if err != nil {
@@ -1418,22 +1440,9 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		openAPISchema = camelExport(f.Type.Enum.Name)
 	}
 
-	annotations := make(map[annotation]string)
-	for _, a := range strings.Split(f.Comment, annotationJoinOperator) {
-		if a == "" {
-			continue
-		}
-		typ, val, found := strings.Cut(a, annotationAssignmentOperator)
-		if !found {
-			return Field{}, fmt.Errorf("invalid column comment annotation format: %s", a)
-		}
-		typ = annotation(strings.TrimSpace(typ))
-		switch typ {
-		case cardinalityAnnot, tagsAnnot, typeAnnot, propertiesAnnot:
-			annotations[typ] = strings.TrimSpace(val)
-		default:
-			return Field{}, fmt.Errorf("invalid column comment annotation type: %s", typ)
-		}
+	annotations, err := parseAnnotations(f.Comment)
+	if err != nil {
+		return Field{}, fmt.Errorf("parse annotations: %w", err)
 	}
 
 	properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
