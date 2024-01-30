@@ -55,6 +55,8 @@ const (
 	tagsAnnot annotation = `"tags"`
 
 	propertiesJoinOperator = ","
+	// propertyIgnoreConstraints generates a field as if it had no FK or PK constraints.
+	propertyIgnoreConstraints = "ignore-constraints"
 	// propertyJSONPrivate sets a json:"-" tag.
 	propertyJSONPrivate = "private"
 	// propertyOpenAPINotRequired marks schema field as not required
@@ -3801,6 +3803,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
 	hidden := false
 	isPrivate := contains(field.Properties, propertyJSONPrivate)
+	// ignoreConstraints := contains(field.Properties, propertyIgnoreConstraints)
 	notRequired := contains(field.Properties, propertyOpenAPINotRequired)
 	isPointer := strings.HasPrefix(field.Type, "*")
 	af := analyzeField(table, field)
@@ -3859,6 +3862,12 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 			fieldType = strings.Repeat("*", pc) + table.GoName + "ID"
 		}
 	}
+
+	// TODO: its not skipping the current field constraints,
+	// but making sure other tables ignore constraints
+	// therefore we need to have RefColumnField and LookupRefField
+	// so we can keep this constraint is set or not.
+	// ignoreConstraints := contains(field.Properties, propertyIgnoreConstraints)
 
 	var constraintTyp string
 	if af.isFK {

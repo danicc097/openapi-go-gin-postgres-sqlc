@@ -30,6 +30,7 @@ type ExtraSchemaWorkItem struct {
 	Description *string               `json:"description" db:"description"`                                  // description
 
 	DemoWorkItemJoin          *ExtraSchemaDemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
+	DemoWorkItemJoinWII       *ExtraSchemaDemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
 	WorkItemAssignedUsersJoin *[]User__WIAU_ExtraSchemaWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
 
 }
@@ -75,16 +76,18 @@ type ExtraSchemaWorkItemOrderBy string
 const ()
 
 type ExtraSchemaWorkItemJoins struct {
-	DemoWorkItem  bool // O2O demo_work_items
-	AssignedUsers bool // M2M work_item_assigned_user
+	DemoWorkItem              bool // O2O demo_work_items
+	DemoWorkItemDemoWorkItems bool // O2O demo_work_items
+	AssignedUsers             bool // M2M work_item_assigned_user
 }
 
 // WithExtraSchemaWorkItemJoin joins with the given tables.
 func WithExtraSchemaWorkItemJoin(joins ExtraSchemaWorkItemJoins) ExtraSchemaWorkItemSelectConfigOption {
 	return func(s *ExtraSchemaWorkItemSelectConfig) {
 		s.joins = ExtraSchemaWorkItemJoins{
-			DemoWorkItem:  s.joins.DemoWorkItem || joins.DemoWorkItem,
-			AssignedUsers: s.joins.AssignedUsers || joins.AssignedUsers,
+			DemoWorkItem:              s.joins.DemoWorkItem || joins.DemoWorkItem,
+			DemoWorkItemDemoWorkItems: s.joins.DemoWorkItemDemoWorkItems || joins.DemoWorkItemDemoWorkItems,
+			AssignedUsers:             s.joins.AssignedUsers || joins.AssignedUsers,
 		}
 	}
 }
@@ -131,6 +134,15 @@ left join extra_schema.demo_work_items as _demo_work_items_work_item_id on _demo
 const extraSchemaWorkItemTableDemoWorkItemSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id`
 
 const extraSchemaWorkItemTableDemoWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
+	work_items.work_item_id`
+
+const extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
+left join extra_schema.demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id
+`
+
+const extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id`
+
+const extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id`
 
 const extraSchemaWorkItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
@@ -315,6 +327,12 @@ func ExtraSchemaWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
+	if c.joins.DemoWorkItemDemoWorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsGroupBySQL)
+	}
+
 	if c.joins.AssignedUsers {
 		selectClauses = append(selectClauses, extraSchemaWorkItemTableAssignedUsersSelectSQL)
 		joinClauses = append(joinClauses, extraSchemaWorkItemTableAssignedUsersJoinSQL)
@@ -420,6 +438,12 @@ func ExtraSchemaWorkItems(ctx context.Context, db DB, opts ...ExtraSchemaWorkIte
 		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
+	if c.joins.DemoWorkItemDemoWorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsGroupBySQL)
+	}
+
 	if c.joins.AssignedUsers {
 		selectClauses = append(selectClauses, extraSchemaWorkItemTableAssignedUsersSelectSQL)
 		joinClauses = append(joinClauses, extraSchemaWorkItemTableAssignedUsersJoinSQL)
@@ -523,6 +547,12 @@ func ExtraSchemaWorkItemByWorkItemID(ctx context.Context, db DB, workItemID Extr
 		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
+	if c.joins.DemoWorkItemDemoWorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsGroupBySQL)
+	}
+
 	if c.joins.AssignedUsers {
 		selectClauses = append(selectClauses, extraSchemaWorkItemTableAssignedUsersSelectSQL)
 		joinClauses = append(joinClauses, extraSchemaWorkItemTableAssignedUsersJoinSQL)
@@ -622,6 +652,12 @@ func ExtraSchemaWorkItemsByTitle(ctx context.Context, db DB, title *string, opts
 		selectClauses = append(selectClauses, extraSchemaWorkItemTableDemoWorkItemSelectSQL)
 		joinClauses = append(joinClauses, extraSchemaWorkItemTableDemoWorkItemJoinSQL)
 		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableDemoWorkItemGroupBySQL)
+	}
+
+	if c.joins.DemoWorkItemDemoWorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableDemoWorkItemDemoWorkItemsGroupBySQL)
 	}
 
 	if c.joins.AssignedUsers {

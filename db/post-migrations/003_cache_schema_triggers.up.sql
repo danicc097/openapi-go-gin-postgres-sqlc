@@ -26,6 +26,7 @@ begin
   -- Dynamically create the cache.demo_work_items table
   execute 'CREATE SCHEMA IF NOT EXISTS cache;';
   execute FORMAT('CREATE TABLE IF NOT EXISTS cache.%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type);
+  execute FORMAT('comment on column cache.%I.work_item_id is ''"type":WorkItemID && "properties":ignore-constraints''' , project_name);
   -- constraints
   select
     exists (
