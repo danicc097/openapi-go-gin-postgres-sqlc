@@ -411,7 +411,6 @@ cache_all() {
 
   if cmp -s "$output_file" "$output_file.tmp" && [[ $X_FORCE_REGEN -eq 0 ]]; then
     echo "${CYAN}Skipping generation (cached).${OFF} Regenerate with ${RED}--x-force-regen${OFF}"
-    mv "$output_file.tmp" "$output_file"
     return 0
   fi
 

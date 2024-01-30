@@ -646,7 +646,8 @@ x.gen.xo() {
   xsetup.backup
   xsetup.drop-and-migrate-gen-db
   { { {
-    cache_all "$CACHE/xo.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/* && return 0
+    cache_all "$CACHE/xo.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/ \
+      --exclude "$XO_TEMPLATES_DIR/tests/*" && return 0
 
     echo "Running generation"
 
@@ -2085,7 +2086,8 @@ xo_generate_spec_helpers() {
   for entity in ${int_ids[@]}; do
     camel=$(to_camel $entity)
     pascal=$(to_pascal $entity)
-    anchors+=("x-${camel}Parameter: &x-${camel}Parameter # Generated. DO NOT EDIT.
+    anchors+=("x-${camel}Parameter: &x-${camel}Parameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
   schema:
     type: integer
@@ -2100,7 +2102,8 @@ xo_generate_spec_helpers() {
   go-utils.find_db_ids_uuid uuid_ids "$PG_REPO_GEN/db"
   for entity in ${uuid_ids[@]}; do
     camel=$(to_camel $entity)
-    anchors+=("x-${camel}Parameter: &x-${camel}Parameter # Generated. DO NOT EDIT.
+    anchors+=("x-${camel}Parameter: &x-${camel}Parameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-uuidIDParameterBase
   schema:
     type: integer
@@ -2636,6 +2639,14 @@ readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BAC
 
 if test -n "$X_DEBUG"; then
   set -x
+  N=$(date +%s%N)
+  # NOTE: would be nice to process incremental times, but due to xlog and xerr, subshells and
+  # background commands all over the place it's nearly impossible
+  if test -z "${BASH_SOURCE[1]##*/}"; then
+    export PS4='+[$((($(date +%s%N)-$N)/1000000))ms][${YELLOW}${BASH_SOURCE##*/}:${LINENO}${OFF}]: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+  else
+    export PS4='+[$((($(date +%s%N)-$N)/1000000))ms][${YELLOW}${BASH_SOURCE[1]##*/}:${BASH_LINENO[0]}${OFF}]: ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+  fi
 fi
 
 # applicable to any command
@@ -2643,10 +2654,6 @@ ensure_envvars_set ".env.template" ".env.${X_ENV}"
 
 # export to all subsequent commands or scripts
 set -a
-# TODO: wrapper around source that for each var in file
-# checks if its defined, e.g. P4="" test -v P4
-# and if so saves to a global current_env assoc array
-# that is shared for all calls of this wrapper func
 # shellcheck source=SCRIPTDIR/../.env.dev
 source ".env.$X_ENV"
 set +a
@@ -2718,6 +2725,7 @@ if [[ -n "$1" ]]; then
     declare cmd=$(command -v "x.$c")
     if [[ $c == "$CMD" && -n "$cmd" ]]; then
       "x.$CMD" "$@"
+
       if [[ -n $X_IGNORE_BUILD_ERRORS ]]; then
         echo "${YELLOW}[WARNING] A rerun without ignoring build errors is required"
       fi
