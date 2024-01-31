@@ -20,7 +20,7 @@ import (
 var errorUniqueViolationRegex = regexp.MustCompile(`\((.*)\)=\((.*)\)`)
 
 func ParseDBErrorDetail(err error) error {
-	newErr := internal.WrapErrorf(err, models.ErrorCodeUnknown, err.Error())
+	newErr := internal.WrapErrorf(err, models.ErrorCodeUnknown, "database error")
 
 	/**
 	 * TODO: will have generic xo Error struct, which has Entity field.

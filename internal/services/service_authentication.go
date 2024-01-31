@@ -51,7 +51,7 @@ func (a *Authentication) GetUserFromAccessToken(ctx context.Context, token strin
 
 	user, err := a.usvc.ByExternalID(ctx, a.pool, claims.Subject)
 	if err != nil {
-		return nil, internal.WrapErrorf(err, models.ErrorCodeNotFound, "user from token not found: %s", err)
+		return nil, internal.WrapErrorf(err, models.ErrorCodeNotFound, "user from token not found")
 	}
 
 	return user, nil
@@ -73,7 +73,7 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 
 	superAdmin, err := a.usvc.ByEmail(ctx, a.pool, cfg.SuperAdmin.DefaultEmail)
 	if err != nil {
-		return nil, internal.WrapErrorf(err, models.ErrorCodePrivate, "could not get admin user %s: %s", cfg.SuperAdmin.DefaultEmail, err)
+		return nil, internal.WrapErrorf(err, models.ErrorCodePrivate, "could not get admin user %s", cfg.SuperAdmin.DefaultEmail)
 	}
 
 	// superAdmin is registered without id since an account needs to exist beforehand (created via initial-data, for any env)
@@ -83,7 +83,7 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 			ExternalID: pointers.New(userinfo.Subject),
 		})
 		if err != nil {
-			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not update super admin external ID after first login %s: %s", cfg.SuperAdmin.DefaultEmail, err)
+			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not update super admin external ID after first login %s", cfg.SuperAdmin.DefaultEmail)
 		}
 		// continue as normal to update superAdmin if necessary.
 		// default superAdmin account can be changed on startup via SUPERADMIN_EMAIL and info will always be synced with auth server
@@ -114,7 +114,7 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 			Role:       role,
 		})
 		if err != nil {
-			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not register user from provider: %s", err)
+			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not register user from provider")
 		}
 	}
 
@@ -122,7 +122,7 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 	if u.RoleRank == guestRole.Rank && userinfo.EmailVerified {
 		u, err = a.usvc.UpdateUserAuthorization(ctx, a.pool, u.UserID, CtxUser{User: superAdmin}, &models.UpdateUserAuthRequest{Role: &guestRole.Name})
 		if err != nil {
-			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not update user auth after email verification: %s", err)
+			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not update user auth after email verification")
 		}
 	}
 
@@ -132,7 +132,7 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 		u.Username = userinfo.PreferredUsername
 		u, err = u.Update(ctx, a.pool)
 		if err != nil {
-			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not update out of sync userinfo: %s", err)
+			return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not update out of sync userinfo")
 		}
 	}
 

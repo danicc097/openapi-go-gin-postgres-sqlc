@@ -67,8 +67,8 @@ github.com/creack/pty v1.1.7/go.mod h1:lj5s0c3V2DBrqTV7llrYr5NG6My20zk30Fl46Y7Do
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/danicc097/oidc-server/v3 v3.5.0 h1:aqNuzC6+Q8NFmDX2lXJip2oWGJTP8Epy/uBtu8nuQwA=
 github.com/danicc097/oidc-server/v3 v3.5.0/go.mod h1:dRbodhLy7B2hVEjtD2dnF8ZXj5QHfAP8QE4LtIfGvNk=
-github.com/danicc097/xo/v5 v5.1.0 h1:eHPTffQTNT4jQ7XmnOChK0QWG4so+z/lB6/eUmWObGU=
-github.com/danicc097/xo/v5 v5.1.0/go.mod h1:GjUeQp17H7P+3lt1CF5oyo7WtWs0IbmrcIIoxhKWYfE=
+github.com/danicc097/xo/v5 v5.6.0 h1:ctBxldyVIndMO60Ygvx5e2SHFYy2cPVdVJC5RS9ZcOw=
+github.com/danicc097/xo/v5 v5.6.0/go.mod h1:oU6s/elNFlD8CvhR7s5/pTTKnHAd8VJNBfAqwoq9xrA=
 github.com/dave/dst v0.27.3 h1:P1HPoMza3cMEquVf9kKy8yXsFirry4zEnWOdYPOoIzY=
 github.com/dave/dst v0.27.3/go.mod h1:jHh6EOibnHgcUW3WjKHisiooEkYwqpHLBSX1iOBhEyc=
 github.com/dave/jennifer v1.5.0 h1:HmgPN93bVDpkQyYbqhCHj5QlgvUkvEOzMyEvKLgCRrg=
