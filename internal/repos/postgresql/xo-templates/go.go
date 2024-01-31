@@ -2905,8 +2905,7 @@ func (f *Funcs) sqlstr(typ string, v any) string {
 	return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "\n\t"))
 }
 
-// check pk can be straightforwardly used as cursor
-func pkIsValidCursor(pk Field) bool {
+func isValidCursor(pk Field) bool {
 	return pk.UnderlyingType == "time.Time" || pk.UnderlyingType == "int" || pk.UnderlyingType == "int64"
 }
 
@@ -2919,38 +2918,20 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 		tableConstraints = tc
 	}
 	existingCursors := make(map[string]bool)
-	allPKsAreValidCursor := true
+	allPKsAreValidCursor := len(table.PrimaryKeys) > 0
 	for _, pk := range table.PrimaryKeys {
-		if !pkIsValidCursor(pk) {
+		if !isValidCursor(pk) {
 			allPKsAreValidCursor = false
 		}
 	}
-
 	if allPKsAreValidCursor {
-		if len(table.PrimaryKeys) > 0 {
-			cursorCols = append(cursorCols, table.PrimaryKeys) // assume its incremental. if it's not then simply dont call it...
-		} else if len(table.ForeignKeys) > 0 {
-			// handle managed tables where there may not be PKs but they are valid cursors via FK,
-			// e.g. cache.<..>_work_items
-			for _, tfk := range table.ForeignKeys {
-				if len(tfk.FieldNames) >= 1 {
-					flds := make([]Field, len(tfk.FieldNames))
-					fname := tfk.FieldNames[0]
-					for _, fld := range table.Fields {
-						if fld.SQLName == fname {
-							flds = append(flds, fld)
-						}
-					}
-					cursorCols = append(cursorCols, flds)
-				}
-			}
-		}
+		cursorCols = append(cursorCols, table.PrimaryKeys) // assume its incremental. if it's not then simply dont call it...
 	}
 
 	for _, z := range table.Fields {
 		for _, c := range tableConstraints {
 			if c.Type == "unique" && c.ColumnName == z.SQLName {
-				if pkIsValidCursor(z) {
+				if isValidCursor(z) {
 					if existingCursors[z.SQLName] {
 						continue
 					}
