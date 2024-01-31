@@ -2924,8 +2924,32 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 			allPKsAreValidCursor = false
 		}
 	}
+	fmt.Printf("allPKsAreValidCursor: %v\n", allPKsAreValidCursor)
+	fmt.Printf("%s.%s\n", table.Schema, table.SQLName)
+
 	if allPKsAreValidCursor {
-		cursorCols = append(cursorCols, table.PrimaryKeys) // assume its incremental. if it's not then simply dont call it...
+		// FIXME: FK is removed from list when go type is changed via "type" comment annotation.
+		// works fine without - generates pagination using int
+		fmt.Printf("table.PrimaryKeys: %+v\n", table.PrimaryKeys)
+		fmt.Printf("table.ForeignKeys: %+v\n", table.ForeignKeys)
+		if len(table.PrimaryKeys) > 0 {
+			cursorCols = append(cursorCols, table.PrimaryKeys) // assume its incremental. if it's not then simply dont call it...
+		} else if len(table.ForeignKeys) > 0 {
+			// handle managed tables where there may not be PKs but they are valid cursors via FK,
+			// e.g. cache.<..>_work_items
+			for _, tfk := range table.ForeignKeys {
+				if len(tfk.FieldNames) >= 1 {
+					flds := make([]Field, len(tfk.FieldNames))
+					fname := tfk.FieldNames[0]
+					for _, fld := range table.Fields {
+						if fld.SQLName == fname {
+							flds = append(flds, fld)
+						}
+					}
+					cursorCols = append(cursorCols, flds)
+				}
+			}
+		}
 	}
 
 	for _, z := range table.Fields {
