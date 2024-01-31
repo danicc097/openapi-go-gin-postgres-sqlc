@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -143,6 +144,107 @@ func WithCacheDemoTwoWorkItemHavingClause(conditions map[string][]any) CacheDemo
 	return func(s *CacheDemoTwoWorkItemSelectConfig) {
 		s.having = conditions
 	}
+}
+
+// CacheDemoTwoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of CacheDemoTwoWorkItem.
+func CacheDemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...CacheDemoTwoWorkItemSelectConfigOption) ([]CacheDemoTwoWorkItem, error) {
+	c := &CacheDemoTwoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoTwoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	operator := "<"
+	if direction == models.DirectionAsc {
+		operator = ">"
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	demo_two_work_items.custom_date_for_project_2,
+	demo_two_work_items.work_item_id,
+	demo_two_work_items.title,
+	demo_two_work_items.description,
+	demo_two_work_items.work_item_type_id,
+	demo_two_work_items.metadata,
+	demo_two_work_items.team_id,
+	demo_two_work_items.kanban_step_id,
+	demo_two_work_items.closed_at,
+	demo_two_work_items.target_date,
+	demo_two_work_items.created_at,
+	demo_two_work_items.updated_at,
+	demo_two_work_items.deleted_at %s 
+	 FROM cache.demo_two_work_items %s 
+	 WHERE demo_two_work_items.work_item_id %s $1
+	 %s   AND demo_two_work_items.deleted_at is %s  %s 
+  %s 
+  ORDER BY 
+		work_item_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
+	sqlstr += c.limit
+	sqlstr = "/* CacheDemoTwoWorkItemPaginatedByWorkItemID */\n" + sqlstr
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoTwoWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Demo two work item", Err: err}))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[CacheDemoTwoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoTwoWorkItem/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Demo two work item", Err: err}))
+	}
+	return res, nil
 }
 
 // CacheDemoTwoWorkItemByWorkItemID retrieves a row from 'cache.demo_two_work_items' as a CacheDemoTwoWorkItem.

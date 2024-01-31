@@ -1113,6 +1113,7 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 
 		fkeys = append(fkeys, tfk)
 	}
+
 	table.ForeignKeys = fkeys
 
 	return table, nil
@@ -1475,7 +1476,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	if extraTags != "" {
 		extraTags = " " + extraTags
 	}
-
+	originalType := typ
 	if typeOverride != "" {
 		typ = typeOverride
 		if strings.Count(typeOverride, ".") > 0 {
@@ -1487,22 +1488,22 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	}
 
 	return Field{
-		Type:          typ,
-		GoName:        tf(f.Name),
-		SQLName:       f.Name,
-		Zero:          zero,
-		IsPrimary:     f.IsPrimary,
-		IsSequence:    f.IsSequence,
-		IsIgnored:     f.IsIgnored,
-		EnumPkg:       enumPkg,
-		EnumSchema:    enumSchema,
-		Comment:       f.Comment,
-		IsDateOrTime:  f.IsDateOrTime,
-		TypeOverride:  typeOverride,
-		OpenAPISchema: openAPISchema,
-		ExtraTags:     extraTags,
-		Properties:    properties,
-		IsGenerated:   strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated, // TODO: we have default gen_random_uuid(), clock_timestamp(), current_timestamp... not reliable
+		Type:           typ,
+		GoName:         tf(f.Name),
+		SQLName:        f.Name,
+		Zero:           zero,
+		IsPrimary:      f.IsPrimary,
+		IsSequence:     f.IsSequence,
+		IsIgnored:      f.IsIgnored,
+		EnumPkg:        enumPkg,
+		EnumSchema:     enumSchema,
+		Comment:        f.Comment,
+		IsDateOrTime:   f.IsDateOrTime,
+		UnderlyingType: originalType,
+		OpenAPISchema:  openAPISchema,
+		ExtraTags:      extraTags,
+		Properties:     properties,
+		IsGenerated:    strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated, // TODO: we have default gen_random_uuid(), clock_timestamp(), current_timestamp... not reliable
 	}, nil
 }
 
@@ -2906,7 +2907,7 @@ func (f *Funcs) sqlstr(typ string, v any) string {
 
 // check pk can be straightforwardly used as cursor
 func pkIsValidCursor(pk Field) bool {
-	return pk.Type == "time.Time" || pk.Type == "int" || pk.Type == "int64"
+	return pk.UnderlyingType == "time.Time" || pk.UnderlyingType == "int" || pk.UnderlyingType == "int64"
 }
 
 // cursor_columns returns a list of possible combinations of columns for cursor pagination
@@ -2924,14 +2925,8 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 			allPKsAreValidCursor = false
 		}
 	}
-	fmt.Printf("allPKsAreValidCursor: %v\n", allPKsAreValidCursor)
-	fmt.Printf("%s.%s\n", table.Schema, table.SQLName)
 
 	if allPKsAreValidCursor {
-		// FIXME: FK is removed from list when go type is changed via "type" comment annotation.
-		// works fine without - generates pagination using int
-		fmt.Printf("table.PrimaryKeys: %+v\n", table.PrimaryKeys)
-		fmt.Printf("table.ForeignKeys: %+v\n", table.ForeignKeys)
 		if len(table.PrimaryKeys) > 0 {
 			cursorCols = append(cursorCols, table.PrimaryKeys) // assume its incremental. if it's not then simply dont call it...
 		} else if len(table.ForeignKeys) > 0 {
@@ -4748,23 +4743,24 @@ type Constraint struct {
 
 // Field is a field template.
 type Field struct {
-	GoName        string
-	SQLName       string
-	Type          string
-	Zero          string
-	IsPrimary     bool
-	IsSequence    bool
-	IsIgnored     bool
-	Comment       string
-	IsGenerated   bool
-	EnumPkg       string
-	EnumSchema    string
-	TypeOverride  string
-	IsDateOrTime  bool
-	Properties    []string
-	OpenAPISchema string
-	ExtraTags     string
-	Annotations   map[annotation]string
+	GoName         string
+	SQLName        string
+	Type           string
+	Zero           string
+	IsPrimary      bool
+	IsSequence     bool
+	IsIgnored      bool
+	Comment        string
+	IsGenerated    bool
+	EnumPkg        string
+	EnumSchema     string
+	TypeOverride   string
+	IsDateOrTime   bool
+	Properties     []string
+	OpenAPISchema  string
+	ExtraTags      string
+	UnderlyingType string
+	Annotations    map[annotation]string
 }
 
 // QueryParam is a custom query parameter template.
