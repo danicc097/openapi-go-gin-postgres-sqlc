@@ -40,9 +40,7 @@ type WorkItem struct {
 	DeletedAt      *time.Time     `json:"deletedAt" db:"deleted_at"`                                              // deleted_at
 
 	DemoTwoWorkItemJoin          *DemoTwoWorkItem       `json:"-" db:"demo_two_work_item_work_item_id" openapi-go:"ignore"`        // O2O demo_two_work_items (inferred)
-	DemoTwoWorkItemJoinWII       *DemoTwoWorkItem       `json:"-" db:"demo_two_work_item_work_item_id" openapi-go:"ignore"`        // O2O demo_two_work_items (inferred)
 	DemoWorkItemJoin             *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
-	DemoWorkItemJoinWII          *DemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
 	WorkItemTimeEntriesJoin      *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                           // M2O work_items
 	WorkItemAssignedUsersJoin    *[]User__WIAU_WorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
 	WorkItemWorkItemCommentsJoin *[]WorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O work_items
@@ -150,34 +148,30 @@ func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 }
 
 type WorkItemJoins struct {
-	DemoTwoWorkItem                 bool // O2O demo_two_work_items
-	DemoTwoWorkItemDemoTwoWorkItems bool // O2O demo_two_work_items
-	DemoWorkItem                    bool // O2O demo_work_items
-	DemoWorkItemDemoWorkItems       bool // O2O demo_work_items
-	TimeEntries                     bool // M2O time_entries
-	AssignedUsers                   bool // M2M work_item_assigned_user
-	WorkItemComments                bool // M2O work_item_comments
-	WorkItemTags                    bool // M2M work_item_work_item_tag
-	KanbanStep                      bool // O2O kanban_steps
-	Team                            bool // O2O teams
-	WorkItemType                    bool // O2O work_item_types
+	DemoTwoWorkItem  bool // O2O demo_two_work_items
+	DemoWorkItem     bool // O2O demo_work_items
+	TimeEntries      bool // M2O time_entries
+	AssignedUsers    bool // M2M work_item_assigned_user
+	WorkItemComments bool // M2O work_item_comments
+	WorkItemTags     bool // M2M work_item_work_item_tag
+	KanbanStep       bool // O2O kanban_steps
+	Team             bool // O2O teams
+	WorkItemType     bool // O2O work_item_types
 }
 
 // WithWorkItemJoin joins with the given tables.
 func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
 		s.joins = WorkItemJoins{
-			DemoTwoWorkItem:                 s.joins.DemoTwoWorkItem || joins.DemoTwoWorkItem,
-			DemoTwoWorkItemDemoTwoWorkItems: s.joins.DemoTwoWorkItemDemoTwoWorkItems || joins.DemoTwoWorkItemDemoTwoWorkItems,
-			DemoWorkItem:                    s.joins.DemoWorkItem || joins.DemoWorkItem,
-			DemoWorkItemDemoWorkItems:       s.joins.DemoWorkItemDemoWorkItems || joins.DemoWorkItemDemoWorkItems,
-			TimeEntries:                     s.joins.TimeEntries || joins.TimeEntries,
-			AssignedUsers:                   s.joins.AssignedUsers || joins.AssignedUsers,
-			WorkItemComments:                s.joins.WorkItemComments || joins.WorkItemComments,
-			WorkItemTags:                    s.joins.WorkItemTags || joins.WorkItemTags,
-			KanbanStep:                      s.joins.KanbanStep || joins.KanbanStep,
-			Team:                            s.joins.Team || joins.Team,
-			WorkItemType:                    s.joins.WorkItemType || joins.WorkItemType,
+			DemoTwoWorkItem:  s.joins.DemoTwoWorkItem || joins.DemoTwoWorkItem,
+			DemoWorkItem:     s.joins.DemoWorkItem || joins.DemoWorkItem,
+			TimeEntries:      s.joins.TimeEntries || joins.TimeEntries,
+			AssignedUsers:    s.joins.AssignedUsers || joins.AssignedUsers,
+			WorkItemComments: s.joins.WorkItemComments || joins.WorkItemComments,
+			WorkItemTags:     s.joins.WorkItemTags || joins.WorkItemTags,
+			KanbanStep:       s.joins.KanbanStep || joins.KanbanStep,
+			Team:             s.joins.Team || joins.Team,
+			WorkItemType:     s.joins.WorkItemType || joins.WorkItemType,
 		}
 	}
 }
@@ -226,15 +220,6 @@ const workItemTableDemoTwoWorkItemSelectSQL = `(case when _demo_two_work_items_w
 const workItemTableDemoTwoWorkItemGroupBySQL = `_demo_two_work_items_work_item_id.work_item_id,
 	work_items.work_item_id`
 
-const workItemTableDemoTwoWorkItemDemoTwoWorkItemsJoinSQL = `-- O2O join generated from "demo_two_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join demo_two_work_items as _demo_two_work_items_work_item_id on _demo_two_work_items_work_item_id.work_item_id = work_items.work_item_id
-`
-
-const workItemTableDemoTwoWorkItemDemoTwoWorkItemsSelectSQL = `(case when _demo_two_work_items_work_item_id.work_item_id is not null then row(_demo_two_work_items_work_item_id.*) end) as demo_two_work_item_work_item_id`
-
-const workItemTableDemoTwoWorkItemDemoTwoWorkItemsGroupBySQL = `_demo_two_work_items_work_item_id.work_item_id,
-	work_items.work_item_id`
-
 const workItemTableDemoWorkItemJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
 left join demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id
 `
@@ -242,15 +227,6 @@ left join demo_work_items as _demo_work_items_work_item_id on _demo_work_items_w
 const workItemTableDemoWorkItemSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id`
 
 const workItemTableDemoWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
-	work_items.work_item_id`
-
-const workItemTableDemoWorkItemDemoWorkItemsJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)"
-left join demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id
-`
-
-const workItemTableDemoWorkItemDemoWorkItemsSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as demo_work_item_work_item_id`
-
-const workItemTableDemoWorkItemDemoWorkItemsGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id`
 
 const workItemTableTimeEntriesJoinSQL = `-- M2O join generated from "time_entries_work_item_id_fkey"
@@ -575,22 +551,10 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemGroupBySQL)
 	}
 
-	if c.joins.DemoTwoWorkItemDemoTwoWorkItems {
-		selectClauses = append(selectClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsGroupBySQL)
-	}
-
 	if c.joins.DemoWorkItem {
 		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
 		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
 		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
-	}
-
-	if c.joins.DemoWorkItemDemoWorkItems {
-		selectClauses = append(selectClauses, workItemTableDemoWorkItemDemoWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoWorkItemDemoWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemDemoWorkItemsGroupBySQL)
 	}
 
 	if c.joins.TimeEntries {
@@ -743,22 +707,10 @@ func WorkItems(ctx context.Context, db DB, opts ...WorkItemSelectConfigOption) (
 		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemGroupBySQL)
 	}
 
-	if c.joins.DemoTwoWorkItemDemoTwoWorkItems {
-		selectClauses = append(selectClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsGroupBySQL)
-	}
-
 	if c.joins.DemoWorkItem {
 		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
 		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
 		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
-	}
-
-	if c.joins.DemoWorkItemDemoWorkItems {
-		selectClauses = append(selectClauses, workItemTableDemoWorkItemDemoWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoWorkItemDemoWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemDemoWorkItemsGroupBySQL)
 	}
 
 	if c.joins.TimeEntries {
@@ -909,22 +861,10 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemGroupBySQL)
 	}
 
-	if c.joins.DemoTwoWorkItemDemoTwoWorkItems {
-		selectClauses = append(selectClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsGroupBySQL)
-	}
-
 	if c.joins.DemoWorkItem {
 		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
 		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
 		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
-	}
-
-	if c.joins.DemoWorkItemDemoWorkItems {
-		selectClauses = append(selectClauses, workItemTableDemoWorkItemDemoWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoWorkItemDemoWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemDemoWorkItemsGroupBySQL)
 	}
 
 	if c.joins.TimeEntries {
@@ -1075,22 +1015,10 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemGroupBySQL)
 	}
 
-	if c.joins.DemoTwoWorkItemDemoTwoWorkItems {
-		selectClauses = append(selectClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsGroupBySQL)
-	}
-
 	if c.joins.DemoWorkItem {
 		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
 		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
 		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
-	}
-
-	if c.joins.DemoWorkItemDemoWorkItems {
-		selectClauses = append(selectClauses, workItemTableDemoWorkItemDemoWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoWorkItemDemoWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemDemoWorkItemsGroupBySQL)
 	}
 
 	if c.joins.TimeEntries {
@@ -1239,22 +1167,10 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...WorkIt
 		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemGroupBySQL)
 	}
 
-	if c.joins.DemoTwoWorkItemDemoTwoWorkItems {
-		selectClauses = append(selectClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsGroupBySQL)
-	}
-
 	if c.joins.DemoWorkItem {
 		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
 		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
 		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
-	}
-
-	if c.joins.DemoWorkItemDemoWorkItems {
-		selectClauses = append(selectClauses, workItemTableDemoWorkItemDemoWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoWorkItemDemoWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemDemoWorkItemsGroupBySQL)
 	}
 
 	if c.joins.TimeEntries {
@@ -1405,22 +1321,10 @@ func WorkItemsByTitle(ctx context.Context, db DB, title string, opts ...WorkItem
 		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemGroupBySQL)
 	}
 
-	if c.joins.DemoTwoWorkItemDemoTwoWorkItems {
-		selectClauses = append(selectClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoTwoWorkItemDemoTwoWorkItemsGroupBySQL)
-	}
-
 	if c.joins.DemoWorkItem {
 		selectClauses = append(selectClauses, workItemTableDemoWorkItemSelectSQL)
 		joinClauses = append(joinClauses, workItemTableDemoWorkItemJoinSQL)
 		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemGroupBySQL)
-	}
-
-	if c.joins.DemoWorkItemDemoWorkItems {
-		selectClauses = append(selectClauses, workItemTableDemoWorkItemDemoWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableDemoWorkItemDemoWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableDemoWorkItemDemoWorkItemsGroupBySQL)
 	}
 
 	if c.joins.TimeEntries {

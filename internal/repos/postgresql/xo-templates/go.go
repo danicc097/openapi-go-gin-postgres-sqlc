@@ -1235,7 +1235,7 @@ cc_label:
 
 			annotations, err := parseAnnotations(constraint.ColumnComment)
 			if err != nil {
-				return "", fmt.Errorf("parseAnnotations: %w", err)
+				panic(fmt.Sprintf("parseAnnotations: %v", err))
 			}
 
 			properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
@@ -1244,7 +1244,7 @@ cc_label:
 				fmt.Printf("ignoreConstraints on %s.%s.%s\n", constraint.TableSchema, constraint.TableName, constraint.ColumnName)
 				fmt.Printf("comment : %v\n", constraint.ColumnComment)
 				fmt.Printf("comment ref : %v\n", constraint.RefColumnComment)
-				break
+				continue
 			}
 
 			// dummy constraint to automatically create join
@@ -2918,13 +2918,13 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 		tableConstraints = tc
 	}
 	existingCursors := make(map[string]bool)
-	pkAreValidCursor := true
+	allPKsAreValidCursor := true
 	for _, pk := range table.PrimaryKeys {
 		if !pkIsValidCursor(pk) {
-			pkAreValidCursor = false
+			allPKsAreValidCursor = false
 		}
 	}
-	if pkAreValidCursor {
+	if allPKsAreValidCursor {
 		cursorCols = append(cursorCols, table.PrimaryKeys) // assume its incremental. if it's not then simply dont call it...
 	}
 
