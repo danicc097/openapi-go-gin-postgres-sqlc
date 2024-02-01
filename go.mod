@@ -43,11 +43,11 @@ require (
 	github.com/zitadel/oidc/v2 v2.12.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.45.0
 	go.opentelemetry.io/contrib/propagators/jaeger v1.20.0
-	go.opentelemetry.io/otel v1.19.0
+	go.opentelemetry.io/otel v1.22.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.17.0
-	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.19.0
-	go.opentelemetry.io/otel/sdk v1.19.0
-	go.opentelemetry.io/otel/trace v1.19.0
+	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.22.0
+	go.opentelemetry.io/otel/sdk v1.22.0
+	go.opentelemetry.io/otel/trace v1.22.0
 	go.uber.org/zap v1.26.0
 	golang.org/x/exp v0.0.0-20240110193028-0dcbfd608b1e
 	golang.org/x/sync v0.5.0
@@ -118,7 +118,7 @@ require (
 	github.com/yosssi/ace v0.0.5 // indirect
 	github.com/yuin/gopher-lua v1.1.0 // indirect
 	github.com/zitadel/logging v0.5.0 // indirect
-	go.opentelemetry.io/otel/metric v1.19.0 // indirect
+	go.opentelemetry.io/otel/metric v1.22.0 // indirect
 	golang.org/x/arch v0.5.0 // indirect
 	golang.org/x/oauth2 v0.16.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
