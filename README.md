@@ -84,6 +84,10 @@ Fill in `.env.template`'s:
 find . -name ".env*.template"
 ```
 
+For `dev` environment, you may use `env.ci` as a starting point,
+replacing `ci` with `dev` and using `API_PREFIX=""` since it will run
+the backend without docker containers.
+
 Assuming a recent Ubuntu release:
 
 ```bash
