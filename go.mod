@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/danicc097/oidc-server/v3 v3.5.0
-	github.com/danicc097/xo/v5 v5.1.0
+	github.com/danicc097/xo/v5 v5.6.0
 	github.com/dave/dst v0.27.3
 	github.com/deepmap/oapi-codegen v1.16.2
 	github.com/deepmap/oapi-codegen/v2 v2.0.1-0.20231204155340-1f53862bcc64
