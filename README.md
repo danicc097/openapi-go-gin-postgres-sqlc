@@ -92,14 +92,23 @@ Assuming a recent Ubuntu release:
 
 ```bash
 
-sudo apt install direnv
+sudo apt install direnv -y
 direnv allow # you can also customize direnv with .envrc.local as you would a regular .envrc, see example
 
 cp openapi-go.code-workspace.example openapi-go.code-workspace # edit as desired
 
 project bootstrap # dependency and tools interactive installation
 project gen
+project recreate-shared-services
 project run-dev
+```
+
+For first test run:
+
+```bash
+project test.backend.setup
+project test.backend
+project test.frontend
 ```
 
 ### Tracing, monitoring...
