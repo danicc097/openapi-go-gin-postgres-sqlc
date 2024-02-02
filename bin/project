@@ -2336,6 +2336,8 @@ remove_schemas_marked_to_delete() {
       | . = "." + .
     ' $SPEC_PATH)
 
+  test -z "$paths_arr" && return
+
   paths=$(join_by "," "${paths_arr[@]}")
   yq e "del($paths)" -i "$SPEC_PATH"
 }
