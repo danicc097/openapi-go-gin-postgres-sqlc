@@ -30,6 +30,7 @@ export default ({ mode }) => {
       // nodePolyfills(),
     ],
     server: {
+      host: Config.DOMAIN,
       port: Number(Config.FRONTEND_PORT) || 5143,
       strictPort: true,
       // hmr: {
