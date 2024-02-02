@@ -128,7 +128,7 @@ func main() {
 		for _, pattern := range cmd.Args() {
 			matches, err := filepath.Glob(pattern)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatalf("filepath.Glob: %s", err)
 			}
 
 			// validation

@@ -770,13 +770,13 @@ x.gen.gowrap() {
 
 # Generate Go client and server from spec.
 x.gen.client-server() {
+  xsetup.build-tools
   { { {
     echo "Running generation"
     paths_file=".openapi.paths.yaml"
 
     local all_types=()
     mapfile -t all_types < <(ast-parser find-types --exclude-generics --public-only "$REST_MODELS")
-    all_types_list=$(join_by "," ${all_types[*]})
 
     types_list=$(join_by "," ${all_types[*]})
     # hack to get separate types generation
@@ -788,10 +788,12 @@ x.gen.client-server() {
     # Generated types in models pkg will be used in services, repos, db, but rest package must use original
     # models from rest/models.go (source of generated spec schemas)
     # and not the generated ones to avoid (a lot of) unnecessary conversions.
-    oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed types generation"
-    oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models --types "$types_list" "$paths_file" || err "Failed server generation"
-    oapi-codegen --config internal/rest/oapi-codegen-test-client.yaml "$SPEC_PATH" || err "Failed client generation"
-    oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation"
+    oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed types generation" &
+    oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models --types "$types_list" "$paths_file" || err "Failed server generation" &
+    oapi-codegen --config internal/rest/oapi-codegen-test-client.yaml "$SPEC_PATH" || err "Failed client generation" &
+    oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation" &
+
+    wait_without_error
 
     ast-parser find-redeclared --delete "$REST_MODELS" # for duplicates in rest
     codegen implement-server                           # based on oapi gen
@@ -2157,7 +2159,6 @@ generate_structs_map() {
   local all_types=()
   # workaround for reflection type name with generics in swaggest
   ast-parser find-structs --create-generics-map --public-only "$path" >"internal/codegen/reflectTypeMap.gen.json"
-
   # TODO: also need to include array of structs in models.go so that is_rest_type is true for oapi-codegen
   # and we use existing rest types for arrays as well
   mapfile -t structs < <(ast-parser find-structs --exclude-generics --public-only "$path")
