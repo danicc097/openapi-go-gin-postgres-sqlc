@@ -2158,7 +2158,7 @@ generate_structs_map() {
   local enums=()
   local all_types=()
   # workaround for reflection type name with generics in swaggest
-  ast-parser find-structs --create-generics-map --public-only "$path" >"internal/codegen/reflectTypeMap.gen.json"
+  ast-parser find-structs --create-generics-map --public-only "$path" >"internal/codegen/reflectTypeMap.gen.json" &
   # TODO: also need to include array of structs in models.go so that is_rest_type is true for oapi-codegen
   # and we use existing rest types for arrays as well
   mapfile -t structs < <(ast-parser find-structs --exclude-generics --public-only "$path")
@@ -2188,6 +2188,8 @@ $(printf "%s\n" "${map_fields[@]}")
 EOF
 
   gofumpt -w $out
+
+  wait_without_error
 }
 
 # Converts db enums to OpenAPI schemas.
