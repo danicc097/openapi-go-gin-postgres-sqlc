@@ -61,7 +61,7 @@
     ],
     "files.associations": {
       "*.sql": "postgres"
-    },,
+    },
     "vscode-command-help.commands": [
       "oapi-codegen",
       "codegen",
