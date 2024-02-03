@@ -570,7 +570,7 @@ go-utils.find_structs() {
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No structs found in package $pkg"
   fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
 }
 
 go-utils.find_db_ids_int() {
@@ -581,7 +581,7 @@ go-utils.find_db_ids_int() {
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No db int IDs found in package $pkg"
   fi
-  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" ${__arr[@]}))
 }
 
 go-utils.find_db_ids_uuid() {
@@ -592,7 +592,7 @@ go-utils.find_db_ids_uuid() {
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No db uuid IDs found in package $pkg"
   fi
-  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" ${__arr[@]}))
 }
 
 # Stores go test functions in package to a given array.
@@ -608,13 +608,13 @@ go-utils.find_test_functions() {
       sed -n -E 's/^\s*func\s*(Test[a-zA-Z0-9_]*)\(.*/\1/p'
   )
 
-  mapfile -t __arr < <(printf "%s\n" "${__arr[@]}" | grep -v "TestMain")
+  mapfile -t __arr < <(printf "%s\n" ${__arr[@]} | grep -v "TestMain")
 
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No test functions found in package in directory: $pkg"
   fi
 
-  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" ${__arr[@]}))
 }
 
 # Stores go struct fields to a given array.
@@ -659,7 +659,7 @@ go-utils.find_generic_structs() {
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No structs found in package $pkg"
   fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
 }
 
 # Stores go interfaces in package to a given array.
@@ -674,7 +674,7 @@ go-utils.find_interfaces() {
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No interfaces found in package $pkg"
   fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
 }
 
 # Stores go enums in package to a given array.
@@ -689,7 +689,7 @@ go-utils.find_enums() {
   if [[ ${#__arr[@]} -eq 0 ]]; then
     echo "No enums found in package $pkg"
   fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
 }
 
 # Returns go interface methods in file.
@@ -717,7 +717,7 @@ go-utils.find_all_types() {
   if [[ ${#__arr[@]} -eq 0 ]]; then
     echo "No types found in package $pkg"
   fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
 }
 
 # Escape regular string for sed commands

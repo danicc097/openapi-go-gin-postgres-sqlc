@@ -324,9 +324,8 @@ x.gen.pregen() {
     local rest_structs=() refs=() spec_schemas=()
     declare -A rest_schema_lookup spec_schema_lookup
 
-    # FIXME: all go-utils require unquoted ${<...>[@]} for looping properly
     go-utils.find_structs rest_structs "$REST_MODELS"
-    for schema in ${rest_structs[@]}; do # only interested in generating rest models.go schemas. let the rest fail.
+    for schema in "${rest_structs[@]}"; do # only interested in generating rest models.go schemas. let the rest fail normally.
       rest_schema_lookup["Rest$schema"]=1
       rest_schema_lookup["$schema"]=1
     done
@@ -343,6 +342,11 @@ x.gen.pregen() {
         # TODO: as per 'update_spec_with_structs'
       fi
     done
+    # echo "refs:${refs[*]}"
+    # echo "rest_schema_lookup:"
+    # for x in "${!rest_schema_lookup[@]}"; do printf "[%s]=%s\n" "$x" "${rest_schema_lookup[$x]}"; done
+    # echo "spec_schema_lookup:"
+    # for x in "${!spec_schema_lookup[@]}"; do printf "[%s]=%s\n" "$x" "${spec_schema_lookup[$x]}"; done
 
     codegen validate-spec -env=".env.$X_ENV"
     ast-parser verify-no-import --imports "$GOMOD_PKG/internal/models" "$REST_MODELS" || err Please use generated rest package OpenAPI types instead.
@@ -505,7 +509,7 @@ generate_repo_constructor() {
   local repo_interfaces=()
   go-utils.find_interfaces repo_interfaces $repos
 
-  for iface in ${repo_interfaces[@]}; do
+  for iface in "${repo_interfaces[@]}"; do
     local struct_init+=("${iface}: ${iface,}")
     local struct_fields+=("${iface} ${iface}")
   done
@@ -757,7 +761,7 @@ x.gen.gowrap() {
     fi
 
     local updated_ifaces=()
-    for iface in ${repo_interfaces[@]}; do
+    for iface in "${repo_interfaces[@]}"; do
       iface_content="$(go-utils.get_interface_methods $iface $repos)"
       if diff "$cache/$iface" <(echo "$iface_content") &>/dev/null && [[ "$iface" != "$name" ]]; then
         [[ $X_FORCE_REGEN -eq 0 ]] && continue
@@ -2127,7 +2131,7 @@ xo_generate_spec_helpers() {
   done
   local uuid_ids=()
   go-utils.find_db_ids_uuid uuid_ids "$PG_REPO_GEN/db"
-  for entity in ${uuid_ids[@]}; do
+  for entity in "${uuid_ids[@]}"; do
     camel=$(to_camel $entity)
     anchors+=("x-${camel}Parameter: &x-${camel}Parameter
   # Generated. DO NOT EDIT.
@@ -2169,7 +2173,7 @@ generate_structs_map() {
   go-utils.find_enums enums "$path"
   go-utils.find_all_types all_types "$path"
   # find_deleted_pkg_schemas all_types Db
-  for struct in ${structs[@]}; do
+  for struct in "${structs[@]}"; do
     map_fields+=("\"Db$struct\": new(db.$struct),") # swaggest requires pointer to struct
   done
   map_fields+=("
@@ -2188,7 +2192,7 @@ generate_structs_map() {
   go-utils.find_enums enums "$path"
   go-utils.find_all_types all_types "$path"
   # find_deleted_pkg_schemas all_types Rest
-  for struct in ${structs[@]}; do
+  for struct in "${structs[@]}"; do
     map_fields+=("\"Rest$struct\": new(rest.$struct),")
   done
   map_fields+=("
