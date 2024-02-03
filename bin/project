@@ -2306,15 +2306,16 @@ update_spec_with_structs() {
   # exclude existing rest_schemas_without_prefix - will override those
   for custom_schema in $(yq ".components.schemas[] | select((has(.x-is-generated) | not) and (.\$ref == null)) | key" $SPEC_PATH); do
     if [[ " ${rest_structs[*]} " =~ " ${custom_schema} " ]]; then
-      clashes+=("$custom_schema")
+      line_number=$(yq ".components.schemas.$custom_schema | line" $SPEC_PATH)
+      clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
     fi
     # don't bother checking Rest$custom_schema or any Db*
   done
 
   if [[ ${#clashes[@]} -gt 0 ]]; then
-    err "The following non-generated schemas would have been overridden by rest structs. Please rename:
-    $(join_by "
-    " "${clashes[@]}")
+    err "The following non-generated schemas would have been overridden by internal/rest/models.go structs. Please rename:
+$(join_by "
+" "${clashes[@]}")
     "
   fi
 
