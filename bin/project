@@ -2318,6 +2318,17 @@ $(join_by "
     "
   fi
 
+  # TODO: before codegen validate-spec we will:
+  # find broken refs before running spec validation (would fail). for each:
+  # try to match against rest_structs arr
+  # mapfile -t refs <(sed -nr "s/[^#]?.*\\$ref: '#\/components\/schemas\/(.*)'/\1/p" $SPEC_PATH)
+  # for each schema check that " ${refs[*]} " ~= " $schema " else append to broken_refs
+  # check each ${broken_ref#Rest} against rest_structs
+  # if match: create Rest<name> and <name> schemas as per 'update_spec_with_structs'
+  # this allows directly referencing rest structs we know exist without having to manually add 2 schemas every time.
+  # if not match: ignore -> ie let validate() fail
+  #
+
   # workaround for https://github.com/mikefarah/yq/discussions/1934
   # have to delete absolutely all schemas before merging
   local del_cmd=""
@@ -2702,7 +2713,7 @@ trap errtrap SIGUSR1
 # may get called multiple times
 trap 'exit-cleanup $LINENO' EXIT HUP INT TERM # EXIT (0) executed on exit from the shell
 if test -n "$X_NO_EXIT_CLEANUP"; then
-  trap 'echo Skipped exit-cleanup' EXIT HUP INT TERM
+  trap ':' EXIT HUP INT TERM
 fi
 exit_cleanup_calls=0
 
