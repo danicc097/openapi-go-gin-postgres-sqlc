@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"go/ast"
-	"go/format"
 	"go/parser"
 	"go/printer"
 	"go/token"
@@ -19,6 +18,8 @@ import (
 	"sort"
 	"strings"
 	"text/template"
+
+	"mvdan.cc/gofumpt/format"
 
 	"github.com/dave/dst"
 	"github.com/dave/dst/decorator"
@@ -220,7 +221,9 @@ func (o *CodeGen) generateOpIDAuthMiddlewares() error {
 
 	// internalformat.PrintJSON(buf.String())
 
-	src, err := format.Source(buf.Bytes())
+	src, err := format.Source(buf.Bytes(), format.Options{
+		ExtraRules: true,
+	})
 	if err != nil {
 		return fmt.Errorf("could not format opID auth middlewares: %w", err)
 	}
@@ -327,7 +330,9 @@ func (o *CodeGen) generateOpIDs() error {
 		return fmt.Errorf("could not execute template: %w", err)
 	}
 
-	src, err := format.Source(buf.Bytes())
+	src, err := format.Source(buf.Bytes(), format.Options{
+		ExtraRules: true,
+	})
 	if err != nil {
 		return fmt.Errorf("could not format opId template: %w", err)
 	}

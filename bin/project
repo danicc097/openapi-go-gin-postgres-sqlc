@@ -321,6 +321,29 @@ x.gen.pregen() {
 
     go build -o $BUILD_DIR/codegen cmd/codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # xo gen may create/update models.
 
+    local rest_structs=() refs=() spec_schemas=()
+    declare -A rest_schema_lookup spec_schema_lookup
+
+    # FIXME: all go-utils require unquoted ${<...>[@]} for looping properly
+    go-utils.find_structs rest_structs "$REST_MODELS"
+    for schema in ${rest_structs[@]}; do # only interested in generating rest models.go schemas. let the rest fail.
+      rest_schema_lookup["Rest$schema"]=1
+      rest_schema_lookup["$schema"]=1
+    done
+
+    mapfile -t spec_schemas < <(yq eval '.components.schemas[] | key' "$SPEC_PATH")
+    for schema in "${spec_schemas[@]}"; do # only interested in generating rest models.go schemas. let the rest fail.
+      spec_schema_lookup["$schema"]=1
+    done
+
+    mapfile -t refs < <(sed -nr "s/[^#]?.*\\$ref: '#\/components\/schemas\/(.*)'/\1/p" $SPEC_PATH | sort | uniq)
+    for ref in "${refs[@]}"; do
+      if [[ -n "${rest_schema_lookup["$ref"]}" && -z "${spec_schema_lookup["$ref"]}" ]]; then
+        echo "${YELLOW}Rest package \$ref $ref does not exist. Generating...${OFF}"
+        # TODO: as per 'update_spec_with_structs'
+      fi
+    done
+
     codegen validate-spec -env=".env.$X_ENV"
     ast-parser verify-no-import --imports "$GOMOD_PKG/internal/models" "$REST_MODELS" || err Please use generated rest package OpenAPI types instead.
 
@@ -2317,17 +2340,6 @@ $(join_by "
 " "${clashes[@]}")
     "
   fi
-
-  # TODO: before codegen validate-spec we will:
-  # find broken refs before running spec validation (would fail). for each:
-  # try to match against rest_structs arr
-  # mapfile -t refs <(sed -nr "s/[^#]?.*\\$ref: '#\/components\/schemas\/(.*)'/\1/p" $SPEC_PATH)
-  # for each schema check that " ${refs[*]} " ~= " $schema " else append to broken_refs
-  # check each ${broken_ref#Rest} against rest_structs
-  # if match: create Rest<name> and <name> schemas as per 'update_spec_with_structs'
-  # this allows directly referencing rest structs we know exist without having to manually add 2 schemas every time.
-  # if not match: ignore -> ie let validate() fail
-  #
 
   # workaround for https://github.com/mikefarah/yq/discussions/1934
   # have to delete absolutely all schemas before merging
