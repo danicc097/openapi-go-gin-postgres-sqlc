@@ -169,6 +169,11 @@ func newSpecReflector() *openapi3.Reflector {
 				t = t.Elem()
 			}
 
+			if params.Schema.ExtraProperties == nil {
+				params.Schema.ExtraProperties = make(map[string]any)
+			}
+			params.Schema.ExtraProperties["x-is-generated"] = true
+
 			if strings.HasSuffix(params.Schema.ReflectType.PkgPath(), "internal/models") {
 				if t.Kind() == reflect.Struct {
 					// will generate duplicate models otherwise
@@ -204,7 +209,8 @@ func newSpecReflector() *openapi3.Reflector {
 				// x-go* extensions cannot be used for Models(.*) themselves,
 				// but Models(.*) should not be generated at all. a ref tag is needed in structs
 				params.Schema.ExtraProperties = map[string]any{
-					"x-go-type": "uuid.UUID",
+					"x-is-generated": true,
+					"x-go-type":      "uuid.UUID",
 					"x-go-type-import": map[string]any{
 						"name": "uuid",
 						"path": "github.com/google/uuid",

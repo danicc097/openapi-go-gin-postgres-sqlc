@@ -1102,6 +1102,9 @@
       "x-postgen-struct": "RestPaginatedUsersResponse"
     },
     "User": {
+      "$ref": "#/definitions/RestUser"
+    },
+    "RestUser": {
       "properties": {
         "apiKey": {
           "$ref": "#/definitions/DbUserAPIKey"
@@ -1188,11 +1191,7 @@
         "createdAt",
         "role"
       ],
-      "type": "object",
-      "x-postgen-struct": "RestUser"
-    },
-    "RestUser": {
-      "$ref": "#/definitions/User"
+      "type": "object"
     },
     "HTTPValidationError": {
       "title": "HTTPValidationError",
@@ -1309,7 +1308,7 @@
         "work-item-comment:edit",
         "work-item-comment:delete"
       ],
-      "x-generated": "-",
+      "x-is-generated": "true",
       "description": "is generated from scopes.json keys."
     },
     "Scopes": {
@@ -1328,13 +1327,13 @@
         "admin",
         "superAdmin"
       ],
-      "x-generated": "-",
+      "x-is-generated": "true",
       "description": "is generated from roles.json keys."
     },
     "WorkItemRole": {
       "title": "WorkItem role",
       "type": "string",
-      "x-generated": "-",
+      "x-is-generated": "true",
       "enum": [
         "preparer",
         "reviewer"
@@ -1603,7 +1602,7 @@
         "demo_two"
       ],
       "type": "string",
-      "x-generated": "-",
+      "x-is-generated": "true",
       "description": "is generated from projects table."
     },
     "DbActivityCreateParams": {
@@ -1676,7 +1675,7 @@
     "NotificationType": {
       "description": "is generated from database enum 'notification_type'.",
       "type": "string",
-      "x-generated": "-",
+      "x-is-generated": "true",
       "enum": [
         "personal",
         "global"
@@ -1689,7 +1688,7 @@
         "Type 2",
         "Another type"
       ],
-      "x-generated": "-",
+      "x-is-generated": "true",
       "description": "is generated from work_item_types table."
     },
     "DemoWorkItemTypes": {
@@ -1697,7 +1696,7 @@
       "enum": [
         "Type 1"
       ],
-      "x-generated": "-",
+      "x-is-generated": "true",
       "description": "is generated from work_item_types table."
     },
     "DbDemoWorkItemCreateParams": {
@@ -1994,7 +1993,7 @@
         "Under review",
         "Work in progress"
       ],
-      "x-generated": "-",
+      "x-is-generated": "true",
       "description": "is generated from kanban_steps table."
     },
     "DemoTwoKanbanSteps": {
@@ -2002,7 +2001,7 @@
       "enum": [
         "Received"
       ],
-      "x-generated": "-",
+      "x-is-generated": "true",
       "description": "is generated from kanban_steps table."
     },
     "UpdateWorkItemCommentRequest": {

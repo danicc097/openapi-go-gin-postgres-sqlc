@@ -20,9 +20,9 @@ import type {
 import type { GetPaginatedUsersParams } from '../model/getPaginatedUsersParams'
 import type { HTTPError } from '../model/hTTPError'
 import type { PaginatedUsersResponse } from '../model/paginatedUsersResponse'
+import type { RestUser } from '../model/restUser'
 import type { UpdateUserAuthRequest } from '../model/updateUserAuthRequest'
 import type { UpdateUserRequest } from '../model/updateUserRequest'
-import type { User } from '../model/user'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -160,7 +160,7 @@ export const useGetPaginatedUsers = <TData = Awaited<ReturnType<typeof getPagina
  * @summary returns the logged in user
  */
 export const getCurrentUser = (options?: SecondParameter<typeof customInstance>, signal?: AbortSignal) => {
-  return customInstance<User>({ url: `/user/me`, method: 'GET', signal }, options)
+  return customInstance<RestUser>({ url: `/user/me`, method: 'GET', signal }, options)
 }
 
 export const getGetCurrentUserQueryKey = () => {
@@ -380,7 +380,7 @@ export const updateUser = (
   updateUserRequest: UpdateUserRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<User>(
+  return customInstance<RestUser>(
     { url: `/user/${id}`, method: 'PATCH', headers: { 'Content-Type': 'application/json' }, data: updateUserRequest },
     options,
   )

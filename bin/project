@@ -2212,7 +2212,7 @@ sync_db_enums_with_spec() {
 
     local schema_path=".components.schemas.$schema_name"
     if yq -e "$schema_path" $SPEC_PATH &>/dev/null; then # -e exits 1 if no match
-      if ! yq -e "$schema_path | has(\"x-generated\")" $SPEC_PATH &>/dev/null; then
+      if ! yq -e "$schema_path | has(\"x-is-generated\")" $SPEC_PATH &>/dev/null; then
         err "Clashing schema name '$schema_name'. Please remove it before continuing."
       fi
     fi
@@ -2251,7 +2251,7 @@ replace_enum_in_spec() {
   __enums=$__enums yq e "
     $schema_path.type = \"string\" |
     $schema_path.enum = env(__enums) |
-    $schema_path.x-generated = \"-\" |
+    $schema_path.x-is-generated = \"true\" |
     $schema_path.description = \"is generated from $src_comment.\" |
     ($schema_path | key) line_comment=\"Generated from $src_comment. DO NOT EDIT.\"" -i $SPEC_PATH
 }
@@ -2278,19 +2278,10 @@ find_deleted_pkg_schemas() {
 update_spec_with_structs() {
   vext="x-postgen-struct"
   struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC_PATH)
-  schema_names=$(yq e ".components.schemas[] | select(has(\"$vext\")) | key" $SPEC_PATH)
   mapfile -t struct_names <<<$struct_names
-  mapfile -t schema_names <<<$schema_names
 
-  # openapi-go will generate a RestXYZ if we have a XYZ: <...> x-postgen-struct: RestXYZ
-  # we need to detect these early, because it will sync a RestXYZ instead of XYZ
-  declare -A schemas
-  for i in ${!struct_names[@]}; do
-    schemas["${struct_names[$i]}"]="${schema_names[$i]}" # keep track of custom structs per schema name
-  done
-
-  struct_names_list=$(join_by "," ${struct_names[*]})
-  ((${#struct_names_list} == 0)) && return
+  struct_names_arg=$(join_by "," ${struct_names[*]})
+  ((${#struct_names_arg} == 0)) && return
 
   # NOTE: https://github.com/pkujhd/goloader allows reloading packages at runtime
   # NOTE: yaegi extraction doesn't work with generics and is slow. See failed-yaegi* branches
@@ -2300,7 +2291,7 @@ update_spec_with_structs() {
 
   local gen_schema_spec="/tmp/openapi.yaml"
   # always compile and run since we need new PublicStructs that were just changed
-  codegen gen-schema --struct-names $struct_names_list | yq '
+  codegen gen-schema --struct-names $struct_names_arg | yq '
     with_entries(select(.key == "components"))' \
     >$gen_schema_spec || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
@@ -2310,7 +2301,7 @@ update_spec_with_structs() {
   # and then merge new fields from old into new
   # https://mikefarah.gitbook.io/yq/operators/multiply-merge#merge-only-new-fields
   # TODO: gen-schema should set x-is-generated: true
-  # TODO: gen-schema should force generation of schemas without Rest prefix
+  # TODO: should force generation of schemas without Rest prefix
   # so that e.g. schema
   # User:
   #   x-is-generated: true
@@ -2318,28 +2309,46 @@ update_spec_with_structs() {
   # is always replaced.
   # There should be a error when a schema without x-is-generated has the same name
   # as either Rest<...> or <...>, prompting user to rename first.
-  # can extract all schema names with .x-is-generated != true
-  #
-
-  for schema in $(yq '.components.schemas[] | key' $gen_schema_spec); do
-    schema_name="${schemas[$schema]:-$schema}"
-
-    yq eval-all "(
-        select(fi == 1).components.schemas.$schema
-        ) as \$schema
-        | select(fi == 0)
-        | .components.schemas.$schema_name = \$schema
-        | (.components.schemas.$schema_name | key) line_comment=\"Generated from internal structs. DO NOT EDIT.\"
-      " "$SPEC_PATH" $gen_schema_spec >/tmp/final-spec
-
-    # TODO: better handle in gen_schema if possible to not generate at all in the first place
-    # if [[ "$schema_name" != "$schema" ]]; then
-    #   echo "Deleting schema \"$schema\". Replace references with \"$schema_name\""
-    #   # yq e "del(.components.schemas.$schema)" -i /tmp/final-spec
-    # fi
-
-    mv /tmp/final-spec "$SPEC_PATH" # need to update at each iteration since next depends on it
+  # can extract all schema names $n with .x-is-generated != true
+  # and if Rest$n ~= " ${specnames[@]} " or $n ~= ...
+  # append name to multierr array then error out with ``The following non-generated schemas would be overridden:``
+  local rest_structs=() clashes=()
+  go-utils.find_structs rest_structs "$REST_MODELS"
+  for custom_schema in $(yq '.components.schemas[] | select(has(.x-is-generated) | not) | key' $SPEC_PATH); do
+    if [[ " ${rest_structs[*]} " =~ " ${custom_schema} " ]]; then
+      clashes+=("$custom_schema")
+    fi
   done
+
+  if [[ ${#clashes[@]} -gt 0 ]]; then
+    err "The following non-generated schemas would have been overridden by rest structs. Please rename:
+    $(join_by "
+    " "${clashes[@]}")
+    "
+  fi
+
+  # TODO: concat objs inside += { to add in single call
+  local rest_schemas_without_prefix=""
+  for rest_struct in ${rest_structs[@]}; do
+    rest_schemas_without_prefix+="\"$rest_struct\": {
+      \"x-is-generated\": \"true\",
+      \"\$ref\": '\''#/components/schemas/Rest$rest_struct'\'',
+    },"
+  done
+
+  yq ".components.schemas += {
+    $rest_schemas_without_prefix
+  }" "$SPEC"
+
+  yq "(
+        select(fi == 0).components.schemas
+        ) as \$schemas
+        | (
+          select(fi == 1).components.schemas
+        ) as \$new_schemas
+        | select(fi == 0)
+        | .components.schemas = \$new_schemas *n \$schemas
+        " "$SPEC" "$gen_schema_spec" | sponge "$SPEC"
 }
 
 remove_schemas_marked_to_delete() {

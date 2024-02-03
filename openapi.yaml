@@ -2011,7 +2011,7 @@ components:
     Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string
       enum: ["project-member", "users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review", "work-item-comment:create", "work-item-comment:edit", "work-item-comment:delete"]
-      x-generated: '-'
+      x-is-generated: 'true'
       description: is generated from scopes.json keys.
     Scopes: # workaround for openapi-go gen
       type: array
@@ -2020,12 +2020,12 @@ components:
     Role: # Generated from roles.json keys. DO NOT EDIT.
       type: string
       enum: ["guest", "user", "advancedUser", "manager", "admin", "superAdmin"]
-      x-generated: '-'
+      x-is-generated: 'true'
       description: is generated from roles.json keys.
     WorkItemRole: # Generated from database enum 'work_item_role'. DO NOT EDIT.
       title: WorkItem role
       type: string
-      x-generated: '-'
+      x-is-generated: 'true'
       enum: ["preparer", "reviewer"]
       description: is generated from database enum 'work_item_role'.
     UpdateUserRequest:
@@ -2250,7 +2250,7 @@ components:
     Project: # Generated from projects table. DO NOT EDIT.
       enum: ["demo", "demo_two"]
       type: string
-      x-generated: '-'
+      x-is-generated: 'true'
       description: is generated from projects table.
     DbActivityCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -2296,17 +2296,17 @@ components:
     NotificationType: # Generated from database enum 'notification_type'. DO NOT EDIT.
       description: is generated from database enum 'notification_type'.
       type: string
-      x-generated: '-'
+      x-is-generated: 'true'
       enum: ["personal", "global"]
     DemoTwoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
       type: string
       enum: ["Type 1", "Type 2", "Another type"]
-      x-generated: '-'
+      x-is-generated: 'true'
       description: is generated from work_item_types table.
     DemoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
       type: string
       enum: ["Type 1"]
-      x-generated: '-'
+      x-is-generated: 'true'
       description: is generated from work_item_types table.
     DbDemoWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
       properties:
@@ -2516,12 +2516,12 @@ components:
     DemoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
       type: string
       enum: ["Disabled", "Received", "Under review", "Work in progress"]
-      x-generated: '-'
+      x-is-generated: 'true'
       description: is generated from kanban_steps table.
     DemoTwoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
       type: string
       enum: ["Received"]
-      x-generated: '-'
+      x-is-generated: 'true'
       description: is generated from kanban_steps table.
     UpdateWorkItemCommentRequest: # Generated from internal structs. DO NOT EDIT.
       properties:

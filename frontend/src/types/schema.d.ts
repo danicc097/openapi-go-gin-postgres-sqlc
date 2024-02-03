@@ -412,7 +412,8 @@ export interface components {
       items: components["schemas"]["RestUser"][] | null;
       page: components["schemas"]["RestPaginationPage"];
     };
-    User: {
+    User: components["schemas"]["RestUser"];
+    RestUser: {
       apiKey?: components["schemas"]["DbUserAPIKey"];
       /** Format: date-time */
       createdAt: string;
@@ -431,7 +432,6 @@ export interface components {
       userID: components["schemas"]["DbUserID"];
       username: string;
     };
-    RestUser: components["schemas"]["User"];
     /** HTTPValidationError */
     HTTPValidationError: {
       /**
