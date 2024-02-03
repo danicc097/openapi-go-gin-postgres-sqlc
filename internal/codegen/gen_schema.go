@@ -16,6 +16,7 @@ import (
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3".
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	internalslices "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
 	"github.com/fatih/structtag"
@@ -35,7 +36,8 @@ func handleError(err error) {
 func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 	reflector := newSpecReflector()
 
-	for idx, structName := range structNames {
+	sns := slices.Unique(structNames)
+	for idx, structName := range sns {
 		// fmt.Fprintf(os.Stderr, "Generating struct %s\n", structName)
 		// We need to compile gen-schema right after PublicStructs file is updated
 		// cannot import packages at runtime

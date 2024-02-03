@@ -2280,6 +2280,11 @@ update_spec_with_structs() {
   struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC_PATH)
   mapfile -t struct_names <<<$struct_names
 
+  # generate all rest/models.go always
+  local rest_structs=()
+  go-utils.find_structs rest_structs "$REST_MODELS"
+  struct_names+=("${rest_structs[@]}")
+
   struct_names_arg=$(join_by "," ${struct_names[*]})
   ((${#struct_names_arg} == 0)) && return
 
@@ -2295,8 +2300,7 @@ update_spec_with_structs() {
     with_entries(select(.key == "components"))' \
     >$gen_schema_spec_path || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
-  local rest_structs=() clashes=()
-  go-utils.find_structs rest_structs "$REST_MODELS"
+  local clashes=()
   for custom_schema in $(yq '.components.schemas[] | select(has(.x-is-generated) | not) | key' $SPEC_PATH); do
     if [[ " ${rest_structs[*]} " =~ " ${custom_schema} " ]]; then
       clashes+=("$custom_schema")
