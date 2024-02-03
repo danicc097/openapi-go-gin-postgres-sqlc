@@ -1,3 +1,7 @@
+/**
+ * IMPORTANT: all structs in models.go will always be generated as OpenAPI schemas.
+ * Generated "Rest*" schemas must be ignored.
+ */
 package rest
 
 /**

@@ -2281,9 +2281,10 @@ update_spec_with_structs() {
   mapfile -t struct_names <<<$struct_names
 
   # generate all rest/models.go always
-  local rest_structs=()
+  local rest_structs=() rest_schemas=()
   go-utils.find_structs rest_structs "$REST_MODELS"
-  struct_names+=("${rest_structs[@]}")
+  mapfile -t -d $'\0' rest_schemas < <(printf "Rest%s\0" ${rest_structs[@]})
+  struct_names+=("${rest_schemas[@]}")
 
   struct_names_arg=$(join_by "," ${struct_names[*]})
   ((${#struct_names_arg} == 0)) && return
@@ -2319,6 +2320,7 @@ update_spec_with_structs() {
   local rest_schemas_without_prefix=""
   for rest_struct in ${rest_structs[@]}; do
     rest_schemas_without_prefix+="\"$rest_struct\": {
+      \"x-comment\": \"$rest_struct represents a Rest$rest_struct. Use this schema in place of Rest$rest_struct.\",
       \"x-is-generated\": true,
       \"\$ref\": \"#/components/schemas/Rest$rest_struct\"
     },"
@@ -2332,14 +2334,15 @@ update_spec_with_structs() {
   yq e '.components.schemas.* |= . + {"x-is-generated": true}' -i "$gen_schema_spec_path"
   yq e '(.components.schemas.* | key) line_comment="Generated schema. DO NOT EDIT."' -i $gen_schema_spec_path
 
+  # only keep schemas not outputted by gen. User should have been warned on clashes.
   yq eval-all "(
         select(fi == 0).components.schemas
         ) as \$schemas
         | (
           select(fi == 1).components.schemas
-        ) as \$new_schemas
+        ) as \$generated_schemas
         | select(fi == 0)
-        | .components.schemas = \$new_schemas *n \$schemas
+        | .components.schemas = \$generated_schemas *n \$schemas
         " "$SPEC_PATH" "$gen_schema_spec_path" | sponge "$SPEC_PATH"
 }
 
