@@ -7,4 +7,10 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * OpenAPI spec version: 2.0.0
  */
 
-export type DemoWorkItemsMetadata = { [key: string]: unknown }
+export interface RestWorkItemType {
+  color: string
+  description: string
+  name: string
+  projectID: EntityIDs.ProjectID
+  workItemTypeID: EntityIDs.WorkItemTypeID
+}

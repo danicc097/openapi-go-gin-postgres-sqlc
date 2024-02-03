@@ -5,9 +5,9 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { CreateWorkItemTagRequest } from '../model/createWorkItemTagRequest'
-import type { UpdateWorkItemTagRequest } from '../model/updateWorkItemTagRequest'
-import type { WorkItemTag } from '../model/workItemTag'
+import type { RestCreateWorkItemTagRequest } from '../model/restCreateWorkItemTagRequest'
+import type { RestUpdateWorkItemTagRequest } from '../model/restUpdateWorkItemTagRequest'
+import type { RestWorkItemTag } from '../model/restWorkItemTag'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -18,15 +18,15 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  */
 export const createWorkItemTag = (
   projectName: 'demo' | 'demo_two',
-  createWorkItemTagRequest: CreateWorkItemTagRequest,
+  restCreateWorkItemTagRequest: RestCreateWorkItemTagRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItemTag>(
+  return customInstance<RestWorkItemTag>(
     {
       url: `/project/${projectName}/work-item-tag/`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      data: createWorkItemTagRequest,
+      data: restCreateWorkItemTagRequest,
     },
     options,
   )
@@ -35,22 +35,22 @@ export const createWorkItemTag = (
  * @summary get workitemtag.
  */
 export const getWorkItemTag = (workItemTagID: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<WorkItemTag>({ url: `/work-item-tag/${workItemTagID}`, method: 'GET' }, options)
+  return customInstance<RestWorkItemTag>({ url: `/work-item-tag/${workItemTagID}`, method: 'GET' }, options)
 }
 /**
  * @summary update workitemtag.
  */
 export const updateWorkItemTag = (
   workItemTagID: number,
-  updateWorkItemTagRequest: UpdateWorkItemTagRequest,
+  restUpdateWorkItemTagRequest: RestUpdateWorkItemTagRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItemTag>(
+  return customInstance<RestWorkItemTag>(
     {
       url: `/work-item-tag/${workItemTagID}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      data: updateWorkItemTagRequest,
+      data: restUpdateWorkItemTagRequest,
     },
     options,
   )

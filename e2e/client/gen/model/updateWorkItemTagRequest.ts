@@ -5,9 +5,6 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { RestUpdateWorkItemTagRequest } from './restUpdateWorkItemTagRequest'
 
-export interface UpdateWorkItemTagRequest {
-  color?: string
-  description?: string
-  name?: string
-}
+export type UpdateWorkItemTagRequest = RestUpdateWorkItemTagRequest

@@ -17,10 +17,10 @@ import type {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query'
-import type { Activity } from '../model/activity'
-import type { CreateActivityRequest } from '../model/createActivityRequest'
 import type { HTTPError } from '../model/hTTPError'
-import type { UpdateActivityRequest } from '../model/updateActivityRequest'
+import type { RestActivity } from '../model/restActivity'
+import type { RestCreateActivityRequest } from '../model/restCreateActivityRequest'
+import type { RestUpdateActivityRequest } from '../model/restUpdateActivityRequest'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -31,15 +31,15 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  */
 export const createActivity = (
   projectName: 'demo' | 'demo_two',
-  createActivityRequest: CreateActivityRequest,
+  restCreateActivityRequest: RestCreateActivityRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<Activity>(
+  return customInstance<RestActivity>(
     {
       url: `/project/${projectName}/activity/`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      data: createActivityRequest,
+      data: restCreateActivityRequest,
     },
     options,
   )
@@ -49,21 +49,21 @@ export const getCreateActivityMutationOptions = <TError = void | HTTPError, TCon
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createActivity>>,
     TError,
-    { projectName: 'demo' | 'demo_two'; data: CreateActivityRequest },
+    { projectName: 'demo' | 'demo_two'; data: RestCreateActivityRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof createActivity>>,
   TError,
-  { projectName: 'demo' | 'demo_two'; data: CreateActivityRequest },
+  { projectName: 'demo' | 'demo_two'; data: RestCreateActivityRequest },
   TContext
 > => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof createActivity>>,
-    { projectName: 'demo' | 'demo_two'; data: CreateActivityRequest }
+    { projectName: 'demo' | 'demo_two'; data: RestCreateActivityRequest }
   > = (props) => {
     const { projectName, data } = props ?? {}
 
@@ -74,7 +74,7 @@ export const getCreateActivityMutationOptions = <TError = void | HTTPError, TCon
 }
 
 export type CreateActivityMutationResult = NonNullable<Awaited<ReturnType<typeof createActivity>>>
-export type CreateActivityMutationBody = CreateActivityRequest
+export type CreateActivityMutationBody = RestCreateActivityRequest
 export type CreateActivityMutationError = void | HTTPError
 
 /**
@@ -84,7 +84,7 @@ export const useCreateActivity = <TError = void | HTTPError, TContext = unknown>
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createActivity>>,
     TError,
-    { projectName: 'demo' | 'demo_two'; data: CreateActivityRequest },
+    { projectName: 'demo' | 'demo_two'; data: RestCreateActivityRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
@@ -101,7 +101,7 @@ export const getActivity = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal,
 ) => {
-  return customInstance<Activity>({ url: `/activity/${activityID}`, method: 'GET', signal }, options)
+  return customInstance<RestActivity>({ url: `/activity/${activityID}`, method: 'GET', signal }, options)
 }
 
 export const getGetActivityQueryKey = (activityID: EntityIDs.ActivityID) => {
@@ -222,15 +222,15 @@ export const useGetActivity = <TData = Awaited<ReturnType<typeof getActivity>>, 
  */
 export const updateActivity = (
   activityID: EntityIDs.ActivityID,
-  updateActivityRequest: UpdateActivityRequest,
+  restUpdateActivityRequest: RestUpdateActivityRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<Activity>(
+  return customInstance<RestActivity>(
     {
       url: `/activity/${activityID}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      data: updateActivityRequest,
+      data: restUpdateActivityRequest,
     },
     options,
   )
@@ -240,21 +240,21 @@ export const getUpdateActivityMutationOptions = <TError = void | HTTPError, TCon
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateActivity>>,
     TError,
-    { activityID: EntityIDs.ActivityID; data: UpdateActivityRequest },
+    { activityID: EntityIDs.ActivityID; data: RestUpdateActivityRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateActivity>>,
   TError,
-  { activityID: EntityIDs.ActivityID; data: UpdateActivityRequest },
+  { activityID: EntityIDs.ActivityID; data: RestUpdateActivityRequest },
   TContext
 > => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateActivity>>,
-    { activityID: EntityIDs.ActivityID; data: UpdateActivityRequest }
+    { activityID: EntityIDs.ActivityID; data: RestUpdateActivityRequest }
   > = (props) => {
     const { activityID, data } = props ?? {}
 
@@ -265,7 +265,7 @@ export const getUpdateActivityMutationOptions = <TError = void | HTTPError, TCon
 }
 
 export type UpdateActivityMutationResult = NonNullable<Awaited<ReturnType<typeof updateActivity>>>
-export type UpdateActivityMutationBody = UpdateActivityRequest
+export type UpdateActivityMutationBody = RestUpdateActivityRequest
 export type UpdateActivityMutationError = void | HTTPError
 
 /**
@@ -275,7 +275,7 @@ export const useUpdateActivity = <TError = void | HTTPError, TContext = unknown>
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateActivity>>,
     TError,
-    { activityID: EntityIDs.ActivityID; data: UpdateActivityRequest },
+    { activityID: EntityIDs.ActivityID; data: RestUpdateActivityRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>

@@ -6,8 +6,6 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { RestCreateTeamRequest } from './restCreateTeamRequest'
 
-export interface CreateTeamRequest {
-  description: string
-  name: string
-}
+export type CreateTeamRequest = RestCreateTeamRequest

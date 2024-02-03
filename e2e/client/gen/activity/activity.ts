@@ -5,9 +5,9 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { Activity } from '../model/activity'
-import type { CreateActivityRequest } from '../model/createActivityRequest'
-import type { UpdateActivityRequest } from '../model/updateActivityRequest'
+import type { RestActivity } from '../model/restActivity'
+import type { RestCreateActivityRequest } from '../model/restCreateActivityRequest'
+import type { RestUpdateActivityRequest } from '../model/restUpdateActivityRequest'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -18,15 +18,15 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  */
 export const createActivity = (
   projectName: 'demo' | 'demo_two',
-  createActivityRequest: CreateActivityRequest,
+  restCreateActivityRequest: RestCreateActivityRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<Activity>(
+  return customInstance<RestActivity>(
     {
       url: `/project/${projectName}/activity/`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      data: createActivityRequest,
+      data: restCreateActivityRequest,
     },
     options,
   )
@@ -35,22 +35,22 @@ export const createActivity = (
  * @summary get activity.
  */
 export const getActivity = (activityID: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<Activity>({ url: `/activity/${activityID}`, method: 'GET' }, options)
+  return customInstance<RestActivity>({ url: `/activity/${activityID}`, method: 'GET' }, options)
 }
 /**
  * @summary update activity.
  */
 export const updateActivity = (
   activityID: number,
-  updateActivityRequest: UpdateActivityRequest,
+  restUpdateActivityRequest: RestUpdateActivityRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<Activity>(
+  return customInstance<RestActivity>(
     {
       url: `/activity/${activityID}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      data: updateActivityRequest,
+      data: restUpdateActivityRequest,
     },
     options,
   )

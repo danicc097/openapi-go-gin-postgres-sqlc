@@ -6,11 +6,6 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { RestWorkItemType } from './restWorkItemType'
 
-export interface WorkItemType {
-  color: string
-  description: string
-  name: string
-  projectID: EntityIDs.ProjectID
-  workItemTypeID: EntityIDs.WorkItemTypeID
-}
+export type WorkItemType = RestWorkItemType

@@ -76,9 +76,9 @@ export const getGetProjectWorkitemsMock = () =>
           username: faker.word.sample(),
         },
       })),
-      metadata: (() => ({
-        key: faker.color.hsl(),
-      }))(),
+      metadata: {
+        [faker.string.alphanumeric(5)]: {},
+      },
       targetDate: (() => faker.date.past())(),
       teamID: faker.helpers.arrayElement([faker.number.int({ min: undefined, max: undefined }), null]),
       timeEntries: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
@@ -145,9 +145,9 @@ export const getGetProjectWorkitemsMock = () =>
           username: faker.word.sample(),
         },
       })),
-      metadata: (() => ({
-        key: faker.color.hsl(),
-      }))(),
+      metadata: {
+        [faker.string.alphanumeric(5)]: {},
+      },
       targetDate: (() => faker.date.past())(),
       teamID: faker.helpers.arrayElement([faker.number.int({ min: undefined, max: undefined }), null]),
       timeEntries: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({

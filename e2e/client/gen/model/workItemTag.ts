@@ -5,12 +5,6 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { RestWorkItemTag } from './restWorkItemTag'
 
-export interface WorkItemTag {
-  color: string
-  deletedAt?: Date | null
-  description: string
-  name: string
-  projectID: number
-  workItemTagID: number
-}
+export type WorkItemTag = RestWorkItemTag

@@ -5,10 +5,6 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbUserID } from './dbUserID'
+import type { RestCreateWorkItemCommentRequest } from './restCreateWorkItemCommentRequest'
 
-export interface CreateWorkItemCommentRequest {
-  message: string
-  userID: DbUserID
-  workItemID: number
-}
+export type CreateWorkItemCommentRequest = RestCreateWorkItemCommentRequest

@@ -5,9 +5,9 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { CreateWorkItemTypeRequest } from '../model/createWorkItemTypeRequest'
-import type { UpdateWorkItemTypeRequest } from '../model/updateWorkItemTypeRequest'
-import type { WorkItemType } from '../model/workItemType'
+import type { RestCreateWorkItemTypeRequest } from '../model/restCreateWorkItemTypeRequest'
+import type { RestUpdateWorkItemTypeRequest } from '../model/restUpdateWorkItemTypeRequest'
+import type { RestWorkItemType } from '../model/restWorkItemType'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -18,15 +18,15 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  */
 export const createWorkItemType = (
   projectName: 'demo' | 'demo_two',
-  createWorkItemTypeRequest: CreateWorkItemTypeRequest,
+  restCreateWorkItemTypeRequest: RestCreateWorkItemTypeRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItemType>(
+  return customInstance<RestWorkItemType>(
     {
       url: `/project/${projectName}/work-item-type/`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      data: createWorkItemTypeRequest,
+      data: restCreateWorkItemTypeRequest,
     },
     options,
   )
@@ -35,22 +35,22 @@ export const createWorkItemType = (
  * @summary get workitemtype.
  */
 export const getWorkItemType = (workItemTypeID: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<WorkItemType>({ url: `/work-item-type/${workItemTypeID}`, method: 'GET' }, options)
+  return customInstance<RestWorkItemType>({ url: `/work-item-type/${workItemTypeID}`, method: 'GET' }, options)
 }
 /**
  * @summary update workitemtype.
  */
 export const updateWorkItemType = (
   workItemTypeID: number,
-  updateWorkItemTypeRequest: UpdateWorkItemTypeRequest,
+  restUpdateWorkItemTypeRequest: RestUpdateWorkItemTypeRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItemType>(
+  return customInstance<RestWorkItemType>(
     {
       url: `/work-item-type/${workItemTypeID}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      data: updateWorkItemTypeRequest,
+      data: restUpdateWorkItemTypeRequest,
     },
     options,
   )

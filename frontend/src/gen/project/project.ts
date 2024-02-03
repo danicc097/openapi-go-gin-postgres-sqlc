@@ -21,8 +21,8 @@ import type { DbProject } from '../model/dbProject'
 import type { GetProjectWorkitems200 } from '../model/getProjectWorkitems200'
 import type { GetProjectWorkitemsParams } from '../model/getProjectWorkitemsParams'
 import type { InitializeProjectRequest } from '../model/initializeProjectRequest'
-import type { ProjectBoard } from '../model/projectBoard'
 import type { ProjectConfig } from '../model/projectConfig'
+import type { RestProjectBoard } from '../model/restProjectBoard'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -415,7 +415,7 @@ export const getProjectBoard = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal,
 ) => {
-  return customInstance<ProjectBoard>({ url: `/project/${projectName}/board`, method: 'GET', signal }, options)
+  return customInstance<RestProjectBoard>({ url: `/project/${projectName}/board`, method: 'GET', signal }, options)
 }
 
 export const getGetProjectBoardQueryKey = (projectName: 'demo' | 'demo_two') => {

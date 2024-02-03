@@ -5,7 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { CreateDemoWorkItemRequest } from './createDemoWorkItemRequest'
-import type { CreateDemoTwoWorkItemRequest } from './createDemoTwoWorkItemRequest'
+import type { RestCreateDemoWorkItemRequest } from './restCreateDemoWorkItemRequest'
+import type { RestCreateDemoTwoWorkItemRequest } from './restCreateDemoTwoWorkItemRequest'
 
-export type CreateWorkItemRequest = CreateDemoWorkItemRequest | CreateDemoTwoWorkItemRequest
+export type CreateWorkItemRequest = RestCreateDemoWorkItemRequest | RestCreateDemoTwoWorkItemRequest

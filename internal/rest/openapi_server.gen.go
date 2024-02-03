@@ -256,66 +256,37 @@ func AllWorkItemRoleValues() []WorkItemRole {
 
 /* Ignoring existing rest struct
 // Activity defines the model for Activity.
-type Activity  struct {
-    ActivityID int`json:"activityID"`
-    DeletedAt *time.Time`json:"deletedAt"`
-    Description string`json:"description"`
-    IsProductive bool`json:"isProductive"`
-    Name string`json:"name"`
-    ProjectID int`json:"projectID"`
-}
+type Activity = externalRef0.RestActivity
 */
 
 /* Ignoring existing rest struct
 // CreateActivityRequest defines the model for CreateActivityRequest.
-type CreateActivityRequest  struct {
-    Description string`json:"description"`
-    IsProductive bool`json:"isProductive"`
-    Name string`json:"name"`
-}
+type CreateActivityRequest = externalRef0.RestCreateActivityRequest
 */
 
 /* Ignoring existing rest struct
 // CreateDemoTwoWorkItemRequest defines the model for CreateDemoTwoWorkItemRequest.
-type CreateDemoTwoWorkItemRequest  struct {
-    Base externalRef0.DbWorkItemCreateParams`json:"base"`
-    DemoTwoProject externalRef0.DbDemoTwoWorkItemCreateParams`json:"demoTwoProject"`
-    Members []externalRef0.ServicesMember`json:"members"`
-
-// ProjectName is generated from projects table.
-    ProjectName externalRef0.Project`json:"projectName"`
-    TagIDs []int`json:"tagIDs"`
-}
+type CreateDemoTwoWorkItemRequest = externalRef0.RestCreateDemoTwoWorkItemRequest
 */
 
 /* Ignoring existing rest struct
 // CreateDemoWorkItemRequest defines the model for CreateDemoWorkItemRequest.
-type CreateDemoWorkItemRequest  struct {
-    Base externalRef0.DbWorkItemCreateParams`json:"base"`
-    DemoProject externalRef0.DbDemoWorkItemCreateParams`json:"demoProject"`
-    Members []externalRef0.ServicesMember`json:"members"`
+type CreateDemoWorkItemRequest = externalRef0.RestCreateDemoWorkItemRequest
+*/
 
-// ProjectName is generated from projects table.
-    ProjectName externalRef0.Project`json:"projectName"`
-    TagIDs []int`json:"tagIDs"`
-}
+/* Ignoring existing rest struct
+// CreateProjectBoardRequest defines the model for CreateProjectBoardRequest.
+type CreateProjectBoardRequest = externalRef0.RestCreateProjectBoardRequest
 */
 
 /* Ignoring existing rest struct
 // CreateTeamRequest defines the model for CreateTeamRequest.
-type CreateTeamRequest  struct {
-    Description string`json:"description"`
-    Name string`json:"name"`
-}
+type CreateTeamRequest = externalRef0.RestCreateTeamRequest
 */
 
 /* Ignoring existing rest struct
 // CreateWorkItemCommentRequest defines the model for CreateWorkItemCommentRequest.
-type CreateWorkItemCommentRequest  struct {
-    Message string`json:"message"`
-    UserID externalRef0.DbUserID`json:"userID"`
-    WorkItemID int`json:"workItemID"`
-}
+type CreateWorkItemCommentRequest = externalRef0.RestCreateWorkItemCommentRequest
 */
 
 // CreateWorkItemRequest defines the model for CreateWorkItemRequest.
@@ -325,20 +296,12 @@ type CreateWorkItemRequest struct {
 
 /* Ignoring existing rest struct
 // CreateWorkItemTagRequest defines the model for CreateWorkItemTagRequest.
-type CreateWorkItemTagRequest  struct {
-    Color string`json:"color"`
-    Description string`json:"description"`
-    Name string`json:"name"`
-}
+type CreateWorkItemTagRequest = externalRef0.RestCreateWorkItemTagRequest
 */
 
 /* Ignoring existing rest struct
 // CreateWorkItemTypeRequest defines the model for CreateWorkItemTypeRequest.
-type CreateWorkItemTypeRequest  struct {
-    Color string`json:"color"`
-    Description string`json:"description"`
-    Name string`json:"name"`
-}
+type CreateWorkItemTypeRequest = externalRef0.RestCreateWorkItemTypeRequest
 */
 
 // DbActivity defines the model for DbActivity.
@@ -582,26 +545,7 @@ type DemoTwoWorkItemTypes string
 
 /* Ignoring existing rest struct
 // DemoTwoWorkItems defines the model for DemoTwoWorkItems.
-type DemoTwoWorkItems  struct {
-    ClosedAt *time.Time`json:"closedAt"`
-    CreatedAt time.Time`json:"createdAt"`
-    DeletedAt *time.Time`json:"deletedAt"`
-    DemoTwoWorkItem externalRef0.DbDemoTwoWorkItem`json:"demoTwoWorkItem"`
-    Description string`json:"description"`
-    KanbanStepID int`json:"kanbanStepID"`
-    Members *[]externalRef0.DbUserWIAUWorkItem`json:"members"`
-    Metadata map[string]interface{}`json:"metadata"`
-    TargetDate time.Time`json:"targetDate"`
-    TeamID *int`json:"teamID"`
-    TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
-    Title string`json:"title"`
-    UpdatedAt time.Time`json:"updatedAt"`
-    WorkItemComments *[]externalRef0.DbWorkItemComment`json:"workItemComments"`
-    WorkItemID int`json:"workItemID"`
-    WorkItemTags *[]externalRef0.DbWorkItemTag`json:"workItemTags"`
-    WorkItemType *externalRef0.DbWorkItemType`json:"workItemType,omitempty"`
-    WorkItemTypeID int`json:"workItemTypeID"`
-}
+type DemoTwoWorkItems = externalRef0.RestDemoTwoWorkItems
 */
 
 // DemoWorkItemTypes is generated from work_item_types table.
@@ -609,26 +553,7 @@ type DemoWorkItemTypes string
 
 /* Ignoring existing rest struct
 // DemoWorkItems defines the model for DemoWorkItems.
-type DemoWorkItems  struct {
-    ClosedAt *time.Time`json:"closedAt"`
-    CreatedAt time.Time`json:"createdAt"`
-    DeletedAt *time.Time`json:"deletedAt"`
-    DemoWorkItem externalRef0.DbDemoWorkItem`json:"demoWorkItem"`
-    Description string`json:"description"`
-    KanbanStepID int`json:"kanbanStepID"`
-    Members *[]externalRef0.DbUserWIAUWorkItem`json:"members"`
-    Metadata map[string]interface{}`json:"metadata"`
-    TargetDate time.Time`json:"targetDate"`
-    TeamID *int`json:"teamID"`
-    TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
-    Title string`json:"title"`
-    UpdatedAt time.Time`json:"updatedAt"`
-    WorkItemComments *[]externalRef0.DbWorkItemComment`json:"workItemComments"`
-    WorkItemID int`json:"workItemID"`
-    WorkItemTags *[]externalRef0.DbWorkItemTag`json:"workItemTags"`
-    WorkItemType *externalRef0.DbWorkItemType`json:"workItemType,omitempty"`
-    WorkItemTypeID int`json:"workItemTypeID"`
-}
+type DemoWorkItems = externalRef0.RestDemoWorkItems
 */
 
 // Direction defines the model for Direction.
@@ -673,13 +598,7 @@ type InitializeProjectRequest struct {
 
 /* Ignoring existing rest struct
 // Notification defines the model for Notification.
-type Notification  struct {
-    Notification externalRef0.DbNotification`json:"notification"`
-    NotificationID int`json:"notificationID"`
-    Read bool`json:"read"`
-    UserID externalRef0.DbUserID`json:"userID"`
-    UserNotificationID int`json:"userNotificationID"`
-}
+type Notification = externalRef0.RestNotification
 */
 
 // NotificationType is generated from database enum 'notification_type'.
@@ -701,15 +620,17 @@ type PaginatedUsersResponse  struct {
 }
 */
 
+/* Ignoring existing rest struct
+// PaginationPage defines the model for PaginationPage.
+type PaginationPage = externalRef0.RestPaginationPage
+*/
+
 // Project is generated from projects table.
 type Project string
 
 /* Ignoring existing rest struct
 // ProjectBoard defines the model for ProjectBoard.
-type ProjectBoard  struct {
-// ProjectName is generated from projects table.
-    ProjectName externalRef0.Project`json:"projectName"`
-}
+type ProjectBoard = externalRef0.RestProjectBoard
 */
 
 // ProjectConfig defines the model for ProjectConfig.
@@ -728,6 +649,122 @@ type ProjectConfigField struct {
 	ShowCollapsed bool   `json:"showCollapsed"`
 }
 
+// RestActivity defines the model for RestActivity.
+type RestActivity struct {
+	ActivityID   int        `json:"activityID"`
+	DeletedAt    *time.Time `json:"deletedAt"`
+	Description  string     `json:"description"`
+	IsProductive bool       `json:"isProductive"`
+	Name         string     `json:"name"`
+	ProjectID    int        `json:"projectID"`
+}
+
+// RestCreateActivityRequest defines the model for RestCreateActivityRequest.
+type RestCreateActivityRequest struct {
+	Description  string `json:"description"`
+	IsProductive bool   `json:"isProductive"`
+	Name         string `json:"name"`
+}
+
+// RestCreateDemoTwoWorkItemRequest defines the model for RestCreateDemoTwoWorkItemRequest.
+type RestCreateDemoTwoWorkItemRequest struct {
+	Base           externalRef0.DbWorkItemCreateParams        `json:"base"`
+	DemoTwoProject externalRef0.DbDemoTwoWorkItemCreateParams `json:"demoTwoProject"`
+	Members        []externalRef0.ServicesMember              `json:"members"`
+
+	// ProjectName is generated from projects table.
+	ProjectName externalRef0.Project `json:"projectName"`
+	TagIDs      []int                `json:"tagIDs"`
+}
+
+// RestCreateDemoWorkItemRequest defines the model for RestCreateDemoWorkItemRequest.
+type RestCreateDemoWorkItemRequest struct {
+	Base        externalRef0.DbWorkItemCreateParams     `json:"base"`
+	DemoProject externalRef0.DbDemoWorkItemCreateParams `json:"demoProject"`
+	Members     []externalRef0.ServicesMember           `json:"members"`
+
+	// ProjectName is generated from projects table.
+	ProjectName externalRef0.Project `json:"projectName"`
+	TagIDs      []int                `json:"tagIDs"`
+}
+
+// RestCreateProjectBoardRequest defines the model for RestCreateProjectBoardRequest.
+type RestCreateProjectBoardRequest struct {
+	Tags  *[]externalRef0.DbWorkItemTagCreateParams `json:"tags"`
+	Teams *[]externalRef0.DbTeamCreateParams        `json:"teams"`
+}
+
+// RestCreateTeamRequest defines the model for RestCreateTeamRequest.
+type RestCreateTeamRequest struct {
+	Description string `json:"description"`
+	Name        string `json:"name"`
+}
+
+// RestCreateWorkItemCommentRequest defines the model for RestCreateWorkItemCommentRequest.
+type RestCreateWorkItemCommentRequest struct {
+	Message    string                `json:"message"`
+	UserID     externalRef0.DbUserID `json:"userID"`
+	WorkItemID int                   `json:"workItemID"`
+}
+
+// RestCreateWorkItemTagRequest defines the model for RestCreateWorkItemTagRequest.
+type RestCreateWorkItemTagRequest struct {
+	Color       string `json:"color"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+}
+
+// RestCreateWorkItemTypeRequest defines the model for RestCreateWorkItemTypeRequest.
+type RestCreateWorkItemTypeRequest struct {
+	Color       string `json:"color"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
+}
+
+// RestDemoTwoWorkItems defines the model for RestDemoTwoWorkItems.
+type RestDemoTwoWorkItems struct {
+	ClosedAt         *time.Time                         `json:"closedAt"`
+	CreatedAt        time.Time                          `json:"createdAt"`
+	DeletedAt        *time.Time                         `json:"deletedAt"`
+	DemoTwoWorkItem  externalRef0.DbDemoTwoWorkItem     `json:"demoTwoWorkItem"`
+	Description      string                             `json:"description"`
+	KanbanStepID     int                                `json:"kanbanStepID"`
+	Members          *[]externalRef0.DbUserWIAUWorkItem `json:"members"`
+	Metadata         map[string]interface{}             `json:"metadata"`
+	TargetDate       time.Time                          `json:"targetDate"`
+	TeamID           *int                               `json:"teamID"`
+	TimeEntries      *[]externalRef0.DbTimeEntry        `json:"timeEntries"`
+	Title            string                             `json:"title"`
+	UpdatedAt        time.Time                          `json:"updatedAt"`
+	WorkItemComments *[]externalRef0.DbWorkItemComment  `json:"workItemComments"`
+	WorkItemID       int                                `json:"workItemID"`
+	WorkItemTags     *[]externalRef0.DbWorkItemTag      `json:"workItemTags"`
+	WorkItemType     *externalRef0.DbWorkItemType       `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                                `json:"workItemTypeID"`
+}
+
+// RestDemoWorkItems defines the model for RestDemoWorkItems.
+type RestDemoWorkItems struct {
+	ClosedAt         *time.Time                         `json:"closedAt"`
+	CreatedAt        time.Time                          `json:"createdAt"`
+	DeletedAt        *time.Time                         `json:"deletedAt"`
+	DemoWorkItem     externalRef0.DbDemoWorkItem        `json:"demoWorkItem"`
+	Description      string                             `json:"description"`
+	KanbanStepID     int                                `json:"kanbanStepID"`
+	Members          *[]externalRef0.DbUserWIAUWorkItem `json:"members"`
+	Metadata         map[string]interface{}             `json:"metadata"`
+	TargetDate       time.Time                          `json:"targetDate"`
+	TeamID           *int                               `json:"teamID"`
+	TimeEntries      *[]externalRef0.DbTimeEntry        `json:"timeEntries"`
+	Title            string                             `json:"title"`
+	UpdatedAt        time.Time                          `json:"updatedAt"`
+	WorkItemComments *[]externalRef0.DbWorkItemComment  `json:"workItemComments"`
+	WorkItemID       int                                `json:"workItemID"`
+	WorkItemTags     *[]externalRef0.DbWorkItemTag      `json:"workItemTags"`
+	WorkItemType     *externalRef0.DbWorkItemType       `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                                `json:"workItemTypeID"`
+}
+
 // RestNotification defines the model for RestNotification.
 type RestNotification struct {
 	Notification       externalRef0.DbNotification `json:"notification"`
@@ -737,9 +774,80 @@ type RestNotification struct {
 	UserNotificationID int                         `json:"userNotificationID"`
 }
 
+// RestPaginatedNotificationsResponse defines the model for RestPaginatedNotificationsResponse.
+type RestPaginatedNotificationsResponse struct {
+	Items *[]externalRef0.RestNotification `json:"items"`
+	Page  externalRef0.RestPaginationPage  `json:"page"`
+}
+
+// RestPaginatedUsersResponse defines the model for RestPaginatedUsersResponse.
+type RestPaginatedUsersResponse struct {
+	Items *[]externalRef0.RestUser        `json:"items"`
+	Page  externalRef0.RestPaginationPage `json:"page"`
+}
+
 // RestPaginationPage defines the model for RestPaginationPage.
 type RestPaginationPage struct {
 	NextCursor *string `json:"nextCursor,omitempty"`
+}
+
+// RestProjectBoard defines the model for RestProjectBoard.
+type RestProjectBoard struct {
+	// ProjectName is generated from projects table.
+	ProjectName externalRef0.Project `json:"projectName"`
+}
+
+// RestSharedWorkItemFields defines the model for RestSharedWorkItemFields.
+type RestSharedWorkItemFields struct {
+	Members          *[]externalRef0.DbUserWIAUWorkItem `json:"members"`
+	TimeEntries      *[]externalRef0.DbTimeEntry        `json:"timeEntries"`
+	WorkItemComments *[]externalRef0.DbWorkItemComment  `json:"workItemComments"`
+	WorkItemTags     *[]externalRef0.DbWorkItemTag      `json:"workItemTags"`
+	WorkItemType     *externalRef0.DbWorkItemType       `json:"workItemType,omitempty"`
+}
+
+// RestTeam defines the model for RestTeam.
+type RestTeam struct {
+	CreatedAt   time.Time `json:"createdAt"`
+	Description string    `json:"description"`
+	Name        string    `json:"name"`
+	ProjectID   int       `json:"projectID"`
+	TeamID      int       `json:"teamID"`
+	UpdatedAt   time.Time `json:"updatedAt"`
+}
+
+// RestUpdateActivityRequest defines the model for RestUpdateActivityRequest.
+type RestUpdateActivityRequest struct {
+	Description  *string `json:"description,omitempty"`
+	IsProductive *bool   `json:"isProductive,omitempty"`
+	Name         *string `json:"name,omitempty"`
+}
+
+// RestUpdateTeamRequest defines the model for RestUpdateTeamRequest.
+type RestUpdateTeamRequest struct {
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+}
+
+// RestUpdateWorkItemCommentRequest defines the model for RestUpdateWorkItemCommentRequest.
+type RestUpdateWorkItemCommentRequest struct {
+	Message    *string                `json:"message,omitempty"`
+	UserID     *externalRef0.DbUserID `json:"userID,omitempty"`
+	WorkItemID *int                   `json:"workItemID,omitempty"`
+}
+
+// RestUpdateWorkItemTagRequest defines the model for RestUpdateWorkItemTagRequest.
+type RestUpdateWorkItemTagRequest struct {
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+}
+
+// RestUpdateWorkItemTypeRequest defines the model for RestUpdateWorkItemTypeRequest.
+type RestUpdateWorkItemTypeRequest struct {
+	Color       *string `json:"color,omitempty"`
+	Description *string `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
 }
 
 // RestUser defines the model for RestUser.
@@ -763,6 +871,35 @@ type RestUser struct {
 	Username string                 `json:"username"`
 }
 
+// RestWorkItemComment defines the model for RestWorkItemComment.
+type RestWorkItemComment struct {
+	CreatedAt         time.Time             `json:"createdAt"`
+	Message           string                `json:"message"`
+	UpdatedAt         time.Time             `json:"updatedAt"`
+	UserID            externalRef0.DbUserID `json:"userID"`
+	WorkItemCommentID int                   `json:"workItemCommentID"`
+	WorkItemID        int                   `json:"workItemID"`
+}
+
+// RestWorkItemTag defines the model for RestWorkItemTag.
+type RestWorkItemTag struct {
+	Color         string     `json:"color"`
+	DeletedAt     *time.Time `json:"deletedAt"`
+	Description   string     `json:"description"`
+	Name          string     `json:"name"`
+	ProjectID     int        `json:"projectID"`
+	WorkItemTagID int        `json:"workItemTagID"`
+}
+
+// RestWorkItemType defines the model for RestWorkItemType.
+type RestWorkItemType struct {
+	Color          string `json:"color"`
+	Description    string `json:"description"`
+	Name           string `json:"name"`
+	ProjectID      int    `json:"projectID"`
+	WorkItemTypeID int    `json:"workItemTypeID"`
+}
+
 // Role is generated from roles.json keys.
 type Role string
 
@@ -780,15 +917,13 @@ type ServicesMember struct {
 }
 
 /* Ignoring existing rest struct
+// SharedWorkItemFields defines the model for SharedWorkItemFields.
+type SharedWorkItemFields = externalRef0.RestSharedWorkItemFields
+*/
+
+/* Ignoring existing rest struct
 // Team defines the model for Team.
-type Team  struct {
-    CreatedAt time.Time`json:"createdAt"`
-    Description string`json:"description"`
-    Name string`json:"name"`
-    ProjectID int`json:"projectID"`
-    TeamID int`json:"teamID"`
-    UpdatedAt time.Time`json:"updatedAt"`
-}
+type Team = externalRef0.RestTeam
 */
 
 // Topics string identifiers for SSE event listeners.
@@ -796,19 +931,12 @@ type Topics string
 
 /* Ignoring existing rest struct
 // UpdateActivityRequest defines the model for UpdateActivityRequest.
-type UpdateActivityRequest  struct {
-    Description *string`json:"description,omitempty"`
-    IsProductive *bool`json:"isProductive,omitempty"`
-    Name *string`json:"name,omitempty"`
-}
+type UpdateActivityRequest = externalRef0.RestUpdateActivityRequest
 */
 
 /* Ignoring existing rest struct
 // UpdateTeamRequest defines the model for UpdateTeamRequest.
-type UpdateTeamRequest  struct {
-    Description *string`json:"description,omitempty"`
-    Name *string`json:"name,omitempty"`
-}
+type UpdateTeamRequest = externalRef0.RestUpdateTeamRequest
 */
 
 // UpdateUserAuthRequest represents User authorization data to update
@@ -829,29 +957,17 @@ type UpdateUserRequest struct {
 
 /* Ignoring existing rest struct
 // UpdateWorkItemCommentRequest defines the model for UpdateWorkItemCommentRequest.
-type UpdateWorkItemCommentRequest  struct {
-    Message *string`json:"message,omitempty"`
-    UserID *externalRef0.DbUserID`json:"userID,omitempty"`
-    WorkItemID *int`json:"workItemID,omitempty"`
-}
+type UpdateWorkItemCommentRequest = externalRef0.RestUpdateWorkItemCommentRequest
 */
 
 /* Ignoring existing rest struct
 // UpdateWorkItemTagRequest defines the model for UpdateWorkItemTagRequest.
-type UpdateWorkItemTagRequest  struct {
-    Color *string`json:"color,omitempty"`
-    Description *string`json:"description,omitempty"`
-    Name *string`json:"name,omitempty"`
-}
+type UpdateWorkItemTagRequest = externalRef0.RestUpdateWorkItemTagRequest
 */
 
 /* Ignoring existing rest struct
 // UpdateWorkItemTypeRequest defines the model for UpdateWorkItemTypeRequest.
-type UpdateWorkItemTypeRequest  struct {
-    Color *string`json:"color,omitempty"`
-    Description *string`json:"description,omitempty"`
-    Name *string`json:"name,omitempty"`
-}
+type UpdateWorkItemTypeRequest = externalRef0.RestUpdateWorkItemTypeRequest
 */
 
 /* Ignoring existing rest struct
@@ -881,14 +997,7 @@ type ValidationError struct {
 
 /* Ignoring existing rest struct
 // WorkItemComment defines the model for WorkItemComment.
-type WorkItemComment  struct {
-    CreatedAt time.Time`json:"createdAt"`
-    Message string`json:"message"`
-    UpdatedAt time.Time`json:"updatedAt"`
-    UserID externalRef0.DbUserID`json:"userID"`
-    WorkItemCommentID int`json:"workItemCommentID"`
-    WorkItemID int`json:"workItemID"`
-}
+type WorkItemComment = externalRef0.RestWorkItemComment
 */
 
 // WorkItemRole is generated from database enum 'work_item_role'.
@@ -896,25 +1005,12 @@ type WorkItemRole string
 
 /* Ignoring existing rest struct
 // WorkItemTag defines the model for WorkItemTag.
-type WorkItemTag  struct {
-    Color string`json:"color"`
-    DeletedAt *time.Time`json:"deletedAt"`
-    Description string`json:"description"`
-    Name string`json:"name"`
-    ProjectID int`json:"projectID"`
-    WorkItemTagID int`json:"workItemTagID"`
-}
+type WorkItemTag = externalRef0.RestWorkItemTag
 */
 
 /* Ignoring existing rest struct
 // WorkItemType defines the model for WorkItemType.
-type WorkItemType  struct {
-    Color string`json:"color"`
-    Description string`json:"description"`
-    Name string`json:"name"`
-    ProjectID int`json:"projectID"`
-    WorkItemTypeID int`json:"workItemTypeID"`
-}
+type WorkItemType = externalRef0.RestWorkItemType
 */
 
 // ProjectName is generated from projects table.

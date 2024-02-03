@@ -17,10 +17,10 @@ import type {
   UseQueryOptions,
   UseQueryResult,
 } from '@tanstack/react-query'
-import type { CreateWorkItemTagRequest } from '../model/createWorkItemTagRequest'
 import type { HTTPError } from '../model/hTTPError'
-import type { UpdateWorkItemTagRequest } from '../model/updateWorkItemTagRequest'
-import type { WorkItemTag } from '../model/workItemTag'
+import type { RestCreateWorkItemTagRequest } from '../model/restCreateWorkItemTagRequest'
+import type { RestUpdateWorkItemTagRequest } from '../model/restUpdateWorkItemTagRequest'
+import type { RestWorkItemTag } from '../model/restWorkItemTag'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -31,15 +31,15 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  */
 export const createWorkItemTag = (
   projectName: 'demo' | 'demo_two',
-  createWorkItemTagRequest: CreateWorkItemTagRequest,
+  restCreateWorkItemTagRequest: RestCreateWorkItemTagRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItemTag>(
+  return customInstance<RestWorkItemTag>(
     {
       url: `/project/${projectName}/work-item-tag/`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      data: createWorkItemTagRequest,
+      data: restCreateWorkItemTagRequest,
     },
     options,
   )
@@ -49,21 +49,21 @@ export const getCreateWorkItemTagMutationOptions = <TError = void | HTTPError, T
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkItemTag>>,
     TError,
-    { projectName: 'demo' | 'demo_two'; data: CreateWorkItemTagRequest },
+    { projectName: 'demo' | 'demo_two'; data: RestCreateWorkItemTagRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof createWorkItemTag>>,
   TError,
-  { projectName: 'demo' | 'demo_two'; data: CreateWorkItemTagRequest },
+  { projectName: 'demo' | 'demo_two'; data: RestCreateWorkItemTagRequest },
   TContext
 > => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof createWorkItemTag>>,
-    { projectName: 'demo' | 'demo_two'; data: CreateWorkItemTagRequest }
+    { projectName: 'demo' | 'demo_two'; data: RestCreateWorkItemTagRequest }
   > = (props) => {
     const { projectName, data } = props ?? {}
 
@@ -74,7 +74,7 @@ export const getCreateWorkItemTagMutationOptions = <TError = void | HTTPError, T
 }
 
 export type CreateWorkItemTagMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkItemTag>>>
-export type CreateWorkItemTagMutationBody = CreateWorkItemTagRequest
+export type CreateWorkItemTagMutationBody = RestCreateWorkItemTagRequest
 export type CreateWorkItemTagMutationError = void | HTTPError
 
 /**
@@ -84,7 +84,7 @@ export const useCreateWorkItemTag = <TError = void | HTTPError, TContext = unkno
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof createWorkItemTag>>,
     TError,
-    { projectName: 'demo' | 'demo_two'; data: CreateWorkItemTagRequest },
+    { projectName: 'demo' | 'demo_two'; data: RestCreateWorkItemTagRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
@@ -101,7 +101,7 @@ export const getWorkItemTag = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal,
 ) => {
-  return customInstance<WorkItemTag>({ url: `/work-item-tag/${workItemTagID}`, method: 'GET', signal }, options)
+  return customInstance<RestWorkItemTag>({ url: `/work-item-tag/${workItemTagID}`, method: 'GET', signal }, options)
 }
 
 export const getGetWorkItemTagQueryKey = (workItemTagID: EntityIDs.WorkItemTagID) => {
@@ -228,15 +228,15 @@ export const useGetWorkItemTag = <TData = Awaited<ReturnType<typeof getWorkItemT
  */
 export const updateWorkItemTag = (
   workItemTagID: EntityIDs.WorkItemTagID,
-  updateWorkItemTagRequest: UpdateWorkItemTagRequest,
+  restUpdateWorkItemTagRequest: RestUpdateWorkItemTagRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItemTag>(
+  return customInstance<RestWorkItemTag>(
     {
       url: `/work-item-tag/${workItemTagID}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      data: updateWorkItemTagRequest,
+      data: restUpdateWorkItemTagRequest,
     },
     options,
   )
@@ -246,21 +246,21 @@ export const getUpdateWorkItemTagMutationOptions = <TError = void | HTTPError, T
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateWorkItemTag>>,
     TError,
-    { workItemTagID: EntityIDs.WorkItemTagID; data: UpdateWorkItemTagRequest },
+    { workItemTagID: EntityIDs.WorkItemTagID; data: RestUpdateWorkItemTagRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>
 }): UseMutationOptions<
   Awaited<ReturnType<typeof updateWorkItemTag>>,
   TError,
-  { workItemTagID: EntityIDs.WorkItemTagID; data: UpdateWorkItemTagRequest },
+  { workItemTagID: EntityIDs.WorkItemTagID; data: RestUpdateWorkItemTagRequest },
   TContext
 > => {
   const { mutation: mutationOptions, request: requestOptions } = options ?? {}
 
   const mutationFn: MutationFunction<
     Awaited<ReturnType<typeof updateWorkItemTag>>,
-    { workItemTagID: EntityIDs.WorkItemTagID; data: UpdateWorkItemTagRequest }
+    { workItemTagID: EntityIDs.WorkItemTagID; data: RestUpdateWorkItemTagRequest }
   > = (props) => {
     const { workItemTagID, data } = props ?? {}
 
@@ -271,7 +271,7 @@ export const getUpdateWorkItemTagMutationOptions = <TError = void | HTTPError, T
 }
 
 export type UpdateWorkItemTagMutationResult = NonNullable<Awaited<ReturnType<typeof updateWorkItemTag>>>
-export type UpdateWorkItemTagMutationBody = UpdateWorkItemTagRequest
+export type UpdateWorkItemTagMutationBody = RestUpdateWorkItemTagRequest
 export type UpdateWorkItemTagMutationError = void | HTTPError
 
 /**
@@ -281,7 +281,7 @@ export const useUpdateWorkItemTag = <TError = void | HTTPError, TContext = unkno
   mutation?: UseMutationOptions<
     Awaited<ReturnType<typeof updateWorkItemTag>>,
     TError,
-    { workItemTagID: EntityIDs.WorkItemTagID; data: UpdateWorkItemTagRequest },
+    { workItemTagID: EntityIDs.WorkItemTagID; data: RestUpdateWorkItemTagRequest },
     TContext
   >
   request?: SecondParameter<typeof customInstance>

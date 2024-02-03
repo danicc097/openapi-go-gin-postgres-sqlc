@@ -5,31 +5,6 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbDemoTwoWorkItem } from './dbDemoTwoWorkItem'
-import type { DbUserWIAUWorkItem } from './dbUserWIAUWorkItem'
-import type { DemoTwoWorkItemsMetadata } from './demoTwoWorkItemsMetadata'
-import type { DbTimeEntry } from './dbTimeEntry'
-import type { DbWorkItemComment } from './dbWorkItemComment'
-import type { DbWorkItemTag } from './dbWorkItemTag'
-import type { DbWorkItemType } from './dbWorkItemType'
+import type { RestDemoTwoWorkItems } from './restDemoTwoWorkItems'
 
-export interface DemoTwoWorkItems {
-  closedAt?: Date | null
-  createdAt: Date
-  deletedAt?: Date | null
-  demoTwoWorkItem: DbDemoTwoWorkItem
-  description: string
-  kanbanStepID: number
-  members?: DbUserWIAUWorkItem[] | null
-  metadata: DemoTwoWorkItemsMetadata
-  targetDate: Date
-  teamID: number | null
-  timeEntries?: DbTimeEntry[] | null
-  title: string
-  updatedAt: Date
-  workItemComments?: DbWorkItemComment[] | null
-  workItemID: number
-  workItemTags?: DbWorkItemTag[] | null
-  workItemType?: DbWorkItemType
-  workItemTypeID: number
-}
+export type DemoTwoWorkItems = RestDemoTwoWorkItems

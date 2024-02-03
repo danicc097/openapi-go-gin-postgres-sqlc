@@ -5,12 +5,6 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { RestTeam } from './restTeam'
 
-export interface Team {
-  createdAt: Date
-  description: string
-  name: string
-  projectID: number
-  teamID: number
-  updatedAt: Date
-}
+export type Team = RestTeam

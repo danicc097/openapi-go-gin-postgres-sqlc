@@ -2,356 +2,100 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
-    "CreateActivityRequest": {
+    "DbDemoTwoWorkItem": {
       "properties": {
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "isProductive": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "description",
-        "isProductive",
-        "name"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestCreateActivityRequest"
-    },
-    "UpdateActivityRequest": {
-      "properties": {
-        "description": {
-          "type": "string"
-        },
-        "isProductive": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string"
-        }
-      },
-      "type": "object",
-      "x-postgen-struct": "RestUpdateActivityRequest"
-    },
-    "Activity": {
-      "properties": {
-        "activityID": {
-          "type": "integer"
-        },
-        "deletedAt": {
+        "customDateForProject2": {
           "format": "date-time",
           "type": [
             "object"
           ]
         },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "isProductive": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
+        "workItemID": {
           "type": "integer"
         }
       },
       "required": [
-        "activityID",
-        "projectID",
-        "name",
-        "description",
-        "isProductive"
+        "workItemID"
       ],
       "type": "object",
-      "x-postgen-struct": "RestActivity"
+      "x-is-generated": true
     },
-    "CreateWorkItemTagRequest": {
+    "DbDemoTwoWorkItemCreateParams": {
       "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string",
-          "minLength": 1
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "color",
-        "description",
-        "name"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestCreateWorkItemTagRequest"
-    },
-    "UpdateWorkItemTagRequest": {
-      "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        }
-      },
-      "type": "object",
-      "x-postgen-struct": "RestUpdateWorkItemTagRequest"
-    },
-    "WorkItemTag": {
-      "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string",
-          "minLength": 1
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "workItemTagID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemTagID",
-        "projectID",
-        "name",
-        "description",
-        "color"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestWorkItemTag"
-    },
-    "CreateWorkItemTypeRequest": {
-      "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string",
-          "minLength": 1
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "color",
-        "description",
-        "name"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestCreateWorkItemTypeRequest"
-    },
-    "UpdateWorkItemTypeRequest": {
-      "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        }
-      },
-      "type": "object",
-      "x-postgen-struct": "RestUpdateWorkItemTypeRequest"
-    },
-    "WorkItemType": {
-      "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string",
-          "minLength": 1
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "workItemTypeID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemTypeID",
-        "projectID",
-        "name",
-        "description",
-        "color"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestWorkItemType"
-    },
-    "CreateTeamRequest": {
-      "properties": {
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "description",
-        "name"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestCreateTeamRequest"
-    },
-    "UpdateTeamRequest": {
-      "properties": {
-        "description": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        }
-      },
-      "type": "object",
-      "x-postgen-struct": "RestUpdateTeamRequest"
-    },
-    "Team": {
-      "properties": {
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "teamID": {
-          "type": "integer"
-        },
-        "updatedAt": {
+        "customDateForProject2": {
           "format": "date-time",
           "type": [
             "object"
           ]
         }
       },
-      "required": [
-        "teamID",
-        "projectID",
-        "name",
-        "description",
-        "createdAt",
-        "updatedAt"
-      ],
       "type": "object",
-      "x-postgen-struct": "RestTeam"
+      "x-is-generated": true
     },
-    "Direction": {
-      "type": "string",
-      "enum": [
-        "asc",
-        "desc"
-      ]
-    },
-    "PaginatedNotificationsResponse": {
+    "DbDemoWorkItem": {
       "properties": {
-        "items": {
-          "items": {
-            "$ref": "#/definitions/RestNotification"
-          },
+        "lastMessageAt": {
+          "format": "date-time",
           "type": [
-            "array",
-            "null"
+            "object"
           ]
         },
-        "page": {
-          "$ref": "#/definitions/RestPaginationPage"
-        }
-      },
-      "required": [
-        "page",
-        "items"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestPaginatedNotificationsResponse"
-    },
-    "DbActivity": {
-      "properties": {
-        "activityID": {
-          "type": "integer"
-        },
-        "description": {
+        "line": {
           "type": "string",
           "minLength": 1
         },
-        "isProductive": {
+        "ref": {
+          "pattern": "^[0-9]{8}$",
+          "type": "string",
+          "minLength": 1
+        },
+        "reopened": {
           "type": "boolean"
         },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
+        "workItemID": {
           "type": "integer"
         }
       },
       "required": [
-        "activityID",
-        "projectID",
-        "name",
-        "description",
-        "isProductive"
+        "workItemID",
+        "ref",
+        "line",
+        "lastMessageAt",
+        "reopened"
       ],
-      "type": "object"
+      "type": "object",
+      "x-postgen-struct": "DbDemoWorkItem",
+      "x-is-generated": true
+    },
+    "DbDemoWorkItemCreateParams": {
+      "properties": {
+        "lastMessageAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "line": {
+          "type": "string",
+          "minLength": 1
+        },
+        "ref": {
+          "pattern": "^[0-9]{8}$",
+          "type": "string",
+          "minLength": 1
+        },
+        "reopened": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "lastMessageAt",
+        "line",
+        "ref",
+        "reopened"
+      ],
+      "type": "object",
+      "x-is-generated": true
     },
     "DbKanbanStep": {
       "properties": {
@@ -391,7 +135,62 @@
         "timeTrackable"
       ],
       "type": "object",
-      "x-postgen-struct": "DbKanbanStep"
+      "x-postgen-struct": "DbKanbanStep",
+      "x-is-generated": true
+    },
+    "DbNotification": {
+      "properties": {
+        "body": {
+          "type": "string",
+          "minLength": 1
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "labels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "minLength": 1
+        },
+        "link": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notificationID": {
+          "type": "integer"
+        },
+        "notificationType": {
+          "$ref": "#/definitions/NotificationType"
+        },
+        "receiver": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "sender": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "notificationID",
+        "title",
+        "body",
+        "labels",
+        "createdAt",
+        "sender",
+        "notificationType"
+      ],
+      "type": "object",
+      "x-is-generated": true
     },
     "DbProject": {
       "properties": {
@@ -430,7 +229,8 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbProject"
+      "x-postgen-struct": "DbProject",
+      "x-is-generated": true
     },
     "DbTeam": {
       "properties": {
@@ -469,21 +269,11 @@
         "createdAt",
         "updatedAt"
       ],
-      "type": "object"
+      "type": "object",
+      "x-is-generated": true
     },
-    "DbWorkItemTag": {
+    "DbTeamCreateParams": {
       "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string",
-          "minLength": 1
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
         "description": {
           "type": "string",
           "minLength": 1
@@ -491,113 +281,65 @@
         "name": {
           "type": "string",
           "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "workItemTagID": {
-          "type": "integer"
         }
       },
       "required": [
-        "workItemTagID",
-        "projectID",
-        "name",
         "description",
-        "color"
+        "name"
       ],
       "type": "object",
-      "x-postgen-struct": "DbWorkItemTag"
+      "x-is-generated": true
     },
-    "DbWorkItemType": {
+    "DbTimeEntry": {
       "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string",
-          "minLength": 1
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
+        "activityID": {
           "type": "integer"
         },
-        "workItemTypeID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemTypeID",
-        "projectID",
-        "name",
-        "description",
-        "color"
-      ],
-      "type": "object",
-      "x-postgen-struct": "DbWorkItemType"
-    },
-    "DbDemoWorkItem": {
-      "properties": {
-        "lastMessageAt": {
+        "comment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
           "format": "date-time",
           "type": [
             "object"
           ]
         },
-        "line": {
-          "type": "string",
-          "minLength": 1
-        },
-        "ref": {
-          "pattern": "^[0-9]{8}$",
-          "type": "string",
-          "minLength": 1
-        },
-        "reopened": {
-          "type": "boolean"
-        },
-        "workItemID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemID",
-        "ref",
-        "line",
-        "lastMessageAt",
-        "reopened"
-      ],
-      "type": "object",
-      "x-postgen-struct": "DbDemoWorkItem"
-    },
-    "DbUserAPIKey": {
-      "properties": {
-        "apiKey": {
-          "type": "string",
-          "minLength": 1
-        },
-        "expiresOn": {
-          "format": "date-time",
+        "teamID": {
           "type": [
-            "object"
+            "integer",
+            "null"
           ]
+        },
+        "timeEntryID": {
+          "type": "integer"
         },
         "userID": {
           "$ref": "#/definitions/DbUserID"
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
         }
       },
       "required": [
-        "apiKey",
-        "expiresOn",
-        "userID"
+        "timeEntryID",
+        "activityID",
+        "userID",
+        "comment",
+        "start"
       ],
       "type": "object",
-      "x-postgen-struct": "DbUserAPIKey"
+      "x-postgen-struct": "DbTimeEntry",
+      "x-is-generated": true
     },
     "DbUser": {
       "properties": {
@@ -662,57 +404,132 @@
         "createdAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbUser"
+      "x-postgen-struct": "DbUser",
+      "x-is-generated": true
     },
-    "DbTimeEntry": {
+    "DbUserAPIKey": {
       "properties": {
-        "activityID": {
-          "type": "integer"
-        },
-        "comment": {
+        "apiKey": {
           "type": "string",
           "minLength": 1
         },
-        "durationMinutes": {
+        "expiresOn": {
+          "format": "date-time",
           "type": [
-            "integer",
-            "null"
+            "object"
           ]
         },
-        "start": {
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        }
+      },
+      "required": [
+        "apiKey",
+        "expiresOn",
+        "userID"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbUserAPIKey",
+      "x-is-generated": true
+    },
+    "DbUserID": {
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+      "type": "string",
+      "x-go-type": "uuid.UUID",
+      "x-go-type-import": {
+        "name": "uuid",
+        "path": "github.com/google/uuid"
+      },
+      "x-is-generated": true
+    },
+    "DbUserWIAUWorkItem": {
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/WorkItemRole"
+        },
+        "user": {
+          "$ref": "#/definitions/DbUser"
+        }
+      },
+      "required": [
+        "user",
+        "role"
+      ],
+      "type": "object",
+      "x-is-generated": true
+    },
+    "DbWorkItem": {
+      "properties": {
+        "closedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "metadata": {
+          "additionalProperties": {},
+          "type": "object"
+        },
+        "targetDate": {
           "format": "date-time",
           "type": [
             "object"
           ]
         },
         "teamID": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
-        "timeEntryID": {
           "type": "integer"
         },
-        "userID": {
-          "$ref": "#/definitions/DbUserID"
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
         },
         "workItemID": {
-          "type": [
-            "integer",
-            "null"
-          ]
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
         }
       },
       "required": [
-        "timeEntryID",
-        "activityID",
-        "userID",
-        "comment",
-        "start"
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "targetDate",
+        "createdAt",
+        "updatedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbTimeEntry"
+      "x-postgen-struct": "DbWorkItem",
+      "x-is-generated": true
     },
     "DbWorkItemComment": {
       "properties": {
@@ -751,63 +568,10 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-postgen-struct": "DbWorkItemComment"
+      "x-postgen-struct": "DbWorkItemComment",
+      "x-is-generated": true
     },
-    "ProjectConfig": {
-      "properties": {
-        "fields": {
-          "items": {
-            "$ref": "#/definitions/ProjectConfigField"
-          },
-          "type": "array"
-        },
-        "header": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array",
-          "minLength": 1
-        },
-        "visualization": {
-          "type": "object"
-        }
-      },
-      "required": [
-        "header",
-        "fields"
-      ],
-      "type": "object"
-    },
-    "ProjectConfigField": {
-      "properties": {
-        "isEditable": {
-          "type": "boolean"
-        },
-        "isVisible": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "path": {
-          "type": "string",
-          "minLength": 1
-        },
-        "showCollapsed": {
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "isEditable",
-        "showCollapsed",
-        "isVisible",
-        "path",
-        "name"
-      ],
-      "type": "object"
-    },
-    "DemoWorkItems": {
+    "DbWorkItemCreateParams": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -815,36 +579,12 @@
             "object"
           ]
         },
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "demoWorkItem": {
-          "$ref": "#/definitions/DbDemoWorkItem"
-        },
         "description": {
           "type": "string",
           "minLength": 1
         },
         "kanbanStepID": {
           "type": "integer"
-        },
-        "members": {
-          "items": {
-            "$ref": "#/definitions/DbUserWIAUWorkItem"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
         },
         "metadata": {
           "additionalProperties": {},
@@ -857,75 +597,371 @@
           ]
         },
         "teamID": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
-        "timeEntries": {
-          "items": {
-            "$ref": "#/definitions/DbTimeEntry"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
+          "type": "integer"
         },
         "title": {
           "type": "string",
           "minLength": 1
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "workItemComments": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemComment"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemID": {
-          "type": "integer"
-        },
-        "workItemTags": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemTag"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemType": {
-          "$ref": "#/definitions/DbWorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
         }
       },
       "required": [
-        "workItemID",
-        "title",
         "description",
-        "workItemTypeID",
-        "metadata",
-        "teamID",
         "kanbanStepID",
+        "metadata",
         "targetDate",
-        "createdAt",
-        "updatedAt",
-        "demoWorkItem"
+        "teamID",
+        "title",
+        "workItemTypeID"
       ],
       "type": "object",
-      "x-postgen-struct": "RestDemoWorkItems"
+      "x-is-generated": true
     },
-    "DemoTwoWorkItems": {
+    "DbWorkItemTag": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTagID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTagID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbWorkItemTag",
+      "x-is-generated": true
+    },
+    "DbWorkItemTagCreateParams": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "color",
+        "description",
+        "name"
+      ],
+      "type": "object",
+      "x-is-generated": true
+    },
+    "DbWorkItemType": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTypeID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "DbWorkItemType",
+      "x-is-generated": true
+    },
+    "RestActivity": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activityID",
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestActivity",
+      "x-is-generated": true
+    },
+    "RestCreateActivityRequest": {
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "description",
+        "isProductive",
+        "name"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateActivityRequest",
+      "x-is-generated": true
+    },
+    "RestCreateDemoTwoWorkItemRequest": {
+      "properties": {
+        "base": {
+          "$ref": "#/definitions/DbWorkItemCreateParams"
+        },
+        "demoTwoProject": {
+          "$ref": "#/definitions/DbDemoTwoWorkItemCreateParams"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/definitions/ServicesMember"
+          },
+          "type": "array"
+        },
+        "projectName": {
+          "$ref": "#/definitions/Project"
+        },
+        "tagIDs": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "projectName",
+        "demoTwoProject",
+        "base",
+        "tagIDs",
+        "members"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateDemoTwoWorkItemRequest",
+      "x-is-generated": true
+    },
+    "RestCreateDemoWorkItemRequest": {
+      "properties": {
+        "base": {
+          "$ref": "#/definitions/DbWorkItemCreateParams"
+        },
+        "demoProject": {
+          "$ref": "#/definitions/DbDemoWorkItemCreateParams"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/definitions/ServicesMember"
+          },
+          "type": "array"
+        },
+        "projectName": {
+          "$ref": "#/definitions/Project"
+        },
+        "tagIDs": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "projectName",
+        "demoProject",
+        "base",
+        "tagIDs",
+        "members"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateDemoWorkItemRequest",
+      "x-is-generated": true
+    },
+    "RestCreateProjectBoardRequest": {
+      "properties": {
+        "tags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTagCreateParams"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "teams": {
+          "items": {
+            "$ref": "#/definitions/DbTeamCreateParams"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestCreateProjectBoardRequest",
+      "x-is-generated": true
+    },
+    "RestCreateTeamRequest": {
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "description",
+        "name"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateTeamRequest",
+      "x-is-generated": true
+    },
+    "RestCreateWorkItemCommentRequest": {
+      "properties": {
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "message",
+        "userID",
+        "workItemID"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateWorkItemCommentRequest",
+      "x-is-generated": true
+    },
+    "RestCreateWorkItemTagRequest": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "color",
+        "description",
+        "name"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateWorkItemTagRequest",
+      "x-is-generated": true
+    },
+    "RestCreateWorkItemTypeRequest": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "color",
+        "description",
+        "name"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestCreateWorkItemTypeRequest",
+      "x-is-generated": true
+    },
+    "RestDemoTwoWorkItems": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -1041,45 +1077,181 @@
         "demoTwoWorkItem"
       ],
       "type": "object",
-      "x-postgen-struct": "RestDemoTwoWorkItems"
+      "x-postgen-struct": "RestDemoTwoWorkItems",
+      "x-is-generated": true
     },
-    "InitializeProjectRequest": {
+    "RestDemoWorkItems": {
       "properties": {
-        "tags": {
+        "closedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "demoWorkItem": {
+          "$ref": "#/definitions/DbDemoWorkItem"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "members": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemTagCreateParams"
+            "$ref": "#/definitions/DbUserWIAUWorkItem"
           },
           "type": [
             "array",
             "null"
           ]
         },
-        "teams": {
+        "metadata": {
+          "additionalProperties": {},
+          "type": "object"
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeEntries": {
           "items": {
-            "$ref": "#/definitions/DbTeamCreateParams"
+            "$ref": "#/definitions/DbTimeEntry"
           },
           "type": [
             "array",
             "null"
           ]
-        }
-      },
-      "type": "object",
-      "x-postgen-struct": "RestCreateProjectBoardRequest"
-    },
-    "ProjectBoard": {
-      "properties": {
-        "projectName": {
-          "$ref": "#/definitions/Project"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemComments": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemComment"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTag"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemType": {
+          "$ref": "#/definitions/DbWorkItemType"
+        },
+        "workItemTypeID": {
+          "type": "integer"
         }
       },
       "required": [
-        "projectName"
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "demoWorkItem"
       ],
       "type": "object",
-      "x-postgen-struct": "RestProjectBoard"
+      "x-postgen-struct": "RestDemoWorkItems",
+      "x-is-generated": true
     },
-    "PaginatedUsersResponse": {
+    "RestNotification": {
+      "properties": {
+        "notification": {
+          "$ref": "#/definitions/DbNotification"
+        },
+        "notificationID": {
+          "type": "integer"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "userNotificationID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "userNotificationID",
+        "notificationID",
+        "read",
+        "userID",
+        "notification"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestNotification",
+      "x-is-generated": true
+    },
+    "RestPaginatedNotificationsResponse": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/definitions/RestNotification"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "page": {
+          "$ref": "#/definitions/RestPaginationPage"
+        }
+      },
+      "required": [
+        "page",
+        "items"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestPaginatedNotificationsResponse",
+      "x-is-generated": true
+    },
+    "RestPaginatedUsersResponse": {
       "properties": {
         "items": {
           "items": {
@@ -1099,10 +1271,197 @@
         "items"
       ],
       "type": "object",
-      "x-postgen-struct": "RestPaginatedUsersResponse"
+      "x-postgen-struct": "RestPaginatedUsersResponse",
+      "x-is-generated": true
     },
-    "User": {
-      "$ref": "#/definitions/RestUser"
+    "RestPaginationPage": {
+      "properties": {
+        "nextCursor": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestPaginationPage",
+      "x-is-generated": true
+    },
+    "RestProjectBoard": {
+      "properties": {
+        "projectName": {
+          "$ref": "#/definitions/Project"
+        }
+      },
+      "required": [
+        "projectName"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestProjectBoard",
+      "x-is-generated": true
+    },
+    "RestSharedWorkItemFields": {
+      "properties": {
+        "members": {
+          "items": {
+            "$ref": "#/definitions/DbUserWIAUWorkItem"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "timeEntries": {
+          "items": {
+            "$ref": "#/definitions/DbTimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemComments": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemComment"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemTags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTag"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemType": {
+          "$ref": "#/definitions/DbWorkItemType"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestSharedWorkItemFields",
+      "x-is-generated": true
+    },
+    "RestTeam": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        }
+      },
+      "required": [
+        "teamID",
+        "projectID",
+        "name",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestTeam",
+      "x-is-generated": true
+    },
+    "RestUpdateActivityRequest": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateActivityRequest",
+      "x-is-generated": true
+    },
+    "RestUpdateTeamRequest": {
+      "properties": {
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateTeamRequest",
+      "x-is-generated": true
+    },
+    "RestUpdateWorkItemCommentRequest": {
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateWorkItemCommentRequest",
+      "x-is-generated": true
+    },
+    "RestUpdateWorkItemTagRequest": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateWorkItemTagRequest",
+      "x-is-generated": true
+    },
+    "RestUpdateWorkItemTypeRequest": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestUpdateWorkItemTypeRequest",
+      "x-is-generated": true
     },
     "RestUser": {
       "properties": {
@@ -1191,7 +1550,370 @@
         "createdAt",
         "role"
       ],
+      "type": "object",
+      "x-postgen-struct": "RestUser",
+      "x-is-generated": true
+    },
+    "RestWorkItemComment": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "workItemCommentID": {
+          "type": "integer"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemCommentID",
+        "workItemID",
+        "userID",
+        "message",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemComment",
+      "x-is-generated": true
+    },
+    "RestWorkItemTag": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTagID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTagID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemTag",
+      "x-is-generated": true
+    },
+    "RestWorkItemType": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTypeID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestWorkItemType",
+      "x-is-generated": true
+    },
+    "ServicesMember": {
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/WorkItemRole"
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        }
+      },
+      "required": [
+        "role",
+        "userID"
+      ],
+      "type": "object",
+      "x-is-generated": true
+    },
+    "Activity": {
+      "$ref": "#/definitions/RestActivity"
+    },
+    "CreateActivityRequest": {
+      "$ref": "#/definitions/RestCreateActivityRequest"
+    },
+    "CreateDemoTwoWorkItemRequest": {
+      "$ref": "#/definitions/RestCreateDemoTwoWorkItemRequest"
+    },
+    "CreateDemoWorkItemRequest": {
+      "$ref": "#/definitions/RestCreateDemoWorkItemRequest"
+    },
+    "CreateProjectBoardRequest": {
+      "$ref": "#/definitions/RestCreateProjectBoardRequest"
+    },
+    "CreateTeamRequest": {
+      "$ref": "#/definitions/RestCreateTeamRequest"
+    },
+    "CreateWorkItemCommentRequest": {
+      "$ref": "#/definitions/RestCreateWorkItemCommentRequest"
+    },
+    "CreateWorkItemTagRequest": {
+      "$ref": "#/definitions/RestCreateWorkItemTagRequest"
+    },
+    "CreateWorkItemTypeRequest": {
+      "$ref": "#/definitions/RestCreateWorkItemTypeRequest"
+    },
+    "DemoTwoWorkItems": {
+      "$ref": "#/definitions/RestDemoTwoWorkItems"
+    },
+    "DemoWorkItems": {
+      "$ref": "#/definitions/RestDemoWorkItems"
+    },
+    "Notification": {
+      "$ref": "#/definitions/RestNotification"
+    },
+    "PaginationPage": {
+      "$ref": "#/definitions/RestPaginationPage"
+    },
+    "ProjectBoard": {
+      "$ref": "#/definitions/RestProjectBoard"
+    },
+    "SharedWorkItemFields": {
+      "$ref": "#/definitions/RestSharedWorkItemFields"
+    },
+    "Team": {
+      "$ref": "#/definitions/RestTeam"
+    },
+    "UpdateActivityRequest": {
+      "$ref": "#/definitions/RestUpdateActivityRequest"
+    },
+    "UpdateTeamRequest": {
+      "$ref": "#/definitions/RestUpdateTeamRequest"
+    },
+    "UpdateWorkItemCommentRequest": {
+      "$ref": "#/definitions/RestUpdateWorkItemCommentRequest"
+    },
+    "UpdateWorkItemTagRequest": {
+      "$ref": "#/definitions/RestUpdateWorkItemTagRequest"
+    },
+    "UpdateWorkItemTypeRequest": {
+      "$ref": "#/definitions/RestUpdateWorkItemTypeRequest"
+    },
+    "User": {
+      "$ref": "#/definitions/RestUser"
+    },
+    "WorkItemComment": {
+      "$ref": "#/definitions/RestWorkItemComment"
+    },
+    "WorkItemTag": {
+      "$ref": "#/definitions/RestWorkItemTag"
+    },
+    "WorkItemType": {
+      "$ref": "#/definitions/RestWorkItemType"
+    },
+    "Direction": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    },
+    "PaginatedNotificationsResponse": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/definitions/RestNotification"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "page": {
+          "$ref": "#/definitions/RestPaginationPage"
+        }
+      },
+      "required": [
+        "page",
+        "items"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestPaginatedNotificationsResponse"
+    },
+    "DbActivity": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activityID",
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
       "type": "object"
+    },
+    "ProjectConfig": {
+      "properties": {
+        "fields": {
+          "items": {
+            "$ref": "#/definitions/ProjectConfigField"
+          },
+          "type": "array"
+        },
+        "header": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "minLength": 1
+        },
+        "visualization": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "header",
+        "fields"
+      ],
+      "type": "object"
+    },
+    "ProjectConfigField": {
+      "properties": {
+        "isEditable": {
+          "type": "boolean"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "showCollapsed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "isEditable",
+        "showCollapsed",
+        "isVisible",
+        "path",
+        "name"
+      ],
+      "type": "object"
+    },
+    "InitializeProjectRequest": {
+      "properties": {
+        "tags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTagCreateParams"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "teams": {
+          "items": {
+            "$ref": "#/definitions/DbTeamCreateParams"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "x-postgen-struct": "RestCreateProjectBoardRequest"
+    },
+    "PaginatedUsersResponse": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/definitions/RestUser"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "page": {
+          "$ref": "#/definitions/RestPaginationPage"
+        }
+      },
+      "required": [
+        "page",
+        "items"
+      ],
+      "type": "object",
+      "x-postgen-struct": "RestPaginatedUsersResponse"
     },
     "HTTPValidationError": {
       "title": "HTTPValidationError",
@@ -1308,7 +2030,7 @@
         "work-item-comment:edit",
         "work-item-comment:delete"
       ],
-      "x-is-generated": "true",
+      "x-is-generated": true,
       "description": "is generated from scopes.json keys."
     },
     "Scopes": {
@@ -1327,13 +2049,13 @@
         "admin",
         "superAdmin"
       ],
-      "x-is-generated": "true",
+      "x-is-generated": true,
       "description": "is generated from roles.json keys."
     },
     "WorkItemRole": {
       "title": "WorkItem role",
       "type": "string",
-      "x-is-generated": "true",
+      "x-is-generated": true,
       "enum": [
         "preparer",
         "reviewer"
@@ -1435,174 +2157,13 @@
         }
       ]
     },
-    "DbWorkItem": {
-      "properties": {
-        "closedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "kanbanStepID": {
-          "type": "integer"
-        },
-        "metadata": {
-          "additionalProperties": {},
-          "type": "object"
-        },
-        "targetDate": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "teamID": {
-          "type": "integer"
-        },
-        "title": {
-          "type": "string",
-          "minLength": 1
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "workItemID": {
-          "type": "integer"
-        },
-        "workItemTypeID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemID",
-        "title",
-        "description",
-        "workItemTypeID",
-        "metadata",
-        "teamID",
-        "kanbanStepID",
-        "targetDate",
-        "createdAt",
-        "updatedAt"
-      ],
-      "type": "object",
-      "x-postgen-struct": "DbWorkItem"
-    },
-    "CreateDemoTwoWorkItemRequest": {
-      "properties": {
-        "base": {
-          "$ref": "#/definitions/DbWorkItemCreateParams"
-        },
-        "demoTwoProject": {
-          "$ref": "#/definitions/DbDemoTwoWorkItemCreateParams"
-        },
-        "members": {
-          "items": {
-            "$ref": "#/definitions/ServicesMember"
-          },
-          "type": "array"
-        },
-        "projectName": {
-          "$ref": "#/definitions/Project"
-        },
-        "tagIDs": {
-          "items": {
-            "type": "integer"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "projectName",
-        "demoTwoProject",
-        "base",
-        "tagIDs",
-        "members"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestCreateDemoTwoWorkItemRequest"
-    },
-    "CreateDemoWorkItemRequest": {
-      "properties": {
-        "base": {
-          "$ref": "#/definitions/DbWorkItemCreateParams"
-        },
-        "demoProject": {
-          "$ref": "#/definitions/DbDemoWorkItemCreateParams"
-        },
-        "members": {
-          "items": {
-            "$ref": "#/definitions/ServicesMember"
-          },
-          "type": "array"
-        },
-        "projectName": {
-          "$ref": "#/definitions/Project"
-        },
-        "tagIDs": {
-          "items": {
-            "type": "integer"
-          },
-          "type": "array"
-        }
-      },
-      "required": [
-        "projectName",
-        "demoProject",
-        "base",
-        "tagIDs",
-        "members"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestCreateDemoWorkItemRequest"
-    },
-    "CreateWorkItemCommentRequest": {
-      "properties": {
-        "message": {
-          "type": "string",
-          "minLength": 1
-        },
-        "userID": {
-          "$ref": "#/definitions/DbUserID"
-        },
-        "workItemID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "message",
-        "userID",
-        "workItemID"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestCreateWorkItemCommentRequest"
-    },
     "Project": {
       "enum": [
         "demo",
         "demo_two"
       ],
       "type": "string",
-      "x-is-generated": "true",
+      "x-is-generated": true,
       "description": "is generated from projects table."
     },
     "DbActivityCreateParams": {
@@ -1629,53 +2190,13 @@
       ],
       "type": "object"
     },
-    "DbTeamCreateParams": {
-      "properties": {
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "description",
-        "name"
-      ],
-      "type": "object"
-    },
-    "DbWorkItemTagCreateParams": {
-      "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string",
-          "minLength": 1
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "color",
-        "description",
-        "name"
-      ],
-      "type": "object"
-    },
     "DbWorkItemRole": {
       "type": "string"
     },
     "NotificationType": {
       "description": "is generated from database enum 'notification_type'.",
       "type": "string",
-      "x-is-generated": "true",
+      "x-is-generated": true,
       "enum": [
         "personal",
         "global"
@@ -1688,7 +2209,7 @@
         "Type 2",
         "Another type"
       ],
-      "x-is-generated": "true",
+      "x-is-generated": true,
       "description": "is generated from work_item_types table."
     },
     "DemoWorkItemTypes": {
@@ -1696,194 +2217,13 @@
       "enum": [
         "Type 1"
       ],
-      "x-is-generated": "true",
+      "x-is-generated": true,
       "description": "is generated from work_item_types table."
-    },
-    "DbDemoWorkItemCreateParams": {
-      "properties": {
-        "lastMessageAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "line": {
-          "type": "string",
-          "minLength": 1
-        },
-        "ref": {
-          "pattern": "^[0-9]{8}$",
-          "type": "string",
-          "minLength": 1
-        },
-        "reopened": {
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "lastMessageAt",
-        "line",
-        "ref",
-        "reopened"
-      ],
-      "type": "object"
-    },
-    "DbWorkItemCreateParams": {
-      "properties": {
-        "closedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "kanbanStepID": {
-          "type": "integer"
-        },
-        "metadata": {
-          "additionalProperties": {},
-          "type": "object"
-        },
-        "targetDate": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "teamID": {
-          "type": "integer"
-        },
-        "title": {
-          "type": "string",
-          "minLength": 1
-        },
-        "workItemTypeID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "description",
-        "kanbanStepID",
-        "metadata",
-        "targetDate",
-        "teamID",
-        "title",
-        "workItemTypeID"
-      ],
-      "type": "object"
-    },
-    "ServicesMember": {
-      "properties": {
-        "role": {
-          "$ref": "#/definitions/WorkItemRole"
-        },
-        "userID": {
-          "$ref": "#/definitions/DbUserID"
-        }
-      },
-      "required": [
-        "role",
-        "userID"
-      ],
-      "type": "object"
-    },
-    "DbDemoTwoWorkItem": {
-      "properties": {
-        "customDateForProject2": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "workItemID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemID"
-      ],
-      "type": "object"
-    },
-    "DbDemoTwoWorkItemCreateParams": {
-      "properties": {
-        "customDateForProject2": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        }
-      },
-      "type": "object"
     },
     "DbWorkItemID": {},
     "DbProjectID": {},
-    "DbUserID": {
-      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-      "type": "string",
-      "x-go-type": "uuid.UUID",
-      "x-go-type-import": {
-        "name": "uuid",
-        "path": "github.com/google/uuid"
-      }
-    },
     "DbWorkItemTypeID": {},
     "DbNotificationID": {},
-    "DbNotification": {
-      "properties": {
-        "body": {
-          "type": "string",
-          "minLength": 1
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "labels": {
-          "items": {
-            "type": "string"
-          },
-          "type": "array",
-          "minLength": 1
-        },
-        "link": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "notificationID": {
-          "type": "integer"
-        },
-        "notificationType": {
-          "$ref": "#/definitions/NotificationType"
-        },
-        "receiver": {
-          "$ref": "#/definitions/DbUserID"
-        },
-        "sender": {
-          "$ref": "#/definitions/DbUserID"
-        },
-        "title": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "notificationID",
-        "title",
-        "body",
-        "labels",
-        "createdAt",
-        "sender",
-        "notificationType"
-      ],
-      "type": "object"
-    },
     "DbUserNotification": {
       "properties": {
         "notificationID": {
@@ -1907,84 +2247,6 @@
       ],
       "type": "object"
     },
-    "RestPaginationPage": {
-      "properties": {
-        "nextCursor": {
-          "type": "string"
-        }
-      },
-      "type": "object"
-    },
-    "Notification": {
-      "properties": {
-        "notification": {
-          "$ref": "#/definitions/DbNotification"
-        },
-        "notificationID": {
-          "type": "integer"
-        },
-        "read": {
-          "type": "boolean"
-        },
-        "userID": {
-          "$ref": "#/definitions/DbUserID"
-        },
-        "userNotificationID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "userNotificationID",
-        "notificationID",
-        "read",
-        "userID",
-        "notification"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestNotification"
-    },
-    "RestNotification": {
-      "properties": {
-        "notification": {
-          "$ref": "#/definitions/DbNotification"
-        },
-        "notificationID": {
-          "type": "integer"
-        },
-        "read": {
-          "type": "boolean"
-        },
-        "userID": {
-          "$ref": "#/definitions/DbUserID"
-        },
-        "userNotificationID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "userNotificationID",
-        "notificationID",
-        "read",
-        "userID",
-        "notification"
-      ],
-      "type": "object"
-    },
-    "DbUserWIAUWorkItem": {
-      "properties": {
-        "role": {
-          "$ref": "#/definitions/WorkItemRole"
-        },
-        "user": {
-          "$ref": "#/definitions/DbUser"
-        }
-      },
-      "required": [
-        "user",
-        "role"
-      ],
-      "type": "object"
-    },
     "DemoKanbanSteps": {
       "type": "string",
       "enum": [
@@ -1993,7 +2255,7 @@
         "Under review",
         "Work in progress"
       ],
-      "x-is-generated": "true",
+      "x-is-generated": true,
       "description": "is generated from kanban_steps table."
     },
     "DemoTwoKanbanSteps": {
@@ -2001,100 +2263,229 @@
       "enum": [
         "Received"
       ],
-      "x-is-generated": "true",
+      "x-is-generated": true,
       "description": "is generated from kanban_steps table."
-    },
-    "UpdateWorkItemCommentRequest": {
-      "properties": {
-        "message": {
-          "type": "string"
-        },
-        "userID": {
-          "$ref": "#/definitions/DbUserID"
-        },
-        "workItemID": {
-          "type": "integer"
-        }
-      },
-      "type": "object",
-      "x-postgen-struct": "RestUpdateWorkItemCommentRequest"
-    },
-    "WorkItemComment": {
-      "properties": {
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "message": {
-          "type": "string",
-          "minLength": 1
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "userID": {
-          "$ref": "#/definitions/DbUserID"
-        },
-        "workItemCommentID": {
-          "type": "integer"
-        },
-        "workItemID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemCommentID",
-        "workItemID",
-        "userID",
-        "message",
-        "createdAt",
-        "updatedAt"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestWorkItemComment"
     }
   },
   "properties": {
-    "CreateActivityRequest": {
-      "$ref": "#/definitions/CreateActivityRequest"
+    "DbDemoTwoWorkItem": {
+      "$ref": "#/definitions/DbDemoTwoWorkItem"
     },
-    "UpdateActivityRequest": {
-      "$ref": "#/definitions/UpdateActivityRequest"
+    "DbDemoTwoWorkItemCreateParams": {
+      "$ref": "#/definitions/DbDemoTwoWorkItemCreateParams"
+    },
+    "DbDemoWorkItem": {
+      "$ref": "#/definitions/DbDemoWorkItem"
+    },
+    "DbDemoWorkItemCreateParams": {
+      "$ref": "#/definitions/DbDemoWorkItemCreateParams"
+    },
+    "DbKanbanStep": {
+      "$ref": "#/definitions/DbKanbanStep"
+    },
+    "DbNotification": {
+      "$ref": "#/definitions/DbNotification"
+    },
+    "DbProject": {
+      "$ref": "#/definitions/DbProject"
+    },
+    "DbTeam": {
+      "$ref": "#/definitions/DbTeam"
+    },
+    "DbTeamCreateParams": {
+      "$ref": "#/definitions/DbTeamCreateParams"
+    },
+    "DbTimeEntry": {
+      "$ref": "#/definitions/DbTimeEntry"
+    },
+    "DbUser": {
+      "$ref": "#/definitions/DbUser"
+    },
+    "DbUserAPIKey": {
+      "$ref": "#/definitions/DbUserAPIKey"
+    },
+    "DbUserID": {
+      "$ref": "#/definitions/DbUserID"
+    },
+    "DbUserWIAUWorkItem": {
+      "$ref": "#/definitions/DbUserWIAUWorkItem"
+    },
+    "DbWorkItem": {
+      "$ref": "#/definitions/DbWorkItem"
+    },
+    "DbWorkItemComment": {
+      "$ref": "#/definitions/DbWorkItemComment"
+    },
+    "DbWorkItemCreateParams": {
+      "$ref": "#/definitions/DbWorkItemCreateParams"
+    },
+    "DbWorkItemTag": {
+      "$ref": "#/definitions/DbWorkItemTag"
+    },
+    "DbWorkItemTagCreateParams": {
+      "$ref": "#/definitions/DbWorkItemTagCreateParams"
+    },
+    "DbWorkItemType": {
+      "$ref": "#/definitions/DbWorkItemType"
+    },
+    "RestActivity": {
+      "$ref": "#/definitions/RestActivity"
+    },
+    "RestCreateActivityRequest": {
+      "$ref": "#/definitions/RestCreateActivityRequest"
+    },
+    "RestCreateDemoTwoWorkItemRequest": {
+      "$ref": "#/definitions/RestCreateDemoTwoWorkItemRequest"
+    },
+    "RestCreateDemoWorkItemRequest": {
+      "$ref": "#/definitions/RestCreateDemoWorkItemRequest"
+    },
+    "RestCreateProjectBoardRequest": {
+      "$ref": "#/definitions/RestCreateProjectBoardRequest"
+    },
+    "RestCreateTeamRequest": {
+      "$ref": "#/definitions/RestCreateTeamRequest"
+    },
+    "RestCreateWorkItemCommentRequest": {
+      "$ref": "#/definitions/RestCreateWorkItemCommentRequest"
+    },
+    "RestCreateWorkItemTagRequest": {
+      "$ref": "#/definitions/RestCreateWorkItemTagRequest"
+    },
+    "RestCreateWorkItemTypeRequest": {
+      "$ref": "#/definitions/RestCreateWorkItemTypeRequest"
+    },
+    "RestDemoTwoWorkItems": {
+      "$ref": "#/definitions/RestDemoTwoWorkItems"
+    },
+    "RestDemoWorkItems": {
+      "$ref": "#/definitions/RestDemoWorkItems"
+    },
+    "RestNotification": {
+      "$ref": "#/definitions/RestNotification"
+    },
+    "RestPaginatedNotificationsResponse": {
+      "$ref": "#/definitions/RestPaginatedNotificationsResponse"
+    },
+    "RestPaginatedUsersResponse": {
+      "$ref": "#/definitions/RestPaginatedUsersResponse"
+    },
+    "RestPaginationPage": {
+      "$ref": "#/definitions/RestPaginationPage"
+    },
+    "RestProjectBoard": {
+      "$ref": "#/definitions/RestProjectBoard"
+    },
+    "RestSharedWorkItemFields": {
+      "$ref": "#/definitions/RestSharedWorkItemFields"
+    },
+    "RestTeam": {
+      "$ref": "#/definitions/RestTeam"
+    },
+    "RestUpdateActivityRequest": {
+      "$ref": "#/definitions/RestUpdateActivityRequest"
+    },
+    "RestUpdateTeamRequest": {
+      "$ref": "#/definitions/RestUpdateTeamRequest"
+    },
+    "RestUpdateWorkItemCommentRequest": {
+      "$ref": "#/definitions/RestUpdateWorkItemCommentRequest"
+    },
+    "RestUpdateWorkItemTagRequest": {
+      "$ref": "#/definitions/RestUpdateWorkItemTagRequest"
+    },
+    "RestUpdateWorkItemTypeRequest": {
+      "$ref": "#/definitions/RestUpdateWorkItemTypeRequest"
+    },
+    "RestUser": {
+      "$ref": "#/definitions/RestUser"
+    },
+    "RestWorkItemComment": {
+      "$ref": "#/definitions/RestWorkItemComment"
+    },
+    "RestWorkItemTag": {
+      "$ref": "#/definitions/RestWorkItemTag"
+    },
+    "RestWorkItemType": {
+      "$ref": "#/definitions/RestWorkItemType"
+    },
+    "ServicesMember": {
+      "$ref": "#/definitions/ServicesMember"
     },
     "Activity": {
       "$ref": "#/definitions/Activity"
     },
-    "CreateWorkItemTagRequest": {
-      "$ref": "#/definitions/CreateWorkItemTagRequest"
+    "CreateActivityRequest": {
+      "$ref": "#/definitions/CreateActivityRequest"
     },
-    "UpdateWorkItemTagRequest": {
-      "$ref": "#/definitions/UpdateWorkItemTagRequest"
+    "CreateDemoTwoWorkItemRequest": {
+      "$ref": "#/definitions/CreateDemoTwoWorkItemRequest"
     },
-    "WorkItemTag": {
-      "$ref": "#/definitions/WorkItemTag"
+    "CreateDemoWorkItemRequest": {
+      "$ref": "#/definitions/CreateDemoWorkItemRequest"
     },
-    "CreateWorkItemTypeRequest": {
-      "$ref": "#/definitions/CreateWorkItemTypeRequest"
-    },
-    "UpdateWorkItemTypeRequest": {
-      "$ref": "#/definitions/UpdateWorkItemTypeRequest"
-    },
-    "WorkItemType": {
-      "$ref": "#/definitions/WorkItemType"
+    "CreateProjectBoardRequest": {
+      "$ref": "#/definitions/CreateProjectBoardRequest"
     },
     "CreateTeamRequest": {
       "$ref": "#/definitions/CreateTeamRequest"
     },
-    "UpdateTeamRequest": {
-      "$ref": "#/definitions/UpdateTeamRequest"
+    "CreateWorkItemCommentRequest": {
+      "$ref": "#/definitions/CreateWorkItemCommentRequest"
+    },
+    "CreateWorkItemTagRequest": {
+      "$ref": "#/definitions/CreateWorkItemTagRequest"
+    },
+    "CreateWorkItemTypeRequest": {
+      "$ref": "#/definitions/CreateWorkItemTypeRequest"
+    },
+    "DemoTwoWorkItems": {
+      "$ref": "#/definitions/DemoTwoWorkItems"
+    },
+    "DemoWorkItems": {
+      "$ref": "#/definitions/DemoWorkItems"
+    },
+    "Notification": {
+      "$ref": "#/definitions/Notification"
+    },
+    "PaginationPage": {
+      "$ref": "#/definitions/PaginationPage"
+    },
+    "ProjectBoard": {
+      "$ref": "#/definitions/ProjectBoard"
+    },
+    "SharedWorkItemFields": {
+      "$ref": "#/definitions/SharedWorkItemFields"
     },
     "Team": {
       "$ref": "#/definitions/Team"
+    },
+    "UpdateActivityRequest": {
+      "$ref": "#/definitions/UpdateActivityRequest"
+    },
+    "UpdateTeamRequest": {
+      "$ref": "#/definitions/UpdateTeamRequest"
+    },
+    "UpdateWorkItemCommentRequest": {
+      "$ref": "#/definitions/UpdateWorkItemCommentRequest"
+    },
+    "UpdateWorkItemTagRequest": {
+      "$ref": "#/definitions/UpdateWorkItemTagRequest"
+    },
+    "UpdateWorkItemTypeRequest": {
+      "$ref": "#/definitions/UpdateWorkItemTypeRequest"
+    },
+    "User": {
+      "$ref": "#/definitions/User"
+    },
+    "WorkItemComment": {
+      "$ref": "#/definitions/WorkItemComment"
+    },
+    "WorkItemTag": {
+      "$ref": "#/definitions/WorkItemTag"
+    },
+    "WorkItemType": {
+      "$ref": "#/definitions/WorkItemType"
     },
     "Direction": {
       "$ref": "#/definitions/Direction"
@@ -2105,62 +2496,17 @@
     "DbActivity": {
       "$ref": "#/definitions/DbActivity"
     },
-    "DbKanbanStep": {
-      "$ref": "#/definitions/DbKanbanStep"
-    },
-    "DbProject": {
-      "$ref": "#/definitions/DbProject"
-    },
-    "DbTeam": {
-      "$ref": "#/definitions/DbTeam"
-    },
-    "DbWorkItemTag": {
-      "$ref": "#/definitions/DbWorkItemTag"
-    },
-    "DbWorkItemType": {
-      "$ref": "#/definitions/DbWorkItemType"
-    },
-    "DbDemoWorkItem": {
-      "$ref": "#/definitions/DbDemoWorkItem"
-    },
-    "DbUserAPIKey": {
-      "$ref": "#/definitions/DbUserAPIKey"
-    },
-    "DbUser": {
-      "$ref": "#/definitions/DbUser"
-    },
-    "DbTimeEntry": {
-      "$ref": "#/definitions/DbTimeEntry"
-    },
-    "DbWorkItemComment": {
-      "$ref": "#/definitions/DbWorkItemComment"
-    },
     "ProjectConfig": {
       "$ref": "#/definitions/ProjectConfig"
     },
     "ProjectConfigField": {
       "$ref": "#/definitions/ProjectConfigField"
     },
-    "DemoWorkItems": {
-      "$ref": "#/definitions/DemoWorkItems"
-    },
-    "DemoTwoWorkItems": {
-      "$ref": "#/definitions/DemoTwoWorkItems"
-    },
     "InitializeProjectRequest": {
       "$ref": "#/definitions/InitializeProjectRequest"
     },
-    "ProjectBoard": {
-      "$ref": "#/definitions/ProjectBoard"
-    },
     "PaginatedUsersResponse": {
       "$ref": "#/definitions/PaginatedUsersResponse"
-    },
-    "User": {
-      "$ref": "#/definitions/User"
-    },
-    "RestUser": {
-      "$ref": "#/definitions/RestUser"
     },
     "HTTPValidationError": {
       "$ref": "#/definitions/HTTPValidationError"
@@ -2201,29 +2547,11 @@
     "CreateWorkItemRequest": {
       "$ref": "#/definitions/CreateWorkItemRequest"
     },
-    "DbWorkItem": {
-      "$ref": "#/definitions/DbWorkItem"
-    },
-    "CreateDemoTwoWorkItemRequest": {
-      "$ref": "#/definitions/CreateDemoTwoWorkItemRequest"
-    },
-    "CreateDemoWorkItemRequest": {
-      "$ref": "#/definitions/CreateDemoWorkItemRequest"
-    },
-    "CreateWorkItemCommentRequest": {
-      "$ref": "#/definitions/CreateWorkItemCommentRequest"
-    },
     "Project": {
       "$ref": "#/definitions/Project"
     },
     "DbActivityCreateParams": {
       "$ref": "#/definitions/DbActivityCreateParams"
-    },
-    "DbTeamCreateParams": {
-      "$ref": "#/definitions/DbTeamCreateParams"
-    },
-    "DbWorkItemTagCreateParams": {
-      "$ref": "#/definitions/DbWorkItemTagCreateParams"
     },
     "DbWorkItemRole": {
       "$ref": "#/definitions/DbWorkItemRole"
@@ -2237,29 +2565,11 @@
     "DemoWorkItemTypes": {
       "$ref": "#/definitions/DemoWorkItemTypes"
     },
-    "DbDemoWorkItemCreateParams": {
-      "$ref": "#/definitions/DbDemoWorkItemCreateParams"
-    },
-    "DbWorkItemCreateParams": {
-      "$ref": "#/definitions/DbWorkItemCreateParams"
-    },
-    "ServicesMember": {
-      "$ref": "#/definitions/ServicesMember"
-    },
-    "DbDemoTwoWorkItem": {
-      "$ref": "#/definitions/DbDemoTwoWorkItem"
-    },
-    "DbDemoTwoWorkItemCreateParams": {
-      "$ref": "#/definitions/DbDemoTwoWorkItemCreateParams"
-    },
     "DbWorkItemID": {
       "$ref": "#/definitions/DbWorkItemID"
     },
     "DbProjectID": {
       "$ref": "#/definitions/DbProjectID"
-    },
-    "DbUserID": {
-      "$ref": "#/definitions/DbUserID"
     },
     "DbWorkItemTypeID": {
       "$ref": "#/definitions/DbWorkItemTypeID"
@@ -2267,35 +2577,14 @@
     "DbNotificationID": {
       "$ref": "#/definitions/DbNotificationID"
     },
-    "DbNotification": {
-      "$ref": "#/definitions/DbNotification"
-    },
     "DbUserNotification": {
       "$ref": "#/definitions/DbUserNotification"
-    },
-    "RestPaginationPage": {
-      "$ref": "#/definitions/RestPaginationPage"
-    },
-    "Notification": {
-      "$ref": "#/definitions/Notification"
-    },
-    "RestNotification": {
-      "$ref": "#/definitions/RestNotification"
-    },
-    "DbUserWIAUWorkItem": {
-      "$ref": "#/definitions/DbUserWIAUWorkItem"
     },
     "DemoKanbanSteps": {
       "$ref": "#/definitions/DemoKanbanSteps"
     },
     "DemoTwoKanbanSteps": {
       "$ref": "#/definitions/DemoTwoKanbanSteps"
-    },
-    "UpdateWorkItemCommentRequest": {
-      "$ref": "#/definitions/UpdateWorkItemCommentRequest"
-    },
-    "WorkItemComment": {
-      "$ref": "#/definitions/WorkItemComment"
     }
   }
 }
