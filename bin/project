@@ -2306,8 +2306,10 @@ update_spec_with_structs() {
     if [[ " ${rest_structs[*]} " =~ " ${custom_schema} " ]]; then
       clashes+=("$custom_schema")
     fi
-    # don't bother checking Rest$custom_schema
+    # don't bother checking Rest$custom_schema or any Db*
   done
+
+  echo "clashes: ${clashes[*]}"
 
   # TODO: reenable when migrated
   # if [[ ${#clashes[@]} -gt 0 ]]; then
@@ -2320,18 +2322,18 @@ update_spec_with_structs() {
   local rest_schemas_without_prefix=""
   for rest_struct in ${rest_structs[@]}; do
     rest_schemas_without_prefix+="\"$rest_struct\": {
-      \"x-comment\": \"$rest_struct represents a Rest$rest_struct. Use this schema in place of Rest$rest_struct.\",
-      \"x-is-generated\": true,
       \"\$ref\": \"#/components/schemas/Rest$rest_struct\"
     },"
   done
+
+  # add before including rest schemas without prefix - since we use $ref it cannot have sibling entries
+  yq e '.components.schemas.* |= . + {"x-is-generated": true}' -i "$gen_schema_spec_path"
 
   # swaggest cannot generate 2 schemas for a single struct
   yq eval-all ".components.schemas += {
     ${rest_schemas_without_prefix%,}
   }" -i "$gen_schema_spec_path"
 
-  yq e '.components.schemas.* |= . + {"x-is-generated": true}' -i "$gen_schema_spec_path"
   yq e '(.components.schemas.* | key) line_comment="Generated schema. DO NOT EDIT."' -i $gen_schema_spec_path
 
   # only keep schemas not outputted by gen. User should have been warned on clashes.

@@ -1185,30 +1185,10 @@ components:
           type: string
       type: object
       x-postgen-struct: RestUpdateActivityRequest
-    Activity: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        activityID:
-          type: integer
-        deletedAt:
-          format: date-time
-          nullable: true
-          type: string
-        description:
-          type: string
-        isProductive:
-          type: boolean
-        name:
-          type: string
-        projectID:
-          type: integer
-      required:
-        - activityID
-        - projectID
-        - name
-        - description
-        - isProductive
-      type: object
+    RestActivity:
       x-postgen-struct: RestActivity
+    Activity: # Generated schema. DO NOT EDIT.
+      $ref: '#/components/schemas/RestActivity'
     CreateWorkItemTagRequest: # Generated from internal structs. DO NOT EDIT.
       properties:
         color:
