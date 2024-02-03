@@ -707,7 +707,25 @@ type RestPaginationPage struct {
 }
 
 // RestUser defines the model for RestUser.
-type RestUser = User
+type RestUser struct {
+	ApiKey                   *DbUserAPIKey `json:"apiKey,omitempty"`
+	CreatedAt                time.Time     `json:"createdAt"`
+	DeletedAt                *time.Time    `json:"deletedAt"`
+	Email                    string        `json:"email"`
+	FirstName                *string       `json:"firstName"`
+	FullName                 *string       `json:"fullName"`
+	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`
+	HasPersonalNotifications bool          `json:"hasPersonalNotifications"`
+	LastName                 *string       `json:"lastName"`
+	Projects                 *[]DbProject  `json:"projects"`
+
+	// Role is generated from roles.json keys.
+	Role     Role      `json:"role"`
+	Scopes   Scopes    `json:"scopes"`
+	Teams    *[]DbTeam `json:"teams"`
+	UserID   DbUserID  `json:"userID"`
+	Username string    `json:"username"`
+}
 
 // Role is generated from roles.json keys.
 type Role string
@@ -789,25 +807,7 @@ type UpdateWorkItemTypeRequest struct {
 }
 
 // User defines the model for User.
-type User struct {
-	ApiKey                   *DbUserAPIKey `json:"apiKey,omitempty"`
-	CreatedAt                time.Time     `json:"createdAt"`
-	DeletedAt                *time.Time    `json:"deletedAt"`
-	Email                    string        `json:"email"`
-	FirstName                *string       `json:"firstName"`
-	FullName                 *string       `json:"fullName"`
-	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`
-	HasPersonalNotifications bool          `json:"hasPersonalNotifications"`
-	LastName                 *string       `json:"lastName"`
-	Projects                 *[]DbProject  `json:"projects"`
-
-	// Role is generated from roles.json keys.
-	Role     Role      `json:"role"`
-	Scopes   Scopes    `json:"scopes"`
-	Teams    *[]DbTeam `json:"teams"`
-	UserID   DbUserID  `json:"userID"`
-	Username string    `json:"username"`
-}
+type User = RestUser
 
 // UuidUUID defines the model for UuidUUID.
 type UuidUUID = uuid.UUID

@@ -1874,6 +1874,8 @@ components:
       type: object
       x-postgen-struct: RestPaginatedUsersResponse
     User: # Generated from internal structs. DO NOT EDIT.
+      $ref: '#/components/schemas/RestUser'
+    RestUser: # TODO: generate automatically for all in structs.gen
       properties:
         apiKey:
           $ref: '#/components/schemas/DbUserAPIKey'
@@ -1927,9 +1929,6 @@ components:
         - createdAt
         - role
       type: object
-      x-postgen-struct: RestUser
-    RestUser: # TODO: generate automatically for all in structs.gen
-      $ref: '#/components/schemas/User'
     HTTPValidationError:
       title: HTTPValidationError
       type: object

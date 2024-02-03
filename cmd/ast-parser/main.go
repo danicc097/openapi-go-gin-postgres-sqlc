@@ -246,7 +246,7 @@ func main() {
 					os.Exit(1)
 				}
 				if deleteRedeclared {
-					paths := []string{"internal/rest/openapi_types.gen.go", "internal/rest/openapi_server.gen.go"}
+					paths := []string{"internal/rest/openapi_server.gen.go"} // "internal/rest/openapi_types.gen.go",
 					for _, path := range paths {
 						src, err := os.ReadFile(path)
 						if err != nil {

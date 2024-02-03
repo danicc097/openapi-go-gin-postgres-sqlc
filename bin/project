@@ -2305,6 +2305,22 @@ update_spec_with_structs() {
     >$gen_schema_spec || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
   # replace every schema back into the spec
+  # TODO: much faster: replace .components.schemas in original
+  # with gen-schema's .schemas
+  # and then merge new fields from old into new
+  # https://mikefarah.gitbook.io/yq/operators/multiply-merge#merge-only-new-fields
+  # TODO: gen-schema should set x-is-generated: true
+  # TODO: gen-schema should force generation of schemas without Rest prefix
+  # so that e.g. schema
+  # User:
+  #   x-is-generated: true
+  #   $ref: '#/components/schemas/RestUser'
+  # is always replaced.
+  # There should be a error when a schema without x-is-generated has the same name
+  # as either Rest<...> or <...>, prompting user to rename first.
+  # can extract all schema names with .x-is-generated != true
+  #
+
   for schema in $(yq '.components.schemas[] | key' $gen_schema_spec); do
     schema_name="${schemas[$schema]:-$schema}"
 

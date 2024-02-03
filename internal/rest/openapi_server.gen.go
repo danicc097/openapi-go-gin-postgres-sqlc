@@ -743,7 +743,25 @@ type RestPaginationPage struct {
 }
 
 // RestUser defines the model for RestUser.
-type RestUser = externalRef0.User
+type RestUser struct {
+	ApiKey                   *externalRef0.DbUserAPIKey `json:"apiKey,omitempty"`
+	CreatedAt                time.Time                  `json:"createdAt"`
+	DeletedAt                *time.Time                 `json:"deletedAt"`
+	Email                    string                     `json:"email"`
+	FirstName                *string                    `json:"firstName"`
+	FullName                 *string                    `json:"fullName"`
+	HasGlobalNotifications   bool                       `json:"hasGlobalNotifications"`
+	HasPersonalNotifications bool                       `json:"hasPersonalNotifications"`
+	LastName                 *string                    `json:"lastName"`
+	Projects                 *[]externalRef0.DbProject  `json:"projects"`
+
+	// Role is generated from roles.json keys.
+	Role     externalRef0.Role      `json:"role"`
+	Scopes   externalRef0.Scopes    `json:"scopes"`
+	Teams    *[]externalRef0.DbTeam `json:"teams"`
+	UserID   externalRef0.DbUserID  `json:"userID"`
+	Username string                 `json:"username"`
+}
 
 // Role is generated from roles.json keys.
 type Role string
@@ -838,25 +856,7 @@ type UpdateWorkItemTypeRequest  struct {
 
 /* Ignoring existing rest struct
 // User defines the model for User.
-type User  struct {
-    ApiKey *externalRef0.DbUserAPIKey`json:"apiKey,omitempty"`
-    CreatedAt time.Time`json:"createdAt"`
-    DeletedAt *time.Time`json:"deletedAt"`
-    Email string`json:"email"`
-    FirstName *string`json:"firstName"`
-    FullName *string`json:"fullName"`
-    HasGlobalNotifications bool`json:"hasGlobalNotifications"`
-    HasPersonalNotifications bool`json:"hasPersonalNotifications"`
-    LastName *string`json:"lastName"`
-    Projects *[]externalRef0.DbProject`json:"projects"`
-
-// Role is generated from roles.json keys.
-    Role externalRef0.Role`json:"role"`
-    Scopes externalRef0.Scopes`json:"scopes"`
-    Teams *[]externalRef0.DbTeam`json:"teams"`
-    UserID externalRef0.DbUserID`json:"userID"`
-    Username string`json:"username"`
-}
+type User = externalRef0.RestUser
 */
 
 // UuidUUID defines the model for UuidUUID.
