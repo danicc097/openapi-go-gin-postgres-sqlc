@@ -108,10 +108,19 @@ fi)
         - ${camel_name}
 components:
   schemas:
-    Create${pascal_name}Request:
+    RestCreate${pascal_name}Request:
       x-postgen-struct: RestCreate${pascal_name}Request
-    Update${pascal_name}Request:
+      x-is-generated: true
+    RestUpdate${pascal_name}Request:
       x-postgen-struct: RestUpdate${pascal_name}Request
-    ${pascal_name}:
+      x-is-generated: true
+    Rest${pascal_name}:
       x-postgen-struct: Rest${pascal_name}
+      x-is-generated: true
+    Create${pascal_name}Request:
+      \$ref: '#/components/schemas/RestCreate${pascal_name}Request'
+    Update${pascal_name}Request:
+      \$ref: '#/components/schemas/RestUpdate${pascal_name}Request'
+    ${pascal_name}:
+      \$ref: '#/components/schemas/Rest${pascal_name}'
 EOF
