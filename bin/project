@@ -341,14 +341,13 @@ x.gen.pregen() {
     ' $SPEC_PATH)
     mapfile -t opids < <(yq e ".paths[][].operationId" $SPEC_PATH)
 
-    # construct single yq call
-    local ops=()
+    local ops=""
     for i in ${!opids[@]}; do
       new_opid="$(to_pascal ${opids[$i]})"
-      ops+=(".${opid_paths[$i]}=\"${new_opid}\"") # cant have space
+      ops+=".${opid_paths[$i]}=\"${new_opid}\" |" # cant have space
     done
 
-    yq_op=$(join_by " | " ${ops[*]})
+    yq_op="${ops%"|"}"
 
     spec_content=$(yq e "$yq_op" < <(echo "$spec_content"))
     echo "$spec_content" >$SPEC_PATH
