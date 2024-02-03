@@ -2303,22 +2303,20 @@ update_spec_with_structs() {
     >$gen_schema_spec_path || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
   local clashes=()
-  for custom_schema in $(yq '.components.schemas[] | select(has(.x-is-generated) | not) | key' $SPEC_PATH); do
+  # exclude existing rest_schemas_without_prefix - will override those
+  for custom_schema in $(yq ".components.schemas[] | select((has(.x-is-generated) | not) and (.\$ref == null)) | key" $SPEC_PATH); do
     if [[ " ${rest_structs[*]} " =~ " ${custom_schema} " ]]; then
       clashes+=("$custom_schema")
     fi
     # don't bother checking Rest$custom_schema or any Db*
   done
 
-  echo "clashes: ${clashes[*]}"
-
-  # TODO: reenable when migrated
-  # if [[ ${#clashes[@]} -gt 0 ]]; then
-  #   err "The following non-generated schemas would have been overridden by rest structs. Please rename:
-  #   $(join_by "
-  #   " "${clashes[@]}")
-  #   "
-  # fi
+  if [[ ${#clashes[@]} -gt 0 ]]; then
+    err "The following non-generated schemas would have been overridden by rest structs. Please rename:
+    $(join_by "
+    " "${clashes[@]}")
+    "
+  fi
 
   # workaround for https://github.com/mikefarah/yq/discussions/1934
   # have to delete absolutely all schemas before merging
