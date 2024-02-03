@@ -570,14 +570,6 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - workItemTag
-  # Make sure to include new scopes in scopes.json
-  # recommended schemas for activity:
-  # CreateActivityRequest:
-  #   x-postgen-struct: RestCreateActivityRequest
-  # UpdateActivityRequest:
-  #   x-postgen-struct: RestUpdateActivityRequest
-  # Activity:
-  #   x-postgen-struct: RestActivity
   /project/{projectName}/activity/:
     post:
       summary: create activity.

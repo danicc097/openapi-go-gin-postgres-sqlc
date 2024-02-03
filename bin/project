@@ -2289,11 +2289,11 @@ update_spec_with_structs() {
   # Only implement the above if there are cases where we cant have compilable state when
   # building gen-schema at this step, or the workaround is too tedious
 
-  local gen_schema_spec="/tmp/openapi.yaml"
+  local gen_schema_spec_path="/tmp/openapi.yaml"
   # always compile and run since we need new PublicStructs that were just changed
   codegen gen-schema --struct-names $struct_names_arg | yq '
     with_entries(select(.key == "components"))' \
-    >$gen_schema_spec || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
+    >$gen_schema_spec_path || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
   # replace every schema back into the spec
   # TODO: much faster: replace .components.schemas in original
@@ -2320,27 +2320,30 @@ update_spec_with_structs() {
     fi
   done
 
-  if [[ ${#clashes[@]} -gt 0 ]]; then
-    err "The following non-generated schemas would have been overridden by rest structs. Please rename:
-    $(join_by "
-    " "${clashes[@]}")
-    "
-  fi
+  # if [[ ${#clashes[@]} -gt 0 ]]; then
+  #   err "The following non-generated schemas would have been overridden by rest structs. Please rename:
+  #   $(join_by "
+  #   " "${clashes[@]}")
+  #   "
+  # fi
 
   # TODO: concat objs inside += { to add in single call
   local rest_schemas_without_prefix=""
   for rest_struct in ${rest_structs[@]}; do
     rest_schemas_without_prefix+="\"$rest_struct\": {
-      \"x-is-generated\": \"true\",
-      \"\$ref\": '\''#/components/schemas/Rest$rest_struct'\'',
+      \"x-is-generated\": true,
+      \"\$ref\": \"#/components/schemas/Rest$rest_struct\"
     },"
   done
 
-  yq ".components.schemas += {
-    $rest_schemas_without_prefix
-  }" "$SPEC"
+  # swaggest cannot generate 2 schemas for a single one
+  yq eval-all ".components.schemas += {
+    ${rest_schemas_without_prefix%,}
+  }" -i "$gen_schema_spec_path"
 
-  yq "(
+  yq e '.components.schemas.* |= . + {"x-is-generated": true}' -i "$gen_schema_spec_path"
+
+  yq eval-all "(
         select(fi == 0).components.schemas
         ) as \$schemas
         | (
@@ -2348,7 +2351,7 @@ update_spec_with_structs() {
         ) as \$new_schemas
         | select(fi == 0)
         | .components.schemas = \$new_schemas *n \$schemas
-        " "$SPEC" "$gen_schema_spec" | sponge "$SPEC"
+        " "$SPEC_PATH" "$gen_schema_spec_path" | sponge "$SPEC_PATH"
 }
 
 remove_schemas_marked_to_delete() {

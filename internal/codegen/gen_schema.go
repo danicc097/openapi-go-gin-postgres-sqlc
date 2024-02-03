@@ -169,11 +169,6 @@ func newSpecReflector() *openapi3.Reflector {
 				t = t.Elem()
 			}
 
-			if params.Schema.ExtraProperties == nil {
-				params.Schema.ExtraProperties = make(map[string]any)
-			}
-			params.Schema.ExtraProperties["x-is-generated"] = true
-
 			if strings.HasSuffix(params.Schema.ReflectType.PkgPath(), "internal/models") {
 				if t.Kind() == reflect.Struct {
 					// will generate duplicate models otherwise
