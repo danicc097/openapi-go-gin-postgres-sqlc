@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	zapadapter "github.com/jackc/pgx-zap"
@@ -93,7 +94,7 @@ func New(logger *zap.SugaredLogger, options ...Option) (*pgxpool.Pool, *sql.DB, 
 		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not query database types")
 	}
 
-	atLeastOneConnInPool := false
+	var atLeastOneConnInPool atomic.Bool
 
 	poolConfig.MinConns = 4
 	// NOTE: CI fails using default of 4
@@ -125,7 +126,7 @@ func New(logger *zap.SugaredLogger, options ...Option) (*pgxpool.Pool, *sql.DB, 
 			return internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not register data types")
 		}
 
-		atLeastOneConnInPool = true
+		atLeastOneConnInPool.Store(true)
 
 		return nil
 	}
@@ -144,7 +145,7 @@ func New(logger *zap.SugaredLogger, options ...Option) (*pgxpool.Pool, *sql.DB, 
 		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "sql.Open")
 	}
 
-	for !atLeastOneConnInPool {
+	for !atLeastOneConnInPool.Load() {
 		time.Sleep(50 * time.Millisecond)
 	}
 
