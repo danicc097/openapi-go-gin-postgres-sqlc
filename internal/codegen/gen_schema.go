@@ -204,8 +204,7 @@ func newSpecReflector() *openapi3.Reflector {
 				// x-go* extensions cannot be used for Models(.*) themselves,
 				// but Models(.*) should not be generated at all. a ref tag is needed in structs
 				params.Schema.ExtraProperties = map[string]any{
-					"x-is-generated": true,
-					"x-go-type":      "uuid.UUID",
+					"x-go-type": "uuid.UUID",
 					"x-go-type-import": map[string]any{
 						"name": "uuid",
 						"path": "github.com/google/uuid",

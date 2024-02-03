@@ -2251,7 +2251,7 @@ replace_enum_in_spec() {
   __enums=$__enums yq e "
     $schema_path.type = \"string\" |
     $schema_path.enum = env(__enums) |
-    $schema_path.x-is-generated = \"true\" |
+    $schema_path.x-is-generated = true |
     $schema_path.description = \"is generated from $src_comment.\" |
     ($schema_path | key) line_comment=\"Generated from $src_comment. DO NOT EDIT.\"" -i $SPEC_PATH
 }
@@ -2295,31 +2295,16 @@ update_spec_with_structs() {
     with_entries(select(.key == "components"))' \
     >$gen_schema_spec_path || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
-  # replace every schema back into the spec
-  # TODO: much faster: replace .components.schemas in original
-  # with gen-schema's .schemas
-  # and then merge new fields from old into new
-  # https://mikefarah.gitbook.io/yq/operators/multiply-merge#merge-only-new-fields
-  # TODO: gen-schema should set x-is-generated: true
-  # TODO: should force generation of schemas without Rest prefix
-  # so that e.g. schema
-  # User:
-  #   x-is-generated: true
-  #   $ref: '#/components/schemas/RestUser'
-  # is always replaced.
-  # There should be a error when a schema without x-is-generated has the same name
-  # as either Rest<...> or <...>, prompting user to rename first.
-  # can extract all schema names $n with .x-is-generated != true
-  # and if Rest$n ~= " ${specnames[@]} " or $n ~= ...
-  # append name to multierr array then error out with ``The following non-generated schemas would be overridden:``
   local rest_structs=() clashes=()
   go-utils.find_structs rest_structs "$REST_MODELS"
   for custom_schema in $(yq '.components.schemas[] | select(has(.x-is-generated) | not) | key' $SPEC_PATH); do
     if [[ " ${rest_structs[*]} " =~ " ${custom_schema} " ]]; then
       clashes+=("$custom_schema")
     fi
+    # don't bother checking Rest$custom_schema
   done
 
+  # TODO: reenable when migrated
   # if [[ ${#clashes[@]} -gt 0 ]]; then
   #   err "The following non-generated schemas would have been overridden by rest structs. Please rename:
   #   $(join_by "
@@ -2327,7 +2312,6 @@ update_spec_with_structs() {
   #   "
   # fi
 
-  # TODO: concat objs inside += { to add in single call
   local rest_schemas_without_prefix=""
   for rest_struct in ${rest_structs[@]}; do
     rest_schemas_without_prefix+="\"$rest_struct\": {
@@ -2336,12 +2320,13 @@ update_spec_with_structs() {
     },"
   done
 
-  # swaggest cannot generate 2 schemas for a single one
+  # swaggest cannot generate 2 schemas for a single struct
   yq eval-all ".components.schemas += {
     ${rest_schemas_without_prefix%,}
   }" -i "$gen_schema_spec_path"
 
   yq e '.components.schemas.* |= . + {"x-is-generated": true}' -i "$gen_schema_spec_path"
+  yq e '(.components.schemas.* | key) line_comment="Generated schema. DO NOT EDIT."' -i $gen_schema_spec_path
 
   yq eval-all "(
         select(fi == 0).components.schemas
