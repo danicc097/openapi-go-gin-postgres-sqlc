@@ -237,14 +237,8 @@ func main() {
 					}
 				}
 
-				errs := []error{}
-				for err := range errCh {
-					errs = append(errs, err)
-				}
-				if len(errs) > 0 {
-					fmt.Fprintf(os.Stderr, "%s\n", errors.Join(errs...))
-					os.Exit(1)
-				}
+				verifyNoErrorsOrExit(errCh)
+
 				if deleteRedeclared {
 					paths := []string{"internal/rest/openapi_server.gen.go"} // "internal/rest/openapi_types.gen.go",
 					for _, path := range paths {
@@ -276,13 +270,27 @@ func main() {
 					os.Exit(0)
 				}
 
+				// default to printing search results if any
 				sortedItems := maps.Keys(items)
 				sort.Slice(sortedItems, func(i, j int) bool {
 					return sortedItems[i] < sortedItems[j]
 				})
-				fmt.Println(strings.Join(sortedItems, "\n"))
+				if len(sortedItems) > 0 {
+					fmt.Println(strings.Join(sortedItems, "\n"))
+				}
 			}
 		}
+	}
+}
+
+func verifyNoErrorsOrExit(errCh chan error) {
+	errs := []error{}
+	for err := range errCh {
+		errs = append(errs, err)
+	}
+	if len(errs) > 0 {
+		fmt.Fprintf(os.Stderr, "%s\n", errors.Join(errs...))
+		os.Exit(1)
 	}
 }
 
