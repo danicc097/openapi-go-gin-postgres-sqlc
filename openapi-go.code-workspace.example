@@ -109,7 +109,7 @@
     "pgFormatter.noExtraLine": null,
     "pgFormatter.noGrouping": null,
     "pgFormatter.perlBinPath": null,
-    "pgFormatter.pgFormatterPath": "/usr/bin/pg_format",
+    "pgFormatter.pgFormatterPath": "/usr/local/bin/pg_format",
     "pgFormatter.spaces": null,
     "pgFormatter.tabs": null,
     "pgFormatter.typeCase": null,

@@ -261,8 +261,6 @@ x.bootstrap() {
 # Install miscellaneous tool binaries locally.
 x.install-tools() {
   { { {
-    echo "Installing out of date tools..."
-
     go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 &
     go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.24.0 &
     # for easier test search.
@@ -1239,6 +1237,11 @@ x.test.xo() {
 
     xo_schema -o "$test_dir/got" --debug \
       --schema xo_tests \
+      --ignore "*.created_at" \
+      --ignore "*.updated_at" >/dev/null || err "Failed xo xo_tests schema generation"
+
+    xo_schema -o "$test_dir/got" --debug \
+      --schema xo_tests_cache \
       --ignore "*.created_at" \
       --ignore "*.updated_at" >/dev/null || err "Failed xo xo_tests schema generation"
 
@@ -2422,6 +2425,20 @@ config_template_setup() {
   frontend/nginx/replace-envvars.sh "$envvars"
 }
 
+ensure_tools_up_to_date() {
+  mkdir -p "$CACHE/xfunctions"
+  body="$CACHE/xfunctions/install-tools"
+  declare -f x.install-tools >"$body" # ignores comments
+
+  local first_run=false
+  # when cache has been removed after bad gen, we don't care about tools.
+  ! test -f "$CACHE/install-tools.md5" && first_run=true
+
+  cache_all "$CACHE/install-tools.md5" "$body" || {
+    ! $first_run && x.install-tools
+  }
+}
+
 ######################## ENTRYPOINT ########################
 
 export PROC=$$
@@ -2794,9 +2811,7 @@ shift
 for c in "${COMMANDS[@]}"; do
   declare cmd=$(command -v "x.$c")
   if [[ $c == "$CMD" && -n "$cmd" ]]; then
-    body="$CACHE/xfunctions/install-tools"
-    declare -f x.install-tools >"$body" # ignores comments
-    cache_all "$CACHE/install-tools.md5" "$body" || x.install-tools
+    ensure_tools_up_to_date
 
     "x.$CMD" "$@"
 

@@ -28,6 +28,9 @@ import (
     at the same time
 * IMPORTANT: explain analyze to ensure dynamic sql query plans for joins dont do hash joins
 
+FIXME:
+- cache with type: annot and ignore-constraint should generate pagination.
+- might be broken since FK ref is not in public schema
 */
 
 func TestCursorPagination_Timestamp(t *testing.T) {

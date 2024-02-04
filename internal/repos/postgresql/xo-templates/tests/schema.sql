@@ -164,6 +164,16 @@ create table xo_tests.pag_element (
   , foreign key (dummy) references xo_tests.dummy_join (dummy_join_id) on delete cascade
 );
 
+create schema if not exists xo_tests_cache;
+
+create table if not exists xo_tests_cache.demo_work_items (
+  work_item_id int not null
+  , title text
+  , foreign key (work_item_id) references xo_tests.work_items (work_item_id) on delete cascade
+);
+
+comment on column xo_tests_cache.demo_work_items.work_item_id is '"type":XoTestsWorkItemID && "properties":ignore-constraints';
+
 do $BODY$
 declare
   user_1_id uuid := '8bfb8359-28e0-4039-9259-3c98ada7300d';
