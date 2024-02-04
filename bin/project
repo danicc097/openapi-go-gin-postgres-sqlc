@@ -263,7 +263,7 @@ x.bootstrap() {
 # Install miscellaneous tool binaries locally.
 x.install-tools() {
   { { {
-    echo "Installing tools..."
+    echo "Installing out of date tools..."
 
     go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 &
     go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.24.0 &
@@ -291,6 +291,10 @@ x.install-tools() {
     wait_without_error || err Could not install all tools. Try running 'go clean -cache' and retry. Else install with ' -mod=readonly' flag.
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
+
+body="$CACHE/xfunctions/install-tools"
+declare -f x.install-tools >"$body" # ignores comments
+cache_all "$CACHE/install-tools.md5" "$body" || x.install-tools
 
 # Fetch latest Swagger UI bundle.
 x.setup.swagger-ui() {
