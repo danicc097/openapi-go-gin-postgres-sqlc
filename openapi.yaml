@@ -1663,6 +1663,31 @@ components:
       type: object
       x-postgen-struct: RestCreateActivityRequest
       x-is-generated: true
+    RestCreateDemoTwoWorkItemRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        base:
+          $ref: '#/components/schemas/DbWorkItemCreateParams'
+        demoTwoProject:
+          $ref: '#/components/schemas/DbDemoTwoWorkItemCreateParams'
+        members:
+          items:
+            $ref: '#/components/schemas/ServicesMember'
+          type: array
+        projectName:
+          $ref: '#/components/schemas/Project'
+        tagIDs:
+          items:
+            type: integer
+          type: array
+      required:
+        - projectName
+        - demoTwoProject
+        - base
+        - tagIDs
+        - members
+      type: object
+      x-postgen-struct: RestCreateDemoTwoWorkItemRequest
+      x-is-generated: true
     RestCreateDemoWorkItemRequest: # Generated schema. DO NOT EDIT.
       properties:
         base:

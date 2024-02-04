@@ -356,9 +356,7 @@ x.gen.pregen() {
       fi
     done
 
-    echo new_schemas:${new_schemas[*]}
-
-    yq eval-all ".components.schemas |= {
+    yq eval-all ".components.schemas += {
       ${new_schemas%,}
     }" -i "$SPEC_PATH"
 
