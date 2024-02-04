@@ -271,6 +271,7 @@ x.install-tools() {
     go install github.com/tufin/oasdiff@latest &
     go install golang.org/x/tools/cmd/goimports@latest &
     go install mvdan.cc/gofumpt@latest &
+    go install mvdan.cc/sh/v3/cmd/shfmt@latest &
     go install github.com/danicc097/air@latest &
     go install github.com/danicc097/xo/v5@v5.6.0 &
     go install github.com/mikefarah/yq/v4@v4.34.2 &
@@ -1078,22 +1079,21 @@ x.lint() {
 
 # Format Go files.
 x.lint.go() {
-  { { {
-    files=$(find . \
-      -not -path "**/$PROTO_DIR/*" \
-      -not -path "**/$PG_REPO_GEN/*" \
-      -not -path "**/testdata/*" \
-      -not -path "**/node_modules/*" \
-      -not -path "**/.venv/*" \
-      -not -path "**/*.cache/*" \
-      -not -path "**/vendor/*" \
-      -not -path "**/*.gen.*" \
-      -not -path "**/*.xo.go" \
-      -name "*.go")
-    goimports -w $files || echo "Linting failed"
-    gofumpt -w $files || echo "Linting failed"
-    golangci-lint run --config=.golangci.yml --allow-parallel-runners --fix &>/dev/null || true
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  echo "Linting go"
+  files=$(find . \
+    -not -path "**/$PROTO_DIR/*" \
+    -not -path "**/$PG_REPO_GEN/*" \
+    -not -path "**/testdata/*" \
+    -not -path "**/node_modules/*" \
+    -not -path "**/.venv/*" \
+    -not -path "**/*.cache/*" \
+    -not -path "**/vendor/*" \
+    -not -path "**/*.gen.*" \
+    -not -path "**/*.xo.go" \
+    -name "*.go")
+  goimports -w $files || echo "Linting failed"
+  gofumpt -w $files || echo "Linting failed"
+  golangci-lint run --config=.golangci.yml --allow-parallel-runners --fix &>/dev/null || true
 }
 
 exhaustruct_lint() {
@@ -1152,28 +1152,29 @@ EOF
 
 # Format frontend files.
 x.lint.frontend() {
-  { { {
-    cd frontend
-    pnpm run lint:fix
-    echo "Success"
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  echo "Linting frontend"
+  cd frontend
+  pnpm run lint:fix
+  echo "Success"
+}
+
+# Format shell files.
+x.lint.shell() {
+  :
 }
 
 # Format SQL files.
 x.lint.sql() {
-  { { {
-    SQL_DIRS=(
-      "$REPOS_DIR"
-      "db"
-    )
-    for slq_dir in ${SQL_DIRS[@]}; do
-      # TODO:
-      # "pgFormatter.configFile": "./<...>", so we can use it in vscode settings too
-      pg_format --config .pg_format $(find "$slq_dir" -name '*.*sql')
-    done
-
-    echo "Success"
-  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  echo "Linting SQL"
+  SQL_DIRS=(
+    "$REPOS_DIR"
+    "db"
+  )
+  for slq_dir in ${SQL_DIRS[@]}; do
+    # TODO:
+    # "pgFormatter.configFile": "./<...>", so we can use it in vscode settings too
+    pg_format --config .pg_format $(find "$slq_dir" -name '*.*sql')
+  done
 }
 
 # Run required backend pre-test setup: services, database cleanup, codegen...
