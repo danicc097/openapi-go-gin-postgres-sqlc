@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC1091,SC2155,SC2086
 
 TOP_LEVEL_DIR="$(git rev-parse --show-toplevel)"

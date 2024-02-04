@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # shellcheck disable=SC2028,SC2154
 delete_method=$(test -n "$has_deleted_at" && echo "SoftDelete" || echo "Delete")

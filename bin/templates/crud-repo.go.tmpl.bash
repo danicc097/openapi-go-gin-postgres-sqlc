@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 delete_method=$(test -n "$has_deleted_at" && echo "SoftDelete" || echo "Delete")
 

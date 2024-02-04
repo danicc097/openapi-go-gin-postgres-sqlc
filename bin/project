@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=1091,2155,2068,2086,2031,2048,2178,2120
 #
 #
@@ -196,8 +196,6 @@ xsetup.drop-and-migrate-gen-db() {
 
 # Check build dependencies are met and prompt to install if missing.
 x.check-build-deps() {
-  # TODO: should check go installs in gobin are the version we expect when running x.gen
-  # via x.install-tools.check
   { { {
     mkdir -p $TOOLS_DIR
 
@@ -291,10 +289,6 @@ x.install-tools() {
     wait_without_error || err Could not install all tools. Try running 'go clean -cache' and retry. Else install with ' -mod=readonly' flag.
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
-
-body="$CACHE/xfunctions/install-tools"
-declare -f x.install-tools >"$body" # ignores comments
-cache_all "$CACHE/install-tools.md5" "$body" || x.install-tools
 
 # Fetch latest Swagger UI bundle.
 x.setup.swagger-ui() {
@@ -2791,20 +2785,24 @@ pids=""
 
 ################ handle executing x functions ################
 
-if [[ -n "$1" ]]; then
-  shift
-  for c in "${COMMANDS[@]}"; do
-    declare cmd=$(command -v "x.$c")
-    if [[ $c == "$CMD" && -n "$cmd" ]]; then
-      "x.$CMD" "$@"
-
-      if [[ -n $X_IGNORE_BUILD_ERRORS ]]; then
-        echo "${YELLOW}[WARNING] A rerun without ignoring build errors is required"
-      fi
-      exit $? # do not quote
-    fi
-  done
+if [[ -z "$1" ]]; then
+  # default to show usage if its a noop
+  usage
 fi
 
-# default to show usage if its a noop
-usage
+shift
+for c in "${COMMANDS[@]}"; do
+  declare cmd=$(command -v "x.$c")
+  if [[ $c == "$CMD" && -n "$cmd" ]]; then
+    body="$CACHE/xfunctions/install-tools"
+    declare -f x.install-tools >"$body" # ignores comments
+    cache_all "$CACHE/install-tools.md5" "$body" || x.install-tools
+
+    "x.$CMD" "$@"
+
+    if [[ -n $X_IGNORE_BUILD_ERRORS ]]; then
+      echo "${YELLOW}[WARNING] A rerun without ignoring build errors is required"
+    fi
+    exit $? # do not quote
+  fi
+done
