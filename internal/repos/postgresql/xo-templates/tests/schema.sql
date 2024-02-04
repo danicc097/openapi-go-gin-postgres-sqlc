@@ -7,6 +7,8 @@ create extension if not exists pg_trgm schema extensions;
 create extension if not exists btree_gin schema extensions;
 
 -- ensure up to date
+-- NOTE: do not refactor to use public schema. Easier test setup and we make sure
+-- xo gen works properly outside public.
 drop schema if exists xo_tests cascade;
 
 create schema if not exists xo_tests;
