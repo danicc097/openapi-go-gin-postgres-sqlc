@@ -167,7 +167,7 @@ create table xo_tests.pag_element (
 create schema if not exists xo_tests_cache;
 
 create table if not exists xo_tests_cache.demo_work_items (
-  work_item_id int not null
+  work_item_id int not null unique
   , title text
   , foreign key (work_item_id) references xo_tests.work_items (work_item_id) on delete cascade
 );
