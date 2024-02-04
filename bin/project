@@ -336,10 +336,16 @@ x.gen.pregen() {
     mapfile -t refs < <(sed -nr "s/[^#]?.*\\$ref: '#\/components\/schemas\/(.*)'/\1/p" $SPEC_PATH | sort | uniq)
     for ref in "${refs[@]}"; do
       if [[ -n "${rest_schema_lookup["$ref"]}" && -z "${spec_schema_lookup["$ref"]}" ]]; then
-        echo "${YELLOW}Rest package \$ref $ref does not exist. Generating...${OFF}"
         missing_rest_models+=("$ref")
       fi
     done
+
+    if [[ ${#missing_rest_models[@]} -gt 0 ]]; then
+      echo "${YELLOW}Generating missing rest package \$ref's:
+$(join_by "
+" "${missing_rest_models[@]}")
+${OFF}"
+    fi
 
     local new_schemas=""
     for ref in "${missing_rest_models[@]}"; do
@@ -363,19 +369,9 @@ x.gen.pregen() {
       fi
     done
 
-    echo "new_schemas:${new_schemas[*]}"
-
     yq eval-all ".components.schemas += {
       ${new_schemas%,}
     }" -i "$SPEC_PATH"
-
-    # echo "refs:${refs[*]}"
-    # echo "
-    # ${OFF}${GREEN}rest_schema_lookup:"
-    # for x in "${!rest_schema_lookup[@]}"; do printf "[%s]=%s\n" "$x" "${rest_schema_lookup[$x]}"; done
-    # echo "
-    # ${OFF}${YELLOW}spec_schema_lookup:"
-    # for x in "${!spec_schema_lookup[@]}"; do printf "[%s]=%s\n" "$x" "${spec_schema_lookup[$x]}"; done
 
     codegen validate-spec -env=".env.$X_ENV"
     ast-parser verify-no-import --imports "$GOMOD_PKG/internal/models" "$REST_MODELS" || err Please use generated rest package OpenAPI types instead.
