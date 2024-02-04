@@ -2443,7 +2443,7 @@ ensure_tools_up_to_date() {
 
   cache_all "$CACHE/install-tools.md5" "$body" >/dev/null || {
     ! $first_run && x.install-tools
-  }
+  } || true
 }
 
 ######################## ENTRYPOINT ########################
