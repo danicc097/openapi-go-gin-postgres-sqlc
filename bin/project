@@ -41,8 +41,9 @@ readonly XO_TESTS_PKG="$GOMOD_PKG/internal/repos/postgresql/xo-templates/tests"
 readonly OPID_AUTH_PATH="operationAuth.gen.json"
 readonly REST_MODELS="internal/rest/models.go"
 readonly PG_REPO_GEN="$PG_REPO_DIR/gen"
-readonly CACHE=".generate.cache"
-readonly CACHE_BACKUP="$CACHE-backup"
+readonly RUN_CACHE=".run.cache"
+readonly GEN_CACHE=".generate.cache"
+readonly GEN_CACHE_BACKUP="$GEN_CACHE-backup"
 readonly SWAGGER_UI_DIR="internal/static/swagger-ui"
 readonly FRONTEND_GEN="frontend/src/gen"
 readonly MAX_FNAME_LOG_LEN=13
@@ -131,12 +132,12 @@ backup_branch="backup-gen-$(uuidgen)"
 # TODO: when running gen and then stashing changes, or switching branches,
 # cache should be removed.
 gen-cache.backup() {
-  cp -r "$CACHE" "$CACHE_BACKUP" || true
+  cp -r "$GEN_CACHE" "$GEN_CACHE_BACKUP" || true
 }
 
 gen-cache.restore() {
-  rm -rf "$CACHE"
-  mv "$CACHE_BACKUP" "$CACHE" || true
+  rm -rf "$GEN_CACHE"
+  mv "$GEN_CACHE_BACKUP" "$GEN_CACHE" || true
 }
 
 # Create a backup stash with current changes.
@@ -146,7 +147,7 @@ xsetup.backup() {
 
   xsetup_backup_gen_caller="${FUNCNAME[1]}"
 
-  mkdir -p "$CACHE"
+  mkdir -p "$GEN_CACHE"
 
   backup_stash_name="backup-stash-$backup_branch"
 
@@ -176,7 +177,7 @@ Restoring previous changes (branch $backup_branch)..."
   # if not removing the whole cache folder we get `already exists, no checkout` upon stash apply since we have just reset gitignore
   # IMPORTANT: we do want to delete regardless since we are restoring the cache folder on stash apply so we
   # don't need complex cache invalidation based on what's been run
-  rm -rf "$CACHE"
+  rm -rf "$GEN_CACHE"
   git stash apply "stash^{/$backup_stash_name}" &>/dev/null
 }
 
@@ -331,17 +332,42 @@ x.gen.pregen() {
       spec_schema_lookup["$schema"]=1
     done
 
+    local missing_rest_models=()
     mapfile -t refs < <(sed -nr "s/[^#]?.*\\$ref: '#\/components\/schemas\/(.*)'/\1/p" $SPEC_PATH | sort | uniq)
     for ref in "${refs[@]}"; do
       if [[ -n "${rest_schema_lookup["$ref"]}" && -z "${spec_schema_lookup["$ref"]}" ]]; then
         echo "${YELLOW}Rest package \$ref $ref does not exist. Generating...${OFF}"
-        # TODO: as per 'update_spec_with_structs'
+        missing_rest_models+=("$ref")
       fi
     done
+
+    local new_schemas=""
+    # FIXME: missing Rest* not in missing_rest_models
+    for ref in "${missing_rest_models[@]}"; do
+      if [[ "$ref" =~ ^Rest* ]]; then
+        new_schemas+="\"$ref\": {
+        \"x-postgen-struct\": \"$ref\",
+        \"x-is-generated\": true
+      },"
+      else
+        new_schemas+="\"$ref\": {
+        \"\$ref\": \"#/components/schemas/Rest$ref\"
+      },"
+      fi
+    done
+
+    echo new_schemas:${new_schemas[*]}
+
+    yq eval-all ".components.schemas |= {
+      ${new_schemas%,}
+    }" -i "$SPEC_PATH"
+
     # echo "refs:${refs[*]}"
-    # echo "rest_schema_lookup:"
+    # echo "
+    # ${OFF}${GREEN}rest_schema_lookup:"
     # for x in "${!rest_schema_lookup[@]}"; do printf "[%s]=%s\n" "$x" "${rest_schema_lookup[$x]}"; done
-    # echo "spec_schema_lookup:"
+    # echo "
+    # ${OFF}${YELLOW}spec_schema_lookup:"
     # for x in "${!spec_schema_lookup[@]}"; do printf "[%s]=%s\n" "$x" "${spec_schema_lookup[$x]}"; done
 
     codegen validate-spec -env=".env.$X_ENV"
@@ -458,7 +484,7 @@ update_roles_and_scopes() {
 }
 
 sync_spec_with_db() {
-  cache_all "$CACHE/db.md5" bin/project bin/.helpers.sh .env.$X_ENV db/ $SPEC_PATH && return 0
+  cache_all "$GEN_CACHE/db.md5" bin/project bin/.helpers.sh .env.$X_ENV db/ $SPEC_PATH && return 0
 
   sync_db_enums_with_spec
 
@@ -668,7 +694,7 @@ x.gen.xo() {
   xsetup.backup
   xsetup.drop-and-migrate-gen-db
   { { {
-    cache_all "$CACHE/xo.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/ \
+    cache_all "$GEN_CACHE/xo.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/ \
       --exclude "$XO_TEMPLATES_DIR/tests/*" && return 0
 
     echo "Running generation"
@@ -739,7 +765,7 @@ x.gen.gowrap() {
 
     echo "Running generation"
 
-    local cache="$CACHE/gowrap"
+    local cache="$GEN_CACHE/gowrap"
     local suffixes=(
       "retry-repo:with_retry"
       "timeout:with_timeout"
@@ -846,7 +872,7 @@ x.gen.counterfeiter() {
       ["MovieGenreServer-$tfidfpb"]="$tfidfpb_dir/v1testing/movie_genre_server.gen.go"
     )
 
-    local cache="$CACHE/counterfeiter"
+    local cache="$GEN_CACHE/counterfeiter"
     local updated_ifaces=()
 
     mkdir -p "$cache"
@@ -856,7 +882,7 @@ x.gen.counterfeiter() {
       iface="${key%%-*}"
       iface_content="$(go-utils.get_interface_methods $iface $input_path)"
 
-      cache_entry_dir="$cache/$(echo $input_path | base64)" # so we can rm -rf $CACHE/*/$interface only when invalidating on failed gen
+      cache_entry_dir="$cache/$(echo $input_path | base64)" # so we can rm -rf $GEN_CACHE/*/$interface only when invalidating on failed gen
       mkdir -p "$cache_entry_dir"
       if diff "$cache_entry_dir/$iface" <(echo "$iface_content") &>/dev/null; then
         [[ $X_FORCE_REGEN -eq 0 ]] && continue
@@ -917,7 +943,7 @@ x.gen.frontend() {
       "frontend/package.json"
     )
 
-    cache_all "$CACHE/frontend.md5" bin/project bin/.helpers.sh .env.$X_ENV $SPEC_PATH ${deps[@]} && return 0
+    cache_all "$GEN_CACHE/frontend.md5" bin/project bin/.helpers.sh .env.$X_ENV $SPEC_PATH ${deps[@]} && return 0
 
     config_template_setup frontend # no need to run if cached .env
 
@@ -963,7 +989,7 @@ x.gen.e2e() {
 
     orval_config="e2e/orval.config.ts"
 
-    cache_all "$CACHE/e2e.md5" bin/project bin/.helpers.sh .env.$X_ENV $SPEC_PATH $orval_config e2e/package.json && return 0
+    cache_all "$GEN_CACHE/e2e.md5" bin/project bin/.helpers.sh .env.$X_ENV $SPEC_PATH $orval_config e2e/package.json && return 0
 
     config_template_setup e2e # no need to run if cached .env
 
@@ -1176,7 +1202,7 @@ x.test.backend() {
 
     local cache_opt="-count=1"
     # we must only invalidate cache if database schema changes
-    cache_all "$CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
+    cache_all "$GEN_CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
 
     set -x
     go_test -tags 'skip_xo' $cache_opt "$@" ./...
@@ -1214,7 +1240,7 @@ x.test.xo() {
     POSTGRES_DB="xo_tests_db"
     GEN_POSTGRES_DB="xo_tests_db"
 
-    cache_all "$CACHE/test-xo.md5" bin/project bin/.helpers.sh $XO_TEMPLATES_DIR/ \
+    cache_all "$GEN_CACHE/test-xo.md5" bin/project bin/.helpers.sh $XO_TEMPLATES_DIR/ \
       --exclude "$XO_TEMPLATES_DIR/tests/got/*" \
       --exclude "$XO_TEMPLATES_DIR/tests/snapshot/*" && return 0
 
@@ -1333,7 +1359,7 @@ x.run.backend-hr() {
     --build.bin "go run ./cmd/rest-server/ -env=.env.$X_ENV" \
     --build.include_ext "go" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,external,*.cache,$CACHE,$TOOLS_DIR" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,external,*.cache,$GEN_CACHE,$TOOLS_DIR" \
     --build.stop_watch "internal/rest/,internal/services/" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
@@ -2433,17 +2459,11 @@ config_template_setup() {
 }
 
 ensure_tools_up_to_date() {
-  mkdir -p "$CACHE/xfunctions"
-  body="$CACHE/xfunctions/install-tools"
+  mkdir -p "$RUN_CACHE/xfunctions"
+  body="$RUN_CACHE/xfunctions/install-tools"
   declare -f x.install-tools >"$body" # ignores comments
 
-  local first_run=false
-  # when cache has been removed after bad gen, we don't care about tools.
-  ! test -f "$CACHE/install-tools.md5" && first_run=true
-
-  cache_all "$CACHE/install-tools.md5" "$body" >/dev/null || {
-    ! $first_run && x.install-tools
-  } || true
+  cache_all "$RUN_CACHE/install-tools.md5" "$body" >/dev/null || x.install-tools || true
 }
 
 ######################## ENTRYPOINT ########################
@@ -2674,7 +2694,7 @@ while [[ "$#" -gt 0 ]]; do
     # Use in case of compilation errors that depend on generated code.
     # A clean gen run is required afterwards.
     export X_IGNORE_BUILD_ERRORS=1
-    # export X_NO_BACKUP=1 # on failed gen $CACHE is cleared, shouldn't be necessary
+    # export X_NO_BACKUP=1 # on failed gen $GEN_CACHE is cleared, shouldn't be necessary
     ;;
   --x-force-regen)
     # Removes code generation cache, forcing a new run.
