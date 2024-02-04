@@ -1934,7 +1934,7 @@ x.db.recreate() {
 
 # Drop and recreate the database in the current environment.
 x.db.drop() {
-  [[ $x_env = "prod" && "$POSTGRES_DB" != "$GEN_POSTGRES_DB" ]] && with_tty confirm "This will drop production database data. Continue?"
+  [[ $X_ENV = "prod" && "$POSTGRES_DB" != "$GEN_POSTGRES_DB" ]] && with_tty confirm "This will drop production database data. Continue?"
   { { {
     docker.postgres.drop_and_recreate_db "$POSTGRES_DB"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
@@ -1976,7 +1976,7 @@ x.db.initial-data() {
     x.db.drop
     x.migrate up
     echo "Loading initial data to $POSTGRES_DB"
-    # docker.postgres.psql -d $POSTGRES_DB <"./db/initial_data_$x_env.pgsql"
+    # docker.postgres.psql -d $POSTGRES_DB <"./db/initial_data_$X_ENV.pgsql"
     go run cmd/initial-data/main.go -env .env.$X_ENV
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1985,19 +1985,19 @@ x.db.initial-data() {
 x.db.dump() {
   { { {
     local dump_prefix="dump_${X_ENV}_"
-    running_dumps=$(docker.postgres.psql -P pager=off -U postgres -d "postgres_$x_env" \
+    running_dumps=$(docker.postgres.psql -P pager=off -U postgres -d "postgres_$X_ENV" \
       -c "SELECT pid FROM pg_stat_activity WHERE application_name = 'pg_dump';")
     if [[ "$running_dumps" != "" ]]; then
       err "pg_dump is already running, aborting new dump"
     fi
 
     mkdir -p "$DUMPS_DIR"
-    schema_v=$(docker.postgres.psql -P pager=off -U postgres -d "postgres_$x_env" \
+    schema_v=$(docker.postgres.psql -P pager=off -U postgres -d "postgres_$X_ENV" \
       -c "SELECT version FROM $MIGRATIONS_TABLE;")
     dump_file="${dump_prefix}$(date +%Y-%m-%dT%H-%M-%S)_version${schema_v}.gz"
 
     echo "Dumping database to $dump_file"
-    docker.postgres pg_dump -U postgres -d "postgres_$x_env" |
+    docker.postgres pg_dump -U postgres -d "postgres_$X_ENV" |
       gzip >"$DUMPS_DIR/$dump_file"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -2021,12 +2021,12 @@ x.db.restore() {
     dump_file="$latest_dump_file"
   fi
 
-  confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$x_env${OFF} environment?"
+  confirm "Do you want to restore ${YELLOW}$dump_file${OFF} in the ${RED}$X_ENV${OFF} environment?"
 
   x.db.drop
-  gunzip -c "$dump_file" | docker.postgres.psql -U postgres -d "postgres_$x_env"
+  gunzip -c "$dump_file" | docker.postgres.psql -U postgres -d "postgres_$X_ENV"
   # sanity check, but probably better to do it before restoring...
-  dump_schema_v=$(docker.postgres.psql -P pager=off -U postgres -d "postgres_$x_env" -c "SELECT version FROM $MIGRATIONS_TABLE;")
+  dump_schema_v=$(docker.postgres.psql -P pager=off -U postgres -d "postgres_$X_ENV" -c "SELECT version FROM $MIGRATIONS_TABLE;")
   file_schema_v=$(echo "$dump_file" | sed -E 's/.*_version([0-9]+)\..*/\1/')
   echo "Migration revision: $dump_schema_v"
   if [[ "$dump_schema_v" != "$file_schema_v" ]]; then
@@ -2101,7 +2101,7 @@ run_shared_services() {
   docker network create traefik-net 2>/dev/null || true
 
   local extra_services
-  if [[ $x_env != "prod" ]]; then
+  if [[ $X_ENV != "prod" ]]; then
     extra_services="-f docker-compose.oidc.yml"
   fi
   cd docker
@@ -2443,6 +2443,9 @@ set -o errtrace
 
 X_ENV="dev"
 test -n "$CI" && X_ENV="ci"
+# prod detection not necessary, calls without --x-env=prod will no affect prod data
+# unless .env.dev is filled and reuse db/credentials which is far-fetched.
+
 # --------------------- completion and delegation --------------------
 #      `complete -o nospace -C foo foo` > `source <(foo bloated_completion)`
 
