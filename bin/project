@@ -349,10 +349,16 @@ x.gen.pregen() {
         \"x-is-generated\": true
       },"
       else
-        # FIXME: if both are missing, it only generates this one, therefore
-        # here we must check if  " ${refs[*]} " =~ Rest$ref "
+        rest_ref="Rest$ref"
+        # handle both missing. do it here only since we should not use Rest* in refs in the first place.
+        if ! [[ " ${refs[*]} " =~ " $rest_ref " ]]; then
+          new_schemas+="\"$rest_ref\": {
+            \"x-postgen-struct\": \"$rest_ref\",
+            \"x-is-generated\": true
+          },"
+        fi
         new_schemas+="\"$ref\": {
-        \"\$ref\": \"#/components/schemas/Rest$ref\"
+        \"\$ref\": \"#/components/schemas/$rest_ref\"
       },"
       fi
     done
