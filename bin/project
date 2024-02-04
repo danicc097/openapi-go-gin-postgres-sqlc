@@ -1884,6 +1884,11 @@ x.migrate.create() {
 
 ########################## db ##########################
 
+# Connects to the database container.
+x.db() {
+  docker exec -it postgres_db_"$PROJECT_PREFIX" bash
+}
+
 # psql session for the current environment.
 x.db.psql() {
   x.db.psql-with-db $POSTGRES_DB
@@ -2436,7 +2441,7 @@ ensure_tools_up_to_date() {
   # when cache has been removed after bad gen, we don't care about tools.
   ! test -f "$CACHE/install-tools.md5" && first_run=true
 
-  cache_all "$CACHE/install-tools.md5" "$body" || {
+  cache_all "$CACHE/install-tools.md5" "$body" >/dev/null || {
     ! $first_run && x.install-tools
   }
 }
