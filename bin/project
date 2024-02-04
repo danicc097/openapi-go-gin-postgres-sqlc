@@ -1211,14 +1211,14 @@ x.test.frontend.watch() {
 x.test.xo() {
   xsetup.backup
   { { {
-    POSTGRES_DB="$POSTGRES_TEST_DB"
-    GEN_POSTGRES_DB="$POSTGRES_TEST_DB"
+    POSTGRES_DB="xo_tests_db"
+    GEN_POSTGRES_DB="xo_tests_db"
 
     cache_all "$CACHE/test-xo.md5" bin/project bin/.helpers.sh $XO_TEMPLATES_DIR/ \
       --exclude "$XO_TEMPLATES_DIR/tests/got/*" \
       --exclude "$XO_TEMPLATES_DIR/tests/snapshot/*" && return 0
 
-    docker.postgres.drop_and_recreate_db $POSTGRES_DB # FIXME wrong xo gen when tables with equal names in public schema exist as well
+    docker.postgres.drop_and_recreate_db $POSTGRES_DB
 
     echo "Running xo template tests"
 
