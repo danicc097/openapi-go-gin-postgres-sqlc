@@ -1073,6 +1073,7 @@ x.lint() {
     x.lint.sql &
     x.lint.go &
     x.lint.frontend &
+    x.lint.shell &
     wait # wait_without_error -  don't care about errors yet
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1160,7 +1161,7 @@ x.lint.frontend() {
 
 # Format shell files.
 x.lint.shell() {
-  :
+  shfmt -l -i 2 -w bin/*
 }
 
 # Format SQL files.
