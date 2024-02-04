@@ -45,13 +45,17 @@ runs:
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
 
+    - name: Update
+      shell: bash
+      run: |
+        sudo apt-get update
+
     - name: Install dependencies
       shell: bash
       run: |
         source .envrc
 
-        sudo apt-get update
-
+        echo Bootstrapping...
         { yes || :; } | project bootstrap
 
         # project e2e.sync-deps # won't use python playwright
