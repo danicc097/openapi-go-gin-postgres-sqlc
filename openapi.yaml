@@ -1161,6 +1161,170 @@ components:
       style: simple
     UUID: *x-uuidParameter
   schemas:
+    Activity: # Generated schema. DO NOT EDIT.
+      properties:
+        activityID:
+          type: integer
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        description:
+          type: string
+        isProductive:
+          type: boolean
+        name:
+          type: string
+        projectID:
+          type: integer
+      required:
+        - activityID
+        - projectID
+        - name
+        - description
+        - isProductive
+      type: object
+      x-postgen-struct: Activity
+      x-is-generated: true
+    CreateActivityRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        description:
+          type: string
+        isProductive:
+          type: boolean
+        name:
+          type: string
+      required:
+        - description
+        - isProductive
+        - name
+      type: object
+      x-postgen-struct: CreateActivityRequest
+      x-is-generated: true
+    CreateDemoTwoWorkItemRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        base:
+          $ref: '#/components/schemas/DbWorkItemCreateParams'
+        demoTwoProject:
+          $ref: '#/components/schemas/DbDemoTwoWorkItemCreateParams'
+        members:
+          items:
+            $ref: '#/components/schemas/ServicesMember'
+          type: array
+        projectName:
+          $ref: '#/components/schemas/Project'
+        tagIDs:
+          items:
+            type: integer
+          type: array
+      required:
+        - projectName
+        - demoTwoProject
+        - base
+        - tagIDs
+        - members
+      type: object
+      x-postgen-struct: CreateDemoTwoWorkItemRequest
+      x-is-generated: true
+    CreateDemoWorkItemRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        base:
+          $ref: '#/components/schemas/DbWorkItemCreateParams'
+        demoProject:
+          $ref: '#/components/schemas/DbDemoWorkItemCreateParams'
+        members:
+          items:
+            $ref: '#/components/schemas/ServicesMember'
+          type: array
+        projectName:
+          $ref: '#/components/schemas/Project'
+        tagIDs:
+          items:
+            type: integer
+          type: array
+      required:
+        - projectName
+        - demoProject
+        - base
+        - tagIDs
+        - members
+      type: object
+      x-postgen-struct: CreateDemoWorkItemRequest
+      x-is-generated: true
+    CreateProjectBoardRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        tags:
+          items:
+            $ref: '#/components/schemas/DbWorkItemTagCreateParams'
+          nullable: true
+          type: array
+        teams:
+          items:
+            $ref: '#/components/schemas/DbTeamCreateParams'
+          nullable: true
+          type: array
+      type: object
+      x-postgen-struct: CreateProjectBoardRequest
+      x-is-generated: true
+    CreateTeamRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        description:
+          type: string
+        name:
+          type: string
+      required:
+        - description
+        - name
+      type: object
+      x-postgen-struct: CreateTeamRequest
+      x-is-generated: true
+    CreateWorkItemCommentRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        message:
+          type: string
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        workItemID:
+          type: integer
+      required:
+        - message
+        - userID
+        - workItemID
+      type: object
+      x-postgen-struct: CreateWorkItemCommentRequest
+      x-is-generated: true
+    CreateWorkItemTagRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+      required:
+        - color
+        - description
+        - name
+      type: object
+      x-postgen-struct: CreateWorkItemTagRequest
+      x-is-generated: true
+    CreateWorkItemTypeRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+      required:
+        - color
+        - description
+        - name
+      type: object
+      x-postgen-struct: CreateWorkItemTypeRequest
+      x-is-generated: true
     DbDemoTwoWorkItem: # Generated schema. DO NOT EDIT.
       properties:
         customDateForProject2:
@@ -1623,171 +1787,7 @@ components:
       type: object
       x-postgen-struct: DbWorkItemType
       x-is-generated: true
-    RestActivity: # Generated schema. DO NOT EDIT.
-      properties:
-        activityID:
-          type: integer
-        deletedAt:
-          format: date-time
-          nullable: true
-          type: string
-        description:
-          type: string
-        isProductive:
-          type: boolean
-        name:
-          type: string
-        projectID:
-          type: integer
-      required:
-        - activityID
-        - projectID
-        - name
-        - description
-        - isProductive
-      type: object
-      x-postgen-struct: RestActivity
-      x-is-generated: true
-    RestCreateActivityRequest: # Generated schema. DO NOT EDIT.
-      properties:
-        description:
-          type: string
-        isProductive:
-          type: boolean
-        name:
-          type: string
-      required:
-        - description
-        - isProductive
-        - name
-      type: object
-      x-postgen-struct: RestCreateActivityRequest
-      x-is-generated: true
-    RestCreateDemoTwoWorkItemRequest: # Generated schema. DO NOT EDIT.
-      properties:
-        base:
-          $ref: '#/components/schemas/DbWorkItemCreateParams'
-        demoTwoProject:
-          $ref: '#/components/schemas/DbDemoTwoWorkItemCreateParams'
-        members:
-          items:
-            $ref: '#/components/schemas/ServicesMember'
-          type: array
-        projectName:
-          $ref: '#/components/schemas/Project'
-        tagIDs:
-          items:
-            type: integer
-          type: array
-      required:
-        - projectName
-        - demoTwoProject
-        - base
-        - tagIDs
-        - members
-      type: object
-      x-postgen-struct: RestCreateDemoTwoWorkItemRequest
-      x-is-generated: true
-    RestCreateDemoWorkItemRequest: # Generated schema. DO NOT EDIT.
-      properties:
-        base:
-          $ref: '#/components/schemas/DbWorkItemCreateParams'
-        demoProject:
-          $ref: '#/components/schemas/DbDemoWorkItemCreateParams'
-        members:
-          items:
-            $ref: '#/components/schemas/ServicesMember'
-          type: array
-        projectName:
-          $ref: '#/components/schemas/Project'
-        tagIDs:
-          items:
-            type: integer
-          type: array
-      required:
-        - projectName
-        - demoProject
-        - base
-        - tagIDs
-        - members
-      type: object
-      x-postgen-struct: RestCreateDemoWorkItemRequest
-      x-is-generated: true
-    RestCreateProjectBoardRequest: # Generated schema. DO NOT EDIT.
-      properties:
-        tags:
-          items:
-            $ref: '#/components/schemas/DbWorkItemTagCreateParams'
-          nullable: true
-          type: array
-        teams:
-          items:
-            $ref: '#/components/schemas/DbTeamCreateParams'
-          nullable: true
-          type: array
-      type: object
-      x-postgen-struct: RestCreateProjectBoardRequest
-      x-is-generated: true
-    RestCreateTeamRequest: # Generated schema. DO NOT EDIT.
-      properties:
-        description:
-          type: string
-        name:
-          type: string
-      required:
-        - description
-        - name
-      type: object
-      x-postgen-struct: RestCreateTeamRequest
-      x-is-generated: true
-    RestCreateWorkItemCommentRequest: # Generated schema. DO NOT EDIT.
-      properties:
-        message:
-          type: string
-        userID:
-          $ref: '#/components/schemas/DbUserID'
-        workItemID:
-          type: integer
-      required:
-        - message
-        - userID
-        - workItemID
-      type: object
-      x-postgen-struct: RestCreateWorkItemCommentRequest
-      x-is-generated: true
-    RestCreateWorkItemTagRequest: # Generated schema. DO NOT EDIT.
-      properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-      required:
-        - color
-        - description
-        - name
-      type: object
-      x-postgen-struct: RestCreateWorkItemTagRequest
-      x-is-generated: true
-    RestCreateWorkItemTypeRequest: # Generated schema. DO NOT EDIT.
-      properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-      required:
-        - color
-        - description
-        - name
-      type: object
-      x-postgen-struct: RestCreateWorkItemTypeRequest
-      x-is-generated: true
-    RestDemoTwoWorkItems: # Generated schema. DO NOT EDIT.
+    DemoTwoWorkItems: # Generated schema. DO NOT EDIT.
       properties:
         closedAt:
           format: date-time
@@ -1859,9 +1859,9 @@ components:
         - updatedAt
         - demoTwoWorkItem
       type: object
-      x-postgen-struct: RestDemoTwoWorkItems
+      x-postgen-struct: DemoTwoWorkItems
       x-is-generated: true
-    RestDemoWorkItems: # Generated schema. DO NOT EDIT.
+    DemoWorkItems: # Generated schema. DO NOT EDIT.
       properties:
         closedAt:
           format: date-time
@@ -1933,9 +1933,9 @@ components:
         - updatedAt
         - demoWorkItem
       type: object
-      x-postgen-struct: RestDemoWorkItems
+      x-postgen-struct: DemoWorkItems
       x-is-generated: true
-    RestNotification: # Generated schema. DO NOT EDIT.
+    Notification: # Generated schema. DO NOT EDIT.
       properties:
         notification:
           $ref: '#/components/schemas/DbNotification'
@@ -1954,55 +1954,66 @@ components:
         - userID
         - notification
       type: object
-      x-postgen-struct: RestNotification
+      x-postgen-struct: Notification
       x-is-generated: true
-    RestPaginatedNotificationsResponse: # Generated schema. DO NOT EDIT.
+    PaginatedNotificationsResponse: # Generated schema. DO NOT EDIT.
       properties:
         items:
           items:
-            $ref: '#/components/schemas/RestNotification'
+            $ref: '#/components/schemas/Notification'
           nullable: true
           type: array
         page:
-          $ref: '#/components/schemas/RestPaginationPage'
+          $ref: '#/components/schemas/PaginationPage'
       required:
         - page
         - items
       type: object
-      x-postgen-struct: RestPaginatedNotificationsResponse
+      x-postgen-struct: PaginatedNotificationsResponse
       x-is-generated: true
-    RestPaginatedUsersResponse: # Generated schema. DO NOT EDIT.
+    PaginatedUsersResponse: # Generated schema. DO NOT EDIT.
       properties:
         items:
           items:
-            $ref: '#/components/schemas/RestUser'
+            $ref: '#/components/schemas/User'
           nullable: true
           type: array
         page:
-          $ref: '#/components/schemas/RestPaginationPage'
+          $ref: '#/components/schemas/PaginationPage'
       required:
         - page
         - items
       type: object
-      x-postgen-struct: RestPaginatedUsersResponse
+      x-postgen-struct: PaginatedUsersResponse
       x-is-generated: true
-    RestPaginationPage: # Generated schema. DO NOT EDIT.
+    PaginationPage: # Generated schema. DO NOT EDIT.
       properties:
         nextCursor:
           type: string
       type: object
-      x-postgen-struct: RestPaginationPage
+      x-postgen-struct: PaginationPage
       x-is-generated: true
-    RestProjectBoard: # Generated schema. DO NOT EDIT.
+    ProjectBoard: # Generated schema. DO NOT EDIT.
       properties:
         projectName:
           $ref: '#/components/schemas/Project'
       required:
         - projectName
       type: object
-      x-postgen-struct: RestProjectBoard
+      x-postgen-struct: ProjectBoard
       x-is-generated: true
-    RestSharedWorkItemFields: # Generated schema. DO NOT EDIT.
+    ServicesMember: # Generated schema. DO NOT EDIT.
+      properties:
+        role:
+          $ref: '#/components/schemas/WorkItemRole'
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+      required:
+        - role
+        - userID
+      type: object
+      x-is-generated: true
+    SharedWorkItemFields: # Generated schema. DO NOT EDIT.
       properties:
         members:
           items:
@@ -2027,9 +2038,9 @@ components:
         workItemType:
           $ref: '#/components/schemas/DbWorkItemType'
       type: object
-      x-postgen-struct: RestSharedWorkItemFields
+      x-postgen-struct: SharedWorkItemFields
       x-is-generated: true
-    RestTeam: # Generated schema. DO NOT EDIT.
+    Team: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
           format: date-time
@@ -2053,9 +2064,9 @@ components:
         - createdAt
         - updatedAt
       type: object
-      x-postgen-struct: RestTeam
+      x-postgen-struct: Team
       x-is-generated: true
-    RestUpdateActivityRequest: # Generated schema. DO NOT EDIT.
+    UpdateActivityRequest: # Generated schema. DO NOT EDIT.
       properties:
         description:
           type: string
@@ -2064,18 +2075,18 @@ components:
         name:
           type: string
       type: object
-      x-postgen-struct: RestUpdateActivityRequest
+      x-postgen-struct: UpdateActivityRequest
       x-is-generated: true
-    RestUpdateTeamRequest: # Generated schema. DO NOT EDIT.
+    UpdateTeamRequest: # Generated schema. DO NOT EDIT.
       properties:
         description:
           type: string
         name:
           type: string
       type: object
-      x-postgen-struct: RestUpdateTeamRequest
+      x-postgen-struct: UpdateTeamRequest
       x-is-generated: true
-    RestUpdateWorkItemCommentRequest: # Generated schema. DO NOT EDIT.
+    UpdateWorkItemCommentRequest: # Generated schema. DO NOT EDIT.
       properties:
         message:
           type: string
@@ -2084,9 +2095,9 @@ components:
         workItemID:
           type: integer
       type: object
-      x-postgen-struct: RestUpdateWorkItemCommentRequest
+      x-postgen-struct: UpdateWorkItemCommentRequest
       x-is-generated: true
-    RestUpdateWorkItemTagRequest: # Generated schema. DO NOT EDIT.
+    UpdateWorkItemTagRequest: # Generated schema. DO NOT EDIT.
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
@@ -2096,9 +2107,9 @@ components:
         name:
           type: string
       type: object
-      x-postgen-struct: RestUpdateWorkItemTagRequest
+      x-postgen-struct: UpdateWorkItemTagRequest
       x-is-generated: true
-    RestUpdateWorkItemTypeRequest: # Generated schema. DO NOT EDIT.
+    UpdateWorkItemTypeRequest: # Generated schema. DO NOT EDIT.
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
@@ -2108,9 +2119,9 @@ components:
         name:
           type: string
       type: object
-      x-postgen-struct: RestUpdateWorkItemTypeRequest
+      x-postgen-struct: UpdateWorkItemTypeRequest
       x-is-generated: true
-    RestUser: # Generated schema. DO NOT EDIT.
+    User: # Generated schema. DO NOT EDIT.
       properties:
         apiKey:
           $ref: '#/components/schemas/DbUserAPIKey'
@@ -2164,9 +2175,9 @@ components:
         - createdAt
         - role
       type: object
-      x-postgen-struct: RestUser
+      x-postgen-struct: User
       x-is-generated: true
-    RestWorkItemComment: # Generated schema. DO NOT EDIT.
+    WorkItemComment: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
           format: date-time
@@ -2190,9 +2201,9 @@ components:
         - createdAt
         - updatedAt
       type: object
-      x-postgen-struct: RestWorkItemComment
+      x-postgen-struct: WorkItemComment
       x-is-generated: true
-    RestWorkItemTag: # Generated schema. DO NOT EDIT.
+    WorkItemTag: # Generated schema. DO NOT EDIT.
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
@@ -2216,9 +2227,9 @@ components:
         - description
         - color
       type: object
-      x-postgen-struct: RestWorkItemTag
+      x-postgen-struct: WorkItemTag
       x-is-generated: true
-    RestWorkItemType: # Generated schema. DO NOT EDIT.
+    WorkItemType: # Generated schema. DO NOT EDIT.
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
@@ -2238,73 +2249,8 @@ components:
         - description
         - color
       type: object
-      x-postgen-struct: RestWorkItemType
+      x-postgen-struct: WorkItemType
       x-is-generated: true
-    ServicesMember: # Generated schema. DO NOT EDIT.
-      properties:
-        role:
-          $ref: '#/components/schemas/WorkItemRole'
-        userID:
-          $ref: '#/components/schemas/DbUserID'
-      required:
-        - role
-        - userID
-      type: object
-      x-is-generated: true
-    Activity: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestActivity'
-    CreateActivityRequest: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestCreateActivityRequest'
-    CreateDemoTwoWorkItemRequest: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestCreateDemoTwoWorkItemRequest'
-    CreateDemoWorkItemRequest: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestCreateDemoWorkItemRequest'
-    CreateProjectBoardRequest: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestCreateProjectBoardRequest'
-    CreateTeamRequest: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestCreateTeamRequest'
-    CreateWorkItemCommentRequest: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestCreateWorkItemCommentRequest'
-    CreateWorkItemTagRequest: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestCreateWorkItemTagRequest'
-    CreateWorkItemTypeRequest: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestCreateWorkItemTypeRequest'
-    DemoTwoWorkItems: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestDemoTwoWorkItems'
-    DemoWorkItems: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestDemoWorkItems'
-    Notification: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestNotification'
-    PaginatedNotificationsResponse: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestPaginatedNotificationsResponse'
-    PaginatedUsersResponse: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestPaginatedUsersResponse'
-    PaginationPage: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestPaginationPage'
-    ProjectBoard: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestProjectBoard'
-    SharedWorkItemFields: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestSharedWorkItemFields'
-    Team: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestTeam'
-    UpdateActivityRequest: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestUpdateActivityRequest'
-    UpdateTeamRequest: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestUpdateTeamRequest'
-    UpdateWorkItemCommentRequest: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestUpdateWorkItemCommentRequest'
-    UpdateWorkItemTagRequest: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestUpdateWorkItemTagRequest'
-    UpdateWorkItemTypeRequest: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestUpdateWorkItemTypeRequest'
-    User: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestUser'
-    WorkItemComment: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestWorkItemComment'
-    WorkItemTag: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestWorkItemTag'
-    WorkItemType: # Generated schema. DO NOT EDIT.
-      $ref: '#/components/schemas/RestWorkItemType'
     Direction:
       type: string
       enum:

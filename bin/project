@@ -2367,8 +2367,8 @@ update_spec_with_structs() {
   # should use ast-parser find-structs, but go/types loading is too slow all
   # over gen functions, we might be better off with simple regexes
   go-utils.find_structs rest_structs "$REST_MODELS"
-  mapfile -t -d $'\0' rest_schemas < <(printf "Rest%s\0" ${rest_structs[@]})
-  struct_names+=("${rest_schemas[@]}")
+  # mapfile -t -d $'\0' rest_schemas < <(printf "Rest%s\0" ${rest_structs[@]})
+  # struct_names+=("${rest_schemas[@]}")
 
   struct_names_arg=$(join_by "," ${struct_names[*]})
   ((${#struct_names_arg} == 0)) && return
@@ -2423,8 +2423,7 @@ $(join_by "
   local rest_schemas_without_prefix=""
   for rest_struct in ${rest_structs[@]}; do
     rest_schemas_without_prefix+="\"$rest_struct\": {
-      \"x-postgen-struct\": \"Rest$rest_struct\",
-      \"x-is-generated\": true
+      \"\$ref\": \"#/components/schemas/Rest$rest_struct\"
     },"
   done
 
@@ -2432,9 +2431,10 @@ $(join_by "
   yq e '.components.schemas.* |= . + {"x-is-generated": true}' -i "$gen_schema_spec_path"
 
   # swaggest cannot generate 2 schemas for a single struct
-  yq eval-all ".components.schemas += {
-    ${rest_schemas_without_prefix%,}
-  }" -i "$gen_schema_spec_path"
+  # += overrides keys! (TODO: use += then instead of *n)
+  # yq eval-all ".components.schemas += {
+  #   ${rest_schemas_without_prefix%,}
+  # }" -i "$gen_schema_spec_path"
 
   yq e '(.components.schemas.* | key) line_comment="Generated schema. DO NOT EDIT."' -i $gen_schema_spec_path
 
