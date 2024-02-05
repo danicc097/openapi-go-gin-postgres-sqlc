@@ -1,6 +1,6 @@
 import type { DeepPartial, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import DynamicForm, { selectOptionsBuilder } from 'src/utils/formGeneration'
-import { parseSchemaFields, type JsonSchemaField, type SchemaField } from 'src/utils/jsonSchema'
+import { parseSchemaFields, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
 import { getByTestId, render, screen, renderHook, fireEvent, act, getByText } from '@testing-library/react'
 import '@testing-library/jest-dom'
@@ -10,7 +10,6 @@ import { FormProvider, useForm } from 'react-hook-form'
 import { ajvResolver } from '@hookform/resolvers/ajv'
 import { fullFormats } from 'ajv-formats/dist/formats'
 import { Group, Avatar, Space, Flex, MantineProvider } from '@mantine/core'
-import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import { nameInitials } from 'src/utils/strings'
 
 const tags = [...Array(10)].map((x, i) => {
@@ -168,12 +167,14 @@ const formInitialValues = {
     teamID: 1,
     metadata: {},
     workItemTypeID: 1,
+    targetDate: dayjs('2024-03-24T20:42:00.000Z').toDate(),
   },
   demoProject: {
     lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
     line: '3e3e2',
     ref: '124321', // should fail pattern validation
     workItemID: 1,
+    reopened: false,
   },
   tagIDs: [0, 1, 2],
   tagIDsMultiselect: [0, 1, 2],
@@ -291,9 +292,11 @@ describe('form generation', () => {
                 'members.userID': selectOptionsBuilder({
                   type: 'select',
                   values: [...Array(1)].map((x, i) => {
-                    const user = getGetCurrentUserMock()
-                    user.email = '1@mail.com'
-                    user.userID = 'a446259c-1083-4212-98fe-bd080c41e7d7'
+                    const user = {
+                      username: '1',
+                      email: '1@mail.com',
+                      userID: 'a446259c-1083-4212-98fe-bd080c41e7d7',
+                    }
                     return user
                   }),
                   optionTransformer(el) {
@@ -301,7 +304,7 @@ describe('form generation', () => {
                       <Group align="center">
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                           <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={el?.username}>
-                            {nameInitials(el?.fullName || '')}
+                            {nameInitials(el?.email || '')}
                           </Avatar>
                           <Space p={5} />
                         </div>
