@@ -2166,7 +2166,7 @@ xo_generate_spec_helpers() {
     x-go-type: db.${pascal}
     x-go-type-import:
       name: db
-      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+      path: $GOMOD_PKG/internal/repos/postgresql/gen/db
   name: ${camel}
 ")
   done
@@ -2182,7 +2182,7 @@ xo_generate_spec_helpers() {
     x-go-type: db.${pascal}
     x-go-type-import:
       name: db
-      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+      path: $GOMOD_PKG/internal/repos/postgresql/gen/db
   name: ${camel}
 ")
   done
@@ -2200,20 +2200,13 @@ $formatted_string
 }
 
 # generate db structs for use with swaggest/openapi-go.
-# no need for ast parsing since all code is predictable
-# NOTE: type grouping not supported.
 generate_structs_map() {
   # cached most of the time. building here since it must be called before tools build
   go build -o $BUILD_DIR/ast-parser cmd/ast-parser/main.go
 
   local path="$PG_REPO_GEN/db"
   local structs=()
-  local enums=()
-  local all_types=()
   go-utils.find_structs structs "$path"
-  go-utils.find_enums enums "$path"
-  go-utils.find_all_types all_types "$path"
-  # find_deleted_pkg_schemas all_types Db
   for struct in "${structs[@]}"; do
     map_fields+=("\"Db$struct\": new(db.$struct),") # swaggest requires pointer to struct
   done
@@ -2223,12 +2216,7 @@ generate_structs_map() {
 
   local path="$REST_MODELS"
   local structs=()
-  local enums=()
-  local all_types=()
   go-utils.find_structs structs "$path"
-  go-utils.find_enums enums "$path"
-  go-utils.find_all_types all_types "$path"
-  # find_deleted_pkg_schemas all_types Rest
   for struct in "${structs[@]}"; do
     map_fields+=("\"Rest$struct\": new(rest.$struct),")
   done
@@ -2237,6 +2225,15 @@ generate_structs_map() {
   ")
 
   # workaround for reflection type name with generics in swaggest
+  # TODO: just use go-utils, go/types too slow. can easily generate by matching:
+  # ^type (1) = $generic_struct[(2)].*
+  #
+  #   {
+  #   "rest": {
+  #     "PaginationBaseResponse[$GOMOD_PKG/internal/rest.Notification]": "PaginatedNotificationsResponse",
+  #     "PaginationBaseResponse[$GOMOD_PKG/internal/rest.User]": "PaginatedUsersResponse"
+  #   }
+  # }
   ast-parser find-structs --create-generics-map --public-only "$path" >"internal/codegen/reflectTypeMap.gen.json" &
 
   out="internal/codegen/structs.gen.go"

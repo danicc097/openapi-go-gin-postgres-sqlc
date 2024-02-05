@@ -1242,13 +1242,10 @@ cc_label:
 			properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
 			ignoreConstraints := contains(properties, propertyIgnoreConstraints)
 			if ignoreConstraints {
-				fmt.Printf("ignoreConstraints on %s.%s.%s\n", constraint.TableSchema, constraint.TableName, constraint.ColumnName)
-				fmt.Printf("comment : %v\n", constraint.ColumnComment)
-				fmt.Printf("comment ref : %v\n", constraint.RefColumnComment)
 				continue
 			}
 
-			// dummy constraint to automatically create join
+			// dummy constraint to automatically create join in FK reference table
 			cc = append(cc, Constraint{
 				Type:             constraint.Type,
 				Cardinality:      O2O,
