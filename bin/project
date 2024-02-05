@@ -2410,12 +2410,21 @@ $(join_by "
     del_cmd+="del(.components.schemas.$schema) |"
   done
 
+  # must rename these from gen_schema_spec_path to trim Rest prefix
+  # and also append
+  # \"x-postgen-struct\": \"Rest$rest_struct\",
+  # \"x-is-generated\": true
+  # yq e '.components.schemas.* | key | select(test("^Rest"))' openapi.yaml
+  # there is no way to delete, so we should concat `.components.schemas.$key = .components.schemas.Rest$key | del(.components.schemas.Rest$key) |`
+  # however gen_schema generates indirect with Rest<...> (should check again if intercept schema is ignored for indirect gen) so perhaps simplest way is to do sed replacing Rest<Uppercase A-Z>[A-Za-z0-9_-]
+
   yq eval-all "${del_cmd%"|"}" -i "$SPEC_PATH"
 
   local rest_schemas_without_prefix=""
   for rest_struct in ${rest_structs[@]}; do
     rest_schemas_without_prefix+="\"$rest_struct\": {
-      \"\$ref\": \"#/components/schemas/Rest$rest_struct\"
+      \"x-postgen-struct\": \"Rest$rest_struct\",
+      \"x-is-generated\": true
     },"
   done
 
