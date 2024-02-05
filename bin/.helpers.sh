@@ -370,11 +370,14 @@ show_tracebacks() {
 cache_all() {
   local excludes=()
   local args=()
-
+  local no_force_regen=false
   #i=0 is still program name in "$@". Therefore continue up to <= too.
   for ((i = 1; i <= ${#@}; i++)); do
     arg="${!i}"
     case $arg in
+    --no-regen)
+      no_force_regen=true
+      ;;
     --exclude)
       ((i++))
       excludes+=("${!i}")
@@ -409,10 +412,12 @@ cache_all() {
     fi
   done
 
-  if cmp -s "$output_file" "$output_file.tmp" && [[ $X_FORCE_REGEN -eq 0 ]]; then
-    echo "${CYAN}Skipping generation (cached).${OFF} Regenerate with ${RED}--x-force-regen${OFF}"
-    rm "$output_file.tmp"
-    return 0
+  if cmp -s "$output_file" "$output_file.tmp"; then
+    if test -z "$X_FORCE_REGEN" || $no_force_regen; then
+      echo "${CYAN}Skipping generation (cached).${OFF} Regenerate with ${RED}--x-force-regen${OFF}"
+      rm "$output_file.tmp"
+      return 0
+    fi
   fi
 
   mv "$output_file.tmp" "$output_file"

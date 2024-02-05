@@ -965,7 +965,7 @@ x.gen.frontend() {
       rm -f frontend/src/client-validator/gen/validate.ts
       find frontend/src/client-validator/gen/ -type f -exec \
         sed -i "s/from '.\/validate'/from '..\/validate'/g" {} \;
-    }
+    } &
 
     {
       v="$(openapi-typescript --version)"
@@ -977,11 +977,12 @@ x.gen.frontend() {
 export type schemas = components['schemas']
 " | cat - "$SCHEMA_OUT" >/tmp/out && mv /tmp/out "$SCHEMA_OUT"
     } &
-    orval --config $orval_config &
+    {
+      orval --config $orval_config
+      orval_branded_types
+    } &
 
     wait_without_error || err Failed jobs
-
-    orval_branded_types
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
@@ -2484,7 +2485,9 @@ ensure_tools_up_to_date() {
   body="$RUN_CACHE/xfunctions/install-tools"
   declare -f x.install-tools >"$body" # ignores comments
 
-  cache_all "$RUN_CACHE/install-tools.md5" "$body" >/dev/null || x.install-tools || true
+  if ! cache_all "$RUN_CACHE/install-tools.md5" "$body" --no-regen >/dev/null; then
+    x.install-tools
+  fi
 }
 
 ######################## ENTRYPOINT ########################
