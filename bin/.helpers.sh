@@ -572,9 +572,9 @@ go-utils.find_structs() {
   local generic_structs=()
   go-utils.find_generic_structs generic_structs $pkg
 
-  for struct_name in "${generic_structs[@]}"; do
+  for generic_struct in "${generic_structs[@]}"; do
     mapfile -t -O ${#__arr[@]} __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
-      sed -n -e "s/^type \(.*\) = ${struct_name}\[.*\].*/\1/p")
+      sed -n -e "s/^type \(.*\) = ${generic_struct}\[.*\].*/\1/p")
   done
 
   if [[ ${#__arr[@]} -eq 0 ]]; then

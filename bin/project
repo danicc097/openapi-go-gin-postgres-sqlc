@@ -172,7 +172,8 @@ xsetup.backup.cleanup() {
 xsetup.backup.restore() {
   echo "
 Backup branch: $backup_branch
-${BLUE}Restoring previous uncommitted changes to current branch (${YELLOW}${CURRENT_BRANCH}${BLUE})${OFF}"
+
+${RED}Restoring previous uncommitted changes to current branch (${YELLOW}${CURRENT_BRANCH}${RED})${OFF}"
   wait # for any pending job
 
   git reset --hard &>/dev/null && git clean -df &>/dev/null
@@ -2225,16 +2226,23 @@ generate_structs_map() {
   ")
 
   # workaround for reflection type name with generics in swaggest
-  # TODO: just use go-utils, go/types too slow. can easily generate by matching:
-  # ^type (1) = $generic_struct[(2)].*
-  #
-  #   {
-  #   "rest": {
-  #     "PaginationBaseResponse[$GOMOD_PKG/internal/rest.Notification]": "PaginatedNotificationsResponse",
-  #     "PaginationBaseResponse[$GOMOD_PKG/internal/rest.User]": "PaginatedUsersResponse"
-  #   }
-  # }
-  ast-parser find-structs --create-generics-map --public-only "$path" >"internal/codegen/reflectTypeMap.gen.json" &
+  local reflect_type_map_entries=()
+  local generic_structs=()
+  go-utils.find_generic_structs generic_structs "$path"
+
+  for generic_struct in "${generic_structs[@]}"; do
+    reflect_type_map_entries+=("$(find "$path" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+      sed -n -e "s/^type \(.*\) = ${generic_struct}\[\(.*\)\].*/${generic_struct},$(escape_sed $GOMOD_PKG)\/internal\/rest.\2,\1/p")")
+  done
+
+  echo '{}' | jq --argjson array "$(
+    printf '%s\n' "${reflect_type_map_entries[@]}" | jq -R -s '
+      split("\n")[:-1]
+      | map(split(","))
+      | map({key: .[0], path: .[1], value: .[2]})'
+  )" '.rest = ($array | reduce .[] as $item ({}; . + { ($item.key + "[" + $item.path + "]"): $item.value }))' >"internal/codegen/reflectTypeMap.gen.json"
+
+  # ast-parser find-structs --create-generics-map --public-only "$path" >"internal/codegen/reflectTypeMap.gen.json" & # 1.5s * 2 on each run
 
   out="internal/codegen/structs.gen.go"
   cat <<EOF >$out
