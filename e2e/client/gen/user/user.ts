@@ -6,7 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { GetPaginatedUsersParams } from '../model/getPaginatedUsersParams'
-import type { PaginatedUsersResponse } from '../model/paginatedUsersResponse'
+import type { RestPaginatedUsersResponse } from '../model/restPaginatedUsersResponse'
 import type { RestUser } from '../model/restUser'
 import type { UpdateUserAuthRequest } from '../model/updateUserAuthRequest'
 import type { UpdateUserRequest } from '../model/updateUserRequest'
@@ -22,7 +22,7 @@ export const getPaginatedUsers = (
   params: GetPaginatedUsersParams,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<PaginatedUsersResponse>({ url: `/user/page`, method: 'GET', params }, options)
+  return customInstance<RestPaginatedUsersResponse>({ url: `/user/page`, method: 'GET', params }, options)
 }
 /**
  * @summary returns the logged in user

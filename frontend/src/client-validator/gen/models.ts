@@ -557,6 +557,14 @@ export interface Notification {
   userID: DbUserID
   userNotificationID: number
 }
+export interface PaginatedNotificationsResponse {
+  items: RestNotification[] | null
+  page: RestPaginationPage
+}
+export interface PaginatedUsersResponse {
+  items: RestUser[] | null
+  page: RestPaginationPage
+}
 export interface PaginationPage {
   nextCursor?: string
 }
@@ -642,10 +650,6 @@ export interface WorkItemType {
   projectID: number
   workItemTypeID: number
 }
-export interface PaginatedNotificationsResponse {
-  items: RestNotification[] | null
-  page: RestPaginationPage
-}
 export interface DbActivity {
   activityID: number
   description: string
@@ -656,10 +660,6 @@ export interface DbActivity {
 export interface InitializeProjectRequest {
   tags?: DbWorkItemTagCreateParams[] | null
   teams?: DbTeamCreateParams[] | null
-}
-export interface PaginatedUsersResponse {
-  items: RestUser[] | null
-  page: RestPaginationPage
 }
 export interface HTTPValidationError {
   detail?: Detail

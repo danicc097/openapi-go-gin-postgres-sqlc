@@ -552,28 +552,51 @@ docker.images.load_latest() {
 AWK_REMOVE_GO_COMMENTS='
      /\/\*/ { f=1 } # set flag that is a block comment
 
-     f==0 && !/^\s*(\/\/|\/\*)/ {
+     f==0 && !/^\s*(\/\/|\/\*)/ { # skip // or /*
         print  # print non-commented lines
      }
-     /\*\// { f=0 } # reset flag at end of comment
+     /\*\// { f=0 } # reset flag at end of block comment
 '
 
-# Stores go structs in package to a given array.
-# Deprecated: use `ast-parser find-structs` and calculate difference
+# Stores go structs (including generic instances) in pkg to a given array.
+# For 100% assurance use `ast-parser find-structs`
 # Parameters:
 #    Struct array (nameref)
-#    Package directory
+#    Package directory or file
 go-utils.find_structs() {
   local -n __arr="$1"
   local pkg="$2"
   mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
-    sed -ne '/\[/!s/[\s]*type\(.*\)struct.*/\1/p') # /\[/! excludes lines containing [ right away
+    sed -ne '/\[/!s/type\(.*\)struct.*/\1/p') # /\[/! excludes lines containing [ right away
+
+  local generic_structs=()
+  go-utils.find_generic_structs generic_structs $pkg
+
+  for struct_name in "${generic_structs[@]}"; do
+    mapfile -t -O ${#__arr[@]} __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+      sed -n -e "s/^type \(.*\) = ${struct_name}\[.*\].*/\1/p")
+  done
+
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No structs found in package $pkg"
   fi
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
 }
 
+# Stores go generic struct definitions in pkg to a given array.
+# Parameters:
+#    Struct array (nameref)
+#    Package directory or file
+go-utils.find_generic_structs() {
+  local -n __arr="$1"
+  local pkg="$2"
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+    sed -ne 's/^type \(.*\)\[.*\] struct.*/\1/p')
+
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
+}
+
+# Stores xo serial or bigserial PK generated types in pkg to a given array.
 go-utils.find_db_ids_int() {
   local -n __arr="$1"
   local pkg="$2"
@@ -585,6 +608,7 @@ go-utils.find_db_ids_int() {
   mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" ${__arr[@]}))
 }
 
+# Stores xo uuid PK generated types in pkg to a given array.
 go-utils.find_db_ids_uuid() {
   local -n __arr="$1"
   local pkg="$2"
@@ -645,22 +669,6 @@ go-utils.struct_fields() {
     field_value=$(awk -v field="$line" '$1 == field {print $1}' <<<"$struct_definition")
     __arr+=("$field_value")
   done < <(echo "$struct_definition")
-}
-
-# Stores go generic structs in package to a given array.
-# Deprecated: use `ast-parser find-structs [--exclude-generics]` and calculate difference
-# Parameters:
-#    Struct array (nameref)
-#    Package directory
-go-utils.find_generic_structs() {
-  local -n __arr="$1"
-  local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
-    sed -ne 's/[\s]*type\s*\([^\[]*\)\(\[.*\]\)\+\s*struct.*/\1/p')
-  if [[ ${#__arr[@]} -eq 0 ]]; then
-    err "No structs found in package $pkg"
-  fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
 }
 
 # Stores go interfaces in package to a given array.

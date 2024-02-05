@@ -21,7 +21,7 @@ report_success() {
 check.bin.bash() {
   { { {
     vers=${BASH_VERSION:0:1}
-    minver=4
+    minver=5
     if ((vers >= minver)); then
       report_success
     else

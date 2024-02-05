@@ -132,6 +132,7 @@ backup_branch="backup-gen-$(uuidgen)"
 # TODO: when running gen and then stashing changes, or switching branches,
 # cache should be removed.
 gen-cache.backup() {
+  rm -rf "$GEN_CACHE_BACKUP" || true
   cp -r "$GEN_CACHE" "$GEN_CACHE_BACKUP" || true
 }
 
@@ -170,10 +171,11 @@ xsetup.backup.cleanup() {
 
 xsetup.backup.restore() {
   echo "
-Restoring previous changes (branch $backup_branch)..."
+Backup branch: $backup_branch
+${BLUE}Restoring previous uncommitted changes to current branch (${YELLOW}${CURRENT_BRANCH}${BLUE})${OFF}"
   wait # for any pending job
 
-  git reset --hard && git clean -df &>/dev/null
+  git reset --hard &>/dev/null && git clean -df &>/dev/null
   # if not removing the whole cache folder we get `already exists, no checkout` upon stash apply since we have just reset gitignore
   # IMPORTANT: we do want to delete regardless since we are restoring the cache folder on stash apply so we
   # don't need complex cache invalidation based on what's been run
@@ -315,6 +317,7 @@ x.gen.pregen() {
 
     echo "Running generation"
 
+    # NOTE: swaggest won't generate for arrays of structs. use a struct with array fields instead.
     generate_structs_map # structs might have been removed in the meantime
 
     go build -o $BUILD_DIR/codegen cmd/codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # xo gen may create/update models.
@@ -342,10 +345,9 @@ x.gen.pregen() {
     done
 
     if [[ ${#missing_rest_models[@]} -gt 0 ]]; then
-      echo "${YELLOW}Generating missing rest package \$ref's:
-$(join_by "
-" "${missing_rest_models[@]}")
-${OFF}"
+      echo "${YELLOW}Generating missing rest package \$ref's:"
+      printf "${YELLOW}  - %s\n" "${missing_rest_models[@]}"
+      echo "${OFF}"
     fi
 
     local new_schemas=""
@@ -847,8 +849,8 @@ x.gen.client-server() {
 
     wait_without_error
 
-    ast-parser find-redeclared --delete "$REST_MODELS" # for duplicates in rest
-    codegen implement-server                           # based on oapi gen
+    ast-parser find-redeclared --delete "$REST_MODELS" # for duplicates in rest. depends on oapi-codegen output
+    codegen implement-server                           # depends on oapi-codegen output
 
     files=$(find "internal/rest/" -name "*.go")
     goimports -w $files
@@ -2201,14 +2203,14 @@ $formatted_string
 # no need for ast parsing since all code is predictable
 # NOTE: type grouping not supported.
 generate_structs_map() {
-  # need new cli since this function is called before building the rest of tooling
+  # cached most of the time. building here since it must be called before tools build
   go build -o $BUILD_DIR/ast-parser cmd/ast-parser/main.go
 
   local path="$PG_REPO_GEN/db"
   local structs=()
   local enums=()
   local all_types=()
-  go-utils.find_structs structs "$path" # faster. we know no generics structs exist in gen pkg
+  go-utils.find_structs structs "$path"
   go-utils.find_enums enums "$path"
   go-utils.find_all_types all_types "$path"
   # find_deleted_pkg_schemas all_types Db
@@ -2223,11 +2225,7 @@ generate_structs_map() {
   local structs=()
   local enums=()
   local all_types=()
-  # workaround for reflection type name with generics in swaggest
-  ast-parser find-structs --create-generics-map --public-only "$path" >"internal/codegen/reflectTypeMap.gen.json" &
-  # TODO: also need to include array of structs in models.go so that is_rest_type is true for oapi-codegen
-  # and we use existing rest types for arrays as well
-  mapfile -t structs < <(ast-parser find-structs --exclude-generics --public-only "$path")
+  go-utils.find_structs structs "$path"
   go-utils.find_enums enums "$path"
   go-utils.find_all_types all_types "$path"
   # find_deleted_pkg_schemas all_types Rest
@@ -2237,6 +2235,9 @@ generate_structs_map() {
   map_fields+=("
   //
   ")
+
+  # workaround for reflection type name with generics in swaggest
+  ast-parser find-structs --create-generics-map --public-only "$path" >"internal/codegen/reflectTypeMap.gen.json" &
 
   out="internal/codegen/structs.gen.go"
   cat <<EOF >$out
@@ -2341,6 +2342,14 @@ find_deleted_pkg_schemas() {
   done
 }
 
+x.dddd() {
+  local rest_structs=() rest_schemas=()
+  # should use ast-parser find-structs, but go/types loading is too slow all
+  # over gen functions, we might be better off with simple regexes
+  go-utils.find_structs rest_structs "$REST_MODELS"
+  echo ${rest_structs[*]}
+}
+
 update_spec_with_structs() {
   vext="x-postgen-struct"
   struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC_PATH)
@@ -2348,6 +2357,8 @@ update_spec_with_structs() {
 
   # generate all rest/models.go always
   local rest_structs=() rest_schemas=()
+  # should use ast-parser find-structs, but go/types loading is too slow all
+  # over gen functions, we might be better off with simple regexes
   go-utils.find_structs rest_structs "$REST_MODELS"
   mapfile -t -d $'\0' rest_schemas < <(printf "Rest%s\0" ${rest_structs[@]})
   struct_names+=("${rest_schemas[@]}")
@@ -2378,7 +2389,7 @@ update_spec_with_structs() {
   done
 
   if [[ ${#clashes[@]} -gt 0 ]]; then
-    err "The following non-generated schemas would have been overridden by internal/rest/models.go structs. Please rename:
+    err "The following non-generated schemas would have been overridden by internal/rest/models.go structs. Please rename or delete:
 $(join_by "
 " "${clashes[@]}")
     "
@@ -2783,10 +2794,12 @@ if test -n "$X_NO_EXIT_CLEANUP"; then
 fi
 exit_cleanup_calls=0
 
+# exit-cleanup prevents exiting while we check if we should run cleanup.
+# For monitoring functions, a top level "trap 'exit' SIGINT"
+# is necessary to allow the user to exit. Handle cleanup calls manually, if any.
+# If the background process calls this script externally, --x-no-exit-cleanup is required
+# in those calls, due to possible CURRENT_BRANCH changes in the meantime.
 exit-cleanup() {
-  # prevent exiting in foreground while we check if we should run cleanup
-  # for monitoring functions, a top level "trap 'exit' SIGINT"
-  # is necessary. Handle cleanup calls manually, if any
   trap 'echo ignoring SIGINT' SIGINT
   [[ "$exit_cleanup_calls" -gt 0 ]] && return
   ((exit_cleanup_calls++)) || true
@@ -2798,15 +2811,8 @@ exit-cleanup() {
       gen-cache.restore
     fi
 
-    # shared cleanup regardless of gen success
-    # caveat: watch out for background processes that call project script
-
-    # when we run something in the background that calls project,
-    # e.g. project db.conns-db postgres_test
-    # it gets whatever CURRENT_BRANCH was set atm, therefore fails.
-    # override exit-cleanup with something like trap 'echo exit-cleanup dummy' EXIT HUP INT TERM with flag:
-    # TODO: --x-no-exit-cleanup
-    git checkout "$CURRENT_BRANCH" &>/dev/null || err "[WARNING] Could not checkout $CURRENT_BRANCH branch" >&2
+    # will fail if not using --x-no-exit-cleanup when required
+    git checkout "$CURRENT_BRANCH" &>/dev/null || err "[ERROR] Could not checkout $CURRENT_BRANCH branch" >&2
     rm -f backup-gen-stash-dummy.txt || true
     git branch -D "$backup_branch" &>/dev/null || true
 
@@ -2834,22 +2840,22 @@ pids=""
 
 ################ handle executing x functions ################
 
-if [[ -z "$1" ]]; then
-  # default to show usage if its a noop
-  usage
+if [[ -n "$1" ]]; then
+  shift
+  for c in "${COMMANDS[@]}"; do
+    declare cmd=$(command -v "x.$c")
+    if [[ $c == "$CMD" && -n "$cmd" ]]; then
+      ensure_tools_up_to_date
+
+      "x.$CMD" "$@"
+
+      if [[ -n $X_IGNORE_BUILD_ERRORS ]]; then
+        echo "${YELLOW}[WARNING] A rerun without ignoring build errors is required"
+      fi
+      exit $? # do not quote
+    fi
+  done
 fi
 
-shift
-for c in "${COMMANDS[@]}"; do
-  declare cmd=$(command -v "x.$c")
-  if [[ $c == "$CMD" && -n "$cmd" ]]; then
-    ensure_tools_up_to_date
-
-    "x.$CMD" "$@"
-
-    if [[ -n $X_IGNORE_BUILD_ERRORS ]]; then
-      echo "${YELLOW}[WARNING] A rerun without ignoring build errors is required"
-    fi
-    exit $? # do not quote
-  fi
-done
+# default to show usage if its a noop or didn't match a command
+usage

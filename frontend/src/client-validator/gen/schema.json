@@ -1718,6 +1718,12 @@
     "Notification": {
       "$ref": "#/definitions/RestNotification"
     },
+    "PaginatedNotificationsResponse": {
+      "$ref": "#/definitions/RestPaginatedNotificationsResponse"
+    },
+    "PaginatedUsersResponse": {
+      "$ref": "#/definitions/RestPaginatedUsersResponse"
+    },
     "PaginationPage": {
       "$ref": "#/definitions/RestPaginationPage"
     },
@@ -1763,28 +1769,6 @@
         "asc",
         "desc"
       ]
-    },
-    "PaginatedNotificationsResponse": {
-      "properties": {
-        "items": {
-          "items": {
-            "$ref": "#/definitions/RestNotification"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "page": {
-          "$ref": "#/definitions/RestPaginationPage"
-        }
-      },
-      "required": [
-        "page",
-        "items"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestPaginatedNotificationsResponse"
     },
     "DbActivity": {
       "properties": {
@@ -1892,28 +1876,6 @@
       },
       "type": "object",
       "x-postgen-struct": "RestCreateProjectBoardRequest"
-    },
-    "PaginatedUsersResponse": {
-      "properties": {
-        "items": {
-          "items": {
-            "$ref": "#/definitions/RestUser"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "page": {
-          "$ref": "#/definitions/RestPaginationPage"
-        }
-      },
-      "required": [
-        "page",
-        "items"
-      ],
-      "type": "object",
-      "x-postgen-struct": "RestPaginatedUsersResponse"
     },
     "HTTPValidationError": {
       "title": "HTTPValidationError",
@@ -2448,6 +2410,12 @@
     "Notification": {
       "$ref": "#/definitions/Notification"
     },
+    "PaginatedNotificationsResponse": {
+      "$ref": "#/definitions/PaginatedNotificationsResponse"
+    },
+    "PaginatedUsersResponse": {
+      "$ref": "#/definitions/PaginatedUsersResponse"
+    },
     "PaginationPage": {
       "$ref": "#/definitions/PaginationPage"
     },
@@ -2490,9 +2458,6 @@
     "Direction": {
       "$ref": "#/definitions/Direction"
     },
-    "PaginatedNotificationsResponse": {
-      "$ref": "#/definitions/PaginatedNotificationsResponse"
-    },
     "DbActivity": {
       "$ref": "#/definitions/DbActivity"
     },
@@ -2504,9 +2469,6 @@
     },
     "InitializeProjectRequest": {
       "$ref": "#/definitions/InitializeProjectRequest"
-    },
-    "PaginatedUsersResponse": {
-      "$ref": "#/definitions/PaginatedUsersResponse"
     },
     "HTTPValidationError": {
       "$ref": "#/definitions/HTTPValidationError"

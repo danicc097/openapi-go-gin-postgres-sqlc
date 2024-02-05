@@ -2275,6 +2275,10 @@ components:
       $ref: '#/components/schemas/RestDemoWorkItems'
     Notification: # Generated schema. DO NOT EDIT.
       $ref: '#/components/schemas/RestNotification'
+    PaginatedNotificationsResponse: # Generated schema. DO NOT EDIT.
+      $ref: '#/components/schemas/RestPaginatedNotificationsResponse'
+    PaginatedUsersResponse: # Generated schema. DO NOT EDIT.
+      $ref: '#/components/schemas/RestPaginatedUsersResponse'
     PaginationPage: # Generated schema. DO NOT EDIT.
       $ref: '#/components/schemas/RestPaginationPage'
     ProjectBoard: # Generated schema. DO NOT EDIT.
@@ -2306,20 +2310,6 @@ components:
       enum:
         - asc
         - desc
-    PaginatedNotificationsResponse:
-      properties:
-        items:
-          items:
-            $ref: '#/components/schemas/RestNotification'
-          nullable: true
-          type: array
-        page:
-          $ref: '#/components/schemas/RestPaginationPage'
-      required:
-        - page
-        - items
-      type: object
-      x-postgen-struct: RestPaginatedNotificationsResponse
     DbActivity:
       properties:
         activityID:
@@ -2390,20 +2380,6 @@ components:
           type: array
       type: object
       x-postgen-struct: RestCreateProjectBoardRequest
-    PaginatedUsersResponse:
-      properties:
-        items:
-          items:
-            $ref: '#/components/schemas/RestUser'
-          nullable: true
-          type: array
-        page:
-          $ref: '#/components/schemas/RestPaginationPage'
-      required:
-        - page
-        - items
-      type: object
-      x-postgen-struct: RestPaginatedUsersResponse
     HTTPValidationError:
       title: HTTPValidationError
       type: object

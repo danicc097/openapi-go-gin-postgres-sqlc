@@ -606,18 +606,12 @@ type NotificationType string
 
 /* Ignoring existing rest struct
 // PaginatedNotificationsResponse defines the model for PaginatedNotificationsResponse.
-type PaginatedNotificationsResponse  struct {
-    Items *[]externalRef0.RestNotification`json:"items"`
-    Page externalRef0.RestPaginationPage`json:"page"`
-}
+type PaginatedNotificationsResponse = externalRef0.RestPaginatedNotificationsResponse
 */
 
 /* Ignoring existing rest struct
 // PaginatedUsersResponse defines the model for PaginatedUsersResponse.
-type PaginatedUsersResponse  struct {
-    Items *[]externalRef0.RestUser`json:"items"`
-    Page externalRef0.RestPaginationPage`json:"page"`
-}
+type PaginatedUsersResponse = externalRef0.RestPaginatedUsersResponse
 */
 
 /* Ignoring existing rest struct

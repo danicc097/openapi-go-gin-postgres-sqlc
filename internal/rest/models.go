@@ -1,6 +1,7 @@
 /**
  * IMPORTANT: all structs in models.go will always be generated as OpenAPI schemas.
  * Generated "Rest*" schemas must be ignored.
+ * TODO: struct type grouping not supported in gen.
  */
 package rest
 

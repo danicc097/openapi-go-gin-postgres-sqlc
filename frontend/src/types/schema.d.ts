@@ -554,6 +554,8 @@ export interface components {
     DemoTwoWorkItems: components["schemas"]["RestDemoTwoWorkItems"];
     DemoWorkItems: components["schemas"]["RestDemoWorkItems"];
     Notification: components["schemas"]["RestNotification"];
+    PaginatedNotificationsResponse: components["schemas"]["RestPaginatedNotificationsResponse"];
+    PaginatedUsersResponse: components["schemas"]["RestPaginatedUsersResponse"];
     PaginationPage: components["schemas"]["RestPaginationPage"];
     ProjectBoard: components["schemas"]["RestProjectBoard"];
     SharedWorkItemFields: components["schemas"]["RestSharedWorkItemFields"];
@@ -569,10 +571,6 @@ export interface components {
     WorkItemType: components["schemas"]["RestWorkItemType"];
     /** @enum {string} */
     Direction: "asc" | "desc";
-    PaginatedNotificationsResponse: {
-      items: components["schemas"]["RestNotification"][] | null;
-      page: components["schemas"]["RestPaginationPage"];
-    };
     DbActivity: {
       activityID: number;
       description: string;
@@ -595,10 +593,6 @@ export interface components {
     InitializeProjectRequest: {
       tags?: components["schemas"]["DbWorkItemTagCreateParams"][] | null;
       teams?: components["schemas"]["DbTeamCreateParams"][] | null;
-    };
-    PaginatedUsersResponse: {
-      items: components["schemas"]["RestUser"][] | null;
-      page: components["schemas"]["RestPaginationPage"];
     };
     /** HTTPValidationError */
     HTTPValidationError: {

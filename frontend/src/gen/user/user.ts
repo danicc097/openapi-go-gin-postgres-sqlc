@@ -19,7 +19,7 @@ import type {
 } from '@tanstack/react-query'
 import type { GetPaginatedUsersParams } from '../model/getPaginatedUsersParams'
 import type { HTTPError } from '../model/hTTPError'
-import type { PaginatedUsersResponse } from '../model/paginatedUsersResponse'
+import type { RestPaginatedUsersResponse } from '../model/restPaginatedUsersResponse'
 import type { RestUser } from '../model/restUser'
 import type { UpdateUserAuthRequest } from '../model/updateUserAuthRequest'
 import type { UpdateUserRequest } from '../model/updateUserRequest'
@@ -36,7 +36,7 @@ export const getPaginatedUsers = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal,
 ) => {
-  return customInstance<PaginatedUsersResponse>({ url: `/user/page`, method: 'GET', params, signal }, options)
+  return customInstance<RestPaginatedUsersResponse>({ url: `/user/page`, method: 'GET', params, signal }, options)
 }
 
 export const getGetPaginatedUsersQueryKey = (params: GetPaginatedUsersParams) => {

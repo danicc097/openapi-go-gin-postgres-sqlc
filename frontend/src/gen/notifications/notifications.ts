@@ -17,7 +17,7 @@ import type {
 } from '@tanstack/react-query'
 import type { GetPaginatedNotificationsParams } from '../model/getPaginatedNotificationsParams'
 import type { HTTPError } from '../model/hTTPError'
-import type { PaginatedNotificationsResponse } from '../model/paginatedNotificationsResponse'
+import type { RestPaginatedNotificationsResponse } from '../model/restPaginatedNotificationsResponse'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -31,7 +31,7 @@ export const getPaginatedNotifications = (
   options?: SecondParameter<typeof customInstance>,
   signal?: AbortSignal,
 ) => {
-  return customInstance<PaginatedNotificationsResponse>(
+  return customInstance<RestPaginatedNotificationsResponse>(
     { url: `/notifications/user/page`, method: 'GET', params, signal },
     options,
   )

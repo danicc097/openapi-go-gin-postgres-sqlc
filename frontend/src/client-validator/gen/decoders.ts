@@ -68,6 +68,8 @@ import {
   DemoTwoWorkItems,
   DemoWorkItems,
   Notification,
+  PaginatedNotificationsResponse,
+  PaginatedUsersResponse,
   PaginationPage,
   ProjectBoard,
   SharedWorkItemFields,
@@ -82,12 +84,10 @@ import {
   WorkItemTag,
   WorkItemType,
   Direction,
-  PaginatedNotificationsResponse,
   DbActivity,
   ProjectConfig,
   ProjectConfigField,
   InitializeProjectRequest,
-  PaginatedUsersResponse,
   HTTPValidationError,
   ErrorCode,
   HTTPError,
@@ -842,6 +842,30 @@ export const NotificationDecoder: Decoder<Notification> = {
     return validateJson(json, schema, NotificationDecoder.definitionName)
   },
 }
+export const PaginatedNotificationsResponseDecoder: Decoder<PaginatedNotificationsResponse> = {
+  definitionName: 'PaginatedNotificationsResponse',
+  schemaRef: '#/definitions/PaginatedNotificationsResponse',
+
+  decode(json: unknown): PaginatedNotificationsResponse {
+    const schema = ajv.getSchema(PaginatedNotificationsResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${PaginatedNotificationsResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, PaginatedNotificationsResponseDecoder.definitionName)
+  },
+}
+export const PaginatedUsersResponseDecoder: Decoder<PaginatedUsersResponse> = {
+  definitionName: 'PaginatedUsersResponse',
+  schemaRef: '#/definitions/PaginatedUsersResponse',
+
+  decode(json: unknown): PaginatedUsersResponse {
+    const schema = ajv.getSchema(PaginatedUsersResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${PaginatedUsersResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, PaginatedUsersResponseDecoder.definitionName)
+  },
+}
 export const PaginationPageDecoder: Decoder<PaginationPage> = {
   definitionName: 'PaginationPage',
   schemaRef: '#/definitions/PaginationPage',
@@ -1010,18 +1034,6 @@ export const DirectionDecoder: Decoder<Direction> = {
     return validateJson(json, schema, DirectionDecoder.definitionName)
   },
 }
-export const PaginatedNotificationsResponseDecoder: Decoder<PaginatedNotificationsResponse> = {
-  definitionName: 'PaginatedNotificationsResponse',
-  schemaRef: '#/definitions/PaginatedNotificationsResponse',
-
-  decode(json: unknown): PaginatedNotificationsResponse {
-    const schema = ajv.getSchema(PaginatedNotificationsResponseDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${PaginatedNotificationsResponseDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, PaginatedNotificationsResponseDecoder.definitionName)
-  },
-}
 export const DbActivityDecoder: Decoder<DbActivity> = {
   definitionName: 'DbActivity',
   schemaRef: '#/definitions/DbActivity',
@@ -1068,18 +1080,6 @@ export const InitializeProjectRequestDecoder: Decoder<InitializeProjectRequest> 
       throw new Error(`Schema ${InitializeProjectRequestDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, InitializeProjectRequestDecoder.definitionName)
-  },
-}
-export const PaginatedUsersResponseDecoder: Decoder<PaginatedUsersResponse> = {
-  definitionName: 'PaginatedUsersResponse',
-  schemaRef: '#/definitions/PaginatedUsersResponse',
-
-  decode(json: unknown): PaginatedUsersResponse {
-    const schema = ajv.getSchema(PaginatedUsersResponseDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${PaginatedUsersResponseDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, PaginatedUsersResponseDecoder.definitionName)
   },
 }
 export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {

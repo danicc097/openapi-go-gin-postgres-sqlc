@@ -573,16 +573,10 @@ type Notification = RestNotification
 type NotificationType string
 
 // PaginatedNotificationsResponse defines the model for PaginatedNotificationsResponse.
-type PaginatedNotificationsResponse struct {
-	Items *[]RestNotification `json:"items"`
-	Page  RestPaginationPage  `json:"page"`
-}
+type PaginatedNotificationsResponse = RestPaginatedNotificationsResponse
 
 // PaginatedUsersResponse defines the model for PaginatedUsersResponse.
-type PaginatedUsersResponse struct {
-	Items *[]RestUser        `json:"items"`
-	Page  RestPaginationPage `json:"page"`
-}
+type PaginatedUsersResponse = RestPaginatedUsersResponse
 
 // PaginationPage defines the model for PaginationPage.
 type PaginationPage = RestPaginationPage
