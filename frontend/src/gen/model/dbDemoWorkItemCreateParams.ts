@@ -8,8 +8,8 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface DbDemoWorkItemCreateParams {
-  lastMessageAt: Date
-  line: string
-  ref: string
-  reopened: boolean
+  lastMessageAt: Date;
+  line: string;
+  ref: string;
+  reopened: boolean;
 }

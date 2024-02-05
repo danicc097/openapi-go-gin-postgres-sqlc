@@ -8,5 +8,5 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface RestPaginationPage {
-  nextCursor?: string
+  nextCursor?: string;
 }

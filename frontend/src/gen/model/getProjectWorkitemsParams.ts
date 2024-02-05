@@ -8,6 +8,6 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export type GetProjectWorkitemsParams = {
-  open?: boolean
-  deleted?: boolean
-}
+open?: boolean;
+deleted?: boolean;
+};

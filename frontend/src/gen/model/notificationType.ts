@@ -10,10 +10,11 @@ import type * as EntityIDs from 'src/gen/entity-ids'
 /**
  * is generated from database enum 'notification_type'.
  */
-export type NotificationType = typeof NotificationType[keyof typeof NotificationType]
+export type NotificationType = typeof NotificationType[keyof typeof NotificationType];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const NotificationType = {
   personal: 'personal',
   global: 'global',
-} as const
+} as const;

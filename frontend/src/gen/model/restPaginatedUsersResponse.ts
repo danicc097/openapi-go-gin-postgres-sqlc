@@ -6,10 +6,10 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestUser } from './restUser'
-import type { RestPaginationPage } from './restPaginationPage'
+import type { RestUser } from './restUser';
+import type { RestPaginationPage } from './restPaginationPage';
 
 export interface RestPaginatedUsersResponse {
-  items: RestUser[] | null
-  page: RestPaginationPage
+  items: RestUser[] | null;
+  page: RestPaginationPage;
 }

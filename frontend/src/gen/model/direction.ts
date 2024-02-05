@@ -7,10 +7,11 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * OpenAPI spec version: 2.0.0
  */
 
-export type Direction = typeof Direction[keyof typeof Direction]
+export type Direction = typeof Direction[keyof typeof Direction];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Direction = {
   asc: 'asc',
   desc: 'desc',
-} as const
+} as const;

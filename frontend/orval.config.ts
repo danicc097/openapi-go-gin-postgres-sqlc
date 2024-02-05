@@ -7,11 +7,11 @@ import { reactQueryDefaultAppOptions } from './src/react-query'
 export default defineConfig({
   main: {
     output: {
+      mock: false,
       mode: 'tags-split',
       target: './src/gen/main.ts',
       schemas: './src/gen/model',
       client: 'react-query',
-      mock: true, // until changes are made to deeply nested generation
       tsconfig: './tsconfig.json',
       // for extreme cases can also override the core package itself https://github.com/anymaniax/orval/tree/master/packages/core
       override: {
@@ -25,21 +25,21 @@ export default defineConfig({
           // useInfiniteQueryParam: 'nextId',
           options: reactQueryDefaultAppOptions.queries,
         },
-        mock: {
-          format: {
-            date: () => faker.date.past(),
-            'date-time': () => faker.date.past(),
-          },
-          properties: {
-            // will use basic string replace to get BrandedTypes.
-            // userID: () => faker.datatype.uuid(),
-            email: () => faker.internet.email(),
-            metadata: () => ({
-              key: faker.color.hsl(),
-            }),
-          },
-          required: true,
-        },
+        // mock: {
+        //   format: {
+        //     date: () => faker.date.past(),
+        //     'date-time': () => faker.date.past(),
+        //   },
+        //   properties: {
+        //     // will use basic string replace to get BrandedTypes.
+        //     // userID: () => faker.datatype.uuid(),
+        //     email: () => faker.internet.email(),
+        //     metadata: () => ({
+        //       key: faker.color.hsl(),
+        //     }),
+        //   },
+        //   required: true,
+        // },
         mutator: { path: 'src/api/mutator.ts', name: 'customInstance' },
       },
     },
@@ -47,8 +47,9 @@ export default defineConfig({
       target: '../openapi.exploded.yaml',
       // validation: true, // https://github.com/IBM/openapi-validator/#configuration via .validaterc
     },
-    hooks: {
-      afterAllFilesWrite: 'prettier --write',
-    },
+    // required for orval types gen right after
+    // hooks: {
+    //   afterAllFilesWrite: 'prettier --write',
+    // },
   },
 })

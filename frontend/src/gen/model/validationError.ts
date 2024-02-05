@@ -6,15 +6,15 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { ValidationErrorCtx } from './validationErrorCtx'
-import type { ValidationErrorDetail } from './validationErrorDetail'
+import type { ValidationErrorCtx } from './validationErrorCtx';
+import type { ValidationErrorDetail } from './validationErrorDetail';
 
 export interface ValidationError {
-  ctx?: ValidationErrorCtx
+  ctx?: ValidationErrorCtx;
   /** verbose details of the error */
-  detail: ValidationErrorDetail
+  detail: ValidationErrorDetail;
   /** location in body path, if any */
-  loc: string[]
+  loc: string[];
   /** should always be shown to the user */
-  msg: string
+  msg: string;
 }

@@ -6,13 +6,13 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { Role } from './role'
-import type { Scopes } from './scopes'
+import type { Role } from './role';
+import type { Scopes } from './scopes';
 
 /**
  * represents User authorization data to update
  */
 export interface UpdateUserAuthRequest {
-  role?: Role
-  scopes?: Scopes
+  role?: Role;
+  scopes?: Scopes;
 }

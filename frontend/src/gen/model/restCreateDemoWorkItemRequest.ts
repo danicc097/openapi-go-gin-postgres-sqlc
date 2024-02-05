@@ -6,15 +6,15 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbWorkItemCreateParams } from './dbWorkItemCreateParams'
-import type { DbDemoWorkItemCreateParams } from './dbDemoWorkItemCreateParams'
-import type { ServicesMember } from './servicesMember'
-import type { Project } from './project'
+import type { DbWorkItemCreateParams } from './dbWorkItemCreateParams';
+import type { DbDemoWorkItemCreateParams } from './dbDemoWorkItemCreateParams';
+import type { ServicesMember } from './servicesMember';
+import type { Project } from './project';
 
 export interface RestCreateDemoWorkItemRequest {
-  base: DbWorkItemCreateParams
-  demoProject: DbDemoWorkItemCreateParams
-  members: ServicesMember[]
-  projectName: Project
-  tagIDs: number[]
+  base: DbWorkItemCreateParams;
+  demoProject: DbDemoWorkItemCreateParams;
+  members: ServicesMember[];
+  projectName: Project;
+  tagIDs: number[];
 }

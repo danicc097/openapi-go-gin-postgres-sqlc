@@ -8,5 +8,5 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface DbDemoTwoWorkItemCreateParams {
-  customDateForProject2?: Date | null
+  customDateForProject2?: Date | null;
 }

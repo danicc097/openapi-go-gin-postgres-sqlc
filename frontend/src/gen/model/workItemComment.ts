@@ -6,6 +6,6 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestWorkItemComment } from './restWorkItemComment'
+import type { RestWorkItemComment } from './restWorkItemComment';
 
-export type WorkItemComment = RestWorkItemComment
+export type WorkItemComment = RestWorkItemComment;

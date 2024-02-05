@@ -8,10 +8,10 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface DbTeam {
-  createdAt: Date
-  description: string
-  name: string
-  projectID: EntityIDs.ProjectID
-  teamID: EntityIDs.TeamID
-  updatedAt: Date
+  createdAt: Date;
+  description: string;
+  name: string;
+  projectID: EntityIDs.ProjectID;
+  teamID: EntityIDs.TeamID;
+  updatedAt: Date;
 }

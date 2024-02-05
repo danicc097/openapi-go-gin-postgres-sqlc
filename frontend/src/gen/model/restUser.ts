@@ -6,27 +6,27 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbUserAPIKey } from './dbUserAPIKey'
-import type { DbProject } from './dbProject'
-import type { Role } from './role'
-import type { Scopes } from './scopes'
-import type { DbTeam } from './dbTeam'
-import type { DbUserID } from './dbUserID'
+import type { DbUserAPIKey } from './dbUserAPIKey';
+import type { DbProject } from './dbProject';
+import type { Role } from './role';
+import type { Scopes } from './scopes';
+import type { DbTeam } from './dbTeam';
+import type { DbUserID } from './dbUserID';
 
 export interface RestUser {
-  apiKey?: DbUserAPIKey
-  createdAt: Date
-  deletedAt?: Date | null
-  email: string
-  firstName?: string | null
-  fullName?: string | null
-  hasGlobalNotifications: boolean
-  hasPersonalNotifications: boolean
-  lastName?: string | null
-  projects?: DbProject[] | null
-  role: Role
-  scopes: Scopes
-  teams?: DbTeam[] | null
-  userID: EntityIDs.UserID
-  username: string
+  apiKey?: DbUserAPIKey;
+  createdAt: Date;
+  deletedAt?: Date | null;
+  email: string;
+  firstName?: string | null;
+  fullName?: string | null;
+  hasGlobalNotifications: boolean;
+  hasPersonalNotifications: boolean;
+  lastName?: string | null;
+  projects?: DbProject[] | null;
+  role: Role;
+  scopes: Scopes;
+  teams?: DbTeam[] | null;
+  userID: EntityIDs.UserID;
+  username: string;
 }

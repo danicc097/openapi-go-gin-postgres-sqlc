@@ -8,11 +8,11 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface DbKanbanStep {
-  color: string
-  description: string
-  kanbanStepID: EntityIDs.KanbanStepID
-  name: string
-  projectID: EntityIDs.ProjectID
-  stepOrder: number
-  timeTrackable: boolean
+  color: string;
+  description: string;
+  kanbanStepID: EntityIDs.KanbanStepID;
+  name: string;
+  projectID: EntityIDs.ProjectID;
+  stepOrder: number;
+  timeTrackable: boolean;
 }

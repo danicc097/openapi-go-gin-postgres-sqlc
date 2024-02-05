@@ -8,8 +8,8 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface DbActivityCreateParams {
-  description: string
-  isProductive: boolean
-  name: string
-  projectID?: EntityIDs.ProjectID
+  description: string;
+  isProductive: boolean;
+  name: string;
+  projectID?: EntityIDs.ProjectID;
 }

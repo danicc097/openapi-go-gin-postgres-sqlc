@@ -7,4 +7,4 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * OpenAPI spec version: 2.0.0
  */
 
-export type ProjectConfigVisualization = { [key: string]: any }
+export type ProjectConfigVisualization = { [key: string]: any };

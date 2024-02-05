@@ -6,6 +6,6 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestPaginatedUsersResponse } from './restPaginatedUsersResponse'
+import type { RestPaginatedUsersResponse } from './restPaginatedUsersResponse';
 
-export type PaginatedUsersResponse = RestPaginatedUsersResponse
+export type PaginatedUsersResponse = RestPaginatedUsersResponse;

@@ -965,7 +965,7 @@ x.gen.frontend() {
       rm -f frontend/src/client-validator/gen/validate.ts
       find frontend/src/client-validator/gen/ -type f -exec \
         sed -i "s/from '.\/validate'/from '..\/validate'/g" {} \;
-    } &
+    } & # nothing depends on this yet
 
     {
       v="$(openapi-typescript --version)"
@@ -1526,9 +1526,10 @@ import { Branded } from 'src/types/utils'
 $(printf "%s\n" "${exports[@]}")
 EOF
 
+  # NOTE: disabled prettier and mock gen, not worth the time it takes.
   # cheapest way to update both new and previous files that need formatting
   # ignore errors since files may have been deleted
-  { git diff --name-only $FRONTEND_GEN | xargs --no-run-if-empty prettier --write -- &>/dev/null; } || true
+  # { git diff --name-only $FRONTEND_GEN | xargs --no-run-if-empty prettier --write -- &>/dev/null; } || true
 }
 
 # Creates a generic CRUD endpoint in the OpenAPI spec and generates related files for a

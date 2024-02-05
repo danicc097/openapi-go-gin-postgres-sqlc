@@ -8,9 +8,9 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface ProjectConfigField {
-  isEditable: boolean
-  isVisible: boolean
-  name: string
-  path: string
-  showCollapsed: boolean
+  isEditable: boolean;
+  isVisible: boolean;
+  name: string;
+  path: string;
+  showCollapsed: boolean;
 }

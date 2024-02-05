@@ -6,6 +6,6 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestUpdateTeamRequest } from './restUpdateTeamRequest'
+import type { RestUpdateTeamRequest } from './restUpdateTeamRequest';
 
-export type UpdateTeamRequest = RestUpdateTeamRequest
+export type UpdateTeamRequest = RestUpdateTeamRequest;

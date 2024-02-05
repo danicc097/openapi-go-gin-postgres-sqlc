@@ -6,10 +6,10 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbUserID } from './dbUserID'
+import type { DbUserID } from './dbUserID';
 
 export interface RestUpdateWorkItemCommentRequest {
-  message?: string
-  userID?: EntityIDs.UserID
-  workItemID?: EntityIDs.WorkItemID
+  message?: string;
+  userID?: EntityIDs.UserID;
+  workItemID?: EntityIDs.WorkItemID;
 }

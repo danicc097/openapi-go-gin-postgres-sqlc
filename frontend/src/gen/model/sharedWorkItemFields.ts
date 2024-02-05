@@ -6,6 +6,6 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestSharedWorkItemFields } from './restSharedWorkItemFields'
+import type { RestSharedWorkItemFields } from './restSharedWorkItemFields';
 
-export type SharedWorkItemFields = RestSharedWorkItemFields
+export type SharedWorkItemFields = RestSharedWorkItemFields;

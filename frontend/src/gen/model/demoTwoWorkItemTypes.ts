@@ -10,11 +10,12 @@ import type * as EntityIDs from 'src/gen/entity-ids'
 /**
  * is generated from work_item_types table.
  */
-export type DemoTwoWorkItemTypes = typeof DemoTwoWorkItemTypes[keyof typeof DemoTwoWorkItemTypes]
+export type DemoTwoWorkItemTypes = typeof DemoTwoWorkItemTypes[keyof typeof DemoTwoWorkItemTypes];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DemoTwoWorkItemTypes = {
   Type_1: 'Type 1',
   Type_2: 'Type 2',
   Another_type: 'Another type',
-} as const
+} as const;

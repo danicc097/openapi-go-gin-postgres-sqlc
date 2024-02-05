@@ -6,19 +6,19 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { Scopes } from './scopes'
-import type { DbUserID } from './dbUserID'
+import type { Scopes } from './scopes';
+import type { DbUserID } from './dbUserID';
 
 export interface DbUser {
-  createdAt: Date
-  deletedAt?: Date | null
-  email: string
-  firstName?: string | null
-  fullName?: string | null
-  hasGlobalNotifications: boolean
-  hasPersonalNotifications: boolean
-  lastName?: string | null
-  scopes: Scopes
-  userID: EntityIDs.UserID
-  username: string
+  createdAt: Date;
+  deletedAt?: Date | null;
+  email: string;
+  firstName?: string | null;
+  fullName?: string | null;
+  hasGlobalNotifications: boolean;
+  hasPersonalNotifications: boolean;
+  lastName?: string | null;
+  scopes: Scopes;
+  userID: EntityIDs.UserID;
+  username: string;
 }
