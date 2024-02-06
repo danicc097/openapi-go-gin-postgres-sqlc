@@ -37,7 +37,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "Activity"
+      "x-gen-struct": "Activity"
     },
     "CreateActivityRequest": {
       "properties": {
@@ -60,7 +60,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "CreateActivityRequest"
+      "x-gen-struct": "CreateActivityRequest"
     },
     "CreateDemoTwoWorkItemRequest": {
       "properties": {
@@ -95,7 +95,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "CreateDemoTwoWorkItemRequest"
+      "x-gen-struct": "CreateDemoTwoWorkItemRequest"
     },
     "CreateDemoWorkItemRequest": {
       "properties": {
@@ -130,7 +130,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "CreateDemoWorkItemRequest"
+      "x-gen-struct": "CreateDemoWorkItemRequest"
     },
     "CreateProjectBoardRequest": {
       "properties": {
@@ -155,7 +155,7 @@
       },
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "CreateProjectBoardRequest"
+      "x-gen-struct": "CreateProjectBoardRequest"
     },
     "CreateTeamRequest": {
       "properties": {
@@ -174,7 +174,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "CreateTeamRequest"
+      "x-gen-struct": "CreateTeamRequest"
     },
     "CreateWorkItemCommentRequest": {
       "properties": {
@@ -196,7 +196,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "CreateWorkItemCommentRequest"
+      "x-gen-struct": "CreateWorkItemCommentRequest"
     },
     "CreateWorkItemTagRequest": {
       "properties": {
@@ -221,7 +221,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "CreateWorkItemTagRequest"
+      "x-gen-struct": "CreateWorkItemTagRequest"
     },
     "CreateWorkItemTypeRequest": {
       "properties": {
@@ -246,7 +246,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "CreateWorkItemTypeRequest"
+      "x-gen-struct": "CreateWorkItemTypeRequest"
     },
     "DbDemoTwoWorkItem": {
       "properties": {
@@ -311,7 +311,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "DbDemoWorkItem"
+      "x-gen-struct": "DbDemoWorkItem"
     },
     "DbDemoWorkItemCreateParams": {
       "properties": {
@@ -382,7 +382,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "DbKanbanStep"
+      "x-gen-struct": "DbKanbanStep"
     },
     "DbNotification": {
       "properties": {
@@ -476,7 +476,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "DbProject"
+      "x-gen-struct": "DbProject"
     },
     "DbTeam": {
       "properties": {
@@ -585,7 +585,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "DbTimeEntry"
+      "x-gen-struct": "DbTimeEntry"
     },
     "DbUser": {
       "properties": {
@@ -651,7 +651,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "DbUser"
+      "x-gen-struct": "DbUser"
     },
     "DbUserAPIKey": {
       "properties": {
@@ -676,7 +676,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "DbUserAPIKey"
+      "x-gen-struct": "DbUserAPIKey"
     },
     "DbUserID": {
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -775,7 +775,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "DbWorkItem"
+      "x-gen-struct": "DbWorkItem"
     },
     "DbWorkItemComment": {
       "properties": {
@@ -815,7 +815,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "DbWorkItemComment"
+      "x-gen-struct": "DbWorkItemComment"
     },
     "DbWorkItemCreateParams": {
       "properties": {
@@ -902,7 +902,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "DbWorkItemTag"
+      "x-gen-struct": "DbWorkItemTag"
     },
     "DbWorkItemTagCreateParams": {
       "properties": {
@@ -959,7 +959,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "DbWorkItemType"
+      "x-gen-struct": "DbWorkItemType"
     },
     "DemoTwoWorkItems": {
       "properties": {
@@ -1078,7 +1078,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "DemoTwoWorkItems"
+      "x-gen-struct": "DemoTwoWorkItems"
     },
     "DemoWorkItems": {
       "properties": {
@@ -1197,7 +1197,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "DemoWorkItems"
+      "x-gen-struct": "DemoWorkItems"
     },
     "Notification": {
       "properties": {
@@ -1226,7 +1226,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "Notification"
+      "x-gen-struct": "Notification"
     },
     "PaginatedNotificationsResponse": {
       "properties": {
@@ -1249,7 +1249,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "PaginatedNotificationsResponse"
+      "x-gen-struct": "PaginatedNotificationsResponse"
     },
     "PaginatedUsersResponse": {
       "properties": {
@@ -1272,7 +1272,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "PaginatedUsersResponse"
+      "x-gen-struct": "PaginatedUsersResponse"
     },
     "PaginationPage": {
       "properties": {
@@ -1282,7 +1282,7 @@
       },
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "PaginationPage"
+      "x-gen-struct": "PaginationPage"
     },
     "ProjectBoard": {
       "properties": {
@@ -1295,7 +1295,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "ProjectBoard"
+      "x-gen-struct": "ProjectBoard"
     },
     "ServicesMember": {
       "properties": {
@@ -1357,7 +1357,7 @@
       },
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "SharedWorkItemFields"
+      "x-gen-struct": "SharedWorkItemFields"
     },
     "Team": {
       "properties": {
@@ -1398,7 +1398,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "Team"
+      "x-gen-struct": "Team"
     },
     "UpdateActivityRequest": {
       "properties": {
@@ -1414,7 +1414,7 @@
       },
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "UpdateActivityRequest"
+      "x-gen-struct": "UpdateActivityRequest"
     },
     "UpdateTeamRequest": {
       "properties": {
@@ -1427,7 +1427,7 @@
       },
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "UpdateTeamRequest"
+      "x-gen-struct": "UpdateTeamRequest"
     },
     "UpdateWorkItemCommentRequest": {
       "properties": {
@@ -1443,7 +1443,7 @@
       },
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "UpdateWorkItemCommentRequest"
+      "x-gen-struct": "UpdateWorkItemCommentRequest"
     },
     "UpdateWorkItemTagRequest": {
       "properties": {
@@ -1460,7 +1460,7 @@
       },
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "UpdateWorkItemTagRequest"
+      "x-gen-struct": "UpdateWorkItemTagRequest"
     },
     "UpdateWorkItemTypeRequest": {
       "properties": {
@@ -1477,7 +1477,7 @@
       },
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "UpdateWorkItemTypeRequest"
+      "x-gen-struct": "UpdateWorkItemTypeRequest"
     },
     "User": {
       "properties": {
@@ -1568,7 +1568,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "User"
+      "x-gen-struct": "User"
     },
     "WorkItemComment": {
       "properties": {
@@ -1608,7 +1608,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "WorkItemComment"
+      "x-gen-struct": "WorkItemComment"
     },
     "WorkItemTag": {
       "properties": {
@@ -1647,7 +1647,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "WorkItemTag"
+      "x-gen-struct": "WorkItemTag"
     },
     "WorkItemType": {
       "properties": {
@@ -1680,7 +1680,7 @@
       ],
       "type": "object",
       "x-is-generated": true,
-      "x-postgen-struct": "WorkItemType"
+      "x-gen-struct": "WorkItemType"
     },
     "Direction": {
       "type": "string",
@@ -1794,7 +1794,7 @@
         }
       },
       "type": "object",
-      "x-postgen-struct": "CreateProjectBoardRequest"
+      "x-gen-struct": "CreateProjectBoardRequest"
     },
     "HTTPValidationError": {
       "title": "HTTPValidationError",

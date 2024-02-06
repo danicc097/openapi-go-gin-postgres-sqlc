@@ -353,7 +353,7 @@ x.gen.pregen() {
     local new_schemas=""
     for ref in "${missing_rest_models[@]}"; do
       new_schemas+="\"$ref\": {
-            \"x-postgen-struct\": \"$ref\",
+            \"x-gen-struct\": \"$ref\",
             \"x-is-generated\": true
           },"
     done
@@ -415,7 +415,7 @@ x.gen.pregen() {
 
     update_spec_with_structs
 
-    remove_schemas_marked_to_delete
+    remove_schemas_marked_for_deletion
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
@@ -2337,7 +2337,7 @@ find_deleted_pkg_schemas() {
 }
 
 update_spec_with_structs() {
-  vext="x-postgen-struct"
+  vext="x-gen-struct"
   struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC_PATH)
   mapfile -t struct_names <<<$struct_names
 
@@ -2390,7 +2390,7 @@ $(join_by "
 
   # must rename these from gen_schema_spec_path to trim Rest prefix
   # and also append
-  # \"x-postgen-struct\": \"Rest$rest_struct\",
+  # \"x-gen-struct\": \"Rest$rest_struct\",
   # \"x-is-generated\": true
   # yq e '.components.schemas.* | key | select(test("^Rest"))' openapi.yaml
   # there is no way to delete, so we should concat `.components.schemas.$key = .components.schemas.Rest$key | del(.components.schemas.Rest$key) |`
@@ -2425,7 +2425,7 @@ $(join_by "
         " "$SPEC_PATH" "$gen_schema_spec_path" | sponge "$SPEC_PATH"
 }
 
-remove_schemas_marked_to_delete() {
+remove_schemas_marked_for_deletion() {
   local paths_arr paths
   paths_arr=$(yq e '..
       | select(has("x-TO-BE-DELETED"))
