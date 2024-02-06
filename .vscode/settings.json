@@ -12,6 +12,7 @@
     "-count=1",
     "-v"
   ],
+  // "go.testEnvFile": null,
   // --
   "shellcheck.executablePath": "shellcheck",
   "shellcheck.customArgs": [
@@ -74,7 +75,7 @@
       "db/migrations/*.down.sql"
     ],
     "postMigrationFiles": [
-      "db/post-migration/*.sql"
+      "db/post-migrations/*.sql"
     ],
     "target": "all",
   },

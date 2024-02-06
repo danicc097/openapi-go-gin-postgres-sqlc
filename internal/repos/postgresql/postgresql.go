@@ -9,7 +9,9 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	zapadapter "github.com/jackc/pgx-zap"
@@ -28,14 +30,37 @@ import (
 
 var pgxAfterConnectLock = sync.Mutex{}
 
+type DBOptions struct {
+	DBName string
+}
+
+type Option func(*DBOptions)
+
+// WithDBName sets the postgres database to connect to.
+func WithDBName(db string) Option {
+	return func(opt *DBOptions) {
+		opt.DBName = db
+	}
+}
+
 // New instantiates the PostgreSQL database using configuration defined in environment variables.
-func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
+func New(logger *zap.SugaredLogger, options ...Option) (*pgxpool.Pool, *sql.DB, error) {
 	cfg := internal.Config
+
+	dbOptions := &DBOptions{}
+	for _, option := range options {
+		option(dbOptions)
+	}
+
+	if dbOptions.DBName == "" {
+		dbOptions.DBName = cfg.Postgres.DB
+	}
+
 	dsn := url.URL{
 		Scheme: "postgres",
 		User:   url.UserPassword(cfg.Postgres.User, cfg.Postgres.Password),
-		Host:   fmt.Sprintf("%s:%s", cfg.Postgres.Server, fmt.Sprint(cfg.Postgres.Port)),
-		Path:   cfg.Postgres.DB,
+		Host:   fmt.Sprintf("%s:%s", cfg.Postgres.Server, strconv.Itoa(cfg.Postgres.Port)),
+		Path:   dbOptions.DBName,
 	}
 
 	q := dsn.Query()
@@ -69,14 +94,14 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not query database types")
 	}
 
-	atLeastOneConnInPool := false
+	var atLeastOneConnInPool atomic.Bool
 
 	poolConfig.MinConns = 4
 	// NOTE: CI fails using default of 4
 	poolConfig.MaxConns = 20
 	if os.Getenv("IS_TESTING") != "" {
 		poolConfig.ConnConfig.RuntimeParams["statement_timeout"] = "60s"
-		poolConfig.MaxConns = 50
+		poolConfig.MaxConns = 20
 	}
 
 	// called after a connection is established, but before it is added to the pool.
@@ -101,7 +126,7 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 			return internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not register data types")
 		}
 
-		atLeastOneConnInPool = true
+		atLeastOneConnInPool.Store(true)
 
 		return nil
 	}
@@ -120,7 +145,7 @@ func New(logger *zap.SugaredLogger) (*pgxpool.Pool, *sql.DB, error) {
 		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "sql.Open")
 	}
 
-	for !atLeastOneConnInPool {
+	for !atLeastOneConnInPool.Load() {
 		time.Sleep(50 * time.Millisecond)
 	}
 

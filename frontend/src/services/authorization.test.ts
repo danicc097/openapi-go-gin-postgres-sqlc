@@ -1,10 +1,9 @@
 import type { User } from 'src/gen/model'
-import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import { isAuthorized } from 'src/services/authorization'
 import { describe, expect, it, test } from 'vitest'
 
 describe('roles and scopes', async () => {
-  const user = getGetCurrentUserMock() as User
+  const user = {} as User
 
   test('role', () => {
     user.role = 'user'

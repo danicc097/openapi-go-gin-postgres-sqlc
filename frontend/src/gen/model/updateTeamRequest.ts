@@ -8,6 +8,6 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface UpdateTeamRequest {
-  description?: string
-  name?: string
+  description?: string;
+  name?: string;
 }

@@ -6,15 +6,15 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbWorkItemCreateParamsMetadata } from './dbWorkItemCreateParamsMetadata'
+import type { DbWorkItemCreateParamsMetadata } from './dbWorkItemCreateParamsMetadata';
 
 export interface DbWorkItemCreateParams {
-  closedAt?: Date | null
-  description: string
-  kanbanStepID: EntityIDs.KanbanStepID
-  metadata: DbWorkItemCreateParamsMetadata
-  targetDate: Date
-  teamID: EntityIDs.TeamID
-  title: string
-  workItemTypeID: EntityIDs.WorkItemTypeID
+  closedAt?: Date | null;
+  description: string;
+  kanbanStepID: EntityIDs.KanbanStepID;
+  metadata: DbWorkItemCreateParamsMetadata;
+  targetDate: Date;
+  teamID: EntityIDs.TeamID;
+  title: string;
+  workItemTypeID: EntityIDs.WorkItemTypeID;
 }

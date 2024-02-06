@@ -8,7 +8,7 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface UpdateWorkItemTagRequest {
-  color?: string
-  description?: string
-  name?: string
+  color?: string;
+  description?: string;
+  name?: string;
 }

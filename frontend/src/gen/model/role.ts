@@ -10,7 +10,8 @@ import type * as EntityIDs from 'src/gen/entity-ids'
 /**
  * is generated from roles.json keys.
  */
-export type Role = typeof Role[keyof typeof Role]
+export type Role = typeof Role[keyof typeof Role];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Role = {
@@ -20,4 +21,4 @@ export const Role = {
   manager: 'manager',
   admin: 'admin',
   superAdmin: 'superAdmin',
-} as const
+} as const;

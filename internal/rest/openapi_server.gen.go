@@ -302,6 +302,14 @@ type CreateDemoWorkItemRequest  struct {
 */
 
 /* Ignoring existing rest struct
+// CreateProjectBoardRequest defines the model for CreateProjectBoardRequest.
+type CreateProjectBoardRequest  struct {
+    Tags *[]externalRef0.DbWorkItemTagCreateParams`json:"tags"`
+    Teams *[]externalRef0.DbTeamCreateParams`json:"teams"`
+}
+*/
+
+/* Ignoring existing rest struct
 // CreateTeamRequest defines the model for CreateTeamRequest.
 type CreateTeamRequest  struct {
     Description string`json:"description"`
@@ -688,16 +696,23 @@ type NotificationType string
 /* Ignoring existing rest struct
 // PaginatedNotificationsResponse defines the model for PaginatedNotificationsResponse.
 type PaginatedNotificationsResponse  struct {
-    Items *[]externalRef0.RestNotification`json:"items"`
-    Page externalRef0.RestPaginationPage`json:"page"`
+    Items *[]externalRef0.Notification`json:"items"`
+    Page externalRef0.PaginationPage`json:"page"`
 }
 */
 
 /* Ignoring existing rest struct
 // PaginatedUsersResponse defines the model for PaginatedUsersResponse.
 type PaginatedUsersResponse  struct {
-    Items *[]externalRef0.RestUser`json:"items"`
-    Page externalRef0.RestPaginationPage`json:"page"`
+    Items *[]externalRef0.User`json:"items"`
+    Page externalRef0.PaginationPage`json:"page"`
+}
+*/
+
+/* Ignoring existing rest struct
+// PaginationPage defines the model for PaginationPage.
+type PaginationPage  struct {
+    NextCursor *string`json:"nextCursor,omitempty"`
 }
 */
 
@@ -728,23 +743,6 @@ type ProjectConfigField struct {
 	ShowCollapsed bool   `json:"showCollapsed"`
 }
 
-// RestNotification defines the model for RestNotification.
-type RestNotification struct {
-	Notification       externalRef0.DbNotification `json:"notification"`
-	NotificationID     int                         `json:"notificationID"`
-	Read               bool                        `json:"read"`
-	UserID             externalRef0.DbUserID       `json:"userID"`
-	UserNotificationID int                         `json:"userNotificationID"`
-}
-
-// RestPaginationPage defines the model for RestPaginationPage.
-type RestPaginationPage struct {
-	NextCursor *string `json:"nextCursor,omitempty"`
-}
-
-// RestUser defines the model for RestUser.
-type RestUser = externalRef0.User
-
 // Role is generated from roles.json keys.
 type Role string
 
@@ -760,6 +758,17 @@ type ServicesMember struct {
 	Role   externalRef0.WorkItemRole `json:"role"`
 	UserID externalRef0.DbUserID     `json:"userID"`
 }
+
+/* Ignoring existing rest struct
+// SharedWorkItemFields defines the model for SharedWorkItemFields.
+type SharedWorkItemFields  struct {
+    Members *[]externalRef0.DbUserWIAUWorkItem`json:"members"`
+    TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
+    WorkItemComments *[]externalRef0.DbWorkItemComment`json:"workItemComments"`
+    WorkItemTags *[]externalRef0.DbWorkItemTag`json:"workItemTags"`
+    WorkItemType *externalRef0.DbWorkItemType`json:"workItemType,omitempty"`
+}
+*/
 
 /* Ignoring existing rest struct
 // Team defines the model for Team.

@@ -6,17 +6,17 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { NotificationType } from './notificationType'
-import type { DbUserID } from './dbUserID'
+import type { NotificationType } from './notificationType';
+import type { DbUserID } from './dbUserID';
 
 export interface DbNotification {
-  body: string
-  createdAt: Date
-  labels: string[]
-  link?: string | null
-  notificationID: EntityIDs.NotificationID
-  notificationType: NotificationType
-  receiver?: DbUserID
-  sender: DbUserID
-  title: string
+  body: string;
+  createdAt: Date;
+  labels: string[];
+  link?: string | null;
+  notificationID: EntityIDs.NotificationID;
+  notificationType: NotificationType;
+  receiver?: DbUserID;
+  sender: DbUserID;
+  title: string;
 }

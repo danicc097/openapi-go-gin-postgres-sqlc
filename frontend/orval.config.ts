@@ -7,11 +7,11 @@ import { reactQueryDefaultAppOptions } from './src/react-query'
 export default defineConfig({
   main: {
     output: {
+      mock: true,
       mode: 'tags-split',
       target: './src/gen/main.ts',
       schemas: './src/gen/model',
       client: 'react-query',
-      mock: true, // until changes are made to deeply nested generation
       tsconfig: './tsconfig.json',
       // for extreme cases can also override the core package itself https://github.com/anymaniax/orval/tree/master/packages/core
       override: {
@@ -35,7 +35,7 @@ export default defineConfig({
             // userID: () => faker.datatype.uuid(),
             email: () => faker.internet.email(),
             metadata: () => ({
-              key: faker.color.hsl(),
+              key: faker.string.sample(),
             }),
           },
           required: true,
@@ -47,8 +47,9 @@ export default defineConfig({
       target: '../openapi.exploded.yaml',
       // validation: true, // https://github.com/IBM/openapi-validator/#configuration via .validaterc
     },
-    hooks: {
-      afterAllFilesWrite: 'prettier --write',
-    },
+    // required for orval types gen right after
+    // hooks: {
+    //   afterAllFilesWrite: 'prettier --write',
+    // },
   },
 })

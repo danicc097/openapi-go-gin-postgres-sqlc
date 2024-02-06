@@ -7,10 +7,10 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * OpenAPI spec version: 2.0.0
  */
 
-export type CreateDemoWorkItemRequestProjectName =
-  typeof CreateDemoWorkItemRequestProjectName[keyof typeof CreateDemoWorkItemRequestProjectName]
+export type CreateDemoWorkItemRequestProjectName = typeof CreateDemoWorkItemRequestProjectName[keyof typeof CreateDemoWorkItemRequestProjectName];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const CreateDemoWorkItemRequestProjectName = {
   demo: 'demo',
-} as const
+} as const;

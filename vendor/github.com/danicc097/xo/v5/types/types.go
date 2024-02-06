@@ -97,12 +97,15 @@ type Constraint struct {
 	// "unique" "check" "primary_key" "foreign_key"
 	Type string `json:"key_type"`
 	// Key name
-	Name          string `json:"name,omitempty"`
-	TableName     string `json:"table_name"`
-	ColumnName    string `json:"column_name"`
-	RefTableName  string `json:"ref_table_name"`
-	RefColumnName string `json:"ref_column_name"`
-	Comment       string `json:"commment"`
+	Name             string `json:"name,omitempty"`
+	TableSchema      string `json:"table_schema"`
+	TableName        string `json:"table_name"`
+	ColumnName       string `json:"column_name"`
+	RefTableSchema   string `json:"ref_table_schema"`
+	RefTableName     string `json:"ref_table_name"`
+	RefColumnName    string `json:"ref_column_name"`
+	ColumnComment    string `json:"column_comment"`
+	RefColumnComment string `json:"ref_column_comment"`
 }
 
 // Table is a table or view.

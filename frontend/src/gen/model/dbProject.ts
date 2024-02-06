@@ -6,14 +6,14 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { ProjectConfig } from './projectConfig'
-import type { Project } from './project'
+import type { ProjectConfig } from './projectConfig';
+import type { Project } from './project';
 
 export interface DbProject {
-  boardConfig: ProjectConfig
-  createdAt: Date
-  description: string
-  name: Project
-  projectID: EntityIDs.ProjectID
-  updatedAt: Date
+  boardConfig: ProjectConfig;
+  createdAt: Date;
+  description: string;
+  name: Project;
+  projectID: EntityIDs.ProjectID;
+  updatedAt: Date;
 }

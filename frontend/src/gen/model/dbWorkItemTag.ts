@@ -8,10 +8,10 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface DbWorkItemTag {
-  color: string
-  deletedAt?: Date | null
-  description: string
-  name: string
-  projectID: EntityIDs.ProjectID
-  workItemTagID: EntityIDs.WorkItemTagID
+  color: string;
+  deletedAt?: Date | null;
+  description: string;
+  name: string;
+  projectID: EntityIDs.ProjectID;
+  workItemTagID: EntityIDs.WorkItemTagID;
 }

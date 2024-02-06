@@ -13,7 +13,8 @@ Notes:
 - 'Private' marks an error to be hidden in response.
 
  */
-export type ErrorCode = typeof ErrorCode[keyof typeof ErrorCode]
+export type ErrorCode = typeof ErrorCode[keyof typeof ErrorCode];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ErrorCode = {
@@ -30,4 +31,4 @@ export const ErrorCode = {
   InvalidRole: 'InvalidRole',
   InvalidScope: 'InvalidScope',
   InvalidUUID: 'InvalidUUID',
-} as const
+} as const;

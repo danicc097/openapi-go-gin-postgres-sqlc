@@ -100,7 +100,8 @@ func (al *AdvisoryLock) IsLocked() bool {
 }
 
 // Release releases a single advisory lock.
-// Note that multiple lock requests stack.
+// Returns whether unlocking was successful or not (doesn't own lock, failed...).
+// Note that stacked lock requests require the same number of Release calls.
 func (al *AdvisoryLock) Release() bool {
 	ctx := context.Background()
 	if al.conn == nil {
@@ -111,18 +112,17 @@ func (al *AdvisoryLock) Release() bool {
 		return false
 	}
 
-	locked := true
-
 	if _, err := al.conn.Exec(ctx, `SELECT pg_advisory_unlock($1)`, al.LockID); err != nil {
-		return locked
+		return false
 	}
 
+	var unlockSuccess bool
 	row := al.conn.QueryRow(ctx, checkLockQuery, al.LockID)
-	if err := row.Scan(&locked); err != nil {
-		return locked
+	if err := row.Scan(&unlockSuccess); err != nil {
+		return false
 	}
 
-	return locked
+	return unlockSuccess
 }
 
 // ReleaseConn releases the connection to the pool.

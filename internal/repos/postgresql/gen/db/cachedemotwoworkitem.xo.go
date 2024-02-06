@@ -23,19 +23,19 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type CacheDemoTwoWorkItem struct {
-	CustomDateForProject2 *time.Time     `json:"customDateForProject2" db:"custom_date_for_project_2"`                   // custom_date_for_project_2
-	WorkItemID            int            `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`          // work_item_id
-	Title                 string         `json:"title" db:"title" required:"true" nullable:"false"`                      // title
-	Description           string         `json:"description" db:"description" required:"true" nullable:"false"`          // description
-	WorkItemTypeID        int            `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"` // work_item_type_id
-	Metadata              map[string]any `json:"metadata" db:"metadata" required:"true" nullable:"false"`                // metadata
-	TeamID                int            `json:"teamID" db:"team_id" required:"true" nullable:"false"`                   // team_id
-	KanbanStepID          int            `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`      // kanban_step_id
-	ClosedAt              *time.Time     `json:"closedAt" db:"closed_at"`                                                // closed_at
-	TargetDate            time.Time      `json:"targetDate" db:"target_date" required:"true" nullable:"false"`           // target_date
-	CreatedAt             time.Time      `json:"createdAt" db:"created_at" required:"true" nullable:"false"`             // created_at
-	UpdatedAt             time.Time      `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`             // updated_at
-	DeletedAt             *time.Time     `json:"deletedAt" db:"deleted_at"`                                              // deleted_at
+	CustomDateForProject2 *time.Time     `json:"customDateForProject2" db:"custom_date_for_project_2"`                                                  // custom_date_for_project_2
+	WorkItemID            WorkItemID     `json:"workItemID" db:"work_item_id" required:"true" nullable:"false" ref:"#/components/schemas/DbWorkItemID"` // work_item_id
+	Title                 string         `json:"title" db:"title" required:"true" nullable:"false"`                                                     // title
+	Description           string         `json:"description" db:"description" required:"true" nullable:"false"`                                         // description
+	WorkItemTypeID        int            `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"`                                // work_item_type_id
+	Metadata              map[string]any `json:"metadata" db:"metadata" required:"true" nullable:"false"`                                               // metadata
+	TeamID                int            `json:"teamID" db:"team_id" required:"true" nullable:"false"`                                                  // team_id
+	KanbanStepID          int            `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`                                     // kanban_step_id
+	ClosedAt              *time.Time     `json:"closedAt" db:"closed_at"`                                                                               // closed_at
+	TargetDate            time.Time      `json:"targetDate" db:"target_date" required:"true" nullable:"false"`                                          // target_date
+	CreatedAt             time.Time      `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                            // created_at
+	UpdatedAt             time.Time      `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                                            // updated_at
+	DeletedAt             *time.Time     `json:"deletedAt" db:"deleted_at"`                                                                             // deleted_at
 }
 
 type CacheDemoTwoWorkItemSelectConfig struct {
@@ -147,7 +147,7 @@ func WithCacheDemoTwoWorkItemHavingClause(conditions map[string][]any) CacheDemo
 }
 
 // CacheDemoTwoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of CacheDemoTwoWorkItem.
-func CacheDemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID int, direction models.Direction, opts ...CacheDemoTwoWorkItemSelectConfigOption) ([]CacheDemoTwoWorkItem, error) {
+func CacheDemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...CacheDemoTwoWorkItemSelectConfigOption) ([]CacheDemoTwoWorkItem, error) {
 	c := &CacheDemoTwoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoTwoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -250,7 +250,7 @@ func CacheDemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workI
 // CacheDemoTwoWorkItemByWorkItemID retrieves a row from 'cache.demo_two_work_items' as a CacheDemoTwoWorkItem.
 //
 // Generated from index 'cache_demo_two_work_items_work_item_id_unique'.
-func CacheDemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...CacheDemoTwoWorkItemSelectConfigOption) (*CacheDemoTwoWorkItem, error) {
+func CacheDemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...CacheDemoTwoWorkItemSelectConfigOption) (*CacheDemoTwoWorkItem, error) {
 	c := &CacheDemoTwoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoTwoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {

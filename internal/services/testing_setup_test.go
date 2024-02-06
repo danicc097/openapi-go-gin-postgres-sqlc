@@ -32,7 +32,7 @@ func testMain(m *testing.M) int {
 	internal.Config.RolePolicyPath = "../../roles.json"
 	internal.Config.ScopePolicyPath = "../../scopes.json"
 
-	testPool, testSQLPool, err = testutil.NewDB()
+	testPool, testSQLPool, err = testutil.NewDB(testutil.WithMigrations())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't create testPool: %s\n", err)
 		os.Exit(1)

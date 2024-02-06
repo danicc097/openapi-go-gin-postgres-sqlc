@@ -6,201 +6,75 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import { faker } from '@faker-js/faker'
-import { HttpResponse, delay, http } from 'msw'
-import { Project, Role, Scope } from '.././model'
+import {
+  faker
+} from '@faker-js/faker'
+import {
+  HttpResponse,
+  delay,
+  http
+} from 'msw'
+import {
+  Project,
+  Role,
+  Scope
+} from '.././model'
 
-export const getGetPaginatedUsersMock = () => ({
-  items: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    apiKey: {
-      apiKey: faker.word.sample(),
-      expiresOn: (() => faker.date.past())(),
-      userID: faker.word.sample() as EntityIDs.UserID,
-    },
-    createdAt: (() => faker.date.past())(),
-    deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-    email: faker.word.sample(),
-    firstName: faker.helpers.arrayElement([faker.word.sample(), null]),
-    fullName: faker.helpers.arrayElement([faker.word.sample(), null]),
-    hasGlobalNotifications: faker.datatype.boolean(),
-    hasPersonalNotifications: faker.datatype.boolean(),
-    lastName: faker.helpers.arrayElement([faker.word.sample(), null]),
-    projects: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-      boardConfig: {
-        fields: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-          isEditable: faker.datatype.boolean(),
-          isVisible: faker.datatype.boolean(),
-          name: faker.word.sample(),
-          path: faker.word.sample(),
-          showCollapsed: faker.datatype.boolean(),
-        })),
-        header: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-          faker.word.sample(),
-        ),
-        visualization: {},
-      },
-      createdAt: (() => faker.date.past())(),
-      description: faker.word.sample(),
-      name: faker.helpers.arrayElement(Object.values(Project)),
-      projectID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.ProjectID,
-      updatedAt: (() => faker.date.past())(),
-    })),
-    role: faker.helpers.arrayElement(Object.values(Role)),
-    scopes: faker.helpers.arrayElements(Object.values(Scope)),
-    teams: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-      createdAt: (() => faker.date.past())(),
-      description: faker.word.sample(),
-      name: faker.word.sample(),
-      projectID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.ProjectID,
-      teamID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.TeamID,
-      updatedAt: (() => faker.date.past())(),
-    })),
-    userID: faker.word.sample() as EntityIDs.UserID,
-    username: faker.word.sample(),
-  })),
-  page: { nextCursor: faker.word.sample() },
-})
+export const getGetPaginatedUsersMock = () => ({items: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({apiKey: {apiKey: faker.word.sample(), expiresOn: (() => faker.date.past())(), userID: faker.word.sample() as EntityIDs.UserID}, createdAt: (() => faker.date.past())(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), email: faker.word.sample(), firstName: faker.helpers.arrayElement([faker.word.sample(), null]), fullName: faker.helpers.arrayElement([faker.word.sample(), null]), hasGlobalNotifications: faker.datatype.boolean(), hasPersonalNotifications: faker.datatype.boolean(), lastName: faker.helpers.arrayElement([faker.word.sample(), null]), projects: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({boardConfig: {fields: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({isEditable: faker.datatype.boolean(), isVisible: faker.datatype.boolean(), name: faker.word.sample(), path: faker.word.sample(), showCollapsed: faker.datatype.boolean()})), header: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => (faker.word.sample())), visualization: {}}, createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.helpers.arrayElement(Object.values(Project)), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, updatedAt: (() => faker.date.past())()})), role: faker.helpers.arrayElement(Object.values(Role)), scopes: faker.helpers.arrayElements(Object.values(Scope)), teams: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, teamID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TeamID, updatedAt: (() => faker.date.past())()})), userID: faker.word.sample() as EntityIDs.UserID, username: faker.word.sample()})), page: {nextCursor: faker.word.sample()}})
 
-export const getGetCurrentUserMock = () => ({
-  apiKey: {
-    apiKey: faker.word.sample(),
-    expiresOn: (() => faker.date.past())(),
-    userID: faker.word.sample() as EntityIDs.UserID,
-  },
-  createdAt: (() => faker.date.past())(),
-  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-  email: (() => faker.internet.email())(),
-  firstName: faker.helpers.arrayElement([faker.word.sample(), null]),
-  fullName: faker.helpers.arrayElement([faker.word.sample(), null]),
-  hasGlobalNotifications: faker.datatype.boolean(),
-  hasPersonalNotifications: faker.datatype.boolean(),
-  lastName: faker.helpers.arrayElement([faker.word.sample(), null]),
-  projects: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    boardConfig: {
-      fields: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-        isEditable: faker.datatype.boolean(),
-        isVisible: faker.datatype.boolean(),
-        name: faker.word.sample(),
-        path: faker.word.sample(),
-        showCollapsed: faker.datatype.boolean(),
-      })),
-      header: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-        faker.word.sample(),
-      ),
-      visualization: {},
-    },
-    createdAt: (() => faker.date.past())(),
-    description: faker.word.sample(),
-    name: faker.helpers.arrayElement(Object.values(Project)),
-    projectID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.ProjectID,
-    updatedAt: (() => faker.date.past())(),
-  })),
-  role: faker.helpers.arrayElement(Object.values(Role)),
-  scopes: faker.helpers.arrayElements(Object.values(Scope)),
-  teams: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    createdAt: (() => faker.date.past())(),
-    description: faker.word.sample(),
-    name: faker.word.sample(),
-    projectID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.ProjectID,
-    teamID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.TeamID,
-    updatedAt: (() => faker.date.past())(),
-  })),
-  userID: faker.word.sample() as EntityIDs.UserID,
-  username: faker.word.sample(),
-})
+export const getGetCurrentUserMock = () => ({apiKey: {apiKey: faker.word.sample(), expiresOn: (() => faker.date.past())(), userID: faker.word.sample() as EntityIDs.UserID}, createdAt: (() => faker.date.past())(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), email: (() => faker.internet.email())(), firstName: faker.helpers.arrayElement([faker.word.sample(), null]), fullName: faker.helpers.arrayElement([faker.word.sample(), null]), hasGlobalNotifications: faker.datatype.boolean(), hasPersonalNotifications: faker.datatype.boolean(), lastName: faker.helpers.arrayElement([faker.word.sample(), null]), projects: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({boardConfig: {fields: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({isEditable: faker.datatype.boolean(), isVisible: faker.datatype.boolean(), name: faker.word.sample(), path: faker.word.sample(), showCollapsed: faker.datatype.boolean()})), header: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => (faker.word.sample())), visualization: {}}, createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.helpers.arrayElement(Object.values(Project)), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, updatedAt: (() => faker.date.past())()})), role: faker.helpers.arrayElement(Object.values(Role)), scopes: faker.helpers.arrayElements(Object.values(Scope)), teams: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, teamID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TeamID, updatedAt: (() => faker.date.past())()})), userID: faker.word.sample() as EntityIDs.UserID, username: faker.word.sample()})
 
-export const getUpdateUserMock = () => ({
-  apiKey: {
-    apiKey: faker.word.sample(),
-    expiresOn: (() => faker.date.past())(),
-    userID: faker.word.sample() as EntityIDs.UserID,
-  },
-  createdAt: (() => faker.date.past())(),
-  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-  email: (() => faker.internet.email())(),
-  firstName: faker.helpers.arrayElement([faker.word.sample(), null]),
-  fullName: faker.helpers.arrayElement([faker.word.sample(), null]),
-  hasGlobalNotifications: faker.datatype.boolean(),
-  hasPersonalNotifications: faker.datatype.boolean(),
-  lastName: faker.helpers.arrayElement([faker.word.sample(), null]),
-  projects: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    boardConfig: {
-      fields: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-        isEditable: faker.datatype.boolean(),
-        isVisible: faker.datatype.boolean(),
-        name: faker.word.sample(),
-        path: faker.word.sample(),
-        showCollapsed: faker.datatype.boolean(),
-      })),
-      header: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() =>
-        faker.word.sample(),
-      ),
-      visualization: {},
-    },
-    createdAt: (() => faker.date.past())(),
-    description: faker.word.sample(),
-    name: faker.helpers.arrayElement(Object.values(Project)),
-    projectID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.ProjectID,
-    updatedAt: (() => faker.date.past())(),
-  })),
-  role: faker.helpers.arrayElement(Object.values(Role)),
-  scopes: faker.helpers.arrayElements(Object.values(Scope)),
-  teams: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({
-    createdAt: (() => faker.date.past())(),
-    description: faker.word.sample(),
-    name: faker.word.sample(),
-    projectID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.ProjectID,
-    teamID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.TeamID,
-    updatedAt: (() => faker.date.past())(),
-  })),
-  userID: faker.word.sample() as EntityIDs.UserID,
-  username: faker.word.sample(),
-})
+export const getUpdateUserMock = () => ({apiKey: {apiKey: faker.word.sample(), expiresOn: (() => faker.date.past())(), userID: faker.word.sample() as EntityIDs.UserID}, createdAt: (() => faker.date.past())(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), email: (() => faker.internet.email())(), firstName: faker.helpers.arrayElement([faker.word.sample(), null]), fullName: faker.helpers.arrayElement([faker.word.sample(), null]), hasGlobalNotifications: faker.datatype.boolean(), hasPersonalNotifications: faker.datatype.boolean(), lastName: faker.helpers.arrayElement([faker.word.sample(), null]), projects: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({boardConfig: {fields: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({isEditable: faker.datatype.boolean(), isVisible: faker.datatype.boolean(), name: faker.word.sample(), path: faker.word.sample(), showCollapsed: faker.datatype.boolean()})), header: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => (faker.word.sample())), visualization: {}}, createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.helpers.arrayElement(Object.values(Project)), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, updatedAt: (() => faker.date.past())()})), role: faker.helpers.arrayElement(Object.values(Role)), scopes: faker.helpers.arrayElements(Object.values(Scope)), teams: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, teamID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TeamID, updatedAt: (() => faker.date.past())()})), userID: faker.word.sample() as EntityIDs.UserID, username: faker.word.sample()})
 
 export const getUserMock = () => [
-  http.get('*/user/page', async () => {
-    await delay(1000)
-    return new HttpResponse(JSON.stringify(getGetPaginatedUsersMock()), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-  http.get('*/user/me', async () => {
-    await delay(1000)
-    return new HttpResponse(JSON.stringify(getGetCurrentUserMock()), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-  http.patch('*/user/:id/authorization', async () => {
-    await delay(1000)
-    return new HttpResponse(null, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-  http.delete('*/user/:id', async () => {
-    await delay(1000)
-    return new HttpResponse(null, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-  http.patch('*/user/:id', async () => {
-    await delay(1000)
-    return new HttpResponse(JSON.stringify(getUpdateUserMock()), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-]
+http.get('*/user/page', async () => {
+        await delay(1000);
+        return new HttpResponse(JSON.stringify(getGetPaginatedUsersMock()),
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        )
+      }),http.get('*/user/me', async () => {
+        await delay(1000);
+        return new HttpResponse(JSON.stringify(getGetCurrentUserMock()),
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        )
+      }),http.patch('*/user/:id/authorization', async () => {
+        await delay(1000);
+        return new HttpResponse(null,
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        )
+      }),http.delete('*/user/:id', async () => {
+        await delay(1000);
+        return new HttpResponse(null,
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        )
+      }),http.patch('*/user/:id', async () => {
+        await delay(1000);
+        return new HttpResponse(JSON.stringify(getUpdateUserMock()),
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        )
+      }),]

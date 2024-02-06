@@ -8,6 +8,6 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface DbTeamCreateParams {
-  description: string
-  name: string
+  description: string;
+  name: string;
 }

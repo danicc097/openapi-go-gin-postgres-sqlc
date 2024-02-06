@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC1091,SC2155,SC2086
 
 TOP_LEVEL_DIR="$(git rev-parse --show-toplevel)"
@@ -363,30 +363,61 @@ show_tracebacks() {
 }
 
 # Cache given files and return if checksums match or an error code otherwise.
+# Parameters:
+#   - Output .md5 file
+#   - Files or directories to cache
+#   - Optionally pass glob patterns to exclude.
 cache_all() {
-  if [ $# -lt 2 ]; then
-    err "Usage: ${FUNCNAME[0]} <output_cache_md5_path> <file_or_directory> [<file_or_directory> ...]"
+  local excludes=()
+  local args=()
+  local no_force_regen=false
+  #i=0 is still program name in "$@". Therefore continue up to <= too.
+  for ((i = 1; i <= ${#@}; i++)); do
+    arg="${!i}"
+    case $arg in
+    --no-regen)
+      no_force_regen=true
+      ;;
+    --exclude)
+      ((i++))
+      excludes+=("${!i}")
+      ;;
+    *)
+      args+=("$arg")
+      ;;
+    esac
+  done
+
+  if [ "${#args[@]}" -lt 2 ]; then
+    echo "Usage: ${FUNCNAME[0]} [--exclude <pattern>] <output_cache_md5_path> <file_or_directory> [<file_or_directory> ...]" >&2
+    return 1
   fi
 
-  output_file="$1"
-  shift
-
+  local output_file="${args[0]}"
   true >"$output_file.tmp"
 
-  for arg in "$@"; do
-    if test -d "$arg"; then
-      find "$arg" -type f -exec md5sum {} + >>"$output_file.tmp"
-    elif test -f "$arg"; then
+  exclude_args=()
+  for exclude in "${excludes[@]}"; do
+    exclude_args+=('!' -path "$exclude")
+  done
+
+  for arg in "${args[@]:1}"; do
+    if [ -d "$arg" ]; then
+      find "$arg" -type f "${exclude_args[@]}" -exec md5sum {} + >>"$output_file.tmp"
+    elif [ -f "$arg" ]; then
       md5sum "$arg" >>"$output_file.tmp"
     else
-      err "Invalid argument: $arg"
+      echo "Invalid argument: $arg" >&2
+      return 1
     fi
   done
 
-  if cmp -s "$output_file" "$output_file.tmp" && [[ $X_FORCE_REGEN -eq 0 ]]; then
-    echo "${CYAN}Skipping generation (cached).${OFF} Regenerate with ${RED}--x-force-regen${OFF}"
-    mv "$output_file.tmp" "$output_file"
-    return 0
+  if cmp -s "$output_file" "$output_file.tmp"; then
+    if test -z "$X_FORCE_REGEN" || $no_force_regen; then
+      echo "${CYAN}Skipping generation (cached).${OFF} Regenerate with ${RED}--x-force-regen${OFF}"
+      rm "$output_file.tmp"
+      return 0
+    fi
   fi
 
   mv "$output_file.tmp" "$output_file"
@@ -429,19 +460,19 @@ docker.postgres() {
 }
 
 docker.postgres.psql() {
-  docker exec -i postgres_db_"$PROJECT_PREFIX" psql -qtAX -v ON_ERROR_STOP=on "$@"
+  docker.postgres psql -qtAX -v ON_ERROR_STOP=on "$@"
 }
 
 # Drop and recreate database `db`. Defaults to POSTGRES_DB.
 docker.postgres.drop_and_recreate_db() {
   local db="${1:POSTGRES_DB}"
 
-  docker.postgres.isready
+  docker.postgres.wait_until_ready
 
   docker.postgres psql --no-psqlrc \
     -U "$POSTGRES_USER" \
     -d "postgres" \
-    -c "CREATE DATABASE test OWNER $POSTGRES_USER;" 2>/dev/null || true
+    -c "CREATE DATABASE db_template OWNER $POSTGRES_USER;" 2>/dev/null || true
 
   echo "${RED}${BOLD}Dropping database $db.${OFF}"
   docker.postgres \
@@ -450,7 +481,7 @@ docker.postgres.drop_and_recreate_db() {
   echo "${BLUE}${BOLD}Creating database $db.${OFF}"
   docker.postgres psql --no-psqlrc \
     -U "$POSTGRES_USER" \
-    -d test \
+    -d db_template \
     -c "CREATE DATABASE $db OWNER $POSTGRES_USER;"
 }
 
@@ -458,7 +489,7 @@ docker.postgres.drop_and_recreate_db() {
 docker.postgres.create_db() {
   local db="$1"
 
-  docker.postgres.isready
+  docker.postgres.wait_until_ready
 
   echo "${BLUE}${BOLD}Creating database $db.${OFF}"
   {
@@ -474,7 +505,7 @@ docker.postgres.create_db() {
 docker.postgres.stop_db_processes() {
   local db="$1"
 
-  docker.postgres.isready
+  docker.postgres.wait_until_ready
 
   echo "${BLUE}${BOLD}Stopping any running processes for database $db.${OFF}"
   docker.postgres psql --no-psqlrc \
@@ -485,13 +516,13 @@ docker.postgres.stop_db_processes() {
         where datname='$db'" >/dev/null
 }
 
-docker.postgres.isready() {
+docker.postgres.wait_until_ready() {
   pg_ready=0
   while [[ ! $pg_ready -eq 1 ]]; do
     docker.postgres \
       pg_isready -U "$POSTGRES_USER" || {
       echo "${YELLOW}Waiting for postgres database to be ready...${OFF}"
-      sleep 2
+      sleep 1
       continue
     }
     pg_ready=1
@@ -526,28 +557,51 @@ docker.images.load_latest() {
 AWK_REMOVE_GO_COMMENTS='
      /\/\*/ { f=1 } # set flag that is a block comment
 
-     f==0 && !/^\s*(\/\/|\/\*)/ {
+     f==0 && !/^\s*(\/\/|\/\*)/ { # skip // or /*
         print  # print non-commented lines
      }
-     /\*\// { f=0 } # reset flag at end of comment
+     /\*\// { f=0 } # reset flag at end of block comment
 '
 
-# Stores go structs in package to a given array.
-# Deprecated: use `ast-parser find-structs` and calculate difference
+# Stores go structs (including generic instances) in pkg to a given array.
+# For 100% assurance use `ast-parser find-structs`
 # Parameters:
 #    Struct array (nameref)
-#    Package directory
+#    Package directory or file
 go-utils.find_structs() {
   local -n __arr="$1"
   local pkg="$2"
   mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
-    sed -ne '/\[/!s/[\s]*type\(.*\)struct.*/\1/p') # /\[/! excludes lines containing [ right away
+    sed -ne '/\[/!s/type\(.*\)struct.*/\1/p') # /\[/! excludes lines containing [ right away
+
+  local generic_structs=()
+  go-utils.find_generic_structs generic_structs $pkg
+
+  for generic_struct in "${generic_structs[@]}"; do
+    mapfile -t -O ${#__arr[@]} __arr < <(find "$pkg" -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+      sed -n -e "s/^type \(.*\) = ${generic_struct}\[.*\].*/\1/p")
+  done
+
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No structs found in package $pkg"
   fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
 }
 
+# Stores go generic struct definitions in pkg to a given array.
+# Parameters:
+#    Struct array (nameref)
+#    Package directory or file
+go-utils.find_generic_structs() {
+  local -n __arr="$1"
+  local pkg="$2"
+  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+    sed -ne 's/^type \(.*\)\[.*\] struct.*/\1/p')
+
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
+}
+
+# Stores xo serial or bigserial PK generated types in pkg to a given array.
 go-utils.find_db_ids_int() {
   local -n __arr="$1"
   local pkg="$2"
@@ -556,9 +610,10 @@ go-utils.find_db_ids_int() {
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No db int IDs found in package $pkg"
   fi
-  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" ${__arr[@]}))
 }
 
+# Stores xo uuid PK generated types in pkg to a given array.
 go-utils.find_db_ids_uuid() {
   local -n __arr="$1"
   local pkg="$2"
@@ -567,7 +622,7 @@ go-utils.find_db_ids_uuid() {
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No db uuid IDs found in package $pkg"
   fi
-  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" ${__arr[@]}))
 }
 
 # Stores go test functions in package to a given array.
@@ -583,13 +638,13 @@ go-utils.find_test_functions() {
       sed -n -E 's/^\s*func\s*(Test[a-zA-Z0-9_]*)\(.*/\1/p'
   )
 
-  mapfile -t __arr < <(printf "%s\n" "${__arr[@]}" | grep -v "TestMain")
+  mapfile -t __arr < <(printf "%s\n" ${__arr[@]} | grep -v "TestMain")
 
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No test functions found in package in directory: $pkg"
   fi
 
-  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort -u < <(printf "%s\n" ${__arr[@]}))
 }
 
 # Stores go struct fields to a given array.
@@ -621,22 +676,6 @@ go-utils.struct_fields() {
   done < <(echo "$struct_definition")
 }
 
-# Stores go generic structs in package to a given array.
-# Deprecated: use `ast-parser find-structs [--exclude-generics]` and calculate difference
-# Parameters:
-#    Struct array (nameref)
-#    Package directory
-go-utils.find_generic_structs() {
-  local -n __arr="$1"
-  local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
-    sed -ne 's/[\s]*type\s*\([^\[]*\)\(\[.*\]\)\+\s*struct.*/\1/p')
-  if [[ ${#__arr[@]} -eq 0 ]]; then
-    err "No structs found in package $pkg"
-  fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
-}
-
 # Stores go interfaces in package to a given array.
 # Parameters:
 #    Interface array (nameref)
@@ -649,7 +688,7 @@ go-utils.find_interfaces() {
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No interfaces found in package $pkg"
   fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
 }
 
 # Stores go enums in package to a given array.
@@ -664,7 +703,7 @@ go-utils.find_enums() {
   if [[ ${#__arr[@]} -eq 0 ]]; then
     echo "No enums found in package $pkg"
   fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
 }
 
 # Returns go interface methods in file.
@@ -692,7 +731,7 @@ go-utils.find_all_types() {
   if [[ ${#__arr[@]} -eq 0 ]]; then
     echo "No types found in package $pkg"
   fi
-  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" "${__arr[@]}"))
+  mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
 }
 
 # Escape regular string for sed commands

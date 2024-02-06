@@ -10,7 +10,11 @@ import (
 // accounting for reverse proxy configuration.
 func BuildAPIURL(subpaths ...string) string {
 	cfg := Config
-	elems := []string{cfg.APIPrefix, cfg.APIVersion}
+	apiPrefix := cfg.APIPrefix
+	if cfg.AppEnv == AppEnvDev {
+		apiPrefix = "" // won't run dockerized, so prefix isn't stripped
+	}
+	elems := []string{apiPrefix, cfg.APIVersion}
 	elems = append(elems, subpaths...)
 
 	path, err := url.JoinPath(

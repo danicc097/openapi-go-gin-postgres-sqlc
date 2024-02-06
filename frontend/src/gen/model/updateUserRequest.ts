@@ -12,7 +12,7 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 export interface UpdateUserRequest {
   /** originally from auth server but updatable */
-  firstName?: string
+  firstName?: string;
   /** originally from auth server but updatable */
-  lastName?: string
+  lastName?: string;
 }

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 create_args="$(test -n "$with_project" && echo "projectID")"
 

@@ -23,6 +23,7 @@ func GetFileRuntimeDirectory() string {
 var setupOnce sync.Once
 
 // Setup runs necessary pre-testing commands for a package: env vars loading, sourcing...
+// It runs once for each suite.
 func Setup() {
 	setupOnce.Do(func() {
 		rootDir := path.Join(GetFileRuntimeDirectory(), "../..")

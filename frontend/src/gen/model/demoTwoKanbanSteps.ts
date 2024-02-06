@@ -10,9 +10,10 @@ import type * as EntityIDs from 'src/gen/entity-ids'
 /**
  * is generated from kanban_steps table.
  */
-export type DemoTwoKanbanSteps = typeof DemoTwoKanbanSteps[keyof typeof DemoTwoKanbanSteps]
+export type DemoTwoKanbanSteps = typeof DemoTwoKanbanSteps[keyof typeof DemoTwoKanbanSteps];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DemoTwoKanbanSteps = {
   Received: 'Received',
-} as const
+} as const;

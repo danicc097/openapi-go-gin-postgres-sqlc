@@ -8,10 +8,10 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface Activity {
-  activityID: EntityIDs.ActivityID
-  deletedAt?: Date | null
-  description: string
-  isProductive: boolean
-  name: string
-  projectID: EntityIDs.ProjectID
+  activityID: EntityIDs.ActivityID;
+  deletedAt?: Date | null;
+  description: string;
+  isProductive: boolean;
+  name: string;
+  projectID: EntityIDs.ProjectID;
 }

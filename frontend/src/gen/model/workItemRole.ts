@@ -10,10 +10,11 @@ import type * as EntityIDs from 'src/gen/entity-ids'
 /**
  * is generated from database enum 'work_item_role'.
  */
-export type WorkItemRole = typeof WorkItemRole[keyof typeof WorkItemRole]
+export type WorkItemRole = typeof WorkItemRole[keyof typeof WorkItemRole];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const WorkItemRole = {
   preparer: 'preparer',
   reviewer: 'reviewer',
-} as const
+} as const;

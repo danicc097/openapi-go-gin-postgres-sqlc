@@ -10,7 +10,8 @@ import type * as EntityIDs from 'src/gen/entity-ids'
 /**
  * is generated from scopes.json keys.
  */
-export type Scope = typeof Scope[keyof typeof Scope]
+export type Scope = typeof Scope[keyof typeof Scope];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Scope = {
@@ -31,4 +32,4 @@ export const Scope = {
   'work-item-comment:create': 'work-item-comment:create',
   'work-item-comment:edit': 'work-item-comment:edit',
   'work-item-comment:delete': 'work-item-comment:delete',
-} as const
+} as const;

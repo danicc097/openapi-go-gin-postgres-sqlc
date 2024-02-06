@@ -55,6 +55,8 @@ const (
 	tagsAnnot annotation = `"tags"`
 
 	propertiesJoinOperator = ","
+	// propertyIgnoreConstraints generates a field as if it had no FK or PK constraints.
+	propertyIgnoreConstraints = "ignore-constraints"
 	// propertyJSONPrivate sets a json:"-" tag.
 	propertyJSONPrivate = "private"
 	// propertyOpenAPINotRequired marks schema field as not required
@@ -1111,6 +1113,7 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 
 		fkeys = append(fkeys, tfk)
 	}
+
 	table.ForeignKeys = fkeys
 
 	return table, nil
@@ -1141,7 +1144,7 @@ func convertConstraints(ctx context.Context, constraints []xo.Constraint, tables
 cc_label:
 	for _, constraint := range constraints {
 		var card cardinality
-		cards := cardinalityRE.FindStringSubmatch(constraint.Comment)
+		cards := cardinalityRE.FindStringSubmatch(constraint.ColumnComment)
 		if len(cards) > 0 {
 			card = cardinality(strings.ToUpper(cards[1]))
 
@@ -1182,7 +1185,7 @@ cc_label:
 				continue // itself
 			}
 			var ccard cardinality
-			ccards := cardinalityRE.FindStringSubmatch(constraint.Comment)
+			ccards := cardinalityRE.FindStringSubmatch(constraint.ColumnComment)
 			if len(ccards) > 0 {
 				ccard = cardinality(strings.ToUpper(ccards[1]))
 
@@ -1231,17 +1234,30 @@ cc_label:
 				}
 			}
 
-			// dummy constraint to automatically create join
+			annotations, err := parseAnnotations(constraint.ColumnComment)
+			if err != nil {
+				panic(fmt.Sprintf("parseAnnotations: %v", err))
+			}
+
+			properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
+			ignoreConstraints := contains(properties, propertyIgnoreConstraints)
+			if ignoreConstraints {
+				continue
+			}
+
+			// dummy constraint to automatically create join in FK reference table
 			cc = append(cc, Constraint{
-				Type:           constraint.Type,
-				Cardinality:    O2O,
-				Name:           constraint.Name + " (inferred)",
-				RefTableName:   constraint.RefTableName,
-				TableName:      constraint.TableName,
-				RefColumnName:  constraint.RefColumnName,
-				ColumnName:     constraint.ColumnName,
-				JoinTableClash: joinTableClash,
-				IsInferredO2O:  true,
+				Type:             constraint.Type,
+				Cardinality:      O2O,
+				Name:             constraint.Name + " (inferred)",
+				RefTableName:     constraint.RefTableName,
+				TableName:        constraint.TableName,
+				RefColumnName:    constraint.RefColumnName,
+				RefColumnComment: constraint.RefColumnComment,
+				ColumnName:       constraint.ColumnName,
+				ColumnComment:    constraint.ColumnComment,
+				JoinTableClash:   joinTableClash,
+				IsInferredO2O:    true,
 			})
 
 			t := tables[constraint.TableName]
@@ -1265,16 +1281,18 @@ cc_label:
 			if af.isSingleFK && af.isSinglePK {
 				fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", constraint.TableName, constraint.RefColumnName)
 				cc = append(cc, Constraint{
-					Type:           constraint.Type,
-					Cardinality:    O2O,
-					Name:           constraint.Name + "(O2O inferred - PK is FK)",
-					RefTableName:   constraint.TableName,
-					TableName:      constraint.RefTableName,
-					RefColumnName:  constraint.ColumnName,
-					ColumnName:     constraint.RefColumnName,
-					JoinTableClash: joinTableClash,
-					IsInferredO2O:  true,
-					RefPKisFK:      true,
+					Type:             constraint.Type,
+					Cardinality:      O2O,
+					Name:             constraint.Name + "(O2O inferred - PK is FK)",
+					RefTableName:     constraint.TableName,
+					TableName:        constraint.RefTableName,
+					RefColumnName:    constraint.ColumnName,
+					RefColumnComment: constraint.ColumnComment,
+					ColumnName:       constraint.RefColumnName,
+					ColumnComment:    constraint.RefColumnComment,
+					JoinTableClash:   joinTableClash,
+					IsInferredO2O:    true,
+					RefPKisFK:        true,
 				})
 			}
 
@@ -1294,14 +1312,16 @@ cc_label:
 			}
 			// create a dummy referenced constraint
 			cc = append(cc, Constraint{
-				Type:           constraint.Type,
-				Cardinality:    O2O,
-				Name:           constraint.Name + "(O2O reference)",
-				RefTableName:   constraint.TableName,
-				TableName:      constraint.RefTableName,
-				RefColumnName:  constraint.ColumnName,
-				ColumnName:     constraint.RefColumnName,
-				JoinTableClash: joinTableClash,
+				Type:             constraint.Type,
+				Cardinality:      O2O,
+				Name:             constraint.Name + "(O2O reference)",
+				RefTableName:     constraint.TableName,
+				TableName:        constraint.RefTableName,
+				RefColumnName:    constraint.ColumnName,
+				RefColumnComment: constraint.ColumnComment,
+				ColumnName:       constraint.RefColumnName,
+				ColumnComment:    constraint.RefColumnComment,
+				JoinTableClash:   joinTableClash,
 			})
 		}
 
@@ -1326,21 +1346,25 @@ cc_label:
 				TableName:             constraint.TableName,
 				RefTableName:          constraint.RefTableName,
 				ColumnName:            constraint.ColumnName,
+				ColumnComment:         constraint.ColumnComment,
 				RefColumnName:         constraint.RefColumnName,
+				RefColumnComment:      constraint.RefColumnComment,
 				JoinTableClash:        joinTableClash,
 				IsGeneratedO2OFromM2O: true,
 			})
 		}
 
 		cc = append(cc, Constraint{
-			Type:           constraint.Type,
-			Cardinality:    card, // cardinality comments only needed on FK columns, never base tables
-			Name:           constraint.Name,
-			TableName:      constraint.TableName,
-			RefTableName:   constraint.RefTableName,
-			ColumnName:     constraint.ColumnName,
-			RefColumnName:  constraint.RefColumnName,
-			JoinTableClash: joinTableClash,
+			Type:             constraint.Type,
+			Cardinality:      card, // cardinality comments only needed on FK columns, never base tables
+			Name:             constraint.Name,
+			TableName:        constraint.TableName,
+			RefTableName:     constraint.RefTableName,
+			ColumnName:       constraint.ColumnName,
+			ColumnComment:    constraint.ColumnComment,
+			RefColumnName:    constraint.RefColumnName,
+			RefColumnComment: constraint.RefColumnComment,
+			JoinTableClash:   joinTableClash,
 		})
 	}
 
@@ -1404,6 +1428,28 @@ func overloadedName(sqlTypes []string, proc Proc) string {
 	return fmt.Sprintf("%sBy%sAnd%s", proc.GoName, front, last)
 }
 
+func parseAnnotations(comment string) (map[annotation]string, error) {
+	annotations := make(map[annotation]string)
+	for _, a := range strings.Split(comment, annotationJoinOperator) {
+		if a == "" {
+			continue
+		}
+		typ, val, found := strings.Cut(a, annotationAssignmentOperator)
+		if !found {
+			return nil, fmt.Errorf("invalid column comment annotation format: %s", a)
+		}
+		typ = annotation(strings.TrimSpace(typ))
+		switch typ {
+		case cardinalityAnnot, tagsAnnot, typeAnnot, propertiesAnnot:
+			annotations[typ] = strings.TrimSpace(val)
+		default:
+			return nil, fmt.Errorf("invalid column comment annotation type: %s", typ)
+		}
+	}
+
+	return annotations, nil
+}
+
 func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, error) {
 	typ, zero, err := goType(ctx, f.Type)
 	if err != nil {
@@ -1416,22 +1462,9 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 		openAPISchema = camelExport(f.Type.Enum.Name)
 	}
 
-	annotations := make(map[annotation]string)
-	for _, a := range strings.Split(f.Comment, annotationJoinOperator) {
-		if a == "" {
-			continue
-		}
-		typ, val, found := strings.Cut(a, annotationAssignmentOperator)
-		if !found {
-			return Field{}, fmt.Errorf("invalid column comment annotation format: %s", a)
-		}
-		typ = annotation(strings.TrimSpace(typ))
-		switch typ {
-		case cardinalityAnnot, tagsAnnot, typeAnnot, propertiesAnnot:
-			annotations[typ] = strings.TrimSpace(val)
-		default:
-			return Field{}, fmt.Errorf("invalid column comment annotation type: %s", typ)
-		}
+	annotations, err := parseAnnotations(f.Comment)
+	if err != nil {
+		return Field{}, fmt.Errorf("parse annotations: %w", err)
 	}
 
 	properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
@@ -1440,7 +1473,7 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	if extraTags != "" {
 		extraTags = " " + extraTags
 	}
-
+	originalType := typ
 	if typeOverride != "" {
 		typ = typeOverride
 		if strings.Count(typeOverride, ".") > 0 {
@@ -1452,22 +1485,22 @@ func convertField(ctx context.Context, tf transformFunc, f xo.Field) (Field, err
 	}
 
 	return Field{
-		Type:          typ,
-		GoName:        tf(f.Name),
-		SQLName:       f.Name,
-		Zero:          zero,
-		IsPrimary:     f.IsPrimary,
-		IsSequence:    f.IsSequence,
-		IsIgnored:     f.IsIgnored,
-		EnumPkg:       enumPkg,
-		EnumSchema:    enumSchema,
-		Comment:       f.Comment,
-		IsDateOrTime:  f.IsDateOrTime,
-		TypeOverride:  typeOverride,
-		OpenAPISchema: openAPISchema,
-		ExtraTags:     extraTags,
-		Properties:    properties,
-		IsGenerated:   strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated, // TODO: we have default gen_random_uuid(), clock_timestamp(), current_timestamp... not reliable
+		Type:           typ,
+		GoName:         tf(f.Name),
+		SQLName:        f.Name,
+		Zero:           zero,
+		IsPrimary:      f.IsPrimary,
+		IsSequence:     f.IsSequence,
+		IsIgnored:      f.IsIgnored,
+		EnumPkg:        enumPkg,
+		EnumSchema:     enumSchema,
+		Comment:        f.Comment,
+		IsDateOrTime:   f.IsDateOrTime,
+		UnderlyingType: originalType,
+		OpenAPISchema:  openAPISchema,
+		ExtraTags:      extraTags,
+		Properties:     properties,
+		IsGenerated:    strings.Contains(f.Default, "()") || f.IsSequence || f.IsGenerated, // TODO: we have default gen_random_uuid(), clock_timestamp(), current_timestamp... not reliable
 	}, nil
 }
 
@@ -2200,7 +2233,7 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 			joinName = camelExport(inflector.Pluralize(lookupName))
 			if c.JoinTableClash {
-				lc := strings.TrimSuffix(c.LookupColumn, "_id")
+				lc := strings.TrimSuffix(c.LookupColumnName, "_id")
 				joinName = joinName + camelExport(lc)
 			}
 
@@ -2729,7 +2762,7 @@ func (f *Funcs) joinNames(t Table) []string {
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 			joinName = camelExport(inflector.Pluralize(lookupName))
 			if c.JoinTableClash {
-				lc := strings.TrimSuffix(c.LookupColumn, "_id")
+				lc := strings.TrimSuffix(c.LookupColumnName, "_id")
 				joinName = joinName + camelExport(lc)
 			}
 		case M2O:
@@ -2869,9 +2902,8 @@ func (f *Funcs) sqlstr(typ string, v any) string {
 	return fmt.Sprintf("sqlstr := `%s `", strings.Join(lines, "\n\t"))
 }
 
-// check pk can be straightforwardly used as cursor
-func pkIsValidCursor(pk Field) bool {
-	return pk.Type == "time.Time" || pk.Type == "int" || pk.Type == "int64"
+func isValidCursor(pk Field) bool {
+	return pk.UnderlyingType == "time.Time" || pk.UnderlyingType == "int" || pk.UnderlyingType == "int64"
 }
 
 // cursor_columns returns a list of possible combinations of columns for cursor pagination
@@ -2883,20 +2915,20 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 		tableConstraints = tc
 	}
 	existingCursors := make(map[string]bool)
-	pkAreValidCursor := true
+	allPKsAreValidCursor := len(table.PrimaryKeys) > 0
 	for _, pk := range table.PrimaryKeys {
-		if !pkIsValidCursor(pk) {
-			pkAreValidCursor = false
+		if !isValidCursor(pk) {
+			allPKsAreValidCursor = false
 		}
 	}
-	if pkAreValidCursor {
+	if allPKsAreValidCursor {
 		cursorCols = append(cursorCols, table.PrimaryKeys) // assume its incremental. if it's not then simply dont call it...
 	}
 
 	for _, z := range table.Fields {
 		for _, c := range tableConstraints {
 			if c.Type == "unique" && c.ColumnName == z.SQLName {
-				if pkIsValidCursor(z) {
+				if isValidCursor(z) {
 					if existingCursors[z.SQLName] {
 						continue
 					}
@@ -3372,8 +3404,10 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 		if c.Cardinality == M2M && c.RefTableName == table {
 			for _, c1 := range cc {
 				if c1.TableName == c.TableName && c1.ColumnName != c.ColumnName && c1.Type == "foreign_key" {
-					c1.LookupColumn = c.ColumnName
-					c1.LookupRefColumn = c.RefColumnName
+					c1.LookupColumnName = c.ColumnName
+					c1.LookupColumnComment = c.ColumnComment
+					c1.LookupRefColumnName = c.RefColumnName
+					c1.LookupRefColumnComment = c.RefColumnComment
 					f.tableConstraints[table] = append(f.tableConstraints[table], c1)
 				}
 			}
@@ -3417,9 +3451,9 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 
 		lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 
-		params["LookupColumn"] = c.LookupColumn
+		params["LookupColumn"] = c.LookupColumnName
 		params["JoinTable"] = c.RefTableName
-		params["LookupRefColumn"] = c.LookupRefColumn
+		params["LookupRefColumn"] = c.LookupRefColumnName
 		params["JoinTablePK"] = c.RefColumnName
 		params["LookupJoinTablePK"] = c.ColumnName
 		params["LookupJoinTablePKAgg"] = c.RefTableName
@@ -3801,6 +3835,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
 	hidden := false
 	isPrivate := contains(field.Properties, propertyJSONPrivate)
+	// ignoreConstraints := contains(field.Properties, propertyIgnoreConstraints)
 	notRequired := contains(field.Properties, propertyOpenAPINotRequired)
 	isPointer := strings.HasPrefix(field.Type, "*")
 	af := analyzeField(table, field)
@@ -3859,6 +3894,12 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 			fieldType = strings.Repeat("*", pc) + table.GoName + "ID"
 		}
 	}
+
+	// TODO: its not skipping the current field constraints,
+	// but making sure other tables ignore constraints
+	// therefore we need to have RefColumnField and LookupRefField
+	// so we can keep this constraint is set or not.
+	// ignoreConstraints := contains(field.Properties, propertyIgnoreConstraints)
 
 	var constraintTyp string
 	if af.isFK {
@@ -4081,7 +4122,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 			joinName := c.TableName + "_" + inflector.Pluralize(lookupName)
 			typ = camelExport(singularize(c.RefTableName))
-			m2mJoinName := inflector.Singularize(camelExport(strings.TrimSuffix(c.LookupColumn, "_id")))
+			m2mJoinName := inflector.Singularize(camelExport(strings.TrimSuffix(c.LookupColumnName, "_id")))
 			m2mName := camelExport(inflector.Pluralize(strings.TrimSuffix(c.ColumnName, "_id")))
 			// e.g. joining books.book_id , users.user_id via publication_author.author_id/publication_id
 			// we get PublicationAuthorsJoin on books and AuthorPublicationsJoin on users which is more descriptive
@@ -4660,39 +4701,44 @@ type Constraint struct {
 	Type        string
 	Cardinality cardinality
 	// Postgres constraint name
-	Name                  string
-	TableName             string // table where FK is defined
-	ColumnName            string
-	RefTableName          string // table FK references
-	RefColumnName         string // RefTableName column FK references
-	LookupColumn          string // (M2M) lookup table column
-	LookupRefColumn       string // (M2M) referenced PK by LookupColumn
-	JoinTableClash        bool   // Whether other constraints join against the same table
-	IsInferredO2O         bool   // Whether this constraint has been generated from a foreign key
-	IsGeneratedO2OFromM2O bool
-	JoinStructFieldClash  bool // Whether 2 or more constraints of the same table have the same struct field name (and hence type as well)
-	RefPKisFK             bool
+	Name                   string
+	TableName              string // table where FK is defined
+	ColumnName             string
+	ColumnComment          string
+	RefTableName           string // table FK references
+	RefColumnName          string // RefTableName column FK references
+	RefColumnComment       string
+	LookupColumnName       string // (M2M) lookup table column
+	LookupColumnComment    string
+	LookupRefColumnName    string // (M2M) referenced PK by LookupColumn
+	LookupRefColumnComment string
+	JoinTableClash         bool // Whether other constraints join against the same table
+	IsInferredO2O          bool // Whether this constraint has been generated from a foreign key
+	IsGeneratedO2OFromM2O  bool
+	JoinStructFieldClash   bool // Whether 2 or more constraints of the same table have the same struct field name (and hence type as well)
+	RefPKisFK              bool
 }
 
 // Field is a field template.
 type Field struct {
-	GoName        string
-	SQLName       string
-	Type          string
-	Zero          string
-	IsPrimary     bool
-	IsSequence    bool
-	IsIgnored     bool
-	Comment       string
-	IsGenerated   bool
-	EnumPkg       string
-	EnumSchema    string
-	TypeOverride  string
-	IsDateOrTime  bool
-	Properties    []string
-	OpenAPISchema string
-	ExtraTags     string
-	Annotations   map[annotation]string
+	GoName         string
+	SQLName        string
+	Type           string
+	Zero           string
+	IsPrimary      bool
+	IsSequence     bool
+	IsIgnored      bool
+	Comment        string
+	IsGenerated    bool
+	EnumPkg        string
+	EnumSchema     string
+	TypeOverride   string
+	IsDateOrTime   bool
+	Properties     []string
+	OpenAPISchema  string
+	ExtraTags      string
+	UnderlyingType string
+	Annotations    map[annotation]string
 }
 
 // QueryParam is a custom query parameter template.

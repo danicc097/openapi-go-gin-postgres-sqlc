@@ -6,19 +6,26 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import { faker } from '@faker-js/faker'
-import { HttpResponse, delay, http } from 'msw'
+import {
+  faker
+} from '@faker-js/faker'
+import {
+  HttpResponse,
+  delay,
+  http
+} from 'msw'
 
-export const getAdminPingMock = () => faker.word.sample()
+export const getAdminPingMock = () => (faker.word.sample())
 
 export const getAdminMock = () => [
-  http.get('*/admin/ping', async () => {
-    await delay(1000)
-    return new HttpResponse(getAdminPingMock(), {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/plain',
-      },
-    })
-  }),
-]
+http.get('*/admin/ping', async () => {
+        await delay(1000);
+        return new HttpResponse(getAdminPingMock(),
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'text/plain',
+            }
+          }
+        )
+      }),]

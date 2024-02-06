@@ -285,6 +285,12 @@ type CreateDemoWorkItemRequest struct {
 	TagIDs      []int   `json:"tagIDs"`
 }
 
+// CreateProjectBoardRequest defines the model for CreateProjectBoardRequest.
+type CreateProjectBoardRequest struct {
+	Tags  *[]DbWorkItemTagCreateParams `json:"tags"`
+	Teams *[]DbTeamCreateParams        `json:"teams"`
+}
+
 // CreateTeamRequest defines the model for CreateTeamRequest.
 type CreateTeamRequest struct {
 	Description string `json:"description"`
@@ -657,14 +663,19 @@ type NotificationType string
 
 // PaginatedNotificationsResponse defines the model for PaginatedNotificationsResponse.
 type PaginatedNotificationsResponse struct {
-	Items *[]RestNotification `json:"items"`
-	Page  RestPaginationPage  `json:"page"`
+	Items *[]Notification `json:"items"`
+	Page  PaginationPage  `json:"page"`
 }
 
 // PaginatedUsersResponse defines the model for PaginatedUsersResponse.
 type PaginatedUsersResponse struct {
-	Items *[]RestUser        `json:"items"`
-	Page  RestPaginationPage `json:"page"`
+	Items *[]User        `json:"items"`
+	Page  PaginationPage `json:"page"`
+}
+
+// PaginationPage defines the model for PaginationPage.
+type PaginationPage struct {
+	NextCursor *string `json:"nextCursor,omitempty"`
 }
 
 // Project is generated from projects table.
@@ -692,23 +703,6 @@ type ProjectConfigField struct {
 	ShowCollapsed bool   `json:"showCollapsed"`
 }
 
-// RestNotification defines the model for RestNotification.
-type RestNotification struct {
-	Notification       DbNotification `json:"notification"`
-	NotificationID     int            `json:"notificationID"`
-	Read               bool           `json:"read"`
-	UserID             DbUserID       `json:"userID"`
-	UserNotificationID int            `json:"userNotificationID"`
-}
-
-// RestPaginationPage defines the model for RestPaginationPage.
-type RestPaginationPage struct {
-	NextCursor *string `json:"nextCursor,omitempty"`
-}
-
-// RestUser defines the model for RestUser.
-type RestUser = User
-
 // Role is generated from roles.json keys.
 type Role string
 
@@ -723,6 +717,15 @@ type ServicesMember struct {
 	// Role is generated from database enum 'work_item_role'.
 	Role   WorkItemRole `json:"role"`
 	UserID DbUserID     `json:"userID"`
+}
+
+// SharedWorkItemFields defines the model for SharedWorkItemFields.
+type SharedWorkItemFields struct {
+	Members          *[]DbUserWIAUWorkItem `json:"members"`
+	TimeEntries      *[]DbTimeEntry        `json:"timeEntries"`
+	WorkItemComments *[]DbWorkItemComment  `json:"workItemComments"`
+	WorkItemTags     *[]DbWorkItemTag      `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType       `json:"workItemType,omitempty"`
 }
 
 // Team defines the model for Team.

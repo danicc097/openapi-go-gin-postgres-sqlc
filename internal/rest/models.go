@@ -1,3 +1,8 @@
+/**
+ * IMPORTANT: all structs in models.go will always be generated as OpenAPI schemas.
+ * Generated "Rest*" schemas must be ignored.
+ * TODO: struct type grouping not supported in gen.
+ */
 package rest
 
 /**
@@ -44,7 +49,7 @@ type User struct {
 	Projects *[]db.Project  `json:"projects"`
 }
 
-// type Users []User // cannot be handled by swaggest lib
+// type Users []User // cannot be handled by swaggest lib (only handles structs)
 // panic: reflect: NumField of non-struct type rest.Users
 // should use below workaround as in paginated queries (all would be paginated queries in a way...)
 //
@@ -61,21 +66,18 @@ type SharedWorkItemFields struct {
 	WorkItemType     *db.WorkItemType          `json:"workItemType"`
 }
 
-// DemoWorkItems represents an OpenAPI schema response for a ProjectBoard.
 type DemoWorkItems struct {
 	db.WorkItem
 	SharedWorkItemFields
 	DemoWorkItem db.DemoWorkItem `json:"demoWorkItem" required:"true"`
 }
 
-// DemoTwoWorkItems represents an OpenAPI schema response for a ProjectBoard.
 type DemoTwoWorkItems struct {
 	db.WorkItem
 	SharedWorkItemFields
 	DemoTwoWorkItem db.DemoTwoWorkItem `json:"demoTwoWorkItem" required:"true"`
 }
 
-// ProjectBoard represents an OpenAPI schema response for a ProjectBoard.
 type ProjectBoard struct {
 	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 }

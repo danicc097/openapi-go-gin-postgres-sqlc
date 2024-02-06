@@ -8,7 +8,7 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface CreateActivityRequest {
-  description: string
-  isProductive: boolean
-  name: string
+  description: string;
+  isProductive: boolean;
+  name: string;
 }

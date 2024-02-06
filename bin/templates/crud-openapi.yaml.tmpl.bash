@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # shellcheck disable=SC2028,SC2154
 cat <<EOF
@@ -106,12 +106,4 @@ fi)
         !!merge <<: *x-error-response
       tags:
         - ${camel_name}
-components:
-  schemas:
-    Create${pascal_name}Request:
-      x-postgen-struct: RestCreate${pascal_name}Request
-    Update${pascal_name}Request:
-      x-postgen-struct: RestUpdate${pascal_name}Request
-    ${pascal_name}:
-      x-postgen-struct: Rest${pascal_name}
 EOF

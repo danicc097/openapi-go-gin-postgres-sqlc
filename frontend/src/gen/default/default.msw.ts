@@ -6,30 +6,38 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import { faker } from '@faker-js/faker'
-import { HttpResponse, delay, http } from 'msw'
+import {
+  faker
+} from '@faker-js/faker'
+import {
+  HttpResponse,
+  delay,
+  http
+} from 'msw'
 
-export const getPingMock = () => faker.word.sample()
+export const getPingMock = () => (faker.word.sample())
 
-export const getOpenapiYamlGetMock = () => faker.word.sample()
+export const getOpenapiYamlGetMock = () => (faker.word.sample())
 
 export const getDefaultMock = () => [
-  http.get('*/ping', async () => {
-    await delay(1000)
-    return new HttpResponse(getPingMock(), {
-      status: 200,
-      headers: {
-        'Content-Type': 'text/plain',
-      },
-    })
-  }),
-  http.get('*/openapi.yaml', async () => {
-    await delay(1000)
-    return new HttpResponse(JSON.stringify(getOpenapiYamlGetMock()), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-]
+http.get('*/ping', async () => {
+        await delay(1000);
+        return new HttpResponse(getPingMock(),
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'text/plain',
+            }
+          }
+        )
+      }),http.get('*/openapi.yaml', async () => {
+        await delay(1000);
+        return new HttpResponse(JSON.stringify(getOpenapiYamlGetMock()),
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        )
+      }),]

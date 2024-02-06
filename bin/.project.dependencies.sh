@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 source ".helpers.sh"
 
@@ -21,7 +21,7 @@ report_success() {
 check.bin.bash() {
   { { {
     vers=${BASH_VERSION:0:1}
-    minver=4
+    minver=5
     if ((vers >= minver)); then
       report_success
     else
@@ -169,7 +169,7 @@ check.bin.parallel() {
 
 install.bin.parallel() {
   { { {
-    sudo apt-get install parallel
+    sudo apt-get install parallel -y
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -187,13 +187,13 @@ check.bin.direnv() {
 
 install.bin.direnv() {
   { { {
-    sudo apt-get install direnv
+    sudo apt-get install direnv -y
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
 check.bin.pnpm() {
   { { {
-    vers=$(pnpm --version)
+    vers=$(pnpm --version)k
     minver=8
     if [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
       report_success
@@ -241,7 +241,7 @@ check.bin.sponge() {
 
 install.bin.sponge() {
   { { {
-    sudo apt-get install moreutils
+    sudo apt-get install moreutils -y
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -260,7 +260,7 @@ check.bin.mkcert() {
 install.bin.mkcert() {
   { { {
     VERSION="1.4.3"
-    sudo apt-get install libnss3-tools
+    sudo apt-get install libnss3-tools -y
     wget https://github.com/FiloSottile/mkcert/releases/download/v"$VERSION"/mkcert-v"$VERSION"-linux-amd64 -O mkcert
     chmod +x mkcert
     mv mkcert ./bin/tools/

@@ -8,9 +8,9 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export interface DbActivity {
-  activityID: EntityIDs.ActivityID
-  description: string
-  isProductive: boolean
-  name: string
-  projectID: EntityIDs.ProjectID
+  activityID: EntityIDs.ActivityID;
+  description: string;
+  isProductive: boolean;
+  name: string;
+  projectID: EntityIDs.ProjectID;
 }

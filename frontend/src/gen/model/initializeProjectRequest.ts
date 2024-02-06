@@ -6,10 +6,10 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbWorkItemTagCreateParams } from './dbWorkItemTagCreateParams'
-import type { DbTeamCreateParams } from './dbTeamCreateParams'
+import type { DbWorkItemTagCreateParams } from './dbWorkItemTagCreateParams';
+import type { DbTeamCreateParams } from './dbTeamCreateParams';
 
 export interface InitializeProjectRequest {
-  tags?: DbWorkItemTagCreateParams[] | null
-  teams?: DbTeamCreateParams[] | null
+  tags?: DbWorkItemTagCreateParams[] | null;
+  teams?: DbTeamCreateParams[] | null;
 }

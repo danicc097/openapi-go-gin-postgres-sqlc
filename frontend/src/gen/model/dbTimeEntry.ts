@@ -6,15 +6,15 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbUserID } from './dbUserID'
+import type { DbUserID } from './dbUserID';
 
 export interface DbTimeEntry {
-  activityID: EntityIDs.ActivityID
-  comment: string
-  durationMinutes?: number | null
-  start: Date
-  teamID?: EntityIDs.TeamID | null
-  timeEntryID: EntityIDs.TimeEntryID
-  userID: EntityIDs.UserID
-  workItemID?: EntityIDs.WorkItemID | null
+  activityID: EntityIDs.ActivityID;
+  comment: string;
+  durationMinutes?: number | null;
+  start: Date;
+  teamID?: EntityIDs.TeamID | null;
+  timeEntryID: EntityIDs.TimeEntryID;
+  userID: EntityIDs.UserID;
+  workItemID?: EntityIDs.WorkItemID | null;
 }

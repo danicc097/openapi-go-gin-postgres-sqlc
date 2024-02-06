@@ -10,10 +10,11 @@ import type * as EntityIDs from 'src/gen/entity-ids'
 /**
  * is generated from projects table.
  */
-export type Project = typeof Project[keyof typeof Project]
+export type Project = typeof Project[keyof typeof Project];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Project = {
   demo: 'demo',
   demo_two: 'demo_two',
-} as const
+} as const;

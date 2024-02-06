@@ -45,16 +45,20 @@ runs:
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
 
+    - name: Update
+      shell: bash
+      run: |
+        sudo apt-get update
+
     - name: Install dependencies
       shell: bash
       run: |
         source .envrc
 
-        sudo apt-get update
+        echo Bootstrapping...
+        { yes y 2>/dev/null || :; } | project bootstrap --x-debug
 
-        { yes || :; } | project bootstrap --x-env=ci
-
-        # project e2e.sync-deps --x-env=ci # won't use python playwright
+        # project e2e.sync-deps # won't use python playwright
 
         echo "$HOME/.local/bin" >> $GITHUB_PATH
         echo "$HOME/bin" >> $GITHUB_PATH

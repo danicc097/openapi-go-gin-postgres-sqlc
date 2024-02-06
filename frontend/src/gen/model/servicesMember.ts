@@ -6,10 +6,10 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { WorkItemRole } from './workItemRole'
-import type { DbUserID } from './dbUserID'
+import type { WorkItemRole } from './workItemRole';
+import type { DbUserID } from './dbUserID';
 
 export interface ServicesMember {
-  role: WorkItemRole
-  userID: EntityIDs.UserID
+  role: WorkItemRole;
+  userID: EntityIDs.UserID;
 }

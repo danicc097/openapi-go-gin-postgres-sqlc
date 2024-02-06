@@ -1,5 +1,6 @@
 name: OpenAPI check
-
+env:
+  CI: true
 on:
   push:
     branches:

@@ -20,11 +20,11 @@ func TestAdvisoryLock(t *testing.T) {
 		// for test count>1 must be unique...
 		lockID := testutil.RandomInt(124342232, 999945323)
 
-		lock, err := postgresql.NewAdvisoryLock(pool, lockID)
+		lock, err := postgresql.NewAdvisoryLock(testPool, lockID)
 		defer lock.ReleaseConn()
 		require.NoError(t, err)
 
-		lock2, err := postgresql.NewAdvisoryLock(pool, lockID)
+		lock2, err := postgresql.NewAdvisoryLock(testPool, lockID)
 		defer lock2.ReleaseConn()
 		require.NoError(t, err)
 
@@ -65,11 +65,11 @@ func TestAdvisoryLock(t *testing.T) {
 		// for test count>1 must be unique...
 		lockID := testutil.RandomInt(124342232, 999945323)
 
-		lock, err := postgresql.NewAdvisoryLock(pool, lockID)
+		lock, err := postgresql.NewAdvisoryLock(testPool, lockID)
 		defer lock.ReleaseConn()
 		require.NoError(t, err)
 
-		lockOwner, err := postgresql.NewAdvisoryLock(pool, lockID)
+		lockOwner, err := postgresql.NewAdvisoryLock(testPool, lockID)
 		defer lockOwner.ReleaseConn()
 		require.NoError(t, err)
 

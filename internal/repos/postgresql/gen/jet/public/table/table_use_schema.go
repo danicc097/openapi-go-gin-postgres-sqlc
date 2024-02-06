@@ -19,6 +19,7 @@ func UseSchema(schema string) {
 	Notifications = Notifications.FromSchema(schema)
 	Projects = Projects.FromSchema(schema)
 	SchemaMigrations = SchemaMigrations.FromSchema(schema)
+	SchemaPostMigrations = SchemaPostMigrations.FromSchema(schema)
 	Teams = Teams.FromSchema(schema)
 	TimeEntries = TimeEntries.FromSchema(schema)
 	UserAPIKeys = UserAPIKeys.FromSchema(schema)

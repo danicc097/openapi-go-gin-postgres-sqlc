@@ -6,16 +6,19 @@
  * and run json-schema-to-typescript to regenerate this file.
  */
 
-export type Direction = 'asc' | 'desc'
 /**
- * is generated from database enum 'notification_type'.
+ * is generated from database enum 'work_item_role'.
  */
-export type NotificationType = 'personal' | 'global'
+export type WorkItemRole = 'preparer' | 'reviewer'
 export type DbUserID = string
 /**
  * is generated from projects table.
  */
 export type Project = 'demo' | 'demo_two'
+/**
+ * is generated from database enum 'notification_type'.
+ */
+export type NotificationType = 'personal' | 'global'
 /**
  * is generated from scopes.json keys.
  */
@@ -39,13 +42,10 @@ export type Scope =
   | 'work-item-comment:delete'
 export type Scopes = Scope[]
 /**
- * is generated from database enum 'work_item_role'.
- */
-export type WorkItemRole = 'preparer' | 'reviewer'
-/**
  * is generated from roles.json keys.
  */
 export type Role = 'guest' | 'user' | 'advancedUser' | 'manager' | 'admin' | 'superAdmin'
+export type Direction = 'asc' | 'desc'
 /**
  * location in body path, if any
  */
@@ -110,16 +110,6 @@ export type DemoKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work i
  */
 export type DemoTwoKanbanSteps = 'Received'
 
-export interface CreateActivityRequest {
-  description: string
-  isProductive: boolean
-  name: string
-}
-export interface UpdateActivityRequest {
-  description?: string
-  isProductive?: boolean
-  name?: string
-}
 export interface Activity {
   activityID: number
   deletedAt?: string | null
@@ -128,67 +118,99 @@ export interface Activity {
   name: string
   projectID: number
 }
+export interface CreateActivityRequest {
+  description: string
+  isProductive: boolean
+  name: string
+}
+export interface CreateDemoTwoWorkItemRequest {
+  base: DbWorkItemCreateParams
+  demoTwoProject: DbDemoTwoWorkItemCreateParams
+  members: ServicesMember[]
+  projectName: Project
+  tagIDs: number[]
+}
+export interface DbWorkItemCreateParams {
+  closedAt?: string | null
+  description: string
+  kanbanStepID: number
+  metadata: {}
+  targetDate: string
+  teamID: number
+  title: string
+  workItemTypeID: number
+}
+export interface DbDemoTwoWorkItemCreateParams {
+  customDateForProject2?: string | null
+}
+export interface ServicesMember {
+  role: WorkItemRole
+  userID: DbUserID
+}
+export interface CreateDemoWorkItemRequest {
+  base: DbWorkItemCreateParams
+  demoProject: DbDemoWorkItemCreateParams
+  members: ServicesMember[]
+  projectName: Project
+  tagIDs: number[]
+}
+export interface DbDemoWorkItemCreateParams {
+  lastMessageAt: string
+  line: string
+  ref: string
+  reopened: boolean
+}
+export interface CreateProjectBoardRequest {
+  tags?: DbWorkItemTagCreateParams[] | null
+  teams?: DbTeamCreateParams[] | null
+}
+export interface DbWorkItemTagCreateParams {
+  color: string
+  description: string
+  name: string
+}
+export interface DbTeamCreateParams {
+  description: string
+  name: string
+}
+export interface CreateTeamRequest {
+  description: string
+  name: string
+}
+export interface CreateWorkItemCommentRequest {
+  message: string
+  userID: DbUserID
+  workItemID: number
+}
 export interface CreateWorkItemTagRequest {
   color: string
   description: string
   name: string
-}
-export interface UpdateWorkItemTagRequest {
-  color?: string
-  description?: string
-  name?: string
-}
-export interface WorkItemTag {
-  color: string
-  deletedAt?: string | null
-  description: string
-  name: string
-  projectID: number
-  workItemTagID: number
 }
 export interface CreateWorkItemTypeRequest {
   color: string
   description: string
   name: string
 }
-export interface UpdateWorkItemTypeRequest {
-  color?: string
-  description?: string
-  name?: string
+export interface DbDemoTwoWorkItem {
+  customDateForProject2?: string | null
+  workItemID: number
 }
-export interface WorkItemType {
+export interface DbDemoWorkItem {
+  lastMessageAt: string
+  line: string
+  ref: string
+  reopened: boolean
+  workItemID: number
+}
+export interface DbKanbanStep {
   color: string
   description: string
+  kanbanStepID: number
   name: string
   projectID: number
-  workItemTypeID: number
-}
-export interface CreateTeamRequest {
-  description: string
-  name: string
-}
-export interface UpdateTeamRequest {
-  description?: string
-  name?: string
-}
-export interface Team {
-  createdAt: string
-  description: string
-  name: string
-  projectID: number
-  teamID: number
-  updatedAt: string
-}
-export interface PaginatedNotificationsResponse {
-  items: RestNotification[] | null
-  page: RestPaginationPage
-}
-export interface RestNotification {
-  notification: DbNotification
-  notificationID: number
-  read: boolean
-  userID: DbUserID
-  userNotificationID: number
+  stepOrder: number
+  timeTrackable: boolean
 }
 export interface DbNotification {
   body: string
@@ -200,25 +222,6 @@ export interface DbNotification {
   receiver?: DbUserID
   sender: DbUserID
   title: string
-}
-export interface RestPaginationPage {
-  nextCursor?: string
-}
-export interface DbActivity {
-  activityID: number
-  description: string
-  isProductive: boolean
-  name: string
-  projectID: number
-}
-export interface DbKanbanStep {
-  color: string
-  description: string
-  kanbanStepID: number
-  name: string
-  projectID: number
-  stepOrder: number
-  timeTrackable: boolean
 }
 export interface DbProject {
   boardConfig: ProjectConfig
@@ -248,32 +251,15 @@ export interface DbTeam {
   teamID: number
   updatedAt: string
 }
-export interface DbWorkItemTag {
-  color: string
-  deletedAt?: string | null
-  description: string
-  name: string
-  projectID: number
-  workItemTagID: number
-}
-export interface DbWorkItemType {
-  color: string
-  description: string
-  name: string
-  projectID: number
-  workItemTypeID: number
-}
-export interface DbDemoWorkItem {
-  lastMessageAt: string
-  line: string
-  ref: string
-  reopened: boolean
-  workItemID: number
-}
-export interface DbUserAPIKey {
-  apiKey: string
-  expiresOn: string
+export interface DbTimeEntry {
+  activityID: number
+  comment: string
+  durationMinutes?: number | null
+  start: string
+  teamID?: number | null
+  timeEntryID: number
   userID: DbUserID
+  workItemID?: number | null
 }
 export interface DbUser {
   createdAt: string
@@ -288,15 +274,28 @@ export interface DbUser {
   userID: DbUserID
   username: string
 }
-export interface DbTimeEntry {
-  activityID: number
-  comment: string
-  durationMinutes?: number | null
-  start: string
-  teamID?: number | null
-  timeEntryID: number
+export interface DbUserAPIKey {
+  apiKey: string
+  expiresOn: string
   userID: DbUserID
-  workItemID?: number | null
+}
+export interface DbUserWIAUWorkItem {
+  role: WorkItemRole
+  user: DbUser
+}
+export interface DbWorkItem {
+  closedAt?: string | null
+  createdAt: string
+  deletedAt?: string | null
+  description: string
+  kanbanStepID: number
+  metadata: {}
+  targetDate: string
+  teamID: number
+  title: string
+  updatedAt: string
+  workItemID: number
+  workItemTypeID: number
 }
 export interface DbWorkItemComment {
   createdAt: string
@@ -306,29 +305,20 @@ export interface DbWorkItemComment {
   workItemCommentID: number
   workItemID: number
 }
-export interface DemoWorkItems {
-  closedAt?: string | null
-  createdAt: string
+export interface DbWorkItemTag {
+  color: string
   deletedAt?: string | null
-  demoWorkItem: DbDemoWorkItem
   description: string
-  kanbanStepID: number
-  members?: DbUserWIAUWorkItem[] | null
-  metadata: {}
-  targetDate: string
-  teamID: number | null
-  timeEntries?: DbTimeEntry[] | null
-  title: string
-  updatedAt: string
-  workItemComments?: DbWorkItemComment[] | null
-  workItemID: number
-  workItemTags?: DbWorkItemTag[] | null
-  workItemType?: DbWorkItemType
-  workItemTypeID: number
+  name: string
+  projectID: number
+  workItemTagID: number
 }
-export interface DbUserWIAUWorkItem {
-  role: WorkItemRole
-  user: DbUser
+export interface DbWorkItemType {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTypeID: number
 }
 export interface DemoTwoWorkItems {
   closedAt?: string | null
@@ -350,46 +340,43 @@ export interface DemoTwoWorkItems {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
-export interface DbDemoTwoWorkItem {
-  customDateForProject2?: string | null
-  workItemID: number
-}
-export interface InitializeProjectRequest {
-  tags?: DbWorkItemTagCreateParams[] | null
-  teams?: DbTeamCreateParams[] | null
-}
-export interface DbWorkItemTagCreateParams {
-  color: string
-  description: string
-  name: string
-}
-export interface DbTeamCreateParams {
-  description: string
-  name: string
-}
-export interface ProjectBoard {
-  projectName: Project
-}
-export interface PaginatedUsersResponse {
-  items: RestUser[] | null
-  page: RestPaginationPage
-}
-export interface RestUser {
-  apiKey?: DbUserAPIKey
+export interface DemoWorkItems {
+  closedAt?: string | null
   createdAt: string
   deletedAt?: string | null
-  email: string
-  firstName?: string | null
-  fullName?: string | null
-  hasGlobalNotifications: boolean
-  hasPersonalNotifications: boolean
-  lastName?: string | null
-  projects?: DbProject[] | null
-  role: Role
-  scopes: Scopes
-  teams?: DbTeam[] | null
+  demoWorkItem: DbDemoWorkItem
+  description: string
+  kanbanStepID: number
+  members?: DbUserWIAUWorkItem[] | null
+  metadata: {}
+  targetDate: string
+  teamID: number | null
+  timeEntries?: DbTimeEntry[] | null
+  title: string
+  updatedAt: string
+  workItemComments?: DbWorkItemComment[] | null
+  workItemID: number
+  workItemTags?: DbWorkItemTag[] | null
+  workItemType?: DbWorkItemType
+  workItemTypeID: number
+}
+export interface Notification {
+  notification: DbNotification
+  notificationID: number
+  read: boolean
   userID: DbUserID
-  username: string
+  userNotificationID: number
+}
+export interface PaginatedNotificationsResponse {
+  items: Notification[] | null
+  page: PaginationPage
+}
+export interface PaginationPage {
+  nextCursor?: string
+}
+export interface PaginatedUsersResponse {
+  items: User[] | null
+  page: PaginationPage
 }
 export interface User {
   apiKey?: DbUserAPIKey
@@ -407,6 +394,82 @@ export interface User {
   teams?: DbTeam[] | null
   userID: DbUserID
   username: string
+}
+export interface ProjectBoard {
+  projectName: Project
+}
+export interface SharedWorkItemFields {
+  members?: DbUserWIAUWorkItem[] | null
+  timeEntries?: DbTimeEntry[] | null
+  workItemComments?: DbWorkItemComment[] | null
+  workItemTags?: DbWorkItemTag[] | null
+  workItemType?: DbWorkItemType
+}
+export interface Team {
+  createdAt: string
+  description: string
+  name: string
+  projectID: number
+  teamID: number
+  updatedAt: string
+}
+export interface UpdateActivityRequest {
+  description?: string
+  isProductive?: boolean
+  name?: string
+}
+export interface UpdateTeamRequest {
+  description?: string
+  name?: string
+}
+export interface UpdateWorkItemCommentRequest {
+  message?: string
+  userID?: DbUserID
+  workItemID?: number
+}
+export interface UpdateWorkItemTagRequest {
+  color?: string
+  description?: string
+  name?: string
+}
+export interface UpdateWorkItemTypeRequest {
+  color?: string
+  description?: string
+  name?: string
+}
+export interface WorkItemComment {
+  createdAt: string
+  message: string
+  updatedAt: string
+  userID: DbUserID
+  workItemCommentID: number
+  workItemID: number
+}
+export interface WorkItemTag {
+  color: string
+  deletedAt?: string | null
+  description: string
+  name: string
+  projectID: number
+  workItemTagID: number
+}
+export interface WorkItemType {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTypeID: number
+}
+export interface DbActivity {
+  activityID: number
+  description: string
+  isProductive: boolean
+  name: string
+  projectID: number
+}
+export interface InitializeProjectRequest {
+  tags?: DbWorkItemTagCreateParams[] | null
+  teams?: DbTeamCreateParams[] | null
 }
 export interface HTTPValidationError {
   detail?: Detail
@@ -458,62 +521,6 @@ export interface UpdateUserAuthRequest {
   role?: Role
   scopes?: Scopes
 }
-export interface CreateDemoWorkItemRequest {
-  base: DbWorkItemCreateParams
-  demoProject: DbDemoWorkItemCreateParams
-  members: ServicesMember[]
-  projectName: Project
-  tagIDs: number[]
-}
-export interface DbWorkItemCreateParams {
-  closedAt?: string | null
-  description: string
-  kanbanStepID: number
-  metadata: {}
-  targetDate: string
-  teamID: number
-  title: string
-  workItemTypeID: number
-}
-export interface DbDemoWorkItemCreateParams {
-  lastMessageAt: string
-  line: string
-  ref: string
-  reopened: boolean
-}
-export interface ServicesMember {
-  role: WorkItemRole
-  userID: DbUserID
-}
-export interface CreateDemoTwoWorkItemRequest {
-  base: DbWorkItemCreateParams
-  demoTwoProject: DbDemoTwoWorkItemCreateParams
-  members: ServicesMember[]
-  projectName: Project
-  tagIDs: number[]
-}
-export interface DbDemoTwoWorkItemCreateParams {
-  customDateForProject2?: string | null
-}
-export interface DbWorkItem {
-  closedAt?: string | null
-  createdAt: string
-  deletedAt?: string | null
-  description: string
-  kanbanStepID: number
-  metadata: {}
-  targetDate: string
-  teamID: number
-  title: string
-  updatedAt: string
-  workItemID: number
-  workItemTypeID: number
-}
-export interface CreateWorkItemCommentRequest {
-  message: string
-  userID: DbUserID
-  workItemID: number
-}
 export interface DbActivityCreateParams {
   description: string
   isProductive: boolean
@@ -529,24 +536,4 @@ export interface DbUserNotification {
   read: boolean
   userID: DbUserID
   userNotificationID: number
-}
-export interface Notification {
-  notification: DbNotification
-  notificationID: number
-  read: boolean
-  userID: DbUserID
-  userNotificationID: number
-}
-export interface UpdateWorkItemCommentRequest {
-  message?: string
-  userID?: DbUserID
-  workItemID?: number
-}
-export interface WorkItemComment {
-  createdAt: string
-  message: string
-  updatedAt: string
-  userID: DbUserID
-  workItemCommentID: number
-  workItemID: number
 }

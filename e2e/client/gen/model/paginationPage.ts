@@ -5,6 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { User } from './user'
 
-export type RestUser = User
+export interface PaginationPage {
+  nextCursor?: string
+}

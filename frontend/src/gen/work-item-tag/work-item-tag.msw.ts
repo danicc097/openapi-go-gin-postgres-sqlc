@@ -6,71 +6,60 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import { faker } from '@faker-js/faker'
-import { HttpResponse, delay, http } from 'msw'
+import {
+  faker
+} from '@faker-js/faker'
+import {
+  HttpResponse,
+  delay,
+  http
+} from 'msw'
 
-export const getCreateWorkItemTagMock = () => ({
-  color: faker.word.sample(),
-  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-  description: faker.word.sample(),
-  name: faker.word.sample(),
-  projectID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.ProjectID,
-  workItemTagID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.WorkItemTagID,
-})
+export const getCreateWorkItemTagMock = () => ({color: faker.word.sample(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTagID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTagID})
 
-export const getGetWorkItemTagMock = () => ({
-  color: faker.word.sample(),
-  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-  description: faker.word.sample(),
-  name: faker.word.sample(),
-  projectID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.ProjectID,
-  workItemTagID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.WorkItemTagID,
-})
+export const getGetWorkItemTagMock = () => ({color: faker.word.sample(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTagID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTagID})
 
-export const getUpdateWorkItemTagMock = () => ({
-  color: faker.word.sample(),
-  deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]),
-  description: faker.word.sample(),
-  name: faker.word.sample(),
-  projectID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.ProjectID,
-  workItemTagID: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.WorkItemTagID,
-})
+export const getUpdateWorkItemTagMock = () => ({color: faker.word.sample(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTagID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTagID})
 
 export const getWorkItemTagMock = () => [
-  http.post('*/project/:projectName/work-item-tag/', async () => {
-    await delay(1000)
-    return new HttpResponse(JSON.stringify(getCreateWorkItemTagMock()), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-  http.get('*/work-item-tag/:workItemTagID', async () => {
-    await delay(1000)
-    return new HttpResponse(JSON.stringify(getGetWorkItemTagMock()), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-  http.patch('*/work-item-tag/:workItemTagID', async () => {
-    await delay(1000)
-    return new HttpResponse(JSON.stringify(getUpdateWorkItemTagMock()), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-  http.delete('*/work-item-tag/:workItemTagID', async () => {
-    await delay(1000)
-    return new HttpResponse(null, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-]
+http.post('*/project/:projectName/work-item-tag/', async () => {
+        await delay(1000);
+        return new HttpResponse(JSON.stringify(getCreateWorkItemTagMock()),
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        )
+      }),http.get('*/work-item-tag/:workItemTagID', async () => {
+        await delay(1000);
+        return new HttpResponse(JSON.stringify(getGetWorkItemTagMock()),
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        )
+      }),http.patch('*/work-item-tag/:workItemTagID', async () => {
+        await delay(1000);
+        return new HttpResponse(JSON.stringify(getUpdateWorkItemTagMock()),
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        )
+      }),http.delete('*/work-item-tag/:workItemTagID', async () => {
+        await delay(1000);
+        return new HttpResponse(null,
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        )
+      }),]

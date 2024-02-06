@@ -8,7 +8,7 @@
 #      Possible structs to generate from are listed in internal/codegen/structs.gen.go
 #      indexed by x-postgen-struct.
 #      To use a yet to be generated schema in a path, create an empty schema
-#      with `x-postgen-struct: {Rest|Db}<struct name>`
+#      with `x-postgen-struct: Db<struct name>` or directly <struct name> for rest models.go structs
 #      Packages to generate structs from are added adhoc.
 # Path operations:
 #   - `x-required-scopes` defines required scopes for a request.
@@ -92,8 +92,9 @@ x-error-response: &x-error-response
 #
 # <<<--- GENERATED DB ANCHORS. DO NOT EDIT. --->>>
 x-activityIDParameter: &x-activityIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.ActivityID
     x-go-type-import:
@@ -101,8 +102,9 @@ x-activityIDParameter: &x-activityIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: activityID
 x-entityNotificationIDParameter: &x-entityNotificationIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.EntityNotificationID
     x-go-type-import:
@@ -110,8 +112,9 @@ x-entityNotificationIDParameter: &x-entityNotificationIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: entityNotificationID
 x-extraSchemaBookAuthorsSurrogateKeyIDParameter: &x-extraSchemaBookAuthorsSurrogateKeyIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.ExtraSchemaBookAuthorsSurrogateKeyID
     x-go-type-import:
@@ -119,8 +122,9 @@ x-extraSchemaBookAuthorsSurrogateKeyIDParameter: &x-extraSchemaBookAuthorsSurrog
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: extraSchemaBookAuthorsSurrogateKeyID
 x-extraSchemaBookIDParameter: &x-extraSchemaBookIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.ExtraSchemaBookID
     x-go-type-import:
@@ -128,8 +132,9 @@ x-extraSchemaBookIDParameter: &x-extraSchemaBookIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: extraSchemaBookID
 x-extraSchemaBookReviewIDParameter: &x-extraSchemaBookReviewIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.ExtraSchemaBookReviewID
     x-go-type-import:
@@ -137,8 +142,9 @@ x-extraSchemaBookReviewIDParameter: &x-extraSchemaBookReviewIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: extraSchemaBookReviewID
 x-extraSchemaDummyJoinIDParameter: &x-extraSchemaDummyJoinIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.ExtraSchemaDummyJoinID
     x-go-type-import:
@@ -146,8 +152,9 @@ x-extraSchemaDummyJoinIDParameter: &x-extraSchemaDummyJoinIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: extraSchemaDummyJoinID
 x-extraSchemaNotificationIDParameter: &x-extraSchemaNotificationIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.ExtraSchemaNotificationID
     x-go-type-import:
@@ -155,8 +162,9 @@ x-extraSchemaNotificationIDParameter: &x-extraSchemaNotificationIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: extraSchemaNotificationID
 x-extraSchemaUserAPIKeyIDParameter: &x-extraSchemaUserAPIKeyIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.ExtraSchemaUserAPIKeyID
     x-go-type-import:
@@ -164,8 +172,9 @@ x-extraSchemaUserAPIKeyIDParameter: &x-extraSchemaUserAPIKeyIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: extraSchemaUserAPIKeyID
 x-extraSchemaWorkItemIDParameter: &x-extraSchemaWorkItemIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.ExtraSchemaWorkItemID
     x-go-type-import:
@@ -173,8 +182,9 @@ x-extraSchemaWorkItemIDParameter: &x-extraSchemaWorkItemIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: extraSchemaWorkItemID
 x-kanbanStepIDParameter: &x-kanbanStepIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.KanbanStepID
     x-go-type-import:
@@ -182,8 +192,9 @@ x-kanbanStepIDParameter: &x-kanbanStepIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: kanbanStepID
 x-movieIDParameter: &x-movieIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.MovieID
     x-go-type-import:
@@ -191,8 +202,9 @@ x-movieIDParameter: &x-movieIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: movieID
 x-notificationIDParameter: &x-notificationIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.NotificationID
     x-go-type-import:
@@ -200,26 +212,19 @@ x-notificationIDParameter: &x-notificationIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: notificationID
 x-projectIDParameter: &x-projectIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.ProjectID
     x-go-type-import:
       name: db
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: projectID
-x-schemaMigrationIDParameter: &x-schemaMigrationIDParameter
-  !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
-    type: integer
-    x-go-type: db.SchemaMigrationID
-    x-go-type-import:
-      name: db
-      path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
-  name: schemaMigrationID
 x-teamIDParameter: &x-teamIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.TeamID
     x-go-type-import:
@@ -227,8 +232,9 @@ x-teamIDParameter: &x-teamIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: teamID
 x-timeEntryIDParameter: &x-timeEntryIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.TimeEntryID
     x-go-type-import:
@@ -236,8 +242,9 @@ x-timeEntryIDParameter: &x-timeEntryIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: timeEntryID
 x-userAPIKeyIDParameter: &x-userAPIKeyIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.UserAPIKeyID
     x-go-type-import:
@@ -245,8 +252,9 @@ x-userAPIKeyIDParameter: &x-userAPIKeyIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: userAPIKeyID
 x-userNotificationIDParameter: &x-userNotificationIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.UserNotificationID
     x-go-type-import:
@@ -254,8 +262,9 @@ x-userNotificationIDParameter: &x-userNotificationIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: userNotificationID
 x-workItemCommentIDParameter: &x-workItemCommentIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.WorkItemCommentID
     x-go-type-import:
@@ -263,8 +272,9 @@ x-workItemCommentIDParameter: &x-workItemCommentIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: workItemCommentID
 x-workItemIDParameter: &x-workItemIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.WorkItemID
     x-go-type-import:
@@ -272,8 +282,9 @@ x-workItemIDParameter: &x-workItemIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: workItemID
 x-workItemTagIDParameter: &x-workItemTagIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.WorkItemTagID
     x-go-type-import:
@@ -281,8 +292,9 @@ x-workItemTagIDParameter: &x-workItemTagIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: workItemTagID
 x-workItemTypeIDParameter: &x-workItemTypeIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-serialIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.WorkItemTypeID
     x-go-type-import:
@@ -290,8 +302,9 @@ x-workItemTypeIDParameter: &x-workItemTypeIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: workItemTypeID
 x-extraSchemaPagElementIDParameter: &x-extraSchemaPagElementIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-uuidIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.WorkItemTypeID
     x-go-type-import:
@@ -299,8 +312,9 @@ x-extraSchemaPagElementIDParameter: &x-extraSchemaPagElementIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: extraSchemaPagElementID
 x-extraSchemaUserIDParameter: &x-extraSchemaUserIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-uuidIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.WorkItemTypeID
     x-go-type-import:
@@ -308,8 +322,9 @@ x-extraSchemaUserIDParameter: &x-extraSchemaUserIDParameter
       path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
   name: extraSchemaUserID
 x-userIDParameter: &x-userIDParameter
+  # Generated. DO NOT EDIT.
   !!merge <<: *x-uuidIDParameterBase
-  schema: # Generated. DO NOT EDIT.
+  schema:
     type: integer
     x-go-type: db.WorkItemTypeID
     x-go-type-import:
@@ -555,14 +570,6 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - workItemTag
-  # Make sure to include new scopes in scopes.json
-  # recommended schemas for activity:
-  # CreateActivityRequest:
-  #   x-postgen-struct: RestCreateActivityRequest
-  # UpdateActivityRequest:
-  #   x-postgen-struct: RestUpdateActivityRequest
-  # Activity:
-  #   x-postgen-struct: RestActivity
   /project/{projectName}/activity/:
     post:
       summary: create activity.
@@ -1154,31 +1161,7 @@ components:
       style: simple
     UUID: *x-uuidParameter
   schemas:
-    CreateActivityRequest: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        description:
-          type: string
-        isProductive:
-          type: boolean
-        name:
-          type: string
-      required:
-        - description
-        - isProductive
-        - name
-      type: object
-      x-postgen-struct: RestCreateActivityRequest
-    UpdateActivityRequest: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        description:
-          type: string
-        isProductive:
-          type: boolean
-        name:
-          type: string
-      type: object
-      x-postgen-struct: RestUpdateActivityRequest
-    Activity: # Generated from internal structs. DO NOT EDIT.
+    Activity: # Generated schema. DO NOT EDIT.
       properties:
         activityID:
           type: integer
@@ -1201,188 +1184,210 @@ components:
         - description
         - isProductive
       type: object
-      x-postgen-struct: RestActivity
-    CreateWorkItemTagRequest: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-      required:
-        - color
-        - description
-        - name
-      type: object
-      x-postgen-struct: RestCreateWorkItemTagRequest
-    UpdateWorkItemTagRequest: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-      type: object
-      x-postgen-struct: RestUpdateWorkItemTagRequest
-    WorkItemTag: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
-          type: string
-        deletedAt:
-          format: date-time
-          nullable: true
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-        workItemTagID:
-          type: integer
-      required:
-        - workItemTagID
-        - projectID
-        - name
-        - description
-        - color
-      type: object
-      x-postgen-struct: RestWorkItemTag
-    CreateWorkItemTypeRequest: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-      required:
-        - color
-        - description
-        - name
-      type: object
-      x-postgen-struct: RestCreateWorkItemTypeRequest
-    UpdateWorkItemTypeRequest: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-      type: object
-      x-postgen-struct: RestUpdateWorkItemTypeRequest
-    WorkItemType: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-        workItemTypeID:
-          type: integer
-      required:
-        - workItemTypeID
-        - projectID
-        - name
-        - description
-        - color
-      type: object
-      x-postgen-struct: RestWorkItemType
-    CreateTeamRequest: # Generated from internal structs. DO NOT EDIT.
+      x-is-generated: true
+      x-postgen-struct: Activity
+    CreateActivityRequest: # Generated schema. DO NOT EDIT.
       properties:
         description:
           type: string
+        isProductive:
+          type: boolean
         name:
           type: string
       required:
         - description
+        - isProductive
         - name
       type: object
-      x-postgen-struct: RestCreateTeamRequest
-    UpdateTeamRequest: # Generated from internal structs. DO NOT EDIT.
+      x-is-generated: true
+      x-postgen-struct: CreateActivityRequest
+    CreateDemoTwoWorkItemRequest: # Generated schema. DO NOT EDIT.
       properties:
-        description:
-          type: string
-        name:
-          type: string
-      type: object
-      x-postgen-struct: RestUpdateTeamRequest
-    Team: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-        teamID:
-          type: integer
-        updatedAt:
-          format: date-time
-          type: string
-      required:
-        - teamID
-        - projectID
-        - name
-        - description
-        - createdAt
-        - updatedAt
-      type: object
-      x-postgen-struct: RestTeam
-    Direction:
-      type: string
-      enum:
-        - asc
-        - desc
-    PaginatedNotificationsResponse: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        items:
+        base:
+          $ref: '#/components/schemas/DbWorkItemCreateParams'
+        demoTwoProject:
+          $ref: '#/components/schemas/DbDemoTwoWorkItemCreateParams'
+        members:
           items:
-            $ref: '#/components/schemas/RestNotification'
+            $ref: '#/components/schemas/ServicesMember'
+          type: array
+        projectName:
+          $ref: '#/components/schemas/Project'
+        tagIDs:
+          items:
+            type: integer
+          type: array
+      required:
+        - projectName
+        - demoTwoProject
+        - base
+        - tagIDs
+        - members
+      type: object
+      x-is-generated: true
+      x-postgen-struct: CreateDemoTwoWorkItemRequest
+    CreateDemoWorkItemRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        base:
+          $ref: '#/components/schemas/DbWorkItemCreateParams'
+        demoProject:
+          $ref: '#/components/schemas/DbDemoWorkItemCreateParams'
+        members:
+          items:
+            $ref: '#/components/schemas/ServicesMember'
+          type: array
+        projectName:
+          $ref: '#/components/schemas/Project'
+        tagIDs:
+          items:
+            type: integer
+          type: array
+      required:
+        - projectName
+        - demoProject
+        - base
+        - tagIDs
+        - members
+      type: object
+      x-is-generated: true
+      x-postgen-struct: CreateDemoWorkItemRequest
+    CreateProjectBoardRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        tags:
+          items:
+            $ref: '#/components/schemas/DbWorkItemTagCreateParams'
           nullable: true
           type: array
-        page:
-          $ref: '#/components/schemas/RestPaginationPage'
-      required:
-        - page
-        - items
+        teams:
+          items:
+            $ref: '#/components/schemas/DbTeamCreateParams'
+          nullable: true
+          type: array
       type: object
-      x-postgen-struct: RestPaginatedNotificationsResponse
-    DbActivity: # Generated from internal structs. DO NOT EDIT.
+      x-is-generated: true
+      x-postgen-struct: CreateProjectBoardRequest
+    CreateTeamRequest: # Generated schema. DO NOT EDIT.
       properties:
-        activityID:
-          type: integer
         description:
           type: string
-        isProductive:
-          type: boolean
         name:
           type: string
-        projectID:
+      required:
+        - description
+        - name
+      type: object
+      x-is-generated: true
+      x-postgen-struct: CreateTeamRequest
+    CreateWorkItemCommentRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        message:
+          type: string
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        workItemID:
           type: integer
       required:
-        - activityID
-        - projectID
-        - name
-        - description
-        - isProductive
+        - message
+        - userID
+        - workItemID
       type: object
-    DbKanbanStep: # Generated from internal structs. DO NOT EDIT.
+      x-is-generated: true
+      x-postgen-struct: CreateWorkItemCommentRequest
+    CreateWorkItemTagRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+      required:
+        - color
+        - description
+        - name
+      type: object
+      x-is-generated: true
+      x-postgen-struct: CreateWorkItemTagRequest
+    CreateWorkItemTypeRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+      required:
+        - color
+        - description
+        - name
+      type: object
+      x-is-generated: true
+      x-postgen-struct: CreateWorkItemTypeRequest
+    DbDemoTwoWorkItem: # Generated schema. DO NOT EDIT.
+      properties:
+        customDateForProject2:
+          format: date-time
+          nullable: true
+          type: string
+        workItemID:
+          type: integer
+      required:
+        - workItemID
+      type: object
+      x-is-generated: true
+    DbDemoTwoWorkItemCreateParams: # Generated schema. DO NOT EDIT.
+      properties:
+        customDateForProject2:
+          format: date-time
+          nullable: true
+          type: string
+      type: object
+      x-is-generated: true
+    DbDemoWorkItem: # Generated schema. DO NOT EDIT.
+      properties:
+        lastMessageAt:
+          format: date-time
+          type: string
+        line:
+          type: string
+        ref:
+          pattern: ^[0-9]{8}$
+          type: string
+        reopened:
+          type: boolean
+        workItemID:
+          type: integer
+      required:
+        - workItemID
+        - ref
+        - line
+        - lastMessageAt
+        - reopened
+      type: object
+      x-is-generated: true
+      x-postgen-struct: DbDemoWorkItem
+    DbDemoWorkItemCreateParams: # Generated schema. DO NOT EDIT.
+      properties:
+        lastMessageAt:
+          format: date-time
+          type: string
+        line:
+          type: string
+        ref:
+          pattern: ^[0-9]{8}$
+          type: string
+        reopened:
+          type: boolean
+      required:
+        - lastMessageAt
+        - line
+        - ref
+        - reopened
+      type: object
+      x-is-generated: true
+    DbKanbanStep: # Generated schema. DO NOT EDIT.
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
@@ -1408,8 +1413,43 @@ components:
         - color
         - timeTrackable
       type: object
+      x-is-generated: true
       x-postgen-struct: DbKanbanStep
-    DbProject: # Generated from internal structs. DO NOT EDIT.
+    DbNotification: # Generated schema. DO NOT EDIT.
+      properties:
+        body:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        labels:
+          items:
+            type: string
+          type: array
+        link:
+          nullable: true
+          type: string
+        notificationID:
+          type: integer
+        notificationType:
+          $ref: '#/components/schemas/NotificationType'
+        receiver:
+          $ref: '#/components/schemas/DbUserID'
+        sender:
+          $ref: '#/components/schemas/DbUserID'
+        title:
+          type: string
+      required:
+        - notificationID
+        - title
+        - body
+        - labels
+        - createdAt
+        - sender
+        - notificationType
+      type: object
+      x-is-generated: true
+    DbProject: # Generated schema. DO NOT EDIT.
       properties:
         boardConfig:
           $ref: '#/components/schemas/ProjectConfig'
@@ -1433,8 +1473,9 @@ components:
         - createdAt
         - updatedAt
       type: object
+      x-is-generated: true
       x-postgen-struct: DbProject
-    DbTeam: # Generated from internal structs. DO NOT EDIT.
+    DbTeam: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
           format: date-time
@@ -1458,90 +1499,50 @@ components:
         - createdAt
         - updatedAt
       type: object
-    DbWorkItemTag: # Generated from internal structs. DO NOT EDIT.
+      x-is-generated: true
+    DbTeamCreateParams: # Generated schema. DO NOT EDIT.
       properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+        description:
           type: string
-        deletedAt:
-          format: date-time
+        name:
+          type: string
+      required:
+        - description
+        - name
+      type: object
+      x-is-generated: true
+    DbTimeEntry: # Generated schema. DO NOT EDIT.
+      properties:
+        activityID:
+          type: integer
+        comment:
+          type: string
+        durationMinutes:
           nullable: true
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
           type: integer
-        workItemTagID:
-          type: integer
-      required:
-        - workItemTagID
-        - projectID
-        - name
-        - description
-        - color
-      type: object
-      x-postgen-struct: DbWorkItemTag
-    DbWorkItemType: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-        workItemTypeID:
-          type: integer
-      required:
-        - workItemTypeID
-        - projectID
-        - name
-        - description
-        - color
-      type: object
-      x-postgen-struct: DbWorkItemType
-    DbDemoWorkItem: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        lastMessageAt:
+        start:
           format: date-time
           type: string
-        line:
-          type: string
-        ref:
-          pattern: ^[0-9]{8}$
-          type: string
-        reopened:
-          type: boolean
-        workItemID:
+        teamID:
+          nullable: true
           type: integer
-      required:
-        - workItemID
-        - ref
-        - line
-        - lastMessageAt
-        - reopened
-      type: object
-      x-postgen-struct: DbDemoWorkItem
-    DbUserAPIKey: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        apiKey:
-          type: string
-        expiresOn:
-          format: date-time
-          type: string
+        timeEntryID:
+          type: integer
         userID:
           $ref: '#/components/schemas/DbUserID'
+        workItemID:
+          nullable: true
+          type: integer
       required:
-        - apiKey
-        - expiresOn
+        - timeEntryID
+        - activityID
         - userID
+        - comment
+        - start
       type: object
-      x-postgen-struct: DbUserAPIKey
-    DbUser: # Generated from internal structs. DO NOT EDIT.
+      x-is-generated: true
+      x-postgen-struct: DbTimeEntry
+    DbUser: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
           format: date-time
@@ -1580,38 +1581,92 @@ components:
         - hasGlobalNotifications
         - createdAt
       type: object
+      x-is-generated: true
       x-postgen-struct: DbUser
-    DbTimeEntry: # Generated from internal structs. DO NOT EDIT.
+    DbUserAPIKey: # Generated schema. DO NOT EDIT.
       properties:
-        activityID:
-          type: integer
-        comment:
+        apiKey:
           type: string
-        durationMinutes:
+        expiresOn:
+          format: date-time
+          type: string
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+      required:
+        - apiKey
+        - expiresOn
+        - userID
+      type: object
+      x-is-generated: true
+      x-postgen-struct: DbUserAPIKey
+    DbUserID: # Generated schema. DO NOT EDIT.
+      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
+      type: string
+      x-go-type: uuid.UUID
+      x-go-type-import:
+        name: uuid
+        path: github.com/google/uuid
+      x-is-generated: true
+    DbUserWIAUWorkItem: # Generated schema. DO NOT EDIT.
+      properties:
+        role:
+          $ref: '#/components/schemas/WorkItemRole'
+        user:
+          $ref: '#/components/schemas/DbUser'
+      required:
+        - user
+        - role
+      type: object
+      x-is-generated: true
+    DbWorkItem: # Generated schema. DO NOT EDIT.
+      properties:
+        closedAt:
+          format: date-time
           nullable: true
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        description:
+          type: string
+        kanbanStepID:
           type: integer
-        start:
+        metadata:
+          additionalProperties: {}
+          type: object
+        targetDate:
           format: date-time
           type: string
         teamID:
-          nullable: true
           type: integer
-        timeEntryID:
-          type: integer
-        userID:
-          $ref: '#/components/schemas/DbUserID'
+        title:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
         workItemID:
-          nullable: true
+          type: integer
+        workItemTypeID:
           type: integer
       required:
-        - timeEntryID
-        - activityID
-        - userID
-        - comment
-        - start
+        - workItemID
+        - title
+        - description
+        - workItemTypeID
+        - metadata
+        - teamID
+        - kanbanStepID
+        - targetDate
+        - createdAt
+        - updatedAt
       type: object
-      x-postgen-struct: DbTimeEntry
-    DbWorkItemComment: # Generated from internal structs. DO NOT EDIT.
+      x-is-generated: true
+      x-postgen-struct: DbWorkItem
+    DbWorkItemComment: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
           format: date-time
@@ -1635,71 +1690,18 @@ components:
         - createdAt
         - updatedAt
       type: object
+      x-is-generated: true
       x-postgen-struct: DbWorkItemComment
-    # Not generated from go code in repo models since we can't have repos/models imported by db.
-    # It is not solved by changing repo models pkg location. repo models will always import db so
-    # it can't be imported by db.
-    ProjectConfig:
-      properties:
-        fields:
-          items:
-            $ref: '#/components/schemas/ProjectConfigField'
-          nullable: false
-          type: array
-        header:
-          items:
-            type: string
-          nullable: false
-          type: array
-        visualization:
-          type: object
-      required:
-        - header
-        - fields
-      type: object
-    ProjectConfigField:
-      properties:
-        isEditable:
-          type: boolean
-        isVisible:
-          type: boolean
-        name:
-          type: string
-        path:
-          type: string
-        showCollapsed:
-          type: boolean
-      required:
-        - isEditable
-        - showCollapsed
-        - isVisible
-        - path
-        - name
-      type: object
-    DemoWorkItems: # Generated from internal structs. DO NOT EDIT.
+    DbWorkItemCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         closedAt:
           format: date-time
           nullable: true
           type: string
-        createdAt:
-          format: date-time
-          type: string
-        deletedAt:
-          format: date-time
-          nullable: true
-          type: string
-        demoWorkItem:
-          $ref: '#/components/schemas/DbDemoWorkItem'
         description:
           type: string
         kanbanStepID:
           type: integer
-        members:
-          items:
-            $ref: '#/components/schemas/DbUserWIAUWorkItem'
-          nullable: true
-          type: array
         metadata:
           additionalProperties: {}
           type: object
@@ -1707,49 +1709,85 @@ components:
           format: date-time
           type: string
         teamID:
-          nullable: true
           type: integer
-        timeEntries:
-          items:
-            $ref: '#/components/schemas/DbTimeEntry'
-          nullable: true
-          type: array
         title:
           type: string
-        updatedAt:
-          format: date-time
-          type: string
-        workItemComments:
-          items:
-            $ref: '#/components/schemas/DbWorkItemComment'
-          nullable: true
-          type: array
-        workItemID:
-          type: integer
-        workItemTags:
-          items:
-            $ref: '#/components/schemas/DbWorkItemTag'
-          nullable: true
-          type: array
-        workItemType:
-          $ref: '#/components/schemas/DbWorkItemType'
         workItemTypeID:
           type: integer
       required:
-        - workItemID
-        - title
         - description
-        - workItemTypeID
-        - metadata
-        - teamID
         - kanbanStepID
+        - metadata
         - targetDate
-        - createdAt
-        - updatedAt
-        - demoWorkItem
+        - teamID
+        - title
+        - workItemTypeID
       type: object
-      x-postgen-struct: RestDemoWorkItems
-    DemoTwoWorkItems: # Generated from internal structs. DO NOT EDIT.
+      x-is-generated: true
+    DbWorkItemTag: # Generated schema. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+        workItemTagID:
+          type: integer
+      required:
+        - workItemTagID
+        - projectID
+        - name
+        - description
+        - color
+      type: object
+      x-is-generated: true
+      x-postgen-struct: DbWorkItemTag
+    DbWorkItemTagCreateParams: # Generated schema. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+      required:
+        - color
+        - description
+        - name
+      type: object
+      x-is-generated: true
+    DbWorkItemType: # Generated schema. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+        workItemTypeID:
+          type: integer
+      required:
+        - workItemTypeID
+        - projectID
+        - name
+        - description
+        - color
+      type: object
+      x-is-generated: true
+      x-postgen-struct: DbWorkItemType
+    DemoTwoWorkItems: # Generated schema. DO NOT EDIT.
       properties:
         closedAt:
           format: date-time
@@ -1821,44 +1859,269 @@ components:
         - updatedAt
         - demoTwoWorkItem
       type: object
-      x-postgen-struct: RestDemoTwoWorkItems
-    InitializeProjectRequest: # Generated from internal structs. DO NOT EDIT.
+      x-is-generated: true
+      x-postgen-struct: DemoTwoWorkItems
+    DemoWorkItems: # Generated schema. DO NOT EDIT.
       properties:
-        tags:
+        closedAt:
+          format: date-time
+          nullable: true
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        demoWorkItem:
+          $ref: '#/components/schemas/DbDemoWorkItem'
+        description:
+          type: string
+        kanbanStepID:
+          type: integer
+        members:
           items:
-            $ref: '#/components/schemas/DbWorkItemTagCreateParams'
+            $ref: '#/components/schemas/DbUserWIAUWorkItem'
           nullable: true
           type: array
-        teams:
+        metadata:
+          additionalProperties: {}
+          type: object
+        targetDate:
+          format: date-time
+          type: string
+        teamID:
+          nullable: true
+          type: integer
+        timeEntries:
           items:
-            $ref: '#/components/schemas/DbTeamCreateParams'
+            $ref: '#/components/schemas/DbTimeEntry'
           nullable: true
           type: array
+        title:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        workItemComments:
+          items:
+            $ref: '#/components/schemas/DbWorkItemComment'
+          nullable: true
+          type: array
+        workItemID:
+          type: integer
+        workItemTags:
+          items:
+            $ref: '#/components/schemas/DbWorkItemTag'
+          nullable: true
+          type: array
+        workItemType:
+          $ref: '#/components/schemas/DbWorkItemType'
+        workItemTypeID:
+          type: integer
+      required:
+        - workItemID
+        - title
+        - description
+        - workItemTypeID
+        - metadata
+        - teamID
+        - kanbanStepID
+        - targetDate
+        - createdAt
+        - updatedAt
+        - demoWorkItem
       type: object
-      x-postgen-struct: RestCreateProjectBoardRequest
-    ProjectBoard: # Generated from internal structs. DO NOT EDIT.
+      x-is-generated: true
+      x-postgen-struct: DemoWorkItems
+    Notification: # Generated schema. DO NOT EDIT.
+      properties:
+        notification:
+          $ref: '#/components/schemas/DbNotification'
+        notificationID:
+          type: integer
+        read:
+          type: boolean
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        userNotificationID:
+          type: integer
+      required:
+        - userNotificationID
+        - notificationID
+        - read
+        - userID
+        - notification
+      type: object
+      x-is-generated: true
+      x-postgen-struct: Notification
+    PaginatedNotificationsResponse: # Generated schema. DO NOT EDIT.
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/Notification'
+          nullable: true
+          type: array
+        page:
+          $ref: '#/components/schemas/PaginationPage'
+      required:
+        - page
+        - items
+      type: object
+      x-is-generated: true
+      x-postgen-struct: PaginatedNotificationsResponse
+    PaginatedUsersResponse: # Generated schema. DO NOT EDIT.
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/User'
+          nullable: true
+          type: array
+        page:
+          $ref: '#/components/schemas/PaginationPage'
+      required:
+        - page
+        - items
+      type: object
+      x-is-generated: true
+      x-postgen-struct: PaginatedUsersResponse
+    PaginationPage: # Generated schema. DO NOT EDIT.
+      properties:
+        nextCursor:
+          type: string
+      type: object
+      x-is-generated: true
+      x-postgen-struct: PaginationPage
+    ProjectBoard: # Generated schema. DO NOT EDIT.
       properties:
         projectName:
           $ref: '#/components/schemas/Project'
       required:
         - projectName
       type: object
-      x-postgen-struct: RestProjectBoard
-    PaginatedUsersResponse: # Generated from internal structs. DO NOT EDIT.
+      x-is-generated: true
+      x-postgen-struct: ProjectBoard
+    ServicesMember: # Generated schema. DO NOT EDIT.
       properties:
-        items:
+        role:
+          $ref: '#/components/schemas/WorkItemRole'
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+      required:
+        - role
+        - userID
+      type: object
+      x-is-generated: true
+    SharedWorkItemFields: # Generated schema. DO NOT EDIT.
+      properties:
+        members:
           items:
-            $ref: '#/components/schemas/RestUser'
+            $ref: '#/components/schemas/DbUserWIAUWorkItem'
           nullable: true
           type: array
-        page:
-          $ref: '#/components/schemas/RestPaginationPage'
-      required:
-        - page
-        - items
+        timeEntries:
+          items:
+            $ref: '#/components/schemas/DbTimeEntry'
+          nullable: true
+          type: array
+        workItemComments:
+          items:
+            $ref: '#/components/schemas/DbWorkItemComment'
+          nullable: true
+          type: array
+        workItemTags:
+          items:
+            $ref: '#/components/schemas/DbWorkItemTag'
+          nullable: true
+          type: array
+        workItemType:
+          $ref: '#/components/schemas/DbWorkItemType'
       type: object
-      x-postgen-struct: RestPaginatedUsersResponse
-    User: # Generated from internal structs. DO NOT EDIT.
+      x-is-generated: true
+      x-postgen-struct: SharedWorkItemFields
+    Team: # Generated schema. DO NOT EDIT.
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+        teamID:
+          type: integer
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - teamID
+        - projectID
+        - name
+        - description
+        - createdAt
+        - updatedAt
+      type: object
+      x-is-generated: true
+      x-postgen-struct: Team
+    UpdateActivityRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        description:
+          type: string
+        isProductive:
+          type: boolean
+        name:
+          type: string
+      type: object
+      x-is-generated: true
+      x-postgen-struct: UpdateActivityRequest
+    UpdateTeamRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        description:
+          type: string
+        name:
+          type: string
+      type: object
+      x-is-generated: true
+      x-postgen-struct: UpdateTeamRequest
+    UpdateWorkItemCommentRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        message:
+          type: string
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        workItemID:
+          type: integer
+      type: object
+      x-is-generated: true
+      x-postgen-struct: UpdateWorkItemCommentRequest
+    UpdateWorkItemTagRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+      type: object
+      x-is-generated: true
+      x-postgen-struct: UpdateWorkItemTagRequest
+    UpdateWorkItemTypeRequest: # Generated schema. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+      type: object
+      x-is-generated: true
+      x-postgen-struct: UpdateWorkItemTypeRequest
+    User: # Generated schema. DO NOT EDIT.
       properties:
         apiKey:
           $ref: '#/components/schemas/DbUserAPIKey'
@@ -1912,9 +2175,157 @@ components:
         - createdAt
         - role
       type: object
-      x-postgen-struct: RestUser
-    RestUser: # TODO: generate automatically for all in structs.gen
-      $ref: '#/components/schemas/User'
+      x-is-generated: true
+      x-postgen-struct: User
+    WorkItemComment: # Generated schema. DO NOT EDIT.
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        message:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        workItemCommentID:
+          type: integer
+        workItemID:
+          type: integer
+      required:
+        - workItemCommentID
+        - workItemID
+        - userID
+        - message
+        - createdAt
+        - updatedAt
+      type: object
+      x-is-generated: true
+      x-postgen-struct: WorkItemComment
+    WorkItemTag: # Generated schema. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+        workItemTagID:
+          type: integer
+      required:
+        - workItemTagID
+        - projectID
+        - name
+        - description
+        - color
+      type: object
+      x-is-generated: true
+      x-postgen-struct: WorkItemTag
+    WorkItemType: # Generated schema. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+        workItemTypeID:
+          type: integer
+      required:
+        - workItemTypeID
+        - projectID
+        - name
+        - description
+        - color
+      type: object
+      x-is-generated: true
+      x-postgen-struct: WorkItemType
+    Direction:
+      type: string
+      enum:
+        - asc
+        - desc
+    DbActivity:
+      properties:
+        activityID:
+          type: integer
+        description:
+          type: string
+        isProductive:
+          type: boolean
+        name:
+          type: string
+        projectID:
+          type: integer
+      required:
+        - activityID
+        - projectID
+        - name
+        - description
+        - isProductive
+      type: object
+    ProjectConfig:
+      properties:
+        fields:
+          items:
+            $ref: '#/components/schemas/ProjectConfigField'
+          nullable: false
+          type: array
+        header:
+          items:
+            type: string
+          nullable: false
+          type: array
+        visualization:
+          type: object
+      required:
+        - header
+        - fields
+      type: object
+    ProjectConfigField:
+      properties:
+        isEditable:
+          type: boolean
+        isVisible:
+          type: boolean
+        name:
+          type: string
+        path:
+          type: string
+        showCollapsed:
+          type: boolean
+      required:
+        - isEditable
+        - showCollapsed
+        - isVisible
+        - path
+        - name
+      type: object
+    InitializeProjectRequest:
+      properties:
+        tags:
+          items:
+            $ref: '#/components/schemas/DbWorkItemTagCreateParams'
+          nullable: true
+          type: array
+        teams:
+          items:
+            $ref: '#/components/schemas/DbTeamCreateParams'
+          nullable: true
+          type: array
+      type: object
+      x-postgen-struct: CreateProjectBoardRequest
     HTTPValidationError:
       title: HTTPValidationError
       type: object
@@ -1994,24 +2405,24 @@ components:
         # - WorkItemMoved
         # - WorkItemClosed
         - GlobalAlerts
-    Scope: # Generated from scopes.json keys. DO NOT EDIT.
+    Scope:
       type: string
       enum: ["project-member", "users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review", "work-item-comment:create", "work-item-comment:edit", "work-item-comment:delete"]
-      x-generated: '-'
+      x-is-generated: true
       description: is generated from scopes.json keys.
-    Scopes: # workaround for openapi-go gen
+    Scopes:
       type: array
       items:
         $ref: '#/components/schemas/Scope'
-    Role: # Generated from roles.json keys. DO NOT EDIT.
+    Role:
       type: string
       enum: ["guest", "user", "advancedUser", "manager", "admin", "superAdmin"]
-      x-generated: '-'
+      x-is-generated: true
       description: is generated from roles.json keys.
-    WorkItemRole: # Generated from database enum 'work_item_role'. DO NOT EDIT.
+    WorkItemRole:
       title: WorkItem role
       type: string
-      x-generated: '-'
+      x-is-generated: true
       enum: ["preparer", "reviewer"]
       description: is generated from database enum 'work_item_role'.
     UpdateUserRequest:
@@ -2028,17 +2439,6 @@ components:
           description: originally from auth server but updatable
           type: string
           pattern: ^[\p{L} '-]+$
-          # will be synced with auth server
-          # username:
-          #   description: originally from auth server but updatable
-          #   type: string
-          #   pattern: ^[\.a-zA-Z0-9_-]+$
-          # will be synced with auth server
-          # email:
-          #   description: originally from auth server but updatable
-          #   type: string
-          #   # format: email # bad oapi-codegen type
-          #   pattern: ^[a-zA-Z0-9._%+-]+@(mydomain\.com|anotherdomain\.com)$
       type: object
     UpdateUserAuthRequest:
       description: represents User authorization data to update
@@ -2052,7 +2452,6 @@ components:
         scopes:
           $ref: '#/components/schemas/Scopes'
       type: object
-    # à la FastAPI
     ValidationError:
       title: ValidationError
       required:
@@ -2087,34 +2486,13 @@ components:
         ctx:
           title: Contextual information
           type: object
-    UuidUUID: # Generated from internal structs. DO NOT EDIT.
+    UuidUUID:
       pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
       type: string
       x-go-type: uuid.UUID
       x-go-type-import:
         name: uuid
         path: github.com/google/uuid
-    # IMPORTANT: anyOf since CreateWorkItemRequestDiscriminator will always be matched.
-    # we should be able to then remove projectName from CreateDemoWorkItemRequest and
-    # CreateDemoTwoWorkItemRequest
-    # CreateWorkItemRequest:
-    #   anyOf:
-    #     - $ref: '#/components/schemas/CreateWorkItemRequestDiscriminator'
-    #     - $ref: '#/components/schemas/CreateDemoWorkItemRequest'
-    #     - $ref: '#/components/schemas/CreateDemoTwoWorkItemRequest'
-    # CreateWorkItemRequestDiscriminator:
-    #   type: object
-    #   properties:
-    #     projectName:
-    #       $ref: '#/components/schemas/Project'
-    #   discriminator:
-    #     propertyName: projectName
-    #     mapping:
-    #       demo: '#/components/schemas/CreateDemoWorkItemRequest'
-    #       demo_two: '#/components/schemas/CreateDemoTwoWorkItemRequest'
-
-    # IMPORTANT: discriminator must be defined this way so validation works
-    # and to ensure proper oapi-codegen generation. Disregard any other method.
     CreateWorkItemRequest:
       oneOf:
         - $ref: '#/components/schemas/CreateDemoWorkItemRequest'
@@ -2124,121 +2502,12 @@ components:
         mapping:
           demo: '#/components/schemas/CreateDemoWorkItemRequest'
           demo_two: '#/components/schemas/CreateDemoTwoWorkItemRequest'
-    DbWorkItem: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        closedAt:
-          format: date-time
-          nullable: true
-          type: string
-        createdAt:
-          format: date-time
-          type: string
-        deletedAt:
-          format: date-time
-          nullable: true
-          type: string
-        description:
-          type: string
-        kanbanStepID:
-          type: integer
-        metadata:
-          additionalProperties: {}
-          type: object
-        targetDate:
-          format: date-time
-          type: string
-        teamID:
-          type: integer
-        title:
-          type: string
-        updatedAt:
-          format: date-time
-          type: string
-        workItemID:
-          type: integer
-        workItemTypeID:
-          type: integer
-      required:
-        - workItemID
-        - title
-        - description
-        - workItemTypeID
-        - metadata
-        - teamID
-        - kanbanStepID
-        - targetDate
-        - createdAt
-        - updatedAt
-      type: object
-      x-postgen-struct: DbWorkItem
-    CreateDemoTwoWorkItemRequest: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        base:
-          $ref: '#/components/schemas/DbWorkItemCreateParams'
-        demoTwoProject:
-          $ref: '#/components/schemas/DbDemoTwoWorkItemCreateParams'
-        members:
-          items:
-            $ref: '#/components/schemas/ServicesMember'
-          type: array
-        projectName:
-          $ref: '#/components/schemas/Project'
-        tagIDs:
-          items:
-            type: integer
-          type: array
-      required:
-        - projectName
-        - demoTwoProject
-        - base
-        - tagIDs
-        - members
-      type: object
-      x-postgen-struct: RestCreateDemoTwoWorkItemRequest
-    CreateDemoWorkItemRequest: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        base:
-          $ref: '#/components/schemas/DbWorkItemCreateParams'
-        demoProject:
-          $ref: '#/components/schemas/DbDemoWorkItemCreateParams'
-        members:
-          items:
-            $ref: '#/components/schemas/ServicesMember'
-          type: array
-        projectName:
-          $ref: '#/components/schemas/Project'
-        tagIDs:
-          items:
-            type: integer
-          type: array
-      required:
-        - projectName
-        - demoProject
-        - base
-        - tagIDs
-        - members
-      type: object
-      x-postgen-struct: RestCreateDemoWorkItemRequest
-    CreateWorkItemCommentRequest: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        message:
-          type: string
-        userID:
-          $ref: '#/components/schemas/DbUserID'
-        workItemID:
-          type: integer
-      required:
-        - message
-        - userID
-        - workItemID
-      type: object
-      x-postgen-struct: RestCreateWorkItemCommentRequest
-    Project: # Generated from projects table. DO NOT EDIT.
+    Project:
       enum: ["demo", "demo_two"]
       type: string
-      x-generated: '-'
+      x-is-generated: true
       description: is generated from projects table.
-    DbActivityCreateParams: # Generated from internal structs. DO NOT EDIT.
+    DbActivityCreateParams:
       properties:
         description:
           type: string
@@ -2253,183 +2522,28 @@ components:
         - isProductive
         - name
       type: object
-    DbTeamCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        description:
-          type: string
-        name:
-          type: string
-      required:
-        - description
-        - name
-      type: object
-    DbWorkItemTagCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-      required:
-        - color
-        - description
-        - name
-      type: object
-    DbWorkItemRole: # Generated from internal structs. DO NOT EDIT.
+    DbWorkItemRole:
       type: string
-    NotificationType: # Generated from database enum 'notification_type'. DO NOT EDIT.
+    NotificationType:
       description: is generated from database enum 'notification_type'.
       type: string
-      x-generated: '-'
+      x-is-generated: true
       enum: ["personal", "global"]
-    DemoTwoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
+    DemoTwoWorkItemTypes:
       type: string
       enum: ["Type 1", "Type 2", "Another type"]
-      x-generated: '-'
+      x-is-generated: true
       description: is generated from work_item_types table.
-    DemoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
+    DemoWorkItemTypes:
       type: string
       enum: ["Type 1"]
-      x-generated: '-'
+      x-is-generated: true
       description: is generated from work_item_types table.
-    DbDemoWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        lastMessageAt:
-          format: date-time
-          type: string
-        line:
-          type: string
-        ref:
-          pattern: ^[0-9]{8}$
-          type: string
-        reopened:
-          type: boolean
-      required:
-        - lastMessageAt
-        - line
-        - ref
-        - reopened
-      type: object
-    DbWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        closedAt:
-          format: date-time
-          nullable: true
-          type: string
-        description:
-          type: string
-        kanbanStepID:
-          type: integer
-        metadata:
-          additionalProperties: {}
-          type: object
-        targetDate:
-          format: date-time
-          type: string
-        teamID:
-          type: integer
-        title:
-          type: string
-        workItemTypeID:
-          type: integer
-      required:
-        - description
-        - kanbanStepID
-        - metadata
-        - targetDate
-        - teamID
-        - title
-        - workItemTypeID
-      type: object
-    ServicesMember: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        role:
-          $ref: '#/components/schemas/WorkItemRole'
-        userID:
-          $ref: '#/components/schemas/DbUserID'
-      required:
-        - role
-        - userID
-      type: object
-    DbDemoTwoWorkItem: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        customDateForProject2:
-          format: date-time
-          nullable: true
-          type: string
-        workItemID:
-          type: integer
-      required:
-        - workItemID
-      type: object
-    DbDemoTwoWorkItemCreateParams: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        customDateForProject2:
-          format: date-time
-          nullable: true
-          type: string
-      type: object
-    # https://github.com/ferdikoomen/openapi-typescript-codegen/issues/998
-    # for our case, this should be part of orval, at least
-    # declare const Brand: unique symbol
-    # export type Branded<T, B> = T & { [Brand]: B }
-
-    # type UserID = Branded<string, "UserID">;
-    # type TeamID = Branded<string, "TeamID">;
-
-    # function doSomethingWithUser(id: UserID) {}
-
-    # doSomethingWithUser("123" as UserID);
-    # doSomethingWithUser("invalid" as TeamID); // Error: Argument of type 'string' is not assignable to parameter of type 'UserID'
-    # type: string
-    # x-orval-type: branded
     DbWorkItemID: {}
     DbProjectID: {}
-    DbUserID: # Generated from internal structs. DO NOT EDIT.
-      pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
-      type: string
-      x-go-type: uuid.UUID
-      x-go-type-import:
-        name: uuid
-        path: github.com/google/uuid
     DbWorkItemTypeID: {}
     DbNotificationID: {}
-    DbNotification: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        body:
-          type: string
-        createdAt:
-          format: date-time
-          type: string
-        labels:
-          items:
-            type: string
-          type: array
-        link:
-          nullable: true
-          type: string
-        notificationID:
-          type: integer
-        notificationType:
-          $ref: '#/components/schemas/NotificationType'
-        receiver:
-          $ref: '#/components/schemas/DbUserID'
-        sender:
-          $ref: '#/components/schemas/DbUserID'
-        title:
-          type: string
-      required:
-        - notificationID
-        - title
-        - body
-        - labels
-        - createdAt
-        - sender
-        - notificationType
-      type: object
-    DbUserNotification: # Generated from internal structs. DO NOT EDIT.
+    DbUserNotification:
       properties:
         notificationID:
           type: integer
@@ -2445,105 +2559,16 @@ components:
         - read
         - userID
       type: object
-    RestPaginationPage: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        nextCursor:
-          type: string
-      type: object
-    Notification: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        notification:
-          $ref: '#/components/schemas/DbNotification'
-        notificationID:
-          type: integer
-        read:
-          type: boolean
-        userID:
-          $ref: '#/components/schemas/DbUserID'
-        userNotificationID:
-          type: integer
-      required:
-        - userNotificationID
-        - notificationID
-        - read
-        - userID
-        - notification
-      type: object
-      x-postgen-struct: RestNotification
-    RestNotification: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        notification:
-          $ref: '#/components/schemas/DbNotification'
-        notificationID:
-          type: integer
-        read:
-          type: boolean
-        userID:
-          $ref: '#/components/schemas/DbUserID'
-        userNotificationID:
-          type: integer
-      required:
-        - userNotificationID
-        - notificationID
-        - read
-        - userID
-        - notification
-      type: object
-    DbUserWIAUWorkItem: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        role:
-          $ref: '#/components/schemas/WorkItemRole'
-        user:
-          $ref: '#/components/schemas/DbUser'
-      required:
-        - user
-        - role
-      type: object
-    DemoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
+    DemoKanbanSteps:
       type: string
       enum: ["Disabled", "Received", "Under review", "Work in progress"]
-      x-generated: '-'
+      x-is-generated: true
       description: is generated from kanban_steps table.
-    DemoTwoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
+    DemoTwoKanbanSteps:
       type: string
       enum: ["Received"]
-      x-generated: '-'
+      x-is-generated: true
       description: is generated from kanban_steps table.
-    UpdateWorkItemCommentRequest: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        message:
-          type: string
-        userID:
-          $ref: '#/components/schemas/DbUserID'
-        workItemID:
-          type: integer
-      type: object
-      x-postgen-struct: RestUpdateWorkItemCommentRequest
-    WorkItemComment: # Generated from internal structs. DO NOT EDIT.
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        message:
-          type: string
-        updatedAt:
-          format: date-time
-          type: string
-        userID:
-          $ref: '#/components/schemas/DbUserID'
-        workItemCommentID:
-          type: integer
-        workItemID:
-          type: integer
-      required:
-        - workItemCommentID
-        - workItemID
-        - userID
-        - message
-        - createdAt
-        - updatedAt
-      type: object
-      x-postgen-struct: RestWorkItemComment
   examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:

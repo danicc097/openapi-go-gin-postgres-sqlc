@@ -8,5 +8,5 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 
 export type MyProviderLoginParams = {
-  'auth-redirect-uri': string
-}
+'auth-redirect-uri': string;
+};

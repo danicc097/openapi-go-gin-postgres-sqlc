@@ -154,16 +154,6 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
-    CreateActivityRequest: {
-      description: string;
-      isProductive: boolean;
-      name: string;
-    };
-    UpdateActivityRequest: {
-      description?: string;
-      isProductive?: boolean;
-      name?: string;
-    };
     Activity: {
       activityID: number;
       /** Format: date-time */
@@ -173,72 +163,71 @@ export interface components {
       name: string;
       projectID: number;
     };
+    CreateActivityRequest: {
+      description: string;
+      isProductive: boolean;
+      name: string;
+    };
+    CreateDemoTwoWorkItemRequest: {
+      base: components["schemas"]["DbWorkItemCreateParams"];
+      demoTwoProject: components["schemas"]["DbDemoTwoWorkItemCreateParams"];
+      members: components["schemas"]["ServicesMember"][];
+      projectName: components["schemas"]["Project"];
+      tagIDs: number[];
+    };
+    CreateDemoWorkItemRequest: {
+      base: components["schemas"]["DbWorkItemCreateParams"];
+      demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
+      members: components["schemas"]["ServicesMember"][];
+      projectName: components["schemas"]["Project"];
+      tagIDs: number[];
+    };
+    CreateProjectBoardRequest: {
+      tags?: components["schemas"]["DbWorkItemTagCreateParams"][] | null;
+      teams?: components["schemas"]["DbTeamCreateParams"][] | null;
+    };
+    CreateTeamRequest: {
+      description: string;
+      name: string;
+    };
+    CreateWorkItemCommentRequest: {
+      message: string;
+      userID: components["schemas"]["DbUserID"];
+      workItemID: number;
+    };
     CreateWorkItemTagRequest: {
       color: string;
       description: string;
       name: string;
-    };
-    UpdateWorkItemTagRequest: {
-      color?: string;
-      description?: string;
-      name?: string;
-    };
-    WorkItemTag: {
-      color: string;
-      /** Format: date-time */
-      deletedAt?: string | null;
-      description: string;
-      name: string;
-      projectID: number;
-      workItemTagID: number;
     };
     CreateWorkItemTypeRequest: {
       color: string;
       description: string;
       name: string;
     };
-    UpdateWorkItemTypeRequest: {
-      color?: string;
-      description?: string;
-      name?: string;
-    };
-    WorkItemType: {
-      color: string;
-      description: string;
-      name: string;
-      projectID: number;
-      workItemTypeID: number;
-    };
-    CreateTeamRequest: {
-      description: string;
-      name: string;
-    };
-    UpdateTeamRequest: {
-      description?: string;
-      name?: string;
-    };
-    Team: {
+    DbDemoTwoWorkItem: {
       /** Format: date-time */
-      createdAt: string;
-      description: string;
-      name: string;
-      projectID: number;
-      teamID: number;
+      customDateForProject2?: string | null;
+      workItemID: number;
+    };
+    DbDemoTwoWorkItemCreateParams: {
       /** Format: date-time */
-      updatedAt: string;
+      customDateForProject2?: string | null;
     };
-    /** @enum {string} */
-    Direction: "asc" | "desc";
-    PaginatedNotificationsResponse: {
-      items: components["schemas"]["RestNotification"][] | null;
-      page: components["schemas"]["RestPaginationPage"];
+    DbDemoWorkItem: {
+      /** Format: date-time */
+      lastMessageAt: string;
+      line: string;
+      ref: string;
+      reopened: boolean;
+      workItemID: number;
     };
-    DbActivity: {
-      activityID: number;
-      description: string;
-      isProductive: boolean;
-      name: string;
-      projectID: number;
+    DbDemoWorkItemCreateParams: {
+      /** Format: date-time */
+      lastMessageAt: string;
+      line: string;
+      ref: string;
+      reopened: boolean;
     };
     DbKanbanStep: {
       color: string;
@@ -248,6 +237,18 @@ export interface components {
       projectID: number;
       stepOrder: number;
       timeTrackable: boolean;
+    };
+    DbNotification: {
+      body: string;
+      /** Format: date-time */
+      createdAt: string;
+      labels: string[];
+      link?: string | null;
+      notificationID: number;
+      notificationType: components["schemas"]["NotificationType"];
+      receiver?: components["schemas"]["DbUserID"];
+      sender: components["schemas"]["DbUserID"];
+      title: string;
     };
     DbProject: {
       boardConfig: components["schemas"]["ProjectConfig"];
@@ -269,35 +270,20 @@ export interface components {
       /** Format: date-time */
       updatedAt: string;
     };
-    DbWorkItemTag: {
-      color: string;
-      /** Format: date-time */
-      deletedAt?: string | null;
+    DbTeamCreateParams: {
       description: string;
       name: string;
-      projectID: number;
-      workItemTagID: number;
     };
-    DbWorkItemType: {
-      color: string;
-      description: string;
-      name: string;
-      projectID: number;
-      workItemTypeID: number;
-    };
-    DbDemoWorkItem: {
+    DbTimeEntry: {
+      activityID: number;
+      comment: string;
+      durationMinutes?: number | null;
       /** Format: date-time */
-      lastMessageAt: string;
-      line: string;
-      ref: string;
-      reopened: boolean;
-      workItemID: number;
-    };
-    DbUserAPIKey: {
-      apiKey: string;
-      /** Format: date-time */
-      expiresOn: string;
+      start: string;
+      teamID?: number | null;
+      timeEntryID: number;
       userID: components["schemas"]["DbUserID"];
+      workItemID?: number | null;
     };
     DbUser: {
       /** Format: date-time */
@@ -314,16 +300,37 @@ export interface components {
       userID: components["schemas"]["DbUserID"];
       username: string;
     };
-    DbTimeEntry: {
-      activityID: number;
-      comment: string;
-      durationMinutes?: number | null;
+    DbUserAPIKey: {
+      apiKey: string;
       /** Format: date-time */
-      start: string;
-      teamID?: number | null;
-      timeEntryID: number;
+      expiresOn: string;
       userID: components["schemas"]["DbUserID"];
-      workItemID?: number | null;
+    };
+    DbUserID: string;
+    DbUserWIAUWorkItem: {
+      role: components["schemas"]["WorkItemRole"];
+      user: components["schemas"]["DbUser"];
+    };
+    DbWorkItem: {
+      /** Format: date-time */
+      closedAt?: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      description: string;
+      kanbanStepID: number;
+      metadata: {
+        [key: string]: unknown;
+      };
+      /** Format: date-time */
+      targetDate: string;
+      teamID: number;
+      title: string;
+      /** Format: date-time */
+      updatedAt: string;
+      workItemID: number;
+      workItemTypeID: number;
     };
     DbWorkItemComment: {
       /** Format: date-time */
@@ -335,43 +342,39 @@ export interface components {
       workItemCommentID: number;
       workItemID: number;
     };
-    ProjectConfig: {
-      fields: components["schemas"]["ProjectConfigField"][];
-      header: string[];
-      visualization?: Record<string, never>;
-    };
-    ProjectConfigField: {
-      isEditable: boolean;
-      isVisible: boolean;
-      name: string;
-      path: string;
-      showCollapsed: boolean;
-    };
-    DemoWorkItems: {
+    DbWorkItemCreateParams: {
       /** Format: date-time */
       closedAt?: string | null;
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      deletedAt?: string | null;
-      demoWorkItem: components["schemas"]["DbDemoWorkItem"];
       description: string;
       kanbanStepID: number;
-      members?: components["schemas"]["DbUserWIAUWorkItem"][] | null;
       metadata: {
         [key: string]: unknown;
       };
       /** Format: date-time */
       targetDate: string;
-      teamID: number | null;
-      timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
+      teamID: number;
       title: string;
+      workItemTypeID: number;
+    };
+    DbWorkItemTag: {
+      color: string;
       /** Format: date-time */
-      updatedAt: string;
-      workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
-      workItemID: number;
-      workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
-      workItemType?: components["schemas"]["DbWorkItemType"];
+      deletedAt?: string | null;
+      description: string;
+      name: string;
+      projectID: number;
+      workItemTagID: number;
+    };
+    DbWorkItemTagCreateParams: {
+      color: string;
+      description: string;
+      name: string;
+    };
+    DbWorkItemType: {
+      color: string;
+      description: string;
+      name: string;
+      projectID: number;
       workItemTypeID: number;
     };
     DemoTwoWorkItems: {
@@ -401,16 +404,98 @@ export interface components {
       workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
     };
-    InitializeProjectRequest: {
-      tags?: components["schemas"]["DbWorkItemTagCreateParams"][] | null;
-      teams?: components["schemas"]["DbTeamCreateParams"][] | null;
+    DemoWorkItems: {
+      /** Format: date-time */
+      closedAt?: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      demoWorkItem: components["schemas"]["DbDemoWorkItem"];
+      description: string;
+      kanbanStepID: number;
+      members?: components["schemas"]["DbUserWIAUWorkItem"][] | null;
+      metadata: {
+        [key: string]: unknown;
+      };
+      /** Format: date-time */
+      targetDate: string;
+      teamID: number | null;
+      timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
+      title: string;
+      /** Format: date-time */
+      updatedAt: string;
+      workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
+      workItemID: number;
+      workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
+      workItemType?: components["schemas"]["DbWorkItemType"];
+      workItemTypeID: number;
+    };
+    Notification: {
+      notification: components["schemas"]["DbNotification"];
+      notificationID: number;
+      read: boolean;
+      userID: components["schemas"]["DbUserID"];
+      userNotificationID: number;
+    };
+    PaginatedNotificationsResponse: {
+      items: components["schemas"]["Notification"][] | null;
+      page: components["schemas"]["PaginationPage"];
+    };
+    PaginatedUsersResponse: {
+      items: components["schemas"]["User"][] | null;
+      page: components["schemas"]["PaginationPage"];
+    };
+    PaginationPage: {
+      nextCursor?: string;
     };
     ProjectBoard: {
       projectName: components["schemas"]["Project"];
     };
-    PaginatedUsersResponse: {
-      items: components["schemas"]["RestUser"][] | null;
-      page: components["schemas"]["RestPaginationPage"];
+    ServicesMember: {
+      role: components["schemas"]["WorkItemRole"];
+      userID: components["schemas"]["DbUserID"];
+    };
+    SharedWorkItemFields: {
+      members?: components["schemas"]["DbUserWIAUWorkItem"][] | null;
+      timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
+      workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
+      workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
+      workItemType?: components["schemas"]["DbWorkItemType"];
+    };
+    Team: {
+      /** Format: date-time */
+      createdAt: string;
+      description: string;
+      name: string;
+      projectID: number;
+      teamID: number;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    UpdateActivityRequest: {
+      description?: string;
+      isProductive?: boolean;
+      name?: string;
+    };
+    UpdateTeamRequest: {
+      description?: string;
+      name?: string;
+    };
+    UpdateWorkItemCommentRequest: {
+      message?: string;
+      userID?: components["schemas"]["DbUserID"];
+      workItemID?: number;
+    };
+    UpdateWorkItemTagRequest: {
+      color?: string;
+      description?: string;
+      name?: string;
+    };
+    UpdateWorkItemTypeRequest: {
+      color?: string;
+      description?: string;
+      name?: string;
     };
     User: {
       apiKey?: components["schemas"]["DbUserAPIKey"];
@@ -431,7 +516,57 @@ export interface components {
       userID: components["schemas"]["DbUserID"];
       username: string;
     };
-    RestUser: components["schemas"]["User"];
+    WorkItemComment: {
+      /** Format: date-time */
+      createdAt: string;
+      message: string;
+      /** Format: date-time */
+      updatedAt: string;
+      userID: components["schemas"]["DbUserID"];
+      workItemCommentID: number;
+      workItemID: number;
+    };
+    WorkItemTag: {
+      color: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      description: string;
+      name: string;
+      projectID: number;
+      workItemTagID: number;
+    };
+    WorkItemType: {
+      color: string;
+      description: string;
+      name: string;
+      projectID: number;
+      workItemTypeID: number;
+    };
+    /** @enum {string} */
+    Direction: "asc" | "desc";
+    DbActivity: {
+      activityID: number;
+      description: string;
+      isProductive: boolean;
+      name: string;
+      projectID: number;
+    };
+    ProjectConfig: {
+      fields: components["schemas"]["ProjectConfigField"][];
+      header: string[];
+      visualization?: Record<string, never>;
+    };
+    ProjectConfigField: {
+      isEditable: boolean;
+      isVisible: boolean;
+      name: string;
+      path: string;
+      showCollapsed: boolean;
+    };
+    InitializeProjectRequest: {
+      tags?: components["schemas"]["DbWorkItemTagCreateParams"][] | null;
+      teams?: components["schemas"]["DbTeamCreateParams"][] | null;
+    };
     /** HTTPValidationError */
     HTTPValidationError: {
       /**
@@ -540,46 +675,6 @@ export interface components {
     };
     UuidUUID: string;
     CreateWorkItemRequest: components["schemas"]["CreateDemoWorkItemRequest"] | components["schemas"]["CreateDemoTwoWorkItemRequest"];
-    DbWorkItem: {
-      /** Format: date-time */
-      closedAt?: string | null;
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      deletedAt?: string | null;
-      description: string;
-      kanbanStepID: number;
-      metadata: {
-        [key: string]: unknown;
-      };
-      /** Format: date-time */
-      targetDate: string;
-      teamID: number;
-      title: string;
-      /** Format: date-time */
-      updatedAt: string;
-      workItemID: number;
-      workItemTypeID: number;
-    };
-    CreateDemoTwoWorkItemRequest: {
-      base: components["schemas"]["DbWorkItemCreateParams"];
-      demoTwoProject: components["schemas"]["DbDemoTwoWorkItemCreateParams"];
-      members: components["schemas"]["ServicesMember"][];
-      projectName: components["schemas"]["Project"];
-      tagIDs: number[];
-    };
-    CreateDemoWorkItemRequest: {
-      base: components["schemas"]["DbWorkItemCreateParams"];
-      demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
-      members: components["schemas"]["ServicesMember"][];
-      projectName: components["schemas"]["Project"];
-      tagIDs: number[];
-    };
-    CreateWorkItemCommentRequest: {
-      message: string;
-      userID: components["schemas"]["DbUserID"];
-      workItemID: number;
-    };
     /**
      * @description is generated from projects table.
      * @enum {string}
@@ -590,15 +685,6 @@ export interface components {
       isProductive: boolean;
       name: string;
       projectID?: number;
-    };
-    DbTeamCreateParams: {
-      description: string;
-      name: string;
-    };
-    DbWorkItemTagCreateParams: {
-      color: string;
-      description: string;
-      name: string;
     };
     DbWorkItemRole: string;
     /**
@@ -616,83 +702,15 @@ export interface components {
      * @enum {string}
      */
     DemoWorkItemTypes: "Type 1";
-    DbDemoWorkItemCreateParams: {
-      /** Format: date-time */
-      lastMessageAt: string;
-      line: string;
-      ref: string;
-      reopened: boolean;
-    };
-    DbWorkItemCreateParams: {
-      /** Format: date-time */
-      closedAt?: string | null;
-      description: string;
-      kanbanStepID: number;
-      metadata: {
-        [key: string]: unknown;
-      };
-      /** Format: date-time */
-      targetDate: string;
-      teamID: number;
-      title: string;
-      workItemTypeID: number;
-    };
-    ServicesMember: {
-      role: components["schemas"]["WorkItemRole"];
-      userID: components["schemas"]["DbUserID"];
-    };
-    DbDemoTwoWorkItem: {
-      /** Format: date-time */
-      customDateForProject2?: string | null;
-      workItemID: number;
-    };
-    DbDemoTwoWorkItemCreateParams: {
-      /** Format: date-time */
-      customDateForProject2?: string | null;
-    };
     DbWorkItemID: unknown;
     DbProjectID: unknown;
-    DbUserID: string;
     DbWorkItemTypeID: unknown;
     DbNotificationID: unknown;
-    DbNotification: {
-      body: string;
-      /** Format: date-time */
-      createdAt: string;
-      labels: string[];
-      link?: string | null;
-      notificationID: number;
-      notificationType: components["schemas"]["NotificationType"];
-      receiver?: components["schemas"]["DbUserID"];
-      sender: components["schemas"]["DbUserID"];
-      title: string;
-    };
     DbUserNotification: {
       notificationID: number;
       read: boolean;
       userID: components["schemas"]["DbUserID"];
       userNotificationID: number;
-    };
-    RestPaginationPage: {
-      nextCursor?: string;
-    };
-    Notification: {
-      notification: components["schemas"]["DbNotification"];
-      notificationID: number;
-      read: boolean;
-      userID: components["schemas"]["DbUserID"];
-      userNotificationID: number;
-    };
-    RestNotification: {
-      notification: components["schemas"]["DbNotification"];
-      notificationID: number;
-      read: boolean;
-      userID: components["schemas"]["DbUserID"];
-      userNotificationID: number;
-    };
-    DbUserWIAUWorkItem: {
-      role: components["schemas"]["WorkItemRole"];
-      user: components["schemas"]["DbUser"];
     };
     /**
      * @description is generated from kanban_steps table.
@@ -704,21 +722,6 @@ export interface components {
      * @enum {string}
      */
     DemoTwoKanbanSteps: "Received";
-    UpdateWorkItemCommentRequest: {
-      message?: string;
-      userID?: components["schemas"]["DbUserID"];
-      workItemID?: number;
-    };
-    WorkItemComment: {
-      /** Format: date-time */
-      createdAt: string;
-      message: string;
-      /** Format: date-time */
-      updatedAt: string;
-      userID: components["schemas"]["DbUserID"];
-      workItemCommentID: number;
-      workItemID: number;
-    };
   };
   responses: never;
   parameters: {

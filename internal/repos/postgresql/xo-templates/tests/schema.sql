@@ -7,6 +7,8 @@ create extension if not exists pg_trgm schema extensions;
 create extension if not exists btree_gin schema extensions;
 
 -- ensure up to date
+-- NOTE: do not refactor to use public schema. Easier test setup and we make sure
+-- xo gen works properly outside public.
 drop schema if exists xo_tests cascade;
 
 create schema if not exists xo_tests;
@@ -163,6 +165,16 @@ create table xo_tests.pag_element (
   , dummy int
   , foreign key (dummy) references xo_tests.dummy_join (dummy_join_id) on delete cascade
 );
+
+create schema if not exists xo_tests_cache;
+
+create table if not exists xo_tests_cache.demo_work_items (
+  work_item_id int not null unique
+  , title text
+  , foreign key (work_item_id) references xo_tests.work_items (work_item_id) on delete cascade
+);
+
+comment on column xo_tests_cache.demo_work_items.work_item_id is '"type":XoTestsWorkItemID && "properties":ignore-constraints';
 
 do $BODY$
 declare

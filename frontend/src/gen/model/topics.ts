@@ -10,9 +10,10 @@ import type * as EntityIDs from 'src/gen/entity-ids'
 /**
  * string identifiers for SSE event listeners.
  */
-export type Topics = typeof Topics[keyof typeof Topics]
+export type Topics = typeof Topics[keyof typeof Topics];
+
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Topics = {
   GlobalAlerts: 'GlobalAlerts',
-} as const
+} as const;

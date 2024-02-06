@@ -6,25 +6,31 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import { HttpResponse, delay, http } from 'msw'
+import {
+  HttpResponse,
+  delay,
+  http
+} from 'msw'
 
 export const getOidcMock = () => [
-  http.get('*/auth/myprovider/callback', async () => {
-    await delay(1000)
-    return new HttpResponse(null, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-  http.get('*/auth/myprovider/login', async () => {
-    await delay(1000)
-    return new HttpResponse(null, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-  }),
-]
+http.get('*/auth/myprovider/callback', async () => {
+        await delay(1000);
+        return new HttpResponse(null,
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        )
+      }),http.get('*/auth/myprovider/login', async () => {
+        await delay(1000);
+        return new HttpResponse(null,
+          { 
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+            }
+          }
+        )
+      }),]
