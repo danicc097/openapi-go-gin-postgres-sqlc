@@ -11,7 +11,7 @@ import (
 func BuildAPIURL(subpaths ...string) string {
 	cfg := Config
 
-	elems := []string{cfg.APIPrefix, cfg.APIVersion}
+	elems := []string{cfg.ReverseProxyAPIPrefix, cfg.APIVersion}
 	elems = append(elems, subpaths...)
 
 	path, err := url.JoinPath(
