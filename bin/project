@@ -2221,7 +2221,8 @@ generate_structs_map() {
   local structs=()
   go-utils.find_structs structs "$path"
   for struct in "${structs[@]}"; do
-    map_fields+=("\"Rest$struct\": new(rest.$struct),")
+    # rest won't have prefix anymore. it is the default schema to use...
+    map_fields+=("\"$struct\": new(rest.$struct),")
   done
   map_fields+=("
   //
@@ -2386,13 +2387,12 @@ update_spec_with_structs() {
     >$gen_schema_spec_path || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
   local clashes=()
-  # exclude existing rest_schemas_without_prefix - will override those
-  for custom_schema in $(yq ".components.schemas[] | select((has(.x-is-generated) | not) and (.\$ref == null)) | key" $SPEC_PATH); do
+  for custom_schema in $(yq ".components.schemas[] | select((has(.x-is-generated) | not)) | key" $SPEC_PATH); do
     if [[ " ${rest_structs[*]} " =~ " ${custom_schema} " ]]; then
       line_number=$(yq ".components.schemas.$custom_schema | line" $SPEC_PATH)
       clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
     fi
-    # don't bother checking Rest$custom_schema or any Db*
+    # don't bother checking any Db*
   done
 
   if [[ ${#clashes[@]} -gt 0 ]]; then
@@ -2426,9 +2426,6 @@ $(join_by "
       \"\$ref\": \"#/components/schemas/Rest$rest_struct\"
     },"
   done
-
-  # add before including rest schemas without prefix - since we use $ref it cannot have sibling entries
-  yq e '.components.schemas.* |= . + {"x-is-generated": true}' -i "$gen_schema_spec_path"
 
   # swaggest cannot generate 2 schemas for a single struct
   # += overrides keys! (TODO: use += then instead of *n)

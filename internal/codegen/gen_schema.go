@@ -66,7 +66,7 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 			fmt.Fprint(os.Stderr, string(s))
 			log.Fatalf("Could not generate %s", schemaName)
 		}
-		x.Schema.MapOfAnything = map[string]any{"x-postgen-struct": structName}
+		x.Schema.MapOfAnything = map[string]any{"x-postgen-struct": schemaName, "x-is-generated": true}
 	}
 	s, err := reflector.Spec.MarshalYAML()
 	handleError(err)

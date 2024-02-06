@@ -8,7 +8,7 @@
 #      Possible structs to generate from are listed in internal/codegen/structs.gen.go
 #      indexed by x-postgen-struct.
 #      To use a yet to be generated schema in a path, create an empty schema
-#      with `x-postgen-struct: {Rest|Db}<struct name>`
+#      with `x-postgen-struct: Db<struct name>` or directly <struct name> for rest models.go structs
 #      Packages to generate structs from are added adhoc.
 # Path operations:
 #   - `x-required-scopes` defines required scopes for a request.
@@ -2325,7 +2325,7 @@ components:
           nullable: true
           type: array
       type: object
-      x-postgen-struct: RestCreateProjectBoardRequest
+      x-postgen-struct: CreateProjectBoardRequest
     HTTPValidationError:
       title: HTTPValidationError
       type: object
@@ -2405,7 +2405,7 @@ components:
         # - WorkItemMoved
         # - WorkItemClosed
         - GlobalAlerts
-    Scope:
+    Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string
       enum: ["project-member", "users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review", "work-item-comment:create", "work-item-comment:edit", "work-item-comment:delete"]
       x-is-generated: true
@@ -2414,12 +2414,12 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Scope'
-    Role:
+    Role: # Generated from roles.json keys. DO NOT EDIT.
       type: string
       enum: ["guest", "user", "advancedUser", "manager", "admin", "superAdmin"]
       x-is-generated: true
       description: is generated from roles.json keys.
-    WorkItemRole:
+    WorkItemRole: # Generated from database enum 'work_item_role'. DO NOT EDIT.
       title: WorkItem role
       type: string
       x-is-generated: true
@@ -2502,7 +2502,7 @@ components:
         mapping:
           demo: '#/components/schemas/CreateDemoWorkItemRequest'
           demo_two: '#/components/schemas/CreateDemoTwoWorkItemRequest'
-    Project:
+    Project: # Generated from projects table. DO NOT EDIT.
       enum: ["demo", "demo_two"]
       type: string
       x-is-generated: true
@@ -2524,17 +2524,17 @@ components:
       type: object
     DbWorkItemRole:
       type: string
-    NotificationType:
+    NotificationType: # Generated from database enum 'notification_type'. DO NOT EDIT.
       description: is generated from database enum 'notification_type'.
       type: string
       x-is-generated: true
       enum: ["personal", "global"]
-    DemoTwoWorkItemTypes:
+    DemoTwoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
       type: string
       enum: ["Type 1", "Type 2", "Another type"]
       x-is-generated: true
       description: is generated from work_item_types table.
-    DemoWorkItemTypes:
+    DemoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
       type: string
       enum: ["Type 1"]
       x-is-generated: true
@@ -2559,12 +2559,12 @@ components:
         - read
         - userID
       type: object
-    DemoKanbanSteps:
+    DemoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
       type: string
       enum: ["Disabled", "Received", "Under review", "Work in progress"]
       x-is-generated: true
       description: is generated from kanban_steps table.
-    DemoTwoKanbanSteps:
+    DemoTwoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
       type: string
       enum: ["Received"]
       x-is-generated: true
