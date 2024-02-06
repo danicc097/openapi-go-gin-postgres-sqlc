@@ -16,15 +16,15 @@ import {
 } from 'msw'
 
 export const getCreateWorkitemMock = () => (faker.helpers.arrayElement([{closedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), createdAt: (() => faker.date.past())(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), kanbanStepID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.KanbanStepID, metadata: (() => ({
-              key: faker.color.hsl()
+              key: faker.string.sample()
             }))(), targetDate: (() => faker.date.past())(), teamID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TeamID, title: faker.word.sample(), updatedAt: (() => faker.date.past())(), workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID, workItemTypeID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTypeID}]))
 
 export const getGetWorkItemMock = () => (faker.helpers.arrayElement([{closedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), createdAt: (() => faker.date.past())(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), kanbanStepID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.KanbanStepID, metadata: (() => ({
-              key: faker.color.hsl()
+              key: faker.string.sample()
             }))(), targetDate: (() => faker.date.past())(), teamID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TeamID, title: faker.word.sample(), updatedAt: (() => faker.date.past())(), workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID, workItemTypeID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTypeID}]))
 
 export const getUpdateWorkitemMock = () => (faker.helpers.arrayElement([{closedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), createdAt: (() => faker.date.past())(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), kanbanStepID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.KanbanStepID, metadata: (() => ({
-              key: faker.color.hsl()
+              key: faker.string.sample()
             }))(), targetDate: (() => faker.date.past())(), teamID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TeamID, title: faker.word.sample(), updatedAt: (() => faker.date.past())(), workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID, workItemTypeID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTypeID}]))
 
 export const getWorkItemMock = () => [

@@ -49,7 +49,7 @@ jobs:
           bg_pid=$!
 
           echo -------1-------
-          POSTGRES_TRACE=false project test.create-crud-gen
+          POSTGRES_TRACE=false project test.create-crud-gen --x-debug
           echo -------2-------
           POSTGRES_TRACE=false project test.backend -race -count=50 -timeout=40m
           echo -------3-------

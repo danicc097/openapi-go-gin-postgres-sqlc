@@ -328,7 +328,6 @@ x.gen.pregen() {
 
     go-utils.find_structs rest_structs "$REST_MODELS"
     for schema in "${rest_structs[@]}"; do # only interested in generating rest models.go schemas. let the rest fail normally.
-      rest_schema_lookup["Rest$schema"]=1
       rest_schema_lookup["$schema"]=1
     done
 
@@ -353,24 +352,10 @@ x.gen.pregen() {
 
     local new_schemas=""
     for ref in "${missing_rest_models[@]}"; do
-      if [[ "$ref" =~ ^Rest* ]]; then
-        new_schemas+="\"$ref\": {
-        \"x-postgen-struct\": \"$ref\",
-        \"x-is-generated\": true
-      },"
-      else
-        rest_ref="Rest$ref"
-        # handle both missing. do it here only since we should not use Rest* in refs in the first place.
-        if ! [[ " ${refs[*]} " =~ " $rest_ref " ]]; then
-          new_schemas+="\"$rest_ref\": {
-            \"x-postgen-struct\": \"$rest_ref\",
+      new_schemas+="\"$ref\": {
+            \"x-postgen-struct\": \"$ref\",
             \"x-is-generated\": true
           },"
-        fi
-        new_schemas+="\"$ref\": {
-        \"\$ref\": \"#/components/schemas/$rest_ref\"
-      },"
-      fi
     done
 
     yq eval-all ".components.schemas += {
@@ -2429,7 +2414,7 @@ $(join_by "
   done
 
   # swaggest cannot generate 2 schemas for a single struct
-  # += overrides keys! (TODO: use += then instead of *n)
+  # += does not work with entries, while *n will recursively merge new fields...
   # yq eval-all ".components.schemas += {
   #   ${rest_schemas_without_prefix%,}
   # }" -i "$gen_schema_spec_path"
