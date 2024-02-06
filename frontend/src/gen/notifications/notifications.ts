@@ -25,8 +25,8 @@ import type {
   HTTPError
 } from '../model/hTTPError'
 import type {
-  RestPaginatedNotificationsResponse
-} from '../model/restPaginatedNotificationsResponse'
+  PaginatedNotificationsResponse
+} from '../model/paginatedNotificationsResponse'
 import { customInstance } from '../../api/mutator';
 
 
@@ -48,7 +48,7 @@ export const getPaginatedNotifications = (
 ) => {
       
       
-      return customInstance<RestPaginatedNotificationsResponse>(
+      return customInstance<PaginatedNotificationsResponse>(
       {url: `/notifications/user/page`, method: 'GET',
         params, signal
     },

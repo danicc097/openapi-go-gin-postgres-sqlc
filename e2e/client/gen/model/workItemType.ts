@@ -5,6 +5,11 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestWorkItemType } from './restWorkItemType'
 
-export type WorkItemType = RestWorkItemType
+export interface WorkItemType {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTypeID: number
+}

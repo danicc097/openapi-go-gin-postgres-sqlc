@@ -5,9 +5,9 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestCreateWorkItemCommentRequest } from '../model/restCreateWorkItemCommentRequest'
-import type { RestUpdateWorkItemCommentRequest } from '../model/restUpdateWorkItemCommentRequest'
-import type { RestWorkItemComment } from '../model/restWorkItemComment'
+import type { CreateWorkItemCommentRequest } from '../model/createWorkItemCommentRequest'
+import type { UpdateWorkItemCommentRequest } from '../model/updateWorkItemCommentRequest'
+import type { WorkItemComment } from '../model/workItemComment'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -18,15 +18,15 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  */
 export const createWorkItemComment = (
   workItemID: number,
-  restCreateWorkItemCommentRequest: RestCreateWorkItemCommentRequest,
+  createWorkItemCommentRequest: CreateWorkItemCommentRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<RestWorkItemComment>(
+  return customInstance<WorkItemComment>(
     {
       url: `/work-item/${workItemID}/comment/`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      data: restCreateWorkItemCommentRequest,
+      data: createWorkItemCommentRequest,
     },
     options,
   )
@@ -39,7 +39,7 @@ export const getWorkItemComment = (
   workItemCommentID: number,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<RestWorkItemComment>(
+  return customInstance<WorkItemComment>(
     { url: `/work-item/${workItemID}/comment/${workItemCommentID}`, method: 'GET' },
     options,
   )
@@ -50,15 +50,15 @@ export const getWorkItemComment = (
 export const updateWorkItemComment = (
   workItemID: number,
   workItemCommentID: number,
-  restUpdateWorkItemCommentRequest: RestUpdateWorkItemCommentRequest,
+  updateWorkItemCommentRequest: UpdateWorkItemCommentRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<RestWorkItemComment>(
+  return customInstance<WorkItemComment>(
     {
       url: `/work-item/${workItemID}/comment/${workItemCommentID}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      data: restUpdateWorkItemCommentRequest,
+      data: updateWorkItemCommentRequest,
     },
     options,
   )

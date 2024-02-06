@@ -6,7 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { GetPaginatedNotificationsParams } from '../model/getPaginatedNotificationsParams'
-import type { RestPaginatedNotificationsResponse } from '../model/restPaginatedNotificationsResponse'
+import type { PaginatedNotificationsResponse } from '../model/paginatedNotificationsResponse'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -19,7 +19,7 @@ export const getPaginatedNotifications = (
   params: GetPaginatedNotificationsParams,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<RestPaginatedNotificationsResponse>(
+  return customInstance<PaginatedNotificationsResponse>(
     { url: `/notifications/user/page`, method: 'GET', params },
     options,
   )

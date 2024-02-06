@@ -154,6 +154,57 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
+    Activity: {
+      activityID: number;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      description: string;
+      isProductive: boolean;
+      name: string;
+      projectID: number;
+    };
+    CreateActivityRequest: {
+      description: string;
+      isProductive: boolean;
+      name: string;
+    };
+    CreateDemoTwoWorkItemRequest: {
+      base: components["schemas"]["DbWorkItemCreateParams"];
+      demoTwoProject: components["schemas"]["DbDemoTwoWorkItemCreateParams"];
+      members: components["schemas"]["ServicesMember"][];
+      projectName: components["schemas"]["Project"];
+      tagIDs: number[];
+    };
+    CreateDemoWorkItemRequest: {
+      base: components["schemas"]["DbWorkItemCreateParams"];
+      demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
+      members: components["schemas"]["ServicesMember"][];
+      projectName: components["schemas"]["Project"];
+      tagIDs: number[];
+    };
+    CreateProjectBoardRequest: {
+      tags?: components["schemas"]["DbWorkItemTagCreateParams"][] | null;
+      teams?: components["schemas"]["DbTeamCreateParams"][] | null;
+    };
+    CreateTeamRequest: {
+      description: string;
+      name: string;
+    };
+    CreateWorkItemCommentRequest: {
+      message: string;
+      userID: components["schemas"]["DbUserID"];
+      workItemID: number;
+    };
+    CreateWorkItemTagRequest: {
+      color: string;
+      description: string;
+      name: string;
+    };
+    CreateWorkItemTypeRequest: {
+      color: string;
+      description: string;
+      name: string;
+    };
     DbDemoTwoWorkItem: {
       /** Format: date-time */
       customDateForProject2?: string | null;
@@ -326,58 +377,7 @@ export interface components {
       projectID: number;
       workItemTypeID: number;
     };
-    RestActivity: {
-      activityID: number;
-      /** Format: date-time */
-      deletedAt?: string | null;
-      description: string;
-      isProductive: boolean;
-      name: string;
-      projectID: number;
-    };
-    RestCreateActivityRequest: {
-      description: string;
-      isProductive: boolean;
-      name: string;
-    };
-    RestCreateDemoTwoWorkItemRequest: {
-      base: components["schemas"]["DbWorkItemCreateParams"];
-      demoTwoProject: components["schemas"]["DbDemoTwoWorkItemCreateParams"];
-      members: components["schemas"]["ServicesMember"][];
-      projectName: components["schemas"]["Project"];
-      tagIDs: number[];
-    };
-    RestCreateDemoWorkItemRequest: {
-      base: components["schemas"]["DbWorkItemCreateParams"];
-      demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
-      members: components["schemas"]["ServicesMember"][];
-      projectName: components["schemas"]["Project"];
-      tagIDs: number[];
-    };
-    RestCreateProjectBoardRequest: {
-      tags?: components["schemas"]["DbWorkItemTagCreateParams"][] | null;
-      teams?: components["schemas"]["DbTeamCreateParams"][] | null;
-    };
-    RestCreateTeamRequest: {
-      description: string;
-      name: string;
-    };
-    RestCreateWorkItemCommentRequest: {
-      message: string;
-      userID: components["schemas"]["DbUserID"];
-      workItemID: number;
-    };
-    RestCreateWorkItemTagRequest: {
-      color: string;
-      description: string;
-      name: string;
-    };
-    RestCreateWorkItemTypeRequest: {
-      color: string;
-      description: string;
-      name: string;
-    };
-    RestDemoTwoWorkItems: {
+    DemoTwoWorkItems: {
       /** Format: date-time */
       closedAt?: string | null;
       /** Format: date-time */
@@ -404,7 +404,7 @@ export interface components {
       workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
     };
-    RestDemoWorkItems: {
+    DemoWorkItems: {
       /** Format: date-time */
       closedAt?: string | null;
       /** Format: date-time */
@@ -431,35 +431,39 @@ export interface components {
       workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
     };
-    RestNotification: {
+    Notification: {
       notification: components["schemas"]["DbNotification"];
       notificationID: number;
       read: boolean;
       userID: components["schemas"]["DbUserID"];
       userNotificationID: number;
     };
-    RestPaginatedNotificationsResponse: {
-      items: components["schemas"]["RestNotification"][] | null;
-      page: components["schemas"]["RestPaginationPage"];
+    PaginatedNotificationsResponse: {
+      items: components["schemas"]["Notification"][] | null;
+      page: components["schemas"]["PaginationPage"];
     };
-    RestPaginatedUsersResponse: {
-      items: components["schemas"]["RestUser"][] | null;
-      page: components["schemas"]["RestPaginationPage"];
+    PaginatedUsersResponse: {
+      items: components["schemas"]["User"][] | null;
+      page: components["schemas"]["PaginationPage"];
     };
-    RestPaginationPage: {
+    PaginationPage: {
       nextCursor?: string;
     };
-    RestProjectBoard: {
+    ProjectBoard: {
       projectName: components["schemas"]["Project"];
     };
-    RestSharedWorkItemFields: {
+    ServicesMember: {
+      role: components["schemas"]["WorkItemRole"];
+      userID: components["schemas"]["DbUserID"];
+    };
+    SharedWorkItemFields: {
       members?: components["schemas"]["DbUserWIAUWorkItem"][] | null;
       timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
       workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
       workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
       workItemType?: components["schemas"]["DbWorkItemType"];
     };
-    RestTeam: {
+    Team: {
       /** Format: date-time */
       createdAt: string;
       description: string;
@@ -469,31 +473,31 @@ export interface components {
       /** Format: date-time */
       updatedAt: string;
     };
-    RestUpdateActivityRequest: {
+    UpdateActivityRequest: {
       description?: string;
       isProductive?: boolean;
       name?: string;
     };
-    RestUpdateTeamRequest: {
+    UpdateTeamRequest: {
       description?: string;
       name?: string;
     };
-    RestUpdateWorkItemCommentRequest: {
+    UpdateWorkItemCommentRequest: {
       message?: string;
       userID?: components["schemas"]["DbUserID"];
       workItemID?: number;
     };
-    RestUpdateWorkItemTagRequest: {
+    UpdateWorkItemTagRequest: {
       color?: string;
       description?: string;
       name?: string;
     };
-    RestUpdateWorkItemTypeRequest: {
+    UpdateWorkItemTypeRequest: {
       color?: string;
       description?: string;
       name?: string;
     };
-    RestUser: {
+    User: {
       apiKey?: components["schemas"]["DbUserAPIKey"];
       /** Format: date-time */
       createdAt: string;
@@ -512,7 +516,7 @@ export interface components {
       userID: components["schemas"]["DbUserID"];
       username: string;
     };
-    RestWorkItemComment: {
+    WorkItemComment: {
       /** Format: date-time */
       createdAt: string;
       message: string;
@@ -522,7 +526,7 @@ export interface components {
       workItemCommentID: number;
       workItemID: number;
     };
-    RestWorkItemTag: {
+    WorkItemTag: {
       color: string;
       /** Format: date-time */
       deletedAt?: string | null;
@@ -531,44 +535,13 @@ export interface components {
       projectID: number;
       workItemTagID: number;
     };
-    RestWorkItemType: {
+    WorkItemType: {
       color: string;
       description: string;
       name: string;
       projectID: number;
       workItemTypeID: number;
     };
-    ServicesMember: {
-      role: components["schemas"]["WorkItemRole"];
-      userID: components["schemas"]["DbUserID"];
-    };
-    Activity: components["schemas"]["RestActivity"];
-    CreateActivityRequest: components["schemas"]["RestCreateActivityRequest"];
-    CreateDemoTwoWorkItemRequest: components["schemas"]["RestCreateDemoTwoWorkItemRequest"];
-    CreateDemoWorkItemRequest: components["schemas"]["RestCreateDemoWorkItemRequest"];
-    CreateProjectBoardRequest: components["schemas"]["RestCreateProjectBoardRequest"];
-    CreateTeamRequest: components["schemas"]["RestCreateTeamRequest"];
-    CreateWorkItemCommentRequest: components["schemas"]["RestCreateWorkItemCommentRequest"];
-    CreateWorkItemTagRequest: components["schemas"]["RestCreateWorkItemTagRequest"];
-    CreateWorkItemTypeRequest: components["schemas"]["RestCreateWorkItemTypeRequest"];
-    DemoTwoWorkItems: components["schemas"]["RestDemoTwoWorkItems"];
-    DemoWorkItems: components["schemas"]["RestDemoWorkItems"];
-    Notification: components["schemas"]["RestNotification"];
-    PaginatedNotificationsResponse: components["schemas"]["RestPaginatedNotificationsResponse"];
-    PaginatedUsersResponse: components["schemas"]["RestPaginatedUsersResponse"];
-    PaginationPage: components["schemas"]["RestPaginationPage"];
-    ProjectBoard: components["schemas"]["RestProjectBoard"];
-    SharedWorkItemFields: components["schemas"]["RestSharedWorkItemFields"];
-    Team: components["schemas"]["RestTeam"];
-    UpdateActivityRequest: components["schemas"]["RestUpdateActivityRequest"];
-    UpdateTeamRequest: components["schemas"]["RestUpdateTeamRequest"];
-    UpdateWorkItemCommentRequest: components["schemas"]["RestUpdateWorkItemCommentRequest"];
-    UpdateWorkItemTagRequest: components["schemas"]["RestUpdateWorkItemTagRequest"];
-    UpdateWorkItemTypeRequest: components["schemas"]["RestUpdateWorkItemTypeRequest"];
-    User: components["schemas"]["RestUser"];
-    WorkItemComment: components["schemas"]["RestWorkItemComment"];
-    WorkItemTag: components["schemas"]["RestWorkItemTag"];
-    WorkItemType: components["schemas"]["RestWorkItemType"];
     /** @enum {string} */
     Direction: "asc" | "desc";
     DbActivity: {

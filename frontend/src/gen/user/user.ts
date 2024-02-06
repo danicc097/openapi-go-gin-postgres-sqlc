@@ -28,17 +28,17 @@ import type {
   HTTPError
 } from '../model/hTTPError'
 import type {
-  RestPaginatedUsersResponse
-} from '../model/restPaginatedUsersResponse'
-import type {
-  RestUser
-} from '../model/restUser'
+  PaginatedUsersResponse
+} from '../model/paginatedUsersResponse'
 import type {
   UpdateUserAuthRequest
 } from '../model/updateUserAuthRequest'
 import type {
   UpdateUserRequest
 } from '../model/updateUserRequest'
+import type {
+  User
+} from '../model/user'
 import { customInstance } from '../../api/mutator';
 
 
@@ -60,7 +60,7 @@ export const getPaginatedUsers = (
 ) => {
       
       
-      return customInstance<RestPaginatedUsersResponse>(
+      return customInstance<PaginatedUsersResponse>(
       {url: `/user/page`, method: 'GET',
         params, signal
     },
@@ -166,7 +166,7 @@ export const getCurrentUser = (
 ) => {
       
       
-      return customInstance<RestUser>(
+      return customInstance<User>(
       {url: `/user/me`, method: 'GET', signal
     },
       options);
@@ -374,7 +374,7 @@ export const updateUser = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<RestUser>(
+      return customInstance<User>(
       {url: `/user/${id}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateUserRequest

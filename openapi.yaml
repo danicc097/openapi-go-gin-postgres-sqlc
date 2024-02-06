@@ -1184,8 +1184,8 @@ components:
         - description
         - isProductive
       type: object
-      x-postgen-struct: Activity
       x-is-generated: true
+      x-postgen-struct: Activity
     CreateActivityRequest: # Generated schema. DO NOT EDIT.
       properties:
         description:
@@ -1199,8 +1199,8 @@ components:
         - isProductive
         - name
       type: object
-      x-postgen-struct: CreateActivityRequest
       x-is-generated: true
+      x-postgen-struct: CreateActivityRequest
     CreateDemoTwoWorkItemRequest: # Generated schema. DO NOT EDIT.
       properties:
         base:
@@ -1224,8 +1224,8 @@ components:
         - tagIDs
         - members
       type: object
-      x-postgen-struct: CreateDemoTwoWorkItemRequest
       x-is-generated: true
+      x-postgen-struct: CreateDemoTwoWorkItemRequest
     CreateDemoWorkItemRequest: # Generated schema. DO NOT EDIT.
       properties:
         base:
@@ -1249,8 +1249,8 @@ components:
         - tagIDs
         - members
       type: object
-      x-postgen-struct: CreateDemoWorkItemRequest
       x-is-generated: true
+      x-postgen-struct: CreateDemoWorkItemRequest
     CreateProjectBoardRequest: # Generated schema. DO NOT EDIT.
       properties:
         tags:
@@ -1264,8 +1264,8 @@ components:
           nullable: true
           type: array
       type: object
-      x-postgen-struct: CreateProjectBoardRequest
       x-is-generated: true
+      x-postgen-struct: CreateProjectBoardRequest
     CreateTeamRequest: # Generated schema. DO NOT EDIT.
       properties:
         description:
@@ -1276,8 +1276,8 @@ components:
         - description
         - name
       type: object
-      x-postgen-struct: CreateTeamRequest
       x-is-generated: true
+      x-postgen-struct: CreateTeamRequest
     CreateWorkItemCommentRequest: # Generated schema. DO NOT EDIT.
       properties:
         message:
@@ -1291,8 +1291,8 @@ components:
         - userID
         - workItemID
       type: object
-      x-postgen-struct: CreateWorkItemCommentRequest
       x-is-generated: true
+      x-postgen-struct: CreateWorkItemCommentRequest
     CreateWorkItemTagRequest: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -1307,8 +1307,8 @@ components:
         - description
         - name
       type: object
-      x-postgen-struct: CreateWorkItemTagRequest
       x-is-generated: true
+      x-postgen-struct: CreateWorkItemTagRequest
     CreateWorkItemTypeRequest: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -1323,8 +1323,8 @@ components:
         - description
         - name
       type: object
-      x-postgen-struct: CreateWorkItemTypeRequest
       x-is-generated: true
+      x-postgen-struct: CreateWorkItemTypeRequest
     DbDemoTwoWorkItem: # Generated schema. DO NOT EDIT.
       properties:
         customDateForProject2:
@@ -1366,8 +1366,8 @@ components:
         - lastMessageAt
         - reopened
       type: object
-      x-postgen-struct: DbDemoWorkItem
       x-is-generated: true
+      x-postgen-struct: DbDemoWorkItem
     DbDemoWorkItemCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         lastMessageAt:
@@ -1413,8 +1413,8 @@ components:
         - color
         - timeTrackable
       type: object
-      x-postgen-struct: DbKanbanStep
       x-is-generated: true
+      x-postgen-struct: DbKanbanStep
     DbNotification: # Generated schema. DO NOT EDIT.
       properties:
         body:
@@ -1473,8 +1473,8 @@ components:
         - createdAt
         - updatedAt
       type: object
-      x-postgen-struct: DbProject
       x-is-generated: true
+      x-postgen-struct: DbProject
     DbTeam: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
@@ -1540,8 +1540,8 @@ components:
         - comment
         - start
       type: object
-      x-postgen-struct: DbTimeEntry
       x-is-generated: true
+      x-postgen-struct: DbTimeEntry
     DbUser: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
@@ -1581,8 +1581,8 @@ components:
         - hasGlobalNotifications
         - createdAt
       type: object
-      x-postgen-struct: DbUser
       x-is-generated: true
+      x-postgen-struct: DbUser
     DbUserAPIKey: # Generated schema. DO NOT EDIT.
       properties:
         apiKey:
@@ -1597,8 +1597,8 @@ components:
         - expiresOn
         - userID
       type: object
-      x-postgen-struct: DbUserAPIKey
       x-is-generated: true
+      x-postgen-struct: DbUserAPIKey
     DbUserID: # Generated schema. DO NOT EDIT.
       pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
       type: string
@@ -1664,8 +1664,8 @@ components:
         - createdAt
         - updatedAt
       type: object
-      x-postgen-struct: DbWorkItem
       x-is-generated: true
+      x-postgen-struct: DbWorkItem
     DbWorkItemComment: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
@@ -1690,8 +1690,8 @@ components:
         - createdAt
         - updatedAt
       type: object
-      x-postgen-struct: DbWorkItemComment
       x-is-generated: true
+      x-postgen-struct: DbWorkItemComment
     DbWorkItemCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         closedAt:
@@ -1748,8 +1748,8 @@ components:
         - description
         - color
       type: object
-      x-postgen-struct: DbWorkItemTag
       x-is-generated: true
+      x-postgen-struct: DbWorkItemTag
     DbWorkItemTagCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -1785,8 +1785,8 @@ components:
         - description
         - color
       type: object
-      x-postgen-struct: DbWorkItemType
       x-is-generated: true
+      x-postgen-struct: DbWorkItemType
     DemoTwoWorkItems: # Generated schema. DO NOT EDIT.
       properties:
         closedAt:
@@ -1859,8 +1859,8 @@ components:
         - updatedAt
         - demoTwoWorkItem
       type: object
-      x-postgen-struct: DemoTwoWorkItems
       x-is-generated: true
+      x-postgen-struct: DemoTwoWorkItems
     DemoWorkItems: # Generated schema. DO NOT EDIT.
       properties:
         closedAt:
@@ -1933,8 +1933,8 @@ components:
         - updatedAt
         - demoWorkItem
       type: object
-      x-postgen-struct: DemoWorkItems
       x-is-generated: true
+      x-postgen-struct: DemoWorkItems
     Notification: # Generated schema. DO NOT EDIT.
       properties:
         notification:
@@ -1954,8 +1954,8 @@ components:
         - userID
         - notification
       type: object
-      x-postgen-struct: Notification
       x-is-generated: true
+      x-postgen-struct: Notification
     PaginatedNotificationsResponse: # Generated schema. DO NOT EDIT.
       properties:
         items:
@@ -1969,8 +1969,8 @@ components:
         - page
         - items
       type: object
-      x-postgen-struct: PaginatedNotificationsResponse
       x-is-generated: true
+      x-postgen-struct: PaginatedNotificationsResponse
     PaginatedUsersResponse: # Generated schema. DO NOT EDIT.
       properties:
         items:
@@ -1984,15 +1984,15 @@ components:
         - page
         - items
       type: object
-      x-postgen-struct: PaginatedUsersResponse
       x-is-generated: true
+      x-postgen-struct: PaginatedUsersResponse
     PaginationPage: # Generated schema. DO NOT EDIT.
       properties:
         nextCursor:
           type: string
       type: object
-      x-postgen-struct: PaginationPage
       x-is-generated: true
+      x-postgen-struct: PaginationPage
     ProjectBoard: # Generated schema. DO NOT EDIT.
       properties:
         projectName:
@@ -2000,8 +2000,8 @@ components:
       required:
         - projectName
       type: object
-      x-postgen-struct: ProjectBoard
       x-is-generated: true
+      x-postgen-struct: ProjectBoard
     ServicesMember: # Generated schema. DO NOT EDIT.
       properties:
         role:
@@ -2038,8 +2038,8 @@ components:
         workItemType:
           $ref: '#/components/schemas/DbWorkItemType'
       type: object
-      x-postgen-struct: SharedWorkItemFields
       x-is-generated: true
+      x-postgen-struct: SharedWorkItemFields
     Team: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
@@ -2064,8 +2064,8 @@ components:
         - createdAt
         - updatedAt
       type: object
-      x-postgen-struct: Team
       x-is-generated: true
+      x-postgen-struct: Team
     UpdateActivityRequest: # Generated schema. DO NOT EDIT.
       properties:
         description:
@@ -2075,8 +2075,8 @@ components:
         name:
           type: string
       type: object
-      x-postgen-struct: UpdateActivityRequest
       x-is-generated: true
+      x-postgen-struct: UpdateActivityRequest
     UpdateTeamRequest: # Generated schema. DO NOT EDIT.
       properties:
         description:
@@ -2084,8 +2084,8 @@ components:
         name:
           type: string
       type: object
-      x-postgen-struct: UpdateTeamRequest
       x-is-generated: true
+      x-postgen-struct: UpdateTeamRequest
     UpdateWorkItemCommentRequest: # Generated schema. DO NOT EDIT.
       properties:
         message:
@@ -2095,8 +2095,8 @@ components:
         workItemID:
           type: integer
       type: object
-      x-postgen-struct: UpdateWorkItemCommentRequest
       x-is-generated: true
+      x-postgen-struct: UpdateWorkItemCommentRequest
     UpdateWorkItemTagRequest: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -2107,8 +2107,8 @@ components:
         name:
           type: string
       type: object
-      x-postgen-struct: UpdateWorkItemTagRequest
       x-is-generated: true
+      x-postgen-struct: UpdateWorkItemTagRequest
     UpdateWorkItemTypeRequest: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -2119,8 +2119,8 @@ components:
         name:
           type: string
       type: object
-      x-postgen-struct: UpdateWorkItemTypeRequest
       x-is-generated: true
+      x-postgen-struct: UpdateWorkItemTypeRequest
     User: # Generated schema. DO NOT EDIT.
       properties:
         apiKey:
@@ -2175,8 +2175,8 @@ components:
         - createdAt
         - role
       type: object
-      x-postgen-struct: User
       x-is-generated: true
+      x-postgen-struct: User
     WorkItemComment: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
@@ -2201,8 +2201,8 @@ components:
         - createdAt
         - updatedAt
       type: object
-      x-postgen-struct: WorkItemComment
       x-is-generated: true
+      x-postgen-struct: WorkItemComment
     WorkItemTag: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -2227,8 +2227,8 @@ components:
         - description
         - color
       type: object
-      x-postgen-struct: WorkItemTag
       x-is-generated: true
+      x-postgen-struct: WorkItemTag
     WorkItemType: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -2249,8 +2249,8 @@ components:
         - description
         - color
       type: object
-      x-postgen-struct: WorkItemType
       x-is-generated: true
+      x-postgen-struct: WorkItemType
     Direction:
       type: string
       enum:
@@ -2405,7 +2405,7 @@ components:
         # - WorkItemMoved
         # - WorkItemClosed
         - GlobalAlerts
-    Scope: # Generated from scopes.json keys. DO NOT EDIT.
+    Scope:
       type: string
       enum: ["project-member", "users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review", "work-item-comment:create", "work-item-comment:edit", "work-item-comment:delete"]
       x-is-generated: true
@@ -2414,12 +2414,12 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Scope'
-    Role: # Generated from roles.json keys. DO NOT EDIT.
+    Role:
       type: string
       enum: ["guest", "user", "advancedUser", "manager", "admin", "superAdmin"]
       x-is-generated: true
       description: is generated from roles.json keys.
-    WorkItemRole: # Generated from database enum 'work_item_role'. DO NOT EDIT.
+    WorkItemRole:
       title: WorkItem role
       type: string
       x-is-generated: true
@@ -2502,7 +2502,7 @@ components:
         mapping:
           demo: '#/components/schemas/CreateDemoWorkItemRequest'
           demo_two: '#/components/schemas/CreateDemoTwoWorkItemRequest'
-    Project: # Generated from projects table. DO NOT EDIT.
+    Project:
       enum: ["demo", "demo_two"]
       type: string
       x-is-generated: true
@@ -2524,17 +2524,17 @@ components:
       type: object
     DbWorkItemRole:
       type: string
-    NotificationType: # Generated from database enum 'notification_type'. DO NOT EDIT.
+    NotificationType:
       description: is generated from database enum 'notification_type'.
       type: string
       x-is-generated: true
       enum: ["personal", "global"]
-    DemoTwoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
+    DemoTwoWorkItemTypes:
       type: string
       enum: ["Type 1", "Type 2", "Another type"]
       x-is-generated: true
       description: is generated from work_item_types table.
-    DemoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
+    DemoWorkItemTypes:
       type: string
       enum: ["Type 1"]
       x-is-generated: true
@@ -2559,12 +2559,12 @@ components:
         - read
         - userID
       type: object
-    DemoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
+    DemoKanbanSteps:
       type: string
       enum: ["Disabled", "Received", "Under review", "Work in progress"]
       x-is-generated: true
       description: is generated from kanban_steps table.
-    DemoTwoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
+    DemoTwoKanbanSteps:
       type: string
       enum: ["Received"]
       x-is-generated: true

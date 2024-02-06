@@ -6,6 +6,12 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestTeam } from './restTeam';
 
-export type Team = RestTeam;
+export interface Team {
+  createdAt: Date;
+  description: string;
+  name: string;
+  projectID: EntityIDs.ProjectID;
+  teamID: EntityIDs.TeamID;
+  updatedAt: Date;
+}

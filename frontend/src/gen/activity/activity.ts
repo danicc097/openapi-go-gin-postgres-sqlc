@@ -22,17 +22,17 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query'
 import type {
+  Activity
+} from '../model/activity'
+import type {
+  CreateActivityRequest
+} from '../model/createActivityRequest'
+import type {
   HTTPError
 } from '../model/hTTPError'
 import type {
-  RestActivity
-} from '../model/restActivity'
-import type {
-  RestCreateActivityRequest
-} from '../model/restCreateActivityRequest'
-import type {
-  RestUpdateActivityRequest
-} from '../model/restUpdateActivityRequest'
+  UpdateActivityRequest
+} from '../model/updateActivityRequest'
 import { customInstance } from '../../api/mutator';
 
 
@@ -50,14 +50,14 @@ import { customInstance } from '../../api/mutator';
  */
 export const createActivity = (
     projectName: 'demo' | 'demo_two',
-    restCreateActivityRequest: RestCreateActivityRequest,
+    createActivityRequest: CreateActivityRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<RestActivity>(
+      return customInstance<Activity>(
       {url: `/project/${projectName}/activity/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: restCreateActivityRequest
+      data: createActivityRequest
     },
       options);
     }
@@ -65,14 +65,14 @@ export const createActivity = (
 
 
 export const getCreateActivityMutationOptions = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createActivity>>, TError,{projectName: 'demo' | 'demo_two';data: RestCreateActivityRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof createActivity>>, TError,{projectName: 'demo' | 'demo_two';data: RestCreateActivityRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createActivity>>, TError,{projectName: 'demo' | 'demo_two';data: CreateActivityRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof createActivity>>, TError,{projectName: 'demo' | 'demo_two';data: CreateActivityRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
 
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createActivity>>, {projectName: 'demo' | 'demo_two';data: RestCreateActivityRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createActivity>>, {projectName: 'demo' | 'demo_two';data: CreateActivityRequest}> = (props) => {
           const {projectName,data} = props ?? {};
 
           return  createActivity(projectName,data,requestOptions)
@@ -84,14 +84,14 @@ export const getCreateActivityMutationOptions = <TError = void | HTTPError,
    return  { mutationFn, ...mutationOptions }}
 
     export type CreateActivityMutationResult = NonNullable<Awaited<ReturnType<typeof createActivity>>>
-    export type CreateActivityMutationBody = RestCreateActivityRequest
+    export type CreateActivityMutationBody = CreateActivityRequest
     export type CreateActivityMutationError = void | HTTPError
 
     /**
  * @summary create activity.
  */
 export const useCreateActivity = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createActivity>>, TError,{projectName: 'demo' | 'demo_two';data: RestCreateActivityRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createActivity>>, TError,{projectName: 'demo' | 'demo_two';data: CreateActivityRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
       const mutationOptions = getCreateActivityMutationOptions(options);
@@ -107,7 +107,7 @@ export const getActivity = (
 ) => {
       
       
-      return customInstance<RestActivity>(
+      return customInstance<Activity>(
       {url: `/activity/${activityID}`, method: 'GET', signal
     },
       options);
@@ -208,14 +208,14 @@ export const useGetActivity = <TData = Awaited<ReturnType<typeof getActivity>>, 
  */
 export const updateActivity = (
     activityID: EntityIDs.ActivityID,
-    restUpdateActivityRequest: RestUpdateActivityRequest,
+    updateActivityRequest: UpdateActivityRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<RestActivity>(
+      return customInstance<Activity>(
       {url: `/activity/${activityID}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
-      data: restUpdateActivityRequest
+      data: updateActivityRequest
     },
       options);
     }
@@ -223,14 +223,14 @@ export const updateActivity = (
 
 
 export const getUpdateActivityMutationOptions = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateActivity>>, TError,{activityID: EntityIDs.ActivityID;data: RestUpdateActivityRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateActivity>>, TError,{activityID: EntityIDs.ActivityID;data: RestUpdateActivityRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateActivity>>, TError,{activityID: EntityIDs.ActivityID;data: UpdateActivityRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateActivity>>, TError,{activityID: EntityIDs.ActivityID;data: UpdateActivityRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
 
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateActivity>>, {activityID: EntityIDs.ActivityID;data: RestUpdateActivityRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateActivity>>, {activityID: EntityIDs.ActivityID;data: UpdateActivityRequest}> = (props) => {
           const {activityID,data} = props ?? {};
 
           return  updateActivity(activityID,data,requestOptions)
@@ -242,14 +242,14 @@ export const getUpdateActivityMutationOptions = <TError = void | HTTPError,
    return  { mutationFn, ...mutationOptions }}
 
     export type UpdateActivityMutationResult = NonNullable<Awaited<ReturnType<typeof updateActivity>>>
-    export type UpdateActivityMutationBody = RestUpdateActivityRequest
+    export type UpdateActivityMutationBody = UpdateActivityRequest
     export type UpdateActivityMutationError = void | HTTPError
 
     /**
  * @summary update activity.
  */
 export const useUpdateActivity = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateActivity>>, TError,{activityID: EntityIDs.ActivityID;data: RestUpdateActivityRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateActivity>>, TError,{activityID: EntityIDs.ActivityID;data: UpdateActivityRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
       const mutationOptions = getUpdateActivityMutationOptions(options);

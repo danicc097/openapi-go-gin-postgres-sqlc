@@ -6,6 +6,9 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestCreateWorkItemTagRequest } from './restCreateWorkItemTagRequest';
 
-export type CreateWorkItemTagRequest = RestCreateWorkItemTagRequest;
+export interface CreateWorkItemTagRequest {
+  color: string;
+  description: string;
+  name: string;
+}

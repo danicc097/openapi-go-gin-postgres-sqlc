@@ -22,17 +22,17 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query'
 import type {
+  CreateWorkItemTypeRequest
+} from '../model/createWorkItemTypeRequest'
+import type {
   HTTPError
 } from '../model/hTTPError'
 import type {
-  RestCreateWorkItemTypeRequest
-} from '../model/restCreateWorkItemTypeRequest'
+  UpdateWorkItemTypeRequest
+} from '../model/updateWorkItemTypeRequest'
 import type {
-  RestUpdateWorkItemTypeRequest
-} from '../model/restUpdateWorkItemTypeRequest'
-import type {
-  RestWorkItemType
-} from '../model/restWorkItemType'
+  WorkItemType
+} from '../model/workItemType'
 import { customInstance } from '../../api/mutator';
 
 
@@ -50,14 +50,14 @@ import { customInstance } from '../../api/mutator';
  */
 export const createWorkItemType = (
     projectName: 'demo' | 'demo_two',
-    restCreateWorkItemTypeRequest: RestCreateWorkItemTypeRequest,
+    createWorkItemTypeRequest: CreateWorkItemTypeRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<RestWorkItemType>(
+      return customInstance<WorkItemType>(
       {url: `/project/${projectName}/work-item-type/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: restCreateWorkItemTypeRequest
+      data: createWorkItemTypeRequest
     },
       options);
     }
@@ -65,14 +65,14 @@ export const createWorkItemType = (
 
 
 export const getCreateWorkItemTypeMutationOptions = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkItemType>>, TError,{projectName: 'demo' | 'demo_two';data: RestCreateWorkItemTypeRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof createWorkItemType>>, TError,{projectName: 'demo' | 'demo_two';data: RestCreateWorkItemTypeRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkItemType>>, TError,{projectName: 'demo' | 'demo_two';data: CreateWorkItemTypeRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof createWorkItemType>>, TError,{projectName: 'demo' | 'demo_two';data: CreateWorkItemTypeRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
 
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createWorkItemType>>, {projectName: 'demo' | 'demo_two';data: RestCreateWorkItemTypeRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createWorkItemType>>, {projectName: 'demo' | 'demo_two';data: CreateWorkItemTypeRequest}> = (props) => {
           const {projectName,data} = props ?? {};
 
           return  createWorkItemType(projectName,data,requestOptions)
@@ -84,14 +84,14 @@ export const getCreateWorkItemTypeMutationOptions = <TError = void | HTTPError,
    return  { mutationFn, ...mutationOptions }}
 
     export type CreateWorkItemTypeMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkItemType>>>
-    export type CreateWorkItemTypeMutationBody = RestCreateWorkItemTypeRequest
+    export type CreateWorkItemTypeMutationBody = CreateWorkItemTypeRequest
     export type CreateWorkItemTypeMutationError = void | HTTPError
 
     /**
  * @summary create workitemtype.
  */
 export const useCreateWorkItemType = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkItemType>>, TError,{projectName: 'demo' | 'demo_two';data: RestCreateWorkItemTypeRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkItemType>>, TError,{projectName: 'demo' | 'demo_two';data: CreateWorkItemTypeRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
       const mutationOptions = getCreateWorkItemTypeMutationOptions(options);
@@ -107,7 +107,7 @@ export const getWorkItemType = (
 ) => {
       
       
-      return customInstance<RestWorkItemType>(
+      return customInstance<WorkItemType>(
       {url: `/work-item-type/${workItemTypeID}`, method: 'GET', signal
     },
       options);
@@ -208,14 +208,14 @@ export const useGetWorkItemType = <TData = Awaited<ReturnType<typeof getWorkItem
  */
 export const updateWorkItemType = (
     workItemTypeID: EntityIDs.WorkItemTypeID,
-    restUpdateWorkItemTypeRequest: RestUpdateWorkItemTypeRequest,
+    updateWorkItemTypeRequest: UpdateWorkItemTypeRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<RestWorkItemType>(
+      return customInstance<WorkItemType>(
       {url: `/work-item-type/${workItemTypeID}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
-      data: restUpdateWorkItemTypeRequest
+      data: updateWorkItemTypeRequest
     },
       options);
     }
@@ -223,14 +223,14 @@ export const updateWorkItemType = (
 
 
 export const getUpdateWorkItemTypeMutationOptions = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemType>>, TError,{workItemTypeID: EntityIDs.WorkItemTypeID;data: RestUpdateWorkItemTypeRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemType>>, TError,{workItemTypeID: EntityIDs.WorkItemTypeID;data: RestUpdateWorkItemTypeRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemType>>, TError,{workItemTypeID: EntityIDs.WorkItemTypeID;data: UpdateWorkItemTypeRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemType>>, TError,{workItemTypeID: EntityIDs.WorkItemTypeID;data: UpdateWorkItemTypeRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
 
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateWorkItemType>>, {workItemTypeID: EntityIDs.WorkItemTypeID;data: RestUpdateWorkItemTypeRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateWorkItemType>>, {workItemTypeID: EntityIDs.WorkItemTypeID;data: UpdateWorkItemTypeRequest}> = (props) => {
           const {workItemTypeID,data} = props ?? {};
 
           return  updateWorkItemType(workItemTypeID,data,requestOptions)
@@ -242,14 +242,14 @@ export const getUpdateWorkItemTypeMutationOptions = <TError = void | HTTPError,
    return  { mutationFn, ...mutationOptions }}
 
     export type UpdateWorkItemTypeMutationResult = NonNullable<Awaited<ReturnType<typeof updateWorkItemType>>>
-    export type UpdateWorkItemTypeMutationBody = RestUpdateWorkItemTypeRequest
+    export type UpdateWorkItemTypeMutationBody = UpdateWorkItemTypeRequest
     export type UpdateWorkItemTypeMutationError = void | HTTPError
 
     /**
  * @summary update workitemtype.
  */
 export const useUpdateWorkItemType = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemType>>, TError,{workItemTypeID: EntityIDs.WorkItemTypeID;data: RestUpdateWorkItemTypeRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemType>>, TError,{workItemTypeID: EntityIDs.WorkItemTypeID;data: UpdateWorkItemTypeRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
       const mutationOptions = getUpdateWorkItemTypeMutationOptions(options);

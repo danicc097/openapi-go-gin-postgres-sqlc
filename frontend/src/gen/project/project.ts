@@ -34,11 +34,11 @@ import type {
   InitializeProjectRequest
 } from '../model/initializeProjectRequest'
 import type {
+  ProjectBoard
+} from '../model/projectBoard'
+import type {
   ProjectConfig
 } from '../model/projectConfig'
-import type {
-  RestProjectBoard
-} from '../model/restProjectBoard'
 import { customInstance } from '../../api/mutator';
 
 
@@ -376,7 +376,7 @@ export const getProjectBoard = (
 ) => {
       
       
-      return customInstance<RestProjectBoard>(
+      return customInstance<ProjectBoard>(
       {url: `/project/${projectName}/board`, method: 'GET', signal
     },
       options);

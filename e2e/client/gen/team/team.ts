@@ -5,9 +5,9 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestCreateTeamRequest } from '../model/restCreateTeamRequest'
-import type { RestTeam } from '../model/restTeam'
-import type { RestUpdateTeamRequest } from '../model/restUpdateTeamRequest'
+import type { CreateTeamRequest } from '../model/createTeamRequest'
+import type { Team } from '../model/team'
+import type { UpdateTeamRequest } from '../model/updateTeamRequest'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -18,15 +18,15 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  */
 export const createTeam = (
   projectName: 'demo' | 'demo_two',
-  restCreateTeamRequest: RestCreateTeamRequest,
+  createTeamRequest: CreateTeamRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<RestTeam>(
+  return customInstance<Team>(
     {
       url: `/project/${projectName}/team/`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      data: restCreateTeamRequest,
+      data: createTeamRequest,
     },
     options,
   )
@@ -35,22 +35,22 @@ export const createTeam = (
  * @summary get team.
  */
 export const getTeam = (teamID: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<RestTeam>({ url: `/team/${teamID}`, method: 'GET' }, options)
+  return customInstance<Team>({ url: `/team/${teamID}`, method: 'GET' }, options)
 }
 /**
  * @summary update team.
  */
 export const updateTeam = (
   teamID: number,
-  restUpdateTeamRequest: RestUpdateTeamRequest,
+  updateTeamRequest: UpdateTeamRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<RestTeam>(
+  return customInstance<Team>(
     {
       url: `/team/${teamID}`,
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      data: restUpdateTeamRequest,
+      data: updateTeamRequest,
     },
     options,
   )

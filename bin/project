@@ -977,6 +977,7 @@ x.gen.frontend() {
 export type schemas = components['schemas']
 " | cat - "$SCHEMA_OUT" >/tmp/out && mv /tmp/out "$SCHEMA_OUT"
     } &
+
     {
       orval --config $orval_config
       orval_branded_types
@@ -1488,7 +1489,7 @@ orval_branded_types() {
     replace_commands+=(
       "-e" "s/${camel}?: number/${camel}?: EntityIDs.${pascal}/g"
       "-e" "s/${camel}: number/${camel}: EntityIDs.${pascal}/g"
-      "-e" "s/${camel}: faker.number.int({ min: undefined, max: undefined })/${camel}: faker.number.int({ min: undefined, max: undefined }) as EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: faker.number.int({min: undefined, max: undefined})/${camel}: faker.number.int({min: undefined, max: undefined}) as EntityIDs.${pascal}/g"
     )
   done
 
@@ -2369,7 +2370,7 @@ update_spec_with_structs() {
   # over gen functions, we might be better off with simple regexes
   go-utils.find_structs rest_structs "$REST_MODELS"
   # mapfile -t -d $'\0' rest_schemas < <(printf "Rest%s\0" ${rest_structs[@]})
-  # struct_names+=("${rest_schemas[@]}")
+  struct_names+=("${rest_structs[@]}")
 
   struct_names_arg=$(join_by "," ${struct_names[*]})
   ((${#struct_names_arg} == 0)) && return
@@ -2387,7 +2388,7 @@ update_spec_with_structs() {
     >$gen_schema_spec_path || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
   local clashes=()
-  for custom_schema in $(yq ".components.schemas[] | select((has(.x-is-generated) | not)) | key" $SPEC_PATH); do
+  for custom_schema in $(yq ".components.schemas[] | select((.x-is-generated == true) | not) | key" $SPEC_PATH); do
     if [[ " ${rest_structs[*]} " =~ " ${custom_schema} " ]]; then
       line_number=$(yq ".components.schemas.$custom_schema | line" $SPEC_PATH)
       clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")

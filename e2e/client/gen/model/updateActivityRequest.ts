@@ -5,6 +5,9 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestUpdateActivityRequest } from './restUpdateActivityRequest'
 
-export type UpdateActivityRequest = RestUpdateActivityRequest
+export interface UpdateActivityRequest {
+  description?: string
+  isProductive?: boolean
+  name?: string
+}

@@ -5,6 +5,8 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestUpdateTeamRequest } from './restUpdateTeamRequest'
 
-export type UpdateTeamRequest = RestUpdateTeamRequest
+export interface UpdateTeamRequest {
+  description?: string
+  name?: string
+}

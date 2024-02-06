@@ -22,17 +22,17 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query'
 import type {
+  CreateWorkItemCommentRequest
+} from '../model/createWorkItemCommentRequest'
+import type {
   HTTPError
 } from '../model/hTTPError'
 import type {
-  RestCreateWorkItemCommentRequest
-} from '../model/restCreateWorkItemCommentRequest'
+  UpdateWorkItemCommentRequest
+} from '../model/updateWorkItemCommentRequest'
 import type {
-  RestUpdateWorkItemCommentRequest
-} from '../model/restUpdateWorkItemCommentRequest'
-import type {
-  RestWorkItemComment
-} from '../model/restWorkItemComment'
+  WorkItemComment
+} from '../model/workItemComment'
 import { customInstance } from '../../api/mutator';
 
 
@@ -50,14 +50,14 @@ import { customInstance } from '../../api/mutator';
  */
 export const createWorkItemComment = (
     workItemID: EntityIDs.WorkItemID,
-    restCreateWorkItemCommentRequest: RestCreateWorkItemCommentRequest,
+    createWorkItemCommentRequest: CreateWorkItemCommentRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<RestWorkItemComment>(
+      return customInstance<WorkItemComment>(
       {url: `/work-item/${workItemID}/comment/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: restCreateWorkItemCommentRequest
+      data: createWorkItemCommentRequest
     },
       options);
     }
@@ -65,14 +65,14 @@ export const createWorkItemComment = (
 
 
 export const getCreateWorkItemCommentMutationOptions = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkItemComment>>, TError,{workItemID: EntityIDs.WorkItemID;data: RestCreateWorkItemCommentRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof createWorkItemComment>>, TError,{workItemID: EntityIDs.WorkItemID;data: RestCreateWorkItemCommentRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkItemComment>>, TError,{workItemID: EntityIDs.WorkItemID;data: CreateWorkItemCommentRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof createWorkItemComment>>, TError,{workItemID: EntityIDs.WorkItemID;data: CreateWorkItemCommentRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
 
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createWorkItemComment>>, {workItemID: EntityIDs.WorkItemID;data: RestCreateWorkItemCommentRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createWorkItemComment>>, {workItemID: EntityIDs.WorkItemID;data: CreateWorkItemCommentRequest}> = (props) => {
           const {workItemID,data} = props ?? {};
 
           return  createWorkItemComment(workItemID,data,requestOptions)
@@ -84,14 +84,14 @@ export const getCreateWorkItemCommentMutationOptions = <TError = void | HTTPErro
    return  { mutationFn, ...mutationOptions }}
 
     export type CreateWorkItemCommentMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkItemComment>>>
-    export type CreateWorkItemCommentMutationBody = RestCreateWorkItemCommentRequest
+    export type CreateWorkItemCommentMutationBody = CreateWorkItemCommentRequest
     export type CreateWorkItemCommentMutationError = void | HTTPError
 
     /**
  * @summary create work item comment.
  */
 export const useCreateWorkItemComment = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkItemComment>>, TError,{workItemID: EntityIDs.WorkItemID;data: RestCreateWorkItemCommentRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkItemComment>>, TError,{workItemID: EntityIDs.WorkItemID;data: CreateWorkItemCommentRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
       const mutationOptions = getCreateWorkItemCommentMutationOptions(options);
@@ -108,7 +108,7 @@ export const getWorkItemComment = (
 ) => {
       
       
-      return customInstance<RestWorkItemComment>(
+      return customInstance<WorkItemComment>(
       {url: `/work-item/${workItemID}/comment/${workItemCommentID}`, method: 'GET', signal
     },
       options);
@@ -215,14 +215,14 @@ export const useGetWorkItemComment = <TData = Awaited<ReturnType<typeof getWorkI
 export const updateWorkItemComment = (
     workItemID: EntityIDs.WorkItemID,
     workItemCommentID: EntityIDs.WorkItemCommentID,
-    restUpdateWorkItemCommentRequest: RestUpdateWorkItemCommentRequest,
+    updateWorkItemCommentRequest: UpdateWorkItemCommentRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<RestWorkItemComment>(
+      return customInstance<WorkItemComment>(
       {url: `/work-item/${workItemID}/comment/${workItemCommentID}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
-      data: restUpdateWorkItemCommentRequest
+      data: updateWorkItemCommentRequest
     },
       options);
     }
@@ -230,14 +230,14 @@ export const updateWorkItemComment = (
 
 
 export const getUpdateWorkItemCommentMutationOptions = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemComment>>, TError,{workItemID: EntityIDs.WorkItemID;workItemCommentID: EntityIDs.WorkItemCommentID;data: RestUpdateWorkItemCommentRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemComment>>, TError,{workItemID: EntityIDs.WorkItemID;workItemCommentID: EntityIDs.WorkItemCommentID;data: RestUpdateWorkItemCommentRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemComment>>, TError,{workItemID: EntityIDs.WorkItemID;workItemCommentID: EntityIDs.WorkItemCommentID;data: UpdateWorkItemCommentRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemComment>>, TError,{workItemID: EntityIDs.WorkItemID;workItemCommentID: EntityIDs.WorkItemCommentID;data: UpdateWorkItemCommentRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
 
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateWorkItemComment>>, {workItemID: EntityIDs.WorkItemID;workItemCommentID: EntityIDs.WorkItemCommentID;data: RestUpdateWorkItemCommentRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateWorkItemComment>>, {workItemID: EntityIDs.WorkItemID;workItemCommentID: EntityIDs.WorkItemCommentID;data: UpdateWorkItemCommentRequest}> = (props) => {
           const {workItemID,workItemCommentID,data} = props ?? {};
 
           return  updateWorkItemComment(workItemID,workItemCommentID,data,requestOptions)
@@ -249,14 +249,14 @@ export const getUpdateWorkItemCommentMutationOptions = <TError = void | HTTPErro
    return  { mutationFn, ...mutationOptions }}
 
     export type UpdateWorkItemCommentMutationResult = NonNullable<Awaited<ReturnType<typeof updateWorkItemComment>>>
-    export type UpdateWorkItemCommentMutationBody = RestUpdateWorkItemCommentRequest
+    export type UpdateWorkItemCommentMutationBody = UpdateWorkItemCommentRequest
     export type UpdateWorkItemCommentMutationError = void | HTTPError
 
     /**
  * @summary update work item comment.
  */
 export const useUpdateWorkItemComment = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemComment>>, TError,{workItemID: EntityIDs.WorkItemID;workItemCommentID: EntityIDs.WorkItemCommentID;data: RestUpdateWorkItemCommentRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemComment>>, TError,{workItemID: EntityIDs.WorkItemID;workItemCommentID: EntityIDs.WorkItemCommentID;data: UpdateWorkItemCommentRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
       const mutationOptions = getUpdateWorkItemCommentMutationOptions(options);

@@ -5,6 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestPaginatedUsersResponse } from './restPaginatedUsersResponse'
+import type { User } from './user'
+import type { PaginationPage } from './paginationPage'
 
-export type PaginatedUsersResponse = RestPaginatedUsersResponse
+export interface PaginatedUsersResponse {
+  items: User[] | null
+  page: PaginationPage
+}

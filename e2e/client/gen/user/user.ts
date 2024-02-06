@@ -6,10 +6,10 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { GetPaginatedUsersParams } from '../model/getPaginatedUsersParams'
-import type { RestPaginatedUsersResponse } from '../model/restPaginatedUsersResponse'
-import type { RestUser } from '../model/restUser'
+import type { PaginatedUsersResponse } from '../model/paginatedUsersResponse'
 import type { UpdateUserAuthRequest } from '../model/updateUserAuthRequest'
 import type { UpdateUserRequest } from '../model/updateUserRequest'
+import type { User } from '../model/user'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -22,13 +22,13 @@ export const getPaginatedUsers = (
   params: GetPaginatedUsersParams,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<RestPaginatedUsersResponse>({ url: `/user/page`, method: 'GET', params }, options)
+  return customInstance<PaginatedUsersResponse>({ url: `/user/page`, method: 'GET', params }, options)
 }
 /**
  * @summary returns the logged in user
  */
 export const getCurrentUser = (options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<RestUser>({ url: `/user/me`, method: 'GET' }, options)
+  return customInstance<User>({ url: `/user/me`, method: 'GET' }, options)
 }
 /**
  * @summary updates user role and scopes by id
@@ -62,7 +62,7 @@ export const updateUser = (
   updateUserRequest: UpdateUserRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<RestUser>(
+  return customInstance<User>(
     { url: `/user/${id}`, method: 'PATCH', headers: { 'Content-Type': 'application/json' }, data: updateUserRequest },
     options,
   )

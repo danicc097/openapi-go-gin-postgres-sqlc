@@ -13,6 +13,7 @@ import { UpdateUserAuthRequestDecoder } from 'src/client-validator/gen/decoders'
 import { newFrontendSpan } from 'src/TraceProvider'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
+import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
 import type { PathType, RecursiveKeyOf, RequiredKeys } from 'src/types/utils'
 import {
   Avatar,
@@ -101,7 +102,11 @@ export default function UserPermissionsPage() {
   const [userOptions, setUserOptions] = useState<Array<SelectUserItemProps> | null>(null)
   const { user } = useAuthenticatedUser()
 
-  const [allUsers] = useState<Array<User>>([])
+  const [allUsers] = useState(
+    [...Array(20)].map((x, i) => {
+      return getGetCurrentUserMock()
+    }),
+  )
 
   const roleOptions = entries(ROLES)
     .filter(([role, v]) => isAuthorized({ user, requiredRole: role }))

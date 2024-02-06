@@ -22,17 +22,17 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query'
 import type {
+  CreateTeamRequest
+} from '../model/createTeamRequest'
+import type {
   HTTPError
 } from '../model/hTTPError'
 import type {
-  RestCreateTeamRequest
-} from '../model/restCreateTeamRequest'
+  Team
+} from '../model/team'
 import type {
-  RestTeam
-} from '../model/restTeam'
-import type {
-  RestUpdateTeamRequest
-} from '../model/restUpdateTeamRequest'
+  UpdateTeamRequest
+} from '../model/updateTeamRequest'
 import { customInstance } from '../../api/mutator';
 
 
@@ -50,14 +50,14 @@ import { customInstance } from '../../api/mutator';
  */
 export const createTeam = (
     projectName: 'demo' | 'demo_two',
-    restCreateTeamRequest: RestCreateTeamRequest,
+    createTeamRequest: CreateTeamRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<RestTeam>(
+      return customInstance<Team>(
       {url: `/project/${projectName}/team/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: restCreateTeamRequest
+      data: createTeamRequest
     },
       options);
     }
@@ -65,14 +65,14 @@ export const createTeam = (
 
 
 export const getCreateTeamMutationOptions = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTeam>>, TError,{projectName: 'demo' | 'demo_two';data: RestCreateTeamRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof createTeam>>, TError,{projectName: 'demo' | 'demo_two';data: RestCreateTeamRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTeam>>, TError,{projectName: 'demo' | 'demo_two';data: CreateTeamRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof createTeam>>, TError,{projectName: 'demo' | 'demo_two';data: CreateTeamRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
 
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTeam>>, {projectName: 'demo' | 'demo_two';data: RestCreateTeamRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTeam>>, {projectName: 'demo' | 'demo_two';data: CreateTeamRequest}> = (props) => {
           const {projectName,data} = props ?? {};
 
           return  createTeam(projectName,data,requestOptions)
@@ -84,14 +84,14 @@ export const getCreateTeamMutationOptions = <TError = void | HTTPError,
    return  { mutationFn, ...mutationOptions }}
 
     export type CreateTeamMutationResult = NonNullable<Awaited<ReturnType<typeof createTeam>>>
-    export type CreateTeamMutationBody = RestCreateTeamRequest
+    export type CreateTeamMutationBody = CreateTeamRequest
     export type CreateTeamMutationError = void | HTTPError
 
     /**
  * @summary create team.
  */
 export const useCreateTeam = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTeam>>, TError,{projectName: 'demo' | 'demo_two';data: RestCreateTeamRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTeam>>, TError,{projectName: 'demo' | 'demo_two';data: CreateTeamRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
       const mutationOptions = getCreateTeamMutationOptions(options);
@@ -107,7 +107,7 @@ export const getTeam = (
 ) => {
       
       
-      return customInstance<RestTeam>(
+      return customInstance<Team>(
       {url: `/team/${teamID}`, method: 'GET', signal
     },
       options);
@@ -208,14 +208,14 @@ export const useGetTeam = <TData = Awaited<ReturnType<typeof getTeam>>, TError =
  */
 export const updateTeam = (
     teamID: EntityIDs.TeamID,
-    restUpdateTeamRequest: RestUpdateTeamRequest,
+    updateTeamRequest: UpdateTeamRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<RestTeam>(
+      return customInstance<Team>(
       {url: `/team/${teamID}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
-      data: restUpdateTeamRequest
+      data: updateTeamRequest
     },
       options);
     }
@@ -223,14 +223,14 @@ export const updateTeam = (
 
 
 export const getUpdateTeamMutationOptions = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTeam>>, TError,{teamID: EntityIDs.TeamID;data: RestUpdateTeamRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof updateTeam>>, TError,{teamID: EntityIDs.TeamID;data: RestUpdateTeamRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTeam>>, TError,{teamID: EntityIDs.TeamID;data: UpdateTeamRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateTeam>>, TError,{teamID: EntityIDs.TeamID;data: UpdateTeamRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
 
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTeam>>, {teamID: EntityIDs.TeamID;data: RestUpdateTeamRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateTeam>>, {teamID: EntityIDs.TeamID;data: UpdateTeamRequest}> = (props) => {
           const {teamID,data} = props ?? {};
 
           return  updateTeam(teamID,data,requestOptions)
@@ -242,14 +242,14 @@ export const getUpdateTeamMutationOptions = <TError = void | HTTPError,
    return  { mutationFn, ...mutationOptions }}
 
     export type UpdateTeamMutationResult = NonNullable<Awaited<ReturnType<typeof updateTeam>>>
-    export type UpdateTeamMutationBody = RestUpdateTeamRequest
+    export type UpdateTeamMutationBody = UpdateTeamRequest
     export type UpdateTeamMutationError = void | HTTPError
 
     /**
  * @summary update team.
  */
 export const useUpdateTeam = <TError = void | HTTPError,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTeam>>, TError,{teamID: EntityIDs.TeamID;data: RestUpdateTeamRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTeam>>, TError,{teamID: EntityIDs.TeamID;data: UpdateTeamRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
       const mutationOptions = getUpdateTeamMutationOptions(options);

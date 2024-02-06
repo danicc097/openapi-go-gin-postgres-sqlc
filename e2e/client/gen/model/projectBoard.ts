@@ -5,6 +5,8 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestProjectBoard } from './restProjectBoard'
+import type { Project } from './project'
 
-export type ProjectBoard = RestProjectBoard
+export interface ProjectBoard {
+  projectName: Project
+}

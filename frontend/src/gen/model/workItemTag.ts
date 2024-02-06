@@ -6,6 +6,12 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestWorkItemTag } from './restWorkItemTag';
 
-export type WorkItemTag = RestWorkItemTag;
+export interface WorkItemTag {
+  color: string;
+  deletedAt?: Date | null;
+  description: string;
+  name: string;
+  projectID: EntityIDs.ProjectID;
+  workItemTagID: EntityIDs.WorkItemTagID;
+}

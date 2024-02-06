@@ -7,7 +7,7 @@ import { reactQueryDefaultAppOptions } from './src/react-query'
 export default defineConfig({
   main: {
     output: {
-      mock: false,
+      mock: true,
       mode: 'tags-split',
       target: './src/gen/main.ts',
       schemas: './src/gen/model',
@@ -25,21 +25,21 @@ export default defineConfig({
           // useInfiniteQueryParam: 'nextId',
           options: reactQueryDefaultAppOptions.queries,
         },
-        // mock: {
-        //   format: {
-        //     date: () => faker.date.past(),
-        //     'date-time': () => faker.date.past(),
-        //   },
-        //   properties: {
-        //     // will use basic string replace to get BrandedTypes.
-        //     // userID: () => faker.datatype.uuid(),
-        //     email: () => faker.internet.email(),
-        //     metadata: () => ({
-        //       key: faker.color.hsl(),
-        //     }),
-        //   },
-        //   required: true,
-        // },
+        mock: {
+          format: {
+            date: () => faker.date.past(),
+            'date-time': () => faker.date.past(),
+          },
+          properties: {
+            // will use basic string replace to get BrandedTypes.
+            // userID: () => faker.datatype.uuid(),
+            email: () => faker.internet.email(),
+            metadata: () => ({
+              key: faker.color.hsl(),
+            }),
+          },
+          required: true,
+        },
         mutator: { path: 'src/api/mutator.ts', name: 'customInstance' },
       },
     },

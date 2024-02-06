@@ -6,6 +6,10 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { RestCreateProjectBoardRequest } from './restCreateProjectBoardRequest';
+import type { DbWorkItemTagCreateParams } from './dbWorkItemTagCreateParams';
+import type { DbTeamCreateParams } from './dbTeamCreateParams';
 
-export type CreateProjectBoardRequest = RestCreateProjectBoardRequest;
+export interface CreateProjectBoardRequest {
+  tags?: DbWorkItemTagCreateParams[] | null;
+  teams?: DbTeamCreateParams[] | null;
+}
