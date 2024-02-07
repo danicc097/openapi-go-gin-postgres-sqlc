@@ -2350,8 +2350,6 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
   go-utils.find_structs rest_structs "$REST_MODELS"
   structs_to_generate+=("${rest_structs[@]}") # always generate all rest/models.go to further prevent user adding clashing names
 
-  struct_names_arg=$(join_by "," ${structs_to_generate[*]})
-
   # NOTE: https://github.com/pkujhd/goloader allows reloading packages at runtime
   # NOTE: yaegi extraction doesn't work with generics and is slow. See failed-yaegi* branches
   # otherwise maybe yaegi can be used for openapi-go without much fuzz
@@ -2361,14 +2359,17 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
   go-utils.find_structs existing_structs "$PG_REPO_GEN/db"
   mapfile -t existing_structs < <(array.add_prefix "Db" "${existing_structs[@]}")
   go-utils.find_structs existing_structs "$REST_MODELS"
-  existing_structs_arg=$(join_by "," ${existing_structs[*]})
 
   for struct in "${structs_to_generate[@]}"; do
     if ! [[ " ${existing_structs[*]} " =~ " $struct " ]]; then
-      echo "Schema with x-gen-struct: $struct no longer exists. Marking for deletion..."
-      yq e ".components.schemas.$struct.x-TO-BE-DELETED = true" "$SPEC_PATH"
+      echo "Schema with x-gen-struct: $struct no longer exists. Deleting..."
+      yq e "del(.components.schemas.$struct)" -i "$SPEC_PATH"
+      structs_to_generate=("${structs_to_generate[@]/$struct/}")
     fi
   done
+
+  struct_names_arg=$(join_by "," ${structs_to_generate[*]})
+  existing_structs_arg=$(join_by "," ${existing_structs[*]})
 
   local gen_schema_spec_path="/tmp/openapi.yaml"
   # always compile and run since we need new PublicStructs that were just changed

@@ -755,8 +755,8 @@ type ServicesMember struct {
 }
 
 /* Ignoring existing rest struct
-// SharedWorkItemFields defines the model for SharedWorkItemFields.
-type SharedWorkItemFields  struct {
+// SharedWorkItemJoins defines the model for SharedWorkItemJoins.
+type SharedWorkItemJoins  struct {
     Members *[]externalRef0.DbUserWIAUWorkItem`json:"members"`
     TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
     WorkItemComments *[]externalRef0.DbWorkItemComment`json:"workItemComments"`

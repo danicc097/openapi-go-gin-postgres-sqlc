@@ -45,7 +45,7 @@ import {
   PaginationPage,
   ProjectBoard,
   ServicesMember,
-  SharedWorkItemFields,
+  SharedWorkItemJoins,
   Team,
   UpdateActivityRequest,
   UpdateTeamRequest,
@@ -538,16 +538,16 @@ export const ServicesMemberDecoder: Decoder<ServicesMember> = {
     return validateJson(json, schema, ServicesMemberDecoder.definitionName)
   },
 }
-export const SharedWorkItemFieldsDecoder: Decoder<SharedWorkItemFields> = {
-  definitionName: 'SharedWorkItemFields',
-  schemaRef: '#/definitions/SharedWorkItemFields',
+export const SharedWorkItemJoinsDecoder: Decoder<SharedWorkItemJoins> = {
+  definitionName: 'SharedWorkItemJoins',
+  schemaRef: '#/definitions/SharedWorkItemJoins',
 
-  decode(json: unknown): SharedWorkItemFields {
-    const schema = ajv.getSchema(SharedWorkItemFieldsDecoder.schemaRef)
+  decode(json: unknown): SharedWorkItemJoins {
+    const schema = ajv.getSchema(SharedWorkItemJoinsDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${SharedWorkItemFieldsDecoder.definitionName} not found`)
+      throw new Error(`Schema ${SharedWorkItemJoinsDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, SharedWorkItemFieldsDecoder.definitionName)
+    return validateJson(json, schema, SharedWorkItemJoinsDecoder.definitionName)
   },
 }
 export const TeamDecoder: Decoder<Team> = {

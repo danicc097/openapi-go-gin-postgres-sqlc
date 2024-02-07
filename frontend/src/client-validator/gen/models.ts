@@ -399,7 +399,7 @@ export interface User {
 export interface ProjectBoard {
   projectName: Project
 }
-export interface SharedWorkItemFields {
+export interface SharedWorkItemJoins {
   members?: DbUserWIAUWorkItem[] | null
   timeEntries?: DbTimeEntry[] | null
   workItemComments?: DbWorkItemComment[] | null

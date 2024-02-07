@@ -2888,7 +2888,7 @@
       "type": "object",
       "x-is-generated": true
     },
-    "SharedWorkItemFields": {
+    "SharedWorkItemJoins": {
       "properties": {
         "members": {
           "items": {
@@ -3210,7 +3210,7 @@
         }
       },
       "type": "object",
-      "x-gen-struct": "SharedWorkItemFields",
+      "x-gen-struct": "SharedWorkItemJoins",
       "x-is-generated": true
     },
     "Team": {
@@ -7550,7 +7550,7 @@
       "type": "object",
       "x-is-generated": true
     },
-    "SharedWorkItemFields": {
+    "SharedWorkItemJoins": {
       "properties": {
         "members": {
           "items": {
@@ -7872,7 +7872,7 @@
         }
       },
       "type": "object",
-      "x-gen-struct": "SharedWorkItemFields",
+      "x-gen-struct": "SharedWorkItemJoins",
       "x-is-generated": true
     },
     "Team": {

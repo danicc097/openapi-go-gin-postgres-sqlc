@@ -714,8 +714,8 @@ type ServicesMember struct {
 	UserID DbUserID     `json:"userID"`
 }
 
-// SharedWorkItemFields defines the model for SharedWorkItemFields.
-type SharedWorkItemFields struct {
+// SharedWorkItemJoins defines the model for SharedWorkItemJoins.
+type SharedWorkItemJoins struct {
 	Members          *[]DbUserWIAUWorkItem `json:"members"`
 	TimeEntries      *[]DbTimeEntry        `json:"timeEntries"`
 	WorkItemComments *[]DbWorkItemComment  `json:"workItemComments"`

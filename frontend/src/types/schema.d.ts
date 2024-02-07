@@ -458,7 +458,7 @@ export interface components {
       role: components["schemas"]["WorkItemRole"];
       userID: components["schemas"]["DbUserID"];
     };
-    SharedWorkItemFields: {
+    SharedWorkItemJoins: {
       members?: components["schemas"]["DbUserWIAUWorkItem"][] | null;
       timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
       workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;

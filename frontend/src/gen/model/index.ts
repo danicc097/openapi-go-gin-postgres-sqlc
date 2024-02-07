@@ -81,7 +81,7 @@ export * from './role';
 export * from './scope';
 export * from './scopes';
 export * from './servicesMember';
-export * from './sharedWorkItemFields';
+export * from './sharedWorkItemJoins';
 export * from './team';
 export * from './topics';
 export * from './updateActivityRequest';

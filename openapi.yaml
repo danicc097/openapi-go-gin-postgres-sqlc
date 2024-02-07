@@ -2022,7 +2022,7 @@ components:
         - userID
       type: object
       x-is-generated: true
-    SharedWorkItemFields: # Generated schema. DO NOT EDIT.
+    SharedWorkItemJoins: # Generated schema. DO NOT EDIT.
       properties:
         members:
           items:
@@ -2047,7 +2047,7 @@ components:
         workItemType:
           $ref: '#/components/schemas/DbWorkItemType'
       type: object
-      x-gen-struct: SharedWorkItemFields
+      x-gen-struct: SharedWorkItemJoins
       x-is-generated: true
     Team: # Generated schema. DO NOT EDIT.
       properties:

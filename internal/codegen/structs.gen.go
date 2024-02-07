@@ -235,7 +235,7 @@ var PublicStructs = map[string]any{
 	"PaginatedUsersResponse":         new(rest.PaginatedUsersResponse),
 	"PaginationPage":                 new(rest.PaginationPage),
 	"ProjectBoard":                   new(rest.ProjectBoard),
-	"SharedWorkItemFields":           new(rest.SharedWorkItemFields),
+	"SharedWorkItemJoins":            new(rest.SharedWorkItemJoins),
 	"Team":                           new(rest.Team),
 	"UpdateActivityRequest":          new(rest.UpdateActivityRequest),
 	"UpdateTeamRequest":              new(rest.UpdateTeamRequest),
