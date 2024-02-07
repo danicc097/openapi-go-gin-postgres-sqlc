@@ -66,7 +66,6 @@ export * from './getProjectWorkitems200';
 export * from './getProjectWorkitemsParams';
 export * from './hTTPError';
 export * from './hTTPValidationError';
-export * from './initializeProjectRequest';
 export * from './myProviderLoginParams';
 export * from './notification';
 export * from './notificationType';

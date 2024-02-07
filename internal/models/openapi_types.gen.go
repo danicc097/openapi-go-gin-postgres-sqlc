@@ -343,6 +343,7 @@ type DbActivityCreateParams struct {
 // DbDemoTwoWorkItem defines the model for DbDemoTwoWorkItem.
 type DbDemoTwoWorkItem struct {
 	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
+	Something             *string    `json:"something,omitempty"`
 	WorkItemID            int        `json:"workItemID"`
 }
 
@@ -643,12 +644,6 @@ type HTTPValidationError struct {
 	Messages []string `json:"messages"`
 }
 
-// InitializeProjectRequest defines the model for InitializeProjectRequest.
-type InitializeProjectRequest struct {
-	Tags  *[]DbWorkItemTagCreateParams `json:"tags"`
-	Teams *[]DbTeamCreateParams        `json:"teams"`
-}
-
 // Notification defines the model for Notification.
 type Notification struct {
 	Notification       DbNotification `json:"notification"`
@@ -914,7 +909,7 @@ type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
 
-type InitializeProjectJSONRequestBody = InitializeProjectRequest
+type InitializeProjectJSONRequestBody = CreateProjectBoardRequest
 
 // CreateTeamJSONRequestBody defines body for CreateTeam for application/json ContentType.
 

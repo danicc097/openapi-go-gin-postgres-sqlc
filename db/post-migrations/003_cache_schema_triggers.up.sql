@@ -154,6 +154,11 @@ begin
     work_items_table_name
   from
     projects loop
+      -- IMPORTANT: now gin indexes can cover everything we want,
+      -- but kept in sync via regular migrations:
+      -- CREATE UNIQUE INDEX CONCURRENTLY newidx ON tab (name, price, sku);
+      -- DROP INDEX cache_demo_work_items_<...>_index;
+      -- ALTER INDEX newidx RENAME TO cache_demo_work_items_<...>_index;
       perform
         create_work_item_cache_table (project_name);
 

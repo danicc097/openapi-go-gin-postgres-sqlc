@@ -370,7 +370,6 @@ x.gen.pregen() {
     ######## Ensure consistent style for future codegen
 
     echo "Applying PascalCase to operation IDs in $SPEC_PATH"
-    spec_content=$(<$SPEC_PATH)
 
     # outputs safe double-quoted paths for yq
     # https://github.com/mikefarah/yq/issues/1295
@@ -390,8 +389,7 @@ x.gen.pregen() {
 
     yq_op="${ops%"|"}"
 
-    spec_content=$(yq e "$yq_op" < <(echo "$spec_content"))
-    echo "$spec_content" >$SPEC_PATH
+    yq e "$yq_op" -i "$SPEC_PATH"
 
     update_roles_and_scopes
 
@@ -476,7 +474,7 @@ update_roles_and_scopes() {
 }
 
 sync_spec_with_db() {
-  cache_all "$GEN_CACHE/db.md5" bin/project bin/.helpers.sh .env.$X_ENV db/ $SPEC_PATH && return 0
+  cache_all "$GEN_CACHE/db.md5" ${base_cache_deps[@]} db/ $SPEC_PATH && return 0
 
   sync_db_enums_with_spec
 
@@ -534,8 +532,7 @@ generate_repo_constructor() {
 package repos
 
 type Repos struct {
-    $(join_by "
-    " "${struct_fields[@]}")
+    $(join_by $'\n' "${struct_fields[@]}")
 }
 EOF
 
@@ -686,7 +683,7 @@ x.gen.xo() {
   xsetup.backup
   xsetup.drop-and-migrate-gen-db
   { { {
-    cache_all "$GEN_CACHE/xo.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/ \
+    cache_all "$GEN_CACHE/xo.md5" ${base_cache_deps[@]} go.mod db/ $XO_TEMPLATES_DIR/ \
       --exclude "$XO_TEMPLATES_DIR/tests/*" && return 0
 
     echo "Running generation"
@@ -935,7 +932,7 @@ x.gen.frontend() {
       "frontend/package.json"
     )
 
-    cache_all "$GEN_CACHE/frontend.md5" bin/project bin/.helpers.sh .env.$X_ENV $SPEC_PATH ${deps[@]} && return 0
+    cache_all "$GEN_CACHE/frontend.md5" ${base_cache_deps[@]} $SPEC_PATH ${deps[@]} && return 0
 
     config_template_setup frontend # no need to run if cached .env
 
@@ -983,7 +980,7 @@ x.gen.e2e() {
 
     orval_config="e2e/orval.config.ts"
 
-    cache_all "$GEN_CACHE/e2e.md5" bin/project bin/.helpers.sh .env.$X_ENV $SPEC_PATH $orval_config e2e/package.json && return 0
+    cache_all "$GEN_CACHE/e2e.md5" ${base_cache_deps[@]} $SPEC_PATH $orval_config e2e/package.json && return 0
 
     config_template_setup e2e # no need to run if cached .env
 
@@ -1235,7 +1232,7 @@ x.test.xo() {
     POSTGRES_DB="xo_tests_db"
     GEN_POSTGRES_DB="xo_tests_db"
 
-    cache_all "$GEN_CACHE/test-xo.md5" bin/project bin/.helpers.sh $XO_TEMPLATES_DIR/ \
+    cache_all "$GEN_CACHE/test-xo.md5" ${base_cache_deps[@]} bin/.helpers.sh $XO_TEMPLATES_DIR/ \
       --exclude "$XO_TEMPLATES_DIR/tests/got/*" \
       --exclude "$XO_TEMPLATES_DIR/tests/snapshot/*" && return 0
 
@@ -2337,30 +2334,45 @@ find_deleted_pkg_schemas() {
 }
 
 update_spec_with_structs() {
-  vext="x-gen-struct"
-  struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC_PATH)
-  mapfile -t struct_names <<<$struct_names
+  mapfile -t invalid_schemas < <(yq e '.components.schemas[] | select(has("x-gen-struct") and (has("x-is-generated") | not)) | key' $SPEC_PATH)
+  [[ ${#invalid_schemas[@]} -gt 0 ]] && err "x-gen-struct can only be used in generated schemas (x-is-generated). Found in:
+$(join_by $'\n' "${invalid_schemas[@]}")"
 
-  # generate all rest/models.go always
-  local rest_structs=() rest_schemas=()
+  mapfile -t invalid_schemas < <(yq e '.components.schemas[] | select(has("x-gen-struct") and key != .x-gen-struct) | key' $SPEC_PATH)
+  [[ ${#invalid_schemas[@]} -gt 0 ]] && err "x-gen-struct must match schema name. Please rename:
+$(join_by $'\n' "${invalid_schemas[@]}")"
+
+  mapfile -t structs_to_generate < <(yq e '.components.schemas[] | select(has("x-gen-struct")).x-gen-struct' $SPEC_PATH)
+
+  local rest_structs=()
   # should use ast-parser find-structs, but go/types loading is too slow all
   # over gen functions, we might be better off with simple regexes
   go-utils.find_structs rest_structs "$REST_MODELS"
-  # mapfile -t -d $'\0' rest_schemas < <(printf "Rest%s\0" ${rest_structs[@]})
-  struct_names+=("${rest_structs[@]}")
+  structs_to_generate+=("${rest_structs[@]}") # always generate all rest/models.go to further prevent user adding clashing names
 
-  struct_names_arg=$(join_by "," ${struct_names[*]})
-  ((${#struct_names_arg} == 0)) && return
+  struct_names_arg=$(join_by "," ${structs_to_generate[*]})
 
   # NOTE: https://github.com/pkujhd/goloader allows reloading packages at runtime
   # NOTE: yaegi extraction doesn't work with generics and is slow. See failed-yaegi* branches
   # otherwise maybe yaegi can be used for openapi-go without much fuzz
   # Only implement the above if there are cases where we cant have compilable state when
   # building gen-schema at this step, or the workaround is too tedious
+  local existing_structs=()
+  go-utils.find_structs existing_structs "$PG_REPO_GEN/db"
+  mapfile -t existing_structs < <(array.add_prefix "Db" "${existing_structs[@]}")
+  go-utils.find_structs existing_structs "$REST_MODELS"
+  existing_structs_arg=$(join_by "," ${existing_structs[*]})
+
+  for struct in "${structs_to_generate[@]}"; do
+    if ! [[ " ${existing_structs[*]} " =~ " $struct " ]]; then
+      echo "Schema with x-gen-struct: $struct no longer exists. Marking for deletion..."
+      yq e ".components.schemas.$struct.x-TO-BE-DELETED = true" "$SPEC_PATH"
+    fi
+  done
 
   local gen_schema_spec_path="/tmp/openapi.yaml"
   # always compile and run since we need new PublicStructs that were just changed
-  codegen gen-schema --struct-names $struct_names_arg | yq '
+  codegen gen-schema --struct-names $struct_names_arg --existing-structs $existing_structs_arg | yq '
     with_entries(select(.key == "components"))' \
     >$gen_schema_spec_path || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
@@ -2375,9 +2387,7 @@ update_spec_with_structs() {
 
   if [[ ${#clashes[@]} -gt 0 ]]; then
     err "The following non-generated schemas would have been overridden by internal/rest/models.go structs. Please rename or delete:
-$(join_by "
-" "${clashes[@]}")
-    "
+$(join_by $'\n' "${clashes[@]}")"
   fi
 
   # workaround for https://github.com/mikefarah/yq/discussions/1934
@@ -2488,7 +2498,7 @@ source ".project.usage.sh"
 set -Eeo pipefail
 set -o errtrace
 
-X_ENV="dev"
+X_ENV="dev" # default if none set
 test -n "$CI" && X_ENV="ci"
 # prod detection not necessary, calls without --x-env=prod will no affect prod data
 # unless .env.dev is filled and reuse db/credentials which is far-fetched.
@@ -2753,6 +2763,7 @@ done
 export BUILD_VERSION="$X_ENV-$(git rev-parse --verify HEAD)"
 
 readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG X_NO_EXIT_CLEANUP
+readonly base_cache_deps="bin/project bin/.helpers.sh .env.$X_ENV"
 
 ######################## INIT ########################
 

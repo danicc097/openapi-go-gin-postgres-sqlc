@@ -9,5 +9,6 @@ import type * as EntityIDs from 'src/gen/entity-ids'
 
 export interface DbDemoTwoWorkItem {
   customDateForProject2?: Date | null;
+  something?: string;
   workItemID: EntityIDs.WorkItemID;
 }

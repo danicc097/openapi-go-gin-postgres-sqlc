@@ -354,14 +354,6 @@ create table work_items (
 
 create index on work_items (team_id);
 
-create index on work_items using gin (title gin_trgm_ops);
-
-create index on work_items using gin (description gin_trgm_ops);
-
-create index on work_items using gin (title gin_trgm_ops , description gin_trgm_ops);
-
-create index on work_items using gin (title , description gin_trgm_ops);
-
 -- project for tour. when starting it user joins the only demo team. when exiting it user is removed.
 -- we can reset it every X hours
 create table demo_work_items (

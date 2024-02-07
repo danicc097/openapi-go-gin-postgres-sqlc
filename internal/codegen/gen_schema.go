@@ -16,7 +16,6 @@ import (
 	// kinopenapi3 "github.com/getkin/kin-openapi/openapi3".
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	internalslices "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
 	"github.com/fatih/structtag"
@@ -24,6 +23,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/swaggest/jsonschema-go"
 	"github.com/swaggest/openapi-go/openapi3"
+	"golang.org/x/exp/slices"
 )
 
 func handleError(err error) {
@@ -33,10 +33,10 @@ func handleError(err error) {
 }
 
 // GenerateSpecSchemas creates OpenAPI schemas from code.
-func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
+func (o *CodeGen) GenerateSpecSchemas(structNames, existingStructs []string) {
 	reflector := newSpecReflector()
 
-	sns := slices.Unique(structNames)
+	sns := internalslices.Unique(structNames)
 	for idx, structName := range sns {
 		// fmt.Fprintf(os.Stderr, "Generating struct %s\n", structName)
 		// We need to compile gen-schema right after PublicStructs file is updated
@@ -45,12 +45,12 @@ func (o *CodeGen) GenerateSpecSchemas(structNames []string) {
 		// to work around this would need something like yaegi, but might not support swaggest libs
 		st, ok := PublicStructs[structName]
 		if !ok {
-			// FIXME: before generating spec via gen-schema we will find all x-gen-struct keys in
-			// spec and search for them in publicstructs. if they dont exist and x-is-generated,
-			// we will add x-TO-BE-DELETED: true. if they simply dont exist warn the user that the reference
-			// is broken.
-			// in any case, we will simply skip schema instead of failing
-			log.Fatalf("struct-name %s does not exist in PublicStructs", structName)
+			if !slices.Contains(existingStructs, structName) {
+				fmt.Fprintf(os.Stderr, "generated struct %q no longer exists and will be deleted", structName)
+				continue
+			}
+
+			log.Fatalf("struct %s does not exist in rest or db packages but is referenced in x-gen-struct", structName)
 		}
 		if !structs.HasJSONTag(st) {
 			log.Fatalf("struct %s: ensure there is at least a JSON tag set", structName)
@@ -209,11 +209,11 @@ func newSpecReflector() *openapi3.Reflector {
 				isCustomUUID = true
 			}
 
-			// TODO: also if type script and has a field UUID
 			if t == reflect.TypeOf(uuid.New()) || isCustomUUID {
 				params.Schema.Type = &jsonschema.Type{SimpleTypes: pointers.New(jsonschema.String)}
 				params.Schema.Pattern = pointers.New("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 				params.Schema.Items = &jsonschema.Items{}
+				params.Schema.Examples = []interface{}{"cdb15f83-1c5d-4727-98d1-8924ccd1fc01"}
 				// x-go* extensions cannot be used for Models(.*) themselves,
 				// but Models(.*) should not be generated at all. a ref tag is needed in structs
 				params.Schema.ExtraProperties = map[string]any{

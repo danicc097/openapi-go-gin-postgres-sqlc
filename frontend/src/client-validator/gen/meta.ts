@@ -56,7 +56,6 @@ import {
   DbActivity,
   ProjectConfig,
   ProjectConfigField,
-  InitializeProjectRequest,
   HTTPValidationError,
   ErrorCode,
   HTTPError,
@@ -183,10 +182,6 @@ export const schemaDefinitions = {
   DbActivity: info<DbActivity>('DbActivity', '#/definitions/DbActivity'),
   ProjectConfig: info<ProjectConfig>('ProjectConfig', '#/definitions/ProjectConfig'),
   ProjectConfigField: info<ProjectConfigField>('ProjectConfigField', '#/definitions/ProjectConfigField'),
-  InitializeProjectRequest: info<InitializeProjectRequest>(
-    'InitializeProjectRequest',
-    '#/definitions/InitializeProjectRequest',
-  ),
   HTTPValidationError: info<HTTPValidationError>('HTTPValidationError', '#/definitions/HTTPValidationError'),
   ErrorCode: info<ErrorCode>('ErrorCode', '#/definitions/ErrorCode'),
   HTTPError: info<HTTPError>('HTTPError', '#/definitions/HTTPError'),

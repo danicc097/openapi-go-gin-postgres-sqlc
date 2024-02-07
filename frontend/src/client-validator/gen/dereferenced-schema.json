@@ -36,8 +36,8 @@
         "isProductive"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "Activity"
+      "x-gen-struct": "Activity",
+      "x-is-generated": true
     },
     "CreateActivityRequest": {
       "properties": {
@@ -59,8 +59,8 @@
         "name"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateActivityRequest"
+      "x-gen-struct": "CreateActivityRequest",
+      "x-is-generated": true
     },
     "CreateDemoTwoWorkItemRequest": {
       "properties": {
@@ -181,8 +181,8 @@
         "members"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateDemoTwoWorkItemRequest"
+      "x-gen-struct": "CreateDemoTwoWorkItemRequest",
+      "x-is-generated": true
     },
     "CreateDemoWorkItemRequest": {
       "properties": {
@@ -321,8 +321,8 @@
         "members"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateDemoWorkItemRequest"
+      "x-gen-struct": "CreateDemoWorkItemRequest",
+      "x-is-generated": true
     },
     "CreateProjectBoardRequest": {
       "properties": {
@@ -382,8 +382,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateProjectBoardRequest"
+      "x-gen-struct": "CreateProjectBoardRequest",
+      "x-is-generated": true
     },
     "CreateTeamRequest": {
       "properties": {
@@ -401,8 +401,8 @@
         "name"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateTeamRequest"
+      "x-gen-struct": "CreateTeamRequest",
+      "x-is-generated": true
     },
     "CreateWorkItemCommentRequest": {
       "properties": {
@@ -430,8 +430,8 @@
         "workItemID"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateWorkItemCommentRequest"
+      "x-gen-struct": "CreateWorkItemCommentRequest",
+      "x-is-generated": true
     },
     "CreateWorkItemTagRequest": {
       "properties": {
@@ -455,8 +455,8 @@
         "name"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateWorkItemTagRequest"
+      "x-gen-struct": "CreateWorkItemTagRequest",
+      "x-is-generated": true
     },
     "CreateWorkItemTypeRequest": {
       "properties": {
@@ -480,8 +480,8 @@
         "name"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateWorkItemTypeRequest"
+      "x-gen-struct": "CreateWorkItemTypeRequest",
+      "x-is-generated": true
     },
     "DbDemoTwoWorkItem": {
       "properties": {
@@ -493,6 +493,9 @@
         },
         "workItemID": {
           "type": "integer"
+        },
+        "something": {
+          "type": "string"
         }
       },
       "required": [
@@ -545,8 +548,8 @@
         "reopened"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbDemoWorkItem"
+      "x-gen-struct": "DbDemoWorkItem",
+      "x-is-generated": true
     },
     "DbDemoWorkItemCreateParams": {
       "properties": {
@@ -616,8 +619,8 @@
         "timeTrackable"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbKanbanStep"
+      "x-gen-struct": "DbKanbanStep",
+      "x-is-generated": true
     },
     "DbNotification": {
       "properties": {
@@ -784,8 +787,8 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbProject"
+      "x-gen-struct": "DbProject",
+      "x-is-generated": true
     },
     "DbTeam": {
       "properties": {
@@ -900,8 +903,8 @@
         "start"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbTimeEntry"
+      "x-gen-struct": "DbTimeEntry",
+      "x-is-generated": true
     },
     "DbUser": {
       "properties": {
@@ -997,8 +1000,8 @@
         "createdAt"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbUser"
+      "x-gen-struct": "DbUser",
+      "x-is-generated": true
     },
     "DbUserAPIKey": {
       "properties": {
@@ -1029,8 +1032,8 @@
         "userID"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbUserAPIKey"
+      "x-gen-struct": "DbUserAPIKey",
+      "x-is-generated": true
     },
     "DbUserID": {
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -1148,8 +1151,8 @@
             "createdAt"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "DbUser"
+          "x-gen-struct": "DbUser",
+          "x-is-generated": true
         }
       },
       "required": [
@@ -1229,8 +1232,8 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbWorkItem"
+      "x-gen-struct": "DbWorkItem",
+      "x-is-generated": true
     },
     "DbWorkItemComment": {
       "properties": {
@@ -1276,8 +1279,8 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbWorkItemComment"
+      "x-gen-struct": "DbWorkItemComment",
+      "x-is-generated": true
     },
     "DbWorkItemCreateParams": {
       "properties": {
@@ -1363,8 +1366,8 @@
         "color"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbWorkItemTag"
+      "x-gen-struct": "DbWorkItemTag",
+      "x-is-generated": true
     },
     "DbWorkItemTagCreateParams": {
       "properties": {
@@ -1420,8 +1423,8 @@
         "color"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbWorkItemType"
+      "x-gen-struct": "DbWorkItemType",
+      "x-is-generated": true
     },
     "DemoTwoWorkItems": {
       "properties": {
@@ -1453,6 +1456,9 @@
             },
             "workItemID": {
               "type": "integer"
+            },
+            "something": {
+              "type": "string"
             }
           },
           "required": [
@@ -1575,8 +1581,8 @@
                   "createdAt"
                 ],
                 "type": "object",
-                "x-is-generated": true,
-                "x-gen-struct": "DbUser"
+                "x-gen-struct": "DbUser",
+                "x-is-generated": true
               }
             },
             "required": [
@@ -1663,8 +1669,8 @@
               "start"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbTimeEntry"
+            "x-gen-struct": "DbTimeEntry",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -1726,8 +1732,8 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbWorkItemComment"
+            "x-gen-struct": "DbWorkItemComment",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -1774,8 +1780,8 @@
               "color"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbWorkItemTag"
+            "x-gen-struct": "DbWorkItemTag",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -1812,8 +1818,8 @@
             "color"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "DbWorkItemType"
+          "x-gen-struct": "DbWorkItemType",
+          "x-is-generated": true
         },
         "workItemTypeID": {
           "type": "integer"
@@ -1833,8 +1839,8 @@
         "demoTwoWorkItem"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DemoTwoWorkItems"
+      "x-gen-struct": "DemoTwoWorkItems",
+      "x-is-generated": true
     },
     "DemoWorkItems": {
       "properties": {
@@ -1888,8 +1894,8 @@
             "reopened"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "DbDemoWorkItem"
+          "x-gen-struct": "DbDemoWorkItem",
+          "x-is-generated": true
         },
         "description": {
           "type": "string",
@@ -2005,8 +2011,8 @@
                   "createdAt"
                 ],
                 "type": "object",
-                "x-is-generated": true,
-                "x-gen-struct": "DbUser"
+                "x-gen-struct": "DbUser",
+                "x-is-generated": true
               }
             },
             "required": [
@@ -2093,8 +2099,8 @@
               "start"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbTimeEntry"
+            "x-gen-struct": "DbTimeEntry",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -2156,8 +2162,8 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbWorkItemComment"
+            "x-gen-struct": "DbWorkItemComment",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -2204,8 +2210,8 @@
               "color"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbWorkItemTag"
+            "x-gen-struct": "DbWorkItemTag",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -2242,8 +2248,8 @@
             "color"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "DbWorkItemType"
+          "x-gen-struct": "DbWorkItemType",
+          "x-is-generated": true
         },
         "workItemTypeID": {
           "type": "integer"
@@ -2263,8 +2269,8 @@
         "demoWorkItem"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DemoWorkItems"
+      "x-gen-struct": "DemoWorkItems",
+      "x-is-generated": true
     },
     "Notification": {
       "properties": {
@@ -2370,8 +2376,8 @@
         "notification"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "Notification"
+      "x-gen-struct": "Notification",
+      "x-is-generated": true
     },
     "PaginatedNotificationsResponse": {
       "properties": {
@@ -2480,8 +2486,8 @@
               "notification"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "Notification"
+            "x-gen-struct": "Notification",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -2495,8 +2501,8 @@
             }
           },
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "PaginationPage"
+          "x-gen-struct": "PaginationPage",
+          "x-is-generated": true
         }
       },
       "required": [
@@ -2504,8 +2510,8 @@
         "items"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "PaginatedNotificationsResponse"
+      "x-gen-struct": "PaginatedNotificationsResponse",
+      "x-is-generated": true
     },
     "PaginatedUsersResponse": {
       "properties": {
@@ -2541,8 +2547,8 @@
                   "userID"
                 ],
                 "type": "object",
-                "x-is-generated": true,
-                "x-gen-struct": "DbUserAPIKey"
+                "x-gen-struct": "DbUserAPIKey",
+                "x-is-generated": true
               },
               "createdAt": {
                 "format": "date-time",
@@ -2676,8 +2682,8 @@
                     "updatedAt"
                   ],
                   "type": "object",
-                  "x-is-generated": true,
-                  "x-gen-struct": "DbProject"
+                  "x-gen-struct": "DbProject",
+                  "x-is-generated": true
                 },
                 "type": [
                   "array",
@@ -2796,8 +2802,8 @@
               "role"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "User"
+            "x-gen-struct": "User",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -2811,8 +2817,8 @@
             }
           },
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "PaginationPage"
+          "x-gen-struct": "PaginationPage",
+          "x-is-generated": true
         }
       },
       "required": [
@@ -2820,8 +2826,8 @@
         "items"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "PaginatedUsersResponse"
+      "x-gen-struct": "PaginatedUsersResponse",
+      "x-is-generated": true
     },
     "PaginationPage": {
       "properties": {
@@ -2830,8 +2836,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "PaginationPage"
+      "x-gen-struct": "PaginationPage",
+      "x-is-generated": true
     },
     "ProjectBoard": {
       "properties": {
@@ -2849,8 +2855,8 @@
         "projectName"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "ProjectBoard"
+      "x-gen-struct": "ProjectBoard",
+      "x-is-generated": true
     },
     "ServicesMember": {
       "properties": {
@@ -2991,8 +2997,8 @@
                   "createdAt"
                 ],
                 "type": "object",
-                "x-is-generated": true,
-                "x-gen-struct": "DbUser"
+                "x-gen-struct": "DbUser",
+                "x-is-generated": true
               }
             },
             "required": [
@@ -3063,8 +3069,8 @@
               "start"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbTimeEntry"
+            "x-gen-struct": "DbTimeEntry",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -3116,8 +3122,8 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbWorkItemComment"
+            "x-gen-struct": "DbWorkItemComment",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -3161,8 +3167,8 @@
               "color"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbWorkItemTag"
+            "x-gen-struct": "DbWorkItemTag",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -3199,13 +3205,13 @@
             "color"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "DbWorkItemType"
+          "x-gen-struct": "DbWorkItemType",
+          "x-is-generated": true
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "SharedWorkItemFields"
+      "x-gen-struct": "SharedWorkItemFields",
+      "x-is-generated": true
     },
     "Team": {
       "properties": {
@@ -3245,8 +3251,8 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "Team"
+      "x-gen-struct": "Team",
+      "x-is-generated": true
     },
     "UpdateActivityRequest": {
       "properties": {
@@ -3261,8 +3267,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "UpdateActivityRequest"
+      "x-gen-struct": "UpdateActivityRequest",
+      "x-is-generated": true
     },
     "UpdateTeamRequest": {
       "properties": {
@@ -3274,8 +3280,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "UpdateTeamRequest"
+      "x-gen-struct": "UpdateTeamRequest",
+      "x-is-generated": true
     },
     "UpdateWorkItemCommentRequest": {
       "properties": {
@@ -3297,8 +3303,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "UpdateWorkItemCommentRequest"
+      "x-gen-struct": "UpdateWorkItemCommentRequest",
+      "x-is-generated": true
     },
     "UpdateWorkItemTagRequest": {
       "properties": {
@@ -3314,8 +3320,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "UpdateWorkItemTagRequest"
+      "x-gen-struct": "UpdateWorkItemTagRequest",
+      "x-is-generated": true
     },
     "UpdateWorkItemTypeRequest": {
       "properties": {
@@ -3331,8 +3337,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "UpdateWorkItemTypeRequest"
+      "x-gen-struct": "UpdateWorkItemTypeRequest",
+      "x-is-generated": true
     },
     "User": {
       "properties": {
@@ -3365,8 +3371,8 @@
             "userID"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "DbUserAPIKey"
+          "x-gen-struct": "DbUserAPIKey",
+          "x-is-generated": true
         },
         "createdAt": {
           "format": "date-time",
@@ -3500,8 +3506,8 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbProject"
+            "x-gen-struct": "DbProject",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -3620,8 +3626,8 @@
         "role"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "User"
+      "x-gen-struct": "User",
+      "x-is-generated": true
     },
     "WorkItemComment": {
       "properties": {
@@ -3667,8 +3673,8 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "WorkItemComment"
+      "x-gen-struct": "WorkItemComment",
+      "x-is-generated": true
     },
     "WorkItemTag": {
       "properties": {
@@ -3706,8 +3712,8 @@
         "color"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "WorkItemTag"
+      "x-gen-struct": "WorkItemTag",
+      "x-is-generated": true
     },
     "WorkItemType": {
       "properties": {
@@ -3739,8 +3745,8 @@
         "color"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "WorkItemType"
+      "x-gen-struct": "WorkItemType",
+      "x-is-generated": true
     },
     "Direction": {
       "type": "string",
@@ -3857,66 +3863,6 @@
         "name"
       ],
       "type": "object"
-    },
-    "InitializeProjectRequest": {
-      "properties": {
-        "tags": {
-          "items": {
-            "properties": {
-              "color": {
-                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-                "type": "string",
-                "minLength": 1
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              }
-            },
-            "required": [
-              "color",
-              "description",
-              "name"
-            ],
-            "type": "object",
-            "x-is-generated": true
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "teams": {
-          "items": {
-            "properties": {
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              }
-            },
-            "required": [
-              "description",
-              "name"
-            ],
-            "type": "object",
-            "x-is-generated": true
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        }
-      },
-      "type": "object",
-      "x-gen-struct": "CreateProjectBoardRequest"
     },
     "HTTPValidationError": {
       "title": "HTTPValidationError",
@@ -4473,8 +4419,8 @@
             "members"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "CreateDemoWorkItemRequest"
+          "x-gen-struct": "CreateDemoWorkItemRequest",
+          "x-is-generated": true
         },
         {
           "properties": {
@@ -4595,8 +4541,8 @@
             "members"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "CreateDemoTwoWorkItemRequest"
+          "x-gen-struct": "CreateDemoTwoWorkItemRequest",
+          "x-is-generated": true
         }
       ]
     },
@@ -4752,8 +4698,8 @@
         "isProductive"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "Activity"
+      "x-gen-struct": "Activity",
+      "x-is-generated": true
     },
     "CreateActivityRequest": {
       "properties": {
@@ -4775,8 +4721,8 @@
         "name"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateActivityRequest"
+      "x-gen-struct": "CreateActivityRequest",
+      "x-is-generated": true
     },
     "CreateDemoTwoWorkItemRequest": {
       "properties": {
@@ -4897,8 +4843,8 @@
         "members"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateDemoTwoWorkItemRequest"
+      "x-gen-struct": "CreateDemoTwoWorkItemRequest",
+      "x-is-generated": true
     },
     "CreateDemoWorkItemRequest": {
       "properties": {
@@ -5037,8 +4983,8 @@
         "members"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateDemoWorkItemRequest"
+      "x-gen-struct": "CreateDemoWorkItemRequest",
+      "x-is-generated": true
     },
     "CreateProjectBoardRequest": {
       "properties": {
@@ -5098,8 +5044,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateProjectBoardRequest"
+      "x-gen-struct": "CreateProjectBoardRequest",
+      "x-is-generated": true
     },
     "CreateTeamRequest": {
       "properties": {
@@ -5117,8 +5063,8 @@
         "name"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateTeamRequest"
+      "x-gen-struct": "CreateTeamRequest",
+      "x-is-generated": true
     },
     "CreateWorkItemCommentRequest": {
       "properties": {
@@ -5146,8 +5092,8 @@
         "workItemID"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateWorkItemCommentRequest"
+      "x-gen-struct": "CreateWorkItemCommentRequest",
+      "x-is-generated": true
     },
     "CreateWorkItemTagRequest": {
       "properties": {
@@ -5171,8 +5117,8 @@
         "name"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateWorkItemTagRequest"
+      "x-gen-struct": "CreateWorkItemTagRequest",
+      "x-is-generated": true
     },
     "CreateWorkItemTypeRequest": {
       "properties": {
@@ -5196,8 +5142,8 @@
         "name"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "CreateWorkItemTypeRequest"
+      "x-gen-struct": "CreateWorkItemTypeRequest",
+      "x-is-generated": true
     },
     "DbDemoTwoWorkItem": {
       "properties": {
@@ -5209,6 +5155,9 @@
         },
         "workItemID": {
           "type": "integer"
+        },
+        "something": {
+          "type": "string"
         }
       },
       "required": [
@@ -5261,8 +5210,8 @@
         "reopened"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbDemoWorkItem"
+      "x-gen-struct": "DbDemoWorkItem",
+      "x-is-generated": true
     },
     "DbDemoWorkItemCreateParams": {
       "properties": {
@@ -5332,8 +5281,8 @@
         "timeTrackable"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbKanbanStep"
+      "x-gen-struct": "DbKanbanStep",
+      "x-is-generated": true
     },
     "DbNotification": {
       "properties": {
@@ -5500,8 +5449,8 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbProject"
+      "x-gen-struct": "DbProject",
+      "x-is-generated": true
     },
     "DbTeam": {
       "properties": {
@@ -5616,8 +5565,8 @@
         "start"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbTimeEntry"
+      "x-gen-struct": "DbTimeEntry",
+      "x-is-generated": true
     },
     "DbUser": {
       "properties": {
@@ -5713,8 +5662,8 @@
         "createdAt"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbUser"
+      "x-gen-struct": "DbUser",
+      "x-is-generated": true
     },
     "DbUserAPIKey": {
       "properties": {
@@ -5745,8 +5694,8 @@
         "userID"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbUserAPIKey"
+      "x-gen-struct": "DbUserAPIKey",
+      "x-is-generated": true
     },
     "DbUserID": {
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
@@ -5864,8 +5813,8 @@
             "createdAt"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "DbUser"
+          "x-gen-struct": "DbUser",
+          "x-is-generated": true
         }
       },
       "required": [
@@ -5945,8 +5894,8 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbWorkItem"
+      "x-gen-struct": "DbWorkItem",
+      "x-is-generated": true
     },
     "DbWorkItemComment": {
       "properties": {
@@ -5992,8 +5941,8 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbWorkItemComment"
+      "x-gen-struct": "DbWorkItemComment",
+      "x-is-generated": true
     },
     "DbWorkItemCreateParams": {
       "properties": {
@@ -6079,8 +6028,8 @@
         "color"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbWorkItemTag"
+      "x-gen-struct": "DbWorkItemTag",
+      "x-is-generated": true
     },
     "DbWorkItemTagCreateParams": {
       "properties": {
@@ -6136,8 +6085,8 @@
         "color"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DbWorkItemType"
+      "x-gen-struct": "DbWorkItemType",
+      "x-is-generated": true
     },
     "DemoTwoWorkItems": {
       "properties": {
@@ -6169,6 +6118,9 @@
             },
             "workItemID": {
               "type": "integer"
+            },
+            "something": {
+              "type": "string"
             }
           },
           "required": [
@@ -6291,8 +6243,8 @@
                   "createdAt"
                 ],
                 "type": "object",
-                "x-is-generated": true,
-                "x-gen-struct": "DbUser"
+                "x-gen-struct": "DbUser",
+                "x-is-generated": true
               }
             },
             "required": [
@@ -6379,8 +6331,8 @@
               "start"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbTimeEntry"
+            "x-gen-struct": "DbTimeEntry",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -6442,8 +6394,8 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbWorkItemComment"
+            "x-gen-struct": "DbWorkItemComment",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -6490,8 +6442,8 @@
               "color"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbWorkItemTag"
+            "x-gen-struct": "DbWorkItemTag",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -6528,8 +6480,8 @@
             "color"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "DbWorkItemType"
+          "x-gen-struct": "DbWorkItemType",
+          "x-is-generated": true
         },
         "workItemTypeID": {
           "type": "integer"
@@ -6549,8 +6501,8 @@
         "demoTwoWorkItem"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DemoTwoWorkItems"
+      "x-gen-struct": "DemoTwoWorkItems",
+      "x-is-generated": true
     },
     "DemoWorkItems": {
       "properties": {
@@ -6604,8 +6556,8 @@
             "reopened"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "DbDemoWorkItem"
+          "x-gen-struct": "DbDemoWorkItem",
+          "x-is-generated": true
         },
         "description": {
           "type": "string",
@@ -6721,8 +6673,8 @@
                   "createdAt"
                 ],
                 "type": "object",
-                "x-is-generated": true,
-                "x-gen-struct": "DbUser"
+                "x-gen-struct": "DbUser",
+                "x-is-generated": true
               }
             },
             "required": [
@@ -6809,8 +6761,8 @@
               "start"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbTimeEntry"
+            "x-gen-struct": "DbTimeEntry",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -6872,8 +6824,8 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbWorkItemComment"
+            "x-gen-struct": "DbWorkItemComment",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -6920,8 +6872,8 @@
               "color"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbWorkItemTag"
+            "x-gen-struct": "DbWorkItemTag",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -6958,8 +6910,8 @@
             "color"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "DbWorkItemType"
+          "x-gen-struct": "DbWorkItemType",
+          "x-is-generated": true
         },
         "workItemTypeID": {
           "type": "integer"
@@ -6979,8 +6931,8 @@
         "demoWorkItem"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "DemoWorkItems"
+      "x-gen-struct": "DemoWorkItems",
+      "x-is-generated": true
     },
     "Notification": {
       "properties": {
@@ -7086,8 +7038,8 @@
         "notification"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "Notification"
+      "x-gen-struct": "Notification",
+      "x-is-generated": true
     },
     "PaginatedNotificationsResponse": {
       "properties": {
@@ -7196,8 +7148,8 @@
               "notification"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "Notification"
+            "x-gen-struct": "Notification",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -7211,8 +7163,8 @@
             }
           },
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "PaginationPage"
+          "x-gen-struct": "PaginationPage",
+          "x-is-generated": true
         }
       },
       "required": [
@@ -7220,8 +7172,8 @@
         "items"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "PaginatedNotificationsResponse"
+      "x-gen-struct": "PaginatedNotificationsResponse",
+      "x-is-generated": true
     },
     "PaginatedUsersResponse": {
       "properties": {
@@ -7257,8 +7209,8 @@
                   "userID"
                 ],
                 "type": "object",
-                "x-is-generated": true,
-                "x-gen-struct": "DbUserAPIKey"
+                "x-gen-struct": "DbUserAPIKey",
+                "x-is-generated": true
               },
               "createdAt": {
                 "format": "date-time",
@@ -7392,8 +7344,8 @@
                     "updatedAt"
                   ],
                   "type": "object",
-                  "x-is-generated": true,
-                  "x-gen-struct": "DbProject"
+                  "x-gen-struct": "DbProject",
+                  "x-is-generated": true
                 },
                 "type": [
                   "array",
@@ -7512,8 +7464,8 @@
               "role"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "User"
+            "x-gen-struct": "User",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -7527,8 +7479,8 @@
             }
           },
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "PaginationPage"
+          "x-gen-struct": "PaginationPage",
+          "x-is-generated": true
         }
       },
       "required": [
@@ -7536,8 +7488,8 @@
         "items"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "PaginatedUsersResponse"
+      "x-gen-struct": "PaginatedUsersResponse",
+      "x-is-generated": true
     },
     "PaginationPage": {
       "properties": {
@@ -7546,8 +7498,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "PaginationPage"
+      "x-gen-struct": "PaginationPage",
+      "x-is-generated": true
     },
     "ProjectBoard": {
       "properties": {
@@ -7565,8 +7517,8 @@
         "projectName"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "ProjectBoard"
+      "x-gen-struct": "ProjectBoard",
+      "x-is-generated": true
     },
     "ServicesMember": {
       "properties": {
@@ -7707,8 +7659,8 @@
                   "createdAt"
                 ],
                 "type": "object",
-                "x-is-generated": true,
-                "x-gen-struct": "DbUser"
+                "x-gen-struct": "DbUser",
+                "x-is-generated": true
               }
             },
             "required": [
@@ -7779,8 +7731,8 @@
               "start"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbTimeEntry"
+            "x-gen-struct": "DbTimeEntry",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -7832,8 +7784,8 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbWorkItemComment"
+            "x-gen-struct": "DbWorkItemComment",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -7877,8 +7829,8 @@
               "color"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbWorkItemTag"
+            "x-gen-struct": "DbWorkItemTag",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -7915,13 +7867,13 @@
             "color"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "DbWorkItemType"
+          "x-gen-struct": "DbWorkItemType",
+          "x-is-generated": true
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "SharedWorkItemFields"
+      "x-gen-struct": "SharedWorkItemFields",
+      "x-is-generated": true
     },
     "Team": {
       "properties": {
@@ -7961,8 +7913,8 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "Team"
+      "x-gen-struct": "Team",
+      "x-is-generated": true
     },
     "UpdateActivityRequest": {
       "properties": {
@@ -7977,8 +7929,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "UpdateActivityRequest"
+      "x-gen-struct": "UpdateActivityRequest",
+      "x-is-generated": true
     },
     "UpdateTeamRequest": {
       "properties": {
@@ -7990,8 +7942,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "UpdateTeamRequest"
+      "x-gen-struct": "UpdateTeamRequest",
+      "x-is-generated": true
     },
     "UpdateWorkItemCommentRequest": {
       "properties": {
@@ -8013,8 +7965,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "UpdateWorkItemCommentRequest"
+      "x-gen-struct": "UpdateWorkItemCommentRequest",
+      "x-is-generated": true
     },
     "UpdateWorkItemTagRequest": {
       "properties": {
@@ -8030,8 +7982,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "UpdateWorkItemTagRequest"
+      "x-gen-struct": "UpdateWorkItemTagRequest",
+      "x-is-generated": true
     },
     "UpdateWorkItemTypeRequest": {
       "properties": {
@@ -8047,8 +7999,8 @@
         }
       },
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "UpdateWorkItemTypeRequest"
+      "x-gen-struct": "UpdateWorkItemTypeRequest",
+      "x-is-generated": true
     },
     "User": {
       "properties": {
@@ -8081,8 +8033,8 @@
             "userID"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "DbUserAPIKey"
+          "x-gen-struct": "DbUserAPIKey",
+          "x-is-generated": true
         },
         "createdAt": {
           "format": "date-time",
@@ -8216,8 +8168,8 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-is-generated": true,
-            "x-gen-struct": "DbProject"
+            "x-gen-struct": "DbProject",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -8336,8 +8288,8 @@
         "role"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "User"
+      "x-gen-struct": "User",
+      "x-is-generated": true
     },
     "WorkItemComment": {
       "properties": {
@@ -8383,8 +8335,8 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "WorkItemComment"
+      "x-gen-struct": "WorkItemComment",
+      "x-is-generated": true
     },
     "WorkItemTag": {
       "properties": {
@@ -8422,8 +8374,8 @@
         "color"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "WorkItemTag"
+      "x-gen-struct": "WorkItemTag",
+      "x-is-generated": true
     },
     "WorkItemType": {
       "properties": {
@@ -8455,8 +8407,8 @@
         "color"
       ],
       "type": "object",
-      "x-is-generated": true,
-      "x-gen-struct": "WorkItemType"
+      "x-gen-struct": "WorkItemType",
+      "x-is-generated": true
     },
     "Direction": {
       "type": "string",
@@ -8573,66 +8525,6 @@
         "name"
       ],
       "type": "object"
-    },
-    "InitializeProjectRequest": {
-      "properties": {
-        "tags": {
-          "items": {
-            "properties": {
-              "color": {
-                "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-                "type": "string",
-                "minLength": 1
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              }
-            },
-            "required": [
-              "color",
-              "description",
-              "name"
-            ],
-            "type": "object",
-            "x-is-generated": true
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "teams": {
-          "items": {
-            "properties": {
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              }
-            },
-            "required": [
-              "description",
-              "name"
-            ],
-            "type": "object",
-            "x-is-generated": true
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        }
-      },
-      "type": "object",
-      "x-gen-struct": "CreateProjectBoardRequest"
     },
     "HTTPValidationError": {
       "title": "HTTPValidationError",
@@ -9189,8 +9081,8 @@
             "members"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "CreateDemoWorkItemRequest"
+          "x-gen-struct": "CreateDemoWorkItemRequest",
+          "x-is-generated": true
         },
         {
           "properties": {
@@ -9311,8 +9203,8 @@
             "members"
           ],
           "type": "object",
-          "x-is-generated": true,
-          "x-gen-struct": "CreateDemoTwoWorkItemRequest"
+          "x-gen-struct": "CreateDemoTwoWorkItemRequest",
+          "x-is-generated": true
         }
       ]
     },

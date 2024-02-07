@@ -22,6 +22,9 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query'
 import type {
+  CreateProjectBoardRequest
+} from '../model/createProjectBoardRequest'
+import type {
   DbProject
 } from '../model/dbProject'
 import type {
@@ -30,9 +33,6 @@ import type {
 import type {
   GetProjectWorkitemsParams
 } from '../model/getProjectWorkitemsParams'
-import type {
-  InitializeProjectRequest
-} from '../model/initializeProjectRequest'
 import type {
   ProjectBoard
 } from '../model/projectBoard'
@@ -56,14 +56,14 @@ import { customInstance } from '../../api/mutator';
  */
 export const initializeProject = (
     projectName: 'demo' | 'demo_two',
-    initializeProjectRequest: InitializeProjectRequest,
+    createProjectBoardRequest: CreateProjectBoardRequest,
  options?: SecondParameter<typeof customInstance>,) => {
       
       
       return customInstance<void>(
       {url: `/project/${projectName}/initialize`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: initializeProjectRequest
+      data: createProjectBoardRequest
     },
       options);
     }
@@ -71,14 +71,14 @@ export const initializeProject = (
 
 
 export const getInitializeProjectMutationOptions = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initializeProject>>, TError,{projectName: 'demo' | 'demo_two';data: InitializeProjectRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
-): UseMutationOptions<Awaited<ReturnType<typeof initializeProject>>, TError,{projectName: 'demo' | 'demo_two';data: InitializeProjectRequest}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initializeProject>>, TError,{projectName: 'demo' | 'demo_two';data: CreateProjectBoardRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof initializeProject>>, TError,{projectName: 'demo' | 'demo_two';data: CreateProjectBoardRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
 
       
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof initializeProject>>, {projectName: 'demo' | 'demo_two';data: InitializeProjectRequest}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof initializeProject>>, {projectName: 'demo' | 'demo_two';data: CreateProjectBoardRequest}> = (props) => {
           const {projectName,data} = props ?? {};
 
           return  initializeProject(projectName,data,requestOptions)
@@ -90,14 +90,14 @@ export const getInitializeProjectMutationOptions = <TError = unknown,
    return  { mutationFn, ...mutationOptions }}
 
     export type InitializeProjectMutationResult = NonNullable<Awaited<ReturnType<typeof initializeProject>>>
-    export type InitializeProjectMutationBody = InitializeProjectRequest
+    export type InitializeProjectMutationBody = CreateProjectBoardRequest
     export type InitializeProjectMutationError = unknown
 
     /**
  * @summary creates initial data (teams, tags...) for a new project
  */
 export const useInitializeProject = <TError = unknown,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initializeProject>>, TError,{projectName: 'demo' | 'demo_two';data: InitializeProjectRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initializeProject>>, TError,{projectName: 'demo' | 'demo_two';data: CreateProjectBoardRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
       const mutationOptions = getInitializeProjectMutationOptions(options);

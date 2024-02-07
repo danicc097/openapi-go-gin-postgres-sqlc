@@ -60,7 +60,6 @@ import {
   DbActivity,
   ProjectConfig,
   ProjectConfigField,
-  InitializeProjectRequest,
   HTTPValidationError,
   ErrorCode,
   HTTPError,
@@ -717,18 +716,6 @@ export const ProjectConfigFieldDecoder: Decoder<ProjectConfigField> = {
       throw new Error(`Schema ${ProjectConfigFieldDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ProjectConfigFieldDecoder.definitionName)
-  },
-}
-export const InitializeProjectRequestDecoder: Decoder<InitializeProjectRequest> = {
-  definitionName: 'InitializeProjectRequest',
-  schemaRef: '#/definitions/InitializeProjectRequest',
-
-  decode(json: unknown): InitializeProjectRequest {
-    const schema = ajv.getSchema(InitializeProjectRequestDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${InitializeProjectRequestDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, InitializeProjectRequestDecoder.definitionName)
   },
 }
 export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {

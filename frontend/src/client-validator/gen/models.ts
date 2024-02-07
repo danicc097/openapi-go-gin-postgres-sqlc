@@ -195,6 +195,7 @@ export interface CreateWorkItemTypeRequest {
 export interface DbDemoTwoWorkItem {
   customDateForProject2?: string | null
   workItemID: number
+  something?: string
 }
 export interface DbDemoWorkItem {
   lastMessageAt: string
@@ -466,10 +467,6 @@ export interface DbActivity {
   isProductive: boolean
   name: string
   projectID: number
-}
-export interface InitializeProjectRequest {
-  tags?: DbWorkItemTagCreateParams[] | null
-  teams?: DbTeamCreateParams[] | null
 }
 export interface HTTPValidationError {
   detail?: Detail
