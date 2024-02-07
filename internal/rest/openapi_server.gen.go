@@ -597,11 +597,13 @@ type DemoTwoWorkItems  struct {
     DeletedAt *time.Time`json:"deletedAt"`
     DemoTwoWorkItem externalRef0.DbDemoTwoWorkItem`json:"demoTwoWorkItem"`
     Description string`json:"description"`
+    KanbanStep *externalRef0.DbKanbanStep`json:"kanbanStep,omitempty"`
     KanbanStepID int`json:"kanbanStepID"`
     Members *[]externalRef0.DbUserWIAUWorkItem`json:"members"`
     Metadata map[string]interface{}`json:"metadata"`
     TargetDate time.Time`json:"targetDate"`
-    TeamID *int`json:"teamID"`
+    Team *externalRef0.DbTeam`json:"team,omitempty"`
+    TeamID int`json:"teamID"`
     TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
     Title string`json:"title"`
     UpdatedAt time.Time`json:"updatedAt"`
@@ -624,11 +626,13 @@ type DemoWorkItems  struct {
     DeletedAt *time.Time`json:"deletedAt"`
     DemoWorkItem externalRef0.DbDemoWorkItem`json:"demoWorkItem"`
     Description string`json:"description"`
+    KanbanStep *externalRef0.DbKanbanStep`json:"kanbanStep,omitempty"`
     KanbanStepID int`json:"kanbanStepID"`
     Members *[]externalRef0.DbUserWIAUWorkItem`json:"members"`
     Metadata map[string]interface{}`json:"metadata"`
     TargetDate time.Time`json:"targetDate"`
-    TeamID *int`json:"teamID"`
+    Team *externalRef0.DbTeam`json:"team,omitempty"`
+    TeamID int`json:"teamID"`
     TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
     Title string`json:"title"`
     UpdatedAt time.Time`json:"updatedAt"`
@@ -757,7 +761,9 @@ type ServicesMember struct {
 /* Ignoring existing rest struct
 // SharedWorkItemJoins defines the model for SharedWorkItemJoins.
 type SharedWorkItemJoins  struct {
+    KanbanStep *externalRef0.DbKanbanStep`json:"kanbanStep,omitempty"`
     Members *[]externalRef0.DbUserWIAUWorkItem`json:"members"`
+    Team *externalRef0.DbTeam`json:"team,omitempty"`
     TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
     WorkItemComments *[]externalRef0.DbWorkItemComment`json:"workItemComments"`
     WorkItemTags *[]externalRef0.DbWorkItemTag`json:"workItemTags"`

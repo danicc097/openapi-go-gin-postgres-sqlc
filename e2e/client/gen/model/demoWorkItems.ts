@@ -6,8 +6,10 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { DbDemoWorkItem } from './dbDemoWorkItem'
+import type { DbKanbanStep } from './dbKanbanStep'
 import type { DbUserWIAUWorkItem } from './dbUserWIAUWorkItem'
 import type { DemoWorkItemsMetadata } from './demoWorkItemsMetadata'
+import type { DbTeam } from './dbTeam'
 import type { DbTimeEntry } from './dbTimeEntry'
 import type { DbWorkItemComment } from './dbWorkItemComment'
 import type { DbWorkItemTag } from './dbWorkItemTag'
@@ -19,11 +21,13 @@ export interface DemoWorkItems {
   deletedAt?: Date | null
   demoWorkItem: DbDemoWorkItem
   description: string
+  kanbanStep?: DbKanbanStep
   kanbanStepID: number
   members?: DbUserWIAUWorkItem[] | null
   metadata: DemoWorkItemsMetadata
   targetDate: Date
-  teamID: number | null
+  team?: DbTeam
+  teamID: number
   timeEntries?: DbTimeEntry[] | null
   title: string
   updatedAt: Date

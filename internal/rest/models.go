@@ -64,7 +64,20 @@ type SharedWorkItemJoins struct {
 	Members          *[]db.User__WIAU_WorkItem `json:"members"`
 	WorkItemTags     *[]db.WorkItemTag         `json:"workItemTags"`
 	WorkItemType     *db.WorkItemType          `json:"workItemType"`
+	KanbanStep       *db.KanbanStep            `json:"kanbanStep"`
+	Team             *db.Team                  `json:"team"`
 }
+
+// 	// TODO: losing all joins.
+// type DemoWorkItems struct {
+// 	SharedWorkItemJoins
+// 	// e.g. we have comment on column work_item_work_item_tag.work_item_id is '"cardinality":M2M';
+// 	// therefore this join (internally handled as constraint) should be propagated if
+// 	// we set a flag propagate-fk-constraints  (don't want to always propagate).
+// 	// if so we duplicate constraints that reference work_item_id original table so that its generated
+// 	// in cache
+// 	WorkItem db.CacheDemoWorkItem `json:"workItem" required:"true"`
+// }
 
 type DemoWorkItems struct {
 	db.WorkItem

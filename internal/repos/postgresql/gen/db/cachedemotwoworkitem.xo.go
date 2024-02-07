@@ -4,12 +4,15 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -23,19 +26,57 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type CacheDemoTwoWorkItem struct {
-	CustomDateForProject2 *time.Time     `json:"customDateForProject2" db:"custom_date_for_project_2"`                                                  // custom_date_for_project_2
-	WorkItemID            WorkItemID     `json:"workItemID" db:"work_item_id" required:"true" nullable:"false" ref:"#/components/schemas/DbWorkItemID"` // work_item_id
-	Title                 string         `json:"title" db:"title" required:"true" nullable:"false"`                                                     // title
-	Description           string         `json:"description" db:"description" required:"true" nullable:"false"`                                         // description
-	WorkItemTypeID        int            `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"`                                // work_item_type_id
-	Metadata              map[string]any `json:"metadata" db:"metadata" required:"true" nullable:"false"`                                               // metadata
-	TeamID                int            `json:"teamID" db:"team_id" required:"true" nullable:"false"`                                                  // team_id
-	KanbanStepID          int            `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`                                     // kanban_step_id
-	ClosedAt              *time.Time     `json:"closedAt" db:"closed_at"`                                                                               // closed_at
-	TargetDate            time.Time      `json:"targetDate" db:"target_date" required:"true" nullable:"false"`                                          // target_date
-	CreatedAt             time.Time      `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                            // created_at
-	UpdatedAt             time.Time      `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                                            // updated_at
-	DeletedAt             *time.Time     `json:"deletedAt" db:"deleted_at"`                                                                             // deleted_at
+	CustomDateForProject2 *time.Time             `json:"customDateForProject2" db:"custom_date_for_project_2"`                                                  // custom_date_for_project_2
+	WorkItemID            CacheDemoTwoWorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false" ref:"#/components/schemas/DbWorkItemID"` // work_item_id
+	Title                 string                 `json:"title" db:"title" required:"true" nullable:"false"`                                                     // title
+	Description           string                 `json:"description" db:"description" required:"true" nullable:"false"`                                         // description
+	WorkItemTypeID        int                    `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"`                                // work_item_type_id
+	Metadata              map[string]any         `json:"metadata" db:"metadata" required:"true" nullable:"false"`                                               // metadata
+	TeamID                int                    `json:"teamID" db:"team_id" required:"true" nullable:"false"`                                                  // team_id
+	KanbanStepID          int                    `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`                                     // kanban_step_id
+	ClosedAt              *time.Time             `json:"closedAt" db:"closed_at"`                                                                               // closed_at
+	TargetDate            time.Time              `json:"targetDate" db:"target_date" required:"true" nullable:"false"`                                          // target_date
+	CreatedAt             time.Time              `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                            // created_at
+	UpdatedAt             time.Time              `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                                            // updated_at
+	DeletedAt             *time.Time             `json:"deletedAt" db:"deleted_at"`                                                                             // deleted_at
+}
+
+// CacheDemoTwoWorkItemCreateParams represents insert params for 'cache.demo_two_work_items'.
+type CacheDemoTwoWorkItemCreateParams struct {
+	ClosedAt              *time.Time             `json:"closedAt"`                                                                            // closed_at
+	CreatedAt             time.Time              `json:"createdAt" required:"true" nullable:"false"`                                          // created_at
+	CustomDateForProject2 *time.Time             `json:"customDateForProject2"`                                                               // custom_date_for_project_2
+	Description           string                 `json:"description" required:"true" nullable:"false"`                                        // description
+	KanbanStepID          int                    `json:"kanbanStepID" required:"true" nullable:"false"`                                       // kanban_step_id
+	Metadata              map[string]any         `json:"metadata" required:"true" nullable:"false"`                                           // metadata
+	TargetDate            time.Time              `json:"targetDate" required:"true" nullable:"false"`                                         // target_date
+	TeamID                int                    `json:"teamID" required:"true" nullable:"false"`                                             // team_id
+	Title                 string                 `json:"title" required:"true" nullable:"false"`                                              // title
+	UpdatedAt             time.Time              `json:"updatedAt" required:"true" nullable:"false"`                                          // updated_at
+	WorkItemID            CacheDemoTwoWorkItemID `json:"workItemID" required:"true" nullable:"false" ref:"#/components/schemas/DbWorkItemID"` // work_item_id
+	WorkItemTypeID        int                    `json:"workItemTypeID" required:"true" nullable:"false"`                                     // work_item_type_id
+}
+
+type CacheDemoTwoWorkItemID WorkItemID
+
+// CreateCacheDemoTwoWorkItem creates a new CacheDemoTwoWorkItem in the database with the given params.
+func CreateCacheDemoTwoWorkItem(ctx context.Context, db DB, params *CacheDemoTwoWorkItemCreateParams) (*CacheDemoTwoWorkItem, error) {
+	cdtwi := &CacheDemoTwoWorkItem{
+		ClosedAt:              params.ClosedAt,
+		CreatedAt:             params.CreatedAt,
+		CustomDateForProject2: params.CustomDateForProject2,
+		Description:           params.Description,
+		KanbanStepID:          params.KanbanStepID,
+		Metadata:              params.Metadata,
+		TargetDate:            params.TargetDate,
+		TeamID:                params.TeamID,
+		Title:                 params.Title,
+		UpdatedAt:             params.UpdatedAt,
+		WorkItemID:            params.WorkItemID,
+		WorkItemTypeID:        params.WorkItemTypeID,
+	}
+
+	return cdtwi.Insert(ctx, db)
 }
 
 type CacheDemoTwoWorkItemSelectConfig struct {
@@ -68,30 +109,30 @@ func WithDeletedCacheDemoTwoWorkItemOnly() CacheDemoTwoWorkItemSelectConfigOptio
 type CacheDemoTwoWorkItemOrderBy string
 
 const (
-	CacheDemoTwoWorkItemCustomDateForProject2DescNullsFirst CacheDemoTwoWorkItemOrderBy = " custom_date_for_project_2 DESC NULLS FIRST "
-	CacheDemoTwoWorkItemCustomDateForProject2DescNullsLast  CacheDemoTwoWorkItemOrderBy = " custom_date_for_project_2 DESC NULLS LAST "
-	CacheDemoTwoWorkItemCustomDateForProject2AscNullsFirst  CacheDemoTwoWorkItemOrderBy = " custom_date_for_project_2 ASC NULLS FIRST "
-	CacheDemoTwoWorkItemCustomDateForProject2AscNullsLast   CacheDemoTwoWorkItemOrderBy = " custom_date_for_project_2 ASC NULLS LAST "
 	CacheDemoTwoWorkItemClosedAtDescNullsFirst              CacheDemoTwoWorkItemOrderBy = " closed_at DESC NULLS FIRST "
 	CacheDemoTwoWorkItemClosedAtDescNullsLast               CacheDemoTwoWorkItemOrderBy = " closed_at DESC NULLS LAST "
 	CacheDemoTwoWorkItemClosedAtAscNullsFirst               CacheDemoTwoWorkItemOrderBy = " closed_at ASC NULLS FIRST "
 	CacheDemoTwoWorkItemClosedAtAscNullsLast                CacheDemoTwoWorkItemOrderBy = " closed_at ASC NULLS LAST "
-	CacheDemoTwoWorkItemTargetDateDescNullsFirst            CacheDemoTwoWorkItemOrderBy = " target_date DESC NULLS FIRST "
-	CacheDemoTwoWorkItemTargetDateDescNullsLast             CacheDemoTwoWorkItemOrderBy = " target_date DESC NULLS LAST "
-	CacheDemoTwoWorkItemTargetDateAscNullsFirst             CacheDemoTwoWorkItemOrderBy = " target_date ASC NULLS FIRST "
-	CacheDemoTwoWorkItemTargetDateAscNullsLast              CacheDemoTwoWorkItemOrderBy = " target_date ASC NULLS LAST "
 	CacheDemoTwoWorkItemCreatedAtDescNullsFirst             CacheDemoTwoWorkItemOrderBy = " created_at DESC NULLS FIRST "
 	CacheDemoTwoWorkItemCreatedAtDescNullsLast              CacheDemoTwoWorkItemOrderBy = " created_at DESC NULLS LAST "
 	CacheDemoTwoWorkItemCreatedAtAscNullsFirst              CacheDemoTwoWorkItemOrderBy = " created_at ASC NULLS FIRST "
 	CacheDemoTwoWorkItemCreatedAtAscNullsLast               CacheDemoTwoWorkItemOrderBy = " created_at ASC NULLS LAST "
-	CacheDemoTwoWorkItemUpdatedAtDescNullsFirst             CacheDemoTwoWorkItemOrderBy = " updated_at DESC NULLS FIRST "
-	CacheDemoTwoWorkItemUpdatedAtDescNullsLast              CacheDemoTwoWorkItemOrderBy = " updated_at DESC NULLS LAST "
-	CacheDemoTwoWorkItemUpdatedAtAscNullsFirst              CacheDemoTwoWorkItemOrderBy = " updated_at ASC NULLS FIRST "
-	CacheDemoTwoWorkItemUpdatedAtAscNullsLast               CacheDemoTwoWorkItemOrderBy = " updated_at ASC NULLS LAST "
+	CacheDemoTwoWorkItemCustomDateForProject2DescNullsFirst CacheDemoTwoWorkItemOrderBy = " custom_date_for_project_2 DESC NULLS FIRST "
+	CacheDemoTwoWorkItemCustomDateForProject2DescNullsLast  CacheDemoTwoWorkItemOrderBy = " custom_date_for_project_2 DESC NULLS LAST "
+	CacheDemoTwoWorkItemCustomDateForProject2AscNullsFirst  CacheDemoTwoWorkItemOrderBy = " custom_date_for_project_2 ASC NULLS FIRST "
+	CacheDemoTwoWorkItemCustomDateForProject2AscNullsLast   CacheDemoTwoWorkItemOrderBy = " custom_date_for_project_2 ASC NULLS LAST "
 	CacheDemoTwoWorkItemDeletedAtDescNullsFirst             CacheDemoTwoWorkItemOrderBy = " deleted_at DESC NULLS FIRST "
 	CacheDemoTwoWorkItemDeletedAtDescNullsLast              CacheDemoTwoWorkItemOrderBy = " deleted_at DESC NULLS LAST "
 	CacheDemoTwoWorkItemDeletedAtAscNullsFirst              CacheDemoTwoWorkItemOrderBy = " deleted_at ASC NULLS FIRST "
 	CacheDemoTwoWorkItemDeletedAtAscNullsLast               CacheDemoTwoWorkItemOrderBy = " deleted_at ASC NULLS LAST "
+	CacheDemoTwoWorkItemTargetDateDescNullsFirst            CacheDemoTwoWorkItemOrderBy = " target_date DESC NULLS FIRST "
+	CacheDemoTwoWorkItemTargetDateDescNullsLast             CacheDemoTwoWorkItemOrderBy = " target_date DESC NULLS LAST "
+	CacheDemoTwoWorkItemTargetDateAscNullsFirst             CacheDemoTwoWorkItemOrderBy = " target_date ASC NULLS FIRST "
+	CacheDemoTwoWorkItemTargetDateAscNullsLast              CacheDemoTwoWorkItemOrderBy = " target_date ASC NULLS LAST "
+	CacheDemoTwoWorkItemUpdatedAtDescNullsFirst             CacheDemoTwoWorkItemOrderBy = " updated_at DESC NULLS FIRST "
+	CacheDemoTwoWorkItemUpdatedAtDescNullsLast              CacheDemoTwoWorkItemOrderBy = " updated_at DESC NULLS LAST "
+	CacheDemoTwoWorkItemUpdatedAtAscNullsFirst              CacheDemoTwoWorkItemOrderBy = " updated_at ASC NULLS FIRST "
+	CacheDemoTwoWorkItemUpdatedAtAscNullsLast               CacheDemoTwoWorkItemOrderBy = " updated_at ASC NULLS LAST "
 )
 
 // WithCacheDemoTwoWorkItemOrderBy orders results by the given columns.
@@ -146,8 +187,184 @@ func WithCacheDemoTwoWorkItemHavingClause(conditions map[string][]any) CacheDemo
 	}
 }
 
+// CacheDemoTwoWorkItemUpdateParams represents update params for 'cache.demo_two_work_items'.
+type CacheDemoTwoWorkItemUpdateParams struct {
+	ClosedAt              **time.Time             `json:"closedAt"`                                                            // closed_at
+	CreatedAt             *time.Time              `json:"createdAt" nullable:"false"`                                          // created_at
+	CustomDateForProject2 **time.Time             `json:"customDateForProject2"`                                               // custom_date_for_project_2
+	Description           *string                 `json:"description" nullable:"false"`                                        // description
+	KanbanStepID          *int                    `json:"kanbanStepID" nullable:"false"`                                       // kanban_step_id
+	Metadata              *map[string]any         `json:"metadata" nullable:"false"`                                           // metadata
+	TargetDate            *time.Time              `json:"targetDate" nullable:"false"`                                         // target_date
+	TeamID                *int                    `json:"teamID" nullable:"false"`                                             // team_id
+	Title                 *string                 `json:"title" nullable:"false"`                                              // title
+	UpdatedAt             *time.Time              `json:"updatedAt" nullable:"false"`                                          // updated_at
+	WorkItemID            *CacheDemoTwoWorkItemID `json:"workItemID" nullable:"false" ref:"#/components/schemas/DbWorkItemID"` // work_item_id
+	WorkItemTypeID        *int                    `json:"workItemTypeID" nullable:"false"`                                     // work_item_type_id
+}
+
+// SetUpdateParams updates cache.demo_two_work_items struct fields with the specified params.
+func (cdtwi *CacheDemoTwoWorkItem) SetUpdateParams(params *CacheDemoTwoWorkItemUpdateParams) {
+	if params.ClosedAt != nil {
+		cdtwi.ClosedAt = *params.ClosedAt
+	}
+	if params.CreatedAt != nil {
+		cdtwi.CreatedAt = *params.CreatedAt
+	}
+	if params.CustomDateForProject2 != nil {
+		cdtwi.CustomDateForProject2 = *params.CustomDateForProject2
+	}
+	if params.Description != nil {
+		cdtwi.Description = *params.Description
+	}
+	if params.KanbanStepID != nil {
+		cdtwi.KanbanStepID = *params.KanbanStepID
+	}
+	if params.Metadata != nil {
+		cdtwi.Metadata = *params.Metadata
+	}
+	if params.TargetDate != nil {
+		cdtwi.TargetDate = *params.TargetDate
+	}
+	if params.TeamID != nil {
+		cdtwi.TeamID = *params.TeamID
+	}
+	if params.Title != nil {
+		cdtwi.Title = *params.Title
+	}
+	if params.UpdatedAt != nil {
+		cdtwi.UpdatedAt = *params.UpdatedAt
+	}
+	if params.WorkItemID != nil {
+		cdtwi.WorkItemID = *params.WorkItemID
+	}
+	if params.WorkItemTypeID != nil {
+		cdtwi.WorkItemTypeID = *params.WorkItemTypeID
+	}
+}
+
+// Insert inserts the CacheDemoTwoWorkItem to the database.
+func (cdtwi *CacheDemoTwoWorkItem) Insert(ctx context.Context, db DB) (*CacheDemoTwoWorkItem, error) {
+	// insert (manual)
+	sqlstr := `INSERT INTO cache.demo_two_work_items (
+	closed_at, created_at, custom_date_for_project_2, deleted_at, description, kanban_step_id, metadata, target_date, team_id, title, updated_at, work_item_id, work_item_type_id
+	) VALUES (
+	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13
+	)
+	 RETURNING * `
+	// run
+	logf(sqlstr, cdtwi.ClosedAt, cdtwi.CreatedAt, cdtwi.CustomDateForProject2, cdtwi.DeletedAt, cdtwi.Description, cdtwi.KanbanStepID, cdtwi.Metadata, cdtwi.TargetDate, cdtwi.TeamID, cdtwi.Title, cdtwi.UpdatedAt, cdtwi.WorkItemID, cdtwi.WorkItemTypeID)
+	rows, err := db.Query(ctx, sqlstr, cdtwi.ClosedAt, cdtwi.CreatedAt, cdtwi.CustomDateForProject2, cdtwi.DeletedAt, cdtwi.Description, cdtwi.KanbanStepID, cdtwi.Metadata, cdtwi.TargetDate, cdtwi.TeamID, cdtwi.Title, cdtwi.UpdatedAt, cdtwi.WorkItemID, cdtwi.WorkItemTypeID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoTwoWorkItem/Insert/db.Query: %w", &XoError{Entity: "Demo two work item", Err: err}))
+	}
+	newcdtwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[CacheDemoTwoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoTwoWorkItem/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Demo two work item", Err: err}))
+	}
+	*cdtwi = newcdtwi
+
+	return cdtwi, nil
+}
+
+// Update updates a CacheDemoTwoWorkItem in the database.
+func (cdtwi *CacheDemoTwoWorkItem) Update(ctx context.Context, db DB) (*CacheDemoTwoWorkItem, error) {
+	// update with composite primary key
+	sqlstr := `UPDATE cache.demo_two_work_items SET 
+	closed_at = $1, created_at = $2, custom_date_for_project_2 = $3, deleted_at = $4, description = $5, kanban_step_id = $6, metadata = $7, target_date = $8, team_id = $9, title = $10, updated_at = $11, work_item_type_id = $12 
+	WHERE work_item_id = $13 
+	RETURNING * `
+	// run
+	logf(sqlstr, cdtwi.ClosedAt, cdtwi.CreatedAt, cdtwi.CustomDateForProject2, cdtwi.DeletedAt, cdtwi.Description, cdtwi.KanbanStepID, cdtwi.Metadata, cdtwi.TargetDate, cdtwi.TeamID, cdtwi.Title, cdtwi.UpdatedAt, cdtwi.WorkItemTypeID, cdtwi.WorkItemID)
+
+	rows, err := db.Query(ctx, sqlstr, cdtwi.ClosedAt, cdtwi.CreatedAt, cdtwi.CustomDateForProject2, cdtwi.DeletedAt, cdtwi.Description, cdtwi.KanbanStepID, cdtwi.Metadata, cdtwi.TargetDate, cdtwi.TeamID, cdtwi.Title, cdtwi.UpdatedAt, cdtwi.WorkItemTypeID, cdtwi.WorkItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoTwoWorkItem/Update/db.Query: %w", &XoError{Entity: "Demo two work item", Err: err}))
+	}
+	newcdtwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[CacheDemoTwoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoTwoWorkItem/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Demo two work item", Err: err}))
+	}
+	*cdtwi = newcdtwi
+
+	return cdtwi, nil
+}
+
+// Upsert upserts a CacheDemoTwoWorkItem in the database.
+// Requires appropriate PK(s) to be set beforehand.
+func (cdtwi *CacheDemoTwoWorkItem) Upsert(ctx context.Context, db DB, params *CacheDemoTwoWorkItemCreateParams) (*CacheDemoTwoWorkItem, error) {
+	var err error
+
+	cdtwi.ClosedAt = params.ClosedAt
+	cdtwi.CreatedAt = params.CreatedAt
+	cdtwi.CustomDateForProject2 = params.CustomDateForProject2
+	cdtwi.Description = params.Description
+	cdtwi.KanbanStepID = params.KanbanStepID
+	cdtwi.Metadata = params.Metadata
+	cdtwi.TargetDate = params.TargetDate
+	cdtwi.TeamID = params.TeamID
+	cdtwi.Title = params.Title
+	cdtwi.UpdatedAt = params.UpdatedAt
+	cdtwi.WorkItemID = params.WorkItemID
+	cdtwi.WorkItemTypeID = params.WorkItemTypeID
+
+	cdtwi, err = cdtwi.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Demo two work item", Err: err})
+			}
+			cdtwi, err = cdtwi.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Demo two work item", Err: err})
+			}
+		}
+	}
+
+	return cdtwi, err
+}
+
+// Delete deletes the CacheDemoTwoWorkItem from the database.
+func (cdtwi *CacheDemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
+	// delete with single primary key
+	sqlstr := `DELETE FROM cache.demo_two_work_items 
+	WHERE work_item_id = $1 `
+	// run
+	if _, err := db.Exec(ctx, sqlstr, cdtwi.WorkItemID); err != nil {
+		return logerror(err)
+	}
+	return nil
+}
+
+// SoftDelete soft deletes the CacheDemoTwoWorkItem from the database via 'deleted_at'.
+func (cdtwi *CacheDemoTwoWorkItem) SoftDelete(ctx context.Context, db DB) error {
+	// delete with single primary key
+	sqlstr := `UPDATE cache.demo_two_work_items 
+	SET deleted_at = NOW() 
+	WHERE work_item_id = $1 `
+	// run
+	if _, err := db.Exec(ctx, sqlstr, cdtwi.WorkItemID); err != nil {
+		return logerror(err)
+	}
+	// set deleted
+	cdtwi.DeletedAt = newPointer(time.Now())
+
+	return nil
+}
+
+// Restore restores a soft deleted CacheDemoTwoWorkItem from the database.
+func (cdtwi *CacheDemoTwoWorkItem) Restore(ctx context.Context, db DB) (*CacheDemoTwoWorkItem, error) {
+	cdtwi.DeletedAt = nil
+	newcdtwi, err := cdtwi.Update(ctx, db)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoTwoWorkItem/Restore/pgx.CollectRows: %w", &XoError{Entity: "Demo two work item", Err: err}))
+	}
+	return newcdtwi, nil
+}
+
 // CacheDemoTwoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of CacheDemoTwoWorkItem.
-func CacheDemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...CacheDemoTwoWorkItemSelectConfigOption) ([]CacheDemoTwoWorkItem, error) {
+func CacheDemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID CacheDemoTwoWorkItemID, direction models.Direction, opts ...CacheDemoTwoWorkItemSelectConfigOption) ([]CacheDemoTwoWorkItem, error) {
 	c := &CacheDemoTwoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoTwoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -212,19 +429,19 @@ func CacheDemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workI
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	demo_two_work_items.custom_date_for_project_2,
-	demo_two_work_items.work_item_id,
-	demo_two_work_items.title,
-	demo_two_work_items.description,
-	demo_two_work_items.work_item_type_id,
-	demo_two_work_items.metadata,
-	demo_two_work_items.team_id,
-	demo_two_work_items.kanban_step_id,
 	demo_two_work_items.closed_at,
-	demo_two_work_items.target_date,
 	demo_two_work_items.created_at,
+	demo_two_work_items.custom_date_for_project_2,
+	demo_two_work_items.deleted_at,
+	demo_two_work_items.description,
+	demo_two_work_items.kanban_step_id,
+	demo_two_work_items.metadata,
+	demo_two_work_items.target_date,
+	demo_two_work_items.team_id,
+	demo_two_work_items.title,
 	demo_two_work_items.updated_at,
-	demo_two_work_items.deleted_at %s 
+	demo_two_work_items.work_item_id,
+	demo_two_work_items.work_item_type_id %s 
 	 FROM cache.demo_two_work_items %s 
 	 WHERE demo_two_work_items.work_item_id %s $1
 	 %s   AND demo_two_work_items.deleted_at is %s  %s 
@@ -249,8 +466,8 @@ func CacheDemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workI
 
 // CacheDemoTwoWorkItemByWorkItemID retrieves a row from 'cache.demo_two_work_items' as a CacheDemoTwoWorkItem.
 //
-// Generated from index 'cache_demo_two_work_items_work_item_id_unique'.
-func CacheDemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...CacheDemoTwoWorkItemSelectConfigOption) (*CacheDemoTwoWorkItem, error) {
+// Generated from index 'cache_demo_two_work_items_work_item_id_pk'.
+func CacheDemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID CacheDemoTwoWorkItemID, opts ...CacheDemoTwoWorkItemSelectConfigOption) (*CacheDemoTwoWorkItem, error) {
 	c := &CacheDemoTwoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoTwoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -310,19 +527,19 @@ func CacheDemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID Wor
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	demo_two_work_items.custom_date_for_project_2,
-	demo_two_work_items.work_item_id,
-	demo_two_work_items.title,
-	demo_two_work_items.description,
-	demo_two_work_items.work_item_type_id,
-	demo_two_work_items.metadata,
-	demo_two_work_items.team_id,
-	demo_two_work_items.kanban_step_id,
 	demo_two_work_items.closed_at,
-	demo_two_work_items.target_date,
 	demo_two_work_items.created_at,
+	demo_two_work_items.custom_date_for_project_2,
+	demo_two_work_items.deleted_at,
+	demo_two_work_items.description,
+	demo_two_work_items.kanban_step_id,
+	demo_two_work_items.metadata,
+	demo_two_work_items.target_date,
+	demo_two_work_items.team_id,
+	demo_two_work_items.title,
 	demo_two_work_items.updated_at,
-	demo_two_work_items.deleted_at %s 
+	demo_two_work_items.work_item_id,
+	demo_two_work_items.work_item_type_id %s 
 	 FROM cache.demo_two_work_items %s 
 	 WHERE demo_two_work_items.work_item_id = $1
 	 %s   AND demo_two_work_items.deleted_at is %s  %s 

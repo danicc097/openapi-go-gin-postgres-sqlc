@@ -991,6 +991,9 @@
           "type": "string",
           "minLength": 1
         },
+        "kanbanStep": {
+          "$ref": "#/definitions/DbKanbanStep"
+        },
         "kanbanStepID": {
           "type": "integer"
         },
@@ -1013,11 +1016,11 @@
             "object"
           ]
         },
+        "team": {
+          "$ref": "#/definitions/DbTeam"
+        },
         "teamID": {
-          "type": [
-            "integer",
-            "null"
-          ]
+          "type": "integer"
         },
         "timeEntries": {
           "items": {
@@ -1110,6 +1113,9 @@
           "type": "string",
           "minLength": 1
         },
+        "kanbanStep": {
+          "$ref": "#/definitions/DbKanbanStep"
+        },
         "kanbanStepID": {
           "type": "integer"
         },
@@ -1132,11 +1138,11 @@
             "object"
           ]
         },
+        "team": {
+          "$ref": "#/definitions/DbTeam"
+        },
         "teamID": {
-          "type": [
-            "integer",
-            "null"
-          ]
+          "type": "integer"
         },
         "timeEntries": {
           "items": {
@@ -1318,6 +1324,9 @@
     },
     "SharedWorkItemJoins": {
       "properties": {
+        "kanbanStep": {
+          "$ref": "#/definitions/DbKanbanStep"
+        },
         "members": {
           "items": {
             "$ref": "#/definitions/DbUserWIAUWorkItem"
@@ -1326,6 +1335,9 @@
             "array",
             "null"
           ]
+        },
+        "team": {
+          "$ref": "#/definitions/DbTeam"
         },
         "timeEntries": {
           "items": {

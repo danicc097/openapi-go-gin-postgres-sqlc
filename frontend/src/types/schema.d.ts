@@ -388,6 +388,7 @@ export interface components {
       deletedAt?: string | null;
       demoTwoWorkItem: components["schemas"]["DbDemoTwoWorkItem"];
       description: string;
+      kanbanStep?: components["schemas"]["DbKanbanStep"];
       kanbanStepID: number;
       members?: components["schemas"]["DbUserWIAUWorkItem"][] | null;
       metadata: {
@@ -395,7 +396,8 @@ export interface components {
       };
       /** Format: date-time */
       targetDate: string;
-      teamID: number | null;
+      team?: components["schemas"]["DbTeam"];
+      teamID: number;
       timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
       title: string;
       /** Format: date-time */
@@ -415,6 +417,7 @@ export interface components {
       deletedAt?: string | null;
       demoWorkItem: components["schemas"]["DbDemoWorkItem"];
       description: string;
+      kanbanStep?: components["schemas"]["DbKanbanStep"];
       kanbanStepID: number;
       members?: components["schemas"]["DbUserWIAUWorkItem"][] | null;
       metadata: {
@@ -422,7 +425,8 @@ export interface components {
       };
       /** Format: date-time */
       targetDate: string;
-      teamID: number | null;
+      team?: components["schemas"]["DbTeam"];
+      teamID: number;
       timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
       title: string;
       /** Format: date-time */
@@ -459,7 +463,9 @@ export interface components {
       userID: components["schemas"]["DbUserID"];
     };
     SharedWorkItemJoins: {
+      kanbanStep?: components["schemas"]["DbKanbanStep"];
       members?: components["schemas"]["DbUserWIAUWorkItem"][] | null;
+      team?: components["schemas"]["DbTeam"];
       timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
       workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
       workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;

@@ -1242,6 +1242,8 @@ cc_label:
 			properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
 			ignoreConstraints := contains(properties, propertyIgnoreConstraints)
 			if ignoreConstraints {
+				// TODO: but do create joins in current table.
+				// for cache workitems table, we will have the same joins as with workitem
 				continue
 			}
 
@@ -3860,7 +3862,8 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 			return "", nil
 		}
 		if af.isSingleFK && af.isSinglePK { // e.g. workitemid in project tables. don't ever want to update it. PK is FK
-			fmt.Printf("UpdateParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
+			fmt.Printf("f.schema: %v\n", f.schema)
+			fmt.Printf("UpdateParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.Schema+"."+table.SQLName)
 			return "", nil
 		}
 		skipExtraTags = true
@@ -4040,6 +4043,13 @@ type analyzedField struct {
 
 func analyzeField(table Table, field Field) analyzedField {
 	var isSinglePK, isSingleFK, isFK bool
+
+	if table.SQLName == "demo_work_items" {
+		fmt.Printf("\n\n\n----------------\n")
+		fmt.Printf("table: %v\n", table.Schema+"."+table.SQLName)
+		fmt.Printf("ForeignKeys: %v\n", formatJSON(table.ForeignKeys))
+		fmt.Printf("PrimaryKeys: %v\n", formatJSON(table.PrimaryKeys))
+	}
 
 	for _, tfk := range table.ForeignKeys {
 		if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {

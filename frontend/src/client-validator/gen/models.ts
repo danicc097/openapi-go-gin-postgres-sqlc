@@ -327,11 +327,13 @@ export interface DemoTwoWorkItems {
   deletedAt?: string | null
   demoTwoWorkItem: DbDemoTwoWorkItem
   description: string
+  kanbanStep?: DbKanbanStep
   kanbanStepID: number
   members?: DbUserWIAUWorkItem[] | null
   metadata: {}
   targetDate: string
-  teamID: number | null
+  team?: DbTeam
+  teamID: number
   timeEntries?: DbTimeEntry[] | null
   title: string
   updatedAt: string
@@ -347,11 +349,13 @@ export interface DemoWorkItems {
   deletedAt?: string | null
   demoWorkItem: DbDemoWorkItem
   description: string
+  kanbanStep?: DbKanbanStep
   kanbanStepID: number
   members?: DbUserWIAUWorkItem[] | null
   metadata: {}
   targetDate: string
-  teamID: number | null
+  team?: DbTeam
+  teamID: number
   timeEntries?: DbTimeEntry[] | null
   title: string
   updatedAt: string
@@ -400,7 +404,9 @@ export interface ProjectBoard {
   projectName: Project
 }
 export interface SharedWorkItemJoins {
+  kanbanStep?: DbKanbanStep
   members?: DbUserWIAUWorkItem[] | null
+  team?: DbTeam
   timeEntries?: DbTimeEntry[] | null
   workItemComments?: DbWorkItemComment[] | null
   workItemTags?: DbWorkItemTag[] | null

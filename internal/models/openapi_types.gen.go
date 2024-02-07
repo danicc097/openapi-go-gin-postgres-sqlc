@@ -570,11 +570,13 @@ type DemoTwoWorkItems struct {
 	DeletedAt        *time.Time             `json:"deletedAt"`
 	DemoTwoWorkItem  DbDemoTwoWorkItem      `json:"demoTwoWorkItem"`
 	Description      string                 `json:"description"`
+	KanbanStep       *DbKanbanStep          `json:"kanbanStep,omitempty"`
 	KanbanStepID     int                    `json:"kanbanStepID"`
 	Members          *[]DbUserWIAUWorkItem  `json:"members"`
 	Metadata         map[string]interface{} `json:"metadata"`
 	TargetDate       time.Time              `json:"targetDate"`
-	TeamID           *int                   `json:"teamID"`
+	Team             *DbTeam                `json:"team,omitempty"`
+	TeamID           int                    `json:"teamID"`
 	TimeEntries      *[]DbTimeEntry         `json:"timeEntries"`
 	Title            string                 `json:"title"`
 	UpdatedAt        time.Time              `json:"updatedAt"`
@@ -595,11 +597,13 @@ type DemoWorkItems struct {
 	DeletedAt        *time.Time             `json:"deletedAt"`
 	DemoWorkItem     DbDemoWorkItem         `json:"demoWorkItem"`
 	Description      string                 `json:"description"`
+	KanbanStep       *DbKanbanStep          `json:"kanbanStep,omitempty"`
 	KanbanStepID     int                    `json:"kanbanStepID"`
 	Members          *[]DbUserWIAUWorkItem  `json:"members"`
 	Metadata         map[string]interface{} `json:"metadata"`
 	TargetDate       time.Time              `json:"targetDate"`
-	TeamID           *int                   `json:"teamID"`
+	Team             *DbTeam                `json:"team,omitempty"`
+	TeamID           int                    `json:"teamID"`
 	TimeEntries      *[]DbTimeEntry         `json:"timeEntries"`
 	Title            string                 `json:"title"`
 	UpdatedAt        time.Time              `json:"updatedAt"`
@@ -716,7 +720,9 @@ type ServicesMember struct {
 
 // SharedWorkItemJoins defines the model for SharedWorkItemJoins.
 type SharedWorkItemJoins struct {
+	KanbanStep       *DbKanbanStep         `json:"kanbanStep,omitempty"`
 	Members          *[]DbUserWIAUWorkItem `json:"members"`
+	Team             *DbTeam               `json:"team,omitempty"`
 	TimeEntries      *[]DbTimeEntry        `json:"timeEntries"`
 	WorkItemComments *[]DbWorkItemComment  `json:"workItemComments"`
 	WorkItemTags     *[]DbWorkItemTag      `json:"workItemTags"`

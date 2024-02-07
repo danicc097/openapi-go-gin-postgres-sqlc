@@ -28,6 +28,20 @@ begin
   execute FORMAT('CREATE TABLE IF NOT EXISTS cache.%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type);
   execute FORMAT('comment on column cache.%I.work_item_id is ''"type":WorkItemID && "properties":ignore-constraints''' , project_name);
   -- constraints
+  -- select
+  --   exists (
+  --     select
+  --       1
+  --     from
+  --       information_schema.table_constraints
+  --     where
+  --       constraint_name = 'fk_cache_' || project_name || '_work_item_id'
+  --       and table_schema = 'cache'
+  --       and table_name = project_name) into constraint_exists;
+  -- if not constraint_exists then
+  --   execute FORMAT('ALTER TABLE cache.%I ADD CONSTRAINT fk_cache_%s_work_item_id
+  --   FOREIGN KEY (work_item_id) REFERENCES public.work_items (work_item_id) ON DELETE CASCADE' , project_name , project_name);
+  -- end if;
   select
     exists (
       select
@@ -35,26 +49,16 @@ begin
       from
         information_schema.table_constraints
       where
-        constraint_name = 'fk_cache_' || project_name || '_work_item_id'
+        constraint_name = 'cache_' || project_name || '_work_item_id_pk'
         and table_schema = 'cache'
         and table_name = project_name) into constraint_exists;
   if not constraint_exists then
-    execute FORMAT('ALTER TABLE cache.%I ADD CONSTRAINT fk_cache_%s_work_item_id
-    FOREIGN KEY (work_item_id) REFERENCES public.work_items (work_item_id) ON DELETE CASCADE' , project_name , project_name);
-  end if;
-  select
-    exists (
-      select
-        1
-      from
-        information_schema.table_constraints
-      where
-        constraint_name = 'cache_' || project_name || '_work_item_id_unique'
-        and table_schema = 'cache'
-        and table_name = project_name) into constraint_exists;
-  if not constraint_exists then
-    execute FORMAT('ALTER TABLE cache.%I ADD CONSTRAINT cache_%s_work_item_id_unique
-    UNIQUE (work_item_id)' , project_name , project_name);
+    execute FORMAT('ALTER TABLE cache.%I ADD CONSTRAINT cache_%s_work_item_id_pk
+    PRIMARY KEY (work_item_id);
+    ' , project_name , project_name);
+    execute FORMAT('ALTER TABLE cache.%I ADD CONSTRAINT cache_%s_work_item_id_fk
+    FOREIGN KEY (work_item_id) REFERENCES work_items (work_item_id);
+    ' , project_name , project_name);
   end if;
   -- IMPORTANT: we will use extra cache table columns so logic to add/modify cols will be messy.
   -- altering existing types would have to be done manually either way.

@@ -1813,6 +1813,8 @@ components:
           $ref: '#/components/schemas/DbDemoTwoWorkItem'
         description:
           type: string
+        kanbanStep:
+          $ref: '#/components/schemas/DbKanbanStep'
         kanbanStepID:
           type: integer
         members:
@@ -1826,8 +1828,9 @@ components:
         targetDate:
           format: date-time
           type: string
+        team:
+          $ref: '#/components/schemas/DbTeam'
         teamID:
-          nullable: true
           type: integer
         timeEntries:
           items:
@@ -1887,6 +1890,8 @@ components:
           $ref: '#/components/schemas/DbDemoWorkItem'
         description:
           type: string
+        kanbanStep:
+          $ref: '#/components/schemas/DbKanbanStep'
         kanbanStepID:
           type: integer
         members:
@@ -1900,8 +1905,9 @@ components:
         targetDate:
           format: date-time
           type: string
+        team:
+          $ref: '#/components/schemas/DbTeam'
         teamID:
-          nullable: true
           type: integer
         timeEntries:
           items:
@@ -2024,11 +2030,15 @@ components:
       x-is-generated: true
     SharedWorkItemJoins: # Generated schema. DO NOT EDIT.
       properties:
+        kanbanStep:
+          $ref: '#/components/schemas/DbKanbanStep'
         members:
           items:
             $ref: '#/components/schemas/DbUserWIAUWorkItem'
           nullable: true
           type: array
+        team:
+          $ref: '#/components/schemas/DbTeam'
         timeEntries:
           items:
             $ref: '#/components/schemas/DbTimeEntry'
