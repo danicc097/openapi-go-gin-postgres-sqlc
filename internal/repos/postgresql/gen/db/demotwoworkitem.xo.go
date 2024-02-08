@@ -29,7 +29,8 @@ type DemoTwoWorkItem struct {
 	WorkItemID            WorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2"`          // custom_date_for_project_2
 
-	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
+	WorkItemJoin    *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
+	WorkItemJoinWII *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
 
 }
 
@@ -91,14 +92,16 @@ func WithDemoTwoWorkItemOrderBy(rows ...DemoTwoWorkItemOrderBy) DemoTwoWorkItemS
 }
 
 type DemoTwoWorkItemJoins struct {
-	WorkItem bool // O2O work_items
+	WorkItem          bool // O2O work_items
+	WorkItemWorkItems bool // O2O work_items
 }
 
 // WithDemoTwoWorkItemJoin joins with the given tables.
 func WithDemoTwoWorkItemJoin(joins DemoTwoWorkItemJoins) DemoTwoWorkItemSelectConfigOption {
 	return func(s *DemoTwoWorkItemSelectConfig) {
 		s.joins = DemoTwoWorkItemJoins{
-			WorkItem: s.joins.WorkItem || joins.WorkItem,
+			WorkItem:          s.joins.WorkItem || joins.WorkItem,
+			WorkItemWorkItems: s.joins.WorkItemWorkItems || joins.WorkItemWorkItems,
 		}
 	}
 }
@@ -139,6 +142,16 @@ left join work_items as _demo_two_work_items_work_item_id on _demo_two_work_item
 const demoTwoWorkItemTableWorkItemSelectSQL = `(case when _demo_two_work_items_work_item_id.work_item_id is not null then row(_demo_two_work_items_work_item_id.*) end) as work_item_work_item_id`
 
 const demoTwoWorkItemTableWorkItemGroupBySQL = `_demo_two_work_items_work_item_id.work_item_id,
+      _demo_two_work_items_work_item_id.work_item_id,
+	demo_two_work_items.work_item_id`
+
+const demoTwoWorkItemTableWorkItemWorkItemsJoinSQL = `-- O2O join generated from "demo_two_work_items_work_item_id_fkey (inferred)"
+left join work_items as _demo_two_work_items_work_item_id on _demo_two_work_items_work_item_id.work_item_id = demo_two_work_items.work_item_id
+`
+
+const demoTwoWorkItemTableWorkItemWorkItemsSelectSQL = `(case when _demo_two_work_items_work_item_id.work_item_id is not null then row(_demo_two_work_items_work_item_id.*) end) as work_item_work_item_id`
+
+const demoTwoWorkItemTableWorkItemWorkItemsGroupBySQL = `_demo_two_work_items_work_item_id.work_item_id,
       _demo_two_work_items_work_item_id.work_item_id,
 	demo_two_work_items.work_item_id`
 
@@ -294,6 +307,12 @@ func DemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 		groupByClauses = append(groupByClauses, demoTwoWorkItemTableWorkItemGroupBySQL)
 	}
 
+	if c.joins.WorkItemWorkItems {
+		selectClauses = append(selectClauses, demoTwoWorkItemTableWorkItemWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, demoTwoWorkItemTableWorkItemWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, demoTwoWorkItemTableWorkItemWorkItemsGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -390,6 +409,12 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItem
 		selectClauses = append(selectClauses, demoTwoWorkItemTableWorkItemSelectSQL)
 		joinClauses = append(joinClauses, demoTwoWorkItemTableWorkItemJoinSQL)
 		groupByClauses = append(groupByClauses, demoTwoWorkItemTableWorkItemGroupBySQL)
+	}
+
+	if c.joins.WorkItemWorkItems {
+		selectClauses = append(selectClauses, demoTwoWorkItemTableWorkItemWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, demoTwoWorkItemTableWorkItemWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, demoTwoWorkItemTableWorkItemWorkItemsGroupBySQL)
 	}
 
 	selects := ""

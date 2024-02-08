@@ -466,7 +466,7 @@ func CacheDemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workI
 
 // CacheDemoTwoWorkItemByWorkItemID retrieves a row from 'cache.demo_two_work_items' as a CacheDemoTwoWorkItem.
 //
-// Generated from index 'cache_demo_two_work_items_work_item_id_pk'.
+// Generated from index 'demo_two_work_items_pkey'.
 func CacheDemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID CacheDemoTwoWorkItemID, opts ...CacheDemoTwoWorkItemSelectConfigOption) (*CacheDemoTwoWorkItem, error) {
 	c := &CacheDemoTwoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoTwoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 

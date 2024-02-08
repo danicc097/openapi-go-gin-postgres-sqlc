@@ -32,7 +32,8 @@ type DemoWorkItem struct {
 	LastMessageAt time.Time  `json:"lastMessageAt" db:"last_message_at" required:"true" nullable:"false"` // last_message_at
 	Reopened      bool       `json:"reopened" db:"reopened" required:"true" nullable:"false"`             // reopened
 
-	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
+	WorkItemJoin    *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
+	WorkItemJoinWII *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
 
 }
 
@@ -100,14 +101,16 @@ func WithDemoWorkItemOrderBy(rows ...DemoWorkItemOrderBy) DemoWorkItemSelectConf
 }
 
 type DemoWorkItemJoins struct {
-	WorkItem bool // O2O work_items
+	WorkItem          bool // O2O work_items
+	WorkItemWorkItems bool // O2O work_items
 }
 
 // WithDemoWorkItemJoin joins with the given tables.
 func WithDemoWorkItemJoin(joins DemoWorkItemJoins) DemoWorkItemSelectConfigOption {
 	return func(s *DemoWorkItemSelectConfig) {
 		s.joins = DemoWorkItemJoins{
-			WorkItem: s.joins.WorkItem || joins.WorkItem,
+			WorkItem:          s.joins.WorkItem || joins.WorkItem,
+			WorkItemWorkItems: s.joins.WorkItemWorkItems || joins.WorkItemWorkItems,
 		}
 	}
 }
@@ -148,6 +151,16 @@ left join work_items as _demo_work_items_work_item_id on _demo_work_items_work_i
 const demoWorkItemTableWorkItemSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id`
 
 const demoWorkItemTableWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
+      _demo_work_items_work_item_id.work_item_id,
+	demo_work_items.work_item_id`
+
+const demoWorkItemTableWorkItemWorkItemsJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)"
+left join work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id
+`
+
+const demoWorkItemTableWorkItemWorkItemsSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id`
+
+const demoWorkItemTableWorkItemWorkItemsGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
       _demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id`
 
@@ -318,6 +331,12 @@ func DemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID Wo
 		groupByClauses = append(groupByClauses, demoWorkItemTableWorkItemGroupBySQL)
 	}
 
+	if c.joins.WorkItemWorkItems {
+		selectClauses = append(selectClauses, demoWorkItemTableWorkItemWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, demoWorkItemTableWorkItemWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, demoWorkItemTableWorkItemWorkItemsGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -419,6 +438,12 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID,
 		groupByClauses = append(groupByClauses, demoWorkItemTableWorkItemGroupBySQL)
 	}
 
+	if c.joins.WorkItemWorkItems {
+		selectClauses = append(selectClauses, demoWorkItemTableWorkItemWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, demoWorkItemTableWorkItemWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, demoWorkItemTableWorkItemWorkItemsGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -514,6 +539,12 @@ func DemoWorkItemsByRefLine(ctx context.Context, db DB, ref string, line string,
 		selectClauses = append(selectClauses, demoWorkItemTableWorkItemSelectSQL)
 		joinClauses = append(joinClauses, demoWorkItemTableWorkItemJoinSQL)
 		groupByClauses = append(groupByClauses, demoWorkItemTableWorkItemGroupBySQL)
+	}
+
+	if c.joins.WorkItemWorkItems {
+		selectClauses = append(selectClauses, demoWorkItemTableWorkItemWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, demoWorkItemTableWorkItemWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, demoWorkItemTableWorkItemWorkItemsGroupBySQL)
 	}
 
 	selects := ""

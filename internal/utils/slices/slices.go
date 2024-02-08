@@ -38,6 +38,7 @@ func Filter[T any](ss []T, predicate func(item T, i int) bool) []T {
 	return out
 }
 
+// Deprecated: use https://pkg.go.dev/slices#ContainsFunc
 func ContainsMatch[T any](items []T, predicate func(item T) bool) bool {
 	for _, item := range items {
 		if predicate(item) {

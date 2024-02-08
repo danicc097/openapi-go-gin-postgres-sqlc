@@ -354,6 +354,12 @@ create table work_items (
 
 create index on work_items (team_id);
 
+comment on column work_items.work_item_id is '"cardinality":O2O';
+
+-- for finding all deleted work items exclusively
+create index on work_items (deleted_at)
+where (deleted_at is not null);
+
 -- project for tour. when starting it user joins the only demo team. when exiting it user is removed.
 -- we can reset it every X hours
 create table demo_work_items (
@@ -370,13 +376,6 @@ create table demo_two_work_items (
   work_item_id bigint primary key references work_items (work_item_id) on delete cascade
   , custom_date_for_project_2 timestamp with time zone
 );
-
--- FIXME xo cannot properly infer edge case when PK is FK
-comment on column work_items.work_item_id is '"cardinality":O2O';
-
--- for finding all deleted work items exclusively
-create index on work_items (deleted_at)
-where (deleted_at is not null);
 
 create table work_item_comments (
   work_item_comment_id bigserial primary key
