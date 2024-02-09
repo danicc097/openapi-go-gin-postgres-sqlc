@@ -209,7 +209,6 @@ export interface components {
       /** Format: date-time */
       customDateForProject2?: string | null;
       workItemID: number;
-      something?: string;
     };
     DbDemoTwoWorkItemCreateParams: {
       /** Format: date-time */

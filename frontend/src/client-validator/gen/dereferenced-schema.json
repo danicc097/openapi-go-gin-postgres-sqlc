@@ -109,8 +109,7 @@
             "title",
             "workItemTypeID"
           ],
-          "type": "object",
-          "x-is-generated": true
+          "type": "object"
         },
         "demoTwoProject": {
           "properties": {
@@ -121,8 +120,7 @@
               ]
             }
           },
-          "type": "object",
-          "x-is-generated": true
+          "type": "object"
         },
         "members": {
           "items": {
@@ -152,8 +150,7 @@
               "role",
               "userID"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": "array"
         },
@@ -231,8 +228,7 @@
             "title",
             "workItemTypeID"
           ],
-          "type": "object",
-          "x-is-generated": true
+          "type": "object"
         },
         "demoProject": {
           "properties": {
@@ -261,8 +257,7 @@
             "ref",
             "reopened"
           ],
-          "type": "object",
-          "x-is-generated": true
+          "type": "object"
         },
         "members": {
           "items": {
@@ -292,8 +287,7 @@
               "role",
               "userID"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": "array"
         },
@@ -348,8 +342,7 @@
               "description",
               "name"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": [
             "array",
@@ -372,8 +365,7 @@
               "description",
               "name"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": [
             "array",
@@ -493,16 +485,12 @@
         },
         "workItemID": {
           "type": "integer"
-        },
-        "something": {
-          "type": "string"
         }
       },
       "required": [
         "workItemID"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbDemoTwoWorkItemCreateParams": {
       "properties": {
@@ -513,8 +501,7 @@
           ]
         }
       },
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbDemoWorkItem": {
       "properties": {
@@ -578,8 +565,7 @@
         "ref",
         "reopened"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbKanbanStep": {
       "properties": {
@@ -693,8 +679,7 @@
         "sender",
         "notificationType"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbProject": {
       "properties": {
@@ -827,8 +812,7 @@
         "createdAt",
         "updatedAt"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbTeamCreateParams": {
       "properties": {
@@ -845,8 +829,7 @@
         "description",
         "name"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbTimeEntry": {
       "properties": {
@@ -1159,8 +1142,7 @@
         "user",
         "role"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbWorkItem": {
       "properties": {
@@ -1327,8 +1309,7 @@
         "title",
         "workItemTypeID"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbWorkItemTag": {
       "properties": {
@@ -1390,8 +1371,7 @@
         "description",
         "name"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbWorkItemType": {
       "properties": {
@@ -1456,16 +1436,12 @@
             },
             "workItemID": {
               "type": "integer"
-            },
-            "something": {
-              "type": "string"
             }
           },
           "required": [
             "workItemID"
           ],
-          "type": "object",
-          "x-is-generated": true
+          "type": "object"
         },
         "description": {
           "type": "string",
@@ -1589,8 +1565,7 @@
               "user",
               "role"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": [
             "array",
@@ -2019,8 +1994,7 @@
               "user",
               "role"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": [
             "array",
@@ -2345,8 +2319,7 @@
             "sender",
             "notificationType"
           ],
-          "type": "object",
-          "x-is-generated": true
+          "type": "object"
         },
         "notificationID": {
           "type": "integer"
@@ -2455,8 +2428,7 @@
                   "sender",
                   "notificationType"
                 ],
-                "type": "object",
-                "x-is-generated": true
+                "type": "object"
               },
               "notificationID": {
                 "type": "integer"
@@ -2768,8 +2740,7 @@
                     "createdAt",
                     "updatedAt"
                   ],
-                  "type": "object",
-                  "x-is-generated": true
+                  "type": "object"
                 },
                 "type": [
                   "array",
@@ -2885,8 +2856,7 @@
         "role",
         "userID"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "SharedWorkItemJoins": {
       "properties": {
@@ -3005,8 +2975,7 @@
               "user",
               "role"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": [
             "array",
@@ -3592,8 +3561,7 @@
               "createdAt",
               "updatedAt"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": [
             "array",
@@ -4329,8 +4297,7 @@
                 "title",
                 "workItemTypeID"
               ],
-              "type": "object",
-              "x-is-generated": true
+              "type": "object"
             },
             "demoProject": {
               "properties": {
@@ -4359,8 +4326,7 @@
                 "ref",
                 "reopened"
               ],
-              "type": "object",
-              "x-is-generated": true
+              "type": "object"
             },
             "members": {
               "items": {
@@ -4390,8 +4356,7 @@
                   "role",
                   "userID"
                 ],
-                "type": "object",
-                "x-is-generated": true
+                "type": "object"
               },
               "type": "array"
             },
@@ -4469,8 +4434,7 @@
                 "title",
                 "workItemTypeID"
               ],
-              "type": "object",
-              "x-is-generated": true
+              "type": "object"
             },
             "demoTwoProject": {
               "properties": {
@@ -4481,8 +4445,7 @@
                   ]
                 }
               },
-              "type": "object",
-              "x-is-generated": true
+              "type": "object"
             },
             "members": {
               "items": {
@@ -4512,8 +4475,7 @@
                   "role",
                   "userID"
                 ],
-                "type": "object",
-                "x-is-generated": true
+                "type": "object"
               },
               "type": "array"
             },
@@ -4771,8 +4733,7 @@
             "title",
             "workItemTypeID"
           ],
-          "type": "object",
-          "x-is-generated": true
+          "type": "object"
         },
         "demoTwoProject": {
           "properties": {
@@ -4783,8 +4744,7 @@
               ]
             }
           },
-          "type": "object",
-          "x-is-generated": true
+          "type": "object"
         },
         "members": {
           "items": {
@@ -4814,8 +4774,7 @@
               "role",
               "userID"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": "array"
         },
@@ -4893,8 +4852,7 @@
             "title",
             "workItemTypeID"
           ],
-          "type": "object",
-          "x-is-generated": true
+          "type": "object"
         },
         "demoProject": {
           "properties": {
@@ -4923,8 +4881,7 @@
             "ref",
             "reopened"
           ],
-          "type": "object",
-          "x-is-generated": true
+          "type": "object"
         },
         "members": {
           "items": {
@@ -4954,8 +4911,7 @@
               "role",
               "userID"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": "array"
         },
@@ -5010,8 +4966,7 @@
               "description",
               "name"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": [
             "array",
@@ -5034,8 +4989,7 @@
               "description",
               "name"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": [
             "array",
@@ -5155,16 +5109,12 @@
         },
         "workItemID": {
           "type": "integer"
-        },
-        "something": {
-          "type": "string"
         }
       },
       "required": [
         "workItemID"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbDemoTwoWorkItemCreateParams": {
       "properties": {
@@ -5175,8 +5125,7 @@
           ]
         }
       },
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbDemoWorkItem": {
       "properties": {
@@ -5240,8 +5189,7 @@
         "ref",
         "reopened"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbKanbanStep": {
       "properties": {
@@ -5355,8 +5303,7 @@
         "sender",
         "notificationType"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbProject": {
       "properties": {
@@ -5489,8 +5436,7 @@
         "createdAt",
         "updatedAt"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbTeamCreateParams": {
       "properties": {
@@ -5507,8 +5453,7 @@
         "description",
         "name"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbTimeEntry": {
       "properties": {
@@ -5821,8 +5766,7 @@
         "user",
         "role"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbWorkItem": {
       "properties": {
@@ -5989,8 +5933,7 @@
         "title",
         "workItemTypeID"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbWorkItemTag": {
       "properties": {
@@ -6052,8 +5995,7 @@
         "description",
         "name"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "DbWorkItemType": {
       "properties": {
@@ -6118,16 +6060,12 @@
             },
             "workItemID": {
               "type": "integer"
-            },
-            "something": {
-              "type": "string"
             }
           },
           "required": [
             "workItemID"
           ],
-          "type": "object",
-          "x-is-generated": true
+          "type": "object"
         },
         "description": {
           "type": "string",
@@ -6251,8 +6189,7 @@
               "user",
               "role"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": [
             "array",
@@ -6681,8 +6618,7 @@
               "user",
               "role"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": [
             "array",
@@ -7007,8 +6943,7 @@
             "sender",
             "notificationType"
           ],
-          "type": "object",
-          "x-is-generated": true
+          "type": "object"
         },
         "notificationID": {
           "type": "integer"
@@ -7117,8 +7052,7 @@
                   "sender",
                   "notificationType"
                 ],
-                "type": "object",
-                "x-is-generated": true
+                "type": "object"
               },
               "notificationID": {
                 "type": "integer"
@@ -7430,8 +7364,7 @@
                     "createdAt",
                     "updatedAt"
                   ],
-                  "type": "object",
-                  "x-is-generated": true
+                  "type": "object"
                 },
                 "type": [
                   "array",
@@ -7547,8 +7480,7 @@
         "role",
         "userID"
       ],
-      "type": "object",
-      "x-is-generated": true
+      "type": "object"
     },
     "SharedWorkItemJoins": {
       "properties": {
@@ -7667,8 +7599,7 @@
               "user",
               "role"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": [
             "array",
@@ -8254,8 +8185,7 @@
               "createdAt",
               "updatedAt"
             ],
-            "type": "object",
-            "x-is-generated": true
+            "type": "object"
           },
           "type": [
             "array",
@@ -8991,8 +8921,7 @@
                 "title",
                 "workItemTypeID"
               ],
-              "type": "object",
-              "x-is-generated": true
+              "type": "object"
             },
             "demoProject": {
               "properties": {
@@ -9021,8 +8950,7 @@
                 "ref",
                 "reopened"
               ],
-              "type": "object",
-              "x-is-generated": true
+              "type": "object"
             },
             "members": {
               "items": {
@@ -9052,8 +8980,7 @@
                   "role",
                   "userID"
                 ],
-                "type": "object",
-                "x-is-generated": true
+                "type": "object"
               },
               "type": "array"
             },
@@ -9131,8 +9058,7 @@
                 "title",
                 "workItemTypeID"
               ],
-              "type": "object",
-              "x-is-generated": true
+              "type": "object"
             },
             "demoTwoProject": {
               "properties": {
@@ -9143,8 +9069,7 @@
                   ]
                 }
               },
-              "type": "object",
-              "x-is-generated": true
+              "type": "object"
             },
             "members": {
               "items": {
@@ -9174,8 +9099,7 @@
                   "role",
                   "userID"
                 ],
-                "type": "object",
-                "x-is-generated": true
+                "type": "object"
               },
               "type": "array"
             },

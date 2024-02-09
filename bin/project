@@ -2391,48 +2391,17 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
 $(join_by $'\n' "${clashes[@]}")"
   fi
 
-  # workaround for https://github.com/mikefarah/yq/discussions/1934
-  # have to delete absolutely all schemas before merging
-  local del_cmd=""
-  local all_schemas=("${struct_names[@]}" "${rest_structs[@]}")
-  for schema in ${all_schemas[@]}; do
-    del_cmd+="del(.components.schemas.$schema) |"
-  done
-
-  # must rename these from gen_schema_spec_path to trim Rest prefix
-  # and also append
-  # \"x-gen-struct\": \"Rest$rest_struct\",
-  # \"x-is-generated\": true
-  # yq e '.components.schemas.* | key | select(test("^Rest"))' openapi.yaml
-  # there is no way to delete, so we should concat `.components.schemas.$key = .components.schemas.Rest$key | del(.components.schemas.Rest$key) |`
-  # however gen_schema generates indirect with Rest<...> (should check again if intercept schema is ignored for indirect gen) so perhaps simplest way is to do sed replacing Rest<Uppercase A-Z>[A-Za-z0-9_-]
-
-  yq eval-all "${del_cmd%"|"}" -i "$SPEC_PATH"
-
-  local rest_schemas_without_prefix=""
-  for rest_struct in ${rest_structs[@]}; do
-    rest_schemas_without_prefix+="\"$rest_struct\": {
-      \"\$ref\": \"#/components/schemas/Rest$rest_struct\"
-    },"
-  done
-
-  # swaggest cannot generate 2 schemas for a single struct
-  # += does not work with entries, while *n will recursively merge new fields...
-  # yq eval-all ".components.schemas += {
-  #   ${rest_schemas_without_prefix%,}
-  # }" -i "$gen_schema_spec_path"
-
-  yq e '(.components.schemas.* | key) line_comment="Generated schema. DO NOT EDIT."' -i $gen_schema_spec_path
-
   # only keep schemas not outputted by gen. User should have been warned on clashes.
+  # NOTE: must use shallow merge to replace every single schema, else indirect generations are out of date.
   yq eval-all "(
         select(fi == 0).components.schemas
         ) as \$schemas
         | (
           select(fi == 1).components.schemas
         ) as \$generated_schemas
+        | (\$generated_schemas.* | key) line_comment=\"Generated schema. DO NOT EDIT.\"
         | select(fi == 0)
-        | .components.schemas = \$generated_schemas *n \$schemas
+        | .components.schemas += \$generated_schemas
         " "$SPEC_PATH" "$gen_schema_spec_path" | sponge "$SPEC_PATH"
 }
 

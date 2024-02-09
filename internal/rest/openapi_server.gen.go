@@ -369,7 +369,6 @@ type DbActivityCreateParams struct {
 // DbDemoTwoWorkItem defines the model for DbDemoTwoWorkItem.
 type DbDemoTwoWorkItem struct {
 	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
-	Something             *string    `json:"something,omitempty"`
 	WorkItemID            int        `json:"workItemID"`
 }
 

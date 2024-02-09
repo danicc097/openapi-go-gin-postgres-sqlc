@@ -1339,12 +1339,9 @@ components:
           type: string
         workItemID:
           type: integer
-        something:
-          type: string
       required:
         - workItemID
       type: object
-      x-is-generated: true
     DbDemoTwoWorkItemCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         customDateForProject2:
@@ -1352,7 +1349,6 @@ components:
           nullable: true
           type: string
       type: object
-      x-is-generated: true
     DbDemoWorkItem: # Generated schema. DO NOT EDIT.
       properties:
         lastMessageAt:
@@ -1394,7 +1390,6 @@ components:
         - ref
         - reopened
       type: object
-      x-is-generated: true
     DbKanbanStep: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -1456,7 +1451,6 @@ components:
         - sender
         - notificationType
       type: object
-      x-is-generated: true
     DbProject: # Generated schema. DO NOT EDIT.
       properties:
         boardConfig:
@@ -1507,7 +1501,6 @@ components:
         - createdAt
         - updatedAt
       type: object
-      x-is-generated: true
     DbTeamCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         description:
@@ -1518,7 +1511,6 @@ components:
         - description
         - name
       type: object
-      x-is-generated: true
     DbTimeEntry: # Generated schema. DO NOT EDIT.
       properties:
         activityID:
@@ -1626,7 +1618,6 @@ components:
         - user
         - role
       type: object
-      x-is-generated: true
     DbWorkItem: # Generated schema. DO NOT EDIT.
       properties:
         closedAt:
@@ -1732,7 +1723,6 @@ components:
         - title
         - workItemTypeID
       type: object
-      x-is-generated: true
     DbWorkItemTag: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -1773,7 +1763,6 @@ components:
         - description
         - name
       type: object
-      x-is-generated: true
     DbWorkItemType: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -2021,7 +2010,6 @@ components:
         - role
         - userID
       type: object
-      x-is-generated: true
     SharedWorkItemJoins: # Generated schema. DO NOT EDIT.
       properties:
         members:
@@ -2400,7 +2388,7 @@ components:
         # - WorkItemMoved
         # - WorkItemClosed
         - GlobalAlerts
-    Scope:
+    Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string
       enum: ["project-member", "users:read", "users:write", "users:delete", "scopes:write", "team-settings:write", "project-settings:write", "activity:create", "activity:edit", "activity:delete", "work-item-tag:create", "work-item-tag:edit", "work-item-tag:delete", "work-item:review", "work-item-comment:create", "work-item-comment:edit", "work-item-comment:delete"]
       x-is-generated: true
@@ -2409,12 +2397,12 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Scope'
-    Role:
+    Role: # Generated from roles.json keys. DO NOT EDIT.
       type: string
       enum: ["guest", "user", "advancedUser", "manager", "admin", "superAdmin"]
       x-is-generated: true
       description: is generated from roles.json keys.
-    WorkItemRole:
+    WorkItemRole: # Generated from database enum 'work_item_role'. DO NOT EDIT.
       title: WorkItem role
       type: string
       x-is-generated: true
@@ -2497,7 +2485,7 @@ components:
         mapping:
           demo: '#/components/schemas/CreateDemoWorkItemRequest'
           demo_two: '#/components/schemas/CreateDemoTwoWorkItemRequest'
-    Project:
+    Project: # Generated from projects table. DO NOT EDIT.
       enum: ["demo", "demo_two"]
       type: string
       x-is-generated: true
@@ -2519,17 +2507,17 @@ components:
       type: object
     DbWorkItemRole:
       type: string
-    NotificationType:
+    NotificationType: # Generated from database enum 'notification_type'. DO NOT EDIT.
       description: is generated from database enum 'notification_type'.
       type: string
       x-is-generated: true
       enum: ["personal", "global"]
-    DemoTwoWorkItemTypes:
+    DemoTwoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
       type: string
       enum: ["Type 1", "Type 2", "Another type"]
       x-is-generated: true
       description: is generated from work_item_types table.
-    DemoWorkItemTypes:
+    DemoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
       type: string
       enum: ["Type 1"]
       x-is-generated: true
@@ -2554,12 +2542,12 @@ components:
         - read
         - userID
       type: object
-    DemoKanbanSteps:
+    DemoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
       type: string
       enum: ["Disabled", "Received", "Under review", "Work in progress"]
       x-is-generated: true
       description: is generated from kanban_steps table.
-    DemoTwoKanbanSteps:
+    DemoTwoKanbanSteps: # Generated from kanban_steps table. DO NOT EDIT.
       type: string
       enum: ["Received"]
       x-is-generated: true

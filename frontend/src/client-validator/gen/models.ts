@@ -195,7 +195,6 @@ export interface CreateWorkItemTypeRequest {
 export interface DbDemoTwoWorkItem {
   customDateForProject2?: string | null
   workItemID: number
-  something?: string
 }
 export interface DbDemoWorkItem {
   lastMessageAt: string
