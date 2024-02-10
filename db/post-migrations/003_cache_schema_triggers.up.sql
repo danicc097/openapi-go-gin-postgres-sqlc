@@ -45,9 +45,9 @@ begin
   -- execute 'CREATE SCHEMA IF NOT EXISTS cache;';
   execute FORMAT('CREATE TABLE IF NOT EXISTS cache__%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type ||
     ',' || foreign_key_constraints_text);
-  -- execute FORMAT('comment on column cache__%I.work_item_id is ''"type":WorkItemID && "properties":ignore-constraints''' , project_name);
-  execute FORMAT('comment on column cache__%I.work_item_id is ''"properties":ignore-constraints''' , project_name);
-
+  -- execute FORMAT('comment on column cache__%I.work_item_id is ''"type":WorkItemID && "properties":refs-ignore''' , project_name);
+  execute FORMAT('comment on column cache__%I.work_item_id is ''"properties":refs-ignore,share-ref-constraints''' , project_name);
+  -- TODO: xo will duplicate M2M and M2O constraints in constraints slice for the referenced column if share-ref-constraints set``
 end;
 $$
 language plpgsql;

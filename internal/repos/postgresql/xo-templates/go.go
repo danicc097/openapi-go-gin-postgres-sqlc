@@ -55,8 +55,11 @@ const (
 	tagsAnnot annotation = `"tags"`
 
 	propertiesJoinOperator = ","
-	// propertyIgnoreConstraints generates a field as if it had no FK or PK constraints.
-	propertyIgnoreConstraints = "ignore-constraints"
+	// propertyRefsIgnore generates a field whose constraints are ignored by referenced table,
+	// ie no joins will be generated.
+	propertyRefsIgnore = "refs-ignore"
+	// target column will generate the same M2O and M2M join fields the ref column has
+	propertyShareRefConstraints = "share-ref-constraints"
 	// propertyJSONPrivate sets a json:"-" tag.
 	propertyJSONPrivate = "private"
 	// propertyOpenAPINotRequired marks schema field as not required
@@ -1240,7 +1243,8 @@ cc_label:
 			}
 
 			properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
-			ignoreConstraints := contains(properties, propertyIgnoreConstraints)
+
+			ignoreConstraints := contains(properties, propertyRefsIgnore)
 			if ignoreConstraints {
 				continue
 			}
@@ -3415,6 +3419,52 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
 		} else if c.RefTableName == table {
 			f.tableConstraints[table] = append(f.tableConstraints[table], c)
+		}
+
+		annotations, err := parseAnnotations(c.ColumnComment)
+		if err != nil {
+			panic(fmt.Sprintf("parseAnnotations: %v", err))
+		}
+
+		properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
+
+		shareRefConstraints := contains(properties, propertyShareRefConstraints)
+		if shareRefConstraints {
+			// TODO: f.loadConstraints(constraints, refTableName)
+			// this will load constraints for work_items.work_item_id when creating constraints for cache__demo_work_items.work_item_id
+			// then we will just append these to f.tableConstraints[table] but changing
+			// column and table to cache__demo_work_items and work_item_id instead.
+		}
+	}
+
+	if table == "cache__demo_work_items" {
+		fmt.Printf("f.tableConstraints[table]: %+v\n", f.tableConstraints[table])
+	}
+
+	for _, currentConstraint := range cc {
+		annotations, err := parseAnnotations(currentConstraint.ColumnComment)
+		if err != nil {
+			panic(fmt.Sprintf("parseAnnotations: %v", err))
+		}
+
+		properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
+
+		shareRefConstraints := contains(properties, propertyShareRefConstraints)
+		if shareRefConstraints {
+			for _, c := range cc {
+				// TODO: duplicate constraints where ref table name and column from currentConstraint match,
+				// with table and column being currentConstraint's instead
+				if c.RefColumnName == currentConstraint.RefColumnName && c.RefTableName == currentConstraint.RefTableName {
+					// or lookupcolumn
+					// fmt.Printf("should duplicate c for (%s.%s): %+v\n", currentConstraint.TableName, currentConstraint.ColumnName, c)
+					// fmt.Printf("currentConstraint: %+v\n", currentConstraint)
+					newc := c
+					newc.RefTableName = currentConstraint.TableName
+					newc.RefColumnName = currentConstraint.ColumnName
+					// TODO:
+					// f.tableConstraints[table] = append(f.tableConstraints[table], newc)
+				}
+			}
 		}
 	}
 }

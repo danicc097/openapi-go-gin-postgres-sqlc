@@ -174,7 +174,7 @@ create table if not exists xo_tests_cache.demo_work_items (
   , foreign key (work_item_id) references xo_tests.work_items (work_item_id) on delete cascade
 );
 
-comment on column xo_tests_cache.demo_work_items.work_item_id is '"type":XoTestsWorkItemID && "properties":ignore-constraints';
+comment on column xo_tests_cache.demo_work_items.work_item_id is '"type":XoTestsWorkItemID && "properties":refs-ignore';
 
 do $BODY$
 declare
