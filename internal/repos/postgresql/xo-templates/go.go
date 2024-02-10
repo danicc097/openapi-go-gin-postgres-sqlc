@@ -2114,7 +2114,7 @@ func (f *Funcs) initial_opts(v any) string {
 func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constraint, t Table, tables Tables) string {
 	if len(constraints) > 0 {
 		// always run
-		f.loadConstraints(constraints, sqlname)
+		f.loadConstraints(constraints, sqlname, true)
 	}
 
 	// -- emit ORDER BY opts
@@ -2746,7 +2746,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 func (f *Funcs) initialize_constraints(t Table, constraints []Constraint) bool {
 	if _, ok := f.tableConstraints[t.SQLName]; !ok {
 		if len(constraints) > 0 {
-			f.loadConstraints(constraints, t.SQLName)
+			f.loadConstraints(constraints, t.SQLName, true)
 		}
 	}
 
@@ -3395,7 +3395,7 @@ func (f *Funcs) sqlstr_index(v any, tables Tables) string {
 }
 
 // loadConstraints saves possible joins for a table based on constraints to tableConstraints
-func (f *Funcs) loadConstraints(cc []Constraint, table string) {
+func (f *Funcs) loadConstraints(cc []Constraint, table string, recursive bool) {
 	if _, ok := f.tableConstraints[table]; ok {
 		// fmt.Printf("Constraints for %s:\n%v\n", table, formatJSON(f.tableConstraints[table]))
 		return // don't duplicate
@@ -3429,7 +3429,10 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 		properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
 
 		shareRefConstraints := contains(properties, propertyShareRefConstraints)
-		if shareRefConstraints {
+		if shareRefConstraints && recursive {
+			// f.loadConstraints(cc, c.TableName, false)
+			// refConstraints, _ := f.tableConstraints[c.TableName]
+			// fmt.Printf("refConstraints for %s.%s: %+v\n", c.TableName, c.ColumnName, refConstraints)
 			// TODO: f.loadConstraints(constraints, refTableName)
 			// this will load constraints for work_items.work_item_id when creating constraints for cache__demo_work_items.work_item_id
 			// then we will just append these to f.tableConstraints[table] but changing
@@ -3438,7 +3441,21 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 	}
 
 	if table == "cache__demo_work_items" {
-		fmt.Printf("f.tableConstraints[table]: %+v\n", f.tableConstraints[table])
+		f.loadConstraints(cc, "work_items", false)
+		refConstraints, _ := f.tableConstraints["work_items"]
+		newRefConstraints := make([]Constraint, len(refConstraints))
+		copy(newRefConstraints, refConstraints)
+		fmt.Printf("refConstraints for %s.%s: %+v\n", "work_items", "work_item_id", refConstraints)
+		for i, c := range refConstraints {
+			i := i
+			newr := c
+			if newr.Cardinality == M2O {
+				newr.RefTableName = c.TableName
+				newr.RefColumnName = c.ColumnName
+			}
+			newRefConstraints[i] = newr
+		}
+		f.tableConstraints[table] = append(f.tableConstraints[table], newRefConstraints...)
 	}
 
 	for _, currentConstraint := range cc {
@@ -3461,7 +3478,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 					newc := c
 					newc.RefTableName = currentConstraint.TableName
 					newc.RefColumnName = currentConstraint.ColumnName
-					// TODO:
+					// TODO: see above
 					// f.tableConstraints[table] = append(f.tableConstraints[table], newc)
 				}
 			}
@@ -4152,7 +4169,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 	// }
 
 	if len(constraints) > 0 {
-		f.loadConstraints(constraints, t.SQLName)
+		f.loadConstraints(constraints, t.SQLName, true)
 	}
 	cc, ok := f.tableConstraints[t.SQLName]
 	if !ok {
