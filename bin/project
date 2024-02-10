@@ -707,7 +707,7 @@ x.gen.xo() {
       --schema cache ||
       err "Failed xo cache schema generation" &
 
-    wait
+    wait_without_error
 
     files=$(find "$PG_REPO_GEN/db" \
       -name "*.go")

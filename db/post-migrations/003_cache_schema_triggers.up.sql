@@ -3,14 +3,33 @@ create or replace function create_work_item_cache_table (project_name text)
   as $$
 declare
   project_table_col_and_type text;
+  foreign_key_constraints_text text;
   work_items_col_and_type text;
   constraint_exists boolean;
 begin
   select
-    STRING_AGG(column_name || ' ' || data_type || ' ' || case when is_nullable = 'YES' then
-        ' NULL'
+    STRING_AGG(constraint_definition , ', ')
+  from (
+    select
+      --conname as constraint_name
+      --, conrelid::regclass as table_name
+      PG_GET_CONSTRAINTDEF(c.oid) as constraint_definition
+    from
+      pg_constraint c
+    where (conrelid = 'public.demo_work_items'::regclass
+      or conrelid = 'public.work_items'::regclass)
+    and contype = 'f') into foreign_key_constraints_text;
+
+  select
+    STRING_AGG(
+      case when column_name != 'work_item_id' then
+        column_name || ' ' || data_type || ' ' || case when is_nullable = 'YES' then
+          ' NULL'
+        else
+          ' NOT NULL'
+        end
       else
-        ' NOT NULL'
+        'work_item_id bigint primary key'
       end , ', ')
   from
     information_schema.columns
@@ -23,42 +42,12 @@ begin
 	  '' NULL'' ELSE '' NOT NULL'' END, '', '')
         FROM information_schema.columns
         WHERE table_name = ''%I'' AND table_schema = ''public'' AND column_name != ''work_item_id''' , project_name) into project_table_col_and_type;
-  -- Dynamically create the cache.demo_work_items table
-  execute 'CREATE SCHEMA IF NOT EXISTS cache;';
-  execute FORMAT('CREATE TABLE IF NOT EXISTS cache.%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type);
-  execute FORMAT('comment on column cache.%I.work_item_id is ''"type":WorkItemID && "properties":ignore-constraints''' , project_name);
-  -- constraints
-  select
-    exists (
-      select
-        1
-      from
-        information_schema.table_constraints
-      where
-        constraint_name = 'fk_cache_' || project_name || '_work_item_id'
-        and table_schema = 'cache'
-        and table_name = project_name) into constraint_exists;
-  if not constraint_exists then
-    execute FORMAT('ALTER TABLE cache.%I ADD CONSTRAINT fk_cache_%s_work_item_id
-    FOREIGN KEY (work_item_id) REFERENCES public.work_items (work_item_id) ON DELETE CASCADE' , project_name , project_name);
-  end if;
-  select
-    exists (
-      select
-        1
-      from
-        information_schema.table_constraints
-      where
-        constraint_name = 'cache_' || project_name || '_work_item_id_unique'
-        and table_schema = 'cache'
-        and table_name = project_name) into constraint_exists;
-  if not constraint_exists then
-    execute FORMAT('ALTER TABLE cache.%I ADD CONSTRAINT cache_%s_work_item_id_unique
-    UNIQUE (work_item_id)' , project_name , project_name);
-  end if;
-  -- IMPORTANT: we will use extra cache table columns so logic to add/modify cols will be messy.
-  -- altering existing types would have to be done manually either way.
-  -- better do these steps manually since its just a duplicate statement, ie when doing migrations (triggers will fail on migration if not synced so there's no risk of out of date cache schema).
+  -- execute 'CREATE SCHEMA IF NOT EXISTS cache;';
+  execute FORMAT('CREATE TABLE IF NOT EXISTS cache__%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type ||
+    ',' || foreign_key_constraints_text);
+  -- execute FORMAT('comment on column cache__%I.work_item_id is ''"type":WorkItemID && "properties":ignore-constraints''' , project_name);
+  execute FORMAT('comment on column cache__%I.work_item_id is ''"properties":ignore-constraints''' , project_name);
+
 end;
 $$
 language plpgsql;
@@ -122,7 +111,7 @@ select
   , conflict_update_columns;
 
   execute FORMAT( '
-insert into cache.%I
+insert into cache__%I
   (%s)
   select
     %s

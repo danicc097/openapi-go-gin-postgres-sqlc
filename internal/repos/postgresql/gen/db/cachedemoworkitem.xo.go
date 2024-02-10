@@ -4,16 +4,19 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/jackc/pgconn"
+	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 )
 
-// CacheDemoWorkItem represents a row from 'cache.demo_work_items'.
+// CacheDemoWorkItem represents a row from 'public.cache__demo_work_items'.
 // Change properties via SQL column comments, joined with " && ":
 //   - "properties":<p1>,<p2>,...
 //     -- private to exclude a field from JSON.
@@ -23,22 +26,65 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type CacheDemoWorkItem struct {
-	Ref            string         `json:"ref" db:"ref" required:"true" nullable:"false"`                                                         // ref
-	Line           string         `json:"line" db:"line" required:"true" nullable:"false"`                                                       // line
-	LastMessageAt  time.Time      `json:"lastMessageAt" db:"last_message_at" required:"true" nullable:"false"`                                   // last_message_at
-	Reopened       bool           `json:"reopened" db:"reopened" required:"true" nullable:"false"`                                               // reopened
-	WorkItemID     WorkItemID     `json:"workItemID" db:"work_item_id" required:"true" nullable:"false" ref:"#/components/schemas/DbWorkItemID"` // work_item_id
-	Title          string         `json:"title" db:"title" required:"true" nullable:"false"`                                                     // title
-	Description    string         `json:"description" db:"description" required:"true" nullable:"false"`                                         // description
-	WorkItemTypeID int            `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"`                                // work_item_type_id
-	Metadata       map[string]any `json:"metadata" db:"metadata" required:"true" nullable:"false"`                                               // metadata
-	TeamID         int            `json:"teamID" db:"team_id" required:"true" nullable:"false"`                                                  // team_id
-	KanbanStepID   int            `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`                                     // kanban_step_id
-	ClosedAt       *time.Time     `json:"closedAt" db:"closed_at"`                                                                               // closed_at
-	TargetDate     time.Time      `json:"targetDate" db:"target_date" required:"true" nullable:"false"`                                          // target_date
-	CreatedAt      time.Time      `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                            // created_at
-	UpdatedAt      time.Time      `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                                            // updated_at
-	DeletedAt      *time.Time     `json:"deletedAt" db:"deleted_at"`                                                                             // deleted_at
+	Ref            string         `json:"ref" db:"ref" required:"true" nullable:"false"`                          // ref
+	Line           string         `json:"line" db:"line" required:"true" nullable:"false"`                        // line
+	LastMessageAt  time.Time      `json:"lastMessageAt" db:"last_message_at" required:"true" nullable:"false"`    // last_message_at
+	Reopened       bool           `json:"reopened" db:"reopened" required:"true" nullable:"false"`                // reopened
+	WorkItemID     WorkItemID     `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`          // work_item_id
+	Title          string         `json:"title" db:"title" required:"true" nullable:"false"`                      // title
+	Description    string         `json:"description" db:"description" required:"true" nullable:"false"`          // description
+	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" db:"work_item_type_id" required:"true" nullable:"false"` // work_item_type_id
+	Metadata       map[string]any `json:"metadata" db:"metadata" required:"true" nullable:"false"`                // metadata
+	TeamID         TeamID         `json:"teamID" db:"team_id" required:"true" nullable:"false"`                   // team_id
+	KanbanStepID   KanbanStepID   `json:"kanbanStepID" db:"kanban_step_id" required:"true" nullable:"false"`      // kanban_step_id
+	ClosedAt       *time.Time     `json:"closedAt" db:"closed_at"`                                                // closed_at
+	TargetDate     time.Time      `json:"targetDate" db:"target_date" required:"true" nullable:"false"`           // target_date
+	CreatedAt      time.Time      `json:"createdAt" db:"created_at" required:"true" nullable:"false"`             // created_at
+	UpdatedAt      time.Time      `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`             // updated_at
+	DeletedAt      *time.Time     `json:"deletedAt" db:"deleted_at"`                                              // deleted_at
+
+	KanbanStepJoin   *KanbanStep   `json:"-" db:"kanban_step_kanban_step_id" openapi-go:"ignore"`       // O2O kanban_steps (inferred)
+	TeamJoin         *Team         `json:"-" db:"team_team_id" openapi-go:"ignore"`                     // O2O teams (inferred)
+	WorkItemTypeJoin *WorkItemType `json:"-" db:"work_item_type_work_item_type_id" openapi-go:"ignore"` // O2O work_item_types (inferred)
+
+}
+
+// CacheDemoWorkItemCreateParams represents insert params for 'public.cache__demo_work_items'.
+type CacheDemoWorkItemCreateParams struct {
+	ClosedAt       *time.Time     `json:"closedAt"`                                        // closed_at
+	Description    string         `json:"description" required:"true" nullable:"false"`    // description
+	KanbanStepID   KanbanStepID   `json:"kanbanStepID" required:"true" nullable:"false"`   // kanban_step_id
+	LastMessageAt  time.Time      `json:"lastMessageAt" required:"true" nullable:"false"`  // last_message_at
+	Line           string         `json:"line" required:"true" nullable:"false"`           // line
+	Metadata       map[string]any `json:"metadata" required:"true" nullable:"false"`       // metadata
+	Ref            string         `json:"ref" required:"true" nullable:"false"`            // ref
+	Reopened       bool           `json:"reopened" required:"true" nullable:"false"`       // reopened
+	TargetDate     time.Time      `json:"targetDate" required:"true" nullable:"false"`     // target_date
+	TeamID         TeamID         `json:"teamID" required:"true" nullable:"false"`         // team_id
+	Title          string         `json:"title" required:"true" nullable:"false"`          // title
+	WorkItemID     WorkItemID     `json:"-" required:"true" nullable:"false"`              // work_item_id
+	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" required:"true" nullable:"false"` // work_item_type_id
+}
+
+// CreateCacheDemoWorkItem creates a new CacheDemoWorkItem in the database with the given params.
+func CreateCacheDemoWorkItem(ctx context.Context, db DB, params *CacheDemoWorkItemCreateParams) (*CacheDemoWorkItem, error) {
+	cdwi := &CacheDemoWorkItem{
+		ClosedAt:       params.ClosedAt,
+		Description:    params.Description,
+		KanbanStepID:   params.KanbanStepID,
+		LastMessageAt:  params.LastMessageAt,
+		Line:           params.Line,
+		Metadata:       params.Metadata,
+		Ref:            params.Ref,
+		Reopened:       params.Reopened,
+		TargetDate:     params.TargetDate,
+		TeamID:         params.TeamID,
+		Title:          params.Title,
+		WorkItemID:     params.WorkItemID,
+		WorkItemTypeID: params.WorkItemTypeID,
+	}
+
+	return cdwi.Insert(ctx, db)
 }
 
 type CacheDemoWorkItemSelectConfig struct {
@@ -71,30 +117,30 @@ func WithDeletedCacheDemoWorkItemOnly() CacheDemoWorkItemSelectConfigOption {
 type CacheDemoWorkItemOrderBy string
 
 const (
-	CacheDemoWorkItemLastMessageAtDescNullsFirst CacheDemoWorkItemOrderBy = " last_message_at DESC NULLS FIRST "
-	CacheDemoWorkItemLastMessageAtDescNullsLast  CacheDemoWorkItemOrderBy = " last_message_at DESC NULLS LAST "
-	CacheDemoWorkItemLastMessageAtAscNullsFirst  CacheDemoWorkItemOrderBy = " last_message_at ASC NULLS FIRST "
-	CacheDemoWorkItemLastMessageAtAscNullsLast   CacheDemoWorkItemOrderBy = " last_message_at ASC NULLS LAST "
 	CacheDemoWorkItemClosedAtDescNullsFirst      CacheDemoWorkItemOrderBy = " closed_at DESC NULLS FIRST "
 	CacheDemoWorkItemClosedAtDescNullsLast       CacheDemoWorkItemOrderBy = " closed_at DESC NULLS LAST "
 	CacheDemoWorkItemClosedAtAscNullsFirst       CacheDemoWorkItemOrderBy = " closed_at ASC NULLS FIRST "
 	CacheDemoWorkItemClosedAtAscNullsLast        CacheDemoWorkItemOrderBy = " closed_at ASC NULLS LAST "
-	CacheDemoWorkItemTargetDateDescNullsFirst    CacheDemoWorkItemOrderBy = " target_date DESC NULLS FIRST "
-	CacheDemoWorkItemTargetDateDescNullsLast     CacheDemoWorkItemOrderBy = " target_date DESC NULLS LAST "
-	CacheDemoWorkItemTargetDateAscNullsFirst     CacheDemoWorkItemOrderBy = " target_date ASC NULLS FIRST "
-	CacheDemoWorkItemTargetDateAscNullsLast      CacheDemoWorkItemOrderBy = " target_date ASC NULLS LAST "
 	CacheDemoWorkItemCreatedAtDescNullsFirst     CacheDemoWorkItemOrderBy = " created_at DESC NULLS FIRST "
 	CacheDemoWorkItemCreatedAtDescNullsLast      CacheDemoWorkItemOrderBy = " created_at DESC NULLS LAST "
 	CacheDemoWorkItemCreatedAtAscNullsFirst      CacheDemoWorkItemOrderBy = " created_at ASC NULLS FIRST "
 	CacheDemoWorkItemCreatedAtAscNullsLast       CacheDemoWorkItemOrderBy = " created_at ASC NULLS LAST "
-	CacheDemoWorkItemUpdatedAtDescNullsFirst     CacheDemoWorkItemOrderBy = " updated_at DESC NULLS FIRST "
-	CacheDemoWorkItemUpdatedAtDescNullsLast      CacheDemoWorkItemOrderBy = " updated_at DESC NULLS LAST "
-	CacheDemoWorkItemUpdatedAtAscNullsFirst      CacheDemoWorkItemOrderBy = " updated_at ASC NULLS FIRST "
-	CacheDemoWorkItemUpdatedAtAscNullsLast       CacheDemoWorkItemOrderBy = " updated_at ASC NULLS LAST "
 	CacheDemoWorkItemDeletedAtDescNullsFirst     CacheDemoWorkItemOrderBy = " deleted_at DESC NULLS FIRST "
 	CacheDemoWorkItemDeletedAtDescNullsLast      CacheDemoWorkItemOrderBy = " deleted_at DESC NULLS LAST "
 	CacheDemoWorkItemDeletedAtAscNullsFirst      CacheDemoWorkItemOrderBy = " deleted_at ASC NULLS FIRST "
 	CacheDemoWorkItemDeletedAtAscNullsLast       CacheDemoWorkItemOrderBy = " deleted_at ASC NULLS LAST "
+	CacheDemoWorkItemLastMessageAtDescNullsFirst CacheDemoWorkItemOrderBy = " last_message_at DESC NULLS FIRST "
+	CacheDemoWorkItemLastMessageAtDescNullsLast  CacheDemoWorkItemOrderBy = " last_message_at DESC NULLS LAST "
+	CacheDemoWorkItemLastMessageAtAscNullsFirst  CacheDemoWorkItemOrderBy = " last_message_at ASC NULLS FIRST "
+	CacheDemoWorkItemLastMessageAtAscNullsLast   CacheDemoWorkItemOrderBy = " last_message_at ASC NULLS LAST "
+	CacheDemoWorkItemTargetDateDescNullsFirst    CacheDemoWorkItemOrderBy = " target_date DESC NULLS FIRST "
+	CacheDemoWorkItemTargetDateDescNullsLast     CacheDemoWorkItemOrderBy = " target_date DESC NULLS LAST "
+	CacheDemoWorkItemTargetDateAscNullsFirst     CacheDemoWorkItemOrderBy = " target_date ASC NULLS FIRST "
+	CacheDemoWorkItemTargetDateAscNullsLast      CacheDemoWorkItemOrderBy = " target_date ASC NULLS LAST "
+	CacheDemoWorkItemUpdatedAtDescNullsFirst     CacheDemoWorkItemOrderBy = " updated_at DESC NULLS FIRST "
+	CacheDemoWorkItemUpdatedAtDescNullsLast      CacheDemoWorkItemOrderBy = " updated_at DESC NULLS LAST "
+	CacheDemoWorkItemUpdatedAtAscNullsFirst      CacheDemoWorkItemOrderBy = " updated_at ASC NULLS FIRST "
+	CacheDemoWorkItemUpdatedAtAscNullsLast       CacheDemoWorkItemOrderBy = " updated_at ASC NULLS LAST "
 )
 
 // WithCacheDemoWorkItemOrderBy orders results by the given columns.
@@ -111,12 +157,20 @@ func WithCacheDemoWorkItemOrderBy(rows ...CacheDemoWorkItemOrderBy) CacheDemoWor
 	}
 }
 
-type CacheDemoWorkItemJoins struct{}
+type CacheDemoWorkItemJoins struct {
+	KanbanStep   bool // O2O kanban_steps
+	Team         bool // O2O teams
+	WorkItemType bool // O2O work_item_types
+}
 
 // WithCacheDemoWorkItemJoin joins with the given tables.
 func WithCacheDemoWorkItemJoin(joins CacheDemoWorkItemJoins) CacheDemoWorkItemSelectConfigOption {
 	return func(s *CacheDemoWorkItemSelectConfig) {
-		s.joins = CacheDemoWorkItemJoins{}
+		s.joins = CacheDemoWorkItemJoins{
+			KanbanStep:   s.joins.KanbanStep || joins.KanbanStep,
+			Team:         s.joins.Team || joins.Team,
+			WorkItemType: s.joins.WorkItemType || joins.WorkItemType,
+		}
 	}
 }
 
@@ -149,8 +203,216 @@ func WithCacheDemoWorkItemHavingClause(conditions map[string][]any) CacheDemoWor
 	}
 }
 
+const cacheDemoWorkItemTableKanbanStepJoinSQL = `-- O2O join generated from "cache__demo_work_items_kanban_step_id_fkey (inferred)"
+left join kanban_steps as _cache__demo_work_items_kanban_step_id on _cache__demo_work_items_kanban_step_id.kanban_step_id = cache__demo_work_items.kanban_step_id
+`
+
+const cacheDemoWorkItemTableKanbanStepSelectSQL = `(case when _cache__demo_work_items_kanban_step_id.kanban_step_id is not null then row(_cache__demo_work_items_kanban_step_id.*) end) as kanban_step_kanban_step_id`
+
+const cacheDemoWorkItemTableKanbanStepGroupBySQL = `_cache__demo_work_items_kanban_step_id.kanban_step_id,
+      _cache__demo_work_items_kanban_step_id.kanban_step_id,
+	cache__demo_work_items.work_item_id`
+
+const cacheDemoWorkItemTableTeamJoinSQL = `-- O2O join generated from "cache__demo_work_items_team_id_fkey (inferred)"
+left join teams as _cache__demo_work_items_team_id on _cache__demo_work_items_team_id.team_id = cache__demo_work_items.team_id
+`
+
+const cacheDemoWorkItemTableTeamSelectSQL = `(case when _cache__demo_work_items_team_id.team_id is not null then row(_cache__demo_work_items_team_id.*) end) as team_team_id`
+
+const cacheDemoWorkItemTableTeamGroupBySQL = `_cache__demo_work_items_team_id.team_id,
+      _cache__demo_work_items_team_id.team_id,
+	cache__demo_work_items.work_item_id`
+
+const cacheDemoWorkItemTableWorkItemTypeJoinSQL = `-- O2O join generated from "cache__demo_work_items_work_item_type_id_fkey (inferred)"
+left join work_item_types as _cache__demo_work_items_work_item_type_id on _cache__demo_work_items_work_item_type_id.work_item_type_id = cache__demo_work_items.work_item_type_id
+`
+
+const cacheDemoWorkItemTableWorkItemTypeSelectSQL = `(case when _cache__demo_work_items_work_item_type_id.work_item_type_id is not null then row(_cache__demo_work_items_work_item_type_id.*) end) as work_item_type_work_item_type_id`
+
+const cacheDemoWorkItemTableWorkItemTypeGroupBySQL = `_cache__demo_work_items_work_item_type_id.work_item_type_id,
+      _cache__demo_work_items_work_item_type_id.work_item_type_id,
+	cache__demo_work_items.work_item_id`
+
+// CacheDemoWorkItemUpdateParams represents update params for 'public.cache__demo_work_items'.
+type CacheDemoWorkItemUpdateParams struct {
+	ClosedAt       **time.Time     `json:"closedAt"`                        // closed_at
+	Description    *string         `json:"description" nullable:"false"`    // description
+	KanbanStepID   *KanbanStepID   `json:"kanbanStepID" nullable:"false"`   // kanban_step_id
+	LastMessageAt  *time.Time      `json:"lastMessageAt" nullable:"false"`  // last_message_at
+	Line           *string         `json:"line" nullable:"false"`           // line
+	Metadata       *map[string]any `json:"metadata" nullable:"false"`       // metadata
+	Ref            *string         `json:"ref" nullable:"false"`            // ref
+	Reopened       *bool           `json:"reopened" nullable:"false"`       // reopened
+	TargetDate     *time.Time      `json:"targetDate" nullable:"false"`     // target_date
+	TeamID         *TeamID         `json:"teamID" nullable:"false"`         // team_id
+	Title          *string         `json:"title" nullable:"false"`          // title
+	WorkItemTypeID *WorkItemTypeID `json:"workItemTypeID" nullable:"false"` // work_item_type_id
+}
+
+// SetUpdateParams updates public.cache__demo_work_items struct fields with the specified params.
+func (cdwi *CacheDemoWorkItem) SetUpdateParams(params *CacheDemoWorkItemUpdateParams) {
+	if params.ClosedAt != nil {
+		cdwi.ClosedAt = *params.ClosedAt
+	}
+	if params.Description != nil {
+		cdwi.Description = *params.Description
+	}
+	if params.KanbanStepID != nil {
+		cdwi.KanbanStepID = *params.KanbanStepID
+	}
+	if params.LastMessageAt != nil {
+		cdwi.LastMessageAt = *params.LastMessageAt
+	}
+	if params.Line != nil {
+		cdwi.Line = *params.Line
+	}
+	if params.Metadata != nil {
+		cdwi.Metadata = *params.Metadata
+	}
+	if params.Ref != nil {
+		cdwi.Ref = *params.Ref
+	}
+	if params.Reopened != nil {
+		cdwi.Reopened = *params.Reopened
+	}
+	if params.TargetDate != nil {
+		cdwi.TargetDate = *params.TargetDate
+	}
+	if params.TeamID != nil {
+		cdwi.TeamID = *params.TeamID
+	}
+	if params.Title != nil {
+		cdwi.Title = *params.Title
+	}
+	if params.WorkItemTypeID != nil {
+		cdwi.WorkItemTypeID = *params.WorkItemTypeID
+	}
+}
+
+// Insert inserts the CacheDemoWorkItem to the database.
+func (cdwi *CacheDemoWorkItem) Insert(ctx context.Context, db DB) (*CacheDemoWorkItem, error) {
+	// insert (primary key generated and returned by database)
+	sqlstr := `INSERT INTO public.cache__demo_work_items (
+	closed_at, deleted_at, description, kanban_step_id, last_message_at, line, metadata, ref, reopened, target_date, team_id, title, work_item_id, work_item_type_id
+	) VALUES (
+	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14
+	) RETURNING * `
+	// run
+	logf(sqlstr, cdwi.ClosedAt, cdwi.DeletedAt, cdwi.Description, cdwi.KanbanStepID, cdwi.LastMessageAt, cdwi.Line, cdwi.Metadata, cdwi.Ref, cdwi.Reopened, cdwi.TargetDate, cdwi.TeamID, cdwi.Title, cdwi.WorkItemID, cdwi.WorkItemTypeID)
+
+	rows, err := db.Query(ctx, sqlstr, cdwi.ClosedAt, cdwi.DeletedAt, cdwi.Description, cdwi.KanbanStepID, cdwi.LastMessageAt, cdwi.Line, cdwi.Metadata, cdwi.Ref, cdwi.Reopened, cdwi.TargetDate, cdwi.TeamID, cdwi.Title, cdwi.WorkItemID, cdwi.WorkItemTypeID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoWorkItem/Insert/db.Query: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
+	}
+	newcdwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[CacheDemoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoWorkItem/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
+	}
+
+	*cdwi = newcdwi
+
+	return cdwi, nil
+}
+
+// Update updates a CacheDemoWorkItem in the database.
+func (cdwi *CacheDemoWorkItem) Update(ctx context.Context, db DB) (*CacheDemoWorkItem, error) {
+	// update with composite primary key
+	sqlstr := `UPDATE public.cache__demo_work_items SET 
+	closed_at = $1, deleted_at = $2, description = $3, kanban_step_id = $4, last_message_at = $5, line = $6, metadata = $7, ref = $8, reopened = $9, target_date = $10, team_id = $11, title = $12, work_item_type_id = $13 
+	WHERE work_item_id = $14 
+	RETURNING * `
+	// run
+	logf(sqlstr, cdwi.ClosedAt, cdwi.CreatedAt, cdwi.DeletedAt, cdwi.Description, cdwi.KanbanStepID, cdwi.LastMessageAt, cdwi.Line, cdwi.Metadata, cdwi.Ref, cdwi.Reopened, cdwi.TargetDate, cdwi.TeamID, cdwi.Title, cdwi.UpdatedAt, cdwi.WorkItemTypeID, cdwi.WorkItemID)
+
+	rows, err := db.Query(ctx, sqlstr, cdwi.ClosedAt, cdwi.DeletedAt, cdwi.Description, cdwi.KanbanStepID, cdwi.LastMessageAt, cdwi.Line, cdwi.Metadata, cdwi.Ref, cdwi.Reopened, cdwi.TargetDate, cdwi.TeamID, cdwi.Title, cdwi.WorkItemTypeID, cdwi.WorkItemID)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoWorkItem/Update/db.Query: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
+	}
+	newcdwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[CacheDemoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoWorkItem/Update/pgx.CollectOneRow: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
+	}
+	*cdwi = newcdwi
+
+	return cdwi, nil
+}
+
+// Upsert upserts a CacheDemoWorkItem in the database.
+// Requires appropriate PK(s) to be set beforehand.
+func (cdwi *CacheDemoWorkItem) Upsert(ctx context.Context, db DB, params *CacheDemoWorkItemCreateParams) (*CacheDemoWorkItem, error) {
+	var err error
+
+	cdwi.ClosedAt = params.ClosedAt
+	cdwi.Description = params.Description
+	cdwi.KanbanStepID = params.KanbanStepID
+	cdwi.LastMessageAt = params.LastMessageAt
+	cdwi.Line = params.Line
+	cdwi.Metadata = params.Metadata
+	cdwi.Ref = params.Ref
+	cdwi.Reopened = params.Reopened
+	cdwi.TargetDate = params.TargetDate
+	cdwi.TeamID = params.TeamID
+	cdwi.Title = params.Title
+	cdwi.WorkItemID = params.WorkItemID
+	cdwi.WorkItemTypeID = params.WorkItemTypeID
+
+	cdwi, err = cdwi.Insert(ctx, db)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != pgerrcode.UniqueViolation {
+				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Cache  demo work item", Err: err})
+			}
+			cdwi, err = cdwi.Update(ctx, db)
+			if err != nil {
+				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Cache  demo work item", Err: err})
+			}
+		}
+	}
+
+	return cdwi, err
+}
+
+// Delete deletes the CacheDemoWorkItem from the database.
+func (cdwi *CacheDemoWorkItem) Delete(ctx context.Context, db DB) error {
+	// delete with single primary key
+	sqlstr := `DELETE FROM public.cache__demo_work_items 
+	WHERE work_item_id = $1 `
+	// run
+	if _, err := db.Exec(ctx, sqlstr, cdwi.WorkItemID); err != nil {
+		return logerror(err)
+	}
+	return nil
+}
+
+// SoftDelete soft deletes the CacheDemoWorkItem from the database via 'deleted_at'.
+func (cdwi *CacheDemoWorkItem) SoftDelete(ctx context.Context, db DB) error {
+	// delete with single primary key
+	sqlstr := `UPDATE public.cache__demo_work_items 
+	SET deleted_at = NOW() 
+	WHERE work_item_id = $1 `
+	// run
+	if _, err := db.Exec(ctx, sqlstr, cdwi.WorkItemID); err != nil {
+		return logerror(err)
+	}
+	// set deleted
+	cdwi.DeletedAt = newPointer(time.Now())
+
+	return nil
+}
+
+// Restore restores a soft deleted CacheDemoWorkItem from the database.
+func (cdwi *CacheDemoWorkItem) Restore(ctx context.Context, db DB) (*CacheDemoWorkItem, error) {
+	cdwi.DeletedAt = nil
+	newcdwi, err := cdwi.Update(ctx, db)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoWorkItem/Restore/pgx.CollectRows: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
+	}
+	return newcdwi, nil
+}
+
 // CacheDemoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of CacheDemoWorkItem.
-func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...CacheDemoWorkItemSelectConfigOption) ([]CacheDemoWorkItem, error) {
+func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID int, direction models.Direction, opts ...CacheDemoWorkItemSelectConfigOption) ([]CacheDemoWorkItem, error) {
 	c := &CacheDemoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -198,6 +460,24 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
+
+	if c.joins.KanbanStep {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableKanbanStepSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableKanbanStepJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableKanbanStepGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableTeamSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableTeamGroupBySQL)
+	}
+
+	if c.joins.WorkItemType {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemTypeSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemTypeJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemTypeGroupBySQL)
+	}
 
 	selects := ""
 	if len(selectClauses) > 0 {
@@ -215,25 +495,25 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	demo_work_items.ref,
-	demo_work_items.line,
-	demo_work_items.last_message_at,
-	demo_work_items.reopened,
-	demo_work_items.work_item_id,
-	demo_work_items.title,
-	demo_work_items.description,
-	demo_work_items.work_item_type_id,
-	demo_work_items.metadata,
-	demo_work_items.team_id,
-	demo_work_items.kanban_step_id,
-	demo_work_items.closed_at,
-	demo_work_items.target_date,
-	demo_work_items.created_at,
-	demo_work_items.updated_at,
-	demo_work_items.deleted_at %s 
-	 FROM cache.demo_work_items %s 
-	 WHERE demo_work_items.work_item_id %s $1
-	 %s   AND demo_work_items.deleted_at is %s  %s 
+	cache__demo_work_items.closed_at,
+	cache__demo_work_items.created_at,
+	cache__demo_work_items.deleted_at,
+	cache__demo_work_items.description,
+	cache__demo_work_items.kanban_step_id,
+	cache__demo_work_items.last_message_at,
+	cache__demo_work_items.line,
+	cache__demo_work_items.metadata,
+	cache__demo_work_items.ref,
+	cache__demo_work_items.reopened,
+	cache__demo_work_items.target_date,
+	cache__demo_work_items.team_id,
+	cache__demo_work_items.title,
+	cache__demo_work_items.updated_at,
+	cache__demo_work_items.work_item_id,
+	cache__demo_work_items.work_item_type_id %s 
+	 FROM public.cache__demo_work_items %s 
+	 WHERE cache__demo_work_items.work_item_id %s $1
+	 %s   AND cache__demo_work_items.deleted_at is %s  %s 
   %s 
   ORDER BY 
 		work_item_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
@@ -244,19 +524,19 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("CacheDemoWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
+		return nil, logerror(fmt.Errorf("CacheDemoWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[CacheDemoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("CacheDemoWorkItem/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Demo work item", Err: err}))
+		return nil, logerror(fmt.Errorf("CacheDemoWorkItem/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
 	}
 	return res, nil
 }
 
-// CacheDemoWorkItemByWorkItemID retrieves a row from 'cache.demo_work_items' as a CacheDemoWorkItem.
+// CacheDemoWorkItemByWorkItemID retrieves a row from 'public.cache__demo_work_items' as a CacheDemoWorkItem.
 //
-// Generated from index 'cache_demo_work_items_work_item_id_unique'.
-func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opts ...CacheDemoWorkItemSelectConfigOption) (*CacheDemoWorkItem, error) {
+// Generated from index 'cache__demo_work_items_pkey'.
+func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...CacheDemoWorkItemSelectConfigOption) (*CacheDemoWorkItem, error) {
 	c := &CacheDemoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -305,6 +585,24 @@ func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 	var joinClauses []string
 	var groupByClauses []string
 
+	if c.joins.KanbanStep {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableKanbanStepSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableKanbanStepJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableKanbanStepGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableTeamSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableTeamGroupBySQL)
+	}
+
+	if c.joins.WorkItemType {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemTypeSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemTypeJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemTypeGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -316,25 +614,25 @@ func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
-	demo_work_items.ref,
-	demo_work_items.line,
-	demo_work_items.last_message_at,
-	demo_work_items.reopened,
-	demo_work_items.work_item_id,
-	demo_work_items.title,
-	demo_work_items.description,
-	demo_work_items.work_item_type_id,
-	demo_work_items.metadata,
-	demo_work_items.team_id,
-	demo_work_items.kanban_step_id,
-	demo_work_items.closed_at,
-	demo_work_items.target_date,
-	demo_work_items.created_at,
-	demo_work_items.updated_at,
-	demo_work_items.deleted_at %s 
-	 FROM cache.demo_work_items %s 
-	 WHERE demo_work_items.work_item_id = $1
-	 %s   AND demo_work_items.deleted_at is %s  %s 
+	cache__demo_work_items.closed_at,
+	cache__demo_work_items.created_at,
+	cache__demo_work_items.deleted_at,
+	cache__demo_work_items.description,
+	cache__demo_work_items.kanban_step_id,
+	cache__demo_work_items.last_message_at,
+	cache__demo_work_items.line,
+	cache__demo_work_items.metadata,
+	cache__demo_work_items.ref,
+	cache__demo_work_items.reopened,
+	cache__demo_work_items.target_date,
+	cache__demo_work_items.team_id,
+	cache__demo_work_items.title,
+	cache__demo_work_items.updated_at,
+	cache__demo_work_items.work_item_id,
+	cache__demo_work_items.work_item_type_id %s 
+	 FROM public.cache__demo_work_items %s 
+	 WHERE cache__demo_work_items.work_item_id = $1
+	 %s   AND cache__demo_work_items.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
@@ -345,12 +643,40 @@ func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 	// logf(sqlstr, workItemID)
 	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
+		return nil, logerror(fmt.Errorf("cache__demo_work_items/CacheDemoWorkItemByWorkItemID/db.Query: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
 	}
 	cdwi, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[CacheDemoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("demo_work_items/DemoWorkItemByWorkItemID/pgx.CollectOneRow: %w", &XoError{Entity: "Demo work item", Err: err}))
+		return nil, logerror(fmt.Errorf("cache__demo_work_items/CacheDemoWorkItemByWorkItemID/pgx.CollectOneRow: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
 	}
 
 	return &cdwi, nil
+}
+
+// FKKanbanStep_KanbanStepID returns the KanbanStep associated with the CacheDemoWorkItem's (KanbanStepID).
+//
+// Generated from foreign key 'cache__demo_work_items_kanban_step_id_fkey'.
+func (cdwi *CacheDemoWorkItem) FKKanbanStep_KanbanStepID(ctx context.Context, db DB) (*KanbanStep, error) {
+	return KanbanStepByKanbanStepID(ctx, db, cdwi.KanbanStepID)
+}
+
+// FKTeam_TeamID returns the Team associated with the CacheDemoWorkItem's (TeamID).
+//
+// Generated from foreign key 'cache__demo_work_items_team_id_fkey'.
+func (cdwi *CacheDemoWorkItem) FKTeam_TeamID(ctx context.Context, db DB) (*Team, error) {
+	return TeamByTeamID(ctx, db, cdwi.TeamID)
+}
+
+// FKWorkItem_WorkItemID returns the WorkItem associated with the CacheDemoWorkItem's (WorkItemID).
+//
+// Generated from foreign key 'cache__demo_work_items_work_item_id_fkey'.
+func (cdwi *CacheDemoWorkItem) FKWorkItem_WorkItemID(ctx context.Context, db DB) (*WorkItem, error) {
+	return WorkItemByWorkItemID(ctx, db, cdwi.WorkItemID)
+}
+
+// FKWorkItemType_WorkItemTypeID returns the WorkItemType associated with the CacheDemoWorkItem's (WorkItemTypeID).
+//
+// Generated from foreign key 'cache__demo_work_items_work_item_type_id_fkey'.
+func (cdwi *CacheDemoWorkItem) FKWorkItemType_WorkItemTypeID(ctx context.Context, db DB) (*WorkItemType, error) {
+	return WorkItemTypeByWorkItemTypeID(ctx, db, cdwi.WorkItemTypeID)
 }
