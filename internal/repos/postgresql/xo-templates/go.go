@@ -1282,6 +1282,10 @@ cc_label:
 			// table that has *referenced* O2O where PK is FK. e.g. work_item gen -> we see demo_work_item has work_item_id PK that is FK.
 			// viceversa we don't care as it's a regular PK.
 			af := analyzeField(t, f)
+			// FIXME: check should just be looping all constraints and if there exists
+			// two contraints one with type == "primary_key" and other "foreign_key" for
+			// the same table and column only then RefPKisFK: true
+			// this makes no sense
 			if af.isSingleFK && af.isSinglePK {
 				fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", constraint.TableName, constraint.RefColumnName)
 				cc = append(cc, Constraint{
@@ -3427,44 +3431,71 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 		}
 
 		properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
+		fmt.Printf("cccccc: %+v\n", c)
+
+		type sharedRefsInfo struct {
+			Table    string
+			Column   string
+			RefTable string
+		}
+
+		// sharedRefs := make(map[string]sharedRefsInfo)
 
 		shareRefConstraints := contains(properties, propertyShareRefConstraints)
 		if shareRefConstraints {
-			// f.loadConstraints(cc, c.TableName, false)
-			// refConstraints, _ := f.tableConstraints[c.TableName]
-			// fmt.Printf("refConstraints for %s.%s: %+v\n", c.TableName, c.ColumnName, refConstraints)
-			// TODO: f.loadConstraints(constraints, refTableName)
-			// this will load constraints for work_items.work_item_id when creating constraints for cache__demo_work_items.work_item_id
-			// then we will just append these to f.tableConstraints[table] but changing
-			// column and table to cache__demo_work_items and work_item_id instead.
+			// TODO: instead save required info: table name, ref table, etc. and do this outside loop as in
+			// 1. find fk
+			// e.g. in cache__* FOREIGN KEY (work_item_id) REFERENCES work_items(work_item_id) ON DELETE CASCADE
+			// will search for O2O
+			fmt.Println(annotations)
+			fmt.Printf("c: %v\n", c)
+			f.loadConstraints(cc, "work_items")
+			refConstraints := f.tableConstraints["work_items"]
+			var newRefConstraints []Constraint
+			for _, refc := range refConstraints {
+				if refc.Type != "foreign_key" {
+					continue
+				}
+				fmt.Printf("refc match: %+v\n", refc)
+				fmt.Printf("for c: %+v\n", c)
+				switch refc.Cardinality {
+				case O2O:
+					if refc.TableName == c.RefTableName && refc.ColumnName == c.RefColumnName {
+						fmt.Printf("refc match: %+v\n", refc)
+						fmt.Printf("for c: %+v\n", c)
+					}
+					// works as is
+				}
+			}
+			f.tableConstraints[table] = append(f.tableConstraints[table], newRefConstraints...)
+			fmt.Printf("refConstraints for %s.%s: %+v\n", "work_items", "work_item_id", formatJSON(newRefConstraints))
 		}
 	}
 
-	if table == "cache__demo_work_items" {
-		f.loadConstraints(cc, "work_items")
-		refConstraints := f.tableConstraints["work_items"]
-		var newRefConstraints []Constraint
-		for _, c := range refConstraints {
-			if c.Type != "foreign_key" {
-				continue
-			}
-			newr := c
-			switch newr.Cardinality {
-			case M2O:
-				fmt.Printf("M2O newr: %+v\n", newr)
-				// M2O newr: {Type:foreign_key Cardinality:M2O Name:work_item_comments_work_item_id_fkey TableName:work_item_comments ColumnName:work_item_id ColumnComment:"cardinality":M2O RefTableName:work_items RefColumnName:work_item_id RefColumnComment:"cardinality":O2O LookupColumnName: LookupColumnComment: LookupRefColumnName: LookupRefColumnComment: JoinTableClash:false IsInferredO2O:false IsGeneratedO2OFromM2O:false JoinStructFieldClash:false RefPKisFK:false}
-				newr.RefTableName = table // for some reason this leads to `workItemID WorkItemCommentsID` but does generate the required M2O joins
-				fmt.Printf("c.ColumnName: %v\n", c.ColumnName)
-				newr.RefColumnName = c.ColumnName
-			case M2M:
-				// works as is
-			}
-			newr.Name = newr.Name + "-shared-ref-" + table
-			newRefConstraints = append(newRefConstraints, newr)
-		}
-		f.tableConstraints[table] = append(f.tableConstraints[table], newRefConstraints...)
-		fmt.Printf("refConstraints for %s.%s: %+v\n", "work_items", "work_item_id", formatJSON(newRefConstraints))
-	}
+	// TODO: range sharedRefsInfo struct and  {
+	// 	f.loadConstraints(cc, "work_items") // TODO: .RefTable field instead
+	// 	refConstraints := f.tableConstraints["work_items"]
+	// 	var newRefConstraints []Constraint
+	// 	for _, c := range refConstraints {
+	// 		if c.Type != "foreign_key" {
+	// 			continue
+	// 		}
+	// 		newr := c
+	// 		switch newr.Cardinality {
+	// 		case M2O:
+	// 			fmt.Printf("M2O newr: %+v\n", newr)
+	// 			// M2O newr: {Type:foreign_key Cardinality:M2O Name:work_item_comments_work_item_id_fkey TableName:work_item_comments ColumnName:work_item_id ColumnComment:"cardinality":M2O RefTableName:work_items RefColumnName:work_item_id RefColumnComment:"cardinality":O2O LookupColumnName: LookupColumnComment: LookupRefColumnName: LookupRefColumnComment: JoinTableClash:false IsInferredO2O:false IsGeneratedO2OFromM2O:false JoinStructFieldClash:false RefPKisFK:false}
+	// 			newr.RefTableName = table // TODO: .Table field
+	// 			newr.RefColumnName = c.ColumnName // TODO: .Column field instead
+	// 		case M2M:
+	// 			// works as is
+	// 		}
+	// 		newr.Name = newr.Name + "-shared-ref-" + table
+	// 		newRefConstraints = append(newRefConstraints, newr)
+	// 	}
+	// 	f.tableConstraints[table] = append(f.tableConstraints[table], newRefConstraints...)
+	// 	fmt.Printf("refConstraints for %s.%s: %+v\n", "work_items", "work_item_id", formatJSON(newRefConstraints))
+	// }
 }
 
 // createJoinStatement returns select queries and join statements strings
