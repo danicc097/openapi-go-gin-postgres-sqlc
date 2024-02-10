@@ -2114,7 +2114,7 @@ func (f *Funcs) initial_opts(v any) string {
 func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constraint, t Table, tables Tables) string {
 	if len(constraints) > 0 {
 		// always run
-		f.loadConstraints(constraints, sqlname, true)
+		f.loadConstraints(constraints, sqlname)
 	}
 
 	// -- emit ORDER BY opts
@@ -2746,7 +2746,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 func (f *Funcs) initialize_constraints(t Table, constraints []Constraint) bool {
 	if _, ok := f.tableConstraints[t.SQLName]; !ok {
 		if len(constraints) > 0 {
-			f.loadConstraints(constraints, t.SQLName, true)
+			f.loadConstraints(constraints, t.SQLName)
 		}
 	}
 
@@ -3395,7 +3395,7 @@ func (f *Funcs) sqlstr_index(v any, tables Tables) string {
 }
 
 // loadConstraints saves possible joins for a table based on constraints to tableConstraints
-func (f *Funcs) loadConstraints(cc []Constraint, table string, recursive bool) {
+func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 	if _, ok := f.tableConstraints[table]; ok {
 		// fmt.Printf("Constraints for %s:\n%v\n", table, formatJSON(f.tableConstraints[table]))
 		return // don't duplicate
@@ -3429,7 +3429,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string, recursive bool) {
 		properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
 
 		shareRefConstraints := contains(properties, propertyShareRefConstraints)
-		if shareRefConstraints && recursive {
+		if shareRefConstraints {
 			// f.loadConstraints(cc, c.TableName, false)
 			// refConstraints, _ := f.tableConstraints[c.TableName]
 			// fmt.Printf("refConstraints for %s.%s: %+v\n", c.TableName, c.ColumnName, refConstraints)
@@ -3441,27 +3441,29 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string, recursive bool) {
 	}
 
 	if table == "cache__demo_work_items" {
-		f.loadConstraints(cc, "work_items", false)
-		refConstraints, _ := f.tableConstraints["work_items"]
+		f.loadConstraints(cc, "work_items")
+		refConstraints := f.tableConstraints["work_items"]
 		var newRefConstraints []Constraint
-		fmt.Printf("refConstraints for %s.%s: %+v\n", "work_items", "work_item_id", refConstraints)
 		for _, c := range refConstraints {
 			if c.Type != "foreign_key" {
 				continue
 			}
 			newr := c
-			if newr.Cardinality == M2O {
+			switch newr.Cardinality {
+			case M2O:
 				fmt.Printf("M2O newr: %+v\n", newr)
 				// M2O newr: {Type:foreign_key Cardinality:M2O Name:work_item_comments_work_item_id_fkey TableName:work_item_comments ColumnName:work_item_id ColumnComment:"cardinality":M2O RefTableName:work_items RefColumnName:work_item_id RefColumnComment:"cardinality":O2O LookupColumnName: LookupColumnComment: LookupRefColumnName: LookupRefColumnComment: JoinTableClash:false IsInferredO2O:false IsGeneratedO2OFromM2O:false JoinStructFieldClash:false RefPKisFK:false}
-				newr.RefTableName = c.TableName
+				newr.RefTableName = table // for some reason this leads to `workItemID WorkItemCommentsID` but does generate the required M2O joins
+				fmt.Printf("c.ColumnName: %v\n", c.ColumnName)
 				newr.RefColumnName = c.ColumnName
-			} else if newr.Cardinality == M2M {
+			case M2M:
 				// works as is
 			}
 			newr.Name = newr.Name + "-shared-ref-" + table
 			newRefConstraints = append(newRefConstraints, newr)
 		}
 		f.tableConstraints[table] = append(f.tableConstraints[table], newRefConstraints...)
+		fmt.Printf("refConstraints for %s.%s: %+v\n", "work_items", "work_item_id", formatJSON(newRefConstraints))
 	}
 }
 
@@ -4148,7 +4150,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 	// }
 
 	if len(constraints) > 0 {
-		f.loadConstraints(constraints, t.SQLName, true)
+		f.loadConstraints(constraints, t.SQLName)
 	}
 	cc, ok := f.tableConstraints[t.SQLName]
 	if !ok {
