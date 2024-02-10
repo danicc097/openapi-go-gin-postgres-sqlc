@@ -3802,10 +3802,11 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 							break
 						}
 					case M2O:
-						if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
-							field.Type = camelExport(f.schemaPrefix) + camelExport(c.TableName) + "ID"
-							break
-						}
+						// FIXME: wrong here, or shared ref is wrong
+						// if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
+						// 	field.Type = camelExport(f.schemaPrefix) + camelExport(c.TableName) + "ID"
+						// 	break
+						// }
 						if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
 							field.Type = camelExport(f.schemaPrefix) + camelExport(c.RefTableName) + "ID"
 							break
@@ -3831,13 +3832,9 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 		}
 	}
 
-	// FIXME:
-	// s: workItemID WorkItemCommentsID
-	// s: workItemID WorkItemCommentsID
-	// s: workItemID
-	if table.SQLName == "cache__demo_work_items" {
-		fmt.Printf("s: %v\n", s)
-	}
+	// if table.SQLName == "cache__demo_work_items" {
+	// 	fmt.Printf("s: %v\n", s)
+	// }
 
 	// add to vals
 	return s

@@ -509,7 +509,7 @@ func (cdwi *CacheDemoWorkItem) Restore(ctx context.Context, db DB) (*CacheDemoWo
 }
 
 // CacheDemoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of CacheDemoWorkItem.
-func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemCommentsID, direction models.Direction, opts ...CacheDemoWorkItemSelectConfigOption) ([]CacheDemoWorkItem, error) {
+func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID int, direction models.Direction, opts ...CacheDemoWorkItemSelectConfigOption) ([]CacheDemoWorkItem, error) {
 	c := &CacheDemoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
@@ -657,7 +657,7 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 // CacheDemoWorkItemByWorkItemID retrieves a row from 'public.cache__demo_work_items' as a CacheDemoWorkItem.
 //
 // Generated from index 'cache__demo_work_items_pkey'.
-func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemCommentsID, opts ...CacheDemoWorkItemSelectConfigOption) (*CacheDemoWorkItem, error) {
+func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, opts ...CacheDemoWorkItemSelectConfigOption) (*CacheDemoWorkItem, error) {
 	c := &CacheDemoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {

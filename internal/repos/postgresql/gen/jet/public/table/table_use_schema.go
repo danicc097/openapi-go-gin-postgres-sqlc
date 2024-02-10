@@ -11,6 +11,8 @@ package table
 // this method only once at the beginning of the program.
 func UseSchema(schema string) {
 	Activities = Activities.FromSchema(schema)
+	CacheDemoTwoWorkItems = CacheDemoTwoWorkItems.FromSchema(schema)
+	CacheDemoWorkItems = CacheDemoWorkItems.FromSchema(schema)
 	DemoTwoWorkItems = DemoTwoWorkItems.FromSchema(schema)
 	DemoWorkItems = DemoWorkItems.FromSchema(schema)
 	EntityNotifications = EntityNotifications.FromSchema(schema)
