@@ -3830,6 +3830,15 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 
 		}
 	}
+
+	// FIXME:
+	// s: workItemID WorkItemCommentsID
+	// s: workItemID WorkItemCommentsID
+	// s: workItemID
+	if table.SQLName == "cache__demo_work_items" {
+		fmt.Printf("s: %v\n", s)
+	}
+
 	// add to vals
 	return s
 }
