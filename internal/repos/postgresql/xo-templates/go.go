@@ -3443,46 +3443,25 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string, recursive bool) {
 	if table == "cache__demo_work_items" {
 		f.loadConstraints(cc, "work_items", false)
 		refConstraints, _ := f.tableConstraints["work_items"]
-		newRefConstraints := make([]Constraint, len(refConstraints))
-		copy(newRefConstraints, refConstraints)
+		var newRefConstraints []Constraint
 		fmt.Printf("refConstraints for %s.%s: %+v\n", "work_items", "work_item_id", refConstraints)
-		for i, c := range refConstraints {
-			i := i
+		for _, c := range refConstraints {
+			if c.Type != "foreign_key" {
+				continue
+			}
 			newr := c
 			if newr.Cardinality == M2O {
+				fmt.Printf("M2O newr: %+v\n", newr)
+				// M2O newr: {Type:foreign_key Cardinality:M2O Name:work_item_comments_work_item_id_fkey TableName:work_item_comments ColumnName:work_item_id ColumnComment:"cardinality":M2O RefTableName:work_items RefColumnName:work_item_id RefColumnComment:"cardinality":O2O LookupColumnName: LookupColumnComment: LookupRefColumnName: LookupRefColumnComment: JoinTableClash:false IsInferredO2O:false IsGeneratedO2OFromM2O:false JoinStructFieldClash:false RefPKisFK:false}
 				newr.RefTableName = c.TableName
 				newr.RefColumnName = c.ColumnName
+			} else if newr.Cardinality == M2M {
+				// works as is
 			}
-			newRefConstraints[i] = newr
+			newr.Name = newr.Name + "-shared-ref-" + table
+			newRefConstraints = append(newRefConstraints, newr)
 		}
 		f.tableConstraints[table] = append(f.tableConstraints[table], newRefConstraints...)
-	}
-
-	for _, currentConstraint := range cc {
-		annotations, err := parseAnnotations(currentConstraint.ColumnComment)
-		if err != nil {
-			panic(fmt.Sprintf("parseAnnotations: %v", err))
-		}
-
-		properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
-
-		shareRefConstraints := contains(properties, propertyShareRefConstraints)
-		if shareRefConstraints {
-			for _, c := range cc {
-				// TODO: duplicate constraints where ref table name and column from currentConstraint match,
-				// with table and column being currentConstraint's instead
-				if c.RefColumnName == currentConstraint.RefColumnName && c.RefTableName == currentConstraint.RefTableName {
-					// or lookupcolumn
-					// fmt.Printf("should duplicate c for (%s.%s): %+v\n", currentConstraint.TableName, currentConstraint.ColumnName, c)
-					// fmt.Printf("currentConstraint: %+v\n", currentConstraint)
-					newc := c
-					newc.RefTableName = currentConstraint.TableName
-					newc.RefColumnName = currentConstraint.ColumnName
-					// TODO: see above
-					// f.tableConstraints[table] = append(f.tableConstraints[table], newc)
-				}
-			}
-		}
 	}
 }
 

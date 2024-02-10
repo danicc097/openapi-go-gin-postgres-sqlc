@@ -245,7 +245,7 @@ const cacheDemoWorkItemTableWorkItemTypeGroupBySQL = `_cache__demo_work_items_wo
       _cache__demo_work_items_work_item_type_id.work_item_type_id,
 	cache__demo_work_items.work_item_id`
 
-const cacheDemoWorkItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
+const cacheDemoWorkItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey-shared-ref-cache__demo_work_items"
 left join (
 	select
 		work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
@@ -270,7 +270,7 @@ const cacheDemoWorkItemTableAssignedUsersSelectSQL = `COALESCE(
 
 const cacheDemoWorkItemTableAssignedUsersGroupBySQL = `cache__demo_work_items.work_item_id, cache__demo_work_items.work_item_id`
 
-const cacheDemoWorkItemTableWorkItemTagsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+const cacheDemoWorkItemTableWorkItemTagsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey-shared-ref-cache__demo_work_items"
 left join (
 	select
 		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
