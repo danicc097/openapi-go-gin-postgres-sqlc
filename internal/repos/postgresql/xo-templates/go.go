@@ -28,6 +28,31 @@ import (
 	"mvdan.cc/gofumpt/format"
 )
 
+const (
+	Off = "\033[0m"
+
+	Red    = "\033[31m"
+	R      = Red
+	Green  = "\033[32m"
+	G      = Green
+	Yellow = "\033[33m"
+	Y      = Yellow
+	Blue   = "\033[34m"
+	B      = Blue
+	Purple = "\033[35m"
+	P      = Purple
+	Cyan   = "\033[36m"
+	C      = Cyan
+
+	Bold       = "\033[1m"
+	Dim        = "\033[2m"
+	Italic     = "\033[3m"
+	Underlined = "\033[4m"
+	Blinking   = "\033[5m"
+	Reverse    = "\033[6m"
+	Invisible  = "\033[7m"
+)
+
 // TODO configurable
 var excludedIndexTypes = []string{"gin_trgm_ops"}
 
@@ -2752,6 +2777,8 @@ func (f *Funcs) initialize_constraints(t Table, constraints []Constraint) bool {
 	for _, f := range t.Fields {
 		af := analyzeField(t, f)
 		if af.PKisFK != nil {
+			fmt.Printf("init t.PrimaryKeys: %v\n", t.PrimaryKeys)
+			fmt.Printf("init t.ForeignKeys: %v\n", t.ForeignKeys)
 			fmt.Printf("af.PKisFK init (table=%s): %v\n", t.SQLName, af.PKisFK)
 			pkisfkc = af.PKisFK
 		}
@@ -4177,7 +4204,7 @@ func analyzeField(table Table, field Field) fieldInfo {
 	if isSinglePK && isSingleFK { // excluding m2m join tables with 2 primary keys that are fks
 		for _, tfk := range table.ForeignKeys {
 			if tfk.FieldNames[0] == table.PrimaryKeys[0].SQLName {
-				fmt.Printf("tfk.FieldNames: %+v\n", tfk.FieldNames)
+				fmt.Printf(Red+"tfk.FieldNames: %+v\n"+Off, tfk.FieldNames)
 				fmt.Printf("table.PrimaryKeys: %+v\n", table.PrimaryKeys)
 				pkisfk = &tfk
 			}
