@@ -181,7 +181,6 @@ var PublicStructs = map[string]any{
 	"DbUser__BASK_ExtraSchemaBookAuthorsSurrogateKey":  new(db.User__BASK_ExtraSchemaBookAuthorsSurrogateKey),
 	"DbUser__BA_ExtraSchemaBook":                       new(db.User__BA_ExtraSchemaBook),
 	"DbUser__BA_ExtraSchemaBookAuthor":                 new(db.User__BA_ExtraSchemaBookAuthor),
-	"DbUser__WIAU_CacheDemoWorkItem":                   new(db.User__WIAU_CacheDemoWorkItem),
 	"DbUser__WIAU_ExtraSchemaWorkItem":                 new(db.User__WIAU_ExtraSchemaWorkItem),
 	"DbUser__WIAU_ExtraSchemaWorkItemAssignedUser":     new(db.User__WIAU_ExtraSchemaWorkItemAssignedUser),
 	"DbUser__WIAU_WorkItem":                            new(db.User__WIAU_WorkItem),
