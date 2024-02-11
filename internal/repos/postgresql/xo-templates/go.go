@@ -2783,6 +2783,7 @@ func (f *Funcs) initialize_constraints(t Table, constraints []Constraint) bool {
 			pkisfkc = af.PKisFK
 		}
 	}
+
 	if _, ok := f.tableConstraints[t.SQLName]; !ok {
 		if len(constraints) > 0 {
 			f.loadConstraints(constraints, t.SQLName, pkisfkc)
@@ -3480,7 +3481,6 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string, pkIsFK *TableFore
 
 		shareRefConstraints := contains(properties, propertyShareRefConstraints)
 		if shareRefConstraints && pkIsFK != nil {
-			fmt.Printf("pkIsFK: %+v\n", pkIsFK)
 			// TODO: instead save required info: table name, ref table, etc. and do this outside loop as in
 			// 1. find fk
 			// e.g. in cache__* FOREIGN KEY (work_item_id) REFERENCES work_items(work_item_id) ON DELETE CASCADE
@@ -4204,8 +4204,10 @@ func analyzeField(table Table, field Field) fieldInfo {
 	if isSinglePK && isSingleFK { // excluding m2m join tables with 2 primary keys that are fks
 		for _, tfk := range table.ForeignKeys {
 			if tfk.FieldNames[0] == table.PrimaryKeys[0].SQLName {
+				fmt.Printf(Green+"%s == %s\n"+Off, tfk.FieldNames[0], table.PrimaryKeys[0].SQLName)
 				fmt.Printf(Red+"tfk.FieldNames: %+v\n"+Off, tfk.FieldNames)
 				fmt.Printf("table.PrimaryKeys: %+v\n", table.PrimaryKeys)
+				tfk := tfk
 				pkisfk = &tfk
 			}
 		}
