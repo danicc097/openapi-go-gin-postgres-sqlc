@@ -1300,7 +1300,7 @@ cc_label:
 					ColumnComment:    constraint.RefColumnComment,
 					JoinTableClash:   joinTableClash,
 					IsInferredO2O:    true,
-					RefPKisFK:        true,
+					PKisFK:           true,
 				})
 			}
 
@@ -3404,34 +3404,35 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 		// fmt.Printf("Constraints for %s:\n%v\n", table, formatJSON(f.tableConstraints[table]))
 		return // don't duplicate
 	}
-	for _, c := range cc {
+	for _, constraint := range cc {
 		// we need unique constraints for paginated query generation. instead do this check when generating joins only
-		// if c.Type != "foreign_key" {
+		// if constraint.Type != "foreign_key" {
 		// 	continue
 		// }
-		if c.Cardinality == M2M && c.RefTableName == table {
+		//TODO: need Table instead of just string, since foreign keys required for shared ref constraints
+		// do not exist, therefore we cannt find the ref table just by prmary key
+		if constraint.Cardinality == M2M && constraint.RefTableName == table {
 			for _, c1 := range cc {
-				if c1.TableName == c.TableName && c1.ColumnName != c.ColumnName && c1.Type == "foreign_key" {
-					c1.LookupColumnName = c.ColumnName
-					c1.LookupColumnComment = c.ColumnComment
-					c1.LookupRefColumnName = c.RefColumnName
-					c1.LookupRefColumnComment = c.RefColumnComment
+				if c1.TableName == constraint.TableName && c1.ColumnName != constraint.ColumnName && c1.Type == "foreign_key" {
+					c1.LookupColumnName = constraint.ColumnName
+					c1.LookupColumnComment = constraint.ColumnComment
+					c1.LookupRefColumnName = constraint.RefColumnName
+					c1.LookupRefColumnComment = constraint.RefColumnComment
 					f.tableConstraints[table] = append(f.tableConstraints[table], c1)
 				}
 			}
-		} else if c.Cardinality == O2O && (c.TableName == table || c.RefTableName == table) {
-			f.tableConstraints[table] = append(f.tableConstraints[table], c)
-		} else if c.RefTableName == table {
-			f.tableConstraints[table] = append(f.tableConstraints[table], c)
+		} else if constraint.Cardinality == O2O && (constraint.TableName == table || constraint.RefTableName == table) {
+			f.tableConstraints[table] = append(f.tableConstraints[table], constraint)
+		} else if constraint.RefTableName == table {
+			f.tableConstraints[table] = append(f.tableConstraints[table], constraint)
 		}
 
-		annotations, err := parseAnnotations(c.ColumnComment)
+		annotations, err := parseAnnotations(constraint.ColumnComment)
 		if err != nil {
 			panic(fmt.Sprintf("parseAnnotations: %v", err))
 		}
 
 		properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
-		fmt.Printf("cccccc: %+v\n", c)
 
 		type sharedRefsInfo struct {
 			Table    string
@@ -3446,23 +3447,36 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 			// TODO: instead save required info: table name, ref table, etc. and do this outside loop as in
 			// 1. find fk
 			// e.g. in cache__* FOREIGN KEY (work_item_id) REFERENCES work_items(work_item_id) ON DELETE CASCADE
-			// will search for O2O
-			fmt.Println(annotations)
-			fmt.Printf("c: %v\n", c)
+			// will search for O2O and save reference column.
+			// 2. for each table in these found
+			for _, c1 := range cc { // this first loop is just to find the ref table
+
+				if c1.Type != "foreign_key" || !c1.PKisFK { // don't care if PK is not FK for propertyShareRefConstraints
+					continue
+				}
+				// now all we have are generated O2O constraints (O2O inferred - PK is FK).
+				// TODO: we just have to match c1's table name and column anme with constraint
+				// to get the ref, which will be work_items.work_item_id
+				fmt.Printf("constraint: %+v\n", constraint)
+				fmt.Printf("c1: %+v\n", c1)
+			}
+
 			f.loadConstraints(cc, "work_items")
 			refConstraints := f.tableConstraints["work_items"]
 			var newRefConstraints []Constraint
 			for _, refc := range refConstraints {
-				if refc.Type != "foreign_key" {
+				if refc.Type != "foreign_key" || !refc.PKisFK {
 					continue
 				}
 				fmt.Printf("refc match: %+v\n", refc)
-				fmt.Printf("for c: %+v\n", c)
+				fmt.Printf("for c: %+v\n", constraint)
 				switch refc.Cardinality {
 				case O2O:
-					if refc.TableName == c.RefTableName && refc.ColumnName == c.RefColumnName {
+					if refc.TableName == constraint.RefTableName && refc.ColumnName == constraint.RefColumnName {
 						fmt.Printf("refc match: %+v\n", refc)
-						fmt.Printf("for c: %+v\n", c)
+						fmt.Printf("for c: %+v\n", constraint)
+						refc.RefTableName = table
+						newRefConstraints = append(newRefConstraints, refc)
 					}
 					// works as is
 				}
@@ -3626,7 +3640,7 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 			// viceversa we don't care as it's a regular PK.
 			params["Alias"] = "_" + c.TableName
 			af := analyzeField(t, field)
-			if af.PKisFK || c.RefPKisFK {
+			if af.PKisFK || c.PKisFK {
 				params["Alias"] = "_" + c.RefTableName
 				params["JoinTableAlias"] = c.ColumnName
 			}
@@ -4150,17 +4164,19 @@ func analyzeField(table Table, field Field) fieldInfo {
 		}
 	}
 
-	if isPK && isFK && isSinglePK { // excluding m2m join tables with 2 primary keys that are fks
+	if isSinglePK && isSingleFK { // excluding m2m join tables with 2 primary keys that are fks
 		pkisfk = true
 	}
 
-	return fieldInfo{
+	r := fieldInfo{
 		IsSinglePK: isSinglePK,
 		PKisFK:     pkisfk,
 		IsFK:       isFK,
 		IsSingleFK: isSingleFK,
 		IsPK:       isPK,
 	}
+
+	return r
 }
 
 // fieldmapping generates field mappings from a struct to another.
@@ -4305,7 +4321,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 					}
 				}
 				af := analyzeField(t, fd)
-				if af.PKisFK || c.RefPKisFK {
+				if af.PKisFK || c.PKisFK {
 					goName = camelExport(singularize(c.RefTableName)) + "Join"
 				}
 				joinPrefix := inflector.Singularize(c.RefTableName) + "_"
@@ -4812,7 +4828,7 @@ type Constraint struct {
 	IsInferredO2O          bool // Whether this constraint has been generated from a foreign key
 	IsGeneratedO2OFromM2O  bool
 	JoinStructFieldClash   bool // Whether 2 or more constraints of the same table have the same struct field name (and hence type as well)
-	RefPKisFK              bool
+	PKisFK                 bool
 }
 
 // Field is a field template.
