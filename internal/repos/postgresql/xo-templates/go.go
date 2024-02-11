@@ -1093,7 +1093,7 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 	}
 
 	// conversion requires Table
-	var fkeys []TableForeignKeys
+	var fkeys []TableForeignKey
 	for _, fk := range t.ForeignKeys {
 		fkey, err := convertFKey(ctx, table, fk)
 		if err != nil {
@@ -1108,7 +1108,7 @@ func convertTable(ctx context.Context, t xo.Table) (Table, error) {
 			fkRefFields[i] = fkField.SQLName
 		}
 
-		tfk := TableForeignKeys{
+		tfk := TableForeignKey{
 			FieldNames: fkFields,
 			RefTable:   fk.RefTable,
 			RefColumns: fkRefFields,
@@ -1286,7 +1286,7 @@ cc_label:
 			// two contraints one with type == "primary_key" and other "foreign_key" for
 			// the same table and column only then RefPKisFK: true
 			// this makes no sense
-			if af.PKisFK {
+			if af.PKisFK != nil {
 				fmt.Printf("%s.%s is a single foreign and primary key in O2O\n", constraint.TableName, constraint.RefColumnName)
 				cc = append(cc, Constraint{
 					Type:             constraint.Type,
@@ -2118,7 +2118,7 @@ func (f *Funcs) initial_opts(v any) string {
 func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constraint, t Table, tables Tables) string {
 	if len(constraints) > 0 {
 		// always run
-		f.loadConstraints(constraints, sqlname)
+		f.loadConstraints(constraints, sqlname, nil)
 	}
 
 	// -- emit ORDER BY opts
@@ -2748,9 +2748,17 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 }
 
 func (f *Funcs) initialize_constraints(t Table, constraints []Constraint) bool {
+	var pkisfkc *TableForeignKey
+	for _, f := range t.Fields {
+		af := analyzeField(t, f)
+		if af.PKisFK != nil {
+			fmt.Printf("af.PKisFK init (table=%s): %v\n", t.SQLName, af.PKisFK)
+			pkisfkc = af.PKisFK
+		}
+	}
 	if _, ok := f.tableConstraints[t.SQLName]; !ok {
 		if len(constraints) > 0 {
-			f.loadConstraints(constraints, t.SQLName)
+			f.loadConstraints(constraints, t.SQLName, pkisfkc)
 		}
 	}
 
@@ -3399,7 +3407,8 @@ func (f *Funcs) sqlstr_index(v any, tables Tables) string {
 }
 
 // loadConstraints saves possible joins for a table based on constraints to tableConstraints
-func (f *Funcs) loadConstraints(cc []Constraint, table string) {
+// if pk is fk for the current table, its foreignkey is required to generate shared refs (if property flag set)
+func (f *Funcs) loadConstraints(cc []Constraint, table string, pkIsFK *TableForeignKey) {
 	if _, ok := f.tableConstraints[table]; ok {
 		// fmt.Printf("Constraints for %s:\n%v\n", table, formatJSON(f.tableConstraints[table]))
 		return // don't duplicate
@@ -3409,7 +3418,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 		// if constraint.Type != "foreign_key" {
 		// 	continue
 		// }
-		//TODO: need Table instead of just string, since foreign keys required for shared ref constraints
+		// TODO: need Table instead of just string, since foreign keys required for shared ref constraints
 		// do not exist, therefore we cannt find the ref table just by prmary key
 		if constraint.Cardinality == M2M && constraint.RefTableName == table {
 			for _, c1 := range cc {
@@ -3443,14 +3452,14 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 		// sharedRefs := make(map[string]sharedRefsInfo)
 
 		shareRefConstraints := contains(properties, propertyShareRefConstraints)
-		if shareRefConstraints {
+		if shareRefConstraints && pkIsFK != nil {
+			fmt.Printf("pkIsFK: %+v\n", pkIsFK)
 			// TODO: instead save required info: table name, ref table, etc. and do this outside loop as in
 			// 1. find fk
 			// e.g. in cache__* FOREIGN KEY (work_item_id) REFERENCES work_items(work_item_id) ON DELETE CASCADE
 			// will search for O2O and save reference column.
 			// 2. for each table in these found
 			for _, c1 := range cc { // this first loop is just to find the ref table
-
 				if c1.Type != "foreign_key" || !c1.PKisFK { // don't care if PK is not FK for propertyShareRefConstraints
 					continue
 				}
@@ -3461,7 +3470,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string) {
 				fmt.Printf("c1: %+v\n", c1)
 			}
 
-			f.loadConstraints(cc, "work_items")
+			f.loadConstraints(cc, "work_items", nil)
 			refConstraints := f.tableConstraints["work_items"]
 			var newRefConstraints []Constraint
 			for _, refc := range refConstraints {
@@ -3640,7 +3649,7 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 			// viceversa we don't care as it's a regular PK.
 			params["Alias"] = "_" + c.TableName
 			af := analyzeField(t, field)
-			if af.PKisFK || c.PKisFK {
+			if af.PKisFK != nil || c.PKisFK {
 				params["Alias"] = "_" + c.RefTableName
 				params["JoinTableAlias"] = c.ColumnName
 			}
@@ -3648,7 +3657,7 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 			joinTable := tables[c.RefTableName]
 			var joinTablePKGroupBys []string
 			for _, pk := range joinTable.PrimaryKeys {
-				if !(af.PKisFK) {
+				if af.PKisFK == nil {
 					gb := params["Alias"].(string) + "_" + params["JoinTableAlias"].(string) + "." + pk.SQLName
 					joinTablePKGroupBys = append(joinTablePKGroupBys, gb)
 				}
@@ -3945,7 +3954,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	switch mode {
 	case "CreateParams":
 		hidden = contains(field.Properties, propertyOpenAPIHidden)
-		if af.PKisFK {
+		if af.PKisFK != nil {
 			ignoreJson = true // need for repo but unknown for request
 		}
 		if skipField {
@@ -3958,7 +3967,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		if skipField {
 			return "", nil
 		}
-		if af.PKisFK { // e.g. workitemid in project tables. don't ever want to update it. PK is FK
+		if af.PKisFK != nil { // e.g. workitemid in project tables. don't ever want to update it. PK is FK
 			fmt.Printf("UpdateParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
 			return "", nil
 		}
@@ -4040,7 +4049,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	}
 
 	if mode == "IDTypes" {
-		if af.PKisFK {
+		if af.PKisFK != nil {
 			return "", nil
 		}
 		if field.IsPrimary {
@@ -4057,7 +4066,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	}
 
 	if mode != "IDTypes" {
-		if af.PKisFK {
+		if af.PKisFK != nil {
 			for _, tfk := range table.ForeignKeys {
 				if len(tfk.FieldNames) == 1 && tfk.FieldNames[0] == field.SQLName {
 					fieldType = camelExport(f.schemaPrefix) + camelExport(singularize(tfk.RefTable)) + "ID"
@@ -4105,7 +4114,7 @@ func (f *Funcs) set_field(field Field, typ string, table Table) (string, error) 
 	case "CreateParams":
 	case "UpsertParams":
 	case "UpdateParams":
-		if af.PKisFK { // e.g. workitemid in project tables. don't ever want to update it.
+		if af.PKisFK != nil { // e.g. workitemid in project tables. don't ever want to update it.
 			fmt.Printf("UpdateParams: skipping %q: is a single foreign and primary key in table %q\n", field.SQLName, table.SQLName)
 			return "", nil
 		}
@@ -4133,14 +4142,15 @@ func (f *Funcs) set_field(field Field, typ string, table Table) (string, error) 
 
 type fieldInfo struct {
 	IsSinglePK bool
-	PKisFK     bool
+	PKisFK     *TableForeignKey
 	IsFK       bool
 	IsSingleFK bool
 	IsPK       bool
 }
 
 func analyzeField(table Table, field Field) fieldInfo {
-	var isSinglePK, pkisfk, isFK, isSingleFK, isPK bool
+	var isSinglePK, isFK, isSingleFK, isPK bool
+	var pkisfk *TableForeignKey
 
 	for _, tfk := range table.ForeignKeys {
 		for _, f := range tfk.FieldNames {
@@ -4165,7 +4175,13 @@ func analyzeField(table Table, field Field) fieldInfo {
 	}
 
 	if isSinglePK && isSingleFK { // excluding m2m join tables with 2 primary keys that are fks
-		pkisfk = true
+		for _, tfk := range table.ForeignKeys {
+			if tfk.FieldNames[0] == table.PrimaryKeys[0].SQLName {
+				fmt.Printf("tfk.FieldNames: %+v\n", tfk.FieldNames)
+				fmt.Printf("table.PrimaryKeys: %+v\n", table.PrimaryKeys)
+				pkisfk = &tfk
+			}
+		}
 	}
 
 	r := fieldInfo{
@@ -4214,7 +4230,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 	// }
 
 	if len(constraints) > 0 {
-		f.loadConstraints(constraints, t.SQLName)
+		f.loadConstraints(constraints, t.SQLName, nil)
 	}
 	cc, ok := f.tableConstraints[t.SQLName]
 	if !ok {
@@ -4313,15 +4329,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 					notes += " (generated from M2O)"
 				}
 
-				t := tables[c.RefTableName]
-				var fd Field
-				for _, tf := range t.Fields {
-					if tf.SQLName == c.ColumnName {
-						fd = tf
-					}
-				}
-				af := analyzeField(t, fd)
-				if af.PKisFK || c.PKisFK {
+				if c.PKisFK {
 					goName = camelExport(singularize(c.RefTableName)) + "Join"
 				}
 				joinPrefix := inflector.Singularize(c.RefTableName) + "_"
@@ -4773,11 +4781,11 @@ type Table struct {
 	Comment     string
 	Generated   []Field
 	Ignored     []Field
-	ForeignKeys []TableForeignKeys
+	ForeignKeys []TableForeignKey
 	Schema      string
 }
 
-type TableForeignKeys struct {
+type TableForeignKey struct {
 	FieldNames []string
 	RefTable   string
 	RefColumns []string
