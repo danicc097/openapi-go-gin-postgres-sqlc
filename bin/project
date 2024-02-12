@@ -1263,7 +1263,7 @@ x.test.xo() {
         --schema xo_tests_cache \
         --ignore "*.created_at" \
         --ignore "*.updated_at" || err "Failed xo xo_tests schema generation"
-    } >/dev/null
+    }
 
     files=$(find "$test_dir/got" \
       -name "*.go")

@@ -166,15 +166,13 @@ create table xo_tests.pag_element (
   , foreign key (dummy) references xo_tests.dummy_join (dummy_join_id) on delete cascade
 );
 
-create schema if not exists xo_tests_cache;
-
-create table if not exists xo_tests_cache.demo_work_items (
-  work_item_id int not null unique
+create table if not exists xo_tests.cache__demo_work_items (
+  work_item_id int not null primary key
   , title text
   , foreign key (work_item_id) references xo_tests.work_items (work_item_id) on delete cascade
 );
 
-comment on column xo_tests_cache.demo_work_items.work_item_id is '"type":XoTestsWorkItemID && "properties":refs-ignore';
+comment on column xo_tests.cache__demo_work_items.work_item_id is '"properties":refs-ignore,share-ref-constraints';
 
 do $BODY$
 declare
