@@ -32,8 +32,9 @@ type XoTestsWorkItem struct {
 	Title       *string           `json:"title" db:"title"`                                              // title
 	Description *string           `json:"description" db:"description"`                                  // description
 
-	DemoWorkItemJoin          *XoTestsDemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
-	WorkItemAssignedUsersJoin *[]User__WIAU_XoTestsWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	DemoWorkItemJoin             *XoTestsDemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
+	WorkItemAssignedUsersJoin    *[]User__WIAU_XoTestsWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemWorkItemCommentsJoin *[]XoTestsWorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O work_items
 }
 
 // XoTestsWorkItemCreateParams represents insert params for 'xo_tests.work_items'.
@@ -75,16 +76,18 @@ func WithXoTestsWorkItemLimit(limit int) XoTestsWorkItemSelectConfigOption {
 type XoTestsWorkItemOrderBy string
 
 type XoTestsWorkItemJoins struct {
-	DemoWorkItem  bool // O2O demo_work_items
-	AssignedUsers bool // M2M work_item_assigned_user
+	DemoWorkItem     bool // O2O demo_work_items
+	AssignedUsers    bool // M2M work_item_assigned_user
+	WorkItemComments bool // M2O work_item_comments
 }
 
 // WithXoTestsWorkItemJoin joins with the given tables.
 func WithXoTestsWorkItemJoin(joins XoTestsWorkItemJoins) XoTestsWorkItemSelectConfigOption {
 	return func(s *XoTestsWorkItemSelectConfig) {
 		s.joins = XoTestsWorkItemJoins{
-			DemoWorkItem:  s.joins.DemoWorkItem || joins.DemoWorkItem,
-			AssignedUsers: s.joins.AssignedUsers || joins.AssignedUsers,
+			DemoWorkItem:     s.joins.DemoWorkItem || joins.DemoWorkItem,
+			AssignedUsers:    s.joins.AssignedUsers || joins.AssignedUsers,
+			WorkItemComments: s.joins.WorkItemComments || joins.WorkItemComments,
 		}
 	}
 }
@@ -157,6 +160,22 @@ const xoTestsWorkItemTableAssignedUsersSelectSQL = `COALESCE(
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const xoTestsWorkItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
+
+const xoTestsWorkItemTableWorkItemCommentsJoinSQL = `-- M2O join generated from "work_item_comments_work_item_id_fkey"
+left join (
+  select
+  work_item_id as work_item_comments_work_item_id
+    , array_agg(work_item_comments.*) as work_item_comments
+  from
+    xo_tests.work_item_comments
+  group by
+        work_item_id
+) as joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
+`
+
+const xoTestsWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+
+const xoTestsWorkItemTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, work_items.work_item_id`
 
 // XoTestsWorkItemUpdateParams represents update params for 'xo_tests.work_items'.
 type XoTestsWorkItemUpdateParams struct {
@@ -321,6 +340,12 @@ func XoTestsWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssignedUsersGroupBySQL)
 	}
 
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, xoTestsWorkItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableWorkItemCommentsGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -426,6 +451,12 @@ func XoTestsWorkItems(ctx context.Context, db DB, opts ...XoTestsWorkItemSelectC
 		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssignedUsersGroupBySQL)
 	}
 
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, xoTestsWorkItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableWorkItemCommentsGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -529,6 +560,12 @@ func XoTestsWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTestsW
 		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssignedUsersGroupBySQL)
 	}
 
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, xoTestsWorkItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableWorkItemCommentsGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -628,6 +665,12 @@ func XoTestsWorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...
 		selectClauses = append(selectClauses, xoTestsWorkItemTableAssignedUsersSelectSQL)
 		joinClauses = append(joinClauses, xoTestsWorkItemTableAssignedUsersJoinSQL)
 		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssignedUsersGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, xoTestsWorkItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableWorkItemCommentsGroupBySQL)
 	}
 
 	selects := ""

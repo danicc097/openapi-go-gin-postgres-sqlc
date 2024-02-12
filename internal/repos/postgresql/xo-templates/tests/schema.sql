@@ -133,6 +133,23 @@ create index on xo_tests.work_items using gin (title extensions.gin_trgm_ops , d
 
 create index on xo_tests.work_items using gin (title , description extensions.gin_trgm_ops);
 
+create table xo_tests.work_item_comments (
+  work_item_comment_id bigserial primary key
+  , work_item_id bigint not null
+  , user_id uuid not null
+  , message text not null
+  , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
+  , updated_at timestamp with time zone default CLOCK_TIMESTAMP() not null
+  , foreign key (user_id) references xo_tests.users (user_id) on delete cascade
+  , foreign key (work_item_id) references xo_tests.work_items (work_item_id) on delete cascade
+);
+
+comment on column xo_tests.work_item_comments.work_item_id is '"cardinality":M2O';
+
+comment on column xo_tests.work_item_comments.user_id is '"cardinality":M2O';
+
+create index on xo_tests.work_item_comments (work_item_id);
+
 create type xo_tests.work_item_role as ENUM (
   'preparer'
   , 'reviewer'
@@ -221,6 +238,8 @@ begin
     values ('body 2' , user_1_id , user_2_id);
   insert into xo_tests.work_items (title , description)
     values ('Work Item 1' , 'Every cloud has a silver lining.');
+  insert into xo_tests.cache__demo_work_items (work_item_id , title)
+    values (1 , 'Work Item 1 (cache__demo_work_items)');
   insert into xo_tests.work_items (title , description)
     values ('Work Item 2' , 'When in Rome, do as the Romans do.');
   insert into xo_tests.work_items (title)

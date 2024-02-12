@@ -31,7 +31,8 @@ type XoTestsCacheDemoWorkItem struct {
 	WorkItemID XoTestsWorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
 	Title      *string           `json:"title" db:"title"`                                              // title
 
-	WorkItemAssignedUsersJoin *[]User__WIAU_XoTestsCacheDemoWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemAssignedUsersJoin    *[]User__WIAU_XoTestsCacheDemoWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemWorkItemCommentsJoin *[]XoTestsWorkItemComment              `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O cache__demo_work_items
 }
 
 // XoTestsCacheDemoWorkItemCreateParams represents insert params for 'xo_tests.cache__demo_work_items'.
@@ -71,14 +72,16 @@ func WithXoTestsCacheDemoWorkItemLimit(limit int) XoTestsCacheDemoWorkItemSelect
 type XoTestsCacheDemoWorkItemOrderBy string
 
 type XoTestsCacheDemoWorkItemJoins struct {
-	AssignedUsers bool // M2M work_item_assigned_user
+	AssignedUsers    bool // M2M work_item_assigned_user
+	WorkItemComments bool // M2O work_item_comments
 }
 
 // WithXoTestsCacheDemoWorkItemJoin joins with the given tables.
 func WithXoTestsCacheDemoWorkItemJoin(joins XoTestsCacheDemoWorkItemJoins) XoTestsCacheDemoWorkItemSelectConfigOption {
 	return func(s *XoTestsCacheDemoWorkItemSelectConfig) {
 		s.joins = XoTestsCacheDemoWorkItemJoins{
-			AssignedUsers: s.joins.AssignedUsers || joins.AssignedUsers,
+			AssignedUsers:    s.joins.AssignedUsers || joins.AssignedUsers,
+			WorkItemComments: s.joins.WorkItemComments || joins.WorkItemComments,
 		}
 	}
 }
@@ -142,6 +145,22 @@ const xoTestsCacheDemoWorkItemTableAssignedUsersSelectSQL = `COALESCE(
 		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const xoTestsCacheDemoWorkItemTableAssignedUsersGroupBySQL = `cache__demo_work_items.work_item_id, cache__demo_work_items.work_item_id`
+
+const xoTestsCacheDemoWorkItemTableWorkItemCommentsJoinSQL = `-- M2O join generated from "work_item_comments_work_item_id_fkey-shared-ref-cache__demo_work_items"
+left join (
+  select
+  work_item_id as work_item_comments_work_item_id
+    , array_agg(work_item_comments.*) as work_item_comments
+  from
+    xo_tests.work_item_comments
+  group by
+        work_item_id
+) as joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = cache__demo_work_items.work_item_id
+`
+
+const xoTestsCacheDemoWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+
+const xoTestsCacheDemoWorkItemTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, cache__demo_work_items.work_item_id`
 
 // XoTestsCacheDemoWorkItemUpdateParams represents update params for 'xo_tests.cache__demo_work_items'.
 type XoTestsCacheDemoWorkItemUpdateParams struct {
@@ -295,6 +314,12 @@ func XoTestsCacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, w
 		groupByClauses = append(groupByClauses, xoTestsCacheDemoWorkItemTableAssignedUsersGroupBySQL)
 	}
 
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, xoTestsCacheDemoWorkItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsCacheDemoWorkItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsCacheDemoWorkItemTableWorkItemCommentsGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -391,6 +416,12 @@ func XoTestsCacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID
 		selectClauses = append(selectClauses, xoTestsCacheDemoWorkItemTableAssignedUsersSelectSQL)
 		joinClauses = append(joinClauses, xoTestsCacheDemoWorkItemTableAssignedUsersJoinSQL)
 		groupByClauses = append(groupByClauses, xoTestsCacheDemoWorkItemTableAssignedUsersGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, xoTestsCacheDemoWorkItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsCacheDemoWorkItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsCacheDemoWorkItemTableWorkItemCommentsGroupBySQL)
 	}
 
 	selects := ""
