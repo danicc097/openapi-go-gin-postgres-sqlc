@@ -2777,9 +2777,6 @@ func (f *Funcs) initialize_constraints(t Table, constraints []Constraint) bool {
 	for _, f := range t.Fields {
 		af := analyzeField(t, f)
 		if af.PKisFK != nil {
-			fmt.Printf("init t.PrimaryKeys: %v\n", t.PrimaryKeys)
-			fmt.Printf("init t.ForeignKeys: %v\n", t.ForeignKeys)
-			fmt.Printf("af.PKisFK init (table=%s): %v\n", t.SQLName, af.PKisFK)
 			pkisfkc = af.PKisFK
 		}
 	}
@@ -3441,6 +3438,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string, pkIsFK *TableFore
 		// fmt.Printf("Constraints for %s:\n%v\n", table, formatJSON(f.tableConstraints[table]))
 		return // don't duplicate
 	}
+	mustShareRefs := false
 	for _, constraint := range cc {
 		// we need unique constraints for paginated query generation. instead do this check when generating joins only
 		// if constraint.Type != "foreign_key" {
@@ -3481,71 +3479,35 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string, pkIsFK *TableFore
 
 		shareRefConstraints := contains(properties, propertyShareRefConstraints)
 		if shareRefConstraints && pkIsFK != nil {
-			// TODO: instead save required info: table name, ref table, etc. and do this outside loop as in
-			// 1. find fk
-			// e.g. in cache__* FOREIGN KEY (work_item_id) REFERENCES work_items(work_item_id) ON DELETE CASCADE
-			// will search for O2O and save reference column.
-			// 2. for each table in these found
-			for _, c1 := range cc { // this first loop is just to find the ref table
-				if c1.Type != "foreign_key" || !c1.PKisFK { // don't care if PK is not FK for propertyShareRefConstraints
-					continue
-				}
-				// now all we have are generated O2O constraints (O2O inferred - PK is FK).
-				// TODO: we just have to match c1's table name and column anme with constraint
-				// to get the ref, which will be work_items.work_item_id
-				fmt.Printf("constraint: %+v\n", constraint)
-				fmt.Printf("c1: %+v\n", c1)
-			}
-
-			f.loadConstraints(cc, "work_items", nil)
-			refConstraints := f.tableConstraints["work_items"]
-			var newRefConstraints []Constraint
-			for _, refc := range refConstraints {
-				if refc.Type != "foreign_key" || !refc.PKisFK {
-					continue
-				}
-				fmt.Printf("refc match: %+v\n", refc)
-				fmt.Printf("for c: %+v\n", constraint)
-				switch refc.Cardinality {
-				case O2O:
-					if refc.TableName == constraint.RefTableName && refc.ColumnName == constraint.RefColumnName {
-						fmt.Printf("refc match: %+v\n", refc)
-						fmt.Printf("for c: %+v\n", constraint)
-						refc.RefTableName = table
-						newRefConstraints = append(newRefConstraints, refc)
-					}
-					// works as is
-				}
-			}
-			f.tableConstraints[table] = append(f.tableConstraints[table], newRefConstraints...)
-			fmt.Printf("refConstraints for %s.%s: %+v\n", "work_items", "work_item_id", formatJSON(newRefConstraints))
+			mustShareRefs = true
 		}
 	}
 
 	// TODO: range sharedRefsInfo struct and  {
-	// 	f.loadConstraints(cc, "work_items") // TODO: .RefTable field instead
-	// 	refConstraints := f.tableConstraints["work_items"]
-	// 	var newRefConstraints []Constraint
-	// 	for _, c := range refConstraints {
-	// 		if c.Type != "foreign_key" {
-	// 			continue
-	// 		}
-	// 		newr := c
-	// 		switch newr.Cardinality {
-	// 		case M2O:
-	// 			fmt.Printf("M2O newr: %+v\n", newr)
-	// 			// M2O newr: {Type:foreign_key Cardinality:M2O Name:work_item_comments_work_item_id_fkey TableName:work_item_comments ColumnName:work_item_id ColumnComment:"cardinality":M2O RefTableName:work_items RefColumnName:work_item_id RefColumnComment:"cardinality":O2O LookupColumnName: LookupColumnComment: LookupRefColumnName: LookupRefColumnComment: JoinTableClash:false IsInferredO2O:false IsGeneratedO2OFromM2O:false JoinStructFieldClash:false RefPKisFK:false}
-	// 			newr.RefTableName = table // TODO: .Table field
-	// 			newr.RefColumnName = c.ColumnName // TODO: .Column field instead
-	// 		case M2M:
-	// 			// works as is
-	// 		}
-	// 		newr.Name = newr.Name + "-shared-ref-" + table
-	// 		newRefConstraints = append(newRefConstraints, newr)
-	// 	}
-	// 	f.tableConstraints[table] = append(f.tableConstraints[table], newRefConstraints...)
-	// 	fmt.Printf("refConstraints for %s.%s: %+v\n", "work_items", "work_item_id", formatJSON(newRefConstraints))
-	// }
+	if mustShareRefs {
+		f.loadConstraints(cc, pkIsFK.RefTable, nil) // TODO: .RefTable field instead
+		refConstraints := f.tableConstraints[pkIsFK.RefTable]
+		var newRefConstraints []Constraint
+		for _, c := range refConstraints {
+			if c.Type != "foreign_key" {
+				continue
+			}
+			newr := c
+			switch newr.Cardinality {
+			case M2O:
+				fmt.Printf("M2O newr: %+v\n", newr)
+				// M2O newr: {Type:foreign_key Cardinality:M2O Name:work_item_comments_work_item_id_fkey TableName:work_item_comments ColumnName:work_item_id ColumnComment:"cardinality":M2O RefTableName:work_items RefColumnName:work_item_id RefColumnComment:"cardinality":O2O LookupColumnName: LookupColumnComment: LookupRefColumnName: LookupRefColumnComment: JoinTableClash:false IsInferredO2O:false IsGeneratedO2OFromM2O:false JoinStructFieldClash:false RefPKisFK:false}
+				newr.RefTableName = table         // TODO: .Table field
+				newr.RefColumnName = c.ColumnName // TODO: .Column field instead
+			case M2M:
+				// works as is
+			}
+			newr.Name = newr.Name + "-shared-ref-" + table
+			newRefConstraints = append(newRefConstraints, newr)
+		}
+		f.tableConstraints[table] = append(f.tableConstraints[table], newRefConstraints...)
+		fmt.Printf("refConstraints for %s.%s: %+v\n", pkIsFK.RefTable, pkIsFK.RefColumns[0], formatJSON(newRefConstraints))
+	}
 }
 
 // createJoinStatement returns select queries and join statements strings
@@ -4204,11 +4166,9 @@ func analyzeField(table Table, field Field) fieldInfo {
 	if isSinglePK && isSingleFK { // excluding m2m join tables with 2 primary keys that are fks
 		for _, tfk := range table.ForeignKeys {
 			if tfk.FieldNames[0] == table.PrimaryKeys[0].SQLName {
-				fmt.Printf(Green+"%s == %s\n"+Off, tfk.FieldNames[0], table.PrimaryKeys[0].SQLName)
-				fmt.Printf(Red+"tfk.FieldNames: %+v\n"+Off, tfk.FieldNames)
-				fmt.Printf("table.PrimaryKeys: %+v\n", table.PrimaryKeys)
 				tfk := tfk
 				pkisfk = &tfk
+				break
 			}
 		}
 	}
