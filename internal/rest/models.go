@@ -58,7 +58,7 @@ type User struct {
 //	}
 type PaginatedUsersResponse = PaginationBaseResponse[User]
 
-type SharedWorkItemFields struct {
+type SharedWorkItemJoins struct {
 	TimeEntries      *[]db.TimeEntry           `json:"timeEntries"`
 	WorkItemComments *[]db.WorkItemComment     `json:"workItemComments"`
 	Members          *[]db.User__WIAU_WorkItem `json:"members"`
@@ -68,13 +68,13 @@ type SharedWorkItemFields struct {
 
 type DemoWorkItems struct {
 	db.WorkItem
-	SharedWorkItemFields
+	SharedWorkItemJoins
 	DemoWorkItem db.DemoWorkItem `json:"demoWorkItem" required:"true"`
 }
 
 type DemoTwoWorkItems struct {
 	db.WorkItem
-	SharedWorkItemFields
+	SharedWorkItemJoins
 	DemoTwoWorkItem db.DemoTwoWorkItem `json:"demoTwoWorkItem" required:"true"`
 }
 

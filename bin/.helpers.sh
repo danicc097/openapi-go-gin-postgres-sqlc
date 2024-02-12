@@ -157,6 +157,18 @@ join_by() {
   fi
 }
 
+array.add_prefix() {
+  local prefix="$1"
+  shift
+  printf "%s\n" "${@/#/$prefix}"
+}
+
+array.add_suffix() {
+  local suffix="$1"
+  shift
+  printf "%s\n" "${@/%/$suffix}"
+}
+
 # breaks when separator has spaces, e.g. " | "
 # join_by() {
 #   [ "$#" -ge 1 ] || return 1
@@ -571,7 +583,7 @@ AWK_REMOVE_GO_COMMENTS='
 go-utils.find_structs() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+  mapfile -t -O ${#__arr[@]} __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
     sed -ne '/\[/!s/type\(.*\)struct.*/\1/p') # /\[/! excludes lines containing [ right away
 
   local generic_structs=()
@@ -595,7 +607,7 @@ go-utils.find_structs() {
 go-utils.find_generic_structs() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+  mapfile -t -O ${#__arr[@]} __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
     sed -ne 's/^type \(.*\)\[.*\] struct.*/\1/p')
 
   mapfile -t __arr < <(LC_COLLATE=C sort < <(printf "%s\n" ${__arr[@]}))
@@ -683,7 +695,7 @@ go-utils.struct_fields() {
 go-utils.find_interfaces() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+  mapfile -t -O ${#__arr[@]} __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
     sed -ne 's/[\s]*type\(.*\)interface.*/\1/p')
   if [[ ${#__arr[@]} -eq 0 ]]; then
     err "No interfaces found in package $pkg"
@@ -698,7 +710,7 @@ go-utils.find_interfaces() {
 go-utils.find_enums() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+  mapfile -t -O ${#__arr[@]} __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
     sed -ne 's/.*type[[:space:]]\+\([^=[:space:]]\+\)[[:space:]]\+string.*/\1/p')
   if [[ ${#__arr[@]} -eq 0 ]]; then
     echo "No enums found in package $pkg"
@@ -726,7 +738,7 @@ go-utils.get_interface_methods() {
 go-utils.find_all_types() {
   local -n __arr="$1"
   local pkg="$2"
-  mapfile -t __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
+  mapfile -t -O ${#__arr[@]} __arr < <(find $pkg -maxdepth 1 -name "*.go" -exec awk "$AWK_REMOVE_GO_COMMENTS" {} \; |
     sed -E -n 's/^type[[:space:]]+([A-Z][A-Za-z0-9_]+)[[:space:]].*/\1/p')
   if [[ ${#__arr[@]} -eq 0 ]]; then
     echo "No types found in package $pkg"

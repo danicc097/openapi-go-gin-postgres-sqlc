@@ -84,6 +84,31 @@ func (_d DemoWorkItemWithTracing) Create(ctx context.Context, d db.DBTX, params 
 	return _d.DemoWorkItem.Create(ctx, d, params)
 }
 
+// Paginated implements repos.DemoWorkItem
+func (_d DemoWorkItemWithTracing) Paginated(ctx context.Context, d db.DBTX, cursor db.WorkItemID, opts ...db.CacheDemoWorkItemSelectConfigOption) (ca1 []db.CacheDemoWorkItem, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoWorkItem.Paginated")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx":    ctx,
+				"d":      d,
+				"cursor": cursor,
+				"opts":   opts}, map[string]interface{}{
+				"ca1": ca1,
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.DemoWorkItem.Paginated(ctx, d, cursor, opts...)
+}
+
 // Update implements repos.DemoWorkItem
 func (_d DemoWorkItemWithTracing) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoWorkItem.Update")

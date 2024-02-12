@@ -9,7 +9,7 @@ import (
 func (h *StrictHandlers) GetPaginatedNotifications(c *gin.Context, request GetPaginatedNotificationsRequestObject) (GetPaginatedNotificationsResponseObject, error) {
 	caller, _ := getUserCallerFromCtx(c)
 
-	nn, err := h.svc.Notification.PaginatedNotifications(c.Request.Context(), h.pool, caller.UserID, request.Params)
+	nn, err := h.svc.Notification.PaginatedUserNotifications(c.Request.Context(), h.pool, caller.UserID, request.Params)
 	if err != nil {
 		renderErrorResponse(c, "Could not fetch notifications", err)
 

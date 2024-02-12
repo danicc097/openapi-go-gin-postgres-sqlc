@@ -398,7 +398,7 @@ export interface User {
 export interface ProjectBoard {
   projectName: Project
 }
-export interface SharedWorkItemFields {
+export interface SharedWorkItemJoins {
   members?: DbUserWIAUWorkItem[] | null
   timeEntries?: DbTimeEntry[] | null
   workItemComments?: DbWorkItemComment[] | null
@@ -466,10 +466,6 @@ export interface DbActivity {
   isProductive: boolean
   name: string
   projectID: number
-}
-export interface InitializeProjectRequest {
-  tags?: DbWorkItemTagCreateParams[] | null
-  teams?: DbTeamCreateParams[] | null
 }
 export interface HTTPValidationError {
   detail?: Detail

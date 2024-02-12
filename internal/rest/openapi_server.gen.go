@@ -673,12 +673,6 @@ type HTTPValidationError struct {
 	Messages []string `json:"messages"`
 }
 
-// InitializeProjectRequest defines the model for InitializeProjectRequest.
-type InitializeProjectRequest struct {
-	Tags  *[]externalRef0.DbWorkItemTagCreateParams `json:"tags"`
-	Teams *[]externalRef0.DbTeamCreateParams        `json:"teams"`
-}
-
 /* Ignoring existing rest struct
 // Notification defines the model for Notification.
 type Notification  struct {
@@ -760,8 +754,8 @@ type ServicesMember struct {
 }
 
 /* Ignoring existing rest struct
-// SharedWorkItemFields defines the model for SharedWorkItemFields.
-type SharedWorkItemFields  struct {
+// SharedWorkItemJoins defines the model for SharedWorkItemJoins.
+type SharedWorkItemJoins  struct {
     Members *[]externalRef0.DbUserWIAUWorkItem`json:"members"`
     TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
     WorkItemComments *[]externalRef0.DbWorkItemComment`json:"workItemComments"`
@@ -976,7 +970,7 @@ type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
 
-type InitializeProjectJSONRequestBody = InitializeProjectRequest
+type InitializeProjectJSONRequestBody = CreateProjectBoardRequest
 
 // CreateTeamJSONRequestBody defines body for CreateTeam for application/json ContentType.
 

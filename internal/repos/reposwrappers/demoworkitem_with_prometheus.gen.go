@@ -66,6 +66,20 @@ func (_d DemoWorkItemWithPrometheus) Create(ctx context.Context, d db.DBTX, para
 	return _d.base.Create(ctx, d, params)
 }
 
+// Paginated implements repos.DemoWorkItem
+func (_d DemoWorkItemWithPrometheus) Paginated(ctx context.Context, d db.DBTX, cursor db.WorkItemID, opts ...db.CacheDemoWorkItemSelectConfigOption) (ca1 []db.CacheDemoWorkItem, err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		demoworkitemDurationSummaryVec.WithLabelValues(_d.instanceName, "Paginated", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.Paginated(ctx, d, cursor, opts...)
+}
+
 // Update implements repos.DemoWorkItem
 func (_d DemoWorkItemWithPrometheus) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
 	_since := time.Now()

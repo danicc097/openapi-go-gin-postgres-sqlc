@@ -113,6 +113,46 @@ func (_d DemoWorkItemWithRetry) Create(ctx context.Context, d db.DBTX, params re
 	return
 }
 
+// Paginated implements repos.DemoWorkItem
+func (_d DemoWorkItemWithRetry) Paginated(ctx context.Context, d db.DBTX, cursor db.WorkItemID, opts ...db.CacheDemoWorkItemSelectConfigOption) (ca1 []db.CacheDemoWorkItem, err error) {
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "SAVEPOINT DemoWorkItemWithRetryPaginated")
+		if err != nil {
+			err = fmt.Errorf("could not store savepoint: %w", err)
+			return
+		}
+	}
+	ca1, err = _d.DemoWorkItem.Paginated(ctx, d, cursor, opts...)
+	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT DemoWorkItemWithRetryPaginated")
+		}
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		if tx, ok := d.(pgx.Tx); ok {
+			if _, err = tx.Exec(ctx, "ROLLBACK to DemoWorkItemWithRetryPaginated"); err != nil {
+				err = fmt.Errorf("could not rollback to savepoint: %w", err)
+				return
+			}
+		}
+
+		ca1, err = _d.DemoWorkItem.Paginated(ctx, d, cursor, opts...)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT DemoWorkItemWithRetryPaginated")
+	}
+	return
+}
+
 // Update implements repos.DemoWorkItem
 func (_d DemoWorkItemWithRetry) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {

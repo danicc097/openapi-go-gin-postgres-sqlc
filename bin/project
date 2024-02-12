@@ -298,8 +298,8 @@ x.setup.swagger-ui() {
   { { {
     local name
 
-    name="$(curl --retry 100 -fsSL "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
-    curl --retry 100 -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
+    name="$(curl --retry 10 --user-agent "$GOMOD_PKG" -fsSL "https://api.github.com/repos/swagger-api/swagger-ui/releases/latest" | jq -r ".. .tag_name? // empty")"
+    curl --retry 10 -fsSL "github.com/swagger-api/swagger-ui/archive/refs/tags/$name.tar.gz" -o swagger-ui.tar.gz
     tar xf swagger-ui.tar.gz swagger-ui-"${name#*v}"/dist --one-top-level=swagger-ui --strip-components=2
     rm swagger-ui.tar.gz
     mkdir -p $SWAGGER_UI_DIR
@@ -353,7 +353,7 @@ x.gen.pregen() {
     local new_schemas=""
     for ref in "${missing_rest_models[@]}"; do
       new_schemas+="\"$ref\": {
-            \"x-postgen-struct\": \"$ref\",
+            \"x-gen-struct\": \"$ref\",
             \"x-is-generated\": true
           },"
     done
@@ -370,7 +370,6 @@ x.gen.pregen() {
     ######## Ensure consistent style for future codegen
 
     echo "Applying PascalCase to operation IDs in $SPEC_PATH"
-    spec_content=$(<$SPEC_PATH)
 
     # outputs safe double-quoted paths for yq
     # https://github.com/mikefarah/yq/issues/1295
@@ -390,8 +389,7 @@ x.gen.pregen() {
 
     yq_op="${ops%"|"}"
 
-    spec_content=$(yq e "$yq_op" < <(echo "$spec_content"))
-    echo "$spec_content" >$SPEC_PATH
+    yq e "$yq_op" -i "$SPEC_PATH"
 
     update_roles_and_scopes
 
@@ -415,7 +413,7 @@ x.gen.pregen() {
 
     update_spec_with_structs
 
-    remove_schemas_marked_to_delete
+    remove_schemas_marked_for_deletion
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
@@ -476,7 +474,7 @@ update_roles_and_scopes() {
 }
 
 sync_spec_with_db() {
-  cache_all "$GEN_CACHE/db.md5" bin/project bin/.helpers.sh .env.$X_ENV db/ $SPEC_PATH && return 0
+  cache_all "$GEN_CACHE/db.md5" ${base_cache_deps[@]} db/ $SPEC_PATH && return 0
 
   sync_db_enums_with_spec
 
@@ -534,8 +532,7 @@ generate_repo_constructor() {
 package repos
 
 type Repos struct {
-    $(join_by "
-    " "${struct_fields[@]}")
+    $(join_by $'\n' "${struct_fields[@]}")
 }
 EOF
 
@@ -686,7 +683,7 @@ x.gen.xo() {
   xsetup.backup
   xsetup.drop-and-migrate-gen-db
   { { {
-    cache_all "$GEN_CACHE/xo.md5" bin/project bin/.helpers.sh .env.$X_ENV go.mod db/ $XO_TEMPLATES_DIR/ \
+    cache_all "$GEN_CACHE/xo.md5" ${base_cache_deps[@]} go.mod db/ $XO_TEMPLATES_DIR/ \
       --exclude "$XO_TEMPLATES_DIR/tests/*" && return 0
 
     echo "Running generation"
@@ -710,7 +707,7 @@ x.gen.xo() {
       --schema cache ||
       err "Failed xo cache schema generation" &
 
-    wait
+    wait_without_error
 
     files=$(find "$PG_REPO_GEN/db" \
       -name "*.go")
@@ -935,7 +932,7 @@ x.gen.frontend() {
       "frontend/package.json"
     )
 
-    cache_all "$GEN_CACHE/frontend.md5" bin/project bin/.helpers.sh .env.$X_ENV $SPEC_PATH ${deps[@]} && return 0
+    cache_all "$GEN_CACHE/frontend.md5" ${base_cache_deps[@]} $SPEC_PATH ${deps[@]} && return 0
 
     config_template_setup frontend # no need to run if cached .env
 
@@ -983,7 +980,7 @@ x.gen.e2e() {
 
     orval_config="e2e/orval.config.ts"
 
-    cache_all "$GEN_CACHE/e2e.md5" bin/project bin/.helpers.sh .env.$X_ENV $SPEC_PATH $orval_config e2e/package.json && return 0
+    cache_all "$GEN_CACHE/e2e.md5" ${base_cache_deps[@]} $SPEC_PATH $orval_config e2e/package.json && return 0
 
     config_template_setup e2e # no need to run if cached .env
 
@@ -1053,7 +1050,12 @@ x.gen.build-tools() {
       { go build -o $out_dir/$cmd cmd/$cmd/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]; } &
     done
 
-    wait_without_error || err Could not rebuild all gen tools. Rerun with --x-ignore-build-errors.
+    # TODO: when typecheck errors are all in *.gen.go files, don't error out.
+    # ignore if go build first error line is `# github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers`
+    # for example
+    wait_without_error || {
+      err Could not rebuild all gen tools. Rerun with --x-ignore-build-errors.
+    }
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -1228,6 +1230,7 @@ x.test.frontend.watch() {
 }
 
 # Run custom xo generation script tests. Accepts `go test` parameters.
+# To fix tests, run with --x-no-backup.
 # Args: [...]
 x.test.xo() {
   xsetup.backup
@@ -1235,7 +1238,7 @@ x.test.xo() {
     POSTGRES_DB="xo_tests_db"
     GEN_POSTGRES_DB="xo_tests_db"
 
-    cache_all "$GEN_CACHE/test-xo.md5" bin/project bin/.helpers.sh $XO_TEMPLATES_DIR/ \
+    cache_all "$GEN_CACHE/test-xo.md5" ${base_cache_deps[@]} bin/.helpers.sh $XO_TEMPLATES_DIR/ \
       --exclude "$XO_TEMPLATES_DIR/tests/got/*" \
       --exclude "$XO_TEMPLATES_DIR/tests/snapshot/*" && return 0
 
@@ -1266,7 +1269,7 @@ x.test.xo() {
         --schema xo_tests_cache \
         --ignore "*.created_at" \
         --ignore "*.updated_at" || err "Failed xo xo_tests schema generation"
-    } >/dev/null
+    }
 
     files=$(find "$test_dir/got" \
       -name "*.go")
@@ -2336,39 +2339,47 @@ find_deleted_pkg_schemas() {
   done
 }
 
-x.dddd() {
-  local rest_structs=() rest_schemas=()
-  # should use ast-parser find-structs, but go/types loading is too slow all
-  # over gen functions, we might be better off with simple regexes
-  go-utils.find_structs rest_structs "$REST_MODELS"
-  echo ${rest_structs[*]}
-}
-
 update_spec_with_structs() {
-  vext="x-postgen-struct"
-  struct_names=$(yq e ".components.schemas[] | select(has(\"$vext\")).$vext" $SPEC_PATH)
-  mapfile -t struct_names <<<$struct_names
+  mapfile -t invalid_schemas < <(yq e '.components.schemas[] | select(has("x-gen-struct") and (has("x-is-generated") | not)) | key' $SPEC_PATH)
+  [[ ${#invalid_schemas[@]} -gt 0 ]] && err "x-gen-struct can only be used in generated schemas (x-is-generated). Found in:
+$(join_by $'\n' "${invalid_schemas[@]}")"
 
-  # generate all rest/models.go always
-  local rest_structs=() rest_schemas=()
+  mapfile -t invalid_schemas < <(yq e '.components.schemas[] | select(has("x-gen-struct") and key != .x-gen-struct) | key' $SPEC_PATH)
+  [[ ${#invalid_schemas[@]} -gt 0 ]] && err "x-gen-struct must match schema name. Please rename:
+$(join_by $'\n' "${invalid_schemas[@]}")"
+
+  mapfile -t structs_to_generate < <(yq e '.components.schemas[] | select(has("x-gen-struct")).x-gen-struct' $SPEC_PATH)
+
+  local rest_structs=()
   # should use ast-parser find-structs, but go/types loading is too slow all
   # over gen functions, we might be better off with simple regexes
   go-utils.find_structs rest_structs "$REST_MODELS"
-  # mapfile -t -d $'\0' rest_schemas < <(printf "Rest%s\0" ${rest_structs[@]})
-  struct_names+=("${rest_structs[@]}")
-
-  struct_names_arg=$(join_by "," ${struct_names[*]})
-  ((${#struct_names_arg} == 0)) && return
+  structs_to_generate+=("${rest_structs[@]}") # always generate all rest/models.go to further prevent user adding clashing names
 
   # NOTE: https://github.com/pkujhd/goloader allows reloading packages at runtime
   # NOTE: yaegi extraction doesn't work with generics and is slow. See failed-yaegi* branches
   # otherwise maybe yaegi can be used for openapi-go without much fuzz
   # Only implement the above if there are cases where we cant have compilable state when
   # building gen-schema at this step, or the workaround is too tedious
+  local existing_structs=()
+  go-utils.find_structs existing_structs "$PG_REPO_GEN/db"
+  mapfile -t existing_structs < <(array.add_prefix "Db" "${existing_structs[@]}")
+  go-utils.find_structs existing_structs "$REST_MODELS"
+
+  for struct in "${structs_to_generate[@]}"; do
+    if ! [[ " ${existing_structs[*]} " =~ " $struct " ]]; then
+      echo "Schema with x-gen-struct: $struct no longer exists. Deleting..."
+      yq e "del(.components.schemas.$struct)" -i "$SPEC_PATH"
+      structs_to_generate=("${structs_to_generate[@]/$struct/}")
+    fi
+  done
+
+  struct_names_arg=$(join_by "," ${structs_to_generate[*]})
+  existing_structs_arg=$(join_by "," ${existing_structs[*]})
 
   local gen_schema_spec_path="/tmp/openapi.yaml"
   # always compile and run since we need new PublicStructs that were just changed
-  codegen gen-schema --struct-names $struct_names_arg | yq '
+  codegen gen-schema --struct-names $struct_names_arg --existing-structs $existing_structs_arg | yq '
     with_entries(select(.key == "components"))' \
     >$gen_schema_spec_path || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
 
@@ -2383,57 +2394,24 @@ update_spec_with_structs() {
 
   if [[ ${#clashes[@]} -gt 0 ]]; then
     err "The following non-generated schemas would have been overridden by internal/rest/models.go structs. Please rename or delete:
-$(join_by "
-" "${clashes[@]}")
-    "
+$(join_by $'\n' "${clashes[@]}")"
   fi
 
-  # workaround for https://github.com/mikefarah/yq/discussions/1934
-  # have to delete absolutely all schemas before merging
-  local del_cmd=""
-  local all_schemas=("${struct_names[@]}" "${rest_structs[@]}")
-  for schema in ${all_schemas[@]}; do
-    del_cmd+="del(.components.schemas.$schema) |"
-  done
-
-  # must rename these from gen_schema_spec_path to trim Rest prefix
-  # and also append
-  # \"x-postgen-struct\": \"Rest$rest_struct\",
-  # \"x-is-generated\": true
-  # yq e '.components.schemas.* | key | select(test("^Rest"))' openapi.yaml
-  # there is no way to delete, so we should concat `.components.schemas.$key = .components.schemas.Rest$key | del(.components.schemas.Rest$key) |`
-  # however gen_schema generates indirect with Rest<...> (should check again if intercept schema is ignored for indirect gen) so perhaps simplest way is to do sed replacing Rest<Uppercase A-Z>[A-Za-z0-9_-]
-
-  yq eval-all "${del_cmd%"|"}" -i "$SPEC_PATH"
-
-  local rest_schemas_without_prefix=""
-  for rest_struct in ${rest_structs[@]}; do
-    rest_schemas_without_prefix+="\"$rest_struct\": {
-      \"\$ref\": \"#/components/schemas/Rest$rest_struct\"
-    },"
-  done
-
-  # swaggest cannot generate 2 schemas for a single struct
-  # += does not work with entries, while *n will recursively merge new fields...
-  # yq eval-all ".components.schemas += {
-  #   ${rest_schemas_without_prefix%,}
-  # }" -i "$gen_schema_spec_path"
-
-  yq e '(.components.schemas.* | key) line_comment="Generated schema. DO NOT EDIT."' -i $gen_schema_spec_path
-
   # only keep schemas not outputted by gen. User should have been warned on clashes.
+  # NOTE: must use shallow merge to replace every single schema, else indirect generations are out of date.
   yq eval-all "(
         select(fi == 0).components.schemas
         ) as \$schemas
         | (
           select(fi == 1).components.schemas
         ) as \$generated_schemas
+        | (\$generated_schemas.* | key) line_comment=\"Generated schema. DO NOT EDIT.\"
         | select(fi == 0)
-        | .components.schemas = \$generated_schemas *n \$schemas
+        | .components.schemas += \$generated_schemas
         " "$SPEC_PATH" "$gen_schema_spec_path" | sponge "$SPEC_PATH"
 }
 
-remove_schemas_marked_to_delete() {
+remove_schemas_marked_for_deletion() {
   local paths_arr paths
   paths_arr=$(yq e '..
       | select(has("x-TO-BE-DELETED"))
@@ -2496,7 +2474,7 @@ source ".project.usage.sh"
 set -Eeo pipefail
 set -o errtrace
 
-X_ENV="dev"
+X_ENV="dev" # default if none set
 test -n "$CI" && X_ENV="ci"
 # prod detection not necessary, calls without --x-env=prod will no affect prod data
 # unless .env.dev is filled and reuse db/credentials which is far-fetched.
@@ -2506,7 +2484,7 @@ test -n "$CI" && X_ENV="ci"
 
 declare -A X_CUSTOM_COMPLETION
 
-readonly X_OPT_ENV__COMP="dev prod ci"
+readonly X_OPT_ENV__COMP="dev prod ci e2e"
 readonly X_FUNC_DB_GEN__COMP="up up-1 drop"
 
 _completion_x_option__env() {
@@ -2761,6 +2739,7 @@ done
 export BUILD_VERSION="$X_ENV-$(git rev-parse --verify HEAD)"
 
 readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG X_NO_EXIT_CLEANUP
+readonly base_cache_deps="bin/project bin/.helpers.sh .env.$X_ENV"
 
 ######################## INIT ########################
 
@@ -2851,7 +2830,7 @@ if [[ -n "$1" ]]; then
       "x.$CMD" "$@"
 
       if [[ -n $X_IGNORE_BUILD_ERRORS ]]; then
-        echo "${YELLOW}[WARNING] A rerun without ignoring build errors is required"
+        echo "${YELLOW}[WARNING] A rerun without ignoring build errors may be required"
       fi
       exit $? # do not quote
     fi

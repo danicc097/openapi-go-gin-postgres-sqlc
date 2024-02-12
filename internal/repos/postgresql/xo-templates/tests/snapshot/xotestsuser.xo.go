@@ -21,9 +21,12 @@ import (
 // XoTestsUser represents a row from 'xo_tests.users'.
 // Change properties via SQL column comments, joined with " && ":
 //   - "properties":<p1>,<p2>,...
-//     -- private to exclude a field from JSON.
-//     -- not-required to make a schema field not required.
-//     -- hidden to exclude field from OpenAPI generation.
+//     -- private: exclude a field from JSON.
+//     -- not-required: make a schema field not required.
+//     -- hidden: exclude field from OpenAPI generation.
+//     -- refs-ignore: generate a field whose constraints are ignored by the referenced table,
+//     i.e. no joins will be generated.
+//     -- share-ref-constraints: for a FK column, it will generate the same M2O and M2M join fields the ref column has.
 //   - "type":<pkg.type> to override the type annotation. An openapi schema named <type> must exist.
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
@@ -42,6 +45,7 @@ type XoTestsUser struct {
 	SenderNotificationsJoin   *[]XoTestsNotification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
 	APIKeyJoin                *XoTestsUserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
 	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_XoTestsUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
+	UserWorkItemCommentsJoin  *[]XoTestsWorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                 // M2O users
 }
 
 // XoTestsUserCreateParams represents insert params for 'xo_tests.users'.
@@ -133,6 +137,7 @@ type XoTestsUserJoins struct {
 	NotificationsSender   bool // M2O notifications
 	UserAPIKey            bool // O2O user_api_keys
 	WorkItemsAssignedUser bool // M2M work_item_assigned_user
+	WorkItemComments      bool // M2O work_item_comments
 }
 
 // WithXoTestsUserJoin joins with the given tables.
@@ -147,6 +152,7 @@ func WithXoTestsUserJoin(joins XoTestsUserJoins) XoTestsUserSelectConfigOption {
 			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
 			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
 			WorkItemsAssignedUser: s.joins.WorkItemsAssignedUser || joins.WorkItemsAssignedUser,
+			WorkItemComments:      s.joins.WorkItemComments || joins.WorkItemComments,
 		}
 	}
 }
@@ -352,6 +358,22 @@ const xoTestsUserTableWorkItemsAssignedUserSelectSQL = `COALESCE(
 		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
 const xoTestsUserTableWorkItemsAssignedUserGroupBySQL = `users.user_id, users.user_id`
+
+const xoTestsUserTableWorkItemCommentsJoinSQL = `-- M2O join generated from "work_item_comments_user_id_fkey"
+left join (
+  select
+  user_id as work_item_comments_user_id
+    , array_agg(work_item_comments.*) as work_item_comments
+  from
+    xo_tests.work_item_comments
+  group by
+        user_id
+) as joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id
+`
+
+const xoTestsUserTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+
+const xoTestsUserTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, users.user_id`
 
 // XoTestsUserUpdateParams represents update params for 'xo_tests.users'.
 type XoTestsUserUpdateParams struct {
@@ -578,6 +600,12 @@ func XoTestsUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.
 		groupByClauses = append(groupByClauses, xoTestsUserTableWorkItemsAssignedUserGroupBySQL)
 	}
 
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, xoTestsUserTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableWorkItemCommentsGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -721,6 +749,12 @@ func XoTestsUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opt
 		groupByClauses = append(groupByClauses, xoTestsUserTableWorkItemsAssignedUserGroupBySQL)
 	}
 
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, xoTestsUserTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableWorkItemCommentsGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -860,6 +894,12 @@ func XoTestsUserByName(ctx context.Context, db DB, name string, opts ...XoTestsU
 		groupByClauses = append(groupByClauses, xoTestsUserTableWorkItemsAssignedUserGroupBySQL)
 	}
 
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, xoTestsUserTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableWorkItemCommentsGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -997,6 +1037,12 @@ func XoTestsUserByUserID(ctx context.Context, db DB, userID XoTestsUserID, opts 
 		selectClauses = append(selectClauses, xoTestsUserTableWorkItemsAssignedUserSelectSQL)
 		joinClauses = append(joinClauses, xoTestsUserTableWorkItemsAssignedUserJoinSQL)
 		groupByClauses = append(groupByClauses, xoTestsUserTableWorkItemsAssignedUserGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, xoTestsUserTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableWorkItemCommentsGroupBySQL)
 	}
 
 	selects := ""

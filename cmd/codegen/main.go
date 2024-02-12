@@ -14,8 +14,8 @@ import (
 
 // nolint: gochecknoglobals
 var (
-	env, spec, opIDAuthPath, structNamesList string
-	stderr                                   bytes.Buffer
+	env, spec, opIDAuthPath, structNamesList, existingStructsList string
+	stderr                                                        bytes.Buffer
 
 	implementServerCmd = flag.NewFlagSet("implement-server", flag.ExitOnError)
 	validateSpecCmd    = flag.NewFlagSet("validate-spec", flag.ExitOnError)
@@ -37,7 +37,8 @@ func main() {
 		fs.StringVar(&spec, "spec", "openapi.yaml", "OpenAPI specification")
 	}
 
-	genSchemaCmd.StringVar(&structNamesList, "struct-names", "", "comma-delimited db package struct names to generate an OpenAPI schema for")
+	genSchemaCmd.StringVar(&structNamesList, "struct-names", "", "comma-delimited struct names to generate an OpenAPI schema for")
+	genSchemaCmd.StringVar(&existingStructsList, "existing-structs", "", "comma-delimited actual Go struct names in db or rest packages")
 
 	cmd, ok := subcommands[os.Args[1]]
 	if !ok {
@@ -58,7 +59,11 @@ func main() {
 		for i := range structNames {
 			structNames[i] = strings.TrimSpace(structNames[i])
 		}
-		codeGen.GenerateSpecSchemas(structNames)
+		existingStructs := strings.Split(structNamesList, ",")
+		for i := range existingStructs {
+			existingStructs[i] = strings.TrimSpace(existingStructs[i])
+		}
+		codeGen.GenerateSpecSchemas(structNames, existingStructs)
 		os.Exit(0)
 	case "implement-server":
 		if err := codeGen.ImplementServer(); err != nil {

@@ -5,10 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { CreateProjectBoardRequest } from '../model/createProjectBoardRequest'
 import type { DbProject } from '../model/dbProject'
 import type { GetProjectWorkitems200 } from '../model/getProjectWorkitems200'
 import type { GetProjectWorkitemsParams } from '../model/getProjectWorkitemsParams'
-import type { InitializeProjectRequest } from '../model/initializeProjectRequest'
 import type { ProjectBoard } from '../model/projectBoard'
 import type { ProjectConfig } from '../model/projectConfig'
 import { customInstance } from '../../api/mutator'
@@ -21,7 +21,7 @@ type SecondParameter<T extends (...args: any) => any> = T extends (config: any, 
  */
 export const initializeProject = (
   projectName: 'demo' | 'demo_two',
-  initializeProjectRequest: InitializeProjectRequest,
+  createProjectBoardRequest: CreateProjectBoardRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
   return customInstance<void>(
@@ -29,7 +29,7 @@ export const initializeProject = (
       url: `/project/${projectName}/initialize`,
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      data: initializeProjectRequest,
+      data: createProjectBoardRequest,
     },
     options,
   )

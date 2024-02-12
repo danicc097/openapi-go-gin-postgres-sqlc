@@ -119,10 +119,17 @@ comment on column xo_tests.notifications.sender is '"cardinality":M2O';
 
 comment on column xo_tests.notifications.receiver is '"cardinality":M2O';
 
+create table xo_tests.teams (
+  team_id serial primary key
+  , name text not null
+);
+
 create table xo_tests.work_items (
   work_item_id bigserial primary key
   , title text
   , description text
+  , team_id int not null
+  , foreign key (team_id) references xo_tests.teams (team_id) on delete cascade
 );
 
 create index on xo_tests.work_items using gin (title extensions.gin_trgm_ops);
@@ -132,6 +139,23 @@ create index on xo_tests.work_items using gin (description extensions.gin_trgm_o
 create index on xo_tests.work_items using gin (title extensions.gin_trgm_ops , description extensions.gin_trgm_ops);
 
 create index on xo_tests.work_items using gin (title , description extensions.gin_trgm_ops);
+
+create table xo_tests.work_item_comments (
+  work_item_comment_id bigserial primary key
+  , work_item_id bigint not null
+  , user_id uuid not null
+  , message text not null
+  , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
+  , updated_at timestamp with time zone default CLOCK_TIMESTAMP() not null
+  , foreign key (user_id) references xo_tests.users (user_id) on delete cascade
+  , foreign key (work_item_id) references xo_tests.work_items (work_item_id) on delete cascade
+);
+
+comment on column xo_tests.work_item_comments.work_item_id is '"cardinality":M2O';
+
+comment on column xo_tests.work_item_comments.user_id is '"cardinality":M2O';
+
+create index on xo_tests.work_item_comments (work_item_id);
 
 create type xo_tests.work_item_role as ENUM (
   'preparer'
@@ -166,15 +190,15 @@ create table xo_tests.pag_element (
   , foreign key (dummy) references xo_tests.dummy_join (dummy_join_id) on delete cascade
 );
 
-create schema if not exists xo_tests_cache;
-
-create table if not exists xo_tests_cache.demo_work_items (
-  work_item_id int not null unique
+create table if not exists xo_tests.cache__demo_work_items (
+  work_item_id int not null primary key
   , title text
+  , team_id int not null
+  , foreign key (team_id) references xo_tests.teams (team_id) on delete cascade
   , foreign key (work_item_id) references xo_tests.work_items (work_item_id) on delete cascade
 );
 
-comment on column xo_tests_cache.demo_work_items.work_item_id is '"type":XoTestsWorkItemID && "properties":ignore-constraints';
+comment on column xo_tests.cache__demo_work_items.work_item_id is '"properties":refs-ignore,share-ref-constraints';
 
 do $BODY$
 declare
@@ -183,6 +207,8 @@ declare
   seller_id uuid := '8c67f1f9-2be4-4b1a-a49b-b7a10a60c53a';
 begin
   -- PERFORM pg_sleep(0.5); -- not working for some reason
+  insert into xo_tests.teams (name)
+    values ('team 1');
   insert into xo_tests.users (user_id , name , created_at)
     values (user_1_id , 'John Doe' , current_timestamp);
   insert into xo_tests.users (user_id , name , created_at)
@@ -221,12 +247,14 @@ begin
     values ('body 2' , user_2_id , user_1_id);
   insert into xo_tests.notifications (body , receiver , sender)
     values ('body 2' , user_1_id , user_2_id);
-  insert into xo_tests.work_items (title , description)
-    values ('Work Item 1' , 'Every cloud has a silver lining.');
-  insert into xo_tests.work_items (title , description)
-    values ('Work Item 2' , 'When in Rome, do as the Romans do.');
-  insert into xo_tests.work_items (title)
-    values ('Work Item 3');
+  insert into xo_tests.work_items (title , description , team_id)
+    values ('Work Item 1' , 'Every cloud has a silver lining.' , 1);
+  insert into xo_tests.cache__demo_work_items (work_item_id , title , team_id)
+    values (1 , 'Work Item 1 (cache__demo_work_items)' , 1);
+  insert into xo_tests.work_items (title , description , team_id)
+    values ('Work Item 2' , 'When in Rome, do as the Romans do.' , 1);
+  insert into xo_tests.work_items (title , team_id)
+    values ('Work Item 3' , 1);
   insert into xo_tests.demo_work_items (work_item_id , checked)
     values (1 , true);
   insert into xo_tests.demo_work_items (work_item_id , checked)

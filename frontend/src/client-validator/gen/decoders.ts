@@ -45,7 +45,7 @@ import {
   PaginationPage,
   ProjectBoard,
   ServicesMember,
-  SharedWorkItemFields,
+  SharedWorkItemJoins,
   Team,
   UpdateActivityRequest,
   UpdateTeamRequest,
@@ -60,7 +60,6 @@ import {
   DbActivity,
   ProjectConfig,
   ProjectConfigField,
-  InitializeProjectRequest,
   HTTPValidationError,
   ErrorCode,
   HTTPError,
@@ -539,16 +538,16 @@ export const ServicesMemberDecoder: Decoder<ServicesMember> = {
     return validateJson(json, schema, ServicesMemberDecoder.definitionName)
   },
 }
-export const SharedWorkItemFieldsDecoder: Decoder<SharedWorkItemFields> = {
-  definitionName: 'SharedWorkItemFields',
-  schemaRef: '#/definitions/SharedWorkItemFields',
+export const SharedWorkItemJoinsDecoder: Decoder<SharedWorkItemJoins> = {
+  definitionName: 'SharedWorkItemJoins',
+  schemaRef: '#/definitions/SharedWorkItemJoins',
 
-  decode(json: unknown): SharedWorkItemFields {
-    const schema = ajv.getSchema(SharedWorkItemFieldsDecoder.schemaRef)
+  decode(json: unknown): SharedWorkItemJoins {
+    const schema = ajv.getSchema(SharedWorkItemJoinsDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${SharedWorkItemFieldsDecoder.definitionName} not found`)
+      throw new Error(`Schema ${SharedWorkItemJoinsDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, SharedWorkItemFieldsDecoder.definitionName)
+    return validateJson(json, schema, SharedWorkItemJoinsDecoder.definitionName)
   },
 }
 export const TeamDecoder: Decoder<Team> = {
@@ -717,18 +716,6 @@ export const ProjectConfigFieldDecoder: Decoder<ProjectConfigField> = {
       throw new Error(`Schema ${ProjectConfigFieldDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ProjectConfigFieldDecoder.definitionName)
-  },
-}
-export const InitializeProjectRequestDecoder: Decoder<InitializeProjectRequest> = {
-  definitionName: 'InitializeProjectRequest',
-  schemaRef: '#/definitions/InitializeProjectRequest',
-
-  decode(json: unknown): InitializeProjectRequest {
-    const schema = ajv.getSchema(InitializeProjectRequestDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${InitializeProjectRequestDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, InitializeProjectRequestDecoder.definitionName)
   },
 }
 export const HTTPValidationErrorDecoder: Decoder<HTTPValidationError> = {

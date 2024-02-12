@@ -85,7 +85,7 @@ find . -name ".env*.template"
 ```
 
 For `dev` environment, you may use `env.ci` as a starting point,
-replacing `ci` with `dev` and using `API_PREFIX=""` since it will run
+replacing `ci` with `dev` and using `REVERSE_PROXY_API_PREFIX=""` since it will run
 the backend without docker containers.
 
 Assuming a recent Ubuntu release:

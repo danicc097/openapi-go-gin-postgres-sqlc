@@ -24,6 +24,7 @@ var _ repos.DemoTwoWorkItem = (*DemoTwoWorkItem)(nil)
 
 func (u *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error) {
 	extraOpts := []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{DemoTwoWorkItem: true})}
+
 	return db.WorkItemByWorkItemID(ctx, d, id, (append(extraOpts, opts...))...)
 }
 

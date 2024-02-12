@@ -30,10 +30,10 @@ services:
       - "authserver.local.localhost:host-gateway" # required if running locally
     labels:
       - traefik.enable=true
-      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.rule=Host(`${DOMAIN:?not set}`) && PathPrefix("${API_PREFIX:?not set}")
+      - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.rule=Host(`${DOMAIN:?not set}`) && PathPrefix("${REVERSE_PROXY_API_PREFIX:?not set}")
       - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.middlewares=${PROJECT_PREFIX}-stripprefix-backend,${PROJECT_PREFIX}-compress # check docs to exclude requests from compression
       - traefik.http.middlewares.${PROJECT_PREFIX}-compress.compress=true
-      - traefik.http.middlewares.${PROJECT_PREFIX}-stripprefix-backend.stripprefix.prefixes=${API_PREFIX:?not set}
+      - traefik.http.middlewares.${PROJECT_PREFIX}-stripprefix-backend.stripprefix.prefixes=${REVERSE_PROXY_API_PREFIX:?not set}
       - traefik.docker.network=traefik-net
       - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.entrypoints=websecure
       - traefik.http.routers.${PROJECT_PREFIX}-${APP_ENV}-backend.tls=true

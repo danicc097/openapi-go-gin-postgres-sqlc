@@ -81,8 +81,8 @@ func (_d NotificationWithPrometheus) LatestNotifications(ctx context.Context, d 
 	return _d.base.LatestNotifications(ctx, d, params)
 }
 
-// PaginatedNotifications implements repos.Notification
-func (_d NotificationWithPrometheus) PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) (ua1 []db.UserNotification, err error) {
+// PaginatedUserNotifications implements repos.Notification
+func (_d NotificationWithPrometheus) PaginatedUserNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) (ua1 []db.UserNotification, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -90,7 +90,7 @@ func (_d NotificationWithPrometheus) PaginatedNotifications(ctx context.Context,
 			result = "error"
 		}
 
-		notificationDurationSummaryVec.WithLabelValues(_d.instanceName, "PaginatedNotifications", result).Observe(time.Since(_since).Seconds())
+		notificationDurationSummaryVec.WithLabelValues(_d.instanceName, "PaginatedUserNotifications", result).Observe(time.Since(_since).Seconds())
 	}()
-	return _d.base.PaginatedNotifications(ctx, d, userID, params)
+	return _d.base.PaginatedUserNotifications(ctx, d, userID, params)
 }

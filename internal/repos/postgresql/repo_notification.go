@@ -94,7 +94,7 @@ func (u *Notification) Create(ctx context.Context, d db.DBTX, params *db.Notific
 	return &nn[0], nil
 }
 
-func (u *Notification) PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) ([]db.UserNotification, error) {
+func (u *Notification) PaginatedUserNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) ([]db.UserNotification, error) {
 	userNotificationID, err := strconv.Atoi(params.Cursor)
 	if err != nil {
 		return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid cursor for paginated notifications: %s", params.Cursor)

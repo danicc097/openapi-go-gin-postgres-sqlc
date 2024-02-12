@@ -66,6 +66,23 @@ func createUserWithRetry(t *testing.T, params *db.XoTestsUserCreateParams) *db.X
 	return u
 }
 
+func TestSharedRefConstraints(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	// generated with refs-ignore,share-ref-constraints
+	ee, err := db.XoTestsCacheDemoWorkItemPaginatedByWorkItemID(ctx, testPool, 0 /* should filter all */, models.DirectionAsc,
+		db.WithXoTestsCacheDemoWorkItemJoin(db.XoTestsCacheDemoWorkItemJoins{AssignedUsers: true}),
+	)
+	require.NoError(t, err)
+	require.Len(t, ee, 1)
+	require.EqualValues(t, 1, ee[0].WorkItemID)
+	require.NotNil(t, ee[0].WorkItemAssignedUsersJoin)
+	require.Len(t, *ee[0].WorkItemAssignedUsersJoin, 2)
+	require.Nil(t, ee[0].WorkItemWorkItemCommentsJoin)
+}
+
 func TestCursorPagination_HavingClause(t *testing.T) {
 	t.Parallel()
 
@@ -74,7 +91,7 @@ func TestCursorPagination_HavingClause(t *testing.T) {
 	u1 := createUserWithRetry(t, &db.XoTestsUserCreateParams{Name: t.Name() + "_1"})
 	u2 := createUserWithRetry(t, &db.XoTestsUserCreateParams{Name: t.Name() + "_2"})
 
-	wi, err := db.CreateXoTestsWorkItem(ctx, testPool, &db.XoTestsWorkItemCreateParams{})
+	wi, err := db.CreateXoTestsWorkItem(ctx, testPool, &db.XoTestsWorkItemCreateParams{TeamID: db.XoTestsTeamID(1)})
 	require.NoError(t, err)
 
 	_, err = db.CreateXoTestsWorkItemAssignedUser(ctx, testPool, &db.XoTestsWorkItemAssignedUserCreateParams{

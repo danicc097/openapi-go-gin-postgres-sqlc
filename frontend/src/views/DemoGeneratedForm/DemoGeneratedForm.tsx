@@ -172,7 +172,7 @@ const schema = {
   },
   required: ['demoProject', 'base', 'tagIDs', 'members'],
   type: 'object',
-  'x-postgen-struct': 'RestDemoWorkItemCreateRequest',
+  'x-gen-struct': 'RestDemoWorkItemCreateRequest',
 }
 const uuids = [
   'fcd252dc-72a4-4514-bdd1-3cac573a5fac',

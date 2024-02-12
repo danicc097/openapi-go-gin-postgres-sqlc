@@ -1,7 +1,7 @@
 do $BODY$
 declare
   t text;
-  project_exists boolean;
+  pj_exists boolean;
   work_items_columns text[];
   project_columns text[];
 begin
@@ -11,17 +11,8 @@ begin
   from
     projects loop
       select
-        exists (
-          select
-          from
-            pg_catalog.pg_class c
-            join pg_catalog.pg_namespace n on n.oid = c.relnamespace
-          where
-            n.nspname = 'public'
-            and c.relname = t
-            and c.relkind = 'r' -- only tables
-) into project_exists;
-      if not project_exists then
+        project_exists (t) into pj_exists;
+      if not pj_exists then
         raise exception 'Project table "%" does not exist' , t;
       end if;
 

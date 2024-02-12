@@ -52,13 +52,13 @@ func (n *Notification) LatestNotifications(ctx context.Context, d db.DBTX, param
 	return notification, nil
 }
 
-// PaginatedNotifications gets user notifications by cursor.
-func (n *Notification) PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) ([]db.UserNotification, error) {
+// PaginatedUserNotifications gets user notifications by cursor.
+func (n *Notification) PaginatedUserNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) ([]db.UserNotification, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	notifications, err := n.repos.Notification.PaginatedNotifications(ctx, d, userID, params)
+	notifications, err := n.repos.Notification.PaginatedUserNotifications(ctx, d, userID, params)
 	if err != nil {
-		return nil, fmt.Errorf("repos.Notification.PaginatedNotifications: %w", err)
+		return nil, fmt.Errorf("repos.Notification.PaginatedUserNotifications: %w", err)
 	}
 
 	return notifications, nil

@@ -26,7 +26,7 @@ type NotificationWithTimeoutConfig struct {
 
 	LatestNotificationsTimeout time.Duration
 
-	PaginatedNotificationsTimeout time.Duration
+	PaginatedUserNotificationsTimeout time.Duration
 }
 
 // NewNotificationWithTimeout returns NotificationWithTimeout
@@ -67,12 +67,12 @@ func (_d NotificationWithTimeout) LatestNotifications(ctx context.Context, d db.
 	return _d.Notification.LatestNotifications(ctx, d, params)
 }
 
-// PaginatedNotifications implements repos.Notification
-func (_d NotificationWithTimeout) PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) (ua1 []db.UserNotification, err error) {
+// PaginatedUserNotifications implements repos.Notification
+func (_d NotificationWithTimeout) PaginatedUserNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) (ua1 []db.UserNotification, err error) {
 	var cancelFunc func()
-	if _d.config.PaginatedNotificationsTimeout > 0 {
-		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.PaginatedNotificationsTimeout)
+	if _d.config.PaginatedUserNotificationsTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.PaginatedUserNotificationsTimeout)
 		defer cancelFunc()
 	}
-	return _d.Notification.PaginatedNotifications(ctx, d, userID, params)
+	return _d.Notification.PaginatedUserNotifications(ctx, d, userID, params)
 }

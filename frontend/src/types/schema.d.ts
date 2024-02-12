@@ -306,6 +306,7 @@ export interface components {
       expiresOn: string;
       userID: components["schemas"]["DbUserID"];
     };
+    /** @example cdb15f83-1c5d-4727-98d1-8924ccd1fc01 */
     DbUserID: string;
     DbUserWIAUWorkItem: {
       role: components["schemas"]["WorkItemRole"];
@@ -456,7 +457,7 @@ export interface components {
       role: components["schemas"]["WorkItemRole"];
       userID: components["schemas"]["DbUserID"];
     };
-    SharedWorkItemFields: {
+    SharedWorkItemJoins: {
       members?: components["schemas"]["DbUserWIAUWorkItem"][] | null;
       timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
       workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
@@ -562,10 +563,6 @@ export interface components {
       name: string;
       path: string;
       showCollapsed: boolean;
-    };
-    InitializeProjectRequest: {
-      tags?: components["schemas"]["DbWorkItemTagCreateParams"][] | null;
-      teams?: components["schemas"]["DbTeamCreateParams"][] | null;
     };
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -1468,7 +1465,7 @@ export interface operations {
     };
     requestBody: {
       content: {
-        "application/json": components["schemas"]["InitializeProjectRequest"];
+        "application/json": components["schemas"]["CreateProjectBoardRequest"];
       };
     };
     responses: {

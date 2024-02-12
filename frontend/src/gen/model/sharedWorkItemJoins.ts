@@ -12,7 +12,7 @@ import type { DbWorkItemComment } from './dbWorkItemComment';
 import type { DbWorkItemTag } from './dbWorkItemTag';
 import type { DbWorkItemType } from './dbWorkItemType';
 
-export interface SharedWorkItemFields {
+export interface SharedWorkItemJoins {
   members?: DbUserWIAUWorkItem[] | null;
   timeEntries?: DbTimeEntry[] | null;
   workItemComments?: DbWorkItemComment[] | null;

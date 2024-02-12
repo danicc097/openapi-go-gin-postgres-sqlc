@@ -354,14 +354,6 @@ create table work_items (
 
 create index on work_items (team_id);
 
-create index on work_items using gin (title gin_trgm_ops);
-
-create index on work_items using gin (description gin_trgm_ops);
-
-create index on work_items using gin (title gin_trgm_ops , description gin_trgm_ops);
-
-create index on work_items using gin (title , description gin_trgm_ops);
-
 -- project for tour. when starting it user joins the only demo team. when exiting it user is removed.
 -- we can reset it every X hours
 create table demo_work_items (
@@ -541,6 +533,31 @@ select
 
 select
   audit.enable_tracking ('public.work_items');
+
+----
+create or replace function project_exists (project_name text)
+  returns boolean
+  as $$
+declare
+  project_exists_boolean boolean;
+begin
+  select
+    exists (
+      select
+        1
+      from
+        pg_catalog.pg_class c
+        join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+      where
+        n.nspname = 'public'
+        and c.relname = project_name
+        and c.relkind = 'r' -- only tables
+) into project_exists_boolean;
+
+  return project_exists_boolean;
+  end;
+$$
+language plpgsql;
 
 
 /*
