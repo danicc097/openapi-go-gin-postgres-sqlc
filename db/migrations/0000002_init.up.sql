@@ -534,6 +534,31 @@ select
 select
   audit.enable_tracking ('public.work_items');
 
+----
+create or replace function project_exists (project_name text)
+  returns boolean
+  as $$
+declare
+  project_exists_boolean boolean;
+begin
+  select
+    exists (
+      select
+        1
+      from
+        pg_catalog.pg_class c
+        join pg_catalog.pg_namespace n on n.oid = c.relnamespace
+      where
+        n.nspname = 'public'
+        and c.relname = project_name
+        and c.relkind = 'r' -- only tables
+) into project_exists_boolean;
+
+  return project_exists_boolean;
+  end;
+$$
+language plpgsql;
+
 
 /*
 

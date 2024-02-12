@@ -657,6 +657,152 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 	return res, nil
 }
 
+// CacheDemoWorkItemsByReopened retrieves a row from 'public.cache__demo_work_items' as a CacheDemoWorkItem.
+//
+// Generated from index 'cache__demo_work_items_gin_index'.
+func CacheDemoWorkItemsByReopened(ctx context.Context, db DB, reopened bool, opts ...CacheDemoWorkItemSelectConfigOption) ([]CacheDemoWorkItem, error) {
+	c := &CacheDemoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	paramStart := 1
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.KanbanStep {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableKanbanStepSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableKanbanStepJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableKanbanStepGroupBySQL)
+	}
+
+	if c.joins.Team {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableTeamSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableTeamGroupBySQL)
+	}
+
+	if c.joins.WorkItemType {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemTypeSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemTypeJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemTypeGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableTimeEntriesGroupBySQL)
+	}
+
+	if c.joins.AssignedUsers {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableAssignedUsersGroupBySQL)
+	}
+
+	if c.joins.WorkItemComments {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemCommentsSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemCommentsJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemCommentsGroupBySQL)
+	}
+
+	if c.joins.WorkItemTags {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemTagsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupbys := ""
+	if len(groupByClauses) > 0 {
+		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	cache__demo_work_items.closed_at,
+	cache__demo_work_items.created_at,
+	cache__demo_work_items.deleted_at,
+	cache__demo_work_items.description,
+	cache__demo_work_items.kanban_step_id,
+	cache__demo_work_items.last_message_at,
+	cache__demo_work_items.line,
+	cache__demo_work_items.metadata,
+	cache__demo_work_items.ref,
+	cache__demo_work_items.reopened,
+	cache__demo_work_items.target_date,
+	cache__demo_work_items.team_id,
+	cache__demo_work_items.title,
+	cache__demo_work_items.updated_at,
+	cache__demo_work_items.work_item_id,
+	cache__demo_work_items.work_item_type_id %s 
+	 FROM public.cache__demo_work_items %s 
+	 WHERE cache__demo_work_items.reopened = $1
+	 %s   AND cache__demo_work_items.deleted_at is %s  %s 
+  %s 
+`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
+	sqlstr += c.orderBy
+	sqlstr += c.limit
+	sqlstr = "/* CacheDemoWorkItemsByReopened */\n" + sqlstr
+
+	// run
+	// logf(sqlstr, reopened)
+	rows, err := db.Query(ctx, sqlstr, append([]any{reopened}, append(filterParams, havingParams...)...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoWorkItem/CacheDemoWorkItemsByTitleLineRefReopened/Query: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
+	}
+	defer rows.Close()
+	// process
+
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[CacheDemoWorkItem])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("CacheDemoWorkItem/CacheDemoWorkItemsByTitleLineRefReopened/pgx.CollectRows: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
+	}
+	return res, nil
+}
+
 // CacheDemoWorkItemByWorkItemID retrieves a row from 'public.cache__demo_work_items' as a CacheDemoWorkItem.
 //
 // Generated from index 'cache__demo_work_items_pkey'.

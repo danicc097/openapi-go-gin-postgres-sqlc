@@ -1,83 +1,3 @@
-create or replace function create_work_item_cache_table (project_name text)
-  returns VOID
-  as $$
-declare
-  project_table_col_and_type text;
-  foreign_key_constraints_text text;
-  work_items_col_and_type text;
-  constraint_exists boolean;
-  tags_comment text;
-  col text;
-begin
-  select
-    STRING_AGG(constraint_definition , ', ')
-  from (
-    select
-      --conname as constraint_name
-      --, conrelid::regclass as table_name
-      PG_GET_CONSTRAINTDEF(c.oid) as constraint_definition
-    from
-      pg_constraint c
-    where (conrelid = 'public.demo_work_items'::regclass
-      or conrelid = 'public.work_items'::regclass)
-    and contype = 'f') into foreign_key_constraints_text;
-
-  select
-    STRING_AGG(
-      case when column_name != 'work_item_id' then
-        column_name || ' ' || data_type || ' ' || case when is_nullable = 'YES' then
-          ' NULL'
-        else
-          ' NOT NULL'
-        end
-      else
-        'work_item_id bigint primary key'
-      end , ', ')
-  from
-    information_schema.columns
-  where
-    table_name = 'work_items'
-    and table_schema = 'public' into work_items_col_and_type;
-
-  execute FORMAT('
-	SELECT string_agg(column_name || '' '' || data_type || '' '' || CASE WHEN is_nullable = ''YES'' THEN
-	  '' NULL'' ELSE '' NOT NULL'' END, '', '')
-        FROM information_schema.columns
-        WHERE table_name = ''%I'' AND table_schema = ''public'' AND column_name != ''work_item_id''' , project_name) into project_table_col_and_type;
-  -- execute 'CREATE SCHEMA IF NOT EXISTS cache;';
-  execute FORMAT('CREATE TABLE IF NOT EXISTS cache__%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type ||
-    ',' || foreign_key_constraints_text);
-  -- we lose "tags" annotation from column comments in ref
-  for col
-  , tags_comment in
-  select
-    a.attname as col
-    , case when d.description ~ '"tags":\s*([^,]+)' then
-      REGEXP_REPLACE(d.description , '.*"tags":\s*([^,]+).*' , '"tags":\1')
-    else
-      null
-    end as tags_comment
-  from
-    pg_catalog.pg_description d
-    join pg_catalog.pg_attribute a on d.objoid = a.attrelid
-  where
-    a.attrelid = 'public.work_items'::regclass
-    or a.attrelid = ('public.' || project_name)::regclass
-    and a.attnum = d.objsubid loop
-      begin
-        continue
-        when tags_comment = null;
-
-        execute FORMAT('comment on column cache__%I.%s is ''%s''' , project_name , col , tags_comment);
-      end;
-    end loop;
-  -- override
-  execute FORMAT('comment on column cache__%I.work_item_id is ''"properties":refs-ignore,share-ref-constraints''' , project_name);
-
-end;
-$$
-language plpgsql;
-
 create or replace function sync_work_items ()
   returns trigger
   as $$
@@ -169,17 +89,14 @@ begin
     work_items_table_name
   from
     projects loop
-      -- IMPORTANT: now gin indexes can cover everything we want,
-      -- but kept in sync via regular migrations:
-      -- CREATE UNIQUE INDEX CONCURRENTLY newidx ON tab (name, price, sku);
-      -- DROP INDEX cache_demo_work_items_<...>_index;
-      -- ALTER INDEX newidx RENAME TO cache_demo_work_items_<...>_index;
-      perform
-        create_work_item_cache_table (project_name);
-
+      -- TODO: will have to include extra denormalized fields accordingly
+      -- per project_name inside sync_work_items.
+      -- Unclear if this can remain in post migration or has to be moved to regular
+      -- migrations (unlikely that we will have data migrations for cache table that require trigger functions to be up to date)
       execute FORMAT('create or replace trigger work_items_sync_trigger_%1$I
         after insert or update on %1$I for each row
         execute function sync_work_items (%1$s);' , project_name);
+
     end loop;
 end;
 $BODY$
