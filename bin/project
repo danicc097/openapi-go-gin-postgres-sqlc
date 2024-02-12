@@ -1053,6 +1053,9 @@ x.gen.build-tools() {
     # TODO: when typecheck errors are all in *.gen.go files, don't error out.
     # ignore if go build first error line is `# github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers`
     # for example
+    # better yet, should only fail when packages relevant to gen fail, ie if stderr contains:
+    # - internal/codegen, cmd/*, internal/repos/*, internal/rest ...
+    # we could also always ignore errors, but if it fails always show the WARNING rerun may be required messgage
     wait_without_error || {
       err Could not rebuild all gen tools. Rerun with --x-ignore-build-errors.
     }
