@@ -86,18 +86,6 @@ func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id db.WorkItemI
 	return wi, nil
 }
 
-// Delete deletes a work item by ID.
-func (w *DemoTwoWorkItem) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
-	defer newOTelSpan().Build(ctx).End()
-
-	wi, err := w.repos.WorkItem.Delete(ctx, d, id)
-	if err != nil {
-		return nil, fmt.Errorf("repos.WorkItem.Delete: %w", err)
-	}
-
-	return wi, nil
-}
-
 // repo has Update only, then service has Close() (Update with closed=True), Move() (Update with kanban step change), ...)
 // params for dedicated workItem require workItemID (FK-as-PK)
 // TBD if useful: ByTag, ByType (for closed workitem searches. open ones simply return everything and filter in client)
@@ -110,8 +98,4 @@ func (w *DemoTwoWorkItem) ListDeleted(ctx context.Context, d db.DBTX, teamID db.
 func (w *DemoTwoWorkItem) List(ctx context.Context, d db.DBTX, teamID db.TeamID) ([]db.WorkItem, error) {
 	// WorkItemsByTeamID with orderby createdAt
 	return []db.WorkItem{}, errors.New("not implemented")
-}
-
-func (w *DemoTwoWorkItem) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
-	return w.repos.WorkItem.Restore(ctx, d, id)
 }

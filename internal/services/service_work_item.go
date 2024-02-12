@@ -138,3 +138,20 @@ func (w *WorkItem) RemoveTags(ctx context.Context, d db.DBTX, workItemID db.Work
 
 	return nil
 }
+
+// Restore restores a work ítem marked as deleted by ID.
+func (w *WorkItem) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
+	return w.repos.WorkItem.Restore(ctx, d, id)
+}
+
+// Delete deletes a work item by ID.
+func (w *WorkItem) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
+	defer newOTelSpan().Build(ctx).End()
+
+	wi, err := w.repos.WorkItem.Delete(ctx, d, id)
+	if err != nil {
+		return nil, fmt.Errorf("repos.WorkItem.Delete: %w", err)
+	}
+
+	return wi, nil
+}
