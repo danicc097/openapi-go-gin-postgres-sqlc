@@ -43,6 +43,7 @@ type WorkItem interface {
 type DemoWorkItem interface {
 	// ByID returns a generic WorkItem with project-specific fields joined by default.
 	ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
+	Paginated(ctx context.Context, d db.DBTX, cursor db.WorkItemID, opts ...db.CacheDemoWorkItemSelectConfigOption) ([]db.CacheDemoWorkItem, error)
 	// params for dedicated workItem only require workItemID (FK-as-PK)
 	Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.WorkItem, error)
 	Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params DemoWorkItemUpdateParams) (*db.WorkItem, error)
@@ -60,7 +61,7 @@ type DemoTwoWorkItem interface {
 type Notification interface {
 	// now can replace GetUserNotifications with `...WithFilters`, in lieu of sqlc
 	LatestNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
-	PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) ([]db.UserNotification, error)
+	PaginatedUserNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) ([]db.UserNotification, error)
 	Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (*db.UserNotification, error)
 	Delete(ctx context.Context, d db.DBTX, id db.NotificationID) (*db.Notification, error)
 }

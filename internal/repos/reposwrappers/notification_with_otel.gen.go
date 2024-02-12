@@ -108,9 +108,9 @@ func (_d NotificationWithTracing) LatestNotifications(ctx context.Context, d db.
 	return _d.Notification.LatestNotifications(ctx, d, params)
 }
 
-// PaginatedNotifications implements repos.Notification
-func (_d NotificationWithTracing) PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) (ua1 []db.UserNotification, err error) {
-	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.PaginatedNotifications")
+// PaginatedUserNotifications implements repos.Notification
+func (_d NotificationWithTracing) PaginatedUserNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) (ua1 []db.UserNotification, err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Notification.PaginatedUserNotifications")
 	defer func() {
 		if _d._spanDecorator != nil {
 			_d._spanDecorator(_span, map[string]interface{}{
@@ -130,5 +130,5 @@ func (_d NotificationWithTracing) PaginatedNotifications(ctx context.Context, d 
 
 		_span.End()
 	}()
-	return _d.Notification.PaginatedNotifications(ctx, d, userID, params)
+	return _d.Notification.PaginatedUserNotifications(ctx, d, userID, params)
 }

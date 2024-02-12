@@ -154,19 +154,19 @@ func (_d NotificationWithRetry) LatestNotifications(ctx context.Context, d db.DB
 	return
 }
 
-// PaginatedNotifications implements repos.Notification
-func (_d NotificationWithRetry) PaginatedNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) (ua1 []db.UserNotification, err error) {
+// PaginatedUserNotifications implements repos.Notification
+func (_d NotificationWithRetry) PaginatedUserNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) (ua1 []db.UserNotification, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
-		_, err = tx.Exec(ctx, "SAVEPOINT NotificationWithRetryPaginatedNotifications")
+		_, err = tx.Exec(ctx, "SAVEPOINT NotificationWithRetryPaginatedUserNotifications")
 		if err != nil {
 			err = fmt.Errorf("could not store savepoint: %w", err)
 			return
 		}
 	}
-	ua1, err = _d.Notification.PaginatedNotifications(ctx, d, userID, params)
+	ua1, err = _d.Notification.PaginatedUserNotifications(ctx, d, userID, params)
 	if err == nil || _d._retryCount < 1 {
 		if tx, ok := d.(pgx.Tx); ok {
-			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT NotificationWithRetryPaginatedNotifications")
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT NotificationWithRetryPaginatedUserNotifications")
 		}
 		return
 	}
@@ -180,16 +180,16 @@ func (_d NotificationWithRetry) PaginatedNotifications(ctx context.Context, d db
 		case <-_ticker.C:
 		}
 		if tx, ok := d.(pgx.Tx); ok {
-			if _, err = tx.Exec(ctx, "ROLLBACK to NotificationWithRetryPaginatedNotifications"); err != nil {
+			if _, err = tx.Exec(ctx, "ROLLBACK to NotificationWithRetryPaginatedUserNotifications"); err != nil {
 				err = fmt.Errorf("could not rollback to savepoint: %w", err)
 				return
 			}
 		}
 
-		ua1, err = _d.Notification.PaginatedNotifications(ctx, d, userID, params)
+		ua1, err = _d.Notification.PaginatedUserNotifications(ctx, d, userID, params)
 	}
 	if tx, ok := d.(pgx.Tx); ok {
-		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT NotificationWithRetryPaginatedNotifications")
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT NotificationWithRetryPaginatedUserNotifications")
 	}
 	return
 }

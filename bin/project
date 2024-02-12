@@ -1050,7 +1050,12 @@ x.gen.build-tools() {
       { go build -o $out_dir/$cmd cmd/$cmd/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]; } &
     done
 
-    wait_without_error || err Could not rebuild all gen tools. Rerun with --x-ignore-build-errors.
+    # TODO: when typecheck errors are all in *.gen.go files, don't error out.
+    # ignore if go build first error line is `# github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers`
+    # for example
+    wait_without_error || {
+      err Could not rebuild all gen tools. Rerun with --x-ignore-build-errors.
+    }
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -2825,7 +2830,7 @@ if [[ -n "$1" ]]; then
       "x.$CMD" "$@"
 
       if [[ -n $X_IGNORE_BUILD_ERRORS ]]; then
-        echo "${YELLOW}[WARNING] A rerun without ignoring build errors is required"
+        echo "${YELLOW}[WARNING] A rerun without ignoring build errors may be required"
       fi
       exit $? # do not quote
     fi

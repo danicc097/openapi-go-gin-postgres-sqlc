@@ -23,6 +23,8 @@ type DemoWorkItemWithTimeoutConfig struct {
 
 	CreateTimeout time.Duration
 
+	PaginatedTimeout time.Duration
+
 	UpdateTimeout time.Duration
 }
 
@@ -52,6 +54,16 @@ func (_d DemoWorkItemWithTimeout) Create(ctx context.Context, d db.DBTX, params 
 		defer cancelFunc()
 	}
 	return _d.DemoWorkItem.Create(ctx, d, params)
+}
+
+// Paginated implements repos.DemoWorkItem
+func (_d DemoWorkItemWithTimeout) Paginated(ctx context.Context, d db.DBTX, cursor db.WorkItemID, opts ...db.CacheDemoWorkItemSelectConfigOption) (ca1 []db.CacheDemoWorkItem, err error) {
+	var cancelFunc func()
+	if _d.config.PaginatedTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.PaginatedTimeout)
+		defer cancelFunc()
+	}
+	return _d.DemoWorkItem.Paginated(ctx, d, cursor, opts...)
 }
 
 // Update implements repos.DemoWorkItem
