@@ -3462,30 +3462,30 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string, pkIsFK *TableFore
 			f.tableConstraints[table] = append(f.tableConstraints[table], constraint)
 		}
 
-		annotations, err := parseAnnotations(constraint.ColumnComment)
-		if err != nil {
-			panic(fmt.Sprintf("parseAnnotations: %v", err))
+		if constraint.TableName == table {
+			annotations, err := parseAnnotations(constraint.ColumnComment)
+			if err != nil {
+				panic(fmt.Sprintf("parseAnnotations: %v", err))
+			}
+
+			properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
+
+			type sharedRefsInfo struct {
+				Table    string
+				Column   string
+				RefTable string
+			}
+
+			shareRefConstraints := contains(properties, propertyShareRefConstraints)
+			if shareRefConstraints && pkIsFK != nil {
+				mustShareRefs = true
+			}
 		}
 
-		properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
-
-		type sharedRefsInfo struct {
-			Table    string
-			Column   string
-			RefTable string
-		}
-
-		// sharedRefs := make(map[string]sharedRefsInfo)
-
-		shareRefConstraints := contains(properties, propertyShareRefConstraints)
-		if shareRefConstraints && pkIsFK != nil {
-			mustShareRefs = true
-		}
 	}
 
-	// TODO: range sharedRefsInfo struct and  {
 	if mustShareRefs {
-		f.loadConstraints(cc, pkIsFK.RefTable, nil) // TODO: .RefTable field instead
+		f.loadConstraints(cc, pkIsFK.RefTable, nil)
 		refConstraints := f.tableConstraints[pkIsFK.RefTable]
 		var newRefConstraints []Constraint
 		for _, c := range refConstraints {
@@ -3495,10 +3495,8 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string, pkIsFK *TableFore
 			newr := c
 			switch newr.Cardinality {
 			case M2O:
-				fmt.Printf("M2O newr: %+v\n", newr)
-				// M2O newr: {Type:foreign_key Cardinality:M2O Name:work_item_comments_work_item_id_fkey TableName:work_item_comments ColumnName:work_item_id ColumnComment:"cardinality":M2O RefTableName:work_items RefColumnName:work_item_id RefColumnComment:"cardinality":O2O LookupColumnName: LookupColumnComment: LookupRefColumnName: LookupRefColumnComment: JoinTableClash:false IsInferredO2O:false IsGeneratedO2OFromM2O:false JoinStructFieldClash:false RefPKisFK:false}
-				newr.RefTableName = table         // TODO: .Table field
-				newr.RefColumnName = c.ColumnName // TODO: .Column field instead
+				newr.RefTableName = table
+				newr.RefColumnName = c.ColumnName
 			case M2M:
 				// works as is
 			}
@@ -3506,7 +3504,6 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string, pkIsFK *TableFore
 			newRefConstraints = append(newRefConstraints, newr)
 		}
 		f.tableConstraints[table] = append(f.tableConstraints[table], newRefConstraints...)
-		fmt.Printf("refConstraints for %s.%s: %+v\n", pkIsFK.RefTable, pkIsFK.RefColumns[0], formatJSON(newRefConstraints))
 	}
 }
 

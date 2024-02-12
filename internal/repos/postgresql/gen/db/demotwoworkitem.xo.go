@@ -29,12 +29,7 @@ type DemoTwoWorkItem struct {
 	WorkItemID            WorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2"`          // custom_date_for_project_2
 
-	WorkItemJoin                 *WorkItem                     `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"`                 // O2O work_items (inferred)
-	WorkItemJoinWII              *WorkItem                     `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"`                 // O2O work_items (inferred)
-	WorkItemTimeEntriesJoin      *[]TimeEntry                  `json:"-" db:"time_entries" openapi-go:"ignore"`                           // M2O demo_two_work_items
-	WorkItemAssignedUsersJoin    *[]User__WIAU_DemoTwoWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
-	WorkItemWorkItemCommentsJoin *[]WorkItemComment            `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O demo_two_work_items
-	WorkItemWorkItemTagsJoin     *[]WorkItemTag                `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
+	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
 
 }
 
@@ -96,32 +91,16 @@ func WithDemoTwoWorkItemOrderBy(rows ...DemoTwoWorkItemOrderBy) DemoTwoWorkItemS
 }
 
 type DemoTwoWorkItemJoins struct {
-	WorkItem          bool // O2O work_items
-	WorkItemWorkItems bool // O2O work_items
-	TimeEntries       bool // M2O time_entries
-	AssignedUsers     bool // M2M work_item_assigned_user
-	WorkItemComments  bool // M2O work_item_comments
-	WorkItemTags      bool // M2M work_item_work_item_tag
+	WorkItem bool // O2O work_items
 }
 
 // WithDemoTwoWorkItemJoin joins with the given tables.
 func WithDemoTwoWorkItemJoin(joins DemoTwoWorkItemJoins) DemoTwoWorkItemSelectConfigOption {
 	return func(s *DemoTwoWorkItemSelectConfig) {
 		s.joins = DemoTwoWorkItemJoins{
-			WorkItem:          s.joins.WorkItem || joins.WorkItem,
-			WorkItemWorkItems: s.joins.WorkItemWorkItems || joins.WorkItemWorkItems,
-			TimeEntries:       s.joins.TimeEntries || joins.TimeEntries,
-			AssignedUsers:     s.joins.AssignedUsers || joins.AssignedUsers,
-			WorkItemComments:  s.joins.WorkItemComments || joins.WorkItemComments,
-			WorkItemTags:      s.joins.WorkItemTags || joins.WorkItemTags,
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
 	}
-}
-
-// User__WIAU_DemoTwoWorkItem represents a M2M join against "public.work_item_assigned_user"
-type User__WIAU_DemoTwoWorkItem struct {
-	User User                `json:"user" db:"users" required:"true"`
-	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // WithDemoTwoWorkItemFilters adds the given WHERE clause conditions, which can be dynamically parameterized
@@ -162,95 +141,6 @@ const demoTwoWorkItemTableWorkItemSelectSQL = `(case when _demo_two_work_items_w
 const demoTwoWorkItemTableWorkItemGroupBySQL = `_demo_two_work_items_work_item_id.work_item_id,
       _demo_two_work_items_work_item_id.work_item_id,
 	demo_two_work_items.work_item_id`
-
-const demoTwoWorkItemTableWorkItemWorkItemsJoinSQL = `-- O2O join generated from "demo_two_work_items_work_item_id_fkey (inferred)-shared-ref-demo_two_work_items"
-left join work_items as _demo_two_work_items_work_item_id on _demo_two_work_items_work_item_id.work_item_id = demo_two_work_items.work_item_id
-`
-
-const demoTwoWorkItemTableWorkItemWorkItemsSelectSQL = `(case when _demo_two_work_items_work_item_id.work_item_id is not null then row(_demo_two_work_items_work_item_id.*) end) as work_item_work_item_id`
-
-const demoTwoWorkItemTableWorkItemWorkItemsGroupBySQL = `_demo_two_work_items_work_item_id.work_item_id,
-      _demo_two_work_items_work_item_id.work_item_id,
-	demo_two_work_items.work_item_id`
-
-const demoTwoWorkItemTableTimeEntriesJoinSQL = `-- M2O join generated from "time_entries_work_item_id_fkey-shared-ref-demo_two_work_items"
-left join (
-  select
-  work_item_id as time_entries_work_item_id
-    , array_agg(time_entries.*) as time_entries
-  from
-    time_entries
-  group by
-        work_item_id
-) as joined_time_entries on joined_time_entries.time_entries_work_item_id = demo_two_work_items.work_item_id
-`
-
-const demoTwoWorkItemTableTimeEntriesSelectSQL = `COALESCE(joined_time_entries.time_entries, '{}') as time_entries`
-
-const demoTwoWorkItemTableTimeEntriesGroupBySQL = `joined_time_entries.time_entries, demo_two_work_items.work_item_id`
-
-const demoTwoWorkItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey-shared-ref-demo_two_work_items"
-left join (
-	select
-		work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
-		, work_item_assigned_user.role as role
-		, users.user_id as __users_user_id
-		, row(users.*) as __users
-	from
-		work_item_assigned_user
-	join users on users.user_id = work_item_assigned_user.assigned_user
-	group by
-		work_item_assigned_user_work_item_id
-		, users.user_id
-		, role
-) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = demo_two_work_items.work_item_id
-`
-
-const demoTwoWorkItemTableAssignedUsersSelectSQL = `COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
-
-const demoTwoWorkItemTableAssignedUsersGroupBySQL = `demo_two_work_items.work_item_id, demo_two_work_items.work_item_id`
-
-const demoTwoWorkItemTableWorkItemCommentsJoinSQL = `-- M2O join generated from "work_item_comments_work_item_id_fkey-shared-ref-demo_two_work_items"
-left join (
-  select
-  work_item_id as work_item_comments_work_item_id
-    , array_agg(work_item_comments.*) as work_item_comments
-  from
-    work_item_comments
-  group by
-        work_item_id
-) as joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = demo_two_work_items.work_item_id
-`
-
-const demoTwoWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
-
-const demoTwoWorkItemTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, demo_two_work_items.work_item_id`
-
-const demoTwoWorkItemTableWorkItemTagsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey-shared-ref-demo_two_work_items"
-left join (
-	select
-		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
-		, work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
-		, row(work_item_tags.*) as __work_item_tags
-	from
-		work_item_work_item_tag
-	join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
-	group by
-		work_item_work_item_tag_work_item_id
-		, work_item_tags.work_item_tag_id
-) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = demo_two_work_items.work_item_id
-`
-
-const demoTwoWorkItemTableWorkItemTagsSelectSQL = `COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') as work_item_work_item_tag_work_item_tags`
-
-const demoTwoWorkItemTableWorkItemTagsGroupBySQL = `demo_two_work_items.work_item_id, demo_two_work_items.work_item_id`
 
 // DemoTwoWorkItemUpdateParams represents update params for 'public.demo_two_work_items'.
 type DemoTwoWorkItemUpdateParams struct {
@@ -404,36 +294,6 @@ func DemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 		groupByClauses = append(groupByClauses, demoTwoWorkItemTableWorkItemGroupBySQL)
 	}
 
-	if c.joins.WorkItemWorkItems {
-		selectClauses = append(selectClauses, demoTwoWorkItemTableWorkItemWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, demoTwoWorkItemTableWorkItemWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, demoTwoWorkItemTableWorkItemWorkItemsGroupBySQL)
-	}
-
-	if c.joins.TimeEntries {
-		selectClauses = append(selectClauses, demoTwoWorkItemTableTimeEntriesSelectSQL)
-		joinClauses = append(joinClauses, demoTwoWorkItemTableTimeEntriesJoinSQL)
-		groupByClauses = append(groupByClauses, demoTwoWorkItemTableTimeEntriesGroupBySQL)
-	}
-
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, demoTwoWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, demoTwoWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, demoTwoWorkItemTableAssignedUsersGroupBySQL)
-	}
-
-	if c.joins.WorkItemComments {
-		selectClauses = append(selectClauses, demoTwoWorkItemTableWorkItemCommentsSelectSQL)
-		joinClauses = append(joinClauses, demoTwoWorkItemTableWorkItemCommentsJoinSQL)
-		groupByClauses = append(groupByClauses, demoTwoWorkItemTableWorkItemCommentsGroupBySQL)
-	}
-
-	if c.joins.WorkItemTags {
-		selectClauses = append(selectClauses, demoTwoWorkItemTableWorkItemTagsSelectSQL)
-		joinClauses = append(joinClauses, demoTwoWorkItemTableWorkItemTagsJoinSQL)
-		groupByClauses = append(groupByClauses, demoTwoWorkItemTableWorkItemTagsGroupBySQL)
-	}
-
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -530,36 +390,6 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItem
 		selectClauses = append(selectClauses, demoTwoWorkItemTableWorkItemSelectSQL)
 		joinClauses = append(joinClauses, demoTwoWorkItemTableWorkItemJoinSQL)
 		groupByClauses = append(groupByClauses, demoTwoWorkItemTableWorkItemGroupBySQL)
-	}
-
-	if c.joins.WorkItemWorkItems {
-		selectClauses = append(selectClauses, demoTwoWorkItemTableWorkItemWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, demoTwoWorkItemTableWorkItemWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, demoTwoWorkItemTableWorkItemWorkItemsGroupBySQL)
-	}
-
-	if c.joins.TimeEntries {
-		selectClauses = append(selectClauses, demoTwoWorkItemTableTimeEntriesSelectSQL)
-		joinClauses = append(joinClauses, demoTwoWorkItemTableTimeEntriesJoinSQL)
-		groupByClauses = append(groupByClauses, demoTwoWorkItemTableTimeEntriesGroupBySQL)
-	}
-
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, demoTwoWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, demoTwoWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, demoTwoWorkItemTableAssignedUsersGroupBySQL)
-	}
-
-	if c.joins.WorkItemComments {
-		selectClauses = append(selectClauses, demoTwoWorkItemTableWorkItemCommentsSelectSQL)
-		joinClauses = append(joinClauses, demoTwoWorkItemTableWorkItemCommentsJoinSQL)
-		groupByClauses = append(groupByClauses, demoTwoWorkItemTableWorkItemCommentsGroupBySQL)
-	}
-
-	if c.joins.WorkItemTags {
-		selectClauses = append(selectClauses, demoTwoWorkItemTableWorkItemTagsSelectSQL)
-		joinClauses = append(joinClauses, demoTwoWorkItemTableWorkItemTagsJoinSQL)
-		groupByClauses = append(groupByClauses, demoTwoWorkItemTableWorkItemTagsGroupBySQL)
 	}
 
 	selects := ""

@@ -28,9 +28,7 @@ type XoTestsDemoWorkItem struct {
 	WorkItemID XoTestsWorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
 	Checked    bool              `json:"checked" db:"checked" required:"true" nullable:"false"`         // checked
 
-	WorkItemJoin              *XoTestsWorkItem                  `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"`                 // O2O work_items (inferred)
-	WorkItemJoinWII           *XoTestsWorkItem                  `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"`                 // O2O work_items (inferred)
-	WorkItemAssignedUsersJoin *[]User__WIAU_XoTestsDemoWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemJoin *XoTestsWorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
 }
 
 // XoTestsDemoWorkItemCreateParams represents insert params for 'xo_tests.demo_work_items'.
@@ -70,26 +68,16 @@ func WithXoTestsDemoWorkItemLimit(limit int) XoTestsDemoWorkItemSelectConfigOpti
 type XoTestsDemoWorkItemOrderBy string
 
 type XoTestsDemoWorkItemJoins struct {
-	WorkItem          bool // O2O work_items
-	WorkItemWorkItems bool // O2O work_items
-	AssignedUsers     bool // M2M work_item_assigned_user
+	WorkItem bool // O2O work_items
 }
 
 // WithXoTestsDemoWorkItemJoin joins with the given tables.
 func WithXoTestsDemoWorkItemJoin(joins XoTestsDemoWorkItemJoins) XoTestsDemoWorkItemSelectConfigOption {
 	return func(s *XoTestsDemoWorkItemSelectConfig) {
 		s.joins = XoTestsDemoWorkItemJoins{
-			WorkItem:          s.joins.WorkItem || joins.WorkItem,
-			WorkItemWorkItems: s.joins.WorkItemWorkItems || joins.WorkItemWorkItems,
-			AssignedUsers:     s.joins.AssignedUsers || joins.AssignedUsers,
+			WorkItem: s.joins.WorkItem || joins.WorkItem,
 		}
 	}
-}
-
-// User__WIAU_XoTestsDemoWorkItem represents a M2M join against "xo_tests.work_item_assigned_user"
-type User__WIAU_XoTestsDemoWorkItem struct {
-	User XoTestsUser          `json:"user" db:"users" required:"true"`
-	Role *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // WithXoTestsDemoWorkItemFilters adds the given WHERE clause conditions, which can be dynamically parameterized
@@ -130,41 +118,6 @@ const xoTestsDemoWorkItemTableWorkItemSelectSQL = `(case when _demo_work_items_w
 const xoTestsDemoWorkItemTableWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
       _demo_work_items_work_item_id.work_item_id,
 	demo_work_items.work_item_id`
-
-const xoTestsDemoWorkItemTableWorkItemWorkItemsJoinSQL = `-- O2O join generated from "demo_work_items_work_item_id_fkey (inferred)-shared-ref-demo_work_items"
-left join xo_tests.work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = demo_work_items.work_item_id
-`
-
-const xoTestsDemoWorkItemTableWorkItemWorkItemsSelectSQL = `(case when _demo_work_items_work_item_id.work_item_id is not null then row(_demo_work_items_work_item_id.*) end) as work_item_work_item_id`
-
-const xoTestsDemoWorkItemTableWorkItemWorkItemsGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
-      _demo_work_items_work_item_id.work_item_id,
-	demo_work_items.work_item_id`
-
-const xoTestsDemoWorkItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey-shared-ref-demo_work_items"
-left join (
-	select
-		work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
-		, work_item_assigned_user.role as role
-		, users.user_id as __users_user_id
-		, row(users.*) as __users
-	from
-		xo_tests.work_item_assigned_user
-	join xo_tests.users on users.user_id = work_item_assigned_user.assigned_user
-	group by
-		work_item_assigned_user_work_item_id
-		, users.user_id
-		, role
-) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = demo_work_items.work_item_id
-`
-
-const xoTestsDemoWorkItemTableAssignedUsersSelectSQL = `COALESCE(
-		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
-
-const xoTestsDemoWorkItemTableAssignedUsersGroupBySQL = `demo_work_items.work_item_id, demo_work_items.work_item_id`
 
 // XoTestsDemoWorkItemUpdateParams represents update params for 'xo_tests.demo_work_items'.
 type XoTestsDemoWorkItemUpdateParams struct {
@@ -318,18 +271,6 @@ func XoTestsDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 		groupByClauses = append(groupByClauses, xoTestsDemoWorkItemTableWorkItemGroupBySQL)
 	}
 
-	if c.joins.WorkItemWorkItems {
-		selectClauses = append(selectClauses, xoTestsDemoWorkItemTableWorkItemWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, xoTestsDemoWorkItemTableWorkItemWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsDemoWorkItemTableWorkItemWorkItemsGroupBySQL)
-	}
-
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, xoTestsDemoWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, xoTestsDemoWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsDemoWorkItemTableAssignedUsersGroupBySQL)
-	}
-
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -426,18 +367,6 @@ func XoTestsDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTe
 		selectClauses = append(selectClauses, xoTestsDemoWorkItemTableWorkItemSelectSQL)
 		joinClauses = append(joinClauses, xoTestsDemoWorkItemTableWorkItemJoinSQL)
 		groupByClauses = append(groupByClauses, xoTestsDemoWorkItemTableWorkItemGroupBySQL)
-	}
-
-	if c.joins.WorkItemWorkItems {
-		selectClauses = append(selectClauses, xoTestsDemoWorkItemTableWorkItemWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, xoTestsDemoWorkItemTableWorkItemWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsDemoWorkItemTableWorkItemWorkItemsGroupBySQL)
-	}
-
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, xoTestsDemoWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, xoTestsDemoWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsDemoWorkItemTableAssignedUsersGroupBySQL)
 	}
 
 	selects := ""
