@@ -29,7 +29,7 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type CacheDemoWorkItem struct {
-	Ref            string         `json:"ref" db:"ref" required:"true" nullable:"false"`                          // ref
+	Ref            string         `json:"ref" db:"ref" required:"true" nullable:"false" pattern:"^[0-9]{8}$"`     // ref
 	Line           string         `json:"line" db:"line" required:"true" nullable:"false"`                        // line
 	LastMessageAt  time.Time      `json:"lastMessageAt" db:"last_message_at" required:"true" nullable:"false"`    // last_message_at
 	Reopened       bool           `json:"reopened" db:"reopened" required:"true" nullable:"false"`                // reopened
@@ -58,19 +58,19 @@ type CacheDemoWorkItem struct {
 
 // CacheDemoWorkItemCreateParams represents insert params for 'public.cache__demo_work_items'.
 type CacheDemoWorkItemCreateParams struct {
-	ClosedAt       *time.Time     `json:"closedAt"`                                        // closed_at
-	Description    string         `json:"description" required:"true" nullable:"false"`    // description
-	KanbanStepID   KanbanStepID   `json:"kanbanStepID" required:"true" nullable:"false"`   // kanban_step_id
-	LastMessageAt  time.Time      `json:"lastMessageAt" required:"true" nullable:"false"`  // last_message_at
-	Line           string         `json:"line" required:"true" nullable:"false"`           // line
-	Metadata       map[string]any `json:"metadata" required:"true" nullable:"false"`       // metadata
-	Ref            string         `json:"ref" required:"true" nullable:"false"`            // ref
-	Reopened       bool           `json:"reopened" required:"true" nullable:"false"`       // reopened
-	TargetDate     time.Time      `json:"targetDate" required:"true" nullable:"false"`     // target_date
-	TeamID         TeamID         `json:"teamID" required:"true" nullable:"false"`         // team_id
-	Title          string         `json:"title" required:"true" nullable:"false"`          // title
-	WorkItemID     WorkItemID     `json:"-" required:"true" nullable:"false"`              // work_item_id
-	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" required:"true" nullable:"false"` // work_item_type_id
+	ClosedAt       *time.Time     `json:"closedAt"`                                                  // closed_at
+	Description    string         `json:"description" required:"true" nullable:"false"`              // description
+	KanbanStepID   KanbanStepID   `json:"kanbanStepID" required:"true" nullable:"false"`             // kanban_step_id
+	LastMessageAt  time.Time      `json:"lastMessageAt" required:"true" nullable:"false"`            // last_message_at
+	Line           string         `json:"line" required:"true" nullable:"false"`                     // line
+	Metadata       map[string]any `json:"metadata" required:"true" nullable:"false"`                 // metadata
+	Ref            string         `json:"ref" required:"true" nullable:"false" pattern:"^[0-9]{8}$"` // ref
+	Reopened       bool           `json:"reopened" required:"true" nullable:"false"`                 // reopened
+	TargetDate     time.Time      `json:"targetDate" required:"true" nullable:"false"`               // target_date
+	TeamID         TeamID         `json:"teamID" required:"true" nullable:"false"`                   // team_id
+	Title          string         `json:"title" required:"true" nullable:"false"`                    // title
+	WorkItemID     WorkItemID     `json:"-" required:"true" nullable:"false"`                        // work_item_id
+	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" required:"true" nullable:"false"`           // work_item_type_id
 }
 
 // CreateCacheDemoWorkItem creates a new CacheDemoWorkItem in the database with the given params.
@@ -335,18 +335,18 @@ const cacheDemoWorkItemTableWorkItemTagsGroupBySQL = `cache__demo_work_items.wor
 
 // CacheDemoWorkItemUpdateParams represents update params for 'public.cache__demo_work_items'.
 type CacheDemoWorkItemUpdateParams struct {
-	ClosedAt       **time.Time     `json:"closedAt"`                        // closed_at
-	Description    *string         `json:"description" nullable:"false"`    // description
-	KanbanStepID   *KanbanStepID   `json:"kanbanStepID" nullable:"false"`   // kanban_step_id
-	LastMessageAt  *time.Time      `json:"lastMessageAt" nullable:"false"`  // last_message_at
-	Line           *string         `json:"line" nullable:"false"`           // line
-	Metadata       *map[string]any `json:"metadata" nullable:"false"`       // metadata
-	Ref            *string         `json:"ref" nullable:"false"`            // ref
-	Reopened       *bool           `json:"reopened" nullable:"false"`       // reopened
-	TargetDate     *time.Time      `json:"targetDate" nullable:"false"`     // target_date
-	TeamID         *TeamID         `json:"teamID" nullable:"false"`         // team_id
-	Title          *string         `json:"title" nullable:"false"`          // title
-	WorkItemTypeID *WorkItemTypeID `json:"workItemTypeID" nullable:"false"` // work_item_type_id
+	ClosedAt       **time.Time     `json:"closedAt"`                                  // closed_at
+	Description    *string         `json:"description" nullable:"false"`              // description
+	KanbanStepID   *KanbanStepID   `json:"kanbanStepID" nullable:"false"`             // kanban_step_id
+	LastMessageAt  *time.Time      `json:"lastMessageAt" nullable:"false"`            // last_message_at
+	Line           *string         `json:"line" nullable:"false"`                     // line
+	Metadata       *map[string]any `json:"metadata" nullable:"false"`                 // metadata
+	Ref            *string         `json:"ref" nullable:"false" pattern:"^[0-9]{8}$"` // ref
+	Reopened       *bool           `json:"reopened" nullable:"false"`                 // reopened
+	TargetDate     *time.Time      `json:"targetDate" nullable:"false"`               // target_date
+	TeamID         *TeamID         `json:"teamID" nullable:"false"`                   // team_id
+	Title          *string         `json:"title" nullable:"false"`                    // title
+	WorkItemTypeID *WorkItemTypeID `json:"workItemTypeID" nullable:"false"`           // work_item_type_id
 }
 
 // SetUpdateParams updates public.cache__demo_work_items struct fields with the specified params.

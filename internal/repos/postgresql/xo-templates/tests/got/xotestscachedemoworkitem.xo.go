@@ -30,20 +30,24 @@ import (
 type XoTestsCacheDemoWorkItem struct {
 	WorkItemID XoTestsWorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
 	Title      *string           `json:"title" db:"title"`                                              // title
+	TeamID     XoTestsTeamID     `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
 
+	TeamJoin                     *XoTestsTeam                           `json:"-" db:"team_team_id" openapi-go:"ignore"`                           // O2O teams (inferred)
 	WorkItemAssignedUsersJoin    *[]User__WIAU_XoTestsCacheDemoWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
 	WorkItemWorkItemCommentsJoin *[]XoTestsWorkItemComment              `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O cache__demo_work_items
 }
 
 // XoTestsCacheDemoWorkItemCreateParams represents insert params for 'xo_tests.cache__demo_work_items'.
 type XoTestsCacheDemoWorkItemCreateParams struct {
-	Title      *string           `json:"title"`                              // title
-	WorkItemID XoTestsWorkItemID `json:"-" required:"true" nullable:"false"` // work_item_id
+	TeamID     XoTestsTeamID     `json:"teamID" required:"true" nullable:"false"` // team_id
+	Title      *string           `json:"title"`                                   // title
+	WorkItemID XoTestsWorkItemID `json:"-" required:"true" nullable:"false"`      // work_item_id
 }
 
 // CreateXoTestsCacheDemoWorkItem creates a new XoTestsCacheDemoWorkItem in the database with the given params.
 func CreateXoTestsCacheDemoWorkItem(ctx context.Context, db DB, params *XoTestsCacheDemoWorkItemCreateParams) (*XoTestsCacheDemoWorkItem, error) {
 	xtcdwi := &XoTestsCacheDemoWorkItem{
+		TeamID:     params.TeamID,
 		Title:      params.Title,
 		WorkItemID: params.WorkItemID,
 	}
@@ -72,6 +76,7 @@ func WithXoTestsCacheDemoWorkItemLimit(limit int) XoTestsCacheDemoWorkItemSelect
 type XoTestsCacheDemoWorkItemOrderBy string
 
 type XoTestsCacheDemoWorkItemJoins struct {
+	Team             bool // O2O teams
 	AssignedUsers    bool // M2M work_item_assigned_user
 	WorkItemComments bool // M2O work_item_comments
 }
@@ -80,6 +85,7 @@ type XoTestsCacheDemoWorkItemJoins struct {
 func WithXoTestsCacheDemoWorkItemJoin(joins XoTestsCacheDemoWorkItemJoins) XoTestsCacheDemoWorkItemSelectConfigOption {
 	return func(s *XoTestsCacheDemoWorkItemSelectConfig) {
 		s.joins = XoTestsCacheDemoWorkItemJoins{
+			Team:             s.joins.Team || joins.Team,
 			AssignedUsers:    s.joins.AssignedUsers || joins.AssignedUsers,
 			WorkItemComments: s.joins.WorkItemComments || joins.WorkItemComments,
 		}
@@ -120,6 +126,16 @@ func WithXoTestsCacheDemoWorkItemHavingClause(conditions map[string][]any) XoTes
 		s.having = conditions
 	}
 }
+
+const xoTestsCacheDemoWorkItemTableTeamJoinSQL = `-- O2O join generated from "cache__demo_work_items_team_id_fkey (inferred)"
+left join xo_tests.teams as _cache__demo_work_items_team_id on _cache__demo_work_items_team_id.team_id = cache__demo_work_items.team_id
+`
+
+const xoTestsCacheDemoWorkItemTableTeamSelectSQL = `(case when _cache__demo_work_items_team_id.team_id is not null then row(_cache__demo_work_items_team_id.*) end) as team_team_id`
+
+const xoTestsCacheDemoWorkItemTableTeamGroupBySQL = `_cache__demo_work_items_team_id.team_id,
+      _cache__demo_work_items_team_id.team_id,
+	cache__demo_work_items.work_item_id`
 
 const xoTestsCacheDemoWorkItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey-shared-ref-cache__demo_work_items"
 left join (
@@ -164,11 +180,15 @@ const xoTestsCacheDemoWorkItemTableWorkItemCommentsGroupBySQL = `joined_work_ite
 
 // XoTestsCacheDemoWorkItemUpdateParams represents update params for 'xo_tests.cache__demo_work_items'.
 type XoTestsCacheDemoWorkItemUpdateParams struct {
-	Title **string `json:"title"` // title
+	TeamID *XoTestsTeamID `json:"teamID" nullable:"false"` // team_id
+	Title  **string       `json:"title"`                   // title
 }
 
 // SetUpdateParams updates xo_tests.cache__demo_work_items struct fields with the specified params.
 func (xtcdwi *XoTestsCacheDemoWorkItem) SetUpdateParams(params *XoTestsCacheDemoWorkItemUpdateParams) {
+	if params.TeamID != nil {
+		xtcdwi.TeamID = *params.TeamID
+	}
 	if params.Title != nil {
 		xtcdwi.Title = *params.Title
 	}
@@ -178,14 +198,14 @@ func (xtcdwi *XoTestsCacheDemoWorkItem) SetUpdateParams(params *XoTestsCacheDemo
 func (xtcdwi *XoTestsCacheDemoWorkItem) Insert(ctx context.Context, db DB) (*XoTestsCacheDemoWorkItem, error) {
 	// insert (manual)
 	sqlstr := `INSERT INTO xo_tests.cache__demo_work_items (
-	title, work_item_id
+	team_id, title, work_item_id
 	) VALUES (
-	$1, $2
+	$1, $2, $3
 	)
 	 RETURNING * `
 	// run
-	logf(sqlstr, xtcdwi.Title, xtcdwi.WorkItemID)
-	rows, err := db.Query(ctx, sqlstr, xtcdwi.Title, xtcdwi.WorkItemID)
+	logf(sqlstr, xtcdwi.TeamID, xtcdwi.Title, xtcdwi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, xtcdwi.TeamID, xtcdwi.Title, xtcdwi.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsCacheDemoWorkItem/Insert/db.Query: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
 	}
@@ -202,13 +222,13 @@ func (xtcdwi *XoTestsCacheDemoWorkItem) Insert(ctx context.Context, db DB) (*XoT
 func (xtcdwi *XoTestsCacheDemoWorkItem) Update(ctx context.Context, db DB) (*XoTestsCacheDemoWorkItem, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE xo_tests.cache__demo_work_items SET 
-	title = $1 
-	WHERE work_item_id = $2 
+	team_id = $1, title = $2 
+	WHERE work_item_id = $3 
 	RETURNING * `
 	// run
-	logf(sqlstr, xtcdwi.Title, xtcdwi.WorkItemID)
+	logf(sqlstr, xtcdwi.TeamID, xtcdwi.Title, xtcdwi.WorkItemID)
 
-	rows, err := db.Query(ctx, sqlstr, xtcdwi.Title, xtcdwi.WorkItemID)
+	rows, err := db.Query(ctx, sqlstr, xtcdwi.TeamID, xtcdwi.Title, xtcdwi.WorkItemID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsCacheDemoWorkItem/Update/db.Query: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
 	}
@@ -226,6 +246,7 @@ func (xtcdwi *XoTestsCacheDemoWorkItem) Update(ctx context.Context, db DB) (*XoT
 func (xtcdwi *XoTestsCacheDemoWorkItem) Upsert(ctx context.Context, db DB, params *XoTestsCacheDemoWorkItemCreateParams) (*XoTestsCacheDemoWorkItem, error) {
 	var err error
 
+	xtcdwi.TeamID = params.TeamID
 	xtcdwi.Title = params.Title
 	xtcdwi.WorkItemID = params.WorkItemID
 
@@ -308,6 +329,12 @@ func XoTestsCacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, w
 	var joinClauses []string
 	var groupByClauses []string
 
+	if c.joins.Team {
+		selectClauses = append(selectClauses, xoTestsCacheDemoWorkItemTableTeamSelectSQL)
+		joinClauses = append(joinClauses, xoTestsCacheDemoWorkItemTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsCacheDemoWorkItemTableTeamGroupBySQL)
+	}
+
 	if c.joins.AssignedUsers {
 		selectClauses = append(selectClauses, xoTestsCacheDemoWorkItemTableAssignedUsersSelectSQL)
 		joinClauses = append(joinClauses, xoTestsCacheDemoWorkItemTableAssignedUsersJoinSQL)
@@ -336,6 +363,7 @@ func XoTestsCacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, w
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	cache__demo_work_items.team_id,
 	cache__demo_work_items.title,
 	cache__demo_work_items.work_item_id %s 
 	 FROM xo_tests.cache__demo_work_items %s 
@@ -412,6 +440,12 @@ func XoTestsCacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID
 	var joinClauses []string
 	var groupByClauses []string
 
+	if c.joins.Team {
+		selectClauses = append(selectClauses, xoTestsCacheDemoWorkItemTableTeamSelectSQL)
+		joinClauses = append(joinClauses, xoTestsCacheDemoWorkItemTableTeamJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsCacheDemoWorkItemTableTeamGroupBySQL)
+	}
+
 	if c.joins.AssignedUsers {
 		selectClauses = append(selectClauses, xoTestsCacheDemoWorkItemTableAssignedUsersSelectSQL)
 		joinClauses = append(joinClauses, xoTestsCacheDemoWorkItemTableAssignedUsersJoinSQL)
@@ -435,6 +469,7 @@ func XoTestsCacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	cache__demo_work_items.team_id,
 	cache__demo_work_items.title,
 	cache__demo_work_items.work_item_id %s 
 	 FROM xo_tests.cache__demo_work_items %s 
@@ -458,6 +493,13 @@ func XoTestsCacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID
 	}
 
 	return &xtcdwi, nil
+}
+
+// FKTeam_TeamID returns the Team associated with the XoTestsCacheDemoWorkItem's (TeamID).
+//
+// Generated from foreign key 'cache__demo_work_items_team_id_fkey'.
+func (xtcdwi *XoTestsCacheDemoWorkItem) FKTeam_TeamID(ctx context.Context, db DB) (*XoTestsTeam, error) {
+	return XoTestsTeamByTeamID(ctx, db, xtcdwi.TeamID)
 }
 
 // FKWorkItem_WorkItemID returns the WorkItem associated with the XoTestsCacheDemoWorkItem's (WorkItemID).

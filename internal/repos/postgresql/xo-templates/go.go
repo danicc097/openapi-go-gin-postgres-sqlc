@@ -3470,12 +3470,6 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string, pkIsFK *TableFore
 
 			properties := extractPropertiesAnnotation(annotations[propertiesAnnot])
 
-			type sharedRefsInfo struct {
-				Table    string
-				Column   string
-				RefTable string
-			}
-
 			shareRefConstraints := contains(properties, propertyShareRefConstraints)
 			if shareRefConstraints && pkIsFK != nil {
 				mustShareRefs = true

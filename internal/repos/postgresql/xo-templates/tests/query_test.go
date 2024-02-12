@@ -91,7 +91,7 @@ func TestCursorPagination_HavingClause(t *testing.T) {
 	u1 := createUserWithRetry(t, &db.XoTestsUserCreateParams{Name: t.Name() + "_1"})
 	u2 := createUserWithRetry(t, &db.XoTestsUserCreateParams{Name: t.Name() + "_2"})
 
-	wi, err := db.CreateXoTestsWorkItem(ctx, testPool, &db.XoTestsWorkItemCreateParams{})
+	wi, err := db.CreateXoTestsWorkItem(ctx, testPool, &db.XoTestsWorkItemCreateParams{TeamID: db.XoTestsTeamID(1)})
 	require.NoError(t, err)
 
 	_, err = db.CreateXoTestsWorkItemAssignedUser(ctx, testPool, &db.XoTestsWorkItemAssignedUserCreateParams{

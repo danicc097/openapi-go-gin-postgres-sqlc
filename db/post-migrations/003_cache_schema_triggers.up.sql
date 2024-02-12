@@ -6,6 +6,8 @@ declare
   foreign_key_constraints_text text;
   work_items_col_and_type text;
   constraint_exists boolean;
+  tags_comment text;
+  col text;
 begin
   select
     STRING_AGG(constraint_definition , ', ')
@@ -45,9 +47,33 @@ begin
   -- execute 'CREATE SCHEMA IF NOT EXISTS cache;';
   execute FORMAT('CREATE TABLE IF NOT EXISTS cache__%I (%s)' , project_name , project_table_col_and_type || ',' || work_items_col_and_type ||
     ',' || foreign_key_constraints_text);
-  -- execute FORMAT('comment on column cache__%I.work_item_id is ''"type":WorkItemID && "properties":refs-ignore''' , project_name);
+  -- we lose "tags" annotation from column comments in ref
+  for col
+  , tags_comment in
+  select
+    a.attname as col
+    , case when d.description ~ '"tags":\s*([^,]+)' then
+      REGEXP_REPLACE(d.description , '.*"tags":\s*([^,]+).*' , '"tags":\1')
+    else
+      null
+    end as tags_comment
+  from
+    pg_catalog.pg_description d
+    join pg_catalog.pg_attribute a on d.objoid = a.attrelid
+  where
+    a.attrelid = 'public.work_items'::regclass
+    or a.attrelid = ('public.' || project_name)::regclass
+    and a.attnum = d.objsubid loop
+      begin
+        continue
+        when tags_comment = null;
+
+        execute FORMAT('comment on column cache__%I.%s is ''%s''' , project_name , col , tags_comment);
+      end;
+    end loop;
+  -- override
   execute FORMAT('comment on column cache__%I.work_item_id is ''"properties":refs-ignore,share-ref-constraints''' , project_name);
-  -- TODO: xo will duplicate M2M and M2O constraints in constraints slice for the referenced column if share-ref-constraints set``
+
 end;
 $$
 language plpgsql;

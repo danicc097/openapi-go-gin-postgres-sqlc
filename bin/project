@@ -1225,6 +1225,7 @@ x.test.frontend.watch() {
 }
 
 # Run custom xo generation script tests. Accepts `go test` parameters.
+# To fix tests, run with --x-no-backup.
 # Args: [...]
 x.test.xo() {
   xsetup.backup
