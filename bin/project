@@ -270,6 +270,8 @@ x.bootstrap() {
 # Install miscellaneous tool binaries locally.
 x.install-tools() {
   { { {
+    GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter
+
     go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 &
     go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.24.0 &
     # for easier test search.
@@ -288,8 +290,6 @@ x.install-tools() {
 
     go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1 &
     go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2 &
-
-    GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter &
 
     # install node libs with --prefix $TOOLS_DIR, if any
     # ...
