@@ -56,6 +56,9 @@ runs:
         source .envrc
 
         echo Bootstrapping...
+
+        go clean -cache
+
         { yes y 2>/dev/null || :; } | project bootstrap --x-debug
 
         # project e2e.sync-deps # won't use python playwright
