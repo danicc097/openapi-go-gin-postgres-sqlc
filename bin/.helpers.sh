@@ -83,19 +83,18 @@ list_descendants() {
 }
 
 # Accepts flags:
-#    -n    Do not immediately exit.
+#    --no-kill    Do not immediately exit.
 wait_without_error() {
   local -i err=0 werr=0
   local kill=true
 
-  while getopts ":n" opt; do
-    case $opt in
-    n) kill=false ;;
-    \?) echo "Invalid option: -$OPTARG" >&2 ;;
+  while [[ $# -gt 0 ]]; do # getopts fails in CI (non interactive)
+    case "$1" in
+    --no-kill) kill=false ;;
+    *) echo "Invalid option: $1" >&2 ;;
     esac
+    shift
   done
-
-  shift $((OPTIND - 1))
 
   while
     wait -fn || werr=$?

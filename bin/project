@@ -1055,7 +1055,7 @@ x.gen.build-tools() {
       { go build -o $out_dir/$cmd cmd/$cmd/main.go || touch "$failed_tool_build_marker"; } &
     done
 
-    wait_without_error -n || {
+    wait_without_error --no-kill || {
       touch "$failed_tool_build_marker"
     }
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
