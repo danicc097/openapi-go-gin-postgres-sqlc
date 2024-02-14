@@ -82,20 +82,34 @@ list_descendants() {
   echo "$desc_pids"
 }
 
-# waits for parallel processes to finish sucessfully, signalling SIGUSR1 otherwise.
+# Accepts flags:
+#    -n    Do not immediately exit.
 wait_without_error() {
   local -i err=0 werr=0
+  local kill=true
+
+  while getopts ":n" opt; do
+    case $opt in
+    n) kill=false ;;
+    \?) echo "Invalid option: -$OPTARG" >&2 ;;
+    esac
+  done
+
+  shift $((OPTIND - 1))
+
   while
-    wait -fn || werr=$? # do not quote
-    ((werr != 127))     # 127: not found
+    wait -fn || werr=$?
+    ((werr != 127))
   do
     err=$werr
-    ((err == 0)) || break # handle error as soon as it happens
+    ((err == 0)) || break # handle as soon as it happens
   done
-  #trap 'wait || :' EXIT # wait for all jobs before exiting (regardless of handling above)
+
   if ((err != 0)); then
     echo "A job failed" >&2
-    kill -s SIGUSR1 $PROC
+    if $kill; then
+      kill -s SIGUSR1 $PROC
+    fi
     return 1
   fi
 }

@@ -11,7 +11,7 @@ source ".helpers.sh"
 starting_cwd=$(pwd)
 ensure_pwd_is_top_level
 
-declare X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG X_NO_EXIT_CLEANUP
+declare X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG X_NO_EXIT_CLEANUP
 declare BUILD_VERSION
 
 readonly CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -48,11 +48,16 @@ readonly SWAGGER_UI_DIR="internal/static/swagger-ui"
 readonly FRONTEND_GEN="frontend/src/gen"
 readonly MAX_FNAME_LOG_LEN=13
 
+readonly TMP="${TMPDIR:-"/tmp"}"
+
 GEN_POSTGRES_DB="gen_db"
 
-dynamic_test_flags=()
+failed_tool_build_marker="$TMP/failed_tool_build_marker"
+rm -f "$failed_tool_build_marker"
+
+go_test_flags=()
 # shuffle disables go test caching. Definitely don't want in dev.
-test -n "$CI" && dynamic_test_flags+=("-shuffle=on")
+test -n "$CI" && go_test_flags+=("-shuffle=on")
 
 # determines whether gen cache should be restored at program exit, i.e. failed commands.
 # cache folder must be cleaned at exit if true.
@@ -321,7 +326,7 @@ x.gen.pregen() {
     # NOTE: swaggest won't generate for arrays of structs. use a struct with array fields instead.
     generate_structs_map # structs might have been removed in the meantime
 
-    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # xo gen may create/update models.
+    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || touch "$failed_tool_build_marker" # xo gen may create/update models.
 
     local rest_structs=() refs=() spec_schemas=()
     declare -A rest_schema_lookup spec_schema_lookup
@@ -640,7 +645,7 @@ clean_yq_array() {
 }
 
 go_test() {
-  APP_ENV="$X_ENV" go test ${dynamic_test_flags[@]} $@
+  APP_ENV="$X_ENV" go test ${go_test_flags[@]} $@
 }
 
 # Run post-generation scripts in the internal package.
@@ -820,7 +825,7 @@ x.gen.client-server() {
     sed "s/\$ref: '\#\//\$ref: '$SPEC_PATH\#\//g" $SPEC_PATH >"$paths_file"
 
     # yq e 'del(.components)' -i "$paths_file" # dont delete since recent oapi-codegen does some checks even if we are not generating types
-    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # templates are embedded, required rebuild
+    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || touch "$failed_tool_build_marker" # templates are embedded, required rebuild
 
     # Generated types in models pkg will be used in services, repos, db, but rest package must use original
     # models from rest/models.go (source of generated spec schemas)
@@ -1047,17 +1052,11 @@ x.gen.build-tools() {
     mkdir -p $out_dir
     for cmd in jet oapi-codegen codegen ast-parser; do
       echo "Building $cmd..."
-      { go build -o $out_dir/$cmd cmd/$cmd/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]; } &
+      { go build -o $out_dir/$cmd cmd/$cmd/main.go || touch "$failed_tool_build_marker"; } &
     done
 
-    # TODO: when typecheck errors are all in *.gen.go files, don't error out.
-    # ignore if go build first error line is `# github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers`
-    # for example
-    # better yet, should only fail when packages relevant to gen fail, ie if stderr contains:
-    # - internal/codegen, cmd/*, internal/repos/*, internal/rest ...
-    # we could also always ignore errors, but if it fails always show the WARNING rerun may be required messgage
-    wait_without_error || {
-      err Could not rebuild all gen tools. Rerun with --x-ignore-build-errors.
+    wait_without_error -n || {
+      touch "$failed_tool_build_marker"
     }
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -2384,7 +2383,7 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
   # always compile and run since we need new PublicStructs that were just changed
   codegen gen-schema --struct-names $struct_names_arg --existing-structs $existing_structs_arg | yq '
     with_entries(select(.key == "components"))' \
-    >$gen_schema_spec_path || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
+    >$gen_schema_spec_path || touch "$failed_tool_build_marker"
 
   local clashes=()
   for custom_schema in $(yq ".components.schemas[] | select((.x-is-generated == true) | not) | key" $SPEC_PATH); do
@@ -2687,13 +2686,6 @@ while [[ "$#" -gt 0 ]]; do
     usage
     exit
     ;;
-  --x-ignore-build-errors)
-    # Proceeds with code generation regardless of tool rebuild errors.
-    # Use in case of compilation errors that depend on generated code.
-    # A clean gen run is required afterwards.
-    export X_IGNORE_BUILD_ERRORS=1
-    # export X_NO_BACKUP=1 # on failed gen $GEN_CACHE is cleared, shouldn't be necessary
-    ;;
   --x-force-regen)
     # Removes code generation cache, forcing a new run.
     export X_FORCE_REGEN=1
@@ -2741,7 +2733,7 @@ done
 
 export BUILD_VERSION="$X_ENV-$(git rev-parse --verify HEAD)"
 
-readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG X_NO_EXIT_CLEANUP
+readonly X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG X_NO_EXIT_CLEANUP
 readonly base_cache_deps="bin/project bin/.helpers.sh .env.$X_ENV"
 
 ######################## INIT ########################
@@ -2832,8 +2824,8 @@ if [[ -n "$1" ]]; then
 
       "x.$CMD" "$@"
 
-      if [[ -n $X_IGNORE_BUILD_ERRORS ]]; then
-        echo "${YELLOW}[WARNING] A rerun without ignoring build errors may be required"
+      if test -f "$failed_tool_build_marker"; then
+        echo "${YELLOW}[WARNING] At least one gen tool build failed. A gen rerun may be required"
       fi
       exit $? # do not quote
     fi
