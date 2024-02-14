@@ -105,6 +105,7 @@ wait_without_error() {
   done
 
   if ((err != 0)); then
+    sleep 0.2 # wait for all stdout/err
     echo "A job failed" >&2
     if $kill; then
       kill -s SIGUSR1 $PROC

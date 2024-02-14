@@ -1102,8 +1102,14 @@ linters-settings:
   exhaustruct:
     # lint struct usage in all packages that use them
     include:
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*CreateParams$'
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest\.DemoWorkItems$'
+      # internal/rest may need to run this, alongside all services structs
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*'
+      # - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*CreateParams$'
       - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos\.Repos$'
+    exclude:
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*UpdateParams$'
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*Joins$'
 # in case we want to run a linter on test files only
 # issues:
 #   exclude-rules:
@@ -1117,9 +1123,11 @@ EOF
   #                     via fixture factories, so we always want these up to date when a new field is added.
   # services: may construct db CreateParams from specific service models
   # repos: ensure all repos initialized (TODO: same for services)
+  # TODO: rest should force exhaust on services, rest and db structs.
   local packages=("
   internal/services
   internal/repos/postgresql/postgresqlrandom
+  internal/rest
   internal/repos
   ")
 

@@ -74,6 +74,7 @@ func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItemID db.Wor
 
 func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItemID db.WorkItemID, members []db.UserID) error {
 	for idx, member := range members {
+		// nolint: exhaustruct
 		lookup := &db.WorkItemAssignedUser{
 			AssignedUser: member,
 			WorkItemID:   workItemID,
@@ -125,6 +126,7 @@ func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, workItemID db.Work
 
 func (w *WorkItem) RemoveTags(ctx context.Context, d db.DBTX, workItemID db.WorkItemID, tagIDs []db.WorkItemTagID) error {
 	for idx, tagID := range tagIDs {
+		// nolint: exhaustruct
 		lookup := &db.WorkItemWorkItemTag{
 			WorkItemTagID: tagID,
 			WorkItemID:    workItemID,
