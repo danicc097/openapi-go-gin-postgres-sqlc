@@ -44,7 +44,6 @@ type ExtraSchemaUser struct {
 	ReceiverNotificationsJoin *[]ExtraSchemaNotification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
 	SenderNotificationsJoin   *[]ExtraSchemaNotification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
 	APIKeyJoin                *ExtraSchemaUserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
-	APIKeyJoinAKI             *ExtraSchemaUserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
 	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_ExtraSchemaUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
 
 }
@@ -137,7 +136,6 @@ type ExtraSchemaUserJoins struct {
 	NotificationsReceiver bool // M2O notifications
 	NotificationsSender   bool // M2O notifications
 	UserAPIKey            bool // O2O user_api_keys
-	UserAPIKeyUserAPIKeys bool // O2O user_api_keys
 	WorkItemsAssignedUser bool // M2M work_item_assigned_user
 }
 
@@ -152,7 +150,6 @@ func WithExtraSchemaUserJoin(joins ExtraSchemaUserJoins) ExtraSchemaUserSelectCo
 			NotificationsReceiver: s.joins.NotificationsReceiver || joins.NotificationsReceiver,
 			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
 			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
-			UserAPIKeyUserAPIKeys: s.joins.UserAPIKeyUserAPIKeys || joins.UserAPIKeyUserAPIKeys,
 			WorkItemsAssignedUser: s.joins.WorkItemsAssignedUser || joins.WorkItemsAssignedUser,
 		}
 	}
@@ -332,16 +329,6 @@ left join extra_schema.user_api_keys as _users_api_key_id on _users_api_key_id.u
 const extraSchemaUserTableUserAPIKeySelectSQL = `(case when _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id`
 
 const extraSchemaUserTableUserAPIKeyGroupBySQL = `_users_api_key_id.user_api_key_id,
-      _users_api_key_id.user_api_key_id,
-	users.user_id`
-
-const extraSchemaUserTableUserAPIKeyUserAPIKeysJoinSQL = `-- O2O join generated from "users_api_key_id_fkey (inferred)"
-left join extra_schema.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
-`
-
-const extraSchemaUserTableUserAPIKeyUserAPIKeysSelectSQL = `(case when _users_api_key_id.user_api_key_id is not null then row(_users_api_key_id.*) end) as user_api_key_api_key_id`
-
-const extraSchemaUserTableUserAPIKeyUserAPIKeysGroupBySQL = `_users_api_key_id.user_api_key_id,
       _users_api_key_id.user_api_key_id,
 	users.user_id`
 
@@ -589,12 +576,6 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 		groupByClauses = append(groupByClauses, extraSchemaUserTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.UserAPIKeyUserAPIKeys {
-		selectClauses = append(selectClauses, extraSchemaUserTableUserAPIKeyUserAPIKeysSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableUserAPIKeyUserAPIKeysJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableUserAPIKeyUserAPIKeysGroupBySQL)
-	}
-
 	if c.joins.WorkItemsAssignedUser {
 		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsAssignedUserSelectSQL)
 		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsAssignedUserJoinSQL)
@@ -738,12 +719,6 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 		groupByClauses = append(groupByClauses, extraSchemaUserTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.UserAPIKeyUserAPIKeys {
-		selectClauses = append(selectClauses, extraSchemaUserTableUserAPIKeyUserAPIKeysSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableUserAPIKeyUserAPIKeysJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableUserAPIKeyUserAPIKeysGroupBySQL)
-	}
-
 	if c.joins.WorkItemsAssignedUser {
 		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsAssignedUserSelectSQL)
 		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsAssignedUserJoinSQL)
@@ -883,12 +858,6 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 		groupByClauses = append(groupByClauses, extraSchemaUserTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.UserAPIKeyUserAPIKeys {
-		selectClauses = append(selectClauses, extraSchemaUserTableUserAPIKeyUserAPIKeysSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableUserAPIKeyUserAPIKeysJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableUserAPIKeyUserAPIKeysGroupBySQL)
-	}
-
 	if c.joins.WorkItemsAssignedUser {
 		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsAssignedUserSelectSQL)
 		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsAssignedUserJoinSQL)
@@ -1026,12 +995,6 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 		selectClauses = append(selectClauses, extraSchemaUserTableUserAPIKeySelectSQL)
 		joinClauses = append(joinClauses, extraSchemaUserTableUserAPIKeyJoinSQL)
 		groupByClauses = append(groupByClauses, extraSchemaUserTableUserAPIKeyGroupBySQL)
-	}
-
-	if c.joins.UserAPIKeyUserAPIKeys {
-		selectClauses = append(selectClauses, extraSchemaUserTableUserAPIKeyUserAPIKeysSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableUserAPIKeyUserAPIKeysJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableUserAPIKeyUserAPIKeysGroupBySQL)
 	}
 
 	if c.joins.WorkItemsAssignedUser {

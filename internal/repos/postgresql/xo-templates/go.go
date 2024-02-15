@@ -1250,14 +1250,7 @@ cc_label:
 			// and check if field is unique or not
 			// ignore duplicate joins generated for partitioned columns to new tables, joined by helper keys, e.g. api_key_id
 			for _, seenConstraint := range cc {
-				if seenConstraint.TableName == constraint.TableName &&
-					seenConstraint.RefTableName == constraint.RefTableName &&
-					seenConstraint.ColumnName == constraint.ColumnName &&
-					seenConstraint.RefColumnName == constraint.RefColumnName &&
-					seenConstraint.Type == constraint.Type &&
-					/* card check to generate joins with vertically partitioned tables.
-					 */
-					seenConstraint.Cardinality == card {
+				if sameConstraint(seenConstraint, constraint) && seenConstraint.Cardinality == card {
 					continue cc_label
 				}
 			}
@@ -3439,6 +3432,7 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string, pkIsFK *TableFore
 		return // don't duplicate
 	}
 	mustShareRefs := false
+outer:
 	for _, constraint := range cc {
 		// we need unique constraints for paginated query generation. instead do this check when generating joins only
 		// if constraint.Type != "foreign_key" {
@@ -3446,6 +3440,12 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string, pkIsFK *TableFore
 		// }
 		// TODO: need Table instead of just string, since foreign keys required for shared ref constraints
 		// do not exist, therefore we cannt find the ref table just by prmary key
+		// TODO: ignore seen constraints
+		for _, seenConstraint := range f.tableConstraints[table] {
+			if sameConstraint(seenConstraint, constraint) {
+				continue outer
+			}
+		}
 		if constraint.Cardinality == M2M && constraint.RefTableName == table {
 			for _, c1 := range cc {
 				if c1.TableName == constraint.TableName && c1.ColumnName != constraint.ColumnName && c1.Type == "foreign_key" {
@@ -3498,6 +3498,29 @@ func (f *Funcs) loadConstraints(cc []Constraint, table string, pkIsFK *TableFore
 			newRefConstraints = append(newRefConstraints, newr)
 		}
 		f.tableConstraints[table] = append(f.tableConstraints[table], newRefConstraints...)
+	}
+}
+
+// sameConstraint returns whether constraint b is equivalent to a.
+// accepts Constraint or xo.Constraint.
+// NOTE: xo.Constraint requires external cardinality check.
+func sameConstraint(a Constraint, b any) bool {
+	switch x := b.(type) {
+	case xo.Constraint:
+		return a.TableName == x.TableName &&
+			a.RefTableName == x.RefTableName &&
+			a.ColumnName == x.ColumnName &&
+			a.RefColumnName == x.RefColumnName &&
+			a.Type == x.Type
+	case Constraint:
+		return a.TableName == x.TableName &&
+			a.RefTableName == x.RefTableName &&
+			a.ColumnName == x.ColumnName &&
+			a.RefColumnName == x.RefColumnName &&
+			a.Type == x.Type &&
+			a.Cardinality == x.Cardinality
+	default:
+		panic(fmt.Sprintf("unknown constraint type: %T", b))
 	}
 }
 
@@ -4301,10 +4324,6 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 
 				notes += " " + c.RefTableName
 				if c.IsInferredO2O {
-					// FIXME: at this point we generate a duplicate when partitioning vertically
-					// should detect vertically partitioned tables above and skip.
-					// APIKeyJoin        *UserAPIKey    ...  // O2O user_api_keys (inferred)
-					// APIKeyJoinAKI     *UserAPIKey    ...  // O2O user_api_keys (inferred)
 					notes += " (inferred)"
 				}
 				if c.IsGeneratedO2OFromM2O {
