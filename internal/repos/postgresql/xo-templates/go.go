@@ -4292,8 +4292,6 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			if c.TableName == t.SQLName {
 				typ = camelExport(singularize(c.RefTableName))
 				descName := camelExport(inflector.Singularize(strings.TrimSuffix(c.ColumnName, "_id")))
-				// detect vertically partitioned tables.
-				// TODO should be APIKeyID  *int --> APIKeyJoin *UserAPIKey, else we can have clashes
 				for _, pk := range t.PrimaryKeys {
 					if pk.SQLName == c.ColumnName {
 						descName = camelExport(inflector.Singularize(c.RefTableName))
@@ -4303,6 +4301,10 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 
 				notes += " " + c.RefTableName
 				if c.IsInferredO2O {
+					// FIXME: at this point we generate a duplicate when partitioning vertically
+					// should detect vertically partitioned tables above and skip.
+					// APIKeyJoin        *UserAPIKey    ...  // O2O user_api_keys (inferred)
+					// APIKeyJoinAKI     *UserAPIKey    ...  // O2O user_api_keys (inferred)
 					notes += " (inferred)"
 				}
 				if c.IsGeneratedO2OFromM2O {

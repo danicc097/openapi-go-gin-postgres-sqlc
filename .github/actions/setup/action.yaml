@@ -57,7 +57,7 @@ runs:
 
         echo Bootstrapping...
 
-        { yes y 2>/dev/null || :; } | project bootstrap --x-debug
+        { yes y 2>/dev/null || :; } | project bootstrap
 
         # project e2e.sync-deps # won't use python playwright
 

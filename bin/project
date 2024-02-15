@@ -270,31 +270,45 @@ x.bootstrap() {
 # Install miscellaneous tool binaries locally.
 x.install-tools() {
   { { {
-
-    go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 &
-    go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.24.0 &
-    # for easier test search.
-    # NOTE: unrelated run test broken discovery: https://github.com/golang/vscode-go/issues/2719
-    # go install github.com/danicc097/go-test-renamer@v0.2.0 &
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2 &
-    go install github.com/tufin/oasdiff@latest &
-    go install golang.org/x/tools/cmd/goimports@latest &
-    go install mvdan.cc/gofumpt@latest &
-    go install mvdan.cc/sh/v3/cmd/shfmt@latest &
-    go install github.com/danicc097/air@latest &
-    go install github.com/danicc097/xo/v5@v5.6.0 &
-    go install github.com/mikefarah/yq/v4@v4.34.2 &
-    go install github.com/hexdigest/gowrap/cmd/gowrap@latest &
-    go install golang.org/x/tools/cmd/stringer@latest &
-    go install github.com/maxbrunsfeld/counterfeiter/v6@latest &
-
-    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1 &
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2 &
+    declare -A jobs
+    local pids=() failed_jobs=()
 
     # install node libs with --prefix $TOOLS_DIR, if any
     # ...
+    # TODO: abstract to function that just accepts commands to run
+    # as it is we might just use parallel but may use own functions later.
+    commands=(
+      "go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2"
+      "go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.24.0"
+      "go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2"
+      "go install github.com/tufin/oasdiff@latest"
+      "go install golang.org/x/tools/cmd/goimports@latest"
+      "go install mvdan.cc/gofumpt@latest"
+      "go install mvdan.cc/sh/v3/cmd/shfmt@latest"
+      "go install github.com/danicc097/air@latest"
+      "go install github.com/danicc097/xo/v5@v5.6.0"
+      "go install github.com/mikefarah/yq/v4@v4.34.2"
+      "go install github.com/hexdigest/gowrap/cmd/gowrap@latest"
+      "go install golang.org/x/tools/cmd/stringer@latest"
+      "go install github.com/maxbrunsfeld/counterfeiter/v6@latest"
+      "go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1"
+      "go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2"
+    )
+    for command in "${commands[@]}"; do
+      $command &
+      pids+=($!)
+      jobs[$!]="$command"
+    done
 
-    wait_without_error || err Could not install all tools. Try running 'go clean -cache' and retry. Else install with ' -mod=readonly' flag.
+    for pid in "${pids[@]}"; do
+      wait -fn "$pid" || failed_jobs+=("${jobs[$pid]}")
+    done
+
+    # For failing installs for no apparent reason, try running 'go clean -cache' and retry. Else install with ' -mod=readonly' flag.
+    if [[ ${#failed_jobs[@]} -gt 0 ]]; then
+      err "Could not install all tools. Failed jobs:
+$(join_by $'\n' "${failed_jobs[@]}")"
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 

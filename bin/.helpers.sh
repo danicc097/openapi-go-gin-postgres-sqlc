@@ -84,6 +84,12 @@ list_descendants() {
 
 # Accepts flags:
 #    --no-kill    Do not immediately exit.
+# It does not store information the failed command. To keep track of all failures,
+# use:
+# 	for pid in "${pids[@]}"; do
+# 	  cmd=$(jobs -l | grep "$pid")
+# 	  wait -fn "$pid" || echo "Background job failed: $cmd"
+# 	done
 wait_without_error() {
   local -i err=0 werr=0
   local kill=true
