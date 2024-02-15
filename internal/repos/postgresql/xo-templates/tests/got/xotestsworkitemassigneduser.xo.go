@@ -119,7 +119,12 @@ func WithXoTestsWorkItemAssignedUserFilters(filters map[string][]any) XoTestsWor
 // with $i to prevent SQL injection.
 // Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See joins db tag to use the appropriate aliases.
 //	filters := map[string][]any{
 //	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
 //	}
@@ -226,9 +231,9 @@ func (xtwiau *XoTestsWorkItemAssignedUser) Insert(ctx context.Context, db DB) (*
 // Update updates a XoTestsWorkItemAssignedUser in the database.
 func (xtwiau *XoTestsWorkItemAssignedUser) Update(ctx context.Context, db DB) (*XoTestsWorkItemAssignedUser, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.work_item_assigned_user SET 
-	role = $1 
-	WHERE work_item_id = $2  AND assigned_user = $3 
+	sqlstr := `UPDATE xo_tests.work_item_assigned_user SET
+	role = $1
+	WHERE work_item_id = $2  AND assigned_user = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, xtwiau.XoTestsRole, xtwiau.WorkItemID, xtwiau.AssignedUser)
@@ -275,7 +280,7 @@ func (xtwiau *XoTestsWorkItemAssignedUser) Upsert(ctx context.Context, db DB, pa
 // Delete deletes the XoTestsWorkItemAssignedUser from the database.
 func (xtwiau *XoTestsWorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM xo_tests.work_item_assigned_user 
+	sqlstr := `DELETE FROM xo_tests.work_item_assigned_user
 	WHERE work_item_id = $1 AND assigned_user = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtwiau.WorkItemID, xtwiau.AssignedUser); err != nil {
@@ -358,14 +363,14 @@ func XoTestsWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, d
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s 
-	 FROM xo_tests.work_item_assigned_user %s 
+	work_item_assigned_user.work_item_id %s
+	 FROM xo_tests.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.assigned_user = $1 AND work_item_assigned_user.work_item_id = $2
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -461,14 +466,14 @@ func XoTestsWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s 
-	 FROM xo_tests.work_item_assigned_user %s 
+	work_item_assigned_user.work_item_id %s
+	 FROM xo_tests.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.work_item_id = $1 AND work_item_assigned_user.assigned_user = $2
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -562,14 +567,14 @@ func XoTestsWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workIt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s 
-	 FROM xo_tests.work_item_assigned_user %s 
+	work_item_assigned_user.work_item_id %s
+	 FROM xo_tests.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.work_item_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -665,14 +670,14 @@ func XoTestsWorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assi
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s 
-	 FROM xo_tests.work_item_assigned_user %s 
+	work_item_assigned_user.work_item_id %s
+	 FROM xo_tests.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.assigned_user = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

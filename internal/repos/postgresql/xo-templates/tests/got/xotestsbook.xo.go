@@ -123,7 +123,12 @@ func WithXoTestsBookFilters(filters map[string][]any) XoTestsBookSelectConfigOpt
 // with $i to prevent SQL injection.
 // Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See joins db tag to use the appropriate aliases.
 //	filters := map[string][]any{
 //	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
 //	}
@@ -261,9 +266,9 @@ func (xtb *XoTestsBook) Insert(ctx context.Context, db DB) (*XoTestsBook, error)
 // Update updates a XoTestsBook in the database.
 func (xtb *XoTestsBook) Update(ctx context.Context, db DB) (*XoTestsBook, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.books SET 
-	name = $1 
-	WHERE book_id = $2 
+	sqlstr := `UPDATE xo_tests.books SET
+	name = $1
+	WHERE book_id = $2
 	RETURNING * `
 	// run
 	logf(sqlstr, xtb.Name, xtb.BookID)
@@ -308,7 +313,7 @@ func (xtb *XoTestsBook) Upsert(ctx context.Context, db DB, params *XoTestsBookCr
 // Delete deletes the XoTestsBook from the database.
 func (xtb *XoTestsBook) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.books 
+	sqlstr := `DELETE FROM xo_tests.books
 	WHERE book_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtb.BookID); err != nil {
@@ -406,14 +411,14 @@ func XoTestsBookPaginatedByBookID(ctx context.Context, db DB, bookID XoTestsBook
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	books.book_id,
-	books.name %s 
-	 FROM xo_tests.books %s 
+	books.name %s
+	 FROM xo_tests.books %s
 	 WHERE books.book_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
+	 %s   %s
+  %s
+  ORDER BY
 		book_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookPaginatedByBookID */\n" + sqlstr
@@ -517,13 +522,13 @@ func XoTestsBookByBookID(ctx context.Context, db DB, bookID XoTestsBookID, opts 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	books.book_id,
-	books.name %s 
-	 FROM xo_tests.books %s 
+	books.name %s
+	 FROM xo_tests.books %s
 	 WHERE books.book_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

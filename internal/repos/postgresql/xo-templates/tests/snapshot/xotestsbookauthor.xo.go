@@ -119,7 +119,12 @@ func WithXoTestsBookAuthorFilters(filters map[string][]any) XoTestsBookAuthorSel
 // with $i to prevent SQL injection.
 // Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See joins db tag to use the appropriate aliases.
 //	filters := map[string][]any{
 //	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
 //	}
@@ -226,9 +231,9 @@ func (xtba *XoTestsBookAuthor) Insert(ctx context.Context, db DB) (*XoTestsBookA
 // Update updates a XoTestsBookAuthor in the database.
 func (xtba *XoTestsBookAuthor) Update(ctx context.Context, db DB) (*XoTestsBookAuthor, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.book_authors SET 
-	pseudonym = $1 
-	WHERE book_id = $2  AND author_id = $3 
+	sqlstr := `UPDATE xo_tests.book_authors SET
+	pseudonym = $1
+	WHERE book_id = $2  AND author_id = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, xtba.Pseudonym, xtba.BookID, xtba.AuthorID)
@@ -275,7 +280,7 @@ func (xtba *XoTestsBookAuthor) Upsert(ctx context.Context, db DB, params *XoTest
 // Delete deletes the XoTestsBookAuthor from the database.
 func (xtba *XoTestsBookAuthor) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM xo_tests.book_authors 
+	sqlstr := `DELETE FROM xo_tests.book_authors
 	WHERE book_id = $1 AND author_id = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtba.BookID, xtba.AuthorID); err != nil {
@@ -358,14 +363,14 @@ func XoTestsBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID XoTest
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s 
-	 FROM xo_tests.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM xo_tests.book_authors %s
 	 WHERE book_authors.book_id = $1 AND book_authors.author_id = $2
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -459,14 +464,14 @@ func XoTestsBookAuthorsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s 
-	 FROM xo_tests.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM xo_tests.book_authors %s
 	 WHERE book_authors.book_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -562,14 +567,14 @@ func XoTestsBookAuthorsByAuthorID(ctx context.Context, db DB, authorID XoTestsUs
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s 
-	 FROM xo_tests.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM xo_tests.book_authors %s
 	 WHERE book_authors.author_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

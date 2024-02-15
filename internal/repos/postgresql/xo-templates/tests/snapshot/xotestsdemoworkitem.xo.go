@@ -102,7 +102,12 @@ func WithXoTestsDemoWorkItemFilters(filters map[string][]any) XoTestsDemoWorkIte
 // with $i to prevent SQL injection.
 // Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See joins db tag to use the appropriate aliases.
 //	filters := map[string][]any{
 //	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
 //	}
@@ -161,9 +166,9 @@ func (xtdwi *XoTestsDemoWorkItem) Insert(ctx context.Context, db DB) (*XoTestsDe
 // Update updates a XoTestsDemoWorkItem in the database.
 func (xtdwi *XoTestsDemoWorkItem) Update(ctx context.Context, db DB) (*XoTestsDemoWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.demo_work_items SET 
-	checked = $1 
-	WHERE work_item_id = $2 
+	sqlstr := `UPDATE xo_tests.demo_work_items SET
+	checked = $1
+	WHERE work_item_id = $2
 	RETURNING * `
 	// run
 	logf(sqlstr, xtdwi.Checked, xtdwi.WorkItemID)
@@ -209,7 +214,7 @@ func (xtdwi *XoTestsDemoWorkItem) Upsert(ctx context.Context, db DB, params *XoT
 // Delete deletes the XoTestsDemoWorkItem from the database.
 func (xtdwi *XoTestsDemoWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.demo_work_items 
+	sqlstr := `DELETE FROM xo_tests.demo_work_items
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtdwi.WorkItemID); err != nil {
@@ -289,14 +294,14 @@ func XoTestsDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	demo_work_items.checked,
-	demo_work_items.work_item_id %s 
-	 FROM xo_tests.demo_work_items %s 
+	demo_work_items.work_item_id %s
+	 FROM xo_tests.demo_work_items %s
 	 WHERE demo_work_items.work_item_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
+	 %s   %s
+  %s
+  ORDER BY
 		work_item_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsDemoWorkItemPaginatedByWorkItemID */\n" + sqlstr
@@ -382,13 +387,13 @@ func XoTestsDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTe
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	demo_work_items.checked,
-	demo_work_items.work_item_id %s 
-	 FROM xo_tests.demo_work_items %s 
+	demo_work_items.work_item_id %s
+	 FROM xo_tests.demo_work_items %s
 	 WHERE demo_work_items.work_item_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

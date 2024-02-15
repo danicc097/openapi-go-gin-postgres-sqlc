@@ -194,7 +194,12 @@ func WithXoTestsUserFilters(filters map[string][]any) XoTestsUserSelectConfigOpt
 // with $i to prevent SQL injection.
 // Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See joins db tag to use the appropriate aliases.
 //	filters := map[string][]any{
 //	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
 //	}
@@ -419,9 +424,9 @@ func (xtu *XoTestsUser) Insert(ctx context.Context, db DB) (*XoTestsUser, error)
 // Update updates a XoTestsUser in the database.
 func (xtu *XoTestsUser) Update(ctx context.Context, db DB) (*XoTestsUser, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.users SET 
-	api_key_id = $1, deleted_at = $2, name = $3 
-	WHERE user_id = $4 
+	sqlstr := `UPDATE xo_tests.users SET
+	api_key_id = $1, deleted_at = $2, name = $3
+	WHERE user_id = $4
 	RETURNING * `
 	// run
 	logf(sqlstr, xtu.APIKeyID, xtu.CreatedAt, xtu.DeletedAt, xtu.Name, xtu.UserID)
@@ -467,7 +472,7 @@ func (xtu *XoTestsUser) Upsert(ctx context.Context, db DB, params *XoTestsUserCr
 // Delete deletes the XoTestsUser from the database.
 func (xtu *XoTestsUser) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.users 
+	sqlstr := `DELETE FROM xo_tests.users
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtu.UserID); err != nil {
@@ -479,8 +484,8 @@ func (xtu *XoTestsUser) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the XoTestsUser from the database via 'deleted_at'.
 func (xtu *XoTestsUser) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE xo_tests.users 
-	SET deleted_at = NOW() 
+	sqlstr := `UPDATE xo_tests.users
+	SET deleted_at = NOW()
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtu.UserID); err != nil {
@@ -621,17 +626,17 @@ func XoTestsUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s 
-	 FROM xo_tests.users %s 
+	users.user_id %s
+	 FROM xo_tests.users %s
 	 WHERE users.created_at %s $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
+	 %s   AND users.deleted_at is %s  %s
+  %s
+  ORDER BY
 		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserPaginatedByCreatedAt */\n" + sqlstr
@@ -765,16 +770,16 @@ func XoTestsUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s 
-	 FROM xo_tests.users %s 
+	users.user_id %s
+	 FROM xo_tests.users %s
 	 WHERE users.created_at = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -910,16 +915,16 @@ func XoTestsUserByName(ctx context.Context, db DB, name string, opts ...XoTestsU
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s 
-	 FROM xo_tests.users %s 
+	users.user_id %s
+	 FROM xo_tests.users %s
 	 WHERE users.name = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1055,16 +1060,16 @@ func XoTestsUserByUserID(ctx context.Context, db DB, userID XoTestsUserID, opts 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s 
-	 FROM xo_tests.users %s 
+	users.user_id %s
+	 FROM xo_tests.users %s
 	 WHERE users.user_id = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

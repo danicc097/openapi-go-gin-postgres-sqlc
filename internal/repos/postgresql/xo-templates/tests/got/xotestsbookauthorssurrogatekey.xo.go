@@ -123,7 +123,12 @@ func WithXoTestsBookAuthorsSurrogateKeyFilters(filters map[string][]any) XoTests
 // with $i to prevent SQL injection.
 // Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
+//
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See joins db tag to use the appropriate aliases.
 //	filters := map[string][]any{
 //	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
 //	}
@@ -231,9 +236,9 @@ func (xtbask *XoTestsBookAuthorsSurrogateKey) Insert(ctx context.Context, db DB)
 // Update updates a XoTestsBookAuthorsSurrogateKey in the database.
 func (xtbask *XoTestsBookAuthorsSurrogateKey) Update(ctx context.Context, db DB) (*XoTestsBookAuthorsSurrogateKey, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.book_authors_surrogate_key SET 
-	author_id = $1, book_id = $2, pseudonym = $3 
-	WHERE book_authors_surrogate_key_id = $4 
+	sqlstr := `UPDATE xo_tests.book_authors_surrogate_key SET
+	author_id = $1, book_id = $2, pseudonym = $3
+	WHERE book_authors_surrogate_key_id = $4
 	RETURNING * `
 	// run
 	logf(sqlstr, xtbask.AuthorID, xtbask.BookID, xtbask.Pseudonym, xtbask.BookAuthorsSurrogateKeyID)
@@ -280,7 +285,7 @@ func (xtbask *XoTestsBookAuthorsSurrogateKey) Upsert(ctx context.Context, db DB,
 // Delete deletes the XoTestsBookAuthorsSurrogateKey from the database.
 func (xtbask *XoTestsBookAuthorsSurrogateKey) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.book_authors_surrogate_key 
+	sqlstr := `DELETE FROM xo_tests.book_authors_surrogate_key
 	WHERE book_authors_surrogate_key_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtbask.BookAuthorsSurrogateKeyID); err != nil {
@@ -366,16 +371,16 @@ func XoTestsBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx cont
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s 
-	 FROM xo_tests.book_authors_surrogate_key %s 
+	book_authors_surrogate_key.pseudonym %s
+	 FROM xo_tests.book_authors_surrogate_key %s
 	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
+	 %s   %s
+  %s
+  ORDER BY
 		book_authors_surrogate_key_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID */\n" + sqlstr
@@ -467,15 +472,15 @@ func XoTestsBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s 
-	 FROM xo_tests.book_authors_surrogate_key %s 
+	book_authors_surrogate_key.pseudonym %s
+	 FROM xo_tests.book_authors_surrogate_key %s
 	 WHERE book_authors_surrogate_key.book_id = $1 AND book_authors_surrogate_key.author_id = $2
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -569,15 +574,15 @@ func XoTestsBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s 
-	 FROM xo_tests.book_authors_surrogate_key %s 
+	book_authors_surrogate_key.pseudonym %s
+	 FROM xo_tests.book_authors_surrogate_key %s
 	 WHERE book_authors_surrogate_key.book_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -673,15 +678,15 @@ func XoTestsBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, autho
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s 
-	 FROM xo_tests.book_authors_surrogate_key %s 
+	book_authors_surrogate_key.pseudonym %s
+	 FROM xo_tests.book_authors_surrogate_key %s
 	 WHERE book_authors_surrogate_key.author_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -777,15 +782,15 @@ func XoTestsBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Conte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors_surrogate_key.author_id,
 	book_authors_surrogate_key.book_authors_surrogate_key_id,
 	book_authors_surrogate_key.book_id,
-	book_authors_surrogate_key.pseudonym %s 
-	 FROM xo_tests.book_authors_surrogate_key %s 
+	book_authors_surrogate_key.pseudonym %s
+	 FROM xo_tests.book_authors_surrogate_key %s
 	 WHERE book_authors_surrogate_key.book_authors_surrogate_key_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
