@@ -129,7 +129,6 @@ func WithXoTestsUserAPIKeyFilters(filters map[string][]any) XoTestsUserAPIKeySel
 // WithXoTestsUserAPIKeyHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
-//
 // WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
@@ -203,9 +202,9 @@ func (xtuak *XoTestsUserAPIKey) Insert(ctx context.Context, db DB) (*XoTestsUser
 // Update updates a XoTestsUserAPIKey in the database.
 func (xtuak *XoTestsUserAPIKey) Update(ctx context.Context, db DB) (*XoTestsUserAPIKey, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.user_api_keys SET
-	api_key = $1, expires_on = $2, user_id = $3
-	WHERE user_api_key_id = $4
+	sqlstr := `UPDATE xo_tests.user_api_keys SET 
+	api_key = $1, expires_on = $2, user_id = $3 
+	WHERE user_api_key_id = $4 
 	RETURNING * `
 	// run
 	logf(sqlstr, xtuak.APIKey, xtuak.ExpiresOn, xtuak.UserID, xtuak.UserAPIKeyID)
@@ -252,7 +251,7 @@ func (xtuak *XoTestsUserAPIKey) Upsert(ctx context.Context, db DB, params *XoTes
 // Delete deletes the XoTestsUserAPIKey from the database.
 func (xtuak *XoTestsUserAPIKey) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.user_api_keys
+	sqlstr := `DELETE FROM xo_tests.user_api_keys 
 	WHERE user_api_key_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtuak.UserAPIKeyID); err != nil {
@@ -332,16 +331,16 @@ func XoTestsUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAP
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
 	user_api_keys.user_api_key_id,
-	user_api_keys.user_id %s
-	 FROM xo_tests.user_api_keys %s
+	user_api_keys.user_id %s 
+	 FROM xo_tests.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id %s $1
-	 %s   %s
-  %s
-  ORDER BY
+	 %s   %s 
+  %s 
+  ORDER BY 
 		user_api_key_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserAPIKeyPaginatedByUserAPIKeyID */\n" + sqlstr
@@ -427,15 +426,15 @@ func XoTestsUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts .
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
 	user_api_keys.user_api_key_id,
-	user_api_keys.user_id %s
-	 FROM xo_tests.user_api_keys %s
+	user_api_keys.user_id %s 
+	 FROM xo_tests.user_api_keys %s 
 	 WHERE user_api_keys.api_key = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -523,15 +522,15 @@ func XoTestsUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID Xo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
 	user_api_keys.user_api_key_id,
-	user_api_keys.user_id %s
-	 FROM xo_tests.user_api_keys %s
+	user_api_keys.user_id %s 
+	 FROM xo_tests.user_api_keys %s 
 	 WHERE user_api_keys.user_api_key_id = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -619,15 +618,15 @@ func XoTestsUserAPIKeyByUserID(ctx context.Context, db DB, userID XoTestsUserID,
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_api_keys.api_key,
 	user_api_keys.expires_on,
 	user_api_keys.user_api_key_id,
-	user_api_keys.user_id %s
-	 FROM xo_tests.user_api_keys %s
+	user_api_keys.user_id %s 
+	 FROM xo_tests.user_api_keys %s 
 	 WHERE user_api_keys.user_id = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
