@@ -89,10 +89,12 @@ begin
     work_items_table_name
   from
     projects loop
-      -- TODO: will have to include extra denormalized fields accordingly
-      -- per project_name inside sync_work_items.
-      -- Unclear if this can remain in post migration or has to be moved to regular
-      -- migrations (unlikely that we will have data migrations for cache table that require trigger functions to be up to date)
+      /* TODO: will have to include extra denormalized fields accordingly
+       per project_name inside sync_work_items.
+       Unclear if this can remain in post migration or has to be moved to regular
+       migrations (unlikely that we will have data migrations for cache table that require trigger functions to be up
+       to date before executing post migrations)
+       */
       execute FORMAT('create or replace trigger work_items_sync_trigger_%1$I
         after insert or update on %1$I for each row
         execute function sync_work_items (%1$s);' , project_name);

@@ -78,6 +78,13 @@ end;
 $$
 language plpgsql;
 
+--
+--
+--
+-- INIT cache tables
+--
+--
+--
 select
   create_work_item_cache_table ('demo_work_items');
 
