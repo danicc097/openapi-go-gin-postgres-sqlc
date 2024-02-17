@@ -2380,6 +2380,11 @@ func With%[1]sJoin(joins %[1]sJoins) %[1]sSelectConfigOption {
 		buf.WriteString(stt)
 	}
 
+	/**
+	 * ideally the having clause should be generated for each table differently, containing the mapping
+	 * of join name to xo_join_... so its a matter of just reading the doc instead of diving into the selectSQL string
+	 * not so trivial as it is now
+	 * */
 	buf.WriteString(fmt.Sprintf(`
 // With%[1]sFilters adds the given WHERE clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
