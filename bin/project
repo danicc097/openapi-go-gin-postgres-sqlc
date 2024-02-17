@@ -1189,9 +1189,7 @@ x.lint.sql() {
     "db"
   )
   for slq_dir in ${SQL_DIRS[@]}; do
-    # TODO:
-    # "pgFormatter.configFile": "./<...>", so we can use it in vscode settings too
-    pg_format --config .pg_format $(find "$slq_dir" -name '*.*sql' -not -name "schema.sql")
+    pg_format --config .pg_format $(find "$slq_dir" -name '*.*sql' -not -path "db/schema.sql")
   done
 }
 
