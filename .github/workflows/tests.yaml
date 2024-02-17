@@ -38,6 +38,12 @@ jobs:
         run: |
           # debug gen: run with --x-force-regen
           git diff --exit-code # -- . ':!dir_to_skip'
+          untracked_files=$(git ls-files --others --exclude-standard)
+          if [ -n "$untracked_files" ]; then
+              echo "[ERROR] Found untracked files:"
+              echo "${untracked_files[*]}"
+              exit 1
+          else
 
       - name: Test backend
         run: |
