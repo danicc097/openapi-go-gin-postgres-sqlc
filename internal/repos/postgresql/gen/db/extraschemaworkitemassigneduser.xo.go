@@ -233,9 +233,9 @@ func (eswiau *ExtraSchemaWorkItemAssignedUser) Insert(ctx context.Context, db DB
 // Update updates a ExtraSchemaWorkItemAssignedUser in the database.
 func (eswiau *ExtraSchemaWorkItemAssignedUser) Update(ctx context.Context, db DB) (*ExtraSchemaWorkItemAssignedUser, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.work_item_assigned_user SET
-	role = $1
-	WHERE work_item_id = $2  AND assigned_user = $3
+	sqlstr := `UPDATE extra_schema.work_item_assigned_user SET 
+	role = $1 
+	WHERE work_item_id = $2  AND assigned_user = $3 
 	RETURNING * `
 	// run
 	logf(sqlstr, eswiau.ExtraSchemaRole, eswiau.WorkItemID, eswiau.AssignedUser)
@@ -282,7 +282,7 @@ func (eswiau *ExtraSchemaWorkItemAssignedUser) Upsert(ctx context.Context, db DB
 // Delete deletes the ExtraSchemaWorkItemAssignedUser from the database.
 func (eswiau *ExtraSchemaWorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM extra_schema.work_item_assigned_user
+	sqlstr := `DELETE FROM extra_schema.work_item_assigned_user 
 	WHERE work_item_id = $1 AND assigned_user = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, eswiau.WorkItemID, eswiau.AssignedUser); err != nil {
@@ -365,14 +365,14 @@ func ExtraSchemaWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Contex
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s
-	 FROM extra_schema.work_item_assigned_user %s
+	work_item_assigned_user.work_item_id %s 
+	 FROM extra_schema.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.assigned_user = $1 AND work_item_assigned_user.work_item_id = $2
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -468,14 +468,14 @@ func ExtraSchemaWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s
-	 FROM extra_schema.work_item_assigned_user %s
+	work_item_assigned_user.work_item_id %s 
+	 FROM extra_schema.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.work_item_id = $1 AND work_item_assigned_user.assigned_user = $2
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -569,14 +569,14 @@ func ExtraSchemaWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, wo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s
-	 FROM extra_schema.work_item_assigned_user %s
+	work_item_assigned_user.work_item_id %s 
+	 FROM extra_schema.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.work_item_id = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -672,14 +672,14 @@ func ExtraSchemaWorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s
-	 FROM extra_schema.work_item_assigned_user %s
+	work_item_assigned_user.work_item_id %s 
+	 FROM extra_schema.work_item_assigned_user %s 
 	 WHERE work_item_assigned_user.assigned_user = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

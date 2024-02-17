@@ -203,9 +203,9 @@ func (esn *ExtraSchemaNotification) Insert(ctx context.Context, db DB) (*ExtraSc
 // Update updates a ExtraSchemaNotification in the database.
 func (esn *ExtraSchemaNotification) Update(ctx context.Context, db DB) (*ExtraSchemaNotification, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.notifications SET
-	body = $1, notification_type = $2, receiver = $3, sender = $4
-	WHERE notification_id = $5
+	sqlstr := `UPDATE extra_schema.notifications SET 
+	body = $1, notification_type = $2, receiver = $3, sender = $4 
+	WHERE notification_id = $5 
 	RETURNING * `
 	// run
 	logf(sqlstr, esn.Body, esn.ExtraSchemaNotificationType, esn.Receiver, esn.Sender, esn.NotificationID)
@@ -253,7 +253,7 @@ func (esn *ExtraSchemaNotification) Upsert(ctx context.Context, db DB, params *E
 // Delete deletes the ExtraSchemaNotification from the database.
 func (esn *ExtraSchemaNotification) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.notifications
+	sqlstr := `DELETE FROM extra_schema.notifications 
 	WHERE notification_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esn.NotificationID); err != nil {
@@ -339,17 +339,17 @@ func ExtraSchemaNotificationPaginatedByNotificationID(ctx context.Context, db DB
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	notifications.body,
 	notifications.notification_id,
 	notifications.notification_type,
 	notifications.receiver,
-	notifications.sender %s
-	 FROM extra_schema.notifications %s
+	notifications.sender %s 
+	 FROM extra_schema.notifications %s 
 	 WHERE notifications.notification_id %s $1
-	 %s   %s
-  %s
-  ORDER BY
+	 %s   %s 
+  %s 
+  ORDER BY 
 		notification_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaNotificationPaginatedByNotificationID */\n" + sqlstr
@@ -441,16 +441,16 @@ func ExtraSchemaNotificationByNotificationID(ctx context.Context, db DB, notific
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	notifications.body,
 	notifications.notification_id,
 	notifications.notification_type,
 	notifications.receiver,
-	notifications.sender %s
-	 FROM extra_schema.notifications %s
+	notifications.sender %s 
+	 FROM extra_schema.notifications %s 
 	 WHERE notifications.notification_id = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -544,16 +544,16 @@ func ExtraSchemaNotificationsBySender(ctx context.Context, db DB, sender ExtraSc
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	notifications.body,
 	notifications.notification_id,
 	notifications.notification_type,
 	notifications.receiver,
-	notifications.sender %s
-	 FROM extra_schema.notifications %s
+	notifications.sender %s 
+	 FROM extra_schema.notifications %s 
 	 WHERE notifications.sender = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

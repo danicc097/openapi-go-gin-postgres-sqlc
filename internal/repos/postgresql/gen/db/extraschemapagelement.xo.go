@@ -207,9 +207,9 @@ func (espe *ExtraSchemaPagElement) Insert(ctx context.Context, db DB) (*ExtraSch
 // Update updates a ExtraSchemaPagElement in the database.
 func (espe *ExtraSchemaPagElement) Update(ctx context.Context, db DB) (*ExtraSchemaPagElement, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.pag_element SET
-	dummy = $1, name = $2
-	WHERE paginated_element_id = $3
+	sqlstr := `UPDATE extra_schema.pag_element SET 
+	dummy = $1, name = $2 
+	WHERE paginated_element_id = $3 
 	RETURNING * `
 	// run
 	logf(sqlstr, espe.CreatedAt, espe.Dummy, espe.Name, espe.PaginatedElementID)
@@ -255,7 +255,7 @@ func (espe *ExtraSchemaPagElement) Upsert(ctx context.Context, db DB, params *Ex
 // Delete deletes the ExtraSchemaPagElement from the database.
 func (espe *ExtraSchemaPagElement) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.pag_element
+	sqlstr := `DELETE FROM extra_schema.pag_element 
 	WHERE paginated_element_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, espe.PaginatedElementID); err != nil {
@@ -335,16 +335,16 @@ func ExtraSchemaPagElementPaginatedByCreatedAt(ctx context.Context, db DB, creat
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
-	pag_element.paginated_element_id %s
-	 FROM extra_schema.pag_element %s
+	pag_element.paginated_element_id %s 
+	 FROM extra_schema.pag_element %s 
 	 WHERE pag_element.created_at %s $1
-	 %s   %s
-  %s
-  ORDER BY
+	 %s   %s 
+  %s 
+  ORDER BY 
 		created_at %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaPagElementPaginatedByCreatedAt */\n" + sqlstr
@@ -430,15 +430,15 @@ func ExtraSchemaPagElementByCreatedAt(ctx context.Context, db DB, createdAt time
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
-	pag_element.paginated_element_id %s
-	 FROM extra_schema.pag_element %s
+	pag_element.paginated_element_id %s 
+	 FROM extra_schema.pag_element %s 
 	 WHERE pag_element.created_at = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -526,15 +526,15 @@ func ExtraSchemaPagElementByPaginatedElementID(ctx context.Context, db DB, pagin
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	pag_element.created_at,
 	pag_element.dummy,
 	pag_element.name,
-	pag_element.paginated_element_id %s
-	 FROM extra_schema.pag_element %s
+	pag_element.paginated_element_id %s 
+	 FROM extra_schema.pag_element %s 
 	 WHERE pag_element.paginated_element_id = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

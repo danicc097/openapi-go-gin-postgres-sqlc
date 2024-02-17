@@ -421,9 +421,9 @@ func (cdwi *CacheDemoWorkItem) Insert(ctx context.Context, db DB) (*CacheDemoWor
 // Update updates a CacheDemoWorkItem in the database.
 func (cdwi *CacheDemoWorkItem) Update(ctx context.Context, db DB) (*CacheDemoWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.cache__demo_work_items SET
-	closed_at = $1, deleted_at = $2, description = $3, kanban_step_id = $4, last_message_at = $5, line = $6, metadata = $7, ref = $8, reopened = $9, target_date = $10, team_id = $11, title = $12, work_item_type_id = $13
-	WHERE work_item_id = $14
+	sqlstr := `UPDATE public.cache__demo_work_items SET 
+	closed_at = $1, deleted_at = $2, description = $3, kanban_step_id = $4, last_message_at = $5, line = $6, metadata = $7, ref = $8, reopened = $9, target_date = $10, team_id = $11, title = $12, work_item_type_id = $13 
+	WHERE work_item_id = $14 
 	RETURNING * `
 	// run
 	logf(sqlstr, cdwi.ClosedAt, cdwi.CreatedAt, cdwi.DeletedAt, cdwi.Description, cdwi.KanbanStepID, cdwi.LastMessageAt, cdwi.Line, cdwi.Metadata, cdwi.Ref, cdwi.Reopened, cdwi.TargetDate, cdwi.TeamID, cdwi.Title, cdwi.UpdatedAt, cdwi.WorkItemTypeID, cdwi.WorkItemID)
@@ -480,7 +480,7 @@ func (cdwi *CacheDemoWorkItem) Upsert(ctx context.Context, db DB, params *CacheD
 // Delete deletes the CacheDemoWorkItem from the database.
 func (cdwi *CacheDemoWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.cache__demo_work_items
+	sqlstr := `DELETE FROM public.cache__demo_work_items 
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, cdwi.WorkItemID); err != nil {
@@ -492,8 +492,8 @@ func (cdwi *CacheDemoWorkItem) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the CacheDemoWorkItem from the database via 'deleted_at'.
 func (cdwi *CacheDemoWorkItem) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE public.cache__demo_work_items
-	SET deleted_at = NOW()
+	sqlstr := `UPDATE public.cache__demo_work_items 
+	SET deleted_at = NOW() 
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, cdwi.WorkItemID); err != nil {
@@ -622,7 +622,7 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	cache__demo_work_items.closed_at,
 	cache__demo_work_items.created_at,
 	cache__demo_work_items.deleted_at,
@@ -638,12 +638,12 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 	cache__demo_work_items.title,
 	cache__demo_work_items.updated_at,
 	cache__demo_work_items.work_item_id,
-	cache__demo_work_items.work_item_type_id %s
-	 FROM public.cache__demo_work_items %s
+	cache__demo_work_items.work_item_type_id %s 
+	 FROM public.cache__demo_work_items %s 
 	 WHERE cache__demo_work_items.work_item_id %s $1
-	 %s   AND cache__demo_work_items.deleted_at is %s  %s
-  %s
-  ORDER BY
+	 %s   AND cache__demo_work_items.deleted_at is %s  %s 
+  %s 
+  ORDER BY 
 		work_item_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* CacheDemoWorkItemPaginatedByWorkItemID */\n" + sqlstr
@@ -765,7 +765,7 @@ func CacheDemoWorkItemsByReopened(ctx context.Context, db DB, reopened bool, opt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	cache__demo_work_items.closed_at,
 	cache__demo_work_items.created_at,
 	cache__demo_work_items.deleted_at,
@@ -781,11 +781,11 @@ func CacheDemoWorkItemsByReopened(ctx context.Context, db DB, reopened bool, opt
 	cache__demo_work_items.title,
 	cache__demo_work_items.updated_at,
 	cache__demo_work_items.work_item_id,
-	cache__demo_work_items.work_item_type_id %s
-	 FROM public.cache__demo_work_items %s
+	cache__demo_work_items.work_item_type_id %s 
+	 FROM public.cache__demo_work_items %s 
 	 WHERE cache__demo_work_items.reopened = $1
-	 %s   AND cache__demo_work_items.deleted_at is %s  %s
-  %s
+	 %s   AND cache__demo_work_items.deleted_at is %s  %s 
+  %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -911,7 +911,7 @@ func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, o
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	cache__demo_work_items.closed_at,
 	cache__demo_work_items.created_at,
 	cache__demo_work_items.deleted_at,
@@ -927,11 +927,11 @@ func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, o
 	cache__demo_work_items.title,
 	cache__demo_work_items.updated_at,
 	cache__demo_work_items.work_item_id,
-	cache__demo_work_items.work_item_type_id %s
-	 FROM public.cache__demo_work_items %s
+	cache__demo_work_items.work_item_type_id %s 
+	 FROM public.cache__demo_work_items %s 
 	 WHERE cache__demo_work_items.work_item_id = $1
-	 %s   AND cache__demo_work_items.deleted_at is %s  %s
-  %s
+	 %s   AND cache__demo_work_items.deleted_at is %s  %s 
+  %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

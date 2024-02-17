@@ -271,9 +271,9 @@ func (n *Notification) Insert(ctx context.Context, db DB) (*Notification, error)
 // Update updates a Notification in the database.
 func (n *Notification) Update(ctx context.Context, db DB) (*Notification, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.notifications SET
-	body = $1, labels = $2, link = $3, notification_type = $4, receiver = $5, receiver_rank = $6, sender = $7, title = $8
-	WHERE notification_id = $9
+	sqlstr := `UPDATE public.notifications SET 
+	body = $1, labels = $2, link = $3, notification_type = $4, receiver = $5, receiver_rank = $6, sender = $7, title = $8 
+	WHERE notification_id = $9 
 	RETURNING * `
 	// run
 	logf(sqlstr, n.Body, n.Labels, n.Link, n.NotificationType, n.Receiver, n.ReceiverRank, n.Sender, n.Title, n.NotificationID)
@@ -325,7 +325,7 @@ func (n *Notification) Upsert(ctx context.Context, db DB, params *NotificationCr
 // Delete deletes the Notification from the database.
 func (n *Notification) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.notifications
+	sqlstr := `DELETE FROM public.notifications 
 	WHERE notification_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, n.NotificationID); err != nil {
@@ -417,7 +417,7 @@ func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificat
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	notifications.body,
 	notifications.created_at,
 	notifications.labels,
@@ -427,12 +427,12 @@ func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificat
 	notifications.receiver,
 	notifications.receiver_rank,
 	notifications.sender,
-	notifications.title %s
-	 FROM public.notifications %s
+	notifications.title %s 
+	 FROM public.notifications %s 
 	 WHERE notifications.notification_id %s $1
-	 %s   %s
-  %s
-  ORDER BY
+	 %s   %s 
+  %s 
+  ORDER BY 
 		notification_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* NotificationPaginatedByNotificationID */\n" + sqlstr
@@ -530,7 +530,7 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID Not
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	notifications.body,
 	notifications.created_at,
 	notifications.labels,
@@ -540,11 +540,11 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID Not
 	notifications.receiver,
 	notifications.receiver_rank,
 	notifications.sender,
-	notifications.title %s
-	 FROM public.notifications %s
+	notifications.title %s 
+	 FROM public.notifications %s 
 	 WHERE notifications.notification_id = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -644,7 +644,7 @@ func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, d
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	notifications.body,
 	notifications.created_at,
 	notifications.labels,
@@ -654,11 +654,11 @@ func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, d
 	notifications.receiver,
 	notifications.receiver_rank,
 	notifications.sender,
-	notifications.title %s
-	 FROM public.notifications %s
+	notifications.title %s 
+	 FROM public.notifications %s 
 	 WHERE notifications.receiver_rank = $1 AND notifications.notification_type = $2 AND notifications.created_at = $3
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

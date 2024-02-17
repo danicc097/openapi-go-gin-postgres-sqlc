@@ -207,7 +207,7 @@ func (up *UserProject) Insert(ctx context.Context, db DB) (*UserProject, error) 
 // Delete deletes the UserProject from the database.
 func (up *UserProject) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM public.user_project
+	sqlstr := `DELETE FROM public.user_project 
 	WHERE project_id = $1 AND member = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, up.ProjectID, up.Member); err != nil {
@@ -290,13 +290,13 @@ func UserProjectsByMember(ctx context.Context, db DB, member UserID, opts ...Use
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_project.member,
-	user_project.project_id %s
-	 FROM public.user_project %s
+	user_project.project_id %s 
+	 FROM public.user_project %s 
 	 WHERE user_project.member = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -392,13 +392,13 @@ func UserProjectByMemberProjectID(ctx context.Context, db DB, member UserID, pro
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_project.member,
-	user_project.project_id %s
-	 FROM public.user_project %s
+	user_project.project_id %s 
+	 FROM public.user_project %s 
 	 WHERE user_project.member = $1 AND user_project.project_id = $2
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -492,13 +492,13 @@ func UserProjectsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_project.member,
-	user_project.project_id %s
-	 FROM public.user_project %s
+	user_project.project_id %s 
+	 FROM public.user_project %s 
 	 WHERE user_project.project_id = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -594,13 +594,13 @@ func UserProjectsByProjectIDMember(ctx context.Context, db DB, projectID Project
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_project.member,
-	user_project.project_id %s
-	 FROM public.user_project %s
+	user_project.project_id %s 
+	 FROM public.user_project %s 
 	 WHERE user_project.project_id = $1 AND user_project.member = $2
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -208,7 +208,7 @@ func (wiwit *WorkItemWorkItemTag) Insert(ctx context.Context, db DB) (*WorkItemW
 // Delete deletes the WorkItemWorkItemTag from the database.
 func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM public.work_item_work_item_tag
+	sqlstr := `DELETE FROM public.work_item_work_item_tag 
 	WHERE work_item_tag_id = $1 AND work_item_id = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wiwit.WorkItemTagID, wiwit.WorkItemID); err != nil {
@@ -294,14 +294,14 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, 
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_work_item_tag.work_item_id,
-	work_item_work_item_tag.work_item_tag_id %s
-	 FROM public.work_item_work_item_tag %s
+	work_item_work_item_tag.work_item_tag_id %s 
+	 FROM public.work_item_work_item_tag %s 
 	 WHERE work_item_work_item_tag.work_item_tag_id %s $1 AND work_item_work_item_tag.work_item_id %s $2
-	 %s   %s
-  %s
-  ORDER BY
+	 %s   %s 
+  %s 
+  ORDER BY 
 		work_item_tag_id %s  ,
 		work_item_id %s `, selects, joins, operator, operator, filters, groupbys, havingClause, direction, direction)
 	sqlstr += c.limit
@@ -394,13 +394,13 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_work_item_tag.work_item_id,
-	work_item_work_item_tag.work_item_tag_id %s
-	 FROM public.work_item_work_item_tag %s
+	work_item_work_item_tag.work_item_tag_id %s 
+	 FROM public.work_item_work_item_tag %s 
 	 WHERE work_item_work_item_tag.work_item_id = $1 AND work_item_work_item_tag.work_item_tag_id = $2
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -494,13 +494,13 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID Wor
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_work_item_tag.work_item_id,
-	work_item_work_item_tag.work_item_tag_id %s
-	 FROM public.work_item_work_item_tag %s
+	work_item_work_item_tag.work_item_tag_id %s 
+	 FROM public.work_item_work_item_tag %s 
 	 WHERE work_item_work_item_tag.work_item_id = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -596,13 +596,13 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_work_item_tag.work_item_id,
-	work_item_work_item_tag.work_item_tag_id %s
-	 FROM public.work_item_work_item_tag %s
+	work_item_work_item_tag.work_item_tag_id %s 
+	 FROM public.work_item_work_item_tag %s 
 	 WHERE work_item_work_item_tag.work_item_tag_id = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -698,13 +698,13 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_work_item_tag.work_item_id,
-	work_item_work_item_tag.work_item_tag_id %s
-	 FROM public.work_item_work_item_tag %s
+	work_item_work_item_tag.work_item_tag_id %s 
+	 FROM public.work_item_work_item_tag %s 
 	 WHERE work_item_work_item_tag.work_item_tag_id = $1 AND work_item_work_item_tag.work_item_id = $2
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

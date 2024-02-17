@@ -207,7 +207,7 @@ func (ut *UserTeam) Insert(ctx context.Context, db DB) (*UserTeam, error) {
 // Delete deletes the UserTeam from the database.
 func (ut *UserTeam) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM public.user_team
+	sqlstr := `DELETE FROM public.user_team 
 	WHERE team_id = $1 AND member = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, ut.TeamID, ut.Member); err != nil {
@@ -290,13 +290,13 @@ func UserTeamsByMember(ctx context.Context, db DB, member UserID, opts ...UserTe
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_team.member,
-	user_team.team_id %s
-	 FROM public.user_team %s
+	user_team.team_id %s 
+	 FROM public.user_team %s 
 	 WHERE user_team.member = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -392,13 +392,13 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member UserID, teamID Te
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_team.member,
-	user_team.team_id %s
-	 FROM public.user_team %s
+	user_team.team_id %s 
+	 FROM public.user_team %s 
 	 WHERE user_team.member = $1 AND user_team.team_id = $2
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -492,13 +492,13 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...UserTe
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_team.member,
-	user_team.team_id %s
-	 FROM public.user_team %s
+	user_team.team_id %s 
+	 FROM public.user_team %s 
 	 WHERE user_team.team_id = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -594,13 +594,13 @@ func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID TeamID, member U
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	user_team.member,
-	user_team.team_id %s
-	 FROM public.user_team %s
+	user_team.team_id %s 
+	 FROM public.user_team %s 
 	 WHERE user_team.team_id = $1 AND user_team.member = $2
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

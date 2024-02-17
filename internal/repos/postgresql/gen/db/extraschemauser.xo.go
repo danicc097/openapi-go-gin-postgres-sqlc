@@ -405,9 +405,9 @@ func (esu *ExtraSchemaUser) Insert(ctx context.Context, db DB) (*ExtraSchemaUser
 // Update updates a ExtraSchemaUser in the database.
 func (esu *ExtraSchemaUser) Update(ctx context.Context, db DB) (*ExtraSchemaUser, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.users SET
-	api_key_id = $1, deleted_at = $2, name = $3
-	WHERE user_id = $4
+	sqlstr := `UPDATE extra_schema.users SET 
+	api_key_id = $1, deleted_at = $2, name = $3 
+	WHERE user_id = $4 
 	RETURNING * `
 	// run
 	logf(sqlstr, esu.APIKeyID, esu.CreatedAt, esu.DeletedAt, esu.Name, esu.UserID)
@@ -453,7 +453,7 @@ func (esu *ExtraSchemaUser) Upsert(ctx context.Context, db DB, params *ExtraSche
 // Delete deletes the ExtraSchemaUser from the database.
 func (esu *ExtraSchemaUser) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.users
+	sqlstr := `DELETE FROM extra_schema.users 
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esu.UserID); err != nil {
@@ -465,8 +465,8 @@ func (esu *ExtraSchemaUser) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the ExtraSchemaUser from the database via 'deleted_at'.
 func (esu *ExtraSchemaUser) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE extra_schema.users
-	SET deleted_at = NOW()
+	sqlstr := `UPDATE extra_schema.users 
+	SET deleted_at = NOW() 
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esu.UserID); err != nil {
@@ -601,17 +601,17 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s
-	 FROM extra_schema.users %s
+	users.user_id %s 
+	 FROM extra_schema.users %s 
 	 WHERE users.created_at %s $1
-	 %s   AND users.deleted_at is %s  %s
-  %s
-  ORDER BY
+	 %s   AND users.deleted_at is %s  %s 
+  %s 
+  ORDER BY 
 		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserPaginatedByCreatedAt */\n" + sqlstr
@@ -739,16 +739,16 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s
-	 FROM extra_schema.users %s
+	users.user_id %s 
+	 FROM extra_schema.users %s 
 	 WHERE users.created_at = $1
-	 %s   AND users.deleted_at is %s  %s
-  %s
+	 %s   AND users.deleted_at is %s  %s 
+  %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -878,16 +878,16 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s
-	 FROM extra_schema.users %s
+	users.user_id %s 
+	 FROM extra_schema.users %s 
 	 WHERE users.name = $1
-	 %s   AND users.deleted_at is %s  %s
-  %s
+	 %s   AND users.deleted_at is %s  %s 
+  %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1017,16 +1017,16 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s
-	 FROM extra_schema.users %s
+	users.user_id %s 
+	 FROM extra_schema.users %s 
 	 WHERE users.user_id = $1
-	 %s   AND users.deleted_at is %s  %s
-  %s
+	 %s   AND users.deleted_at is %s  %s 
+  %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

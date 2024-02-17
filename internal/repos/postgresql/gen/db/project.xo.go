@@ -323,9 +323,9 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 // Update updates a Project in the database.
 func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.projects SET
-	board_config = $1, description = $2, name = $3, work_items_table_name = $4
-	WHERE project_id = $5
+	sqlstr := `UPDATE public.projects SET 
+	board_config = $1, description = $2, name = $3, work_items_table_name = $4 
+	WHERE project_id = $5 
 	RETURNING * `
 	// run
 	logf(sqlstr, p.BoardConfig, p.Description, p.Name, p.WorkItemsTableName, p.ProjectID)
@@ -373,7 +373,7 @@ func (p *Project) Upsert(ctx context.Context, db DB, params *ProjectCreateParams
 // Delete deletes the Project from the database.
 func (p *Project) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.projects
+	sqlstr := `DELETE FROM public.projects 
 	WHERE project_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, p.ProjectID); err != nil {
@@ -483,19 +483,19 @@ func ProjectPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	projects.board_config,
 	projects.created_at,
 	projects.description,
 	projects.name,
 	projects.project_id,
 	projects.updated_at,
-	projects.work_items_table_name %s
-	 FROM public.projects %s
+	projects.work_items_table_name %s 
+	 FROM public.projects %s 
 	 WHERE projects.project_id %s $1
-	 %s   %s
-  %s
-  ORDER BY
+	 %s   %s 
+  %s 
+  ORDER BY 
 		project_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ProjectPaginatedByProjectID */\n" + sqlstr
@@ -611,18 +611,18 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	projects.board_config,
 	projects.created_at,
 	projects.description,
 	projects.name,
 	projects.project_id,
 	projects.updated_at,
-	projects.work_items_table_name %s
-	 FROM public.projects %s
+	projects.work_items_table_name %s 
+	 FROM public.projects %s 
 	 WHERE projects.name = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -740,18 +740,18 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ..
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	projects.board_config,
 	projects.created_at,
 	projects.description,
 	projects.name,
 	projects.project_id,
 	projects.updated_at,
-	projects.work_items_table_name %s
-	 FROM public.projects %s
+	projects.work_items_table_name %s 
+	 FROM public.projects %s 
 	 WHERE projects.project_id = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -869,18 +869,18 @@ func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	projects.board_config,
 	projects.created_at,
 	projects.description,
 	projects.name,
 	projects.project_id,
 	projects.updated_at,
-	projects.work_items_table_name %s
-	 FROM public.projects %s
+	projects.work_items_table_name %s 
+	 FROM public.projects %s 
 	 WHERE projects.work_items_table_name = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
