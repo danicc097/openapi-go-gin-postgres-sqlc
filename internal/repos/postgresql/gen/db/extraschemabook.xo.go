@@ -130,9 +130,9 @@ func WithExtraSchemaBookFilters(filters map[string][]any) ExtraSchemaBookSelectC
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithExtraSchemaBookHavingClause(conditions map[string][]any) ExtraSchemaBookSelectConfigOption {
 	return func(s *ExtraSchemaBookSelectConfig) {
@@ -154,14 +154,14 @@ left join (
 		book_authors_book_id
 		, users.user_id
 		, pseudonym
-) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = books.book_id
+) as xo_join_book_authors_authors on xo_join_book_authors_authors.book_authors_book_id = books.book_id
 `
 
 const extraSchemaBookTableAuthorsBookSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_authors.__users
-		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
+		xo_join_book_authors_authors.__users
+		, xo_join_book_authors_authors.pseudonym
+		)) filter (where xo_join_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
 
 const extraSchemaBookTableAuthorsBookGroupBySQL = `books.book_id, books.book_id`
 
@@ -179,14 +179,14 @@ left join (
 		book_authors_surrogate_key_book_id
 		, users.user_id
 		, pseudonym
-) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = books.book_id
+) as xo_join_book_authors_surrogate_key_authors on xo_join_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = books.book_id
 `
 
 const extraSchemaBookTableAuthorsBookUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_authors.__users
-		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') as book_authors_surrogate_key_authors`
+		xo_join_book_authors_surrogate_key_authors.__users
+		, xo_join_book_authors_surrogate_key_authors.pseudonym
+		)) filter (where xo_join_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') as book_authors_surrogate_key_authors`
 
 const extraSchemaBookTableAuthorsBookUsersGroupBySQL = `books.book_id, books.book_id`
 
@@ -199,12 +199,12 @@ left join (
     extra_schema.book_reviews
   group by
         book_id
-) as joined_book_reviews on joined_book_reviews.book_reviews_book_id = books.book_id
+) as xo_join_book_reviews on xo_join_book_reviews.book_reviews_book_id = books.book_id
 `
 
-const extraSchemaBookTableBookReviewsSelectSQL = `COALESCE(joined_book_reviews.book_reviews, '{}') as book_reviews`
+const extraSchemaBookTableBookReviewsSelectSQL = `COALESCE(xo_join_book_reviews.book_reviews, '{}') as book_reviews`
 
-const extraSchemaBookTableBookReviewsGroupBySQL = `joined_book_reviews.book_reviews, books.book_id`
+const extraSchemaBookTableBookReviewsGroupBySQL = `xo_join_book_reviews.book_reviews, books.book_id`
 
 const extraSchemaBookTableSellersJoinSQL = `-- M2M join generated from "book_sellers_seller_fkey"
 left join (
@@ -218,13 +218,13 @@ left join (
 	group by
 		book_sellers_book_id
 		, users.user_id
-) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = books.book_id
+) as xo_join_book_sellers_sellers on xo_join_book_sellers_sellers.book_sellers_book_id = books.book_id
 `
 
 const extraSchemaBookTableSellersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') as book_sellers_sellers`
+		xo_join_book_sellers_sellers.__users
+		)) filter (where xo_join_book_sellers_sellers.__users_user_id is not null), '{}') as book_sellers_sellers`
 
 const extraSchemaBookTableSellersGroupBySQL = `books.book_id, books.book_id`
 
@@ -268,9 +268,9 @@ func (esb *ExtraSchemaBook) Insert(ctx context.Context, db DB) (*ExtraSchemaBook
 // Update updates a ExtraSchemaBook in the database.
 func (esb *ExtraSchemaBook) Update(ctx context.Context, db DB) (*ExtraSchemaBook, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.books SET 
-	name = $1 
-	WHERE book_id = $2 
+	sqlstr := `UPDATE extra_schema.books SET
+	name = $1
+	WHERE book_id = $2
 	RETURNING * `
 	// run
 	logf(sqlstr, esb.Name, esb.BookID)
@@ -315,7 +315,7 @@ func (esb *ExtraSchemaBook) Upsert(ctx context.Context, db DB, params *ExtraSche
 // Delete deletes the ExtraSchemaBook from the database.
 func (esb *ExtraSchemaBook) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.books 
+	sqlstr := `DELETE FROM extra_schema.books
 	WHERE book_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esb.BookID); err != nil {
@@ -413,14 +413,14 @@ func ExtraSchemaBookPaginatedByBookID(ctx context.Context, db DB, bookID ExtraSc
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	books.book_id,
-	books.name %s 
-	 FROM extra_schema.books %s 
+	books.name %s
+	 FROM extra_schema.books %s
 	 WHERE books.book_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
+	 %s   %s
+  %s
+  ORDER BY
 		book_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookPaginatedByBookID */\n" + sqlstr
@@ -524,13 +524,13 @@ func ExtraSchemaBookByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookI
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	books.book_id,
-	books.name %s 
-	 FROM extra_schema.books %s 
+	books.name %s
+	 FROM extra_schema.books %s
 	 WHERE books.book_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -127,9 +127,9 @@ func WithWorkItemAssignedUserFilters(filters map[string][]any) WorkItemAssignedU
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithWorkItemAssignedUserHavingClause(conditions map[string][]any) WorkItemAssignedUserSelectConfigOption {
 	return func(s *WorkItemAssignedUserSelectConfig) {
@@ -151,14 +151,14 @@ left join (
 		work_item_assigned_user_assigned_user
 		, work_items.work_item_id
 		, role
-) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = work_item_assigned_user.assigned_user
+) as xo_join_work_item_assigned_user_work_items on xo_join_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = work_item_assigned_user.assigned_user
 `
 
 const workItemAssignedUserTableWorkItemsAssignedUserSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
+		xo_join_work_item_assigned_user_work_items.__work_items
+		, xo_join_work_item_assigned_user_work_items.role
+		)) filter (where xo_join_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
 const workItemAssignedUserTableWorkItemsAssignedUserGroupBySQL = `work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
 
@@ -176,14 +176,14 @@ left join (
 		work_item_assigned_user_work_item_id
 		, users.user_id
 		, role
-) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
+) as xo_join_work_item_assigned_user_assigned_users on xo_join_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
 `
 
 const workItemAssignedUserTableAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
+		xo_join_work_item_assigned_user_assigned_users.__users
+		, xo_join_work_item_assigned_user_assigned_users.role
+		)) filter (where xo_join_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const workItemAssignedUserTableAssignedUsersGroupBySQL = `work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
 
@@ -234,9 +234,9 @@ func (wiau *WorkItemAssignedUser) Insert(ctx context.Context, db DB) (*WorkItemA
 // Update updates a WorkItemAssignedUser in the database.
 func (wiau *WorkItemAssignedUser) Update(ctx context.Context, db DB) (*WorkItemAssignedUser, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_assigned_user SET 
-	role = $1 
-	WHERE work_item_id = $2  AND assigned_user = $3 
+	sqlstr := `UPDATE public.work_item_assigned_user SET
+	role = $1
+	WHERE work_item_id = $2  AND assigned_user = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, wiau.Role, wiau.WorkItemID, wiau.AssignedUser)
@@ -283,7 +283,7 @@ func (wiau *WorkItemAssignedUser) Upsert(ctx context.Context, db DB, params *Wor
 // Delete deletes the WorkItemAssignedUser from the database.
 func (wiau *WorkItemAssignedUser) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM public.work_item_assigned_user 
+	sqlstr := `DELETE FROM public.work_item_assigned_user
 	WHERE work_item_id = $1 AND assigned_user = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wiau.WorkItemID, wiau.AssignedUser); err != nil {
@@ -366,14 +366,14 @@ func WorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, db DB, a
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s 
-	 FROM public.work_item_assigned_user %s 
+	work_item_assigned_user.work_item_id %s
+	 FROM public.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.assigned_user = $1 AND work_item_assigned_user.work_item_id = $2
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -469,14 +469,14 @@ func WorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db DB, wo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s 
-	 FROM public.work_item_assigned_user %s 
+	work_item_assigned_user.work_item_id %s
+	 FROM public.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.work_item_id = $1 AND work_item_assigned_user.assigned_user = $2
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -570,14 +570,14 @@ func WorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workItemID Wo
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s 
-	 FROM public.work_item_assigned_user %s 
+	work_item_assigned_user.work_item_id %s
+	 FROM public.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.work_item_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -673,14 +673,14 @@ func WorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assignedUse
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_assigned_user.assigned_user,
 	work_item_assigned_user.role,
-	work_item_assigned_user.work_item_id %s 
-	 FROM public.work_item_assigned_user %s 
+	work_item_assigned_user.work_item_id %s
+	 FROM public.work_item_assigned_user %s
 	 WHERE work_item_assigned_user.assigned_user = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

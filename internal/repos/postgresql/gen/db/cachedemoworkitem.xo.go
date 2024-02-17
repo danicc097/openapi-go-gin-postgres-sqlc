@@ -218,9 +218,9 @@ func WithCacheDemoWorkItemFilters(filters map[string][]any) CacheDemoWorkItemSel
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithCacheDemoWorkItemHavingClause(conditions map[string][]any) CacheDemoWorkItemSelectConfigOption {
 	return func(s *CacheDemoWorkItemSelectConfig) {
@@ -267,12 +267,12 @@ left join (
     time_entries
   group by
         work_item_id
-) as joined_time_entries on joined_time_entries.time_entries_work_item_id = cache__demo_work_items.work_item_id
+) as xo_join_time_entries on xo_join_time_entries.time_entries_work_item_id = cache__demo_work_items.work_item_id
 `
 
-const cacheDemoWorkItemTableTimeEntriesSelectSQL = `COALESCE(joined_time_entries.time_entries, '{}') as time_entries`
+const cacheDemoWorkItemTableTimeEntriesSelectSQL = `COALESCE(xo_join_time_entries.time_entries, '{}') as time_entries`
 
-const cacheDemoWorkItemTableTimeEntriesGroupBySQL = `joined_time_entries.time_entries, cache__demo_work_items.work_item_id`
+const cacheDemoWorkItemTableTimeEntriesGroupBySQL = `xo_join_time_entries.time_entries, cache__demo_work_items.work_item_id`
 
 const cacheDemoWorkItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey-shared-ref-cache__demo_work_items"
 left join (
@@ -288,14 +288,14 @@ left join (
 		work_item_assigned_user_work_item_id
 		, users.user_id
 		, role
-) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = cache__demo_work_items.work_item_id
+) as xo_join_work_item_assigned_user_assigned_users on xo_join_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = cache__demo_work_items.work_item_id
 `
 
 const cacheDemoWorkItemTableAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
+		xo_join_work_item_assigned_user_assigned_users.__users
+		, xo_join_work_item_assigned_user_assigned_users.role
+		)) filter (where xo_join_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const cacheDemoWorkItemTableAssignedUsersGroupBySQL = `cache__demo_work_items.work_item_id, cache__demo_work_items.work_item_id`
 
@@ -308,12 +308,12 @@ left join (
     work_item_comments
   group by
         work_item_id
-) as joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = cache__demo_work_items.work_item_id
+) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_work_item_id = cache__demo_work_items.work_item_id
 `
 
-const cacheDemoWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const cacheDemoWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
 
-const cacheDemoWorkItemTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, cache__demo_work_items.work_item_id`
+const cacheDemoWorkItemTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, cache__demo_work_items.work_item_id`
 
 const cacheDemoWorkItemTableWorkItemTagsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey-shared-ref-cache__demo_work_items"
 left join (
@@ -327,13 +327,13 @@ left join (
 	group by
 		work_item_work_item_tag_work_item_id
 		, work_item_tags.work_item_tag_id
-) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = cache__demo_work_items.work_item_id
+) as xo_join_work_item_work_item_tag_work_item_tags on xo_join_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = cache__demo_work_items.work_item_id
 `
 
 const cacheDemoWorkItemTableWorkItemTagsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') as work_item_work_item_tag_work_item_tags`
+		xo_join_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where xo_join_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') as work_item_work_item_tag_work_item_tags`
 
 const cacheDemoWorkItemTableWorkItemTagsGroupBySQL = `cache__demo_work_items.work_item_id, cache__demo_work_items.work_item_id`
 
@@ -421,9 +421,9 @@ func (cdwi *CacheDemoWorkItem) Insert(ctx context.Context, db DB) (*CacheDemoWor
 // Update updates a CacheDemoWorkItem in the database.
 func (cdwi *CacheDemoWorkItem) Update(ctx context.Context, db DB) (*CacheDemoWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.cache__demo_work_items SET 
-	closed_at = $1, deleted_at = $2, description = $3, kanban_step_id = $4, last_message_at = $5, line = $6, metadata = $7, ref = $8, reopened = $9, target_date = $10, team_id = $11, title = $12, work_item_type_id = $13 
-	WHERE work_item_id = $14 
+	sqlstr := `UPDATE public.cache__demo_work_items SET
+	closed_at = $1, deleted_at = $2, description = $3, kanban_step_id = $4, last_message_at = $5, line = $6, metadata = $7, ref = $8, reopened = $9, target_date = $10, team_id = $11, title = $12, work_item_type_id = $13
+	WHERE work_item_id = $14
 	RETURNING * `
 	// run
 	logf(sqlstr, cdwi.ClosedAt, cdwi.CreatedAt, cdwi.DeletedAt, cdwi.Description, cdwi.KanbanStepID, cdwi.LastMessageAt, cdwi.Line, cdwi.Metadata, cdwi.Ref, cdwi.Reopened, cdwi.TargetDate, cdwi.TeamID, cdwi.Title, cdwi.UpdatedAt, cdwi.WorkItemTypeID, cdwi.WorkItemID)
@@ -480,7 +480,7 @@ func (cdwi *CacheDemoWorkItem) Upsert(ctx context.Context, db DB, params *CacheD
 // Delete deletes the CacheDemoWorkItem from the database.
 func (cdwi *CacheDemoWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.cache__demo_work_items 
+	sqlstr := `DELETE FROM public.cache__demo_work_items
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, cdwi.WorkItemID); err != nil {
@@ -492,8 +492,8 @@ func (cdwi *CacheDemoWorkItem) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the CacheDemoWorkItem from the database via 'deleted_at'.
 func (cdwi *CacheDemoWorkItem) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE public.cache__demo_work_items 
-	SET deleted_at = NOW() 
+	sqlstr := `UPDATE public.cache__demo_work_items
+	SET deleted_at = NOW()
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, cdwi.WorkItemID); err != nil {
@@ -622,7 +622,7 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	cache__demo_work_items.closed_at,
 	cache__demo_work_items.created_at,
 	cache__demo_work_items.deleted_at,
@@ -638,12 +638,12 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 	cache__demo_work_items.title,
 	cache__demo_work_items.updated_at,
 	cache__demo_work_items.work_item_id,
-	cache__demo_work_items.work_item_type_id %s 
-	 FROM public.cache__demo_work_items %s 
+	cache__demo_work_items.work_item_type_id %s
+	 FROM public.cache__demo_work_items %s
 	 WHERE cache__demo_work_items.work_item_id %s $1
-	 %s   AND cache__demo_work_items.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
+	 %s   AND cache__demo_work_items.deleted_at is %s  %s
+  %s
+  ORDER BY
 		work_item_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* CacheDemoWorkItemPaginatedByWorkItemID */\n" + sqlstr
@@ -765,7 +765,7 @@ func CacheDemoWorkItemsByReopened(ctx context.Context, db DB, reopened bool, opt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	cache__demo_work_items.closed_at,
 	cache__demo_work_items.created_at,
 	cache__demo_work_items.deleted_at,
@@ -781,11 +781,11 @@ func CacheDemoWorkItemsByReopened(ctx context.Context, db DB, reopened bool, opt
 	cache__demo_work_items.title,
 	cache__demo_work_items.updated_at,
 	cache__demo_work_items.work_item_id,
-	cache__demo_work_items.work_item_type_id %s 
-	 FROM public.cache__demo_work_items %s 
+	cache__demo_work_items.work_item_type_id %s
+	 FROM public.cache__demo_work_items %s
 	 WHERE cache__demo_work_items.reopened = $1
-	 %s   AND cache__demo_work_items.deleted_at is %s  %s 
-  %s 
+	 %s   AND cache__demo_work_items.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -911,7 +911,7 @@ func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, o
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	cache__demo_work_items.closed_at,
 	cache__demo_work_items.created_at,
 	cache__demo_work_items.deleted_at,
@@ -927,11 +927,11 @@ func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, o
 	cache__demo_work_items.title,
 	cache__demo_work_items.updated_at,
 	cache__demo_work_items.work_item_id,
-	cache__demo_work_items.work_item_type_id %s 
-	 FROM public.cache__demo_work_items %s 
+	cache__demo_work_items.work_item_type_id %s
+	 FROM public.cache__demo_work_items %s
 	 WHERE cache__demo_work_items.work_item_id = $1
-	 %s   AND cache__demo_work_items.deleted_at is %s  %s 
-  %s 
+	 %s   AND cache__demo_work_items.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

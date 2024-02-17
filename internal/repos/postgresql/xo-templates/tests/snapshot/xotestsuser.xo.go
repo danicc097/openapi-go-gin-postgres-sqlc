@@ -198,9 +198,9 @@ func WithXoTestsUserFilters(filters map[string][]any) XoTestsUserSelectConfigOpt
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithXoTestsUserHavingClause(conditions map[string][]any) XoTestsUserSelectConfigOption {
 	return func(s *XoTestsUserSelectConfig) {
@@ -222,14 +222,14 @@ left join (
 		book_authors_author_id
 		, books.book_id
 		, pseudonym
-) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
+) as xo_join_book_authors_books on xo_join_book_authors_books.book_authors_author_id = users.user_id
 `
 
 const xoTestsUserTableBooksAuthorSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_books.__books
-		, joined_book_authors_books.pseudonym
-		)) filter (where joined_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
+		xo_join_book_authors_books.__books
+		, xo_join_book_authors_books.pseudonym
+		)) filter (where xo_join_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
 
 const xoTestsUserTableBooksAuthorGroupBySQL = `users.user_id, users.user_id`
 
@@ -247,14 +247,14 @@ left join (
 		book_authors_surrogate_key_author_id
 		, books.book_id
 		, pseudonym
-) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
+) as xo_join_book_authors_surrogate_key_books on xo_join_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
 `
 
 const xoTestsUserTableBooksAuthorBooksSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_books.__books
-		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') as book_authors_surrogate_key_books`
+		xo_join_book_authors_surrogate_key_books.__books
+		, xo_join_book_authors_surrogate_key_books.pseudonym
+		)) filter (where xo_join_book_authors_surrogate_key_books.__books_book_id is not null), '{}') as book_authors_surrogate_key_books`
 
 const xoTestsUserTableBooksAuthorBooksGroupBySQL = `users.user_id, users.user_id`
 
@@ -267,12 +267,12 @@ left join (
     xo_tests.book_reviews
   group by
         reviewer
-) as joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
+) as xo_join_book_reviews on xo_join_book_reviews.book_reviews_user_id = users.user_id
 `
 
-const xoTestsUserTableBookReviewsSelectSQL = `COALESCE(joined_book_reviews.book_reviews, '{}') as book_reviews`
+const xoTestsUserTableBookReviewsSelectSQL = `COALESCE(xo_join_book_reviews.book_reviews, '{}') as book_reviews`
 
-const xoTestsUserTableBookReviewsGroupBySQL = `joined_book_reviews.book_reviews, users.user_id`
+const xoTestsUserTableBookReviewsGroupBySQL = `xo_join_book_reviews.book_reviews, users.user_id`
 
 const xoTestsUserTableBooksSellerJoinSQL = `-- M2M join generated from "book_sellers_book_id_fkey"
 left join (
@@ -286,13 +286,13 @@ left join (
 	group by
 		book_sellers_seller
 		, books.book_id
-) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
+) as xo_join_book_sellers_books on xo_join_book_sellers_books.book_sellers_seller = users.user_id
 `
 
 const xoTestsUserTableBooksSellerSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') as book_sellers_books`
+		xo_join_book_sellers_books.__books
+		)) filter (where xo_join_book_sellers_books.__books_book_id is not null), '{}') as book_sellers_books`
 
 const xoTestsUserTableBooksSellerGroupBySQL = `users.user_id, users.user_id`
 
@@ -305,12 +305,12 @@ left join (
     xo_tests.notifications
   group by
         receiver
-) as joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
+) as xo_join_notifications_receiver on xo_join_notifications_receiver.notifications_user_id = users.user_id
 `
 
-const xoTestsUserTableNotificationsReceiverSelectSQL = `COALESCE(joined_notifications_receiver.notifications, '{}') as notifications_receiver`
+const xoTestsUserTableNotificationsReceiverSelectSQL = `COALESCE(xo_join_notifications_receiver.notifications, '{}') as notifications_receiver`
 
-const xoTestsUserTableNotificationsReceiverGroupBySQL = `joined_notifications_receiver.notifications, users.user_id`
+const xoTestsUserTableNotificationsReceiverGroupBySQL = `xo_join_notifications_receiver.notifications, users.user_id`
 
 const xoTestsUserTableNotificationsSenderJoinSQL = `-- M2O join generated from "notifications_sender_fkey"
 left join (
@@ -321,12 +321,12 @@ left join (
     xo_tests.notifications
   group by
         sender
-) as joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
+) as xo_join_notifications_sender on xo_join_notifications_sender.notifications_user_id = users.user_id
 `
 
-const xoTestsUserTableNotificationsSenderSelectSQL = `COALESCE(joined_notifications_sender.notifications, '{}') as notifications_sender`
+const xoTestsUserTableNotificationsSenderSelectSQL = `COALESCE(xo_join_notifications_sender.notifications, '{}') as notifications_sender`
 
-const xoTestsUserTableNotificationsSenderGroupBySQL = `joined_notifications_sender.notifications, users.user_id`
+const xoTestsUserTableNotificationsSenderGroupBySQL = `xo_join_notifications_sender.notifications, users.user_id`
 
 const xoTestsUserTableUserAPIKeyJoinSQL = `-- O2O join generated from "users_api_key_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
@@ -352,14 +352,14 @@ left join (
 		work_item_assigned_user_assigned_user
 		, work_items.work_item_id
 		, role
-) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
+) as xo_join_work_item_assigned_user_work_items on xo_join_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
 `
 
 const xoTestsUserTableWorkItemsAssignedUserSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
+		xo_join_work_item_assigned_user_work_items.__work_items
+		, xo_join_work_item_assigned_user_work_items.role
+		)) filter (where xo_join_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
 const xoTestsUserTableWorkItemsAssignedUserGroupBySQL = `users.user_id, users.user_id`
 
@@ -372,12 +372,12 @@ left join (
     xo_tests.work_item_comments
   group by
         user_id
-) as joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id
+) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_user_id = users.user_id
 `
 
-const xoTestsUserTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const xoTestsUserTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
 
-const xoTestsUserTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, users.user_id`
+const xoTestsUserTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, users.user_id`
 
 // XoTestsUserUpdateParams represents update params for 'xo_tests.users'.
 type XoTestsUserUpdateParams struct {
@@ -423,9 +423,9 @@ func (xtu *XoTestsUser) Insert(ctx context.Context, db DB) (*XoTestsUser, error)
 // Update updates a XoTestsUser in the database.
 func (xtu *XoTestsUser) Update(ctx context.Context, db DB) (*XoTestsUser, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.users SET 
-	api_key_id = $1, deleted_at = $2, name = $3 
-	WHERE user_id = $4 
+	sqlstr := `UPDATE xo_tests.users SET
+	api_key_id = $1, deleted_at = $2, name = $3
+	WHERE user_id = $4
 	RETURNING * `
 	// run
 	logf(sqlstr, xtu.APIKeyID, xtu.CreatedAt, xtu.DeletedAt, xtu.Name, xtu.UserID)
@@ -471,7 +471,7 @@ func (xtu *XoTestsUser) Upsert(ctx context.Context, db DB, params *XoTestsUserCr
 // Delete deletes the XoTestsUser from the database.
 func (xtu *XoTestsUser) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.users 
+	sqlstr := `DELETE FROM xo_tests.users
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtu.UserID); err != nil {
@@ -483,8 +483,8 @@ func (xtu *XoTestsUser) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the XoTestsUser from the database via 'deleted_at'.
 func (xtu *XoTestsUser) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE xo_tests.users 
-	SET deleted_at = NOW() 
+	sqlstr := `UPDATE xo_tests.users
+	SET deleted_at = NOW()
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtu.UserID); err != nil {
@@ -625,17 +625,17 @@ func XoTestsUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s 
-	 FROM xo_tests.users %s 
+	users.user_id %s
+	 FROM xo_tests.users %s
 	 WHERE users.created_at %s $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
+	 %s   AND users.deleted_at is %s  %s
+  %s
+  ORDER BY
 		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserPaginatedByCreatedAt */\n" + sqlstr
@@ -769,16 +769,16 @@ func XoTestsUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s 
-	 FROM xo_tests.users %s 
+	users.user_id %s
+	 FROM xo_tests.users %s
 	 WHERE users.created_at = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -914,16 +914,16 @@ func XoTestsUserByName(ctx context.Context, db DB, name string, opts ...XoTestsU
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s 
-	 FROM xo_tests.users %s 
+	users.user_id %s
+	 FROM xo_tests.users %s
 	 WHERE users.name = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1059,16 +1059,16 @@ func XoTestsUserByUserID(ctx context.Context, db DB, userID XoTestsUserID, opts 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s 
-	 FROM xo_tests.users %s 
+	users.user_id %s
+	 FROM xo_tests.users %s
 	 WHERE users.user_id = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -143,9 +143,9 @@ func WithXoTestsWorkItemCommentFilters(filters map[string][]any) XoTestsWorkItem
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithXoTestsWorkItemCommentHavingClause(conditions map[string][]any) XoTestsWorkItemCommentSelectConfigOption {
 	return func(s *XoTestsWorkItemCommentSelectConfig) {
@@ -221,9 +221,9 @@ func (xtwic *XoTestsWorkItemComment) Insert(ctx context.Context, db DB) (*XoTest
 // Update updates a XoTestsWorkItemComment in the database.
 func (xtwic *XoTestsWorkItemComment) Update(ctx context.Context, db DB) (*XoTestsWorkItemComment, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.work_item_comments SET 
-	message = $1, user_id = $2, work_item_id = $3 
-	WHERE work_item_comment_id = $4 
+	sqlstr := `UPDATE xo_tests.work_item_comments SET
+	message = $1, user_id = $2, work_item_id = $3
+	WHERE work_item_comment_id = $4
 	RETURNING * `
 	// run
 	logf(sqlstr, xtwic.Message, xtwic.UserID, xtwic.WorkItemID, xtwic.WorkItemCommentID)
@@ -270,7 +270,7 @@ func (xtwic *XoTestsWorkItemComment) Upsert(ctx context.Context, db DB, params *
 // Delete deletes the XoTestsWorkItemComment from the database.
 func (xtwic *XoTestsWorkItemComment) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.work_item_comments 
+	sqlstr := `DELETE FROM xo_tests.work_item_comments
 	WHERE work_item_comment_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtwic.WorkItemCommentID); err != nil {
@@ -356,18 +356,18 @@ func XoTestsWorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db 
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM xo_tests.work_item_comments %s 
+	work_item_comments.work_item_id %s
+	 FROM xo_tests.work_item_comments %s
 	 WHERE work_item_comments.work_item_comment_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
+	 %s   %s
+  %s
+  ORDER BY
 		work_item_comment_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemCommentPaginatedByWorkItemCommentID */\n" + sqlstr
@@ -459,17 +459,17 @@ func XoTestsWorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workI
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM xo_tests.work_item_comments %s 
+	work_item_comments.work_item_id %s
+	 FROM xo_tests.work_item_comments %s
 	 WHERE work_item_comments.work_item_comment_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -563,17 +563,17 @@ func XoTestsWorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM xo_tests.work_item_comments %s 
+	work_item_comments.work_item_id %s
+	 FROM xo_tests.work_item_comments %s
 	 WHERE work_item_comments.work_item_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

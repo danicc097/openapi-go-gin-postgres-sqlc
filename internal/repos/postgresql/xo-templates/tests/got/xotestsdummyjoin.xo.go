@@ -100,9 +100,9 @@ func WithXoTestsDummyJoinFilters(filters map[string][]any) XoTestsDummyJoinSelec
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithXoTestsDummyJoinHavingClause(conditions map[string][]any) XoTestsDummyJoinSelectConfigOption {
 	return func(s *XoTestsDummyJoinSelectConfig) {
@@ -150,9 +150,9 @@ func (xtdj *XoTestsDummyJoin) Insert(ctx context.Context, db DB) (*XoTestsDummyJ
 // Update updates a XoTestsDummyJoin in the database.
 func (xtdj *XoTestsDummyJoin) Update(ctx context.Context, db DB) (*XoTestsDummyJoin, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.dummy_join SET 
-	name = $1 
-	WHERE dummy_join_id = $2 
+	sqlstr := `UPDATE xo_tests.dummy_join SET
+	name = $1
+	WHERE dummy_join_id = $2
 	RETURNING * `
 	// run
 	logf(sqlstr, xtdj.Name, xtdj.DummyJoinID)
@@ -197,7 +197,7 @@ func (xtdj *XoTestsDummyJoin) Upsert(ctx context.Context, db DB, params *XoTests
 // Delete deletes the XoTestsDummyJoin from the database.
 func (xtdj *XoTestsDummyJoin) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.dummy_join 
+	sqlstr := `DELETE FROM xo_tests.dummy_join
 	WHERE dummy_join_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtdj.DummyJoinID); err != nil {
@@ -271,14 +271,14 @@ func XoTestsDummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoi
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	dummy_join.dummy_join_id,
-	dummy_join.name %s 
-	 FROM xo_tests.dummy_join %s 
+	dummy_join.name %s
+	 FROM xo_tests.dummy_join %s
 	 WHERE dummy_join.dummy_join_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
+	 %s   %s
+  %s
+  ORDER BY
 		dummy_join_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsDummyJoinPaginatedByDummyJoinID */\n" + sqlstr
@@ -358,13 +358,13 @@ func XoTestsDummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID XoTes
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	dummy_join.dummy_join_id,
-	dummy_join.name %s 
-	 FROM xo_tests.dummy_join %s 
+	dummy_join.name %s
+	 FROM xo_tests.dummy_join %s
 	 WHERE dummy_join.dummy_join_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

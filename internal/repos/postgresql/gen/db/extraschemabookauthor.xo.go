@@ -126,9 +126,9 @@ func WithExtraSchemaBookAuthorFilters(filters map[string][]any) ExtraSchemaBookA
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithExtraSchemaBookAuthorHavingClause(conditions map[string][]any) ExtraSchemaBookAuthorSelectConfigOption {
 	return func(s *ExtraSchemaBookAuthorSelectConfig) {
@@ -150,14 +150,14 @@ left join (
 		book_authors_author_id
 		, books.book_id
 		, pseudonym
-) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = book_authors.author_id
+) as xo_join_book_authors_books on xo_join_book_authors_books.book_authors_author_id = book_authors.author_id
 `
 
 const extraSchemaBookAuthorTableBooksAuthorSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_books.__books
-		, joined_book_authors_books.pseudonym
-		)) filter (where joined_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
+		xo_join_book_authors_books.__books
+		, xo_join_book_authors_books.pseudonym
+		)) filter (where xo_join_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
 
 const extraSchemaBookAuthorTableBooksAuthorGroupBySQL = `book_authors.author_id, book_authors.book_id, book_authors.author_id`
 
@@ -175,14 +175,14 @@ left join (
 		book_authors_book_id
 		, users.user_id
 		, pseudonym
-) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
+) as xo_join_book_authors_authors on xo_join_book_authors_authors.book_authors_book_id = book_authors.book_id
 `
 
 const extraSchemaBookAuthorTableAuthorsBookSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_authors.__users
-		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
+		xo_join_book_authors_authors.__users
+		, xo_join_book_authors_authors.pseudonym
+		)) filter (where xo_join_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
 
 const extraSchemaBookAuthorTableAuthorsBookGroupBySQL = `book_authors.book_id, book_authors.book_id, book_authors.author_id`
 
@@ -233,9 +233,9 @@ func (esba *ExtraSchemaBookAuthor) Insert(ctx context.Context, db DB) (*ExtraSch
 // Update updates a ExtraSchemaBookAuthor in the database.
 func (esba *ExtraSchemaBookAuthor) Update(ctx context.Context, db DB) (*ExtraSchemaBookAuthor, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.book_authors SET 
-	pseudonym = $1 
-	WHERE book_id = $2  AND author_id = $3 
+	sqlstr := `UPDATE extra_schema.book_authors SET
+	pseudonym = $1
+	WHERE book_id = $2  AND author_id = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, esba.Pseudonym, esba.BookID, esba.AuthorID)
@@ -282,7 +282,7 @@ func (esba *ExtraSchemaBookAuthor) Upsert(ctx context.Context, db DB, params *Ex
 // Delete deletes the ExtraSchemaBookAuthor from the database.
 func (esba *ExtraSchemaBookAuthor) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM extra_schema.book_authors 
+	sqlstr := `DELETE FROM extra_schema.book_authors
 	WHERE book_id = $1 AND author_id = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esba.BookID, esba.AuthorID); err != nil {
@@ -365,14 +365,14 @@ func ExtraSchemaBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID Ex
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s 
-	 FROM extra_schema.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM extra_schema.book_authors %s
 	 WHERE book_authors.book_id = $1 AND book_authors.author_id = $2
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -466,14 +466,14 @@ func ExtraSchemaBookAuthorsByBookID(ctx context.Context, db DB, bookID ExtraSche
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s 
-	 FROM extra_schema.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM extra_schema.book_authors %s
 	 WHERE book_authors.book_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -569,14 +569,14 @@ func ExtraSchemaBookAuthorsByAuthorID(ctx context.Context, db DB, authorID Extra
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s 
-	 FROM extra_schema.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM extra_schema.book_authors %s
 	 WHERE book_authors.author_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

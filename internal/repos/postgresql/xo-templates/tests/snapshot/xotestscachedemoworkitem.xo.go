@@ -121,9 +121,9 @@ func WithXoTestsCacheDemoWorkItemFilters(filters map[string][]any) XoTestsCacheD
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithXoTestsCacheDemoWorkItemHavingClause(conditions map[string][]any) XoTestsCacheDemoWorkItemSelectConfigOption {
 	return func(s *XoTestsCacheDemoWorkItemSelectConfig) {
@@ -155,14 +155,14 @@ left join (
 		work_item_assigned_user_work_item_id
 		, users.user_id
 		, role
-) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = cache__demo_work_items.work_item_id
+) as xo_join_work_item_assigned_user_assigned_users on xo_join_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = cache__demo_work_items.work_item_id
 `
 
 const xoTestsCacheDemoWorkItemTableAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
+		xo_join_work_item_assigned_user_assigned_users.__users
+		, xo_join_work_item_assigned_user_assigned_users.role
+		)) filter (where xo_join_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const xoTestsCacheDemoWorkItemTableAssignedUsersGroupBySQL = `cache__demo_work_items.work_item_id, cache__demo_work_items.work_item_id`
 
@@ -175,12 +175,12 @@ left join (
     xo_tests.work_item_comments
   group by
         work_item_id
-) as joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = cache__demo_work_items.work_item_id
+) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_work_item_id = cache__demo_work_items.work_item_id
 `
 
-const xoTestsCacheDemoWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const xoTestsCacheDemoWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
 
-const xoTestsCacheDemoWorkItemTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, cache__demo_work_items.work_item_id`
+const xoTestsCacheDemoWorkItemTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, cache__demo_work_items.work_item_id`
 
 // XoTestsCacheDemoWorkItemUpdateParams represents update params for 'xo_tests.cache__demo_work_items'.
 type XoTestsCacheDemoWorkItemUpdateParams struct {
@@ -225,9 +225,9 @@ func (xtcdwi *XoTestsCacheDemoWorkItem) Insert(ctx context.Context, db DB) (*XoT
 // Update updates a XoTestsCacheDemoWorkItem in the database.
 func (xtcdwi *XoTestsCacheDemoWorkItem) Update(ctx context.Context, db DB) (*XoTestsCacheDemoWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.cache__demo_work_items SET 
-	team_id = $1, title = $2 
-	WHERE work_item_id = $3 
+	sqlstr := `UPDATE xo_tests.cache__demo_work_items SET
+	team_id = $1, title = $2
+	WHERE work_item_id = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, xtcdwi.TeamID, xtcdwi.Title, xtcdwi.WorkItemID)
@@ -274,7 +274,7 @@ func (xtcdwi *XoTestsCacheDemoWorkItem) Upsert(ctx context.Context, db DB, param
 // Delete deletes the XoTestsCacheDemoWorkItem from the database.
 func (xtcdwi *XoTestsCacheDemoWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.cache__demo_work_items 
+	sqlstr := `DELETE FROM xo_tests.cache__demo_work_items
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtcdwi.WorkItemID); err != nil {
@@ -366,15 +366,15 @@ func XoTestsCacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, w
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	cache__demo_work_items.team_id,
 	cache__demo_work_items.title,
-	cache__demo_work_items.work_item_id %s 
-	 FROM xo_tests.cache__demo_work_items %s 
+	cache__demo_work_items.work_item_id %s
+	 FROM xo_tests.cache__demo_work_items %s
 	 WHERE cache__demo_work_items.work_item_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
+	 %s   %s
+  %s
+  ORDER BY
 		work_item_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsCacheDemoWorkItemPaginatedByWorkItemID */\n" + sqlstr
@@ -472,14 +472,14 @@ func XoTestsCacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	cache__demo_work_items.team_id,
 	cache__demo_work_items.title,
-	cache__demo_work_items.work_item_id %s 
-	 FROM xo_tests.cache__demo_work_items %s 
+	cache__demo_work_items.work_item_id %s
+	 FROM xo_tests.cache__demo_work_items %s
 	 WHERE cache__demo_work_items.work_item_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

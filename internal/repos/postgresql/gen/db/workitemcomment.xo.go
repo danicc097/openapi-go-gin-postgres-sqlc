@@ -144,9 +144,9 @@ func WithWorkItemCommentFilters(filters map[string][]any) WorkItemCommentSelectC
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithWorkItemCommentHavingClause(conditions map[string][]any) WorkItemCommentSelectConfigOption {
 	return func(s *WorkItemCommentSelectConfig) {
@@ -222,9 +222,9 @@ func (wic *WorkItemComment) Insert(ctx context.Context, db DB) (*WorkItemComment
 // Update updates a WorkItemComment in the database.
 func (wic *WorkItemComment) Update(ctx context.Context, db DB) (*WorkItemComment, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_item_comments SET 
-	message = $1, user_id = $2, work_item_id = $3 
-	WHERE work_item_comment_id = $4 
+	sqlstr := `UPDATE public.work_item_comments SET
+	message = $1, user_id = $2, work_item_id = $3
+	WHERE work_item_comment_id = $4
 	RETURNING * `
 	// run
 	logf(sqlstr, wic.Message, wic.UserID, wic.WorkItemID, wic.WorkItemCommentID)
@@ -271,7 +271,7 @@ func (wic *WorkItemComment) Upsert(ctx context.Context, db DB, params *WorkItemC
 // Delete deletes the WorkItemComment from the database.
 func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.work_item_comments 
+	sqlstr := `DELETE FROM public.work_item_comments
 	WHERE work_item_comment_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wic.WorkItemCommentID); err != nil {
@@ -357,18 +357,18 @@ func WorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db DB, wor
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM public.work_item_comments %s 
+	work_item_comments.work_item_id %s
+	 FROM public.work_item_comments %s
 	 WHERE work_item_comments.work_item_comment_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
+	 %s   %s
+  %s
+  ORDER BY
 		work_item_comment_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemCommentPaginatedByWorkItemCommentID */\n" + sqlstr
@@ -460,17 +460,17 @@ func WorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workItemComm
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM public.work_item_comments %s 
+	work_item_comments.work_item_id %s
+	 FROM public.work_item_comments %s
 	 WHERE work_item_comments.work_item_comment_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -564,17 +564,17 @@ func WorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID WorkIte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_item_comments.created_at,
 	work_item_comments.message,
 	work_item_comments.updated_at,
 	work_item_comments.user_id,
 	work_item_comments.work_item_comment_id,
-	work_item_comments.work_item_id %s 
-	 FROM public.work_item_comments %s 
+	work_item_comments.work_item_id %s
+	 FROM public.work_item_comments %s
 	 WHERE work_item_comments.work_item_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

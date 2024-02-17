@@ -121,9 +121,9 @@ func WithExtraSchemaWorkItemFilters(filters map[string][]any) ExtraSchemaWorkIte
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithExtraSchemaWorkItemHavingClause(conditions map[string][]any) ExtraSchemaWorkItemSelectConfigOption {
 	return func(s *ExtraSchemaWorkItemSelectConfig) {
@@ -154,14 +154,14 @@ left join (
 		work_item_assigned_user_work_item_id
 		, users.user_id
 		, role
-) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
+) as xo_join_work_item_assigned_user_assigned_users on xo_join_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
 `
 
 const extraSchemaWorkItemTableAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
+		xo_join_work_item_assigned_user_assigned_users.__users
+		, xo_join_work_item_assigned_user_assigned_users.role
+		)) filter (where xo_join_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const extraSchemaWorkItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
 
@@ -209,9 +209,9 @@ func (eswi *ExtraSchemaWorkItem) Insert(ctx context.Context, db DB) (*ExtraSchem
 // Update updates a ExtraSchemaWorkItem in the database.
 func (eswi *ExtraSchemaWorkItem) Update(ctx context.Context, db DB) (*ExtraSchemaWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.work_items SET 
-	description = $1, title = $2 
-	WHERE work_item_id = $3 
+	sqlstr := `UPDATE extra_schema.work_items SET
+	description = $1, title = $2
+	WHERE work_item_id = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, eswi.Description, eswi.Title, eswi.WorkItemID)
@@ -257,7 +257,7 @@ func (eswi *ExtraSchemaWorkItem) Upsert(ctx context.Context, db DB, params *Extr
 // Delete deletes the ExtraSchemaWorkItem from the database.
 func (eswi *ExtraSchemaWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.work_items 
+	sqlstr := `DELETE FROM extra_schema.work_items
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, eswi.WorkItemID); err != nil {
@@ -343,15 +343,15 @@ func ExtraSchemaWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s 
-	 FROM extra_schema.work_items %s 
+	work_items.work_item_id %s
+	 FROM extra_schema.work_items %s
 	 WHERE work_items.work_item_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
+	 %s   %s
+  %s
+  ORDER BY
 		work_item_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemPaginatedByWorkItemID */\n" + sqlstr
@@ -443,14 +443,14 @@ func ExtraSchemaWorkItems(ctx context.Context, db DB, opts ...ExtraSchemaWorkIte
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s 
-	 FROM extra_schema.work_items %s 
+	work_items.work_item_id %s
+	 FROM extra_schema.work_items %s
 	 WHERE true
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -546,14 +546,14 @@ func ExtraSchemaWorkItemByWorkItemID(ctx context.Context, db DB, workItemID Extr
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s 
-	 FROM extra_schema.work_items %s 
+	work_items.work_item_id %s
+	 FROM extra_schema.work_items %s
 	 WHERE work_items.work_item_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -647,14 +647,14 @@ func ExtraSchemaWorkItemsByTitle(ctx context.Context, db DB, title *string, opts
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.description,
 	work_items.title,
-	work_items.work_item_id %s 
-	 FROM extra_schema.work_items %s 
+	work_items.work_item_id %s
+	 FROM extra_schema.work_items %s
 	 WHERE work_items.title = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

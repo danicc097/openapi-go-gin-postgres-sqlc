@@ -196,9 +196,9 @@ func WithExtraSchemaUserFilters(filters map[string][]any) ExtraSchemaUserSelectC
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithExtraSchemaUserHavingClause(conditions map[string][]any) ExtraSchemaUserSelectConfigOption {
 	return func(s *ExtraSchemaUserSelectConfig) {
@@ -220,14 +220,14 @@ left join (
 		book_authors_author_id
 		, books.book_id
 		, pseudonym
-) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
+) as xo_join_book_authors_books on xo_join_book_authors_books.book_authors_author_id = users.user_id
 `
 
 const extraSchemaUserTableBooksAuthorSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_books.__books
-		, joined_book_authors_books.pseudonym
-		)) filter (where joined_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
+		xo_join_book_authors_books.__books
+		, xo_join_book_authors_books.pseudonym
+		)) filter (where xo_join_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
 
 const extraSchemaUserTableBooksAuthorGroupBySQL = `users.user_id, users.user_id`
 
@@ -245,14 +245,14 @@ left join (
 		book_authors_surrogate_key_author_id
 		, books.book_id
 		, pseudonym
-) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
+) as xo_join_book_authors_surrogate_key_books on xo_join_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
 `
 
 const extraSchemaUserTableBooksAuthorBooksSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_books.__books
-		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') as book_authors_surrogate_key_books`
+		xo_join_book_authors_surrogate_key_books.__books
+		, xo_join_book_authors_surrogate_key_books.pseudonym
+		)) filter (where xo_join_book_authors_surrogate_key_books.__books_book_id is not null), '{}') as book_authors_surrogate_key_books`
 
 const extraSchemaUserTableBooksAuthorBooksGroupBySQL = `users.user_id, users.user_id`
 
@@ -265,12 +265,12 @@ left join (
     extra_schema.book_reviews
   group by
         reviewer
-) as joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
+) as xo_join_book_reviews on xo_join_book_reviews.book_reviews_user_id = users.user_id
 `
 
-const extraSchemaUserTableBookReviewsSelectSQL = `COALESCE(joined_book_reviews.book_reviews, '{}') as book_reviews`
+const extraSchemaUserTableBookReviewsSelectSQL = `COALESCE(xo_join_book_reviews.book_reviews, '{}') as book_reviews`
 
-const extraSchemaUserTableBookReviewsGroupBySQL = `joined_book_reviews.book_reviews, users.user_id`
+const extraSchemaUserTableBookReviewsGroupBySQL = `xo_join_book_reviews.book_reviews, users.user_id`
 
 const extraSchemaUserTableBooksSellerJoinSQL = `-- M2M join generated from "book_sellers_book_id_fkey"
 left join (
@@ -284,13 +284,13 @@ left join (
 	group by
 		book_sellers_seller
 		, books.book_id
-) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
+) as xo_join_book_sellers_books on xo_join_book_sellers_books.book_sellers_seller = users.user_id
 `
 
 const extraSchemaUserTableBooksSellerSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') as book_sellers_books`
+		xo_join_book_sellers_books.__books
+		)) filter (where xo_join_book_sellers_books.__books_book_id is not null), '{}') as book_sellers_books`
 
 const extraSchemaUserTableBooksSellerGroupBySQL = `users.user_id, users.user_id`
 
@@ -303,12 +303,12 @@ left join (
     extra_schema.notifications
   group by
         receiver
-) as joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
+) as xo_join_notifications_receiver on xo_join_notifications_receiver.notifications_user_id = users.user_id
 `
 
-const extraSchemaUserTableNotificationsReceiverSelectSQL = `COALESCE(joined_notifications_receiver.notifications, '{}') as notifications_receiver`
+const extraSchemaUserTableNotificationsReceiverSelectSQL = `COALESCE(xo_join_notifications_receiver.notifications, '{}') as notifications_receiver`
 
-const extraSchemaUserTableNotificationsReceiverGroupBySQL = `joined_notifications_receiver.notifications, users.user_id`
+const extraSchemaUserTableNotificationsReceiverGroupBySQL = `xo_join_notifications_receiver.notifications, users.user_id`
 
 const extraSchemaUserTableNotificationsSenderJoinSQL = `-- M2O join generated from "notifications_sender_fkey"
 left join (
@@ -319,12 +319,12 @@ left join (
     extra_schema.notifications
   group by
         sender
-) as joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
+) as xo_join_notifications_sender on xo_join_notifications_sender.notifications_user_id = users.user_id
 `
 
-const extraSchemaUserTableNotificationsSenderSelectSQL = `COALESCE(joined_notifications_sender.notifications, '{}') as notifications_sender`
+const extraSchemaUserTableNotificationsSenderSelectSQL = `COALESCE(xo_join_notifications_sender.notifications, '{}') as notifications_sender`
 
-const extraSchemaUserTableNotificationsSenderGroupBySQL = `joined_notifications_sender.notifications, users.user_id`
+const extraSchemaUserTableNotificationsSenderGroupBySQL = `xo_join_notifications_sender.notifications, users.user_id`
 
 const extraSchemaUserTableUserAPIKeyJoinSQL = `-- O2O join generated from "users_api_key_id_fkey (inferred)"
 left join extra_schema.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
@@ -350,14 +350,14 @@ left join (
 		work_item_assigned_user_assigned_user
 		, work_items.work_item_id
 		, role
-) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
+) as xo_join_work_item_assigned_user_work_items on xo_join_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
 `
 
 const extraSchemaUserTableWorkItemsAssignedUserSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
+		xo_join_work_item_assigned_user_work_items.__work_items
+		, xo_join_work_item_assigned_user_work_items.role
+		)) filter (where xo_join_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
 const extraSchemaUserTableWorkItemsAssignedUserGroupBySQL = `users.user_id, users.user_id`
 
@@ -405,9 +405,9 @@ func (esu *ExtraSchemaUser) Insert(ctx context.Context, db DB) (*ExtraSchemaUser
 // Update updates a ExtraSchemaUser in the database.
 func (esu *ExtraSchemaUser) Update(ctx context.Context, db DB) (*ExtraSchemaUser, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE extra_schema.users SET 
-	api_key_id = $1, deleted_at = $2, name = $3 
-	WHERE user_id = $4 
+	sqlstr := `UPDATE extra_schema.users SET
+	api_key_id = $1, deleted_at = $2, name = $3
+	WHERE user_id = $4
 	RETURNING * `
 	// run
 	logf(sqlstr, esu.APIKeyID, esu.CreatedAt, esu.DeletedAt, esu.Name, esu.UserID)
@@ -453,7 +453,7 @@ func (esu *ExtraSchemaUser) Upsert(ctx context.Context, db DB, params *ExtraSche
 // Delete deletes the ExtraSchemaUser from the database.
 func (esu *ExtraSchemaUser) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM extra_schema.users 
+	sqlstr := `DELETE FROM extra_schema.users
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esu.UserID); err != nil {
@@ -465,8 +465,8 @@ func (esu *ExtraSchemaUser) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the ExtraSchemaUser from the database via 'deleted_at'.
 func (esu *ExtraSchemaUser) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE extra_schema.users 
-	SET deleted_at = NOW() 
+	sqlstr := `UPDATE extra_schema.users
+	SET deleted_at = NOW()
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esu.UserID); err != nil {
@@ -601,17 +601,17 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s 
-	 FROM extra_schema.users %s 
+	users.user_id %s
+	 FROM extra_schema.users %s
 	 WHERE users.created_at %s $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
+	 %s   AND users.deleted_at is %s  %s
+  %s
+  ORDER BY
 		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserPaginatedByCreatedAt */\n" + sqlstr
@@ -739,16 +739,16 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s 
-	 FROM extra_schema.users %s 
+	users.user_id %s
+	 FROM extra_schema.users %s
 	 WHERE users.created_at = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -878,16 +878,16 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s 
-	 FROM extra_schema.users %s 
+	users.user_id %s
+	 FROM extra_schema.users %s
 	 WHERE users.name = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1017,16 +1017,16 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
 	users.name,
-	users.user_id %s 
-	 FROM extra_schema.users %s 
+	users.user_id %s
+	 FROM extra_schema.users %s
 	 WHERE users.user_id = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

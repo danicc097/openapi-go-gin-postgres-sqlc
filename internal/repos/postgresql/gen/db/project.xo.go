@@ -159,9 +159,9 @@ func WithProjectFilters(filters map[string][]any) ProjectSelectConfigOption {
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithProjectHavingClause(conditions map[string][]any) ProjectSelectConfigOption {
 	return func(s *ProjectSelectConfig) {
@@ -178,12 +178,12 @@ left join (
     activities
   group by
         project_id
-) as joined_activities on joined_activities.activities_project_id = projects.project_id
+) as xo_join_activities on xo_join_activities.activities_project_id = projects.project_id
 `
 
-const projectTableActivitiesSelectSQL = `COALESCE(joined_activities.activities, '{}') as activities`
+const projectTableActivitiesSelectSQL = `COALESCE(xo_join_activities.activities, '{}') as activities`
 
-const projectTableActivitiesGroupBySQL = `joined_activities.activities, projects.project_id`
+const projectTableActivitiesGroupBySQL = `xo_join_activities.activities, projects.project_id`
 
 const projectTableKanbanStepsJoinSQL = `-- M2O join generated from "kanban_steps_project_id_fkey"
 left join (
@@ -194,12 +194,12 @@ left join (
     kanban_steps
   group by
         project_id
-) as joined_kanban_steps on joined_kanban_steps.kanban_steps_project_id = projects.project_id
+) as xo_join_kanban_steps on xo_join_kanban_steps.kanban_steps_project_id = projects.project_id
 `
 
-const projectTableKanbanStepsSelectSQL = `COALESCE(joined_kanban_steps.kanban_steps, '{}') as kanban_steps`
+const projectTableKanbanStepsSelectSQL = `COALESCE(xo_join_kanban_steps.kanban_steps, '{}') as kanban_steps`
 
-const projectTableKanbanStepsGroupBySQL = `joined_kanban_steps.kanban_steps, projects.project_id`
+const projectTableKanbanStepsGroupBySQL = `xo_join_kanban_steps.kanban_steps, projects.project_id`
 
 const projectTableTeamsJoinSQL = `-- M2O join generated from "teams_project_id_fkey"
 left join (
@@ -210,12 +210,12 @@ left join (
     teams
   group by
         project_id
-) as joined_teams on joined_teams.teams_project_id = projects.project_id
+) as xo_join_teams on xo_join_teams.teams_project_id = projects.project_id
 `
 
-const projectTableTeamsSelectSQL = `COALESCE(joined_teams.teams, '{}') as teams`
+const projectTableTeamsSelectSQL = `COALESCE(xo_join_teams.teams, '{}') as teams`
 
-const projectTableTeamsGroupBySQL = `joined_teams.teams, projects.project_id`
+const projectTableTeamsGroupBySQL = `xo_join_teams.teams, projects.project_id`
 
 const projectTableMembersProjectJoinSQL = `-- M2M join generated from "user_project_member_fkey"
 left join (
@@ -229,13 +229,13 @@ left join (
 	group by
 		user_project_project_id
 		, users.user_id
-) as joined_user_project_members on joined_user_project_members.user_project_project_id = projects.project_id
+) as xo_join_user_project_members on xo_join_user_project_members.user_project_project_id = projects.project_id
 `
 
 const projectTableMembersProjectSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_user_project_members.__users
-		)) filter (where joined_user_project_members.__users_user_id is not null), '{}') as user_project_members`
+		xo_join_user_project_members.__users
+		)) filter (where xo_join_user_project_members.__users_user_id is not null), '{}') as user_project_members`
 
 const projectTableMembersProjectGroupBySQL = `projects.project_id, projects.project_id`
 
@@ -248,12 +248,12 @@ left join (
     work_item_tags
   group by
         project_id
-) as joined_work_item_tags on joined_work_item_tags.work_item_tags_project_id = projects.project_id
+) as xo_join_work_item_tags on xo_join_work_item_tags.work_item_tags_project_id = projects.project_id
 `
 
-const projectTableWorkItemTagsSelectSQL = `COALESCE(joined_work_item_tags.work_item_tags, '{}') as work_item_tags`
+const projectTableWorkItemTagsSelectSQL = `COALESCE(xo_join_work_item_tags.work_item_tags, '{}') as work_item_tags`
 
-const projectTableWorkItemTagsGroupBySQL = `joined_work_item_tags.work_item_tags, projects.project_id`
+const projectTableWorkItemTagsGroupBySQL = `xo_join_work_item_tags.work_item_tags, projects.project_id`
 
 const projectTableWorkItemTypesJoinSQL = `-- M2O join generated from "work_item_types_project_id_fkey"
 left join (
@@ -264,12 +264,12 @@ left join (
     work_item_types
   group by
         project_id
-) as joined_work_item_types on joined_work_item_types.work_item_types_project_id = projects.project_id
+) as xo_join_work_item_types on xo_join_work_item_types.work_item_types_project_id = projects.project_id
 `
 
-const projectTableWorkItemTypesSelectSQL = `COALESCE(joined_work_item_types.work_item_types, '{}') as work_item_types`
+const projectTableWorkItemTypesSelectSQL = `COALESCE(xo_join_work_item_types.work_item_types, '{}') as work_item_types`
 
-const projectTableWorkItemTypesGroupBySQL = `joined_work_item_types.work_item_types, projects.project_id`
+const projectTableWorkItemTypesGroupBySQL = `xo_join_work_item_types.work_item_types, projects.project_id`
 
 // ProjectUpdateParams represents update params for 'public.projects'.
 type ProjectUpdateParams struct {
@@ -323,9 +323,9 @@ func (p *Project) Insert(ctx context.Context, db DB) (*Project, error) {
 // Update updates a Project in the database.
 func (p *Project) Update(ctx context.Context, db DB) (*Project, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.projects SET 
-	board_config = $1, description = $2, name = $3, work_items_table_name = $4 
-	WHERE project_id = $5 
+	sqlstr := `UPDATE public.projects SET
+	board_config = $1, description = $2, name = $3, work_items_table_name = $4
+	WHERE project_id = $5
 	RETURNING * `
 	// run
 	logf(sqlstr, p.BoardConfig, p.Description, p.Name, p.WorkItemsTableName, p.ProjectID)
@@ -373,7 +373,7 @@ func (p *Project) Upsert(ctx context.Context, db DB, params *ProjectCreateParams
 // Delete deletes the Project from the database.
 func (p *Project) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.projects 
+	sqlstr := `DELETE FROM public.projects
 	WHERE project_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, p.ProjectID); err != nil {
@@ -483,19 +483,19 @@ func ProjectPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	projects.board_config,
 	projects.created_at,
 	projects.description,
 	projects.name,
 	projects.project_id,
 	projects.updated_at,
-	projects.work_items_table_name %s 
-	 FROM public.projects %s 
+	projects.work_items_table_name %s
+	 FROM public.projects %s
 	 WHERE projects.project_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
+	 %s   %s
+  %s
+  ORDER BY
 		project_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* ProjectPaginatedByProjectID */\n" + sqlstr
@@ -611,18 +611,18 @@ func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...Proj
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	projects.board_config,
 	projects.created_at,
 	projects.description,
 	projects.name,
 	projects.project_id,
 	projects.updated_at,
-	projects.work_items_table_name %s 
-	 FROM public.projects %s 
+	projects.work_items_table_name %s
+	 FROM public.projects %s
 	 WHERE projects.name = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -740,18 +740,18 @@ func ProjectByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ..
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	projects.board_config,
 	projects.created_at,
 	projects.description,
 	projects.name,
 	projects.project_id,
 	projects.updated_at,
-	projects.work_items_table_name %s 
-	 FROM public.projects %s 
+	projects.work_items_table_name %s
+	 FROM public.projects %s
 	 WHERE projects.project_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -869,18 +869,18 @@ func ProjectByWorkItemsTableName(ctx context.Context, db DB, workItemsTableName 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	projects.board_config,
 	projects.created_at,
 	projects.description,
 	projects.name,
 	projects.project_id,
 	projects.updated_at,
-	projects.work_items_table_name %s 
-	 FROM public.projects %s 
+	projects.work_items_table_name %s
+	 FROM public.projects %s
 	 WHERE projects.work_items_table_name = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

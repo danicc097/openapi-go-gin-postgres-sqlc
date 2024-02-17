@@ -217,9 +217,9 @@ func WithUserFilters(filters map[string][]any) UserSelectConfigOption {
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithUserHavingClause(conditions map[string][]any) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
@@ -236,12 +236,12 @@ left join (
     notifications
   group by
         receiver
-) as joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
+) as xo_join_notifications_receiver on xo_join_notifications_receiver.notifications_user_id = users.user_id
 `
 
-const userTableNotificationsReceiverSelectSQL = `COALESCE(joined_notifications_receiver.notifications, '{}') as notifications_receiver`
+const userTableNotificationsReceiverSelectSQL = `COALESCE(xo_join_notifications_receiver.notifications, '{}') as notifications_receiver`
 
-const userTableNotificationsReceiverGroupBySQL = `joined_notifications_receiver.notifications, users.user_id`
+const userTableNotificationsReceiverGroupBySQL = `xo_join_notifications_receiver.notifications, users.user_id`
 
 const userTableNotificationsSenderJoinSQL = `-- M2O join generated from "notifications_sender_fkey"
 left join (
@@ -252,12 +252,12 @@ left join (
     notifications
   group by
         sender
-) as joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
+) as xo_join_notifications_sender on xo_join_notifications_sender.notifications_user_id = users.user_id
 `
 
-const userTableNotificationsSenderSelectSQL = `COALESCE(joined_notifications_sender.notifications, '{}') as notifications_sender`
+const userTableNotificationsSenderSelectSQL = `COALESCE(xo_join_notifications_sender.notifications, '{}') as notifications_sender`
 
-const userTableNotificationsSenderGroupBySQL = `joined_notifications_sender.notifications, users.user_id`
+const userTableNotificationsSenderGroupBySQL = `xo_join_notifications_sender.notifications, users.user_id`
 
 const userTableTimeEntriesJoinSQL = `-- M2O join generated from "time_entries_user_id_fkey"
 left join (
@@ -268,12 +268,12 @@ left join (
     time_entries
   group by
         user_id
-) as joined_time_entries on joined_time_entries.time_entries_user_id = users.user_id
+) as xo_join_time_entries on xo_join_time_entries.time_entries_user_id = users.user_id
 `
 
-const userTableTimeEntriesSelectSQL = `COALESCE(joined_time_entries.time_entries, '{}') as time_entries`
+const userTableTimeEntriesSelectSQL = `COALESCE(xo_join_time_entries.time_entries, '{}') as time_entries`
 
-const userTableTimeEntriesGroupBySQL = `joined_time_entries.time_entries, users.user_id`
+const userTableTimeEntriesGroupBySQL = `xo_join_time_entries.time_entries, users.user_id`
 
 const userTableUserNotificationsJoinSQL = `-- M2O join generated from "user_notifications_user_id_fkey"
 left join (
@@ -284,12 +284,12 @@ left join (
     user_notifications
   group by
         user_id
-) as joined_user_notifications on joined_user_notifications.user_notifications_user_id = users.user_id
+) as xo_join_user_notifications on xo_join_user_notifications.user_notifications_user_id = users.user_id
 `
 
-const userTableUserNotificationsSelectSQL = `COALESCE(joined_user_notifications.user_notifications, '{}') as user_notifications`
+const userTableUserNotificationsSelectSQL = `COALESCE(xo_join_user_notifications.user_notifications, '{}') as user_notifications`
 
-const userTableUserNotificationsGroupBySQL = `joined_user_notifications.user_notifications, users.user_id`
+const userTableUserNotificationsGroupBySQL = `xo_join_user_notifications.user_notifications, users.user_id`
 
 const userTableProjectsMemberJoinSQL = `-- M2M join generated from "user_project_project_id_fkey"
 left join (
@@ -303,13 +303,13 @@ left join (
 	group by
 		user_project_member
 		, projects.project_id
-) as joined_user_project_projects on joined_user_project_projects.user_project_member = users.user_id
+) as xo_join_user_project_projects on xo_join_user_project_projects.user_project_member = users.user_id
 `
 
 const userTableProjectsMemberSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_user_project_projects.__projects
-		)) filter (where joined_user_project_projects.__projects_project_id is not null), '{}') as user_project_projects`
+		xo_join_user_project_projects.__projects
+		)) filter (where xo_join_user_project_projects.__projects_project_id is not null), '{}') as user_project_projects`
 
 const userTableProjectsMemberGroupBySQL = `users.user_id, users.user_id`
 
@@ -325,13 +325,13 @@ left join (
 	group by
 		user_team_member
 		, teams.team_id
-) as joined_user_team_teams on joined_user_team_teams.user_team_member = users.user_id
+) as xo_join_user_team_teams on xo_join_user_team_teams.user_team_member = users.user_id
 `
 
 const userTableTeamsMemberSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_user_team_teams.__teams
-		)) filter (where joined_user_team_teams.__teams_team_id is not null), '{}') as user_team_teams`
+		xo_join_user_team_teams.__teams
+		)) filter (where xo_join_user_team_teams.__teams_team_id is not null), '{}') as user_team_teams`
 
 const userTableTeamsMemberGroupBySQL = `users.user_id, users.user_id`
 
@@ -359,14 +359,14 @@ left join (
 		work_item_assigned_user_assigned_user
 		, work_items.work_item_id
 		, role
-) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
+) as xo_join_work_item_assigned_user_work_items on xo_join_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
 `
 
 const userTableWorkItemsAssignedUserSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
+		xo_join_work_item_assigned_user_work_items.__work_items
+		, xo_join_work_item_assigned_user_work_items.role
+		)) filter (where xo_join_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
 const userTableWorkItemsAssignedUserGroupBySQL = `users.user_id, users.user_id`
 
@@ -379,12 +379,12 @@ left join (
     work_item_comments
   group by
         user_id
-) as joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id
+) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_user_id = users.user_id
 `
 
-const userTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const userTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
 
-const userTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, users.user_id`
+const userTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, users.user_id`
 
 // UserUpdateParams represents update params for 'public.users'.
 type UserUpdateParams struct {
@@ -462,9 +462,9 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 // Update updates a User in the database.
 func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.users SET 
-	api_key_id = $1, deleted_at = $2, email = $3, external_id = $4, first_name = $5, has_global_notifications = $6, has_personal_notifications = $7, last_name = $8, role_rank = $9, scopes = $10, username = $11 
-	WHERE user_id = $12 
+	sqlstr := `UPDATE public.users SET
+	api_key_id = $1, deleted_at = $2, email = $3, external_id = $4, first_name = $5, has_global_notifications = $6, has_personal_notifications = $7, last_name = $8, role_rank = $9, scopes = $10, username = $11
+	WHERE user_id = $12
 	RETURNING * `
 	// run
 	logf(sqlstr, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username, u.UserID)
@@ -518,7 +518,7 @@ func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*Us
 // Delete deletes the User from the database.
 func (u *User) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.users 
+	sqlstr := `DELETE FROM public.users
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
@@ -530,8 +530,8 @@ func (u *User) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the User from the database via 'deleted_at'.
 func (u *User) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE public.users 
-	SET deleted_at = NOW() 
+	sqlstr := `UPDATE public.users
+	SET deleted_at = NOW()
 	WHERE user_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, u.UserID); err != nil {
@@ -672,7 +672,7 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -687,12 +687,12 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.created_at %s $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
+	 %s   AND users.deleted_at is %s  %s
+  %s
+  ORDER BY
 		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* UserPaginatedByCreatedAt */\n" + sqlstr
@@ -826,7 +826,7 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -841,11 +841,11 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.created_at = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -981,7 +981,7 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -996,11 +996,11 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.deleted_at = $1 AND (deleted_at IS NOT NULL)
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1138,7 +1138,7 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1153,11 +1153,11 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.email = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1293,7 +1293,7 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1308,11 +1308,11 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.external_id = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1448,7 +1448,7 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1463,11 +1463,11 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.user_id = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1603,7 +1603,7 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1618,11 +1618,11 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.updated_at = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1760,7 +1760,7 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1775,11 +1775,11 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 	users.scopes,
 	users.updated_at,
 	users.user_id,
-	users.username %s 
-	 FROM public.users %s 
+	users.username %s
+	 FROM public.users %s
 	 WHERE users.username = $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
+	 %s   AND users.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

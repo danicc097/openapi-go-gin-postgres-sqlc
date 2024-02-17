@@ -131,9 +131,9 @@ func WithEntityNotificationFilters(filters map[string][]any) EntityNotificationS
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithEntityNotificationHavingClause(conditions map[string][]any) EntityNotificationSelectConfigOption {
 	return func(s *EntityNotificationSelectConfig) {
@@ -189,9 +189,9 @@ func (en *EntityNotification) Insert(ctx context.Context, db DB) (*EntityNotific
 // Update updates a EntityNotification in the database.
 func (en *EntityNotification) Update(ctx context.Context, db DB) (*EntityNotification, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.entity_notifications SET 
-	id = $1, message = $2, topic = $3 
-	WHERE entity_notification_id = $4 
+	sqlstr := `UPDATE public.entity_notifications SET
+	id = $1, message = $2, topic = $3
+	WHERE entity_notification_id = $4
 	RETURNING * `
 	// run
 	logf(sqlstr, en.ID, en.Message, en.Topic, en.EntityNotificationID)
@@ -238,7 +238,7 @@ func (en *EntityNotification) Upsert(ctx context.Context, db DB, params *EntityN
 // Delete deletes the EntityNotification from the database.
 func (en *EntityNotification) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.entity_notifications 
+	sqlstr := `DELETE FROM public.entity_notifications
 	WHERE entity_notification_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, en.EntityNotificationID); err != nil {
@@ -312,17 +312,17 @@ func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db D
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	entity_notifications.created_at,
 	entity_notifications.entity_notification_id,
 	entity_notifications.id,
 	entity_notifications.message,
-	entity_notifications.topic %s 
-	 FROM public.entity_notifications %s 
+	entity_notifications.topic %s
+	 FROM public.entity_notifications %s
 	 WHERE entity_notifications.entity_notification_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
+	 %s   %s
+  %s
+  ORDER BY
 		entity_notification_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* EntityNotificationPaginatedByEntityNotificationID */\n" + sqlstr
@@ -402,16 +402,16 @@ func EntityNotificationByEntityNotificationID(ctx context.Context, db DB, entity
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	entity_notifications.created_at,
 	entity_notifications.entity_notification_id,
 	entity_notifications.id,
 	entity_notifications.message,
-	entity_notifications.topic %s 
-	 FROM public.entity_notifications %s 
+	entity_notifications.topic %s
+	 FROM public.entity_notifications %s
 	 WHERE entity_notifications.entity_notification_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

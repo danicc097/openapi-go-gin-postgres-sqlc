@@ -108,9 +108,9 @@ func WithUserProjectFilters(filters map[string][]any) UserProjectSelectConfigOpt
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithUserProjectHavingClause(conditions map[string][]any) UserProjectSelectConfigOption {
 	return func(s *UserProjectSelectConfig) {
@@ -130,13 +130,13 @@ left join (
 	group by
 		user_project_member
 		, projects.project_id
-) as joined_user_project_projects on joined_user_project_projects.user_project_member = user_project.project_id
+) as xo_join_user_project_projects on xo_join_user_project_projects.user_project_member = user_project.project_id
 `
 
 const userProjectTableProjectsMemberSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_user_project_projects.__projects
-		)) filter (where joined_user_project_projects.__projects_project_id is not null), '{}') as user_project_projects`
+		xo_join_user_project_projects.__projects
+		)) filter (where xo_join_user_project_projects.__projects_project_id is not null), '{}') as user_project_projects`
 
 const userProjectTableProjectsMemberGroupBySQL = `user_project.project_id, user_project.project_id, user_project.member`
 
@@ -152,13 +152,13 @@ left join (
 	group by
 		user_project_project_id
 		, users.user_id
-) as joined_user_project_members on joined_user_project_members.user_project_project_id = user_project.member
+) as xo_join_user_project_members on xo_join_user_project_members.user_project_project_id = user_project.member
 `
 
 const userProjectTableMembersProjectSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_user_project_members.__users
-		)) filter (where joined_user_project_members.__users_user_id is not null), '{}') as user_project_members`
+		xo_join_user_project_members.__users
+		)) filter (where xo_join_user_project_members.__users_user_id is not null), '{}') as user_project_members`
 
 const userProjectTableMembersProjectGroupBySQL = `user_project.member, user_project.project_id, user_project.member`
 
@@ -207,7 +207,7 @@ func (up *UserProject) Insert(ctx context.Context, db DB) (*UserProject, error) 
 // Delete deletes the UserProject from the database.
 func (up *UserProject) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM public.user_project 
+	sqlstr := `DELETE FROM public.user_project
 	WHERE project_id = $1 AND member = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, up.ProjectID, up.Member); err != nil {
@@ -290,13 +290,13 @@ func UserProjectsByMember(ctx context.Context, db DB, member UserID, opts ...Use
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	user_project.member,
-	user_project.project_id %s 
-	 FROM public.user_project %s 
+	user_project.project_id %s
+	 FROM public.user_project %s
 	 WHERE user_project.member = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -392,13 +392,13 @@ func UserProjectByMemberProjectID(ctx context.Context, db DB, member UserID, pro
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	user_project.member,
-	user_project.project_id %s 
-	 FROM public.user_project %s 
+	user_project.project_id %s
+	 FROM public.user_project %s
 	 WHERE user_project.member = $1 AND user_project.project_id = $2
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -492,13 +492,13 @@ func UserProjectsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	user_project.member,
-	user_project.project_id %s 
-	 FROM public.user_project %s 
+	user_project.project_id %s
+	 FROM public.user_project %s
 	 WHERE user_project.project_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -594,13 +594,13 @@ func UserProjectsByProjectIDMember(ctx context.Context, db DB, projectID Project
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	user_project.member,
-	user_project.project_id %s 
-	 FROM public.user_project %s 
+	user_project.project_id %s
+	 FROM public.user_project %s
 	 WHERE user_project.project_id = $1 AND user_project.member = $2
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

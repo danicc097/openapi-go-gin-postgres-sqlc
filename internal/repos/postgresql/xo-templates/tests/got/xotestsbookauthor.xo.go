@@ -123,9 +123,9 @@ func WithXoTestsBookAuthorFilters(filters map[string][]any) XoTestsBookAuthorSel
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithXoTestsBookAuthorHavingClause(conditions map[string][]any) XoTestsBookAuthorSelectConfigOption {
 	return func(s *XoTestsBookAuthorSelectConfig) {
@@ -147,14 +147,14 @@ left join (
 		book_authors_author_id
 		, books.book_id
 		, pseudonym
-) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = book_authors.author_id
+) as xo_join_book_authors_books on xo_join_book_authors_books.book_authors_author_id = book_authors.author_id
 `
 
 const xoTestsBookAuthorTableBooksAuthorSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_books.__books
-		, joined_book_authors_books.pseudonym
-		)) filter (where joined_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
+		xo_join_book_authors_books.__books
+		, xo_join_book_authors_books.pseudonym
+		)) filter (where xo_join_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
 
 const xoTestsBookAuthorTableBooksAuthorGroupBySQL = `book_authors.author_id, book_authors.book_id, book_authors.author_id`
 
@@ -172,14 +172,14 @@ left join (
 		book_authors_book_id
 		, users.user_id
 		, pseudonym
-) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
+) as xo_join_book_authors_authors on xo_join_book_authors_authors.book_authors_book_id = book_authors.book_id
 `
 
 const xoTestsBookAuthorTableAuthorsBookSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_authors.__users
-		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
+		xo_join_book_authors_authors.__users
+		, xo_join_book_authors_authors.pseudonym
+		)) filter (where xo_join_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
 
 const xoTestsBookAuthorTableAuthorsBookGroupBySQL = `book_authors.book_id, book_authors.book_id, book_authors.author_id`
 
@@ -230,9 +230,9 @@ func (xtba *XoTestsBookAuthor) Insert(ctx context.Context, db DB) (*XoTestsBookA
 // Update updates a XoTestsBookAuthor in the database.
 func (xtba *XoTestsBookAuthor) Update(ctx context.Context, db DB) (*XoTestsBookAuthor, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.book_authors SET 
-	pseudonym = $1 
-	WHERE book_id = $2  AND author_id = $3 
+	sqlstr := `UPDATE xo_tests.book_authors SET
+	pseudonym = $1
+	WHERE book_id = $2  AND author_id = $3
 	RETURNING * `
 	// run
 	logf(sqlstr, xtba.Pseudonym, xtba.BookID, xtba.AuthorID)
@@ -279,7 +279,7 @@ func (xtba *XoTestsBookAuthor) Upsert(ctx context.Context, db DB, params *XoTest
 // Delete deletes the XoTestsBookAuthor from the database.
 func (xtba *XoTestsBookAuthor) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM xo_tests.book_authors 
+	sqlstr := `DELETE FROM xo_tests.book_authors
 	WHERE book_id = $1 AND author_id = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtba.BookID, xtba.AuthorID); err != nil {
@@ -362,14 +362,14 @@ func XoTestsBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID XoTest
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s 
-	 FROM xo_tests.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM xo_tests.book_authors %s
 	 WHERE book_authors.book_id = $1 AND book_authors.author_id = $2
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -463,14 +463,14 @@ func XoTestsBookAuthorsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s 
-	 FROM xo_tests.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM xo_tests.book_authors %s
 	 WHERE book_authors.book_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -566,14 +566,14 @@ func XoTestsBookAuthorsByAuthorID(ctx context.Context, db DB, authorID XoTestsUs
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_authors.author_id,
 	book_authors.book_id,
-	book_authors.pseudonym %s 
-	 FROM xo_tests.book_authors %s 
+	book_authors.pseudonym %s
+	 FROM xo_tests.book_authors %s
 	 WHERE book_authors.author_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

@@ -208,9 +208,9 @@ func WithWorkItemFilters(filters map[string][]any) WorkItemSelectConfigOption {
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithWorkItemHavingClause(conditions map[string][]any) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
@@ -245,12 +245,12 @@ left join (
     time_entries
   group by
         work_item_id
-) as joined_time_entries on joined_time_entries.time_entries_work_item_id = work_items.work_item_id
+) as xo_join_time_entries on xo_join_time_entries.time_entries_work_item_id = work_items.work_item_id
 `
 
-const workItemTableTimeEntriesSelectSQL = `COALESCE(joined_time_entries.time_entries, '{}') as time_entries`
+const workItemTableTimeEntriesSelectSQL = `COALESCE(xo_join_time_entries.time_entries, '{}') as time_entries`
 
-const workItemTableTimeEntriesGroupBySQL = `joined_time_entries.time_entries, work_items.work_item_id`
+const workItemTableTimeEntriesGroupBySQL = `xo_join_time_entries.time_entries, work_items.work_item_id`
 
 const workItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
 left join (
@@ -266,14 +266,14 @@ left join (
 		work_item_assigned_user_work_item_id
 		, users.user_id
 		, role
-) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
+) as xo_join_work_item_assigned_user_assigned_users on xo_join_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
 `
 
 const workItemTableAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
+		xo_join_work_item_assigned_user_assigned_users.__users
+		, xo_join_work_item_assigned_user_assigned_users.role
+		)) filter (where xo_join_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const workItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
 
@@ -286,12 +286,12 @@ left join (
     work_item_comments
   group by
         work_item_id
-) as joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
+) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
 `
 
-const workItemTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const workItemTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
 
-const workItemTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, work_items.work_item_id`
+const workItemTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, work_items.work_item_id`
 
 const workItemTableWorkItemTagsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
@@ -305,13 +305,13 @@ left join (
 	group by
 		work_item_work_item_tag_work_item_id
 		, work_item_tags.work_item_tag_id
-) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
+) as xo_join_work_item_work_item_tag_work_item_tags on xo_join_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `
 
 const workItemTableWorkItemTagsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') as work_item_work_item_tag_work_item_tags`
+		xo_join_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where xo_join_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') as work_item_work_item_tag_work_item_tags`
 
 const workItemTableWorkItemTagsGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
 
@@ -413,9 +413,9 @@ func (wi *WorkItem) Insert(ctx context.Context, db DB) (*WorkItem, error) {
 // Update updates a WorkItem in the database.
 func (wi *WorkItem) Update(ctx context.Context, db DB) (*WorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE public.work_items SET 
-	closed_at = $1, deleted_at = $2, description = $3, kanban_step_id = $4, metadata = $5, target_date = $6, team_id = $7, title = $8, work_item_type_id = $9 
-	WHERE work_item_id = $10 
+	sqlstr := `UPDATE public.work_items SET
+	closed_at = $1, deleted_at = $2, description = $3, kanban_step_id = $4, metadata = $5, target_date = $6, team_id = $7, title = $8, work_item_type_id = $9
+	WHERE work_item_id = $10
 	RETURNING * `
 	// run
 	logf(sqlstr, wi.ClosedAt, wi.DeletedAt, wi.Description, wi.KanbanStepID, wi.Metadata, wi.TargetDate, wi.TeamID, wi.Title, wi.WorkItemTypeID, wi.WorkItemID)
@@ -467,7 +467,7 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreatePar
 // Delete deletes the WorkItem from the database.
 func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM public.work_items 
+	sqlstr := `DELETE FROM public.work_items
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID); err != nil {
@@ -479,8 +479,8 @@ func (wi *WorkItem) Delete(ctx context.Context, db DB) error {
 // SoftDelete soft deletes the WorkItem from the database via 'deleted_at'.
 func (wi *WorkItem) SoftDelete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `UPDATE public.work_items 
-	SET deleted_at = NOW() 
+	sqlstr := `UPDATE public.work_items
+	SET deleted_at = NOW()
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, wi.WorkItemID); err != nil {
@@ -621,7 +621,7 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.closed_at,
 	work_items.created_at,
 	work_items.deleted_at,
@@ -633,12 +633,12 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 	work_items.title,
 	work_items.updated_at,
 	work_items.work_item_id,
-	work_items.work_item_type_id %s 
-	 FROM public.work_items %s 
+	work_items.work_item_type_id %s
+	 FROM public.work_items %s
 	 WHERE work_items.work_item_id %s $1
-	 %s   AND work_items.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
+	 %s   AND work_items.deleted_at is %s  %s
+  %s
+  ORDER BY
 		work_item_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemPaginatedByWorkItemID */\n" + sqlstr
@@ -772,7 +772,7 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.closed_at,
 	work_items.created_at,
 	work_items.deleted_at,
@@ -784,11 +784,11 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 	work_items.title,
 	work_items.updated_at,
 	work_items.work_item_id,
-	work_items.work_item_type_id %s 
-	 FROM public.work_items %s 
+	work_items.work_item_type_id %s
+	 FROM public.work_items %s
 	 WHERE work_items.deleted_at = $1 AND (deleted_at IS NOT NULL)
-	 %s   AND work_items.deleted_at is %s  %s 
-  %s 
+	 %s   AND work_items.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -926,7 +926,7 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.closed_at,
 	work_items.created_at,
 	work_items.deleted_at,
@@ -938,11 +938,11 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 	work_items.title,
 	work_items.updated_at,
 	work_items.work_item_id,
-	work_items.work_item_type_id %s 
-	 FROM public.work_items %s 
+	work_items.work_item_type_id %s
+	 FROM public.work_items %s
 	 WHERE work_items.work_item_id = $1
-	 %s   AND work_items.deleted_at is %s  %s 
-  %s 
+	 %s   AND work_items.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -1078,7 +1078,7 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...WorkIt
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.closed_at,
 	work_items.created_at,
 	work_items.deleted_at,
@@ -1090,11 +1090,11 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...WorkIt
 	work_items.title,
 	work_items.updated_at,
 	work_items.work_item_id,
-	work_items.work_item_type_id %s 
-	 FROM public.work_items %s 
+	work_items.work_item_type_id %s
+	 FROM public.work_items %s
 	 WHERE work_items.team_id = $1
-	 %s   AND work_items.deleted_at is %s  %s 
-  %s 
+	 %s   AND work_items.deleted_at is %s  %s
+  %s
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

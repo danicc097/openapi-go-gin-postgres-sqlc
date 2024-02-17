@@ -110,7 +110,7 @@ func TestCursorPagination_HavingClause(t *testing.T) {
 	ee, err := db.XoTestsWorkItemPaginatedByWorkItemID(ctx, testPool, 0 /* should filter all */, models.DirectionAsc,
 		db.WithXoTestsWorkItemJoin(db.XoTestsWorkItemJoins{AssignedUsers: true}),
 		db.WithXoTestsWorkItemHavingClause(map[string][]any{
-			"$i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id))": {u1.UserID},
+			"$i = ANY(ARRAY_AGG(xo_join_work_item_assigned_user_assigned_users.__users_user_id))": {u1.UserID},
 		}),
 	)
 	require.NoError(t, err)

@@ -127,9 +127,9 @@ func WithXoTestsWorkItemFilters(filters map[string][]any) XoTestsWorkItemSelectC
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithXoTestsWorkItemHavingClause(conditions map[string][]any) XoTestsWorkItemSelectConfigOption {
 	return func(s *XoTestsWorkItemSelectConfig) {
@@ -160,14 +160,14 @@ left join (
 		work_item_assigned_user_work_item_id
 		, users.user_id
 		, role
-) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
+) as xo_join_work_item_assigned_user_assigned_users on xo_join_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
 `
 
 const xoTestsWorkItemTableAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
+		xo_join_work_item_assigned_user_assigned_users.__users
+		, xo_join_work_item_assigned_user_assigned_users.role
+		)) filter (where xo_join_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const xoTestsWorkItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
 
@@ -180,12 +180,12 @@ left join (
     xo_tests.work_item_comments
   group by
         work_item_id
-) as joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
+) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
 `
 
-const xoTestsWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const xoTestsWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
 
-const xoTestsWorkItemTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, work_items.work_item_id`
+const xoTestsWorkItemTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, work_items.work_item_id`
 
 const xoTestsWorkItemTableTeamJoinSQL = `-- O2O join generated from "work_items_team_id_fkey (inferred)"
 left join xo_tests.teams as _work_items_team_id on _work_items_team_id.team_id = work_items.team_id
@@ -245,9 +245,9 @@ func (xtwi *XoTestsWorkItem) Insert(ctx context.Context, db DB) (*XoTestsWorkIte
 // Update updates a XoTestsWorkItem in the database.
 func (xtwi *XoTestsWorkItem) Update(ctx context.Context, db DB) (*XoTestsWorkItem, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.work_items SET 
-	description = $1, team_id = $2, title = $3 
-	WHERE work_item_id = $4 
+	sqlstr := `UPDATE xo_tests.work_items SET
+	description = $1, team_id = $2, title = $3
+	WHERE work_item_id = $4
 	RETURNING * `
 	// run
 	logf(sqlstr, xtwi.Description, xtwi.TeamID, xtwi.Title, xtwi.WorkItemID)
@@ -294,7 +294,7 @@ func (xtwi *XoTestsWorkItem) Upsert(ctx context.Context, db DB, params *XoTestsW
 // Delete deletes the XoTestsWorkItem from the database.
 func (xtwi *XoTestsWorkItem) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.work_items 
+	sqlstr := `DELETE FROM xo_tests.work_items
 	WHERE work_item_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtwi.WorkItemID); err != nil {
@@ -392,16 +392,16 @@ func XoTestsWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.description,
 	work_items.team_id,
 	work_items.title,
-	work_items.work_item_id %s 
-	 FROM xo_tests.work_items %s 
+	work_items.work_item_id %s
+	 FROM xo_tests.work_items %s
 	 WHERE work_items.work_item_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
+	 %s   %s
+  %s
+  ORDER BY
 		work_item_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemPaginatedByWorkItemID */\n" + sqlstr
@@ -505,15 +505,15 @@ func XoTestsWorkItems(ctx context.Context, db DB, opts ...XoTestsWorkItemSelectC
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.description,
 	work_items.team_id,
 	work_items.title,
-	work_items.work_item_id %s 
-	 FROM xo_tests.work_items %s 
+	work_items.work_item_id %s
+	 FROM xo_tests.work_items %s
 	 WHERE true
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -621,15 +621,15 @@ func XoTestsWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTestsW
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.description,
 	work_items.team_id,
 	work_items.title,
-	work_items.work_item_id %s 
-	 FROM xo_tests.work_items %s 
+	work_items.work_item_id %s
+	 FROM xo_tests.work_items %s
 	 WHERE work_items.work_item_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -735,15 +735,15 @@ func XoTestsWorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	work_items.description,
 	work_items.team_id,
 	work_items.title,
-	work_items.work_item_id %s 
-	 FROM xo_tests.work_items %s 
+	work_items.work_item_id %s
+	 FROM xo_tests.work_items %s
 	 WHERE work_items.title = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit

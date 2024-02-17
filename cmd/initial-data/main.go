@@ -423,7 +423,7 @@ func main() {
 	// wis, err := db.WorkItemPaginatedByWorkItemID(ctx, pool, demoWorkItems[0].WorkItemID-1, models.DirectionAsc, db.WithWorkItemHavingClause(map[string][]any{
 	// 	// adding inside where clause yields `aggregate functions are not allowed in WHERE, since it makes no sense.
 	// 	//  see https://www.postgresql.org/docs/current/tutorial-agg.html
-	// 	"$i = ANY(ARRAY_AGG(joined_work_item_assigned_user_assigned_users.__users_user_id))": {testUser.UserID},
+	// 	"$i = ANY(ARRAY_AGG(xo_join_work_item_assigned_user_assigned_users.__users_user_id))": {testUser.UserID},
 	// }), db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, DemoWorkItem: true}))
 	// handleError(err)
 	// fmt.Printf("wis len: %v - First workitem found:\n", len(wis))

@@ -2402,9 +2402,9 @@ func With%[1]sFilters(filters map[string][]any) %[1]sSelectConfigOption {
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func With%[1]sHavingClause(conditions map[string][]any) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
@@ -3284,24 +3284,24 @@ func (f *Funcs) sqlstr_soft_delete(v any) []string {
 	return []string{fmt.Sprintf("[[ UNSUPPORTED TYPE 25: %T ]]", v)}
 }
 
-// M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(joined_{{.JoinTable}}.{{.JoinTable}}) filter (where joined_teams.teams is not null) end) as {{.JoinTable}}`
+// M2MSelect = `(case when {{.Nth}}::boolean = true then array_agg(xo_join_{{.JoinTable}}.{{.JoinTable}}) filter (where xo_join_teams.teams is not null) end) as {{.JoinTable}}`
 
 const (
 	M2MSelect = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}
+		xo_join_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}
 		{{- range .LookupExtraCols }}
-		, joined_{{$.LookupJoinTablePKSuffix}}{{$.ClashSuffix}}.{{ . -}}
+		, xo_join_{{$.LookupJoinTablePKSuffix}}{{$.ClashSuffix}}.{{ . -}}
 		{{- end }}
-		)) filter (where joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}_{{.JoinTablePK}} is not null), '{}') as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
-	M2OSelect = `COALESCE(joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') as {{.JoinTable}}{{.ClashSuffix}}`
+		)) filter (where xo_join_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}_{{.JoinTablePK}} is not null), '{}') as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
+	M2OSelect = `COALESCE(xo_join_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
 	O2OSelect = `(case when {{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}} is not null then row({{ .Alias}}_{{.JoinTableAlias}}.*) end) as {{ singularize .JoinTable}}_{{ singularize .JoinTableAlias}}`
 )
 
 const (
 	M2MGroupBy = `{{.CurrentTable}}.{{.LookupRefColumn}}, {{.CurrentTablePKGroupBys}}`
-	M2OGroupBy = `joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, {{.CurrentTablePKGroupBys}}`
+	M2OGroupBy = `xo_join_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, {{.CurrentTablePKGroupBys}}`
 	O2OGroupBy = `{{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}},
 	{{- range $g := .JoinTablePKGroupBys}}
       {{if $g}}{{$g}},{{end}}
@@ -3330,7 +3330,7 @@ left join (
 		{{- range .LookupExtraCols }}
 		, {{ . -}}
 		{{- end }}
-) as joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}} on joined_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.{{.LookupTable}}_{{.LookupColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}
+) as xo_join_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}} on xo_join_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.{{.LookupTable}}_{{.LookupColumn}} = {{.CurrentTable}}.{{.LookupRefColumn}}
 `
 	M2OJoin = `
 left join (
@@ -3341,7 +3341,7 @@ left join (
     {{.Schema}}{{.JoinTable}}
   group by
         {{.JoinColumn}}
-) as joined_{{.JoinTable}}{{.ClashSuffix}} on joined_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}_{{.JoinRefColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}
+) as xo_join_{{.JoinTable}}{{.ClashSuffix}} on xo_join_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}_{{.JoinRefColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}
 `
 	O2OJoin = `
 left join {{.Schema}}{{.JoinTable}} as {{ .Alias}}_{{.JoinTableAlias}} on {{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}

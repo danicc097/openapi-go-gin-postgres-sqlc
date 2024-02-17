@@ -108,9 +108,9 @@ func WithExtraSchemaBookSellerFilters(filters map[string][]any) ExtraSchemaBookS
 // Example:
 //
 //	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
-//	// See joins db tag to use the appropriate aliases.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithExtraSchemaBookSellerHavingClause(conditions map[string][]any) ExtraSchemaBookSellerSelectConfigOption {
 	return func(s *ExtraSchemaBookSellerSelectConfig) {
@@ -130,13 +130,13 @@ left join (
 	group by
 		book_sellers_book_id
 		, users.user_id
-) as joined_book_sellers_sellers on joined_book_sellers_sellers.book_sellers_book_id = book_sellers.book_id
+) as xo_join_book_sellers_sellers on xo_join_book_sellers_sellers.book_sellers_book_id = book_sellers.book_id
 `
 
 const extraSchemaBookSellerTableSellersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_sellers.__users
-		)) filter (where joined_book_sellers_sellers.__users_user_id is not null), '{}') as book_sellers_sellers`
+		xo_join_book_sellers_sellers.__users
+		)) filter (where xo_join_book_sellers_sellers.__users_user_id is not null), '{}') as book_sellers_sellers`
 
 const extraSchemaBookSellerTableSellersGroupBySQL = `book_sellers.book_id, book_sellers.book_id, book_sellers.seller`
 
@@ -152,13 +152,13 @@ left join (
 	group by
 		book_sellers_seller
 		, books.book_id
-) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = book_sellers.seller
+) as xo_join_book_sellers_books on xo_join_book_sellers_books.book_sellers_seller = book_sellers.seller
 `
 
 const extraSchemaBookSellerTableBooksSellerSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') as book_sellers_books`
+		xo_join_book_sellers_books.__books
+		)) filter (where xo_join_book_sellers_books.__books_book_id is not null), '{}') as book_sellers_books`
 
 const extraSchemaBookSellerTableBooksSellerGroupBySQL = `book_sellers.seller, book_sellers.book_id, book_sellers.seller`
 
@@ -207,7 +207,7 @@ func (esbs *ExtraSchemaBookSeller) Insert(ctx context.Context, db DB) (*ExtraSch
 // Delete deletes the ExtraSchemaBookSeller from the database.
 func (esbs *ExtraSchemaBookSeller) Delete(ctx context.Context, db DB) error {
 	// delete with composite primary key
-	sqlstr := `DELETE FROM extra_schema.book_sellers 
+	sqlstr := `DELETE FROM extra_schema.book_sellers
 	WHERE book_id = $1 AND seller = $2 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, esbs.BookID, esbs.Seller); err != nil {
@@ -290,13 +290,13 @@ func ExtraSchemaBookSellersByBookIDSeller(ctx context.Context, db DB, bookID Ext
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_sellers.book_id,
-	book_sellers.seller %s 
-	 FROM extra_schema.book_sellers %s 
+	book_sellers.seller %s
+	 FROM extra_schema.book_sellers %s
 	 WHERE book_sellers.book_id = $1 AND book_sellers.seller = $2
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -392,13 +392,13 @@ func ExtraSchemaBookSellersByBookID(ctx context.Context, db DB, bookID ExtraSche
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_sellers.book_id,
-	book_sellers.seller %s 
-	 FROM extra_schema.book_sellers %s 
+	book_sellers.seller %s
+	 FROM extra_schema.book_sellers %s
 	 WHERE book_sellers.book_id = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -494,13 +494,13 @@ func ExtraSchemaBookSellersBySeller(ctx context.Context, db DB, seller ExtraSche
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_sellers.book_id,
-	book_sellers.seller %s 
-	 FROM extra_schema.book_sellers %s 
+	book_sellers.seller %s
+	 FROM extra_schema.book_sellers %s
 	 WHERE book_sellers.seller = $1
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
@@ -596,13 +596,13 @@ func ExtraSchemaBookSellersBySellerBookID(ctx context.Context, db DB, seller Ext
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT 
+	sqlstr := fmt.Sprintf(`SELECT
 	book_sellers.book_id,
-	book_sellers.seller %s 
-	 FROM extra_schema.book_sellers %s 
+	book_sellers.seller %s
+	 FROM extra_schema.book_sellers %s
 	 WHERE book_sellers.seller = $1 AND book_sellers.book_id = $2
-	 %s   %s 
-  %s 
+	 %s   %s
+  %s
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
