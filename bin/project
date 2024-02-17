@@ -1364,7 +1364,7 @@ x.test.backend.watch-for() {
     echo "${tests[*]}"
   )
 
-  test_backend_watch -count=1 -run "^($fns)$" "$GOMOD_PKG/$dir" "${gotest_args[@]}"
+  test_backend_watch -run "^($fns)$" "$GOMOD_PKG/$dir" "${gotest_args[@]}"
 }
 
 # Run backend with hot-reloading.

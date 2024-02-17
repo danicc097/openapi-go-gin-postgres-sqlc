@@ -150,9 +150,9 @@ func (xtt *XoTestsTeam) Insert(ctx context.Context, db DB) (*XoTestsTeam, error)
 // Update updates a XoTestsTeam in the database.
 func (xtt *XoTestsTeam) Update(ctx context.Context, db DB) (*XoTestsTeam, error) {
 	// update with composite primary key
-	sqlstr := `UPDATE xo_tests.teams SET
-	name = $1
-	WHERE team_id = $2
+	sqlstr := `UPDATE xo_tests.teams SET 
+	name = $1 
+	WHERE team_id = $2 
 	RETURNING * `
 	// run
 	logf(sqlstr, xtt.Name, xtt.TeamID)
@@ -197,7 +197,7 @@ func (xtt *XoTestsTeam) Upsert(ctx context.Context, db DB, params *XoTestsTeamCr
 // Delete deletes the XoTestsTeam from the database.
 func (xtt *XoTestsTeam) Delete(ctx context.Context, db DB) error {
 	// delete with single primary key
-	sqlstr := `DELETE FROM xo_tests.teams
+	sqlstr := `DELETE FROM xo_tests.teams 
 	WHERE team_id = $1 `
 	// run
 	if _, err := db.Exec(ctx, sqlstr, xtt.TeamID); err != nil {
@@ -271,14 +271,14 @@ func XoTestsTeamPaginatedByTeamID(ctx context.Context, db DB, teamID XoTestsTeam
 		operator = ">"
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.name,
-	teams.team_id %s
-	 FROM xo_tests.teams %s
+	teams.team_id %s 
+	 FROM xo_tests.teams %s 
 	 WHERE teams.team_id %s $1
-	 %s   %s
-  %s
-  ORDER BY
+	 %s   %s 
+  %s 
+  ORDER BY 
 		team_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsTeamPaginatedByTeamID */\n" + sqlstr
@@ -358,13 +358,13 @@ func XoTestsTeamByTeamID(ctx context.Context, db DB, teamID XoTestsTeamID, opts 
 		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	sqlstr := fmt.Sprintf(`SELECT
+	sqlstr := fmt.Sprintf(`SELECT 
 	teams.name,
-	teams.team_id %s
-	 FROM xo_tests.teams %s
+	teams.team_id %s 
+	 FROM xo_tests.teams %s 
 	 WHERE teams.team_id = $1
-	 %s   %s
-  %s
+	 %s   %s 
+  %s 
 `, selects, joins, filters, groupbys, havingClause)
 	sqlstr += c.orderBy
 	sqlstr += c.limit
