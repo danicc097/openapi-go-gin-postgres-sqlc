@@ -1,8 +1,6 @@
-# Schema dumping
+# Schema dumping (obtuse version, do not implement)
 
-**not implemented.**
-
-**breaks plpgsql lsp extension, should add migration names to skip regex option,
+**breaks plpgsql lsp extension, would need opt migration names to skip regex option,
 or via flag on top of the file (preferred)**
 
 Eventually, accumulated migrations will take too long to run compared to
@@ -27,3 +25,73 @@ migrations order.
 In any other case, it simply runs `up` as usual.
 
 
+# Schema dumping (less obtuse version)
+
+Dump schema from up to date gen_db:
+
+```bash
+project db.bash
+# we must include data, not just schema.
+/$ pg_dump gen_db > /var/lib/postgresql/dump.sql
+```
+
+Once prod is up to date (i.e. revision at latest_schema_dump_revision minus
+one),
+we will `force` latest_schema_dump_revision on prod so that it is ignored on the
+next deployment.
+We must delete all migration files before latest_schema_dump_revision.
+`golang-migrate` will not care that they don't exist anymore, it will start at the
+first migration it encounters.
+
+`.down.sql` for the schema dump will have to look something like this if we use
+the output of pg_dump without postprocessing (cannot add `if exists` to create statements):
+
+```sql
+drop schema if exists "extra_schema" cascade;
+
+drop schema if exists "cache" cascade;
+
+drop schema if exists "v" cascade;
+
+do $$
+declare
+  table_rec RECORD;
+  type_rec RECORD;
+  function_rec RECORD;
+  schema_name text;
+begin
+  -- Drop tables
+  for table_rec in
+  select
+    table_name
+  from
+    information_schema.tables
+  where
+    table_schema = 'public'
+    and table_type = 'BASE TABLE' loop
+      execute 'DROP TABLE IF EXISTS public.' || QUOTE_IDENT(table_rec.table_name) || ' CASCADE';
+    end loop;
+  -- Drop enums
+  for type_rec in
+  select
+    typname
+  from
+    pg_type
+  where
+    typnamespace = 'public'::regnamespace
+    and typtype = 'e' loop
+      execute 'DROP TYPE IF EXISTS public.' || QUOTE_IDENT(type_rec.typname) || ' CASCADE';
+    end loop;
+  -- Drop functions
+  for function_rec in
+  select
+    proname
+  from
+    pg_proc
+  where
+    pronamespace = 'public'::regnamespace loop
+      execute 'DROP FUNCTION IF EXISTS public.' || QUOTE_IDENT(function_rec.proname) || ' CASCADE';
+    end loop;
+end
+$$;
+```
