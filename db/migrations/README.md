@@ -32,7 +32,7 @@ Dump schema from up to date gen_db:
 ```bash
 project db.bash
 # we must include data, not just schema.
-/$ pg_dump gen_db > /var/lib/postgresql/dump.sql
+/$ pg_dump gen_db --column-inserts  --exclude-table schema_migrations --exclude-table schema_post_migrations  > /var/lib/postgresql/dump.sql
 ```
 
 Once prod is up to date (i.e. revision at latest_schema_dump_revision minus
@@ -44,7 +44,8 @@ We must delete all migration files before latest_schema_dump_revision.
 first migration it encounters.
 
 `.down.sql` for the schema dump will have to look something like this if we use
-the output of pg_dump without postprocessing (cannot add `if exists` to create statements):
+the output of pg_dump without postprocessing (cannot add `if exists` to create
+statements).
 
 ```sql
 drop schema if exists "extra_schema" cascade;
@@ -94,4 +95,11 @@ begin
     end loop;
 end
 $$;
+
+drop extension "supa_audit";
+
+drop schema if exists "audit" cascade;
+
+drop schema if exists "extensions" cascade;
+
 ```
