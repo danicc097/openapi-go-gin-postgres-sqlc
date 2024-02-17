@@ -1854,7 +1854,22 @@ WHERE a.attisdropped = false
   AND (true OR a.attnum > 0)
   AND col_description(format('%s.%s', n.nspname, c.relname)::regclass::oid, isc.ordinal_position) is not null;"
 
-  docker.postgres psql --no-psqlrc -d $POSTGRES_DB -c "$query" 2>/dev/null
+  docker.postgres psql --no-psqlrc -d $GEN_POSTGRES_DB -c "$query" 2>/dev/null
+}
+
+# Shows current database table comments used in xo codegen
+# to ease further updates to comments in migrations.
+x.dev-utils.show-table-comments() {
+  local query="SELECT
+  c.relname AS table,
+  COALESCE(obj_description(c.oid, 'pg_class'), '') AS table_comment
+FROM pg_class c
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE c.relkind = 'r'
+  AND n.nspname = 'public'
+  AND obj_description(c.oid, 'pg_class') IS NOT NULL;"
+
+  docker.postgres psql --no-psqlrc -d $GEN_POSTGRES_DB -c "$query" 2>/dev/null
 }
 
 # Setups a traefik container with predefined configuration in `install-dir`.

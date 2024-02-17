@@ -40,18 +40,19 @@ end;
 $$
 language plpgsql;
 
--- internal use. update whenever a project with its related workitems,
---  etc. tables are created in migrations
 create table projects (
   project_id serial primary key
   , name text not null unique
   , description text not null
-  , work_items_table_name text not null unique -- ensures project inserts are documented properly, postmigration script checks this column
+  , work_items_table_name text not null unique
   , board_config jsonb not null default '{}'
   , created_at timestamp with time zone default CLOCK_TIMESTAMP() not null
   , updated_at timestamp with time zone default CLOCK_TIMESTAMP() not null
   , check (name ~ '^[a-zA-Z0-9_\-]+$')
 );
+
+comment on table projects is 'Internal use. Update whenever a project is added (project related tables added manually via migrations).
+- work_items_table_name ensures project inserts are documented properly - postmigration script checks this column';
 
 comment on column projects.work_items_table_name is '"properties":private';
 

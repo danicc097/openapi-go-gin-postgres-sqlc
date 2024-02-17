@@ -38,7 +38,7 @@ project db.bash
 TODO: all comments will be lost. should instead make use of comments on tables
 instead of sql comments so they're saved after migrating a to a schema dump
 and removing old files. (not like anyone would read old migration files comments
-anyway)
+anyway). Can use `project dev-utils.show-table-comments` to make maintenance easier.
 
 Once prod is up to date (i.e. revision at latest_schema_dump_revision minus
 one),

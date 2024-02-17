@@ -1,4 +1,5 @@
 .direnv
+db/schema.sql
 openapi.exploded.yaml
 openapi.yaml.temp
 .generate.cache*
