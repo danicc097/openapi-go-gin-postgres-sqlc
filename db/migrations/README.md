@@ -35,6 +35,11 @@ project db.bash
 /$ pg_dump gen_db --column-inserts  --exclude-table schema_migrations --exclude-table schema_post_migrations  > /var/lib/postgresql/dump.sql
 ```
 
+TODO: all comments will be lost. should instead make use of comments on tables
+instead of sql comments so they're saved after migrating a to a schema dump
+and removing old files. (not like anyone would read old migration files comments
+anyway)
+
 Once prod is up to date (i.e. revision at latest_schema_dump_revision minus
 one),
 we will `force` latest_schema_dump_revision on prod so that it is ignored on the
