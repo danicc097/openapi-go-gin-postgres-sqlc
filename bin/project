@@ -682,6 +682,7 @@ x.gen.sqlc() {
   xsetup.drop-and-migrate-gen-db
   { { {
     echo "Running generation"
+    x.db.gen.export-schema
     rm -f "$PG_REPO_GEN"/db/*.sqlc.go
     x.lint.sql
     sqlc generate --experimental -f "$PG_REPO_DIR"/sqlc.yaml || err "Failed sqlc generation"
@@ -1190,7 +1191,7 @@ x.lint.sql() {
   for slq_dir in ${SQL_DIRS[@]}; do
     # TODO:
     # "pgFormatter.configFile": "./<...>", so we can use it in vscode settings too
-    pg_format --config .pg_format $(find "$slq_dir" -name '*.*sql')
+    pg_format --config .pg_format $(find "$slq_dir" -name '*.*sql' -not -name "schema.sql")
   done
 }
 
@@ -1990,6 +1991,12 @@ x.db.drop() {
   { { {
     docker.postgres.drop_and_recreate_db "$POSTGRES_DB"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+x.db.gen.export-schema() {
+  local schema_path="db/schema.sql"
+  docker.postgres bash -c "pg_dump $GEN_POSTGRES_DB --column-inserts --exclude-table $MIGRATIONS_TABLE --exclude-table $POST_MIGRATIONS_TABLE" | sed -e '/^--/d' >"$schema_path"
+  # pg_format --config .pg_format "$schema_path"
 }
 
 # Drop and recreate the database used for code generation up to N, N-1 revisions or none.
