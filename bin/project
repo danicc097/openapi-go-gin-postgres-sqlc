@@ -1902,7 +1902,6 @@ migrate_post() {
 # Wrapper for golang-migrate with predefined configuration.
 x.migrate() {
   { { {
-    echo "Running migrations"
     migrate \
       -path $MIGRATIONS_DIR/ \
       -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable" \
@@ -1934,7 +1933,7 @@ x.migrate.create() {
 ########################## db ##########################
 
 # Connects to the database container.
-x.db() {
+x.db.bash() {
   docker exec -it postgres_db_"$PROJECT_PREFIX" bash
 }
 
