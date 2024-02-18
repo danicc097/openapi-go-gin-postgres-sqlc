@@ -97,6 +97,10 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 		return nil, nil
 	}
 
+	nextCursor := ""
+	if len(users) > 0 {
+		nextCursor = fmt.Sprint(users[len(users)-1].CreatedAt)
+	}
 	items := make([]User, len(users))
 	for i, u := range users {
 		u := u
@@ -110,7 +114,7 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 	}
 	res := PaginatedUsersResponse{
 		Page: PaginationPage{
-			NextCursor: fmt.Sprint(users[len(users)-1].CreatedAt),
+			NextCursor: nextCursor,
 		},
 		Items: items,
 	}
