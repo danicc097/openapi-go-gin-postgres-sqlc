@@ -513,6 +513,14 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 						return err
 					}
 				}
+				// TODO: for frontend usage. will also duplicate structs for
+				// internal use
+				// content := []byte("a\n")
+
+				// err := os.WriteFile("entityFields.json", content, 0644)
+				// if err != nil {
+				// 	fmt.Println("Error:", err)
+				// }
 			}
 			return nil
 		},
@@ -907,6 +915,24 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 			})
 		}
 	}
+
+	// TODO: returns map[string]TableFilter indexed by table.GoName
+	// where
+	type JoinFilter struct {
+		SQLJoin string `json:"sqlJoin"` // xo_join_*
+	}
+	type FieldFilter struct {
+		SQLName string `json:"sqlName"`
+		Type    string `json:"type"` // date|datetime|string|number or array of them
+	}
+	type TableFilter struct {
+		// only implement if needed
+		// indexed by join field db key. if frontend passes entries, selectOption
+		// will reflect and set where db tag matches
+		// Joins  map[string]JoinFilter `json:"joins"`
+		Fields map[string]FieldFilter // indexed by field json key
+	}
+
 	return nil
 }
 
@@ -1193,17 +1219,6 @@ cc_label:
 			}
 		}
 
-		/**
-		 * Mark name clashes between constraint tables
-		 * TODO JoinTableClash pending O2O and M2M testing
-		 * There are false positives, see user_project and user_team both have member field which triggers clash=true
-		 * * when this should only happen if both are in JoinFields struct.
-		 * however this makes everything more readable in the end...
-		 * type UserJoins struct {
-				ProjectsMember        bool // M2M user_project // vs just Projects
-				TeamsMember           bool // M2M user_team // vs just Teams
-			}
-		*/
 		var joinTableClash bool
 		for _, c := range constraints {
 			if c.Type != "foreign_key" {
@@ -1572,14 +1587,15 @@ const ext = ".xo.go"
 
 // Funcs is a set of template funcs.
 type Funcs struct {
-	driver           string
-	schema           string
-	schemaPrefix     string
-	nth              func(int) string
-	first            bool
-	pkg              string
-	tags             []string
-	imports          []string
+	driver       string
+	schema       string
+	schemaPrefix string
+	nth          func(int) string
+	first        bool
+	pkg          string
+	tags         []string
+	imports      []string
+	// joinTableDbTags map[string]map[string]string
 	tableConstraints map[string][]Constraint
 	conflict         string
 	custom           string
@@ -2312,13 +2328,6 @@ type %s struct {
 					joinName = joinName + camelExport(c.ColumnName)
 				}
 			}
-			if c.TableName == sqlname {
-				notes += string(c.Cardinality) + " " + c.RefTableName
-				joinName = camelExport(c.RefTableName)
-				if c.JoinTableClash {
-					joinName = joinName + camelExport(c.RefColumnName)
-				}
-			}
 		case O2O:
 			notes += string(c.Cardinality) + " " + c.RefTableName
 			if c.TableName == sqlname {
@@ -2345,7 +2354,9 @@ type %s struct {
 			}
 		}
 		joinNames = append(joinNames, joinName)
-		buf.WriteString(fmt.Sprintf("%s bool %s\n", joinName, notes))
+		var tag string
+		// tag := fmt.Sprintf("`db:\"%s\"`", joinName)
+		buf.WriteString(fmt.Sprintf("%s bool %s %s\n", joinName, tag, notes))
 
 		joinClause, selectClause, groupby := f.createJoinStatement(tables, c, t, funcs)
 		if joinClause == "" || selectClause == "" {
@@ -2814,12 +2825,6 @@ func (f *Funcs) joinNames(t Table) []string {
 				joinName = camelExport(c.TableName)
 				if c.JoinTableClash {
 					joinName = joinName + camelExport(c.ColumnName)
-				}
-			}
-			if c.TableName == t.SQLName {
-				joinName = camelExport(c.RefTableName)
-				if c.JoinTableClash {
-					joinName = joinName + camelExport(c.RefColumnName)
 				}
 			}
 		case O2O:
@@ -3618,16 +3623,6 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 			}
 
 		}
-		if c.TableName == table.SQLName {
-			params["JoinColumn"] = c.RefColumnName
-			params["JoinTable"] = c.RefTableName
-			params["JoinRefColumn"] = c.ColumnName
-			params["CurrentTable"] = table.SQLName
-
-			if c.JoinTableClash {
-				params["ClashSuffix"] = "_" + c.RefColumnName
-			}
-		}
 
 		// joinTable := tables[params["JoinTable"].(string)]
 		// var joinTablePKGroupBys []string
@@ -3869,11 +3864,6 @@ func (f *Funcs) param(field Field, addType bool, table *Table) string {
 							break
 						}
 					case M2O:
-						// FIXME: wrong here, or shared ref is wrong
-						// if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
-						// 	field.Type = camelExport(f.schemaPrefix) + camelExport(c.TableName) + "ID"
-						// 	break
-						// }
 						if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
 							field.Type = camelExport(f.schemaPrefix) + camelExport(c.RefTableName) + "ID"
 							break
@@ -4040,10 +4030,6 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 			case M2O:
 				if c.RefTableName == table.SQLName && c.RefColumnName == field.SQLName {
 					constraintTyp = camelExport(f.schemaPrefix) + camelExport(c.TableName) + "ID"
-					break
-				}
-				if c.TableName == table.SQLName && c.ColumnName == field.SQLName {
-					constraintTyp = camelExport(f.schemaPrefix) + camelExport(c.RefTableName) + "ID"
 					break
 				}
 			case O2O:
@@ -4295,21 +4281,6 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				}
 				if !structFieldIsUnique(structFields, goName) {
 					goName = goName + toAcronym(c.ColumnName)
-				}
-			}
-
-			if c.TableName == t.SQLName {
-				notes += " " + c.TableName
-				goName = camelExport(singularize(c.RefTableName))
-				typ = goName
-				descName := camelExport(inflector.Singularize(strings.TrimSuffix(c.RefColumnName, "_id")))
-				goName = descName + inflector.Pluralize(goName) + "Join"
-				joinName = inflector.Pluralize(c.RefTableName)
-				if c.JoinTableClash {
-					joinName = joinName + "_" + c.RefColumnName
-				}
-				if !structFieldIsUnique(structFields, goName) {
-					goName = goName + toAcronym(c.RefColumnName)
 				}
 			}
 
