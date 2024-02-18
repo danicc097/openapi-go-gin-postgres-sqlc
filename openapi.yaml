@@ -810,6 +810,18 @@ paths:
                 items:
                   type: string
         - in: query
+          name: nested
+          style: deepObject
+          allowReserved: true
+          schema:
+            type: object
+            properties:
+              obj:
+                type: object
+                properties:
+                  nestedObj:
+                    type: string
+        - in: query
           name: arrayFilter
           explode: false
           schema:

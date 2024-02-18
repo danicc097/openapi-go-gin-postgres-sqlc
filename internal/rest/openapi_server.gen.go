@@ -954,6 +954,27 @@ type GetPaginatedUsersParams struct {
 	Limit     int                    `form:"limit" json:"limit"`
 	Direction externalRef0.Direction `form:"direction" json:"direction"`
 	Cursor    string                 `form:"cursor" json:"cursor"`
+	Filter    *struct {
+		Author *[]string `json:"author,omitempty"`
+		Post   *[]string `json:"post,omitempty"`
+	} `json:"filter,omitempty"`
+	Nested *struct {
+		Obj *struct {
+			NestedObj *string `json:"nestedObj,omitempty"`
+		} `json:"obj,omitempty"`
+	} `json:"nested,omitempty"`
+	ArrayFilter *[]GetPaginatedUsersParams_ArrayFilter_Item `form:"arrayFilter,omitempty" json:"arrayFilter,omitempty"`
+}
+
+// GetPaginatedUsersParamsArrayFilter0 defines parameters for GetPaginatedUsers.
+type GetPaginatedUsersParamsArrayFilter0 = string
+
+// GetPaginatedUsersParamsArrayFilter1 defines parameters for GetPaginatedUsers.
+type GetPaginatedUsersParamsArrayFilter1 = bool
+
+// GetPaginatedUsersParams_ArrayFilter_Item defines parameters for GetPaginatedUsers.
+type GetPaginatedUsersParams_ArrayFilter_Item struct {
+	union json.RawMessage
 }
 
 // UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
@@ -1729,6 +1750,30 @@ func (siw *ServerInterfaceWrapper) GetPaginatedUsers(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, true, "cursor", c.Request.URL.Query(), &params.Cursor)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter cursor: %s", err)})
+		return
+	}
+
+	// ------------- Optional query parameter "filter" -------------
+
+	err = runtime.BindQueryParameter("deepObject", true, false, "filter", c.Request.URL.Query(), &params.Filter)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter filter: %s", err)})
+		return
+	}
+
+	// ------------- Optional query parameter "nested" -------------
+
+	err = runtime.BindQueryParameter("deepObject", true, false, "nested", c.Request.URL.Query(), &params.Nested)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter nested: %s", err)})
+		return
+	}
+
+	// ------------- Optional query parameter "arrayFilter" -------------
+
+	err = runtime.BindQueryParameter("form", false, false, "arrayFilter", c.Request.URL.Query(), &params.ArrayFilter)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter arrayFilter: %s", err)})
 		return
 	}
 

@@ -1350,6 +1350,16 @@ export interface operations {
         limit: number;
         direction: components["schemas"]["Direction"];
         cursor: string;
+        filter?: {
+          post?: string[];
+          author?: string[];
+        };
+        nested?: {
+          obj?: {
+            nestedObj?: string;
+          };
+        };
+        arrayFilter?: (string | boolean)[];
       };
     };
     responses: {
