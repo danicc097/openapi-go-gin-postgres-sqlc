@@ -45,6 +45,14 @@ jobs:
               exit 1
           fi
 
+      - name: Vet
+        run: |
+          source .envrc
+
+          go vet ./...
+          go install golang.org/x/tools/go/analysis/passes/nilness/cmd/nilness@latest
+          nilness ./...
+
       - name: Test backend
         run: |
           source .envrc
