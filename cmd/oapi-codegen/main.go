@@ -12,8 +12,8 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/deepmap/oapi-codegen/pkg/util"
 	"github.com/deepmap/oapi-codegen/v2/pkg/codegen"
+	"github.com/deepmap/oapi-codegen/v2/pkg/util"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/iancoleman/strcase"
 	"gopkg.in/yaml.v3"
