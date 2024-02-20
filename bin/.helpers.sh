@@ -398,7 +398,8 @@ show_tracebacks() {
 # Parameters:
 #   - Output .md5 file
 #   - Files or directories to cache
-#   - Optionally pass glob patterns to exclude.
+#   - Optionally pass glob patterns to exclude via --exclude [pattern].
+#   - Optionally pass --no-regen disable external cache invalidation.
 cache_all() {
   local excludes=()
   local args=()
