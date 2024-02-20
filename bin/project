@@ -281,11 +281,11 @@ x.install-tools() {
       "go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2"
       "go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.24.0"
       "go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2"
-      "go install github.com/tufin/oasdiff@latest"
+      "go install github.com/tufin/oasdiff@v1.10.9"
       "go install golang.org/x/tools/cmd/goimports@latest"
       "go install mvdan.cc/gofumpt@latest"
       "go install mvdan.cc/sh/v3/cmd/shfmt@latest"
-      "go install github.com/danicc097/air@latest"
+      "go install github.com/cosmtrek/air@latest"
       "go install github.com/danicc097/xo/v5@v5.6.0"
       "go install github.com/mikefarah/yq/v4@v4.34.2"
       "go install github.com/hexdigest/gowrap/cmd/gowrap@latest"
@@ -1372,20 +1372,18 @@ x.run.backend-hr() {
   # to prevent either bombarding with req or having to wait too long at startup.
   # see https://github.com/moby/moby/issues/33410
   run_shared_services up -d --build --remove-orphans --wait
-  x.setup-swagger-ui
-  # TODO: pre and post merged to air : https://github.com/cosmtrek/air/pull/461/files
-  # exclude files changed by pre with exclude_file, or exclude_regex
+
   # https://github.com/cosmtrek/air/blob/master/air_example.toml
-  # local pre_build_cmd="project setup-swagger-ui" # `internal/static/swagger-ui/openapi.yaml has changed` inf loop
-  # NOTE: building binary very unreliable, leads to bin not found.
+  # NOTE: building binary unreliable, leads to bin not found.
+  local pre_build_cmd="project setup-swagger-ui"
   air \
-    --build.pre_build_cmd "$pre_build_cmd" \
+    --build.pre_cmd "$pre_build_cmd" \
     --build.cmd "" \
     --build.bin "go run ./cmd/rest-server/ -env=.env.$X_ENV" \
-    --build.include_ext "go,work,mod,yml,yaml" \
+    --build.include_ext "go,work,mod" \
+    --build.include_file "openapi.yaml" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,external,*.cache,$GEN_CACHE,$TOOLS_DIR" \
-    --build.stop_watch "internal/rest/,internal/services/" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,external,*.cache,$GEN_CACHE,$TOOLS_DIR,internal/static/swagger-ui" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
     sed -e "s/^/${BLUE}[Air]${OFF} /"
