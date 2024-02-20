@@ -1372,7 +1372,9 @@ x.run.backend-hr() {
   # to prevent either bombarding with req or having to wait too long at startup.
   # see https://github.com/moby/moby/issues/33410
   run_shared_services up -d --build --remove-orphans --wait
-  setup_swagger_ui
+  x.setup-swagger-ui
+  # TODO: give list of patterns of files to ignore while pre_build_cmd is running
+  # local pre_build_cmd="project setup-swagger-ui" # `internal/static/swagger-ui/openapi.yaml has changed` inf loop
   # NOTE: building binary very unreliable, leads to bin not found.
   air \
     --build.pre_build_cmd "$pre_build_cmd" \
@@ -1445,7 +1447,7 @@ x.run-dockerized() {
 
   # x.gen
 
-  setup_swagger_ui
+  x.setup-swagger-ui
 
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
     --project-name "$PROJECT_PREFIX"_"$X_ENV" \
@@ -2329,7 +2331,7 @@ sync_db_enums_with_spec() {
   done
 }
 
-setup_swagger_ui() {
+x.setup-swagger-ui() {
   go run cmd/swagger-ui-setup/main.go -env=".env.$X_ENV" -swagger-ui-dir=$SWAGGER_UI_DIR
 
   local bundle_spec="$SWAGGER_UI_DIR/openapi.yaml"
