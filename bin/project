@@ -2483,7 +2483,8 @@ xo_schema() {
     "$@"
 }
 
-# updates dynamic config with env vars for
+# updates dynamic config.json with env vars for the given directory.
+# Requires an existing config.template.json
 config_template_setup() {
   local dir="$1"
   export ENV_REPLACE_GLOB=$dir/config.json
