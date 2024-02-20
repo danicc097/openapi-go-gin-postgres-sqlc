@@ -2492,7 +2492,7 @@ config_template_setup() {
   # this has to always be run at startup
   jq \
     'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
-    $dir/config.template.json >/tmp/$dir-config.tmp.json && mv /tmp/$dir-config.tmp.json "$ENV_REPLACE_GLOB"
+    $dir/config.template.json >"$ENV_REPLACE_GLOB"
   envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
   frontend/nginx/replace-envvars.sh "$envvars"
 }
