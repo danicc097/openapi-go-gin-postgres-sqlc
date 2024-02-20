@@ -1374,7 +1374,8 @@ x.run.backend-hr() {
   run_shared_services up -d --build --remove-orphans --wait
   x.setup-swagger-ui
   # TODO: pre and post merged to air : https://github.com/cosmtrek/air/pull/461/files
-  # havent tested if it doesnt listen to changes while executing pre and post
+  # exclude files changed by pre with exclude_file, or exclude_regex
+  # https://github.com/cosmtrek/air/blob/master/air_example.toml
   # local pre_build_cmd="project setup-swagger-ui" # `internal/static/swagger-ui/openapi.yaml has changed` inf loop
   # NOTE: building binary very unreliable, leads to bin not found.
   air \
