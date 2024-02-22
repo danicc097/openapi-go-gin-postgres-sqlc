@@ -115,7 +115,7 @@ func WithWorkItemTagOrderBy(rows ...WorkItemTagOrderBy) WorkItemTagSelectConfigO
 
 type WorkItemTagJoins struct {
 	Project              bool // O2O projects
-	WorkItemsWorkItemTag bool // M2M work_item_work_item_tag
+	WorkItemTagWorkItems bool // M2M work_item_work_item_tag
 }
 
 // WithWorkItemTagJoin joins with the given tables.
@@ -123,7 +123,7 @@ func WithWorkItemTagJoin(joins WorkItemTagJoins) WorkItemTagSelectConfigOption {
 	return func(s *WorkItemTagSelectConfig) {
 		s.joins = WorkItemTagJoins{
 			Project:              s.joins.Project || joins.Project,
-			WorkItemsWorkItemTag: s.joins.WorkItemsWorkItemTag || joins.WorkItemsWorkItemTag,
+			WorkItemTagWorkItems: s.joins.WorkItemTagWorkItems || joins.WorkItemTagWorkItems,
 		}
 	}
 }
@@ -171,7 +171,7 @@ const workItemTagTableProjectGroupBySQL = `_work_item_tags_project_id.project_id
       _work_item_tags_project_id.project_id,
 	work_item_tags.work_item_tag_id`
 
-const workItemTagTableWorkItemsWorkItemTagJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+const workItemTagTableWorkItemTagWorkItemsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
 		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
@@ -186,12 +186,12 @@ left join (
 ) as xo_join_work_item_work_item_tag_work_items on xo_join_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_tags.work_item_tag_id
 `
 
-const workItemTagTableWorkItemsWorkItemTagSelectSQL = `COALESCE(
+const workItemTagTableWorkItemTagWorkItemsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_work_item_tag_work_items.__work_items
 		)) filter (where xo_join_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') as work_item_work_item_tag_work_items`
 
-const workItemTagTableWorkItemsWorkItemTagGroupBySQL = `work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id`
+const workItemTagTableWorkItemTagWorkItemsGroupBySQL = `work_item_tags.work_item_tag_id, work_item_tags.work_item_tag_id`
 
 // WorkItemTagUpdateParams represents update params for 'public.work_item_tags'.
 type WorkItemTagUpdateParams struct {
@@ -386,10 +386,10 @@ func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTag
 		groupByClauses = append(groupByClauses, workItemTagTableProjectGroupBySQL)
 	}
 
-	if c.joins.WorkItemsWorkItemTag {
-		selectClauses = append(selectClauses, workItemTagTableWorkItemsWorkItemTagSelectSQL)
-		joinClauses = append(joinClauses, workItemTagTableWorkItemsWorkItemTagJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	if c.joins.WorkItemTagWorkItems {
+		selectClauses = append(selectClauses, workItemTagTableWorkItemTagWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableWorkItemTagWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableWorkItemTagWorkItemsGroupBySQL)
 	}
 
 	selects := ""
@@ -492,10 +492,10 @@ func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID Proje
 		groupByClauses = append(groupByClauses, workItemTagTableProjectGroupBySQL)
 	}
 
-	if c.joins.WorkItemsWorkItemTag {
-		selectClauses = append(selectClauses, workItemTagTableWorkItemsWorkItemTagSelectSQL)
-		joinClauses = append(joinClauses, workItemTagTableWorkItemsWorkItemTagJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	if c.joins.WorkItemTagWorkItems {
+		selectClauses = append(selectClauses, workItemTagTableWorkItemTagWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableWorkItemTagWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableWorkItemTagWorkItemsGroupBySQL)
 	}
 
 	selects := ""
@@ -600,10 +600,10 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 		groupByClauses = append(groupByClauses, workItemTagTableProjectGroupBySQL)
 	}
 
-	if c.joins.WorkItemsWorkItemTag {
-		selectClauses = append(selectClauses, workItemTagTableWorkItemsWorkItemTagSelectSQL)
-		joinClauses = append(joinClauses, workItemTagTableWorkItemsWorkItemTagJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	if c.joins.WorkItemTagWorkItems {
+		selectClauses = append(selectClauses, workItemTagTableWorkItemTagWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableWorkItemTagWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableWorkItemTagWorkItemsGroupBySQL)
 	}
 
 	selects := ""
@@ -704,10 +704,10 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 		groupByClauses = append(groupByClauses, workItemTagTableProjectGroupBySQL)
 	}
 
-	if c.joins.WorkItemsWorkItemTag {
-		selectClauses = append(selectClauses, workItemTagTableWorkItemsWorkItemTagSelectSQL)
-		joinClauses = append(joinClauses, workItemTagTableWorkItemsWorkItemTagJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	if c.joins.WorkItemTagWorkItems {
+		selectClauses = append(selectClauses, workItemTagTableWorkItemTagWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableWorkItemTagWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableWorkItemTagWorkItemsGroupBySQL)
 	}
 
 	selects := ""
@@ -810,10 +810,10 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 		groupByClauses = append(groupByClauses, workItemTagTableProjectGroupBySQL)
 	}
 
-	if c.joins.WorkItemsWorkItemTag {
-		selectClauses = append(selectClauses, workItemTagTableWorkItemsWorkItemTagSelectSQL)
-		joinClauses = append(joinClauses, workItemTagTableWorkItemsWorkItemTagJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	if c.joins.WorkItemTagWorkItems {
+		selectClauses = append(selectClauses, workItemTagTableWorkItemTagWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableWorkItemTagWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableWorkItemTagWorkItemsGroupBySQL)
 	}
 
 	selects := ""
@@ -916,10 +916,10 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkIt
 		groupByClauses = append(groupByClauses, workItemTagTableProjectGroupBySQL)
 	}
 
-	if c.joins.WorkItemsWorkItemTag {
-		selectClauses = append(selectClauses, workItemTagTableWorkItemsWorkItemTagSelectSQL)
-		joinClauses = append(joinClauses, workItemTagTableWorkItemsWorkItemTagJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTagTableWorkItemsWorkItemTagGroupBySQL)
+	if c.joins.WorkItemTagWorkItems {
+		selectClauses = append(selectClauses, workItemTagTableWorkItemTagWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, workItemTagTableWorkItemTagWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTagTableWorkItemTagWorkItemsGroupBySQL)
 	}
 
 	selects := ""

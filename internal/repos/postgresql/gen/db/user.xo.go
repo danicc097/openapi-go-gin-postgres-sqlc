@@ -47,15 +47,15 @@ type User struct {
 	UpdatedAt                time.Time     `json:"-" db:"updated_at" nullable:"false"`                                                        // updated_at
 	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at"`                                                                 // deleted_at
 
-	ReceiverNotificationsJoin *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
-	SenderNotificationsJoin   *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
-	UserTimeEntriesJoin       *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                       // M2O users
-	UserUserNotificationsJoin *[]UserNotification    `json:"-" db:"user_notifications" openapi-go:"ignore"`                 // M2O users
+	NotificationsReceiverJoin *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
+	NotificationsSenderJoin   *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
+	TimeEntriesJoin           *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                       // M2O users
+	UserNotificationsJoin     *[]UserNotification    `json:"-" db:"user_notifications" openapi-go:"ignore"`                 // M2O users
 	MemberProjectsJoin        *[]Project             `json:"-" db:"user_project_projects" openapi-go:"ignore"`              // M2M user_project
 	MemberTeamsJoin           *[]Team                `json:"-" db:"user_team_teams" openapi-go:"ignore"`                    // M2M user_team
-	APIKeyJoin                *UserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
+	UserAPIKeyJoin            *UserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
 	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_User `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
-	UserWorkItemCommentsJoin  *[]WorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                 // M2O users
+	WorkItemCommentsJoin      *[]WorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                 // M2O users
 
 }
 
@@ -164,10 +164,10 @@ type UserJoins struct {
 	NotificationsSender   bool // M2O notifications
 	TimeEntries           bool // M2O time_entries
 	UserNotifications     bool // M2O user_notifications
-	ProjectsMember        bool // M2M user_project
-	TeamsMember           bool // M2M user_team
+	MemberProjects        bool // M2M user_project
+	MemberTeams           bool // M2M user_team
 	UserAPIKey            bool // O2O user_api_keys
-	WorkItemsAssignedUser bool // M2M work_item_assigned_user
+	AssignedUserWorkItems bool // M2M work_item_assigned_user
 	WorkItemComments      bool // M2O work_item_comments
 }
 
@@ -179,10 +179,10 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
 			TimeEntries:           s.joins.TimeEntries || joins.TimeEntries,
 			UserNotifications:     s.joins.UserNotifications || joins.UserNotifications,
-			ProjectsMember:        s.joins.ProjectsMember || joins.ProjectsMember,
-			TeamsMember:           s.joins.TeamsMember || joins.TeamsMember,
+			MemberProjects:        s.joins.MemberProjects || joins.MemberProjects,
+			MemberTeams:           s.joins.MemberTeams || joins.MemberTeams,
 			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
-			WorkItemsAssignedUser: s.joins.WorkItemsAssignedUser || joins.WorkItemsAssignedUser,
+			AssignedUserWorkItems: s.joins.AssignedUserWorkItems || joins.AssignedUserWorkItems,
 			WorkItemComments:      s.joins.WorkItemComments || joins.WorkItemComments,
 		}
 	}
@@ -291,7 +291,7 @@ const userTableUserNotificationsSelectSQL = `COALESCE(xo_join_user_notifications
 
 const userTableUserNotificationsGroupBySQL = `xo_join_user_notifications.user_notifications, users.user_id`
 
-const userTableProjectsMemberJoinSQL = `-- M2M join generated from "user_project_project_id_fkey"
+const userTableMemberProjectsJoinSQL = `-- M2M join generated from "user_project_project_id_fkey"
 left join (
 	select
 		user_project.member as user_project_member
@@ -306,14 +306,14 @@ left join (
 ) as xo_join_user_project_projects on xo_join_user_project_projects.user_project_member = users.user_id
 `
 
-const userTableProjectsMemberSelectSQL = `COALESCE(
+const userTableMemberProjectsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_user_project_projects.__projects
 		)) filter (where xo_join_user_project_projects.__projects_project_id is not null), '{}') as user_project_projects`
 
-const userTableProjectsMemberGroupBySQL = `users.user_id, users.user_id`
+const userTableMemberProjectsGroupBySQL = `users.user_id, users.user_id`
 
-const userTableTeamsMemberJoinSQL = `-- M2M join generated from "user_team_team_id_fkey"
+const userTableMemberTeamsJoinSQL = `-- M2M join generated from "user_team_team_id_fkey"
 left join (
 	select
 		user_team.member as user_team_member
@@ -328,12 +328,12 @@ left join (
 ) as xo_join_user_team_teams on xo_join_user_team_teams.user_team_member = users.user_id
 `
 
-const userTableTeamsMemberSelectSQL = `COALESCE(
+const userTableMemberTeamsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_user_team_teams.__teams
 		)) filter (where xo_join_user_team_teams.__teams_team_id is not null), '{}') as user_team_teams`
 
-const userTableTeamsMemberGroupBySQL = `users.user_id, users.user_id`
+const userTableMemberTeamsGroupBySQL = `users.user_id, users.user_id`
 
 const userTableUserAPIKeyJoinSQL = `-- O2O join generated from "users_api_key_id_fkey (inferred)"
 left join user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
@@ -345,7 +345,7 @@ const userTableUserAPIKeyGroupBySQL = `_users_api_key_id.user_api_key_id,
       _users_api_key_id.user_api_key_id,
 	users.user_id`
 
-const userTableWorkItemsAssignedUserJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+const userTableAssignedUserWorkItemsJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
 		work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
@@ -362,13 +362,13 @@ left join (
 ) as xo_join_work_item_assigned_user_work_items on xo_join_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
 `
 
-const userTableWorkItemsAssignedUserSelectSQL = `COALESCE(
+const userTableAssignedUserWorkItemsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_assigned_user_work_items.__work_items
 		, xo_join_work_item_assigned_user_work_items.role
 		)) filter (where xo_join_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
-const userTableWorkItemsAssignedUserGroupBySQL = `users.user_id, users.user_id`
+const userTableAssignedUserWorkItemsGroupBySQL = `users.user_id, users.user_id`
 
 const userTableWorkItemCommentsJoinSQL = `-- M2O join generated from "work_item_comments_user_id_fkey"
 left join (
@@ -627,16 +627,16 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
 	}
 
-	if c.joins.ProjectsMember {
-		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
+	if c.joins.MemberProjects {
+		selectClauses = append(selectClauses, userTableMemberProjectsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberProjectsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberProjectsGroupBySQL)
 	}
 
-	if c.joins.TeamsMember {
-		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	if c.joins.MemberTeams {
+		selectClauses = append(selectClauses, userTableMemberTeamsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberTeamsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberTeamsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -645,10 +645,10 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -786,16 +786,16 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
 	}
 
-	if c.joins.ProjectsMember {
-		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
+	if c.joins.MemberProjects {
+		selectClauses = append(selectClauses, userTableMemberProjectsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberProjectsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberProjectsGroupBySQL)
 	}
 
-	if c.joins.TeamsMember {
-		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	if c.joins.MemberTeams {
+		selectClauses = append(selectClauses, userTableMemberTeamsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberTeamsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberTeamsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -804,10 +804,10 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -941,16 +941,16 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
 	}
 
-	if c.joins.ProjectsMember {
-		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
+	if c.joins.MemberProjects {
+		selectClauses = append(selectClauses, userTableMemberProjectsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberProjectsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberProjectsGroupBySQL)
 	}
 
-	if c.joins.TeamsMember {
-		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	if c.joins.MemberTeams {
+		selectClauses = append(selectClauses, userTableMemberTeamsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberTeamsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberTeamsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -959,10 +959,10 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -1098,16 +1098,16 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
 	}
 
-	if c.joins.ProjectsMember {
-		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
+	if c.joins.MemberProjects {
+		selectClauses = append(selectClauses, userTableMemberProjectsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberProjectsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberProjectsGroupBySQL)
 	}
 
-	if c.joins.TeamsMember {
-		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	if c.joins.MemberTeams {
+		selectClauses = append(selectClauses, userTableMemberTeamsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberTeamsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberTeamsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -1116,10 +1116,10 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -1253,16 +1253,16 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
 	}
 
-	if c.joins.ProjectsMember {
-		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
+	if c.joins.MemberProjects {
+		selectClauses = append(selectClauses, userTableMemberProjectsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberProjectsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberProjectsGroupBySQL)
 	}
 
-	if c.joins.TeamsMember {
-		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	if c.joins.MemberTeams {
+		selectClauses = append(selectClauses, userTableMemberTeamsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberTeamsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberTeamsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -1271,10 +1271,10 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -1408,16 +1408,16 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
 	}
 
-	if c.joins.ProjectsMember {
-		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
+	if c.joins.MemberProjects {
+		selectClauses = append(selectClauses, userTableMemberProjectsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberProjectsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberProjectsGroupBySQL)
 	}
 
-	if c.joins.TeamsMember {
-		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	if c.joins.MemberTeams {
+		selectClauses = append(selectClauses, userTableMemberTeamsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberTeamsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberTeamsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -1426,10 +1426,10 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -1563,16 +1563,16 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
 	}
 
-	if c.joins.ProjectsMember {
-		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
+	if c.joins.MemberProjects {
+		selectClauses = append(selectClauses, userTableMemberProjectsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberProjectsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberProjectsGroupBySQL)
 	}
 
-	if c.joins.TeamsMember {
-		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	if c.joins.MemberTeams {
+		selectClauses = append(selectClauses, userTableMemberTeamsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberTeamsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberTeamsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -1581,10 +1581,10 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -1720,16 +1720,16 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 		groupByClauses = append(groupByClauses, userTableUserNotificationsGroupBySQL)
 	}
 
-	if c.joins.ProjectsMember {
-		selectClauses = append(selectClauses, userTableProjectsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableProjectsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableProjectsMemberGroupBySQL)
+	if c.joins.MemberProjects {
+		selectClauses = append(selectClauses, userTableMemberProjectsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberProjectsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberProjectsGroupBySQL)
 	}
 
-	if c.joins.TeamsMember {
-		selectClauses = append(selectClauses, userTableTeamsMemberSelectSQL)
-		joinClauses = append(joinClauses, userTableTeamsMemberJoinSQL)
-		groupByClauses = append(groupByClauses, userTableTeamsMemberGroupBySQL)
+	if c.joins.MemberTeams {
+		selectClauses = append(selectClauses, userTableMemberTeamsSelectSQL)
+		joinClauses = append(joinClauses, userTableMemberTeamsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableMemberTeamsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -1738,10 +1738,10 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, userTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, userTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, userTableWorkItemsAssignedUserGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {

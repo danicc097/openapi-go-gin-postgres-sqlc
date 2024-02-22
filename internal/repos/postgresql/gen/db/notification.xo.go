@@ -40,9 +40,9 @@ type Notification struct {
 	Receiver         *UserID          `json:"receiver" db:"receiver"`                                                                                               // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 
-	ReceiverJoin                      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O users (generated from M2O)
-	SenderJoin                        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O users (generated from M2O)
-	NotificationUserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O notifications
+	UserReceiverJoin      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O users (generated from M2O)
+	UserSenderJoin        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O users (generated from M2O)
+	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O notifications
 
 }
 

@@ -36,9 +36,9 @@ type Team struct {
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true" nullable:"false"`    // created_at
 	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`    // updated_at
 
-	ProjectJoin         *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
-	TeamTimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O teams
-	TeamMembersJoin     *[]User      `json:"-" db:"user_team_members" openapi-go:"ignore"`  // M2M user_team
+	ProjectJoin     *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O teams
+	TeamMembersJoin *[]User      `json:"-" db:"user_team_members" openapi-go:"ignore"`  // M2M user_team
 
 }
 
@@ -110,7 +110,7 @@ func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 type TeamJoins struct {
 	Project     bool // O2O projects
 	TimeEntries bool // M2O time_entries
-	MembersTeam bool // M2M user_team
+	TeamMembers bool // M2M user_team
 }
 
 // WithTeamJoin joins with the given tables.
@@ -119,7 +119,7 @@ func WithTeamJoin(joins TeamJoins) TeamSelectConfigOption {
 		s.joins = TeamJoins{
 			Project:     s.joins.Project || joins.Project,
 			TimeEntries: s.joins.TimeEntries || joins.TimeEntries,
-			MembersTeam: s.joins.MembersTeam || joins.MembersTeam,
+			TeamMembers: s.joins.TeamMembers || joins.TeamMembers,
 		}
 	}
 }
@@ -183,7 +183,7 @@ const teamTableTimeEntriesSelectSQL = `COALESCE(xo_join_time_entries.time_entrie
 
 const teamTableTimeEntriesGroupBySQL = `xo_join_time_entries.time_entries, teams.team_id`
 
-const teamTableMembersTeamJoinSQL = `-- M2M join generated from "user_team_member_fkey"
+const teamTableTeamMembersJoinSQL = `-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 		user_team.team_id as user_team_team_id
@@ -198,12 +198,12 @@ left join (
 ) as xo_join_user_team_members on xo_join_user_team_members.user_team_team_id = teams.team_id
 `
 
-const teamTableMembersTeamSelectSQL = `COALESCE(
+const teamTableTeamMembersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_user_team_members.__users
 		)) filter (where xo_join_user_team_members.__users_user_id is not null), '{}') as user_team_members`
 
-const teamTableMembersTeamGroupBySQL = `teams.team_id, teams.team_id`
+const teamTableTeamMembersGroupBySQL = `teams.team_id, teams.team_id`
 
 // TeamUpdateParams represents update params for 'public.teams'.
 type TeamUpdateParams struct {
@@ -373,10 +373,10 @@ func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID TeamID, direction 
 		groupByClauses = append(groupByClauses, teamTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.MembersTeam {
-		selectClauses = append(selectClauses, teamTableMembersTeamSelectSQL)
-		joinClauses = append(joinClauses, teamTableMembersTeamJoinSQL)
-		groupByClauses = append(groupByClauses, teamTableMembersTeamGroupBySQL)
+	if c.joins.TeamMembers {
+		selectClauses = append(selectClauses, teamTableTeamMembersSelectSQL)
+		joinClauses = append(joinClauses, teamTableTeamMembersJoinSQL)
+		groupByClauses = append(groupByClauses, teamTableTeamMembersGroupBySQL)
 	}
 
 	selects := ""
@@ -485,10 +485,10 @@ func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, d
 		groupByClauses = append(groupByClauses, teamTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.MembersTeam {
-		selectClauses = append(selectClauses, teamTableMembersTeamSelectSQL)
-		joinClauses = append(joinClauses, teamTableMembersTeamJoinSQL)
-		groupByClauses = append(groupByClauses, teamTableMembersTeamGroupBySQL)
+	if c.joins.TeamMembers {
+		selectClauses = append(selectClauses, teamTableTeamMembersSelectSQL)
+		joinClauses = append(joinClauses, teamTableTeamMembersJoinSQL)
+		groupByClauses = append(groupByClauses, teamTableTeamMembersGroupBySQL)
 	}
 
 	selects := ""
@@ -599,10 +599,10 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID Proj
 		groupByClauses = append(groupByClauses, teamTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.MembersTeam {
-		selectClauses = append(selectClauses, teamTableMembersTeamSelectSQL)
-		joinClauses = append(joinClauses, teamTableMembersTeamJoinSQL)
-		groupByClauses = append(groupByClauses, teamTableMembersTeamGroupBySQL)
+	if c.joins.TeamMembers {
+		selectClauses = append(selectClauses, teamTableTeamMembersSelectSQL)
+		joinClauses = append(joinClauses, teamTableTeamMembersJoinSQL)
+		groupByClauses = append(groupByClauses, teamTableTeamMembersGroupBySQL)
 	}
 
 	selects := ""
@@ -709,10 +709,10 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 		groupByClauses = append(groupByClauses, teamTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.MembersTeam {
-		selectClauses = append(selectClauses, teamTableMembersTeamSelectSQL)
-		joinClauses = append(joinClauses, teamTableMembersTeamJoinSQL)
-		groupByClauses = append(groupByClauses, teamTableMembersTeamGroupBySQL)
+	if c.joins.TeamMembers {
+		selectClauses = append(selectClauses, teamTableTeamMembersSelectSQL)
+		joinClauses = append(joinClauses, teamTableTeamMembersJoinSQL)
+		groupByClauses = append(groupByClauses, teamTableTeamMembersGroupBySQL)
 	}
 
 	selects := ""
@@ -821,10 +821,10 @@ func TeamsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...T
 		groupByClauses = append(groupByClauses, teamTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.MembersTeam {
-		selectClauses = append(selectClauses, teamTableMembersTeamSelectSQL)
-		joinClauses = append(joinClauses, teamTableMembersTeamJoinSQL)
-		groupByClauses = append(groupByClauses, teamTableMembersTeamGroupBySQL)
+	if c.joins.TeamMembers {
+		selectClauses = append(selectClauses, teamTableTeamMembersSelectSQL)
+		joinClauses = append(joinClauses, teamTableTeamMembersJoinSQL)
+		groupByClauses = append(groupByClauses, teamTableTeamMembersGroupBySQL)
 	}
 
 	selects := ""
@@ -933,10 +933,10 @@ func TeamByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...TeamSelectC
 		groupByClauses = append(groupByClauses, teamTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.MembersTeam {
-		selectClauses = append(selectClauses, teamTableMembersTeamSelectSQL)
-		joinClauses = append(joinClauses, teamTableMembersTeamJoinSQL)
-		groupByClauses = append(groupByClauses, teamTableMembersTeamGroupBySQL)
+	if c.joins.TeamMembers {
+		selectClauses = append(selectClauses, teamTableTeamMembersSelectSQL)
+		joinClauses = append(joinClauses, teamTableTeamMembersJoinSQL)
+		groupByClauses = append(groupByClauses, teamTableTeamMembersGroupBySQL)
 	}
 
 	selects := ""

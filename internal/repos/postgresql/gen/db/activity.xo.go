@@ -36,8 +36,8 @@ type Activity struct {
 	IsProductive bool       `json:"isProductive" db:"is_productive" required:"true" nullable:"false"` // is_productive
 	DeletedAt    *time.Time `json:"deletedAt" db:"deleted_at"`                                        // deleted_at
 
-	ProjectJoin             *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
-	ActivityTimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O activities
+	ProjectJoin     *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O activities
 
 }
 
