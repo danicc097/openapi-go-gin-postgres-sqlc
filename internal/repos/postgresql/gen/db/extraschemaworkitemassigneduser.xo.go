@@ -31,8 +31,8 @@ type ExtraSchemaWorkItemAssignedUser struct {
 	AssignedUser    ExtraSchemaUserID        `json:"assignedUser" db:"assigned_user" required:"true" nullable:"false"`                        // assigned_user
 	ExtraSchemaRole *ExtraSchemaWorkItemRole `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 
-	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_ExtraSchemaWorkItemAssignedUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"`     // M2M work_item_assigned_user
-	AssignedUsersJoin         *[]User__WIAU_ExtraSchemaWorkItemAssignedUser     `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemsJoin     *[]WorkItem__WIAU_ExtraSchemaWorkItemAssignedUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"`     // M2M work_item_assigned_user
+	AssignedUsersJoin *[]User__WIAU_ExtraSchemaWorkItemAssignedUser     `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
 
 }
 
@@ -77,16 +77,16 @@ type ExtraSchemaWorkItemAssignedUserOrderBy string
 const ()
 
 type ExtraSchemaWorkItemAssignedUserJoins struct {
-	AssignedUserWorkItems bool // M2M work_item_assigned_user
-	AssignedUsers         bool // M2M work_item_assigned_user
+	WorkItems     bool // M2M work_item_assigned_user
+	AssignedUsers bool // M2M work_item_assigned_user
 }
 
 // WithExtraSchemaWorkItemAssignedUserJoin joins with the given tables.
 func WithExtraSchemaWorkItemAssignedUserJoin(joins ExtraSchemaWorkItemAssignedUserJoins) ExtraSchemaWorkItemAssignedUserSelectConfigOption {
 	return func(s *ExtraSchemaWorkItemAssignedUserSelectConfig) {
 		s.joins = ExtraSchemaWorkItemAssignedUserJoins{
-			AssignedUserWorkItems: s.joins.AssignedUserWorkItems || joins.AssignedUserWorkItems,
-			AssignedUsers:         s.joins.AssignedUsers || joins.AssignedUsers,
+			WorkItems:     s.joins.WorkItems || joins.WorkItems,
+			AssignedUsers: s.joins.AssignedUsers || joins.AssignedUsers,
 		}
 	}
 }
@@ -136,7 +136,7 @@ func WithExtraSchemaWorkItemAssignedUserHavingClause(conditions map[string][]any
 	}
 }
 
-const extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+const extraSchemaWorkItemAssignedUserTableWorkItemsJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
 		work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
@@ -153,13 +153,13 @@ left join (
 ) as xo_join_work_item_assigned_user_work_items on xo_join_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = work_item_assigned_user.assigned_user
 `
 
-const extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsSelectSQL = `COALESCE(
+const extraSchemaWorkItemAssignedUserTableWorkItemsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_assigned_user_work_items.__work_items
 		, xo_join_work_item_assigned_user_work_items.role
 		)) filter (where xo_join_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
-const extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsGroupBySQL = `work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
+const extraSchemaWorkItemAssignedUserTableWorkItemsGroupBySQL = `work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
 
 const extraSchemaWorkItemAssignedUserTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
 left join (
@@ -343,10 +343,10 @@ func ExtraSchemaWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Contex
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.AssignedUserWorkItems {
-		selectClauses = append(selectClauses, extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsGroupBySQL)
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAssignedUserTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAssignedUserTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAssignedUserTableWorkItemsGroupBySQL)
 	}
 
 	if c.joins.AssignedUsers {
@@ -446,10 +446,10 @@ func ExtraSchemaWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.AssignedUserWorkItems {
-		selectClauses = append(selectClauses, extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsGroupBySQL)
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAssignedUserTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAssignedUserTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAssignedUserTableWorkItemsGroupBySQL)
 	}
 
 	if c.joins.AssignedUsers {
@@ -547,10 +547,10 @@ func ExtraSchemaWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, wo
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.AssignedUserWorkItems {
-		selectClauses = append(selectClauses, extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsGroupBySQL)
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAssignedUserTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAssignedUserTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAssignedUserTableWorkItemsGroupBySQL)
 	}
 
 	if c.joins.AssignedUsers {
@@ -650,10 +650,10 @@ func ExtraSchemaWorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, 
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.AssignedUserWorkItems {
-		selectClauses = append(selectClauses, extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemAssignedUserTableAssignedUserWorkItemsGroupBySQL)
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAssignedUserTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAssignedUserTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAssignedUserTableWorkItemsGroupBySQL)
 	}
 
 	if c.joins.AssignedUsers {

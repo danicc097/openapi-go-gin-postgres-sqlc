@@ -28,8 +28,8 @@ type WorkItemWorkItemTag struct {
 	WorkItemTagID WorkItemTagID `json:"workItemTagID" db:"work_item_tag_id" required:"true" nullable:"false"` // work_item_tag_id
 	WorkItemID    WorkItemID    `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`        // work_item_id
 
-	WorkItemTagsJoin         *[]WorkItemTag `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
-	WorkItemTagWorkItemsJoin *[]WorkItem    `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"`     // M2M work_item_work_item_tag
+	WorkItemTagsJoin *[]WorkItemTag `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
+	WorkItemsJoin    *[]WorkItem    `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"`     // M2M work_item_work_item_tag
 
 }
 
@@ -72,16 +72,16 @@ type WorkItemWorkItemTagOrderBy string
 const ()
 
 type WorkItemWorkItemTagJoins struct {
-	WorkItemTags         bool // M2M work_item_work_item_tag
-	WorkItemTagWorkItems bool // M2M work_item_work_item_tag
+	WorkItemTags bool // M2M work_item_work_item_tag
+	WorkItems    bool // M2M work_item_work_item_tag
 }
 
 // WithWorkItemWorkItemTagJoin joins with the given tables.
 func WithWorkItemWorkItemTagJoin(joins WorkItemWorkItemTagJoins) WorkItemWorkItemTagSelectConfigOption {
 	return func(s *WorkItemWorkItemTagSelectConfig) {
 		s.joins = WorkItemWorkItemTagJoins{
-			WorkItemTags:         s.joins.WorkItemTags || joins.WorkItemTags,
-			WorkItemTagWorkItems: s.joins.WorkItemTagWorkItems || joins.WorkItemTagWorkItems,
+			WorkItemTags: s.joins.WorkItemTags || joins.WorkItemTags,
+			WorkItems:    s.joins.WorkItems || joins.WorkItems,
 		}
 	}
 }
@@ -141,7 +141,7 @@ const workItemWorkItemTagTableWorkItemTagsSelectSQL = `COALESCE(
 
 const workItemWorkItemTagTableWorkItemTagsGroupBySQL = `work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id`
 
-const workItemWorkItemTagTableWorkItemTagWorkItemsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
+const workItemWorkItemTagTableWorkItemsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_id_fkey"
 left join (
 	select
 		work_item_work_item_tag.work_item_tag_id as work_item_work_item_tag_work_item_tag_id
@@ -156,12 +156,12 @@ left join (
 ) as xo_join_work_item_work_item_tag_work_items on xo_join_work_item_work_item_tag_work_items.work_item_work_item_tag_work_item_tag_id = work_item_work_item_tag.work_item_id
 `
 
-const workItemWorkItemTagTableWorkItemTagWorkItemsSelectSQL = `COALESCE(
+const workItemWorkItemTagTableWorkItemsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_work_item_tag_work_items.__work_items
 		)) filter (where xo_join_work_item_work_item_tag_work_items.__work_items_work_item_id is not null), '{}') as work_item_work_item_tag_work_items`
 
-const workItemWorkItemTagTableWorkItemTagWorkItemsGroupBySQL = `work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id`
+const workItemWorkItemTagTableWorkItemsGroupBySQL = `work_item_work_item_tag.work_item_id, work_item_work_item_tag.work_item_tag_id, work_item_work_item_tag.work_item_id`
 
 // WorkItemWorkItemTagUpdateParams represents update params for 'public.work_item_work_item_tag'.
 type WorkItemWorkItemTagUpdateParams struct {
@@ -273,10 +273,10 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, 
 		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagsGroupBySQL)
 	}
 
-	if c.joins.WorkItemTagWorkItems {
-		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemTagWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemTagWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagWorkItemsGroupBySQL)
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemsGroupBySQL)
 	}
 
 	selects := ""
@@ -378,10 +378,10 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagsGroupBySQL)
 	}
 
-	if c.joins.WorkItemTagWorkItems {
-		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemTagWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemTagWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagWorkItemsGroupBySQL)
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemsGroupBySQL)
 	}
 
 	selects := ""
@@ -478,10 +478,10 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID Wor
 		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagsGroupBySQL)
 	}
 
-	if c.joins.WorkItemTagWorkItems {
-		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemTagWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemTagWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagWorkItemsGroupBySQL)
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemsGroupBySQL)
 	}
 
 	selects := ""
@@ -580,10 +580,10 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagsGroupBySQL)
 	}
 
-	if c.joins.WorkItemTagWorkItems {
-		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemTagWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemTagWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagWorkItemsGroupBySQL)
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemsGroupBySQL)
 	}
 
 	selects := ""
@@ -682,10 +682,10 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagsGroupBySQL)
 	}
 
-	if c.joins.WorkItemTagWorkItems {
-		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemTagWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemTagWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemTagWorkItemsGroupBySQL)
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, workItemWorkItemTagTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, workItemWorkItemTagTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemWorkItemTagTableWorkItemsGroupBySQL)
 	}
 
 	selects := ""
