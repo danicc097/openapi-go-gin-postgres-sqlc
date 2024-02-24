@@ -44,7 +44,8 @@ type ExtraSchemaUser struct {
 	NotificationsReceiverJoin *[]ExtraSchemaNotification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
 	NotificationsSenderJoin   *[]ExtraSchemaNotification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
 	UserAPIKeyJoin            *ExtraSchemaUserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
-	WorkItemsJoin             *[]WorkItem__WIAU_ExtraSchemaUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemsJoin             *[]ExtraSchemaWorkItem            `json:"-" db:"work_item_admin_work_items" openapi-go:"ignore"`         // M2M work_item_admin
+	WorkItemsWIAUJoin         *[]WorkItem__WIAU_ExtraSchemaUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
 
 }
 
@@ -136,7 +137,8 @@ type ExtraSchemaUserJoins struct {
 	NotificationsReceiver bool // M2O notifications
 	NotificationsSender   bool // M2O notifications
 	UserAPIKey            bool // O2O user_api_keys
-	WorkItems             bool // M2M work_item_assigned_user
+	WorkItems             bool // M2M work_item_admin
+	WorkItemsWIAU         bool // M2M work_item_assigned_user
 }
 
 // WithExtraSchemaUserJoin joins with the given tables.
@@ -151,6 +153,7 @@ func WithExtraSchemaUserJoin(joins ExtraSchemaUserJoins) ExtraSchemaUserSelectCo
 			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
 			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
 			WorkItems:             s.joins.WorkItems || joins.WorkItems,
+			WorkItemsWIAU:         s.joins.WorkItemsWIAU || joins.WorkItemsWIAU,
 		}
 	}
 }
@@ -336,7 +339,29 @@ const extraSchemaUserTableUserAPIKeyGroupBySQL = `_users_api_key_id.user_api_key
       _users_api_key_id.user_api_key_id,
 	users.user_id`
 
-const extraSchemaUserTableWorkItemsJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+const extraSchemaUserTableWorkItemsJoinSQL = `-- M2M join generated from "work_item_admin_work_item_id_fkey"
+left join (
+	select
+		work_item_admin.admin as work_item_admin_admin
+		, work_items.work_item_id as __work_items_work_item_id
+		, row(work_items.*) as __work_items
+	from
+		extra_schema.work_item_admin
+	join extra_schema.work_items on work_items.work_item_id = work_item_admin.work_item_id
+	group by
+		work_item_admin_admin
+		, work_items.work_item_id
+) as xo_join_work_item_admin_work_items on xo_join_work_item_admin_work_items.work_item_admin_admin = users.user_id
+`
+
+const extraSchemaUserTableWorkItemsSelectSQL = `COALESCE(
+		ARRAY_AGG( DISTINCT (
+		xo_join_work_item_admin_work_items.__work_items
+		)) filter (where xo_join_work_item_admin_work_items.__work_items_work_item_id is not null), '{}') as work_item_admin_work_items`
+
+const extraSchemaUserTableWorkItemsGroupBySQL = `users.user_id, users.user_id`
+
+const extraSchemaUserTableWorkItemsWIAUJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
 		work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
@@ -353,13 +378,13 @@ left join (
 ) as xo_join_work_item_assigned_user_work_items on xo_join_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
 `
 
-const extraSchemaUserTableWorkItemsSelectSQL = `COALESCE(
+const extraSchemaUserTableWorkItemsWIAUSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_assigned_user_work_items.__work_items
 		, xo_join_work_item_assigned_user_work_items.role
 		)) filter (where xo_join_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
-const extraSchemaUserTableWorkItemsGroupBySQL = `users.user_id, users.user_id`
+const extraSchemaUserTableWorkItemsWIAUGroupBySQL = `users.user_id, users.user_id`
 
 // ExtraSchemaUserUpdateParams represents update params for 'extra_schema.users'.
 type ExtraSchemaUserUpdateParams struct {
@@ -586,6 +611,12 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsGroupBySQL)
 	}
 
+	if c.joins.WorkItemsWIAU {
+		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsWIAUSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsWIAUJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsWIAUGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -729,6 +760,12 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsGroupBySQL)
 	}
 
+	if c.joins.WorkItemsWIAU {
+		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsWIAUSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsWIAUJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsWIAUGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -868,6 +905,12 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsGroupBySQL)
 	}
 
+	if c.joins.WorkItemsWIAU {
+		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsWIAUSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsWIAUJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsWIAUGroupBySQL)
+	}
+
 	selects := ""
 	if len(selectClauses) > 0 {
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
@@ -1005,6 +1048,12 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsSelectSQL)
 		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsJoinSQL)
 		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsGroupBySQL)
+	}
+
+	if c.joins.WorkItemsWIAU {
+		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsWIAUSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsWIAUJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsWIAUGroupBySQL)
 	}
 
 	selects := ""

@@ -126,6 +126,20 @@ create index on extra_schema.work_items using gin (title extensions.gin_trgm_ops
 
 create index on extra_schema.work_items using gin (title , description extensions.gin_trgm_ops);
 
+create table extra_schema.work_item_admin (
+  work_item_id bigint not null
+  , admin uuid not null
+  , primary key (work_item_id , admin)
+  , foreign key (work_item_id) references extra_schema.work_items (work_item_id) on delete cascade
+  , foreign key (admin) references extra_schema.users (user_id) on delete cascade
+);
+
+create index on extra_schema.work_item_admin (admin , work_item_id);
+
+comment on column extra_schema.work_item_admin.work_item_id is '"cardinality":M2M';
+
+comment on column extra_schema.work_item_admin.admin is '"cardinality":M2M';
+
 create type extra_schema.work_item_role as ENUM (
   'extra_preparer'
   , 'extra_reviewer'
