@@ -4264,10 +4264,16 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			}
 
 			goName = camelExport(inflector.Pluralize(lookupName))
-			// lc := camelExport(strings.TrimSuffix(c.LookupColumnName, "_id"))
-			// if c.JoinTableClash { // with M2M just add acronym if it clashes
-			// 	goName = lc + goName
-			// }
+			rc := camelExport(strings.TrimSuffix(c.RefColumnName, "_id"))
+			rlc := camelExport(strings.TrimSuffix(c.LookupRefColumnName, "_id"))
+			lc := camelExport(strings.TrimSuffix(c.LookupColumnName, "_id"))
+			// fmt.Printf("rc: %v\n", rc)
+			// fmt.Printf("rlc: %v\n", rlc)
+			// fmt.Printf("lc: %v\n", lc)
+			// fmt.Printf("col: %v\n", col)
+			if rlc != rc { // with M2M just add acronym if it clashes
+				goName = lc + goName
+			}
 			for _, g := range goNames {
 				if g == goName+"Join" {
 					goName = goName + toAcronym(c.TableName)

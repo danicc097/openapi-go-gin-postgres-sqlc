@@ -37,14 +37,14 @@ type XoTestsUser struct {
 	CreatedAt time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"` // created_at
 	DeletedAt *time.Time           `json:"deletedAt" db:"deleted_at"`                                  // deleted_at
 
-	BooksJoin                 *[]Book__BA_XoTestsUser       `json:"-" db:"book_authors_books" openapi-go:"ignore"`                 // M2M book_authors
-	BooksBASKJoin             *[]Book__BASK_XoTestsUser     `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
+	AuthorBooksJoin           *[]Book__BA_XoTestsUser       `json:"-" db:"book_authors_books" openapi-go:"ignore"`                 // M2M book_authors
+	AuthorBooksBASKJoin       *[]Book__BASK_XoTestsUser     `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
 	BookReviewsJoin           *[]XoTestsBookReview          `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O users
-	BooksBSJoin               *[]XoTestsBook                `json:"-" db:"book_sellers_books" openapi-go:"ignore"`                 // M2M book_sellers
+	SellerBooksJoin           *[]XoTestsBook                `json:"-" db:"book_sellers_books" openapi-go:"ignore"`                 // M2M book_sellers
 	NotificationsReceiverJoin *[]XoTestsNotification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
 	NotificationsSenderJoin   *[]XoTestsNotification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
 	UserAPIKeyJoin            *XoTestsUserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
-	WorkItemsJoin             *[]WorkItem__WIAU_XoTestsUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
+	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_XoTestsUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
 	WorkItemCommentsJoin      *[]XoTestsWorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                 // M2O users
 }
 

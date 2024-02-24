@@ -38,7 +38,7 @@ type Team struct {
 
 	ProjectJoin     *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
 	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O teams
-	MembersJoin     *[]User      `json:"-" db:"user_team_members" openapi-go:"ignore"`  // M2M user_team
+	TeamMembersJoin *[]User      `json:"-" db:"user_team_members" openapi-go:"ignore"`  // M2M user_team
 
 }
 

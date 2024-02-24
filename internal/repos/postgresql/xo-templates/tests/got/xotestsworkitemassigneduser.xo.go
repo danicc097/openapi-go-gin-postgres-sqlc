@@ -31,8 +31,8 @@ type XoTestsWorkItemAssignedUser struct {
 	AssignedUser XoTestsUserID        `json:"assignedUser" db:"assigned_user" required:"true" nullable:"false"`                        // assigned_user
 	XoTestsRole  *XoTestsWorkItemRole `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 
-	WorkItemsJoin     *[]WorkItem__WIAU_XoTestsWorkItemAssignedUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"`     // M2M work_item_assigned_user
-	AssignedUsersJoin *[]User__WIAU_XoTestsWorkItemAssignedUser     `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_XoTestsWorkItemAssignedUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"`     // M2M work_item_assigned_user
+	WorkItemAssignedUsersJoin *[]User__WIAU_XoTestsWorkItemAssignedUser     `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
 }
 
 // XoTestsWorkItemAssignedUserCreateParams represents insert params for 'xo_tests.work_item_assigned_user'.

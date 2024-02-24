@@ -32,9 +32,9 @@ type ExtraSchemaWorkItem struct {
 	Title       *string               `json:"title" db:"title"`                                              // title
 	Description *string               `json:"description" db:"description"`                                  // description
 
-	DemoWorkItemJoin  *ExtraSchemaDemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
-	AdminsJoin        *[]ExtraSchemaUser                `json:"-" db:"work_item_admin_admins" openapi-go:"ignore"`                 // M2M work_item_admin
-	AssignedUsersJoin *[]User__WIAU_ExtraSchemaWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	DemoWorkItemJoin          *ExtraSchemaDemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
+	WorkItemAdminsJoin        *[]ExtraSchemaUser                `json:"-" db:"work_item_admin_admins" openapi-go:"ignore"`                 // M2M work_item_admin
+	WorkItemAssignedUsersJoin *[]User__WIAU_ExtraSchemaWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
 
 }
 

@@ -31,10 +31,10 @@ type XoTestsBook struct {
 	BookID XoTestsBookID `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
 	Name   string        `json:"name" db:"name" required:"true" nullable:"false"`      // name
 
-	AuthorsJoin     *[]User__BA_XoTestsBook   `json:"-" db:"book_authors_authors" openapi-go:"ignore"`               // M2M book_authors
-	AuthorsBASKJoin *[]User__BASK_XoTestsBook `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
-	BookReviewsJoin *[]XoTestsBookReview      `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O books
-	SellersJoin     *[]XoTestsUser            `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"`               // M2M book_sellers
+	BookAuthorsJoin     *[]User__BA_XoTestsBook   `json:"-" db:"book_authors_authors" openapi-go:"ignore"`               // M2M book_authors
+	BookAuthorsBASKJoin *[]User__BASK_XoTestsBook `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
+	BookReviewsJoin     *[]XoTestsBookReview      `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O books
+	BookSellersJoin     *[]XoTestsUser            `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"`               // M2M book_sellers
 }
 
 // XoTestsBookCreateParams represents insert params for 'xo_tests.books'.

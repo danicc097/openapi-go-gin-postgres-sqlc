@@ -31,8 +31,8 @@ type XoTestsBookAuthor struct {
 	AuthorID  XoTestsUserID `json:"authorID" db:"author_id" required:"true" nullable:"false"` // author_id
 	Pseudonym *string       `json:"pseudonym" db:"pseudonym"`                                 // pseudonym
 
-	BooksJoin   *[]Book__BA_XoTestsBookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
-	AuthorsJoin *[]User__BA_XoTestsBookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
+	AuthorBooksJoin *[]Book__BA_XoTestsBookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
+	BookAuthorsJoin *[]User__BA_XoTestsBookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
 }
 
 // XoTestsBookAuthorCreateParams represents insert params for 'xo_tests.book_authors'.

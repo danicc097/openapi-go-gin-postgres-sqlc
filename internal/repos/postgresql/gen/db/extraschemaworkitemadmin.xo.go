@@ -27,8 +27,8 @@ type ExtraSchemaWorkItemAdmin struct {
 	WorkItemID ExtraSchemaWorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
 	Admin      ExtraSchemaUserID     `json:"admin" db:"admin" required:"true" nullable:"false"`             // admin
 
-	WorkItemsJoin *[]ExtraSchemaWorkItem `json:"-" db:"work_item_admin_work_items" openapi-go:"ignore"` // M2M work_item_admin
-	AdminsJoin    *[]ExtraSchemaUser     `json:"-" db:"work_item_admin_admins" openapi-go:"ignore"`     // M2M work_item_admin
+	AdminWorkItemsJoin *[]ExtraSchemaWorkItem `json:"-" db:"work_item_admin_work_items" openapi-go:"ignore"` // M2M work_item_admin
+	WorkItemAdminsJoin *[]ExtraSchemaUser     `json:"-" db:"work_item_admin_admins" openapi-go:"ignore"`     // M2M work_item_admin
 
 }
 

@@ -36,8 +36,8 @@ type WorkItemTag struct {
 	Color         string        `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	DeletedAt     *time.Time    `json:"deletedAt" db:"deleted_at"`                                                                      // deleted_at
 
-	ProjectJoin   *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"`                 // O2O projects (generated from M2O)
-	WorkItemsJoin *[]WorkItem `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"` // M2M work_item_work_item_tag
+	ProjectJoin              *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"`                 // O2O projects (generated from M2O)
+	WorkItemTagWorkItemsJoin *[]WorkItem `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"` // M2M work_item_work_item_tag
 
 }
 

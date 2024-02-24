@@ -37,12 +37,12 @@ type Project struct {
 	CreatedAt          time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                              // created_at
 	UpdatedAt          time.Time            `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                                              // updated_at
 
-	ActivitiesJoin    *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`           // M2O projects
-	KanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`         // M2O projects
-	TeamsJoin         *[]Team         `json:"-" db:"teams" openapi-go:"ignore"`                // M2O projects
-	MembersJoin       *[]User         `json:"-" db:"user_project_members" openapi-go:"ignore"` // M2M user_project
-	WorkItemTagsJoin  *[]WorkItemTag  `json:"-" db:"work_item_tags" openapi-go:"ignore"`       // M2O projects
-	WorkItemTypesJoin *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"`      // M2O projects
+	ActivitiesJoin     *[]Activity     `json:"-" db:"activities" openapi-go:"ignore"`           // M2O projects
+	KanbanStepsJoin    *[]KanbanStep   `json:"-" db:"kanban_steps" openapi-go:"ignore"`         // M2O projects
+	TeamsJoin          *[]Team         `json:"-" db:"teams" openapi-go:"ignore"`                // M2O projects
+	ProjectMembersJoin *[]User         `json:"-" db:"user_project_members" openapi-go:"ignore"` // M2M user_project
+	WorkItemTagsJoin   *[]WorkItemTag  `json:"-" db:"work_item_tags" openapi-go:"ignore"`       // M2O projects
+	WorkItemTypesJoin  *[]WorkItemType `json:"-" db:"work_item_types" openapi-go:"ignore"`      // M2O projects
 
 }
 

@@ -27,8 +27,8 @@ type UserProject struct {
 	ProjectID ProjectID `json:"projectID" db:"project_id" required:"true" nullable:"false"` // project_id
 	Member    UserID    `json:"member" db:"member" required:"true" nullable:"false"`        // member
 
-	ProjectsJoin *[]Project `json:"-" db:"user_project_projects" openapi-go:"ignore"` // M2M user_project
-	MembersJoin  *[]User    `json:"-" db:"user_project_members" openapi-go:"ignore"`  // M2M user_project
+	ProjectsJoin       *[]Project `json:"-" db:"user_project_projects" openapi-go:"ignore"` // M2M user_project
+	ProjectMembersJoin *[]User    `json:"-" db:"user_project_members" openapi-go:"ignore"`  // M2M user_project
 
 }
 
