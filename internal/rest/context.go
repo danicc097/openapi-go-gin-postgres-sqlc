@@ -59,9 +59,9 @@ func getUserCallerFromCtx(c *gin.Context) (services.CtxUser, error) {
 func CtxWithUserCaller(c *gin.Context, user *db.User) {
 	c.Set(userCtxKey, services.CtxUser{
 		User:     user,
-		Teams:    *user.MemberTeamsJoin,
-		Projects: *user.MemberProjectsJoin,
-		APIKey:   user.APIKeyJoin,
+		Teams:    *user.TeamsJoin,
+		Projects: *user.ProjectsJoin,
+		APIKey:   user.UserAPIKeyJoin,
 	})
 }
 

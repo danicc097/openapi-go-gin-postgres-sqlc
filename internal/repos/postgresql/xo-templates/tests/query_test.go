@@ -78,9 +78,9 @@ func TestSharedRefConstraints(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, ee, 1)
 	require.EqualValues(t, 1, ee[0].WorkItemID)
-	require.NotNil(t, ee[0].WorkItemAssignedUsersJoin)
-	require.Len(t, *ee[0].WorkItemAssignedUsersJoin, 2)
-	require.Nil(t, ee[0].WorkItemWorkItemCommentsJoin)
+	require.NotNil(t, ee[0].AssignedUsersJoin)
+	require.Len(t, *ee[0].AssignedUsersJoin, 2)
+	require.Nil(t, ee[0].WorkItemCommentsJoin)
 }
 
 func TestCursorPagination_HavingClause(t *testing.T) {
@@ -117,7 +117,7 @@ func TestCursorPagination_HavingClause(t *testing.T) {
 	require.Len(t, ee, 1)
 	assert.Equal(t, ee[0].WorkItemID, wi.WorkItemID)
 
-	au := *ee[0].WorkItemAssignedUsersJoin
+	au := *ee[0].AssignedUsersJoin
 	found := false
 	for _, u := range au {
 		if u.User.UserID == u1.UserID {
@@ -163,9 +163,9 @@ func TestM2M_SelectFilter(t *testing.T) {
 
 	wi, err := db.XoTestsWorkItemByWorkItemID(ctx, testPool, 1, db.WithXoTestsWorkItemJoin(db.XoTestsWorkItemJoins{AssignedUsers: true}))
 	require.NoError(t, err)
-	assert.NotNil(t, *wi.WorkItemAssignedUsersJoin)
-	require.Len(t, *wi.WorkItemAssignedUsersJoin, 2)
-	for _, member := range *wi.WorkItemAssignedUsersJoin {
+	assert.NotNil(t, *wi.AssignedUsersJoin)
+	require.Len(t, *wi.AssignedUsersJoin, 2)
+	for _, member := range *wi.AssignedUsersJoin {
 		uid := db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
 		if member.User.UserID == uid {
 			assert.Nil(t, member.User.DeletedAt) // ensure proper filter clause used. e.g. filter where record is not null will exclude the whole record if just one element is null, see https://github.com/danicc097/openapi-go-gin-postgres-sqlc/blob/7a9affbccc9738e728ba5532d055230f4668034c/FIXME.md#L44
@@ -179,18 +179,18 @@ func TestM2M_TwoFKsAndExtraColumns(t *testing.T) {
 
 	ctx := context.Background()
 
-	u, err := db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{BooksAuthor: true}))
+	u, err := db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{Books: true}))
 	require.NoError(t, err)
-	require.Len(t, *u.AuthorBooksJoin, 0)
+	require.Len(t, *u.BooksJoin, 0)
 
 	u, err = db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")))
 	require.NoError(t, err)
-	assert.Nil(t, u.AuthorBooksJoin)
+	assert.Nil(t, u.BooksJoin)
 
-	u, err = db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{BooksAuthor: true}))
+	u, err = db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{Books: true}))
 	require.NoError(t, err)
-	require.Len(t, *u.AuthorBooksJoin, 2)
-	for _, b := range *u.AuthorBooksJoin {
+	require.Len(t, *u.BooksJoin, 2)
+	for _, b := range *u.BooksJoin {
 		if b.Book.BookID == 1 {
 			assert.Equal(t, "not Jane Smith", *b.Pseudonym)
 		}
@@ -202,18 +202,18 @@ func TestM2M_SurrogatePK(t *testing.T) {
 
 	ctx := context.Background()
 
-	u, err := db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{BooksAuthorBooks: true}))
+	u, err := db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{BooksBASK: true}))
 	require.NoError(t, err)
-	require.Len(t, *u.AuthorBooksJoinBASK, 0)
+	require.Len(t, *u.BooksBASKJoin, 0)
 
 	u, err = db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d")))
 	require.NoError(t, err)
-	assert.Nil(t, u.AuthorBooksJoinBASK)
+	assert.Nil(t, u.BooksBASKJoin)
 
-	u, err = db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{BooksAuthorBooks: true}))
+	u, err = db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{BooksBASK: true}))
 	require.NoError(t, err)
-	require.Len(t, *u.AuthorBooksJoinBASK, 2)
-	for _, b := range *u.AuthorBooksJoinBASK {
+	require.Len(t, *u.BooksBASKJoin, 2)
+	for _, b := range *u.BooksBASKJoin {
 		if b.Book.BookID == 1 {
 			assert.Equal(t, *b.Pseudonym, "not Jane Smith")
 		}
@@ -225,18 +225,19 @@ func TestM2M_TwoFKs(t *testing.T) {
 
 	ctx := context.Background()
 
-	u, err := db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{BooksSeller: true}))
+	// FIXME: m2m should be BooksSeller and BooksAuthor for xo tests since lookup column names != column name user_id,
+	u, err := db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{BooksBS: true}))
 	require.NoError(t, err)
-	require.Len(t, *u.SellerBooksJoin, 0)
+	require.Len(t, *u.BooksBSJoin, 0)
 
 	u, err = db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("78b8db3e-9900-4ca2-9875-fd1eb59acf71")))
 	require.NoError(t, err)
-	assert.Nil(t, u.SellerBooksJoin)
+	assert.Nil(t, u.BooksBSJoin)
 
-	u, err = db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("8c67f1f9-2be4-4b1a-a49b-b7a10a60c53a")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{BooksSeller: true}))
+	u, err = db.XoTestsUserByUserID(ctx, testPool, db.NewXoTestsUserID(uuid.MustParse("8c67f1f9-2be4-4b1a-a49b-b7a10a60c53a")), db.WithXoTestsUserJoin(db.XoTestsUserJoins{BooksBS: true}))
 	require.NoError(t, err)
-	require.Len(t, *u.SellerBooksJoin, 1)
-	assert.EqualValues(t, (*u.SellerBooksJoin)[0].BookID, 1)
+	require.Len(t, *u.BooksBSJoin, 1)
+	assert.EqualValues(t, (*u.BooksBSJoin)[0].BookID, 1)
 }
 
 func TestM2O(t *testing.T) {
@@ -247,13 +248,13 @@ func TestM2O(t *testing.T) {
 
 	u, err := db.XoTestsUserByUserID(ctx, testPool, userID, db.WithXoTestsUserJoin(db.XoTestsUserJoins{NotificationsSender: true, NotificationsReceiver: true}))
 	require.NoError(t, err)
-	require.Len(t, *u.ReceiverNotificationsJoin, 1)
-	require.Len(t, *u.SenderNotificationsJoin, 2)
+	require.Len(t, *u.NotificationsReceiverJoin, 1)
+	require.Len(t, *u.NotificationsSenderJoin, 2)
 
 	n, err := db.XoTestsNotificationsBySender(ctx, testPool, userID, db.WithXoTestsNotificationJoin(db.XoTestsNotificationJoins{UserSender: true, UserReceiver: true}))
 	require.NoError(t, err)
 	require.Len(t, n, 2)
-	assert.Equal(t, n[0].SenderJoin.UserID, userID)
+	assert.Equal(t, n[0].UserSenderJoin.UserID, userID)
 }
 
 func TestO2OInferred_PKisFK(t *testing.T) {
@@ -283,7 +284,7 @@ func TestO2OInferred_VerticallyPartitioned(t *testing.T) {
 
 	u, err := db.XoTestsUserByUserID(ctx, testPool, userID, db.WithXoTestsUserJoin(db.XoTestsUserJoins{UserAPIKey: true}))
 	require.NoError(t, err)
-	assert.Equal(t, u.APIKeyJoin.UserID, userID)
+	assert.Equal(t, u.UserAPIKeyJoin.UserID, userID)
 
 	uak, err := db.XoTestsUserAPIKeyByUserID(ctx, testPool, userID, db.WithXoTestsUserAPIKeyJoin(db.XoTestsUserAPIKeyJoins{User: true}))
 	require.NoError(t, err)
@@ -297,7 +298,7 @@ func TestCustomFilters(t *testing.T) {
 	ctx := context.Background()
 
 	uu, err := db.XoTestsUserPaginatedByCreatedAt(ctx, testPool, time.Now().Add(-999*time.Hour), models.DirectionAsc,
-		db.WithXoTestsUserJoin(db.XoTestsUserJoins{UserAPIKey: true, BooksAuthor: true}),
+		db.WithXoTestsUserJoin(db.XoTestsUserJoins{UserAPIKey: true, Books: true}),
 		db.WithXoTestsUserFilters(map[string][]any{
 			"xo_tests.users.name = any ($i)":       {[]string{"Jane Smith"}}, // unique
 			"NOT (xo_tests.users.name = any ($i))": {[]string{"excl_name_1", "excl_name_2"}},
@@ -306,8 +307,8 @@ func TestCustomFilters(t *testing.T) {
 		}))
 	require.NoError(t, err)
 	require.Len(t, uu, 1)
-	assert.NotNil(t, uu[0].AuthorBooksJoin)
-	require.Len(t, *uu[0].AuthorBooksJoin, 2)
+	assert.NotNil(t, uu[0].BooksJoin)
+	require.Len(t, *uu[0].BooksJoin, 2)
 }
 
 func TestCRUD_UniqueIndex(t *testing.T) {

@@ -62,7 +62,7 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller CtxUser, param
 		}
 
 		memberIDs := make(map[db.UserID]bool)
-		for _, m := range *wi.WorkItemAssignedUsersJoin {
+		for _, m := range *wi.AssignedUsersJoin {
 			memberIDs[m.User.UserID] = true
 		}
 		if _, ok := memberIDs[caller.UserID]; !ok {

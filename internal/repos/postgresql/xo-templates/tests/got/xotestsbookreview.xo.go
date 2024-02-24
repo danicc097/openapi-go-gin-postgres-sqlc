@@ -32,8 +32,8 @@ type XoTestsBookReview struct {
 	BookID       XoTestsBookID       `json:"bookID" db:"book_id" required:"true" nullable:"false"`              // book_id
 	Reviewer     XoTestsUserID       `json:"reviewer" db:"reviewer" required:"true" nullable:"false"`           // reviewer
 
-	BookJoin     *XoTestsBook `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O books (generated from M2O)
-	ReviewerJoin *XoTestsUser `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O users (generated from M2O)
+	BookJoin *XoTestsBook `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O books (generated from M2O)
+	UserJoin *XoTestsUser `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O users (generated from M2O)
 }
 
 // XoTestsBookReviewCreateParams represents insert params for 'xo_tests.book_reviews'.

@@ -92,10 +92,10 @@ func main() {
 	// username := "superadmin"
 	user, err := db.UserByUsername(context.Background(), pool, username,
 		db.WithUserJoin(db.UserJoins{
-			TimeEntries:           true,
-			WorkItemsAssignedUser: true,
-			TeamsMember:           true,
-			UserAPIKey:            true,
+			TimeEntries: true,
+			WorkItems:   true,
+			Teams:       true,
+			UserAPIKey:  true,
 		}),
 		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
 	if err != nil {
@@ -119,7 +119,7 @@ func main() {
 
 	fmt.Printf("user: %+v\n", user)
 	// test correct queries
-	key := user.APIKeyJoin.APIKey
+	key := user.UserAPIKeyJoin.APIKey
 	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, key, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	if err != nil {
 		log.Fatalf("UserAPIKeyByAPIKey: %v", err)

@@ -32,9 +32,9 @@ type XoTestsCacheDemoWorkItem struct {
 	Title      *string           `json:"title" db:"title"`                                              // title
 	TeamID     XoTestsTeamID     `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
 
-	TeamJoin                     *XoTestsTeam                           `json:"-" db:"team_team_id" openapi-go:"ignore"`                           // O2O teams (inferred)
-	WorkItemAssignedUsersJoin    *[]User__WIAU_XoTestsCacheDemoWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
-	WorkItemWorkItemCommentsJoin *[]XoTestsWorkItemComment              `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O cache__demo_work_items
+	TeamJoin             *XoTestsTeam                           `json:"-" db:"team_team_id" openapi-go:"ignore"`                           // O2O teams (inferred)
+	AssignedUsersJoin    *[]User__WIAU_XoTestsCacheDemoWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemCommentsJoin *[]XoTestsWorkItemComment              `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O cache__demo_work_items
 }
 
 // XoTestsCacheDemoWorkItemCreateParams represents insert params for 'xo_tests.cache__demo_work_items'.

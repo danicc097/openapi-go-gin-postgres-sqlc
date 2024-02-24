@@ -39,13 +39,13 @@ func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItemID db.Wor
 	}
 
 	for idx, member := range members {
-		user, err := w.repos.User.ByID(ctx, d, member.UserID, db.WithUserJoin(db.UserJoins{TeamsMember: true}))
+		user, err := w.repos.User.ByID(ctx, d, member.UserID, db.WithUserJoin(db.UserJoins{Teams: true}))
 		if err != nil {
 			return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{strconv.Itoa(idx)}, "user with id %s not found", member.UserID)
 		}
 
 		var userInTeam bool
-		for _, team := range *user.MemberTeamsJoin {
+		for _, team := range *user.TeamsJoin {
 			if team.TeamID == wi.TeamID {
 				userInTeam = true
 			}
