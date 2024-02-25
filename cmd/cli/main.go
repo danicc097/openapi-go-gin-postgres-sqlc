@@ -93,8 +93,8 @@ func main() {
 	user, err := db.UserByUsername(context.Background(), pool, username,
 		db.WithUserJoin(db.UserJoins{
 			TimeEntries:           true,
-			WorkItemsAssignedUser: true,
-			TeamsMember:           true,
+			AssignedUserWorkItems: true,
+			MemberTeams:           true,
 			UserAPIKey:            true,
 		}),
 		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
@@ -119,7 +119,7 @@ func main() {
 
 	fmt.Printf("user: %+v\n", user)
 	// test correct queries
-	key := user.APIKeyJoin.APIKey
+	key := user.UserAPIKeyJoin.APIKey
 	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, key, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
 	if err != nil {
 		log.Fatalf("UserAPIKeyByAPIKey: %v", err)
@@ -256,7 +256,7 @@ func pgxArrayAggIssueWorkingQuery(pool *pgxpool.Pool) {
 		SELECT 2 AS team_id, 2 as project_id, 'team 2' AS name, 'This is team 2 from project 1' as description, now() AS created_at, now() AS updated_at
 	)
 	SELECT users.user_id
-	, joined_teams.__teams as teams
+	, xo_join_teams.__teams as teams
 	FROM users
 	left join (
 		select
@@ -265,7 +265,7 @@ func pgxArrayAggIssueWorkingQuery(pool *pgxpool.Pool) {
 			from user_team
 			join teams using (team_id)
 			group by user_team_user_id
-		) as joined_teams on joined_teams.user_team_user_id = users.user_id
+		) as xo_join_teams on xo_join_teams.user_team_user_id = users.user_id
 	`
 
 	rows, err := pool.Query(context.Background(), query)
@@ -344,7 +344,7 @@ VALUES (2 , '19270107-1b9c-4f52-a578-7390d5b31513');
 
 	query := `
 	SELECT users.user_id
-	, joined_teams.__teams as teams
+	, xo_join_teams.__teams as teams
 	FROM users
 	left join (
 		select
@@ -353,7 +353,7 @@ VALUES (2 , '19270107-1b9c-4f52-a578-7390d5b31513');
 			from user_team
 			join teams on teams.team_id = user_team.team_id
 			group by user_team_user_id
-		) as joined_teams on joined_teams.user_team_user_id = users.user_id
+		) as xo_join_teams on xo_join_teams.user_team_user_id = users.user_id
 ;
 	`
 	/**

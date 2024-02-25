@@ -1,7 +1,10 @@
 # https://docs.sqlc.dev/en/stable/reference/config.html
 version: "2"
 sql:
-  - schema: "../../../db/migrations/"
+  # TODO: use docker.postgres bash -c "pg_dump gen_db --column-inserts  --exclude-table schema_migrations --exclude-table schema_post_migrations" > db/schema.sql
+  # we can keep schema.sql in /db/ folder so it can be used when we want to do a schema dump
+  # apart from just being used by sqlc
+  - schema: "../../../db/schema.sql"
     queries: "./queries/"
     engine: "postgresql"
     gen:

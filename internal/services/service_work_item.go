@@ -39,7 +39,7 @@ func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItemID db.Wor
 	}
 
 	for idx, member := range members {
-		user, err := w.repos.User.ByID(ctx, d, member.UserID, db.WithUserJoin(db.UserJoins{TeamsMember: true}))
+		user, err := w.repos.User.ByID(ctx, d, member.UserID, db.WithUserJoin(db.UserJoins{MemberTeams: true}))
 		if err != nil {
 			return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{strconv.Itoa(idx)}, "user with id %s not found", member.UserID)
 		}
@@ -74,6 +74,7 @@ func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItemID db.Wor
 
 func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItemID db.WorkItemID, members []db.UserID) error {
 	for idx, member := range members {
+		// nolint: exhaustruct
 		lookup := &db.WorkItemAssignedUser{
 			AssignedUser: member,
 			WorkItemID:   workItemID,
@@ -125,6 +126,7 @@ func (w *WorkItem) AssignTags(ctx context.Context, d db.DBTX, workItemID db.Work
 
 func (w *WorkItem) RemoveTags(ctx context.Context, d db.DBTX, workItemID db.WorkItemID, tagIDs []db.WorkItemTagID) error {
 	for idx, tagID := range tagIDs {
+		// nolint: exhaustruct
 		lookup := &db.WorkItemWorkItemTag{
 			WorkItemTagID: tagID,
 			WorkItemID:    workItemID,

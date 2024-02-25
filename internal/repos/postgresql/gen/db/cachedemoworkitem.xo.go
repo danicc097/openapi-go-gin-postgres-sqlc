@@ -46,13 +46,13 @@ type CacheDemoWorkItem struct {
 	UpdatedAt      time.Time      `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`             // updated_at
 	DeletedAt      *time.Time     `json:"deletedAt" db:"deleted_at"`                                              // deleted_at
 
-	KanbanStepJoin               *KanbanStep                     `json:"-" db:"kanban_step_kanban_step_id" openapi-go:"ignore"`             // O2O kanban_steps (inferred)
-	TeamJoin                     *Team                           `json:"-" db:"team_team_id" openapi-go:"ignore"`                           // O2O teams (inferred)
-	WorkItemTypeJoin             *WorkItemType                   `json:"-" db:"work_item_type_work_item_type_id" openapi-go:"ignore"`       // O2O work_item_types (inferred)
-	WorkItemTimeEntriesJoin      *[]TimeEntry                    `json:"-" db:"time_entries" openapi-go:"ignore"`                           // M2O cache__demo_work_items
-	WorkItemAssignedUsersJoin    *[]User__WIAU_CacheDemoWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
-	WorkItemWorkItemCommentsJoin *[]WorkItemComment              `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O cache__demo_work_items
-	WorkItemWorkItemTagsJoin     *[]WorkItemTag                  `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
+	KanbanStepJoin       *KanbanStep                     `json:"-" db:"kanban_step_kanban_step_id" openapi-go:"ignore"`             // O2O kanban_steps (inferred)
+	TeamJoin             *Team                           `json:"-" db:"team_team_id" openapi-go:"ignore"`                           // O2O teams (inferred)
+	WorkItemTypeJoin     *WorkItemType                   `json:"-" db:"work_item_type_work_item_type_id" openapi-go:"ignore"`       // O2O work_item_types (inferred)
+	TimeEntriesJoin      *[]TimeEntry                    `json:"-" db:"time_entries" openapi-go:"ignore"`                           // M2O cache__demo_work_items
+	AssignedUsersJoin    *[]User__WIAU_CacheDemoWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemCommentsJoin *[]WorkItemComment              `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O cache__demo_work_items
+	WorkItemTagsJoin     *[]WorkItemTag                  `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
 
 }
 
@@ -213,10 +213,14 @@ func WithCacheDemoWorkItemFilters(filters map[string][]any) CacheDemoWorkItemSel
 // WithCacheDemoWorkItemHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithCacheDemoWorkItemHavingClause(conditions map[string][]any) CacheDemoWorkItemSelectConfigOption {
 	return func(s *CacheDemoWorkItemSelectConfig) {
@@ -263,12 +267,12 @@ left join (
     time_entries
   group by
         work_item_id
-) as joined_time_entries on joined_time_entries.time_entries_work_item_id = cache__demo_work_items.work_item_id
+) as xo_join_time_entries on xo_join_time_entries.time_entries_work_item_id = cache__demo_work_items.work_item_id
 `
 
-const cacheDemoWorkItemTableTimeEntriesSelectSQL = `COALESCE(joined_time_entries.time_entries, '{}') as time_entries`
+const cacheDemoWorkItemTableTimeEntriesSelectSQL = `COALESCE(xo_join_time_entries.time_entries, '{}') as time_entries`
 
-const cacheDemoWorkItemTableTimeEntriesGroupBySQL = `joined_time_entries.time_entries, cache__demo_work_items.work_item_id`
+const cacheDemoWorkItemTableTimeEntriesGroupBySQL = `xo_join_time_entries.time_entries, cache__demo_work_items.work_item_id`
 
 const cacheDemoWorkItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey-shared-ref-cache__demo_work_items"
 left join (
@@ -284,14 +288,14 @@ left join (
 		work_item_assigned_user_work_item_id
 		, users.user_id
 		, role
-) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = cache__demo_work_items.work_item_id
+) as xo_join_work_item_assigned_user_assigned_users on xo_join_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = cache__demo_work_items.work_item_id
 `
 
 const cacheDemoWorkItemTableAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
+		xo_join_work_item_assigned_user_assigned_users.__users
+		, xo_join_work_item_assigned_user_assigned_users.role
+		)) filter (where xo_join_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const cacheDemoWorkItemTableAssignedUsersGroupBySQL = `cache__demo_work_items.work_item_id, cache__demo_work_items.work_item_id`
 
@@ -304,12 +308,12 @@ left join (
     work_item_comments
   group by
         work_item_id
-) as joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = cache__demo_work_items.work_item_id
+) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_work_item_id = cache__demo_work_items.work_item_id
 `
 
-const cacheDemoWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const cacheDemoWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
 
-const cacheDemoWorkItemTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, cache__demo_work_items.work_item_id`
+const cacheDemoWorkItemTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, cache__demo_work_items.work_item_id`
 
 const cacheDemoWorkItemTableWorkItemTagsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey-shared-ref-cache__demo_work_items"
 left join (
@@ -323,13 +327,13 @@ left join (
 	group by
 		work_item_work_item_tag_work_item_id
 		, work_item_tags.work_item_tag_id
-) as joined_work_item_work_item_tag_work_item_tags on joined_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = cache__demo_work_items.work_item_id
+) as xo_join_work_item_work_item_tag_work_item_tags on xo_join_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = cache__demo_work_items.work_item_id
 `
 
 const cacheDemoWorkItemTableWorkItemTagsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_work_item_tag_work_item_tags.__work_item_tags
-		)) filter (where joined_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') as work_item_work_item_tag_work_item_tags`
+		xo_join_work_item_work_item_tag_work_item_tags.__work_item_tags
+		)) filter (where xo_join_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') as work_item_work_item_tag_work_item_tags`
 
 const cacheDemoWorkItemTableWorkItemTagsGroupBySQL = `cache__demo_work_items.work_item_id, cache__demo_work_items.work_item_id`
 

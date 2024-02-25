@@ -16,6 +16,11 @@ func (h *StrictHandlers) GetPaginatedNotifications(c *gin.Context, request GetPa
 		return nil, nil
 	}
 
+	nextCursor := ""
+	if len(nn) > 0 {
+		nextCursor = fmt.Sprint(nn[len(nn)-1].UserNotificationID)
+	}
+
 	items := make([]Notification, len(nn))
 	for i, un := range nn {
 		items[i] = Notification{
@@ -25,7 +30,7 @@ func (h *StrictHandlers) GetPaginatedNotifications(c *gin.Context, request GetPa
 	}
 	res := PaginatedNotificationsResponse{
 		Page: PaginationPage{
-			NextCursor: fmt.Sprint(nn[len(nn)-1].UserNotificationID),
+			NextCursor: nextCursor,
 		},
 		Items: items,
 	}

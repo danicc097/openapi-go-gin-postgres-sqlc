@@ -14,7 +14,5 @@ create extension if not exists plpgsql_check schema extensions;
 
 create extension if not exists "uuid-ossp" schema extensions;
 
-set search_path = public , extensions;
-
 -- https://github.com/supabase/supa_audit
 create extension if not exists supa_audit schema extensions;

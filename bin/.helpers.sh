@@ -82,20 +82,40 @@ list_descendants() {
   echo "$desc_pids"
 }
 
-# waits for parallel processes to finish sucessfully, signalling SIGUSR1 otherwise.
+# Accepts flags:
+#    --no-kill    Do not immediately exit.
+# It does not store information the failed command. To keep track of all failures,
+# use:
+# 	for pid in "${pids[@]}"; do
+# 	  cmd=$(jobs -l | grep "$pid")
+# 	  wait -fn "$pid" || echo "Background job failed: $cmd"
+# 	done
 wait_without_error() {
   local -i err=0 werr=0
+  local kill=true
+
+  while [[ $# -gt 0 ]]; do # getopts fails in CI (non interactive)
+    case "$1" in
+    --no-kill) kill=false ;;
+    *) echo "Invalid option: $1" >&2 ;;
+    esac
+    shift
+  done
+
   while
-    wait -fn || werr=$? # do not quote
-    ((werr != 127))     # 127: not found
+    wait -fn || werr=$?
+    ((werr != 127))
   do
     err=$werr
-    ((err == 0)) || break # handle error as soon as it happens
+    ((err == 0)) || break # handle as soon as it happens
   done
-  #trap 'wait || :' EXIT # wait for all jobs before exiting (regardless of handling above)
+
   if ((err != 0)); then
+    sleep 0.2 # wait for all stdout/err
     echo "A job failed" >&2
-    kill -s SIGUSR1 $PROC
+    if $kill; then
+      kill -s SIGUSR1 $PROC
+    fi
     return 1
   fi
 }
@@ -378,7 +398,8 @@ show_tracebacks() {
 # Parameters:
 #   - Output .md5 file
 #   - Files or directories to cache
-#   - Optionally pass glob patterns to exclude.
+#   - Optionally pass glob patterns to exclude via --exclude [pattern].
+#   - Optionally pass --no-regen disable external cache invalidation.
 cache_all() {
   local excludes=()
   local args=()

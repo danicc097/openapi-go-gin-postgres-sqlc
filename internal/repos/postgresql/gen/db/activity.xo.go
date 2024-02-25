@@ -36,8 +36,8 @@ type Activity struct {
 	IsProductive bool       `json:"isProductive" db:"is_productive" required:"true" nullable:"false"` // is_productive
 	DeletedAt    *time.Time `json:"deletedAt" db:"deleted_at"`                                        // deleted_at
 
-	ProjectJoin             *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
-	ActivityTimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O activities
+	ProjectJoin     *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O activities
 
 }
 
@@ -146,10 +146,14 @@ func WithActivityFilters(filters map[string][]any) ActivitySelectConfigOption {
 // WithActivityHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithActivityHavingClause(conditions map[string][]any) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
@@ -176,12 +180,12 @@ left join (
     time_entries
   group by
         activity_id
-) as joined_time_entries on joined_time_entries.time_entries_activity_id = activities.activity_id
+) as xo_join_time_entries on xo_join_time_entries.time_entries_activity_id = activities.activity_id
 `
 
-const activityTableTimeEntriesSelectSQL = `COALESCE(joined_time_entries.time_entries, '{}') as time_entries`
+const activityTableTimeEntriesSelectSQL = `COALESCE(xo_join_time_entries.time_entries, '{}') as time_entries`
 
-const activityTableTimeEntriesGroupBySQL = `joined_time_entries.time_entries, activities.activity_id`
+const activityTableTimeEntriesGroupBySQL = `xo_join_time_entries.time_entries, activities.activity_id`
 
 // ActivityUpdateParams represents update params for 'public.activities'.
 type ActivityUpdateParams struct {

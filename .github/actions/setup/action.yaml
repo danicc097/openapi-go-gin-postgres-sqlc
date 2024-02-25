@@ -15,7 +15,7 @@ runs:
     - name: Setup Go
       uses: actions/setup-go@v3
       with:
-        go-version: "^1.20.7"
+        go-version: "^1.21.6"
 
     # - name: Setup Python
     #   uses: actions/setup-python@v4
@@ -56,7 +56,8 @@ runs:
         source .envrc
 
         echo Bootstrapping...
-        { yes y 2>/dev/null || :; } | project bootstrap --x-debug
+
+        { yes y 2>/dev/null || :; } | project bootstrap
 
         # project e2e.sync-deps # won't use python playwright
 

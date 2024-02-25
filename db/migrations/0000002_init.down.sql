@@ -1,53 +1,33 @@
-drop table if exists movies cascade;
+drop schema if exists v;
 
-drop table if exists entity_notifications cascade;
+drop schema if exists "cache";
 
-drop table if exists time_entries cascade;
-
-drop table if exists activities cascade;
-
-drop table if exists work_item_member cascade;
-
-drop table if exists work_item_assigned_user cascade;
-
-drop table if exists tasks cascade;
-
-drop table if exists work_item_fields cascade;
-
-drop table if exists task_types cascade;
-
-drop table if exists work_item_work_item_tag cascade;
-
-drop table if exists work_item_tags cascade;
-
-drop table if exists work_item_comments cascade;
-
-drop table if exists work_items cascade;
-
-drop table if exists demo_work_items cascade;
-
-drop table if exists demo_two_work_items cascade;
-
-drop table if exists kanban_steps cascade;
-
-drop table if exists work_item_types cascade;
-
-drop table if exists user_team cascade;
-
-drop table if exists users cascade;
-
-drop table if exists notifications cascade;
-
-drop table if exists user_notifications cascade;
-
-drop table if exists user_api_keys cascade;
-
-drop table if exists teams cascade;
-
-drop table if exists projects cascade;
-
-drop type if exists role cascade;
-
-drop type if exists notification_type cascade;
-
-drop type if exists work_item_role cascade;
+do $$
+declare
+  table_rec RECORD;
+  type_rec RECORD;
+begin
+  -- Drop tables
+  for table_rec in
+  select
+    table_name
+  from
+    information_schema.tables
+  where
+    table_schema = 'public'
+    and table_type = 'BASE TABLE' loop
+      execute 'DROP TABLE IF EXISTS public.' || QUOTE_IDENT(table_rec.table_name) || ' CASCADE';
+    end loop;
+  -- Drop enums
+  for type_rec in
+  select
+    typname
+  from
+    pg_type
+  where
+    typnamespace = 'public'::regnamespace
+    and typtype = 'e' loop
+      execute 'DROP TYPE IF EXISTS public.' || QUOTE_IDENT(type_rec.typname) || ' CASCADE';
+    end loop;
+end
+$$;

@@ -33,10 +33,10 @@ type XoTestsWorkItem struct {
 	Description *string           `json:"description" db:"description"`                                  // description
 	TeamID      XoTestsTeamID     `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
 
-	DemoWorkItemJoin             *XoTestsDemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
-	WorkItemAssignedUsersJoin    *[]User__WIAU_XoTestsWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
-	WorkItemWorkItemCommentsJoin *[]XoTestsWorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O work_items
-	TeamJoin                     *XoTestsTeam                  `json:"-" db:"team_team_id" openapi-go:"ignore"`                           // O2O teams (inferred)
+	DemoWorkItemJoin     *XoTestsDemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
+	AssignedUsersJoin    *[]User__WIAU_XoTestsWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemCommentsJoin *[]XoTestsWorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O work_items
+	TeamJoin             *XoTestsTeam                  `json:"-" db:"team_team_id" openapi-go:"ignore"`                           // O2O teams (inferred)
 }
 
 // XoTestsWorkItemCreateParams represents insert params for 'xo_tests.work_items'.
@@ -122,10 +122,14 @@ func WithXoTestsWorkItemFilters(filters map[string][]any) XoTestsWorkItemSelectC
 // WithXoTestsWorkItemHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithXoTestsWorkItemHavingClause(conditions map[string][]any) XoTestsWorkItemSelectConfigOption {
 	return func(s *XoTestsWorkItemSelectConfig) {
@@ -156,14 +160,14 @@ left join (
 		work_item_assigned_user_work_item_id
 		, users.user_id
 		, role
-) as joined_work_item_assigned_user_assigned_users on joined_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
+) as xo_join_work_item_assigned_user_assigned_users on xo_join_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
 `
 
 const xoTestsWorkItemTableAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_assigned_users.__users
-		, joined_work_item_assigned_user_assigned_users.role
-		)) filter (where joined_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
+		xo_join_work_item_assigned_user_assigned_users.__users
+		, xo_join_work_item_assigned_user_assigned_users.role
+		)) filter (where xo_join_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
 const xoTestsWorkItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
 
@@ -176,12 +180,12 @@ left join (
     xo_tests.work_item_comments
   group by
         work_item_id
-) as joined_work_item_comments on joined_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
+) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
 `
 
-const xoTestsWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const xoTestsWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
 
-const xoTestsWorkItemTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, work_items.work_item_id`
+const xoTestsWorkItemTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, work_items.work_item_id`
 
 const xoTestsWorkItemTableTeamJoinSQL = `-- O2O join generated from "work_items_team_id_fkey (inferred)"
 left join xo_tests.teams as _work_items_team_id on _work_items_team_id.team_id = work_items.team_id

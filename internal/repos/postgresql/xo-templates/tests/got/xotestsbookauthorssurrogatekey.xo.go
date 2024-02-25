@@ -33,8 +33,8 @@ type XoTestsBookAuthorsSurrogateKey struct {
 	AuthorID                  XoTestsUserID                    `json:"authorID" db:"author_id" required:"true" nullable:"false"`                                      // author_id
 	Pseudonym                 *string                          `json:"pseudonym" db:"pseudonym"`                                                                      // pseudonym
 
-	AuthorBooksJoin *[]Book__BASK_XoTestsBookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
-	BookAuthorsJoin *[]User__BASK_XoTestsBookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
+	BooksJoin   *[]Book__BASK_XoTestsBookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
+	AuthorsJoin *[]User__BASK_XoTestsBookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
 }
 
 // XoTestsBookAuthorsSurrogateKeyCreateParams represents insert params for 'xo_tests.book_authors_surrogate_key'.
@@ -78,16 +78,16 @@ func WithXoTestsBookAuthorsSurrogateKeyLimit(limit int) XoTestsBookAuthorsSurrog
 type XoTestsBookAuthorsSurrogateKeyOrderBy string
 
 type XoTestsBookAuthorsSurrogateKeyJoins struct {
-	BooksAuthor bool // M2M book_authors_surrogate_key
-	AuthorsBook bool // M2M book_authors_surrogate_key
+	Books   bool // M2M book_authors_surrogate_key
+	Authors bool // M2M book_authors_surrogate_key
 }
 
 // WithXoTestsBookAuthorsSurrogateKeyJoin joins with the given tables.
 func WithXoTestsBookAuthorsSurrogateKeyJoin(joins XoTestsBookAuthorsSurrogateKeyJoins) XoTestsBookAuthorsSurrogateKeySelectConfigOption {
 	return func(s *XoTestsBookAuthorsSurrogateKeySelectConfig) {
 		s.joins = XoTestsBookAuthorsSurrogateKeyJoins{
-			BooksAuthor: s.joins.BooksAuthor || joins.BooksAuthor,
-			AuthorsBook: s.joins.AuthorsBook || joins.AuthorsBook,
+			Books:   s.joins.Books || joins.Books,
+			Authors: s.joins.Authors || joins.Authors,
 		}
 	}
 }
@@ -122,10 +122,14 @@ func WithXoTestsBookAuthorsSurrogateKeyFilters(filters map[string][]any) XoTests
 // WithXoTestsBookAuthorsSurrogateKeyHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithXoTestsBookAuthorsSurrogateKeyHavingClause(conditions map[string][]any) XoTestsBookAuthorsSurrogateKeySelectConfigOption {
 	return func(s *XoTestsBookAuthorsSurrogateKeySelectConfig) {
@@ -133,7 +137,7 @@ func WithXoTestsBookAuthorsSurrogateKeyHavingClause(conditions map[string][]any)
 	}
 }
 
-const xoTestsBookAuthorsSurrogateKeyTableBooksAuthorJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
+const xoTestsBookAuthorsSurrogateKeyTableBooksJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
 		book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
@@ -147,18 +151,18 @@ left join (
 		book_authors_surrogate_key_author_id
 		, books.book_id
 		, pseudonym
-) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = book_authors_surrogate_key.author_id
+) as xo_join_book_authors_surrogate_key_books on xo_join_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = book_authors_surrogate_key.author_id
 `
 
-const xoTestsBookAuthorsSurrogateKeyTableBooksAuthorSelectSQL = `COALESCE(
+const xoTestsBookAuthorsSurrogateKeyTableBooksSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_books.__books
-		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') as book_authors_surrogate_key_books`
+		xo_join_book_authors_surrogate_key_books.__books
+		, xo_join_book_authors_surrogate_key_books.pseudonym
+		)) filter (where xo_join_book_authors_surrogate_key_books.__books_book_id is not null), '{}') as book_authors_surrogate_key_books`
 
-const xoTestsBookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL = `book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id`
+const xoTestsBookAuthorsSurrogateKeyTableBooksGroupBySQL = `book_authors_surrogate_key.author_id, book_authors_surrogate_key.book_authors_surrogate_key_id`
 
-const xoTestsBookAuthorsSurrogateKeyTableAuthorsBookJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
+const xoTestsBookAuthorsSurrogateKeyTableAuthorsJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
 left join (
 	select
 		book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
@@ -172,16 +176,16 @@ left join (
 		book_authors_surrogate_key_book_id
 		, users.user_id
 		, pseudonym
-) as joined_book_authors_surrogate_key_authors on joined_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
+) as xo_join_book_authors_surrogate_key_authors on xo_join_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = book_authors_surrogate_key.book_id
 `
 
-const xoTestsBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL = `COALESCE(
+const xoTestsBookAuthorsSurrogateKeyTableAuthorsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_authors.__users
-		, joined_book_authors_surrogate_key_authors.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') as book_authors_surrogate_key_authors`
+		xo_join_book_authors_surrogate_key_authors.__users
+		, xo_join_book_authors_surrogate_key_authors.pseudonym
+		)) filter (where xo_join_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') as book_authors_surrogate_key_authors`
 
-const xoTestsBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL = `book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id`
+const xoTestsBookAuthorsSurrogateKeyTableAuthorsGroupBySQL = `book_authors_surrogate_key.book_id, book_authors_surrogate_key.book_authors_surrogate_key_id`
 
 // XoTestsBookAuthorsSurrogateKeyUpdateParams represents update params for 'xo_tests.book_authors_surrogate_key'.
 type XoTestsBookAuthorsSurrogateKeyUpdateParams struct {
@@ -339,16 +343,16 @@ func XoTestsBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx cont
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	if c.joins.Books {
+		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableBooksGroupBySQL)
 	}
 
-	if c.joins.AuthorsBook {
-		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	if c.joins.Authors {
+		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsGroupBySQL)
 	}
 
 	selects := ""
@@ -445,16 +449,16 @@ func XoTestsBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, 
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	if c.joins.Books {
+		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableBooksGroupBySQL)
 	}
 
-	if c.joins.AuthorsBook {
-		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	if c.joins.Authors {
+		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsGroupBySQL)
 	}
 
 	selects := ""
@@ -547,16 +551,16 @@ func XoTestsBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID 
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	if c.joins.Books {
+		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableBooksGroupBySQL)
 	}
 
-	if c.joins.AuthorsBook {
-		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	if c.joins.Authors {
+		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsGroupBySQL)
 	}
 
 	selects := ""
@@ -651,16 +655,16 @@ func XoTestsBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, autho
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	if c.joins.Books {
+		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableBooksGroupBySQL)
 	}
 
-	if c.joins.AuthorsBook {
-		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	if c.joins.Authors {
+		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsGroupBySQL)
 	}
 
 	selects := ""
@@ -755,16 +759,16 @@ func XoTestsBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Conte
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableBooksAuthorGroupBySQL)
+	if c.joins.Books {
+		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableBooksGroupBySQL)
 	}
 
-	if c.joins.AuthorsBook {
-		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsBookGroupBySQL)
+	if c.joins.Authors {
+		selectClauses = append(selectClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookAuthorsSurrogateKeyTableAuthorsGroupBySQL)
 	}
 
 	selects := ""

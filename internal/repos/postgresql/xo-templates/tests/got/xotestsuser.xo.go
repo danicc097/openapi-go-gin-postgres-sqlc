@@ -38,14 +38,14 @@ type XoTestsUser struct {
 	DeletedAt *time.Time           `json:"deletedAt" db:"deleted_at"`                                  // deleted_at
 
 	AuthorBooksJoin           *[]Book__BA_XoTestsUser       `json:"-" db:"book_authors_books" openapi-go:"ignore"`                 // M2M book_authors
-	AuthorBooksJoinBASK       *[]Book__BASK_XoTestsUser     `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
-	ReviewerBookReviewsJoin   *[]XoTestsBookReview          `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O users
+	AuthorBooksBASKJoin       *[]Book__BASK_XoTestsUser     `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
+	BookReviewsJoin           *[]XoTestsBookReview          `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O users
 	SellerBooksJoin           *[]XoTestsBook                `json:"-" db:"book_sellers_books" openapi-go:"ignore"`                 // M2M book_sellers
 	ReceiverNotificationsJoin *[]XoTestsNotification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
 	SenderNotificationsJoin   *[]XoTestsNotification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
-	APIKeyJoin                *XoTestsUserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
+	UserAPIKeyJoin            *XoTestsUserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
 	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_XoTestsUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
-	UserWorkItemCommentsJoin  *[]XoTestsWorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                 // M2O users
+	WorkItemCommentsJoin      *[]XoTestsWorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                 // M2O users
 }
 
 // XoTestsUserCreateParams represents insert params for 'xo_tests.users'.
@@ -129,14 +129,14 @@ func WithXoTestsUserOrderBy(rows ...XoTestsUserOrderBy) XoTestsUserSelectConfigO
 }
 
 type XoTestsUserJoins struct {
-	BooksAuthor           bool // M2M book_authors
-	BooksAuthorBooks      bool // M2M book_authors_surrogate_key
+	AuthorBooks           bool // M2M book_authors
+	AuthorBooksBASK       bool // M2M book_authors_surrogate_key
 	BookReviews           bool // M2O book_reviews
-	BooksSeller           bool // M2M book_sellers
-	NotificationsReceiver bool // M2O notifications
-	NotificationsSender   bool // M2O notifications
+	SellerBooks           bool // M2M book_sellers
+	ReceiverNotifications bool // M2O notifications
+	SenderNotifications   bool // M2O notifications
 	UserAPIKey            bool // O2O user_api_keys
-	WorkItemsAssignedUser bool // M2M work_item_assigned_user
+	AssignedUserWorkItems bool // M2M work_item_assigned_user
 	WorkItemComments      bool // M2O work_item_comments
 }
 
@@ -144,14 +144,14 @@ type XoTestsUserJoins struct {
 func WithXoTestsUserJoin(joins XoTestsUserJoins) XoTestsUserSelectConfigOption {
 	return func(s *XoTestsUserSelectConfig) {
 		s.joins = XoTestsUserJoins{
-			BooksAuthor:           s.joins.BooksAuthor || joins.BooksAuthor,
-			BooksAuthorBooks:      s.joins.BooksAuthorBooks || joins.BooksAuthorBooks,
+			AuthorBooks:           s.joins.AuthorBooks || joins.AuthorBooks,
+			AuthorBooksBASK:       s.joins.AuthorBooksBASK || joins.AuthorBooksBASK,
 			BookReviews:           s.joins.BookReviews || joins.BookReviews,
-			BooksSeller:           s.joins.BooksSeller || joins.BooksSeller,
-			NotificationsReceiver: s.joins.NotificationsReceiver || joins.NotificationsReceiver,
-			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
+			SellerBooks:           s.joins.SellerBooks || joins.SellerBooks,
+			ReceiverNotifications: s.joins.ReceiverNotifications || joins.ReceiverNotifications,
+			SenderNotifications:   s.joins.SenderNotifications || joins.SenderNotifications,
 			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
-			WorkItemsAssignedUser: s.joins.WorkItemsAssignedUser || joins.WorkItemsAssignedUser,
+			AssignedUserWorkItems: s.joins.AssignedUserWorkItems || joins.AssignedUserWorkItems,
 			WorkItemComments:      s.joins.WorkItemComments || joins.WorkItemComments,
 		}
 	}
@@ -193,10 +193,14 @@ func WithXoTestsUserFilters(filters map[string][]any) XoTestsUserSelectConfigOpt
 // WithXoTestsUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithXoTestsUserHavingClause(conditions map[string][]any) XoTestsUserSelectConfigOption {
 	return func(s *XoTestsUserSelectConfig) {
@@ -204,7 +208,7 @@ func WithXoTestsUserHavingClause(conditions map[string][]any) XoTestsUserSelectC
 	}
 }
 
-const xoTestsUserTableBooksAuthorJoinSQL = `-- M2M join generated from "book_authors_book_id_fkey"
+const xoTestsUserTableAuthorBooksJoinSQL = `-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 		book_authors.author_id as book_authors_author_id
@@ -218,18 +222,18 @@ left join (
 		book_authors_author_id
 		, books.book_id
 		, pseudonym
-) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = users.user_id
+) as xo_join_book_authors_books on xo_join_book_authors_books.book_authors_author_id = users.user_id
 `
 
-const xoTestsUserTableBooksAuthorSelectSQL = `COALESCE(
+const xoTestsUserTableAuthorBooksSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_books.__books
-		, joined_book_authors_books.pseudonym
-		)) filter (where joined_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
+		xo_join_book_authors_books.__books
+		, xo_join_book_authors_books.pseudonym
+		)) filter (where xo_join_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
 
-const xoTestsUserTableBooksAuthorGroupBySQL = `users.user_id, users.user_id`
+const xoTestsUserTableAuthorBooksGroupBySQL = `users.user_id, users.user_id`
 
-const xoTestsUserTableBooksAuthorBooksJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
+const xoTestsUserTableAuthorBooksBASKJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
 		book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
@@ -243,16 +247,16 @@ left join (
 		book_authors_surrogate_key_author_id
 		, books.book_id
 		, pseudonym
-) as joined_book_authors_surrogate_key_books on joined_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
+) as xo_join_book_authors_surrogate_key_books on xo_join_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
 `
 
-const xoTestsUserTableBooksAuthorBooksSelectSQL = `COALESCE(
+const xoTestsUserTableAuthorBooksBASKSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_surrogate_key_books.__books
-		, joined_book_authors_surrogate_key_books.pseudonym
-		)) filter (where joined_book_authors_surrogate_key_books.__books_book_id is not null), '{}') as book_authors_surrogate_key_books`
+		xo_join_book_authors_surrogate_key_books.__books
+		, xo_join_book_authors_surrogate_key_books.pseudonym
+		)) filter (where xo_join_book_authors_surrogate_key_books.__books_book_id is not null), '{}') as book_authors_surrogate_key_books`
 
-const xoTestsUserTableBooksAuthorBooksGroupBySQL = `users.user_id, users.user_id`
+const xoTestsUserTableAuthorBooksBASKGroupBySQL = `users.user_id, users.user_id`
 
 const xoTestsUserTableBookReviewsJoinSQL = `-- M2O join generated from "book_reviews_reviewer_fkey"
 left join (
@@ -263,14 +267,14 @@ left join (
     xo_tests.book_reviews
   group by
         reviewer
-) as joined_book_reviews on joined_book_reviews.book_reviews_user_id = users.user_id
+) as xo_join_book_reviews on xo_join_book_reviews.book_reviews_user_id = users.user_id
 `
 
-const xoTestsUserTableBookReviewsSelectSQL = `COALESCE(joined_book_reviews.book_reviews, '{}') as book_reviews`
+const xoTestsUserTableBookReviewsSelectSQL = `COALESCE(xo_join_book_reviews.book_reviews, '{}') as book_reviews`
 
-const xoTestsUserTableBookReviewsGroupBySQL = `joined_book_reviews.book_reviews, users.user_id`
+const xoTestsUserTableBookReviewsGroupBySQL = `xo_join_book_reviews.book_reviews, users.user_id`
 
-const xoTestsUserTableBooksSellerJoinSQL = `-- M2M join generated from "book_sellers_book_id_fkey"
+const xoTestsUserTableSellerBooksJoinSQL = `-- M2M join generated from "book_sellers_book_id_fkey"
 left join (
 	select
 		book_sellers.seller as book_sellers_seller
@@ -282,17 +286,17 @@ left join (
 	group by
 		book_sellers_seller
 		, books.book_id
-) as joined_book_sellers_books on joined_book_sellers_books.book_sellers_seller = users.user_id
+) as xo_join_book_sellers_books on xo_join_book_sellers_books.book_sellers_seller = users.user_id
 `
 
-const xoTestsUserTableBooksSellerSelectSQL = `COALESCE(
+const xoTestsUserTableSellerBooksSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_sellers_books.__books
-		)) filter (where joined_book_sellers_books.__books_book_id is not null), '{}') as book_sellers_books`
+		xo_join_book_sellers_books.__books
+		)) filter (where xo_join_book_sellers_books.__books_book_id is not null), '{}') as book_sellers_books`
 
-const xoTestsUserTableBooksSellerGroupBySQL = `users.user_id, users.user_id`
+const xoTestsUserTableSellerBooksGroupBySQL = `users.user_id, users.user_id`
 
-const xoTestsUserTableNotificationsReceiverJoinSQL = `-- M2O join generated from "notifications_receiver_fkey"
+const xoTestsUserTableReceiverNotificationsJoinSQL = `-- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
   receiver as notifications_user_id
@@ -301,14 +305,14 @@ left join (
     xo_tests.notifications
   group by
         receiver
-) as joined_notifications_receiver on joined_notifications_receiver.notifications_user_id = users.user_id
+) as xo_join_notifications_receiver on xo_join_notifications_receiver.notifications_user_id = users.user_id
 `
 
-const xoTestsUserTableNotificationsReceiverSelectSQL = `COALESCE(joined_notifications_receiver.notifications, '{}') as notifications_receiver`
+const xoTestsUserTableReceiverNotificationsSelectSQL = `COALESCE(xo_join_notifications_receiver.notifications, '{}') as notifications_receiver`
 
-const xoTestsUserTableNotificationsReceiverGroupBySQL = `joined_notifications_receiver.notifications, users.user_id`
+const xoTestsUserTableReceiverNotificationsGroupBySQL = `xo_join_notifications_receiver.notifications, users.user_id`
 
-const xoTestsUserTableNotificationsSenderJoinSQL = `-- M2O join generated from "notifications_sender_fkey"
+const xoTestsUserTableSenderNotificationsJoinSQL = `-- M2O join generated from "notifications_sender_fkey"
 left join (
   select
   sender as notifications_user_id
@@ -317,12 +321,12 @@ left join (
     xo_tests.notifications
   group by
         sender
-) as joined_notifications_sender on joined_notifications_sender.notifications_user_id = users.user_id
+) as xo_join_notifications_sender on xo_join_notifications_sender.notifications_user_id = users.user_id
 `
 
-const xoTestsUserTableNotificationsSenderSelectSQL = `COALESCE(joined_notifications_sender.notifications, '{}') as notifications_sender`
+const xoTestsUserTableSenderNotificationsSelectSQL = `COALESCE(xo_join_notifications_sender.notifications, '{}') as notifications_sender`
 
-const xoTestsUserTableNotificationsSenderGroupBySQL = `joined_notifications_sender.notifications, users.user_id`
+const xoTestsUserTableSenderNotificationsGroupBySQL = `xo_join_notifications_sender.notifications, users.user_id`
 
 const xoTestsUserTableUserAPIKeyJoinSQL = `-- O2O join generated from "users_api_key_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
@@ -334,7 +338,7 @@ const xoTestsUserTableUserAPIKeyGroupBySQL = `_users_api_key_id.user_api_key_id,
       _users_api_key_id.user_api_key_id,
 	users.user_id`
 
-const xoTestsUserTableWorkItemsAssignedUserJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+const xoTestsUserTableAssignedUserWorkItemsJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
 		work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
@@ -348,16 +352,16 @@ left join (
 		work_item_assigned_user_assigned_user
 		, work_items.work_item_id
 		, role
-) as joined_work_item_assigned_user_work_items on joined_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
+) as xo_join_work_item_assigned_user_work_items on xo_join_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
 `
 
-const xoTestsUserTableWorkItemsAssignedUserSelectSQL = `COALESCE(
+const xoTestsUserTableAssignedUserWorkItemsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_work_item_assigned_user_work_items.__work_items
-		, joined_work_item_assigned_user_work_items.role
-		)) filter (where joined_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
+		xo_join_work_item_assigned_user_work_items.__work_items
+		, xo_join_work_item_assigned_user_work_items.role
+		)) filter (where xo_join_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
-const xoTestsUserTableWorkItemsAssignedUserGroupBySQL = `users.user_id, users.user_id`
+const xoTestsUserTableAssignedUserWorkItemsGroupBySQL = `users.user_id, users.user_id`
 
 const xoTestsUserTableWorkItemCommentsJoinSQL = `-- M2O join generated from "work_item_comments_user_id_fkey"
 left join (
@@ -368,12 +372,12 @@ left join (
     xo_tests.work_item_comments
   group by
         user_id
-) as joined_work_item_comments on joined_work_item_comments.work_item_comments_user_id = users.user_id
+) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_user_id = users.user_id
 `
 
-const xoTestsUserTableWorkItemCommentsSelectSQL = `COALESCE(joined_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const xoTestsUserTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
 
-const xoTestsUserTableWorkItemCommentsGroupBySQL = `joined_work_item_comments.work_item_comments, users.user_id`
+const xoTestsUserTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, users.user_id`
 
 // XoTestsUserUpdateParams represents update params for 'xo_tests.users'.
 type XoTestsUserUpdateParams struct {
@@ -552,16 +556,16 @@ func XoTestsUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, xoTestsUserTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableBooksAuthorGroupBySQL)
+	if c.joins.AuthorBooks {
+		selectClauses = append(selectClauses, xoTestsUserTableAuthorBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableAuthorBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableAuthorBooksGroupBySQL)
 	}
 
-	if c.joins.BooksAuthorBooks {
-		selectClauses = append(selectClauses, xoTestsUserTableBooksAuthorBooksSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableBooksAuthorBooksJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableBooksAuthorBooksGroupBySQL)
+	if c.joins.AuthorBooksBASK {
+		selectClauses = append(selectClauses, xoTestsUserTableAuthorBooksBASKSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableAuthorBooksBASKJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableAuthorBooksBASKGroupBySQL)
 	}
 
 	if c.joins.BookReviews {
@@ -570,22 +574,22 @@ func XoTestsUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.
 		groupByClauses = append(groupByClauses, xoTestsUserTableBookReviewsGroupBySQL)
 	}
 
-	if c.joins.BooksSeller {
-		selectClauses = append(selectClauses, xoTestsUserTableBooksSellerSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableBooksSellerJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableBooksSellerGroupBySQL)
+	if c.joins.SellerBooks {
+		selectClauses = append(selectClauses, xoTestsUserTableSellerBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableSellerBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableSellerBooksGroupBySQL)
 	}
 
-	if c.joins.NotificationsReceiver {
-		selectClauses = append(selectClauses, xoTestsUserTableNotificationsReceiverSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableNotificationsReceiverJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableNotificationsReceiverGroupBySQL)
+	if c.joins.ReceiverNotifications {
+		selectClauses = append(selectClauses, xoTestsUserTableReceiverNotificationsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableReceiverNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableReceiverNotificationsGroupBySQL)
 	}
 
-	if c.joins.NotificationsSender {
-		selectClauses = append(selectClauses, xoTestsUserTableNotificationsSenderSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableNotificationsSenderJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableNotificationsSenderGroupBySQL)
+	if c.joins.SenderNotifications {
+		selectClauses = append(selectClauses, xoTestsUserTableSenderNotificationsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableSenderNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableSenderNotificationsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -594,10 +598,10 @@ func XoTestsUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.
 		groupByClauses = append(groupByClauses, xoTestsUserTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, xoTestsUserTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableWorkItemsAssignedUserGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, xoTestsUserTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -701,16 +705,16 @@ func XoTestsUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opt
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, xoTestsUserTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableBooksAuthorGroupBySQL)
+	if c.joins.AuthorBooks {
+		selectClauses = append(selectClauses, xoTestsUserTableAuthorBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableAuthorBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableAuthorBooksGroupBySQL)
 	}
 
-	if c.joins.BooksAuthorBooks {
-		selectClauses = append(selectClauses, xoTestsUserTableBooksAuthorBooksSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableBooksAuthorBooksJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableBooksAuthorBooksGroupBySQL)
+	if c.joins.AuthorBooksBASK {
+		selectClauses = append(selectClauses, xoTestsUserTableAuthorBooksBASKSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableAuthorBooksBASKJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableAuthorBooksBASKGroupBySQL)
 	}
 
 	if c.joins.BookReviews {
@@ -719,22 +723,22 @@ func XoTestsUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opt
 		groupByClauses = append(groupByClauses, xoTestsUserTableBookReviewsGroupBySQL)
 	}
 
-	if c.joins.BooksSeller {
-		selectClauses = append(selectClauses, xoTestsUserTableBooksSellerSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableBooksSellerJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableBooksSellerGroupBySQL)
+	if c.joins.SellerBooks {
+		selectClauses = append(selectClauses, xoTestsUserTableSellerBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableSellerBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableSellerBooksGroupBySQL)
 	}
 
-	if c.joins.NotificationsReceiver {
-		selectClauses = append(selectClauses, xoTestsUserTableNotificationsReceiverSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableNotificationsReceiverJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableNotificationsReceiverGroupBySQL)
+	if c.joins.ReceiverNotifications {
+		selectClauses = append(selectClauses, xoTestsUserTableReceiverNotificationsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableReceiverNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableReceiverNotificationsGroupBySQL)
 	}
 
-	if c.joins.NotificationsSender {
-		selectClauses = append(selectClauses, xoTestsUserTableNotificationsSenderSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableNotificationsSenderJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableNotificationsSenderGroupBySQL)
+	if c.joins.SenderNotifications {
+		selectClauses = append(selectClauses, xoTestsUserTableSenderNotificationsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableSenderNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableSenderNotificationsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -743,10 +747,10 @@ func XoTestsUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opt
 		groupByClauses = append(groupByClauses, xoTestsUserTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, xoTestsUserTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableWorkItemsAssignedUserGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, xoTestsUserTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -846,16 +850,16 @@ func XoTestsUserByName(ctx context.Context, db DB, name string, opts ...XoTestsU
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, xoTestsUserTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableBooksAuthorGroupBySQL)
+	if c.joins.AuthorBooks {
+		selectClauses = append(selectClauses, xoTestsUserTableAuthorBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableAuthorBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableAuthorBooksGroupBySQL)
 	}
 
-	if c.joins.BooksAuthorBooks {
-		selectClauses = append(selectClauses, xoTestsUserTableBooksAuthorBooksSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableBooksAuthorBooksJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableBooksAuthorBooksGroupBySQL)
+	if c.joins.AuthorBooksBASK {
+		selectClauses = append(selectClauses, xoTestsUserTableAuthorBooksBASKSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableAuthorBooksBASKJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableAuthorBooksBASKGroupBySQL)
 	}
 
 	if c.joins.BookReviews {
@@ -864,22 +868,22 @@ func XoTestsUserByName(ctx context.Context, db DB, name string, opts ...XoTestsU
 		groupByClauses = append(groupByClauses, xoTestsUserTableBookReviewsGroupBySQL)
 	}
 
-	if c.joins.BooksSeller {
-		selectClauses = append(selectClauses, xoTestsUserTableBooksSellerSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableBooksSellerJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableBooksSellerGroupBySQL)
+	if c.joins.SellerBooks {
+		selectClauses = append(selectClauses, xoTestsUserTableSellerBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableSellerBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableSellerBooksGroupBySQL)
 	}
 
-	if c.joins.NotificationsReceiver {
-		selectClauses = append(selectClauses, xoTestsUserTableNotificationsReceiverSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableNotificationsReceiverJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableNotificationsReceiverGroupBySQL)
+	if c.joins.ReceiverNotifications {
+		selectClauses = append(selectClauses, xoTestsUserTableReceiverNotificationsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableReceiverNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableReceiverNotificationsGroupBySQL)
 	}
 
-	if c.joins.NotificationsSender {
-		selectClauses = append(selectClauses, xoTestsUserTableNotificationsSenderSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableNotificationsSenderJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableNotificationsSenderGroupBySQL)
+	if c.joins.SenderNotifications {
+		selectClauses = append(selectClauses, xoTestsUserTableSenderNotificationsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableSenderNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableSenderNotificationsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -888,10 +892,10 @@ func XoTestsUserByName(ctx context.Context, db DB, name string, opts ...XoTestsU
 		groupByClauses = append(groupByClauses, xoTestsUserTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, xoTestsUserTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableWorkItemsAssignedUserGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, xoTestsUserTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -991,16 +995,16 @@ func XoTestsUserByUserID(ctx context.Context, db DB, userID XoTestsUserID, opts 
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, xoTestsUserTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableBooksAuthorGroupBySQL)
+	if c.joins.AuthorBooks {
+		selectClauses = append(selectClauses, xoTestsUserTableAuthorBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableAuthorBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableAuthorBooksGroupBySQL)
 	}
 
-	if c.joins.BooksAuthorBooks {
-		selectClauses = append(selectClauses, xoTestsUserTableBooksAuthorBooksSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableBooksAuthorBooksJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableBooksAuthorBooksGroupBySQL)
+	if c.joins.AuthorBooksBASK {
+		selectClauses = append(selectClauses, xoTestsUserTableAuthorBooksBASKSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableAuthorBooksBASKJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableAuthorBooksBASKGroupBySQL)
 	}
 
 	if c.joins.BookReviews {
@@ -1009,22 +1013,22 @@ func XoTestsUserByUserID(ctx context.Context, db DB, userID XoTestsUserID, opts 
 		groupByClauses = append(groupByClauses, xoTestsUserTableBookReviewsGroupBySQL)
 	}
 
-	if c.joins.BooksSeller {
-		selectClauses = append(selectClauses, xoTestsUserTableBooksSellerSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableBooksSellerJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableBooksSellerGroupBySQL)
+	if c.joins.SellerBooks {
+		selectClauses = append(selectClauses, xoTestsUserTableSellerBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableSellerBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableSellerBooksGroupBySQL)
 	}
 
-	if c.joins.NotificationsReceiver {
-		selectClauses = append(selectClauses, xoTestsUserTableNotificationsReceiverSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableNotificationsReceiverJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableNotificationsReceiverGroupBySQL)
+	if c.joins.ReceiverNotifications {
+		selectClauses = append(selectClauses, xoTestsUserTableReceiverNotificationsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableReceiverNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableReceiverNotificationsGroupBySQL)
 	}
 
-	if c.joins.NotificationsSender {
-		selectClauses = append(selectClauses, xoTestsUserTableNotificationsSenderSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableNotificationsSenderJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableNotificationsSenderGroupBySQL)
+	if c.joins.SenderNotifications {
+		selectClauses = append(selectClauses, xoTestsUserTableSenderNotificationsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableSenderNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableSenderNotificationsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -1033,10 +1037,10 @@ func XoTestsUserByUserID(ctx context.Context, db DB, userID XoTestsUserID, opts 
 		groupByClauses = append(groupByClauses, xoTestsUserTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItemsAssignedUser {
-		selectClauses = append(selectClauses, xoTestsUserTableWorkItemsAssignedUserSelectSQL)
-		joinClauses = append(joinClauses, xoTestsUserTableWorkItemsAssignedUserJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsUserTableWorkItemsAssignedUserGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, xoTestsUserTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsUserTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsUserTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {

@@ -32,8 +32,8 @@ type ExtraSchemaBookReview struct {
 	BookID       ExtraSchemaBookID       `json:"bookID" db:"book_id" required:"true" nullable:"false"`              // book_id
 	Reviewer     ExtraSchemaUserID       `json:"reviewer" db:"reviewer" required:"true" nullable:"false"`           // reviewer
 
-	BookJoin     *ExtraSchemaBook `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O books (generated from M2O)
-	ReviewerJoin *ExtraSchemaUser `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O users (generated from M2O)
+	BookJoin *ExtraSchemaBook `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O books (generated from M2O)
+	UserJoin *ExtraSchemaUser `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O users (generated from M2O)
 
 }
 
@@ -110,10 +110,14 @@ func WithExtraSchemaBookReviewFilters(filters map[string][]any) ExtraSchemaBookR
 // WithExtraSchemaBookReviewHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithExtraSchemaBookReviewHavingClause(conditions map[string][]any) ExtraSchemaBookReviewSelectConfigOption {
 	return func(s *ExtraSchemaBookReviewSelectConfig) {

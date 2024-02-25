@@ -36,7 +36,7 @@ type ExtraSchemaPagElement struct {
 	CreatedAt          time.Time               `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                    // created_at
 	Dummy              *ExtraSchemaDummyJoinID `json:"dummy" db:"dummy"`                                                              // dummy
 
-	DummyJoin *ExtraSchemaDummyJoin `json:"-" db:"dummy_join_dummy" openapi-go:"ignore"` // O2O dummy_join (inferred)
+	DummyJoinJoin *ExtraSchemaDummyJoin `json:"-" db:"dummy_join_dummy" openapi-go:"ignore"` // O2O dummy_join (inferred)
 
 }
 
@@ -138,10 +138,14 @@ func WithExtraSchemaPagElementFilters(filters map[string][]any) ExtraSchemaPagEl
 // WithExtraSchemaPagElementHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithExtraSchemaPagElementHavingClause(conditions map[string][]any) ExtraSchemaPagElementSelectConfigOption {
 	return func(s *ExtraSchemaPagElementSelectConfig) {

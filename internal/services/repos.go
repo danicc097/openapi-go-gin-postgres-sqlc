@@ -117,6 +117,7 @@ func CreateRepos() *repos.Repos {
 		nil,
 	)
 
+	// using struct for easier automated appending later on. forced fill via exhaustruct
 	return &repos.Repos{
 		WorkItemComment: workitemcommentrepo,
 		Activity:        activityrepo,

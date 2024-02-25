@@ -40,9 +40,9 @@ type Notification struct {
 	Receiver         *UserID          `json:"receiver" db:"receiver"`                                                                                               // receiver
 	NotificationType NotificationType `json:"notificationType" db:"notification_type" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 
-	ReceiverJoin                      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O users (generated from M2O)
-	SenderJoin                        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O users (generated from M2O)
-	NotificationUserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O notifications
+	UserReceiverJoin      *User               `json:"-" db:"user_receiver" openapi-go:"ignore"`      // O2O users (generated from M2O)
+	UserSenderJoin        *User               `json:"-" db:"user_sender" openapi-go:"ignore"`        // O2O users (generated from M2O)
+	UserNotificationsJoin *[]UserNotification `json:"-" db:"user_notifications" openapi-go:"ignore"` // M2O notifications
 
 }
 
@@ -152,10 +152,14 @@ func WithNotificationFilters(filters map[string][]any) NotificationSelectConfigO
 // WithNotificationHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithNotificationHavingClause(conditions map[string][]any) NotificationSelectConfigOption {
 	return func(s *NotificationSelectConfig) {
@@ -192,12 +196,12 @@ left join (
     user_notifications
   group by
         notification_id
-) as joined_user_notifications on joined_user_notifications.user_notifications_notification_id = notifications.notification_id
+) as xo_join_user_notifications on xo_join_user_notifications.user_notifications_notification_id = notifications.notification_id
 `
 
-const notificationTableUserNotificationsSelectSQL = `COALESCE(joined_user_notifications.user_notifications, '{}') as user_notifications`
+const notificationTableUserNotificationsSelectSQL = `COALESCE(xo_join_user_notifications.user_notifications, '{}') as user_notifications`
 
-const notificationTableUserNotificationsGroupBySQL = `joined_user_notifications.user_notifications, notifications.notification_id`
+const notificationTableUserNotificationsGroupBySQL = `xo_join_user_notifications.user_notifications, notifications.notification_id`
 
 // NotificationUpdateParams represents update params for 'public.notifications'.
 type NotificationUpdateParams struct {

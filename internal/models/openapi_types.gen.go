@@ -892,6 +892,27 @@ type GetPaginatedUsersParams struct {
 	Limit     int       `form:"limit" json:"limit"`
 	Direction Direction `form:"direction" json:"direction"`
 	Cursor    string    `form:"cursor" json:"cursor"`
+	Filter    *struct {
+		Author *[]string `json:"author,omitempty"`
+		Post   *[]string `json:"post,omitempty"`
+	} `json:"filter,omitempty"`
+	Nested *struct {
+		Obj *struct {
+			NestedObj *string `json:"nestedObj,omitempty"`
+		} `json:"obj,omitempty"`
+	} `json:"nested,omitempty"`
+	ArrayFilter *[]GetPaginatedUsersParams_ArrayFilter_Item `form:"arrayFilter,omitempty" json:"arrayFilter,omitempty"`
+}
+
+// GetPaginatedUsersParamsArrayFilter0 defines parameters for GetPaginatedUsers.
+type GetPaginatedUsersParamsArrayFilter0 = string
+
+// GetPaginatedUsersParamsArrayFilter1 defines parameters for GetPaginatedUsers.
+type GetPaginatedUsersParamsArrayFilter1 = bool
+
+// GetPaginatedUsersParams_ArrayFilter_Item defines parameters for GetPaginatedUsers.
+type GetPaginatedUsersParams_ArrayFilter_Item struct {
+	union json.RawMessage
 }
 
 // UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.

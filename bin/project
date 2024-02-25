@@ -11,7 +11,7 @@ source ".helpers.sh"
 starting_cwd=$(pwd)
 ensure_pwd_is_top_level
 
-declare X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG X_NO_EXIT_CLEANUP
+declare X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG X_NO_EXIT_CLEANUP
 declare BUILD_VERSION
 
 readonly CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
@@ -48,11 +48,16 @@ readonly SWAGGER_UI_DIR="internal/static/swagger-ui"
 readonly FRONTEND_GEN="frontend/src/gen"
 readonly MAX_FNAME_LOG_LEN=13
 
+readonly TMP="${TMPDIR:-"/tmp"}"
+
 GEN_POSTGRES_DB="gen_db"
 
-dynamic_test_flags=()
+failed_tool_build_marker="$TMP/failed_tool_build_marker"
+rm -f "$failed_tool_build_marker"
+
+go_test_flags=()
 # shuffle disables go test caching. Definitely don't want in dev.
-test -n "$CI" && dynamic_test_flags+=("-shuffle=on")
+test -n "$CI" && go_test_flags+=("-shuffle=on")
 
 # determines whether gen cache should be restored at program exit, i.e. failed commands.
 # cache folder must be cleaned at exit if true.
@@ -265,31 +270,45 @@ x.bootstrap() {
 # Install miscellaneous tool binaries locally.
 x.install-tools() {
   { { {
-    go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2 &
-    go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.24.0 &
-    # for easier test search.
-    # NOTE: unrelated run test broken discovery: https://github.com/golang/vscode-go/issues/2719
-    # go install github.com/danicc097/go-test-renamer@v0.2.0 &
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2 &
-    go install github.com/tufin/oasdiff@latest &
-    go install golang.org/x/tools/cmd/goimports@latest &
-    go install mvdan.cc/gofumpt@latest &
-    go install mvdan.cc/sh/v3/cmd/shfmt@latest &
-    go install github.com/danicc097/air@latest &
-    go install github.com/danicc097/xo/v5@v5.6.0 &
-    go install github.com/mikefarah/yq/v4@v4.34.2 &
-    go install github.com/hexdigest/gowrap/cmd/gowrap@latest &
-    go install golang.org/x/tools/cmd/stringer@latest &
-
-    go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1 &
-    go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2 &
-
-    GO111MODULE=off go get -u github.com/maxbrunsfeld/counterfeiter &
+    declare -A jobs
+    local pids=() failed_jobs=()
 
     # install node libs with --prefix $TOOLS_DIR, if any
     # ...
+    # TODO: abstract to function that just accepts commands to run
+    # as it is we might just use parallel but may use own functions later.
+    commands=(
+      "go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@v4.15.2"
+      "go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.24.0"
+      "go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.55.2"
+      "go install github.com/tufin/oasdiff@v1.10.9"
+      "go install golang.org/x/tools/cmd/goimports@latest"
+      "go install mvdan.cc/gofumpt@latest"
+      "go install mvdan.cc/sh/v3/cmd/shfmt@latest"
+      "go install github.com/cosmtrek/air@latest"
+      "go install github.com/danicc097/xo/v5@v5.6.0"
+      "go install github.com/mikefarah/yq/v4@v4.34.2"
+      "go install github.com/hexdigest/gowrap/cmd/gowrap@latest"
+      "go install golang.org/x/tools/cmd/stringer@latest"
+      "go install github.com/maxbrunsfeld/counterfeiter/v6@latest"
+      "go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1"
+      "go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2"
+    )
+    for command in "${commands[@]}"; do
+      $command &
+      pids+=($!)
+      jobs[$!]="$command"
+    done
 
-    wait_without_error || err Could not install all tools. Try running 'go clean -cache' and retry. Else install with ' -mod=readonly' flag.
+    for pid in "${pids[@]}"; do
+      wait -fn "$pid" || failed_jobs+=("${jobs[$pid]}")
+    done
+
+    # For failing installs for no apparent reason, try running 'go clean -cache' and retry. Else install with ' -mod=readonly' flag.
+    if [[ ${#failed_jobs[@]} -gt 0 ]]; then
+      err "Could not install all tools. Failed jobs:
+$(join_by $'\n' "${failed_jobs[@]}")"
+    fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
@@ -321,7 +340,7 @@ x.gen.pregen() {
     # NOTE: swaggest won't generate for arrays of structs. use a struct with array fields instead.
     generate_structs_map # structs might have been removed in the meantime
 
-    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # xo gen may create/update models.
+    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || touch "$failed_tool_build_marker" # xo gen may create/update models.
 
     local rest_structs=() refs=() spec_schemas=()
     declare -A rest_schema_lookup spec_schema_lookup
@@ -640,7 +659,7 @@ clean_yq_array() {
 }
 
 go_test() {
-  APP_ENV="$X_ENV" go test ${dynamic_test_flags[@]} $@
+  APP_ENV="$X_ENV" go test ${go_test_flags[@]} $@
 }
 
 # Run post-generation scripts in the internal package.
@@ -663,6 +682,7 @@ x.gen.sqlc() {
   xsetup.drop-and-migrate-gen-db
   { { {
     echo "Running generation"
+    x.db.gen.export-schema
     rm -f "$PG_REPO_GEN"/db/*.sqlc.go
     x.lint.sql
     sqlc generate --experimental -f "$PG_REPO_DIR"/sqlc.yaml || err "Failed sqlc generation"
@@ -820,7 +840,7 @@ x.gen.client-server() {
     sed "s/\$ref: '\#\//\$ref: '$SPEC_PATH\#\//g" $SPEC_PATH >"$paths_file"
 
     # yq e 'del(.components)' -i "$paths_file" # dont delete since recent oapi-codegen does some checks even if we are not generating types
-    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]] # templates are embedded, required rebuild
+    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || touch "$failed_tool_build_marker" # templates are embedded, required rebuild
 
     # Generated types in models pkg will be used in services, repos, db, but rest package must use original
     # models from rest/models.go (source of generated spec schemas)
@@ -1047,14 +1067,11 @@ x.gen.build-tools() {
     mkdir -p $out_dir
     for cmd in jet oapi-codegen codegen ast-parser; do
       echo "Building $cmd..."
-      { go build -o $out_dir/$cmd cmd/$cmd/main.go || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]; } &
+      { go build -o $out_dir/$cmd cmd/$cmd/main.go || touch "$failed_tool_build_marker"; } &
     done
 
-    # TODO: when typecheck errors are all in *.gen.go files, don't error out.
-    # ignore if go build first error line is `# github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers`
-    # for example
-    wait_without_error || {
-      err Could not rebuild all gen tools. Rerun with --x-ignore-build-errors.
+    wait_without_error --no-kill || {
+      touch "$failed_tool_build_marker"
     }
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -1100,8 +1117,14 @@ linters-settings:
   exhaustruct:
     # lint struct usage in all packages that use them
     include:
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*CreateParams$'
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest\.DemoWorkItems$'
+      # internal/rest may need to run this, alongside all services structs
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*'
+      # - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*CreateParams$'
       - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos\.Repos$'
+    exclude:
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*UpdateParams$'
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*Joins$'
 # in case we want to run a linter on test files only
 # issues:
 #   exclude-rules:
@@ -1115,9 +1138,11 @@ EOF
   #                     via fixture factories, so we always want these up to date when a new field is added.
   # services: may construct db CreateParams from specific service models
   # repos: ensure all repos initialized (TODO: same for services)
+  # TODO: rest should force exhaust on services, rest and db structs.
   local packages=("
   internal/services
   internal/repos/postgresql/postgresqlrandom
+  internal/rest
   internal/repos
   ")
 
@@ -1164,9 +1189,7 @@ x.lint.sql() {
     "db"
   )
   for slq_dir in ${SQL_DIRS[@]}; do
-    # TODO:
-    # "pgFormatter.configFile": "./<...>", so we can use it in vscode settings too
-    pg_format --config .pg_format $(find "$slq_dir" -name '*.*sql')
+    pg_format --config .pg_format $(find "$slq_dir" -name '*.*sql' -not -path "db/schema.sql")
   done
 }
 
@@ -1340,7 +1363,7 @@ x.test.backend.watch-for() {
     echo "${tests[*]}"
   )
 
-  test_backend_watch -count=1 -run "^($fns)$" "$GOMOD_PKG/$dir" "${gotest_args[@]}"
+  test_backend_watch -run "^($fns)$" "$GOMOD_PKG/$dir" "${gotest_args[@]}"
 }
 
 # Run backend with hot-reloading.
@@ -1349,16 +1372,18 @@ x.run.backend-hr() {
   # to prevent either bombarding with req or having to wait too long at startup.
   # see https://github.com/moby/moby/issues/33410
   run_shared_services up -d --build --remove-orphans --wait
-  setup_swagger_ui
-  # NOTE: building binary very unreliable, leads to bin not found.
+
+  # https://github.com/cosmtrek/air/blob/master/air_example.toml
+  # NOTE: building binary unreliable, leads to bin not found.
+  local pre_build_cmd="project setup-swagger-ui"
   air \
-    --build.pre_build_cmd "$pre_build_cmd" \
+    --build.pre_cmd "$pre_build_cmd" \
     --build.cmd "" \
     --build.bin "go run ./cmd/rest-server/ -env=.env.$X_ENV" \
-    --build.include_ext "go" \
+    --build.include_ext "go,work,mod" \
+    --build.include_file "openapi.yaml" \
     --build.exclude_regex ".gen.go,_test.go" \
-    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,external,*.cache,$GEN_CACHE,$TOOLS_DIR" \
-    --build.stop_watch "internal/rest/,internal/services/" \
+    --build.exclude_dir ".git,tmp,$PROTO_DIR,$PG_REPO_GEN,**/testdata,vendor,frontend,external,*.cache,$GEN_CACHE,$TOOLS_DIR,internal/static/swagger-ui" \
     --build.delay 1000 \
     --build.exclude_unchanged "true" |
     sed -e "s/^/${BLUE}[Air]${OFF} /"
@@ -1422,7 +1447,7 @@ x.run-dockerized() {
 
   # x.gen
 
-  setup_swagger_ui
+  x.setup-swagger-ui
 
   DOCKER_BUILDKIT=1 BUILDKIT_PROGRESS=plain docker compose \
     --project-name "$PROJECT_PREFIX"_"$X_ENV" \
@@ -1829,7 +1854,22 @@ WHERE a.attisdropped = false
   AND (true OR a.attnum > 0)
   AND col_description(format('%s.%s', n.nspname, c.relname)::regclass::oid, isc.ordinal_position) is not null;"
 
-  docker.postgres psql --no-psqlrc -d $POSTGRES_DB -c "$query" 2>/dev/null
+  docker.postgres psql --no-psqlrc -d $GEN_POSTGRES_DB -c "$query" 2>/dev/null
+}
+
+# Shows current database table comments used in xo codegen
+# to ease further updates to comments in migrations.
+x.dev-utils.show-table-comments() {
+  local query="SELECT
+  c.relname AS table,
+  COALESCE(obj_description(c.oid, 'pg_class'), '') AS table_comment
+FROM pg_class c
+  JOIN pg_namespace n ON n.oid = c.relnamespace
+WHERE c.relkind = 'r'
+  AND n.nspname = 'public'
+  AND obj_description(c.oid, 'pg_class') IS NOT NULL;"
+
+  docker.postgres psql --no-psqlrc -d $GEN_POSTGRES_DB -c "$query" 2>/dev/null
 }
 
 # Setups a traefik container with predefined configuration in `install-dir`.
@@ -1878,7 +1918,6 @@ migrate_post() {
 # Wrapper for golang-migrate with predefined configuration.
 x.migrate() {
   { { {
-    echo "Running migrations"
     migrate \
       -path $MIGRATIONS_DIR/ \
       -database "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$EXPOSED_POSTGRES_PORT/$POSTGRES_DB?sslmode=disable" \
@@ -1910,7 +1949,7 @@ x.migrate.create() {
 ########################## db ##########################
 
 # Connects to the database container.
-x.db() {
+x.db.bash() {
   docker exec -it postgres_db_"$PROJECT_PREFIX" bash
 }
 
@@ -1967,6 +2006,12 @@ x.db.drop() {
   { { {
     docker.postgres.drop_and_recreate_db "$POSTGRES_DB"
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+x.db.gen.export-schema() {
+  local schema_path="db/schema.sql"
+  docker.postgres bash -c "pg_dump $GEN_POSTGRES_DB --column-inserts --exclude-table $MIGRATIONS_TABLE --exclude-table $POST_MIGRATIONS_TABLE" | sed -e '/^--/d' >"$schema_path"
+  # pg_format --config .pg_format "$schema_path"
 }
 
 # Drop and recreate the database used for code generation up to N, N-1 revisions or none.
@@ -2286,7 +2331,7 @@ sync_db_enums_with_spec() {
   done
 }
 
-setup_swagger_ui() {
+x.setup-swagger-ui() {
   go run cmd/swagger-ui-setup/main.go -env=".env.$X_ENV" -swagger-ui-dir=$SWAGGER_UI_DIR
 
   local bundle_spec="$SWAGGER_UI_DIR/openapi.yaml"
@@ -2381,7 +2426,7 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
   # always compile and run since we need new PublicStructs that were just changed
   codegen gen-schema --struct-names $struct_names_arg --existing-structs $existing_structs_arg | yq '
     with_entries(select(.key == "components"))' \
-    >$gen_schema_spec_path || [[ -n "$X_IGNORE_BUILD_ERRORS" ]]
+    >$gen_schema_spec_path || touch "$failed_tool_build_marker"
 
   local clashes=()
   for custom_schema in $(yq ".components.schemas[] | select((.x-is-generated == true) | not) | key" $SPEC_PATH); do
@@ -2438,7 +2483,8 @@ xo_schema() {
     "$@"
 }
 
-# updates dynamic config with env vars for
+# updates dynamic config.json with env vars for the given directory.
+# Requires an existing config.template.json
 config_template_setup() {
   local dir="$1"
   export ENV_REPLACE_GLOB=$dir/config.json
@@ -2446,7 +2492,7 @@ config_template_setup() {
   # this has to always be run at startup
   jq \
     'to_entries | map_values({ (.key) : ("$" + .key) }) | reduce .[] as $item ({}; . + $item)' \
-    $dir/config.template.json >/tmp/$dir-config.tmp.json && mv /tmp/$dir-config.tmp.json "$ENV_REPLACE_GLOB"
+    $dir/config.template.json >"$ENV_REPLACE_GLOB"
   envvars=$(printenv | awk -F= '{print $1}' | sed 's/^/\$/g' | paste -sd,)
   frontend/nginx/replace-envvars.sh "$envvars"
 }
@@ -2684,13 +2730,6 @@ while [[ "$#" -gt 0 ]]; do
     usage
     exit
     ;;
-  --x-ignore-build-errors)
-    # Proceeds with code generation regardless of tool rebuild errors.
-    # Use in case of compilation errors that depend on generated code.
-    # A clean gen run is required afterwards.
-    export X_IGNORE_BUILD_ERRORS=1
-    # export X_NO_BACKUP=1 # on failed gen $GEN_CACHE is cleared, shouldn't be necessary
-    ;;
   --x-force-regen)
     # Removes code generation cache, forcing a new run.
     export X_FORCE_REGEN=1
@@ -2738,7 +2777,7 @@ done
 
 export BUILD_VERSION="$X_ENV-$(git rev-parse --verify HEAD)"
 
-readonly X_IGNORE_BUILD_ERRORS X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG X_NO_EXIT_CLEANUP
+readonly X_FORCE_REGEN X_NO_CONFIRMATION X_NO_GEN X_NO_BACKUP X_ENV X_DEBUG X_NO_EXIT_CLEANUP
 readonly base_cache_deps="bin/project bin/.helpers.sh .env.$X_ENV"
 
 ######################## INIT ########################
@@ -2829,8 +2868,8 @@ if [[ -n "$1" ]]; then
 
       "x.$CMD" "$@"
 
-      if [[ -n $X_IGNORE_BUILD_ERRORS ]]; then
-        echo "${YELLOW}[WARNING] A rerun without ignoring build errors may be required"
+      if test -f "$failed_tool_build_marker"; then
+        echo "${YELLOW}[WARNING] At least one gen tool build failed. A gen rerun may be required"
       fi
       exit $? # do not quote
     fi

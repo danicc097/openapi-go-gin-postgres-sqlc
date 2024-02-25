@@ -74,7 +74,7 @@ linters-settings:
       - stdlib
       - "go.opentelemetry.io/otel/trace.Span"
   varnamelen:
-    max-distance: 10
+    max-distance: 20
     ignore-type-assert-ok: true
     ignore-map-index-ok: true
     ignore-chan-recv-ok: true

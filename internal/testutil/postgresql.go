@@ -115,6 +115,10 @@ func NewDB(options ...TestDBOption) (*pgxpool.Pool, *sql.DB, error) {
 		printMigrationsState(pool)
 	}
 
+	// TODO: raise statements cannot be logged with golang-migrate since it doesnt accept pgx conn (has OnNotice)
+	// maybe could use pg_notify alongside pgx - channel name internal.Config.ProjectPrefix
+	//  see: https://github.com/jackc/pgxlisten/blob/master/pgxlisten_test.go
+	// at the end of migrations we show all notifications.
 	driver, err := migratepostgres.WithInstance(sqlpool, &migratepostgres.Config{MigrationsTable: "schema_migrations"})
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't migrate (migrations): %s\n", err))

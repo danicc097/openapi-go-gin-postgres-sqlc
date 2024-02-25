@@ -52,6 +52,7 @@ func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Ser
 	// in our user service methods.
 	workitemcommentsvc := NewWorkItemComment(logger, repos)
 
+	// using struct for easier automated appending later on. forced fill via exhaustruct
 	return &Services{
 		WorkItemComment: workitemcommentsvc,
 		Activity:        activitysvc,

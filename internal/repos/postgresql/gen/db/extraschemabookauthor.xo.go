@@ -31,8 +31,8 @@ type ExtraSchemaBookAuthor struct {
 	AuthorID  ExtraSchemaUserID `json:"authorID" db:"author_id" required:"true" nullable:"false"` // author_id
 	Pseudonym *string           `json:"pseudonym" db:"pseudonym"`                                 // pseudonym
 
-	AuthorBooksJoin *[]Book__BA_ExtraSchemaBookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
-	BookAuthorsJoin *[]User__BA_ExtraSchemaBookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
+	BooksJoin   *[]Book__BA_ExtraSchemaBookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
+	AuthorsJoin *[]User__BA_ExtraSchemaBookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
 
 }
 
@@ -77,16 +77,16 @@ type ExtraSchemaBookAuthorOrderBy string
 const ()
 
 type ExtraSchemaBookAuthorJoins struct {
-	BooksAuthor bool // M2M book_authors
-	AuthorsBook bool // M2M book_authors
+	Books   bool // M2M book_authors
+	Authors bool // M2M book_authors
 }
 
 // WithExtraSchemaBookAuthorJoin joins with the given tables.
 func WithExtraSchemaBookAuthorJoin(joins ExtraSchemaBookAuthorJoins) ExtraSchemaBookAuthorSelectConfigOption {
 	return func(s *ExtraSchemaBookAuthorSelectConfig) {
 		s.joins = ExtraSchemaBookAuthorJoins{
-			BooksAuthor: s.joins.BooksAuthor || joins.BooksAuthor,
-			AuthorsBook: s.joins.AuthorsBook || joins.AuthorsBook,
+			Books:   s.joins.Books || joins.Books,
+			Authors: s.joins.Authors || joins.Authors,
 		}
 	}
 }
@@ -121,10 +121,14 @@ func WithExtraSchemaBookAuthorFilters(filters map[string][]any) ExtraSchemaBookA
 // WithExtraSchemaBookAuthorHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithExtraSchemaBookAuthorHavingClause(conditions map[string][]any) ExtraSchemaBookAuthorSelectConfigOption {
 	return func(s *ExtraSchemaBookAuthorSelectConfig) {
@@ -132,7 +136,7 @@ func WithExtraSchemaBookAuthorHavingClause(conditions map[string][]any) ExtraSch
 	}
 }
 
-const extraSchemaBookAuthorTableBooksAuthorJoinSQL = `-- M2M join generated from "book_authors_book_id_fkey"
+const extraSchemaBookAuthorTableBooksJoinSQL = `-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 		book_authors.author_id as book_authors_author_id
@@ -146,18 +150,18 @@ left join (
 		book_authors_author_id
 		, books.book_id
 		, pseudonym
-) as joined_book_authors_books on joined_book_authors_books.book_authors_author_id = book_authors.author_id
+) as xo_join_book_authors_books on xo_join_book_authors_books.book_authors_author_id = book_authors.author_id
 `
 
-const extraSchemaBookAuthorTableBooksAuthorSelectSQL = `COALESCE(
+const extraSchemaBookAuthorTableBooksSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_books.__books
-		, joined_book_authors_books.pseudonym
-		)) filter (where joined_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
+		xo_join_book_authors_books.__books
+		, xo_join_book_authors_books.pseudonym
+		)) filter (where xo_join_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
 
-const extraSchemaBookAuthorTableBooksAuthorGroupBySQL = `book_authors.author_id, book_authors.book_id, book_authors.author_id`
+const extraSchemaBookAuthorTableBooksGroupBySQL = `book_authors.author_id, book_authors.book_id, book_authors.author_id`
 
-const extraSchemaBookAuthorTableAuthorsBookJoinSQL = `-- M2M join generated from "book_authors_author_id_fkey"
+const extraSchemaBookAuthorTableAuthorsJoinSQL = `-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 		book_authors.book_id as book_authors_book_id
@@ -171,16 +175,16 @@ left join (
 		book_authors_book_id
 		, users.user_id
 		, pseudonym
-) as joined_book_authors_authors on joined_book_authors_authors.book_authors_book_id = book_authors.book_id
+) as xo_join_book_authors_authors on xo_join_book_authors_authors.book_authors_book_id = book_authors.book_id
 `
 
-const extraSchemaBookAuthorTableAuthorsBookSelectSQL = `COALESCE(
+const extraSchemaBookAuthorTableAuthorsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		joined_book_authors_authors.__users
-		, joined_book_authors_authors.pseudonym
-		)) filter (where joined_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
+		xo_join_book_authors_authors.__users
+		, xo_join_book_authors_authors.pseudonym
+		)) filter (where xo_join_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
 
-const extraSchemaBookAuthorTableAuthorsBookGroupBySQL = `book_authors.book_id, book_authors.book_id, book_authors.author_id`
+const extraSchemaBookAuthorTableAuthorsGroupBySQL = `book_authors.book_id, book_authors.book_id, book_authors.author_id`
 
 // ExtraSchemaBookAuthorUpdateParams represents update params for 'extra_schema.book_authors'.
 type ExtraSchemaBookAuthorUpdateParams struct {
@@ -339,16 +343,16 @@ func ExtraSchemaBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID Ex
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, extraSchemaBookAuthorTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaBookAuthorTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableBooksAuthorGroupBySQL)
+	if c.joins.Books {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorTableBooksSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorTableBooksJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableBooksGroupBySQL)
 	}
 
-	if c.joins.AuthorsBook {
-		selectClauses = append(selectClauses, extraSchemaBookAuthorTableAuthorsBookSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaBookAuthorTableAuthorsBookJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableAuthorsBookGroupBySQL)
+	if c.joins.Authors {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorTableAuthorsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorTableAuthorsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableAuthorsGroupBySQL)
 	}
 
 	selects := ""
@@ -440,16 +444,16 @@ func ExtraSchemaBookAuthorsByBookID(ctx context.Context, db DB, bookID ExtraSche
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, extraSchemaBookAuthorTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaBookAuthorTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableBooksAuthorGroupBySQL)
+	if c.joins.Books {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorTableBooksSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorTableBooksJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableBooksGroupBySQL)
 	}
 
-	if c.joins.AuthorsBook {
-		selectClauses = append(selectClauses, extraSchemaBookAuthorTableAuthorsBookSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaBookAuthorTableAuthorsBookJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableAuthorsBookGroupBySQL)
+	if c.joins.Authors {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorTableAuthorsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorTableAuthorsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableAuthorsGroupBySQL)
 	}
 
 	selects := ""
@@ -543,16 +547,16 @@ func ExtraSchemaBookAuthorsByAuthorID(ctx context.Context, db DB, authorID Extra
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.BooksAuthor {
-		selectClauses = append(selectClauses, extraSchemaBookAuthorTableBooksAuthorSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaBookAuthorTableBooksAuthorJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableBooksAuthorGroupBySQL)
+	if c.joins.Books {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorTableBooksSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorTableBooksJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableBooksGroupBySQL)
 	}
 
-	if c.joins.AuthorsBook {
-		selectClauses = append(selectClauses, extraSchemaBookAuthorTableAuthorsBookSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaBookAuthorTableAuthorsBookJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableAuthorsBookGroupBySQL)
+	if c.joins.Authors {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorTableAuthorsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorTableAuthorsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableAuthorsGroupBySQL)
 	}
 
 	selects := ""

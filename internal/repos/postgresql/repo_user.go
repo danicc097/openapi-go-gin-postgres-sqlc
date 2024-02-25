@@ -43,14 +43,14 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParam
 func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPaginatedUsersParams) ([]db.User, error) {
 	createdAt, err := time.Parse(time.RFC3339, params.Cursor)
 	if err != nil {
-		return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid cursor for paginated notifications: %s", params.Cursor)
+		return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid createdAt cursor for paginated notifications: %s", params.Cursor)
 	}
 
 	opts := []db.UserSelectConfigOption{
 		db.WithUserFilters(map[string][]any{
 			// restrict as desired
 		}),
-		db.WithUserJoin(db.UserJoins{TeamsMember: true, ProjectsMember: true}),
+		db.WithUserJoin(db.UserJoins{MemberTeams: true, MemberProjects: true}),
 	}
 	if params.Limit > 0 { // for users, allow 0 or less to fetch all
 		opts = append(opts, db.WithUserLimit(params.Limit))
@@ -115,12 +115,12 @@ func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.
 }
 
 func (u *User) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamID) ([]db.User, error) {
-	team, err := db.TeamByTeamID(ctx, d, teamID, db.WithTeamJoin(db.TeamJoins{MembersTeam: true}))
+	team, err := db.TeamByTeamID(ctx, d, teamID, db.WithTeamJoin(db.TeamJoins{Members: true}))
 	if err != nil {
 		return []db.User{}, fmt.Errorf("could not get users by team: %w", ParseDBErrorDetail(err))
 	}
 
-	return *team.TeamMembersJoin, nil
+	return *team.MembersJoin, nil
 }
 
 func (u *User) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID) ([]db.User, error) {

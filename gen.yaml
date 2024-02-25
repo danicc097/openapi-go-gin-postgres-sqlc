@@ -1,3 +1,0 @@
-x-teamIDParameter: &x-teamIDParameter
-  !!merge <<: *x-serialIDParameterBase
-  name: teamID

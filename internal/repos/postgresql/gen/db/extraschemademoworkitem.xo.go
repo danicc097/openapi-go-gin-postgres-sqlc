@@ -104,10 +104,14 @@ func WithExtraSchemaDemoWorkItemFilters(filters map[string][]any) ExtraSchemaDem
 // WithExtraSchemaDemoWorkItemHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithExtraSchemaDemoWorkItemHavingClause(conditions map[string][]any) ExtraSchemaDemoWorkItemSelectConfigOption {
 	return func(s *ExtraSchemaDemoWorkItemSelectConfig) {

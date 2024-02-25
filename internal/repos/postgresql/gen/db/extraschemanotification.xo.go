@@ -34,8 +34,8 @@ type ExtraSchemaNotification struct {
 	Receiver                    *ExtraSchemaUserID          `json:"receiver" db:"receiver"`                                                                                               // receiver
 	ExtraSchemaNotificationType ExtraSchemaNotificationType `json:"notificationType" db:"notification_type" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 
-	ReceiverJoin *ExtraSchemaUser `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
-	SenderJoin   *ExtraSchemaUser `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
+	UserReceiverJoin *ExtraSchemaUser `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
+	UserSenderJoin   *ExtraSchemaUser `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
 
 }
 
@@ -116,10 +116,14 @@ func WithExtraSchemaNotificationFilters(filters map[string][]any) ExtraSchemaNot
 // WithExtraSchemaNotificationHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
 // with $i to prevent SQL injection.
 // Example:
+// WithUserHavingClause adds the given HAVING clause conditions, which can be dynamically parameterized
+// with $i to prevent SQL injection.
+// Example:
 //
-//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId
+//	// filter a given aggregate of assigned users to return results where at least one of them has id of userId.
+//	// See xo_join_* alias used by the join db tag in the SelectSQL string.
 //	filters := map[string][]any{
-//	"$i = ANY(ARRAY_AGG(assigned_users_join.user_id))": {userId},
+//	"$i = ANY(ARRAY_AGG(xo_join_assigned_users_join.user_id))": {userId},
 //	}
 func WithExtraSchemaNotificationHavingClause(conditions map[string][]any) ExtraSchemaNotificationSelectConfigOption {
 	return func(s *ExtraSchemaNotificationSelectConfig) {
