@@ -64,7 +64,7 @@
     "ajv-formats": "^2.1.1",
     "axios": "^1.2.1",
     "clsx": "^2.0.0",
-    "dayjs": "^1.11.8",
+    "dayjs": "^1.11.10",
     "dotenv": "^16.0.2",
     "fake-indexeddb": "^5.0.1",
     "framer-motion": "^7.6.7",

@@ -40,7 +40,7 @@ dependencies:
     version: 7.4.1(@mantine/hooks@7.4.1)(@types/react@18.0.26)(react-dom@18.2.0)(react@18.2.0)
   '@mantine/dates':
     specifier: 7.4.1
-    version: 7.4.1(@mantine/core@7.4.1)(@mantine/hooks@7.4.1)(dayjs@1.11.8)(react-dom@18.2.0)(react@18.2.0)
+    version: 7.4.1(@mantine/core@7.4.1)(@mantine/hooks@7.4.1)(dayjs@1.11.10)(react-dom@18.2.0)(react@18.2.0)
   '@mantine/hooks':
     specifier: 7.4.1
     version: 7.4.1(react@18.2.0)
@@ -150,8 +150,8 @@ dependencies:
     specifier: ^2.0.0
     version: 2.0.0
   dayjs:
-    specifier: ^1.11.8
-    version: 1.11.8
+    specifier: ^1.11.10
+    version: 1.11.10
   dotenv:
     specifier: ^16.0.2
     version: 16.0.2
@@ -1687,7 +1687,7 @@ packages:
       - '@types/react'
     dev: false
 
-  /@mantine/dates@7.4.1(@mantine/core@7.4.1)(@mantine/hooks@7.4.1)(dayjs@1.11.8)(react-dom@18.2.0)(react@18.2.0):
+  /@mantine/dates@7.4.1(@mantine/core@7.4.1)(@mantine/hooks@7.4.1)(dayjs@1.11.10)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-a7DNeJmLCgnFbd9NAEQ/LP998zLFPu8IWVjtJY/YJ4OUIDLEPi56OzuopA3epVzGkMcEvL4Ak78Z23KfZPJepg==}
     peerDependencies:
       '@mantine/core': 7.4.1
@@ -1699,7 +1699,7 @@ packages:
       '@mantine/core': 7.4.1(@mantine/hooks@7.4.1)(@types/react@18.0.26)(react-dom@18.2.0)(react@18.2.0)
       '@mantine/hooks': 7.4.1(react@18.2.0)
       clsx: 2.0.0
-      dayjs: 1.11.8
+      dayjs: 1.11.10
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
     dev: false
@@ -4079,8 +4079,8 @@ packages:
       whatwg-mimetype: 3.0.0
       whatwg-url: 11.0.0
 
-  /dayjs@1.11.8:
-    resolution: {integrity: sha512-LcgxzFoWMEPO7ggRv1Y2N31hUf2R0Vj7fuy/m+Bg1K8rr+KAs1AEy4y9jd5DXe8pbHgX+srkHNS7TH6Q6ZhYeQ==}
+  /dayjs@1.11.10:
+    resolution: {integrity: sha512-vjAczensTgRcqDERK0SR2XMwsF/tSvnvlv6VcF2GIhg6Sx4yOIt/irsr1RDJsKiIyBzJDpCoXiWWq28MqH2cnQ==}
     dev: false
 
   /debug@2.6.9:
