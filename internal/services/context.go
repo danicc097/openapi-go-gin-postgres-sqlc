@@ -15,7 +15,7 @@ type CtxUser struct {
 func NewCtxUser(user *db.User) *CtxUser {
 	return &CtxUser{
 		User:     user,
-		Teams:    *user.TeamsJoin,
+		Teams:    *user.MemberTeamsJoin,
 		Projects: *user.ProjectsJoin,
 	}
 }

@@ -111,7 +111,7 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 		items[i] = User{
 			User:     &u,
 			Role:     Role(role.Name),
-			Teams:    u.TeamsJoin,
+			Teams:    u.MemberTeamsJoin,
 			Projects: u.ProjectsJoin,
 		}
 	}

@@ -27,7 +27,7 @@ func NewWorkItem(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItem {
 		logger: logger,
 		repos:  repos,
 		getSharedDBOpts: func() []db.WorkItemSelectConfigOption {
-			return []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, WorkItemTags: true})}
+			return []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{WorkItemAssignedUsers: true, WorkItemWorkItemTags: true})}
 		},
 	}
 }
@@ -39,13 +39,13 @@ func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItemID db.Wor
 	}
 
 	for idx, member := range members {
-		user, err := w.repos.User.ByID(ctx, d, member.UserID, db.WithUserJoin(db.UserJoins{Teams: true}))
+		user, err := w.repos.User.ByID(ctx, d, member.UserID, db.WithUserJoin(db.UserJoins{MemberTeams: true}))
 		if err != nil {
 			return internal.WrapErrorWithLocf(err, models.ErrorCodeNotFound, []string{strconv.Itoa(idx)}, "user with id %s not found", member.UserID)
 		}
 
 		var userInTeam bool
-		for _, team := range *user.TeamsJoin {
+		for _, team := range *user.MemberTeamsJoin {
 			if team.TeamID == wi.TeamID {
 				userInTeam = true
 			}

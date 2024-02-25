@@ -50,7 +50,7 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPagina
 		db.WithUserFilters(map[string][]any{
 			// restrict as desired
 		}),
-		db.WithUserJoin(db.UserJoins{Teams: true, Projects: true}),
+		db.WithUserJoin(db.UserJoins{MemberTeams: true, MemberProjects: true}),
 	}
 	if params.Limit > 0 { // for users, allow 0 or less to fetch all
 		opts = append(opts, db.WithUserLimit(params.Limit))
@@ -115,12 +115,12 @@ func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.
 }
 
 func (u *User) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamID) ([]db.User, error) {
-	team, err := db.TeamByTeamID(ctx, d, teamID, db.WithTeamJoin(db.TeamJoins{Members: true}))
+	team, err := db.TeamByTeamID(ctx, d, teamID, db.WithTeamJoin(db.TeamJoins{TeamMembers: true}))
 	if err != nil {
 		return []db.User{}, fmt.Errorf("could not get users by team: %w", ParseDBErrorDetail(err))
 	}
 
-	return *team.MembersJoin, nil
+	return *team.TeamMembersJoin, nil
 }
 
 func (u *User) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID) ([]db.User, error) {
