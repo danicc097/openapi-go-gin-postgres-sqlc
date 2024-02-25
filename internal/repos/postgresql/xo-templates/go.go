@@ -2274,15 +2274,13 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 			notes += string(c.Cardinality) + " " + c.TableName
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 			goName = camelExport(inflector.Pluralize(lookupName))
-			// lc := camelExport(strings.TrimSuffix(c.LookupColumnName, "_id"))
-			// TODO: should call joins where field names dont match with suffix.
-			// e.g. having sender and receiver columns in notifications table
-			// both reference user_id. if it were user_id or user column
-			// it would just call it UserJoin.
-			// if c.JoinTableClash {
-			// 	goName = lc + goName
-			// }
 
+			rc := camelExport(strings.TrimSuffix(c.RefColumnName, "_id"))
+			rlc := camelExport(strings.TrimSuffix(c.LookupRefColumnName, "_id"))
+			lc := camelExport(strings.TrimSuffix(c.LookupColumnName, "_id"))
+			if rlc != rc { // with M2M just add acronym if it clashes
+				goName = lc + goName
+			}
 			lookupTable := tables[c.TableName]
 			m2mExtraCols := getTableRegularFields(lookupTable)
 			if len(m2mExtraCols) > 0 {
@@ -2331,7 +2329,7 @@ type %s struct {
 			notes += string(c.Cardinality) + " " + c.TableName
 			goName = camelExport(c.TableName)
 			if c.JoinTableClash {
-				goName = goName + camelExport(c.ColumnName)
+				goName = camelExport(c.ColumnName) + goName
 			}
 		case O2O:
 			if c.TableName != sqlname {
@@ -2822,16 +2820,19 @@ func (f *Funcs) joinNames(t Table) []string {
 		case M2M:
 			lookupName := strings.TrimSuffix(c.ColumnName, "_id")
 			joinName = camelExport(inflector.Pluralize(lookupName))
-			// lc := camelExport(strings.TrimSuffix(c.LookupColumnName, "_id"))
-			// if c.JoinTableClash {
-			// 	joinName = lc + joinName
-			// }
+			rc := camelExport(strings.TrimSuffix(c.RefColumnName, "_id"))
+			rlc := camelExport(strings.TrimSuffix(c.LookupRefColumnName, "_id"))
+			lc := camelExport(strings.TrimSuffix(c.LookupColumnName, "_id"))
+			if rlc != rc { // with M2M just add acronym if it clashes
+				joinName = lc + joinName
+			}
 		case M2O:
-			if c.RefTableName == t.SQLName {
-				joinName = camelExport(c.TableName)
-				if c.JoinTableClash {
-					joinName = joinName + camelExport(c.ColumnName)
-				}
+			if c.RefTableName != t.SQLName {
+				continue
+			}
+			joinName = camelExport(c.TableName)
+			if c.JoinTableClash {
+				joinName = camelExport(c.ColumnName) + joinName
 			}
 		case O2O:
 			if c.TableName == t.SQLName {
@@ -4267,10 +4268,6 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			rc := camelExport(strings.TrimSuffix(c.RefColumnName, "_id"))
 			rlc := camelExport(strings.TrimSuffix(c.LookupRefColumnName, "_id"))
 			lc := camelExport(strings.TrimSuffix(c.LookupColumnName, "_id"))
-			// fmt.Printf("rc: %v\n", rc)
-			// fmt.Printf("rlc: %v\n", rlc)
-			// fmt.Printf("lc: %v\n", lc)
-			// fmt.Printf("col: %v\n", col)
 			if rlc != rc { // with M2M just add acronym if it clashes
 				goName = lc + goName
 			}
@@ -4295,7 +4292,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			typ = camelExport(singularize(c.TableName))
 			goName = camelExport(c.TableName)
 			if c.JoinTableClash {
-				goName = goName + camelExport(c.ColumnName)
+				goName = camelExport(c.ColumnName) + goName
 			}
 			for _, g := range goNames {
 				if g == goName+"Join" {

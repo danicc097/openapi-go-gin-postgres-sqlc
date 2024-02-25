@@ -74,16 +74,16 @@ func WithXoTestsWorkItemAssignedUserLimit(limit int) XoTestsWorkItemAssignedUser
 type XoTestsWorkItemAssignedUserOrderBy string
 
 type XoTestsWorkItemAssignedUserJoins struct {
-	WorkItems     bool // M2M work_item_assigned_user
-	AssignedUsers bool // M2M work_item_assigned_user
+	AssignedUserWorkItems bool // M2M work_item_assigned_user
+	WorkItemAssignedUsers bool // M2M work_item_assigned_user
 }
 
 // WithXoTestsWorkItemAssignedUserJoin joins with the given tables.
 func WithXoTestsWorkItemAssignedUserJoin(joins XoTestsWorkItemAssignedUserJoins) XoTestsWorkItemAssignedUserSelectConfigOption {
 	return func(s *XoTestsWorkItemAssignedUserSelectConfig) {
 		s.joins = XoTestsWorkItemAssignedUserJoins{
-			WorkItems:     s.joins.WorkItems || joins.WorkItems,
-			AssignedUsers: s.joins.AssignedUsers || joins.AssignedUsers,
+			AssignedUserWorkItems: s.joins.AssignedUserWorkItems || joins.AssignedUserWorkItems,
+			WorkItemAssignedUsers: s.joins.WorkItemAssignedUsers || joins.WorkItemAssignedUsers,
 		}
 	}
 }
@@ -133,7 +133,7 @@ func WithXoTestsWorkItemAssignedUserHavingClause(conditions map[string][]any) Xo
 	}
 }
 
-const xoTestsWorkItemAssignedUserTableWorkItemsJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+const xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
 		work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
@@ -150,15 +150,15 @@ left join (
 ) as xo_join_work_item_assigned_user_work_items on xo_join_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = work_item_assigned_user.assigned_user
 `
 
-const xoTestsWorkItemAssignedUserTableWorkItemsSelectSQL = `COALESCE(
+const xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_assigned_user_work_items.__work_items
 		, xo_join_work_item_assigned_user_work_items.role
 		)) filter (where xo_join_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
-const xoTestsWorkItemAssignedUserTableWorkItemsGroupBySQL = `work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
+const xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsGroupBySQL = `work_item_assigned_user.assigned_user, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
 
-const xoTestsWorkItemAssignedUserTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
+const xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
 left join (
 	select
 		work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
@@ -175,13 +175,13 @@ left join (
 ) as xo_join_work_item_assigned_user_assigned_users on xo_join_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_item_assigned_user.work_item_id
 `
 
-const xoTestsWorkItemAssignedUserTableAssignedUsersSelectSQL = `COALESCE(
+const xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_assigned_user_assigned_users.__users
 		, xo_join_work_item_assigned_user_assigned_users.role
 		)) filter (where xo_join_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
-const xoTestsWorkItemAssignedUserTableAssignedUsersGroupBySQL = `work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
+const xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersGroupBySQL = `work_item_assigned_user.work_item_id, work_item_assigned_user.work_item_id, work_item_assigned_user.assigned_user`
 
 // XoTestsWorkItemAssignedUserUpdateParams represents update params for 'xo_tests.work_item_assigned_user'.
 type XoTestsWorkItemAssignedUserUpdateParams struct {
@@ -340,16 +340,16 @@ func XoTestsWorkItemAssignedUsersByAssignedUserWorkItemID(ctx context.Context, d
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.WorkItems {
-		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableWorkItemsGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableAssignedUsersGroupBySQL)
+	if c.joins.WorkItemAssignedUsers {
+		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersGroupBySQL)
 	}
 
 	selects := ""
@@ -443,16 +443,16 @@ func XoTestsWorkItemAssignedUserByWorkItemIDAssignedUser(ctx context.Context, db
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.WorkItems {
-		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableWorkItemsGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableAssignedUsersGroupBySQL)
+	if c.joins.WorkItemAssignedUsers {
+		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersGroupBySQL)
 	}
 
 	selects := ""
@@ -544,16 +544,16 @@ func XoTestsWorkItemAssignedUsersByWorkItemID(ctx context.Context, db DB, workIt
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.WorkItems {
-		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableWorkItemsGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableAssignedUsersGroupBySQL)
+	if c.joins.WorkItemAssignedUsers {
+		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersGroupBySQL)
 	}
 
 	selects := ""
@@ -647,16 +647,16 @@ func XoTestsWorkItemAssignedUsersByAssignedUser(ctx context.Context, db DB, assi
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.WorkItems {
-		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableWorkItemsGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableAssignedUserWorkItemsGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableAssignedUsersGroupBySQL)
+	if c.joins.WorkItemAssignedUsers {
+		selectClauses = append(selectClauses, xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemAssignedUserTableWorkItemAssignedUsersGroupBySQL)
 	}
 
 	selects := ""

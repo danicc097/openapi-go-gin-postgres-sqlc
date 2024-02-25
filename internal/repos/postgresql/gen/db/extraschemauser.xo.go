@@ -41,8 +41,8 @@ type ExtraSchemaUser struct {
 	AuthorBooksBASKJoin       *[]Book__BASK_ExtraSchemaUser     `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
 	BookReviewsJoin           *[]ExtraSchemaBookReview          `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O users
 	SellerBooksJoin           *[]ExtraSchemaBook                `json:"-" db:"book_sellers_books" openapi-go:"ignore"`                 // M2M book_sellers
-	NotificationsReceiverJoin *[]ExtraSchemaNotification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
-	NotificationsSenderJoin   *[]ExtraSchemaNotification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
+	ReceiverNotificationsJoin *[]ExtraSchemaNotification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
+	SenderNotificationsJoin   *[]ExtraSchemaNotification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
 	UserAPIKeyJoin            *ExtraSchemaUserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
 	AdminWorkItemsJoin        *[]ExtraSchemaWorkItem            `json:"-" db:"work_item_admin_work_items" openapi-go:"ignore"`         // M2M work_item_admin
 	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_ExtraSchemaUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
@@ -130,30 +130,30 @@ func WithExtraSchemaUserOrderBy(rows ...ExtraSchemaUserOrderBy) ExtraSchemaUserS
 }
 
 type ExtraSchemaUserJoins struct {
-	Books                 bool // M2M book_authors
-	BooksBASK             bool // M2M book_authors_surrogate_key
+	AuthorBooks           bool // M2M book_authors
+	AuthorBooksBASK       bool // M2M book_authors_surrogate_key
 	BookReviews           bool // M2O book_reviews
-	BooksBS               bool // M2M book_sellers
-	NotificationsReceiver bool // M2O notifications
-	NotificationsSender   bool // M2O notifications
+	SellerBooks           bool // M2M book_sellers
+	ReceiverNotifications bool // M2O notifications
+	SenderNotifications   bool // M2O notifications
 	UserAPIKey            bool // O2O user_api_keys
-	WorkItems             bool // M2M work_item_admin
-	WorkItemsWIAU         bool // M2M work_item_assigned_user
+	AdminWorkItems        bool // M2M work_item_admin
+	AssignedUserWorkItems bool // M2M work_item_assigned_user
 }
 
 // WithExtraSchemaUserJoin joins with the given tables.
 func WithExtraSchemaUserJoin(joins ExtraSchemaUserJoins) ExtraSchemaUserSelectConfigOption {
 	return func(s *ExtraSchemaUserSelectConfig) {
 		s.joins = ExtraSchemaUserJoins{
-			Books:                 s.joins.Books || joins.Books,
-			BooksBASK:             s.joins.BooksBASK || joins.BooksBASK,
+			AuthorBooks:           s.joins.AuthorBooks || joins.AuthorBooks,
+			AuthorBooksBASK:       s.joins.AuthorBooksBASK || joins.AuthorBooksBASK,
 			BookReviews:           s.joins.BookReviews || joins.BookReviews,
-			BooksBS:               s.joins.BooksBS || joins.BooksBS,
-			NotificationsReceiver: s.joins.NotificationsReceiver || joins.NotificationsReceiver,
-			NotificationsSender:   s.joins.NotificationsSender || joins.NotificationsSender,
+			SellerBooks:           s.joins.SellerBooks || joins.SellerBooks,
+			ReceiverNotifications: s.joins.ReceiverNotifications || joins.ReceiverNotifications,
+			SenderNotifications:   s.joins.SenderNotifications || joins.SenderNotifications,
 			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
-			WorkItems:             s.joins.WorkItems || joins.WorkItems,
-			WorkItemsWIAU:         s.joins.WorkItemsWIAU || joins.WorkItemsWIAU,
+			AdminWorkItems:        s.joins.AdminWorkItems || joins.AdminWorkItems,
+			AssignedUserWorkItems: s.joins.AssignedUserWorkItems || joins.AssignedUserWorkItems,
 		}
 	}
 }
@@ -209,7 +209,7 @@ func WithExtraSchemaUserHavingClause(conditions map[string][]any) ExtraSchemaUse
 	}
 }
 
-const extraSchemaUserTableBooksJoinSQL = `-- M2M join generated from "book_authors_book_id_fkey"
+const extraSchemaUserTableAuthorBooksJoinSQL = `-- M2M join generated from "book_authors_book_id_fkey"
 left join (
 	select
 		book_authors.author_id as book_authors_author_id
@@ -226,15 +226,15 @@ left join (
 ) as xo_join_book_authors_books on xo_join_book_authors_books.book_authors_author_id = users.user_id
 `
 
-const extraSchemaUserTableBooksSelectSQL = `COALESCE(
+const extraSchemaUserTableAuthorBooksSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_book_authors_books.__books
 		, xo_join_book_authors_books.pseudonym
 		)) filter (where xo_join_book_authors_books.__books_book_id is not null), '{}') as book_authors_books`
 
-const extraSchemaUserTableBooksGroupBySQL = `users.user_id, users.user_id`
+const extraSchemaUserTableAuthorBooksGroupBySQL = `users.user_id, users.user_id`
 
-const extraSchemaUserTableBooksBASKJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
+const extraSchemaUserTableAuthorBooksBASKJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_book_id_fkey"
 left join (
 	select
 		book_authors_surrogate_key.author_id as book_authors_surrogate_key_author_id
@@ -251,13 +251,13 @@ left join (
 ) as xo_join_book_authors_surrogate_key_books on xo_join_book_authors_surrogate_key_books.book_authors_surrogate_key_author_id = users.user_id
 `
 
-const extraSchemaUserTableBooksBASKSelectSQL = `COALESCE(
+const extraSchemaUserTableAuthorBooksBASKSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_book_authors_surrogate_key_books.__books
 		, xo_join_book_authors_surrogate_key_books.pseudonym
 		)) filter (where xo_join_book_authors_surrogate_key_books.__books_book_id is not null), '{}') as book_authors_surrogate_key_books`
 
-const extraSchemaUserTableBooksBASKGroupBySQL = `users.user_id, users.user_id`
+const extraSchemaUserTableAuthorBooksBASKGroupBySQL = `users.user_id, users.user_id`
 
 const extraSchemaUserTableBookReviewsJoinSQL = `-- M2O join generated from "book_reviews_reviewer_fkey"
 left join (
@@ -275,7 +275,7 @@ const extraSchemaUserTableBookReviewsSelectSQL = `COALESCE(xo_join_book_reviews.
 
 const extraSchemaUserTableBookReviewsGroupBySQL = `xo_join_book_reviews.book_reviews, users.user_id`
 
-const extraSchemaUserTableBooksBSJoinSQL = `-- M2M join generated from "book_sellers_book_id_fkey"
+const extraSchemaUserTableSellerBooksJoinSQL = `-- M2M join generated from "book_sellers_book_id_fkey"
 left join (
 	select
 		book_sellers.seller as book_sellers_seller
@@ -290,14 +290,14 @@ left join (
 ) as xo_join_book_sellers_books on xo_join_book_sellers_books.book_sellers_seller = users.user_id
 `
 
-const extraSchemaUserTableBooksBSSelectSQL = `COALESCE(
+const extraSchemaUserTableSellerBooksSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_book_sellers_books.__books
 		)) filter (where xo_join_book_sellers_books.__books_book_id is not null), '{}') as book_sellers_books`
 
-const extraSchemaUserTableBooksBSGroupBySQL = `users.user_id, users.user_id`
+const extraSchemaUserTableSellerBooksGroupBySQL = `users.user_id, users.user_id`
 
-const extraSchemaUserTableNotificationsReceiverJoinSQL = `-- M2O join generated from "notifications_receiver_fkey"
+const extraSchemaUserTableReceiverNotificationsJoinSQL = `-- M2O join generated from "notifications_receiver_fkey"
 left join (
   select
   receiver as notifications_user_id
@@ -309,11 +309,11 @@ left join (
 ) as xo_join_notifications_receiver on xo_join_notifications_receiver.notifications_user_id = users.user_id
 `
 
-const extraSchemaUserTableNotificationsReceiverSelectSQL = `COALESCE(xo_join_notifications_receiver.notifications, '{}') as notifications_receiver`
+const extraSchemaUserTableReceiverNotificationsSelectSQL = `COALESCE(xo_join_notifications_receiver.notifications, '{}') as notifications_receiver`
 
-const extraSchemaUserTableNotificationsReceiverGroupBySQL = `xo_join_notifications_receiver.notifications, users.user_id`
+const extraSchemaUserTableReceiverNotificationsGroupBySQL = `xo_join_notifications_receiver.notifications, users.user_id`
 
-const extraSchemaUserTableNotificationsSenderJoinSQL = `-- M2O join generated from "notifications_sender_fkey"
+const extraSchemaUserTableSenderNotificationsJoinSQL = `-- M2O join generated from "notifications_sender_fkey"
 left join (
   select
   sender as notifications_user_id
@@ -325,9 +325,9 @@ left join (
 ) as xo_join_notifications_sender on xo_join_notifications_sender.notifications_user_id = users.user_id
 `
 
-const extraSchemaUserTableNotificationsSenderSelectSQL = `COALESCE(xo_join_notifications_sender.notifications, '{}') as notifications_sender`
+const extraSchemaUserTableSenderNotificationsSelectSQL = `COALESCE(xo_join_notifications_sender.notifications, '{}') as notifications_sender`
 
-const extraSchemaUserTableNotificationsSenderGroupBySQL = `xo_join_notifications_sender.notifications, users.user_id`
+const extraSchemaUserTableSenderNotificationsGroupBySQL = `xo_join_notifications_sender.notifications, users.user_id`
 
 const extraSchemaUserTableUserAPIKeyJoinSQL = `-- O2O join generated from "users_api_key_id_fkey (inferred)"
 left join extra_schema.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
@@ -339,7 +339,7 @@ const extraSchemaUserTableUserAPIKeyGroupBySQL = `_users_api_key_id.user_api_key
       _users_api_key_id.user_api_key_id,
 	users.user_id`
 
-const extraSchemaUserTableWorkItemsJoinSQL = `-- M2M join generated from "work_item_admin_work_item_id_fkey"
+const extraSchemaUserTableAdminWorkItemsJoinSQL = `-- M2M join generated from "work_item_admin_work_item_id_fkey"
 left join (
 	select
 		work_item_admin.admin as work_item_admin_admin
@@ -354,14 +354,14 @@ left join (
 ) as xo_join_work_item_admin_work_items on xo_join_work_item_admin_work_items.work_item_admin_admin = users.user_id
 `
 
-const extraSchemaUserTableWorkItemsSelectSQL = `COALESCE(
+const extraSchemaUserTableAdminWorkItemsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_admin_work_items.__work_items
 		)) filter (where xo_join_work_item_admin_work_items.__work_items_work_item_id is not null), '{}') as work_item_admin_work_items`
 
-const extraSchemaUserTableWorkItemsGroupBySQL = `users.user_id, users.user_id`
+const extraSchemaUserTableAdminWorkItemsGroupBySQL = `users.user_id, users.user_id`
 
-const extraSchemaUserTableWorkItemsWIAUJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+const extraSchemaUserTableAssignedUserWorkItemsJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
 left join (
 	select
 		work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
@@ -378,13 +378,13 @@ left join (
 ) as xo_join_work_item_assigned_user_work_items on xo_join_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
 `
 
-const extraSchemaUserTableWorkItemsWIAUSelectSQL = `COALESCE(
+const extraSchemaUserTableAssignedUserWorkItemsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_assigned_user_work_items.__work_items
 		, xo_join_work_item_assigned_user_work_items.role
 		)) filter (where xo_join_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
 
-const extraSchemaUserTableWorkItemsWIAUGroupBySQL = `users.user_id, users.user_id`
+const extraSchemaUserTableAssignedUserWorkItemsGroupBySQL = `users.user_id, users.user_id`
 
 // ExtraSchemaUserUpdateParams represents update params for 'extra_schema.users'.
 type ExtraSchemaUserUpdateParams struct {
@@ -563,16 +563,16 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.Books {
-		selectClauses = append(selectClauses, extraSchemaUserTableBooksSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableBooksJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableBooksGroupBySQL)
+	if c.joins.AuthorBooks {
+		selectClauses = append(selectClauses, extraSchemaUserTableAuthorBooksSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAuthorBooksJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAuthorBooksGroupBySQL)
 	}
 
-	if c.joins.BooksBASK {
-		selectClauses = append(selectClauses, extraSchemaUserTableBooksBASKSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableBooksBASKJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableBooksBASKGroupBySQL)
+	if c.joins.AuthorBooksBASK {
+		selectClauses = append(selectClauses, extraSchemaUserTableAuthorBooksBASKSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAuthorBooksBASKJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAuthorBooksBASKGroupBySQL)
 	}
 
 	if c.joins.BookReviews {
@@ -581,22 +581,22 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 		groupByClauses = append(groupByClauses, extraSchemaUserTableBookReviewsGroupBySQL)
 	}
 
-	if c.joins.BooksBS {
-		selectClauses = append(selectClauses, extraSchemaUserTableBooksBSSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableBooksBSJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableBooksBSGroupBySQL)
+	if c.joins.SellerBooks {
+		selectClauses = append(selectClauses, extraSchemaUserTableSellerBooksSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableSellerBooksJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableSellerBooksGroupBySQL)
 	}
 
-	if c.joins.NotificationsReceiver {
-		selectClauses = append(selectClauses, extraSchemaUserTableNotificationsReceiverSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableNotificationsReceiverJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableNotificationsReceiverGroupBySQL)
+	if c.joins.ReceiverNotifications {
+		selectClauses = append(selectClauses, extraSchemaUserTableReceiverNotificationsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableReceiverNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableReceiverNotificationsGroupBySQL)
 	}
 
-	if c.joins.NotificationsSender {
-		selectClauses = append(selectClauses, extraSchemaUserTableNotificationsSenderSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableNotificationsSenderJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableNotificationsSenderGroupBySQL)
+	if c.joins.SenderNotifications {
+		selectClauses = append(selectClauses, extraSchemaUserTableSenderNotificationsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableSenderNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableSenderNotificationsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -605,16 +605,16 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 		groupByClauses = append(groupByClauses, extraSchemaUserTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItems {
-		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsGroupBySQL)
+	if c.joins.AdminWorkItems {
+		selectClauses = append(selectClauses, extraSchemaUserTableAdminWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAdminWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAdminWorkItemsGroupBySQL)
 	}
 
-	if c.joins.WorkItemsWIAU {
-		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsWIAUSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsWIAUJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsWIAUGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, extraSchemaUserTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	selects := ""
@@ -712,16 +712,16 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.Books {
-		selectClauses = append(selectClauses, extraSchemaUserTableBooksSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableBooksJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableBooksGroupBySQL)
+	if c.joins.AuthorBooks {
+		selectClauses = append(selectClauses, extraSchemaUserTableAuthorBooksSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAuthorBooksJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAuthorBooksGroupBySQL)
 	}
 
-	if c.joins.BooksBASK {
-		selectClauses = append(selectClauses, extraSchemaUserTableBooksBASKSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableBooksBASKJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableBooksBASKGroupBySQL)
+	if c.joins.AuthorBooksBASK {
+		selectClauses = append(selectClauses, extraSchemaUserTableAuthorBooksBASKSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAuthorBooksBASKJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAuthorBooksBASKGroupBySQL)
 	}
 
 	if c.joins.BookReviews {
@@ -730,22 +730,22 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 		groupByClauses = append(groupByClauses, extraSchemaUserTableBookReviewsGroupBySQL)
 	}
 
-	if c.joins.BooksBS {
-		selectClauses = append(selectClauses, extraSchemaUserTableBooksBSSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableBooksBSJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableBooksBSGroupBySQL)
+	if c.joins.SellerBooks {
+		selectClauses = append(selectClauses, extraSchemaUserTableSellerBooksSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableSellerBooksJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableSellerBooksGroupBySQL)
 	}
 
-	if c.joins.NotificationsReceiver {
-		selectClauses = append(selectClauses, extraSchemaUserTableNotificationsReceiverSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableNotificationsReceiverJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableNotificationsReceiverGroupBySQL)
+	if c.joins.ReceiverNotifications {
+		selectClauses = append(selectClauses, extraSchemaUserTableReceiverNotificationsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableReceiverNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableReceiverNotificationsGroupBySQL)
 	}
 
-	if c.joins.NotificationsSender {
-		selectClauses = append(selectClauses, extraSchemaUserTableNotificationsSenderSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableNotificationsSenderJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableNotificationsSenderGroupBySQL)
+	if c.joins.SenderNotifications {
+		selectClauses = append(selectClauses, extraSchemaUserTableSenderNotificationsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableSenderNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableSenderNotificationsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -754,16 +754,16 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 		groupByClauses = append(groupByClauses, extraSchemaUserTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItems {
-		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsGroupBySQL)
+	if c.joins.AdminWorkItems {
+		selectClauses = append(selectClauses, extraSchemaUserTableAdminWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAdminWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAdminWorkItemsGroupBySQL)
 	}
 
-	if c.joins.WorkItemsWIAU {
-		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsWIAUSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsWIAUJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsWIAUGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, extraSchemaUserTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	selects := ""
@@ -857,16 +857,16 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.Books {
-		selectClauses = append(selectClauses, extraSchemaUserTableBooksSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableBooksJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableBooksGroupBySQL)
+	if c.joins.AuthorBooks {
+		selectClauses = append(selectClauses, extraSchemaUserTableAuthorBooksSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAuthorBooksJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAuthorBooksGroupBySQL)
 	}
 
-	if c.joins.BooksBASK {
-		selectClauses = append(selectClauses, extraSchemaUserTableBooksBASKSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableBooksBASKJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableBooksBASKGroupBySQL)
+	if c.joins.AuthorBooksBASK {
+		selectClauses = append(selectClauses, extraSchemaUserTableAuthorBooksBASKSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAuthorBooksBASKJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAuthorBooksBASKGroupBySQL)
 	}
 
 	if c.joins.BookReviews {
@@ -875,22 +875,22 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 		groupByClauses = append(groupByClauses, extraSchemaUserTableBookReviewsGroupBySQL)
 	}
 
-	if c.joins.BooksBS {
-		selectClauses = append(selectClauses, extraSchemaUserTableBooksBSSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableBooksBSJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableBooksBSGroupBySQL)
+	if c.joins.SellerBooks {
+		selectClauses = append(selectClauses, extraSchemaUserTableSellerBooksSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableSellerBooksJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableSellerBooksGroupBySQL)
 	}
 
-	if c.joins.NotificationsReceiver {
-		selectClauses = append(selectClauses, extraSchemaUserTableNotificationsReceiverSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableNotificationsReceiverJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableNotificationsReceiverGroupBySQL)
+	if c.joins.ReceiverNotifications {
+		selectClauses = append(selectClauses, extraSchemaUserTableReceiverNotificationsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableReceiverNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableReceiverNotificationsGroupBySQL)
 	}
 
-	if c.joins.NotificationsSender {
-		selectClauses = append(selectClauses, extraSchemaUserTableNotificationsSenderSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableNotificationsSenderJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableNotificationsSenderGroupBySQL)
+	if c.joins.SenderNotifications {
+		selectClauses = append(selectClauses, extraSchemaUserTableSenderNotificationsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableSenderNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableSenderNotificationsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -899,16 +899,16 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 		groupByClauses = append(groupByClauses, extraSchemaUserTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItems {
-		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsGroupBySQL)
+	if c.joins.AdminWorkItems {
+		selectClauses = append(selectClauses, extraSchemaUserTableAdminWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAdminWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAdminWorkItemsGroupBySQL)
 	}
 
-	if c.joins.WorkItemsWIAU {
-		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsWIAUSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsWIAUJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsWIAUGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, extraSchemaUserTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	selects := ""
@@ -1002,16 +1002,16 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.Books {
-		selectClauses = append(selectClauses, extraSchemaUserTableBooksSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableBooksJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableBooksGroupBySQL)
+	if c.joins.AuthorBooks {
+		selectClauses = append(selectClauses, extraSchemaUserTableAuthorBooksSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAuthorBooksJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAuthorBooksGroupBySQL)
 	}
 
-	if c.joins.BooksBASK {
-		selectClauses = append(selectClauses, extraSchemaUserTableBooksBASKSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableBooksBASKJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableBooksBASKGroupBySQL)
+	if c.joins.AuthorBooksBASK {
+		selectClauses = append(selectClauses, extraSchemaUserTableAuthorBooksBASKSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAuthorBooksBASKJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAuthorBooksBASKGroupBySQL)
 	}
 
 	if c.joins.BookReviews {
@@ -1020,22 +1020,22 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 		groupByClauses = append(groupByClauses, extraSchemaUserTableBookReviewsGroupBySQL)
 	}
 
-	if c.joins.BooksBS {
-		selectClauses = append(selectClauses, extraSchemaUserTableBooksBSSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableBooksBSJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableBooksBSGroupBySQL)
+	if c.joins.SellerBooks {
+		selectClauses = append(selectClauses, extraSchemaUserTableSellerBooksSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableSellerBooksJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableSellerBooksGroupBySQL)
 	}
 
-	if c.joins.NotificationsReceiver {
-		selectClauses = append(selectClauses, extraSchemaUserTableNotificationsReceiverSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableNotificationsReceiverJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableNotificationsReceiverGroupBySQL)
+	if c.joins.ReceiverNotifications {
+		selectClauses = append(selectClauses, extraSchemaUserTableReceiverNotificationsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableReceiverNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableReceiverNotificationsGroupBySQL)
 	}
 
-	if c.joins.NotificationsSender {
-		selectClauses = append(selectClauses, extraSchemaUserTableNotificationsSenderSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableNotificationsSenderJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableNotificationsSenderGroupBySQL)
+	if c.joins.SenderNotifications {
+		selectClauses = append(selectClauses, extraSchemaUserTableSenderNotificationsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableSenderNotificationsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableSenderNotificationsGroupBySQL)
 	}
 
 	if c.joins.UserAPIKey {
@@ -1044,16 +1044,16 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 		groupByClauses = append(groupByClauses, extraSchemaUserTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.WorkItems {
-		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsGroupBySQL)
+	if c.joins.AdminWorkItems {
+		selectClauses = append(selectClauses, extraSchemaUserTableAdminWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAdminWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAdminWorkItemsGroupBySQL)
 	}
 
-	if c.joins.WorkItemsWIAU {
-		selectClauses = append(selectClauses, extraSchemaUserTableWorkItemsWIAUSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaUserTableWorkItemsWIAUJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaUserTableWorkItemsWIAUGroupBySQL)
+	if c.joins.AssignedUserWorkItems {
+		selectClauses = append(selectClauses, extraSchemaUserTableAssignedUserWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaUserTableAssignedUserWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaUserTableAssignedUserWorkItemsGroupBySQL)
 	}
 
 	selects := ""

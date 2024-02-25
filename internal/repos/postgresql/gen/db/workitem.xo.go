@@ -151,30 +151,30 @@ func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
 }
 
 type WorkItemJoins struct {
-	DemoTwoWorkItem  bool // O2O demo_two_work_items
-	DemoWorkItem     bool // O2O demo_work_items
-	TimeEntries      bool // M2O time_entries
-	AssignedUsers    bool // M2M work_item_assigned_user
-	WorkItemComments bool // M2O work_item_comments
-	WorkItemTags     bool // M2M work_item_work_item_tag
-	KanbanStep       bool // O2O kanban_steps
-	Team             bool // O2O teams
-	WorkItemType     bool // O2O work_item_types
+	DemoTwoWorkItem       bool // O2O demo_two_work_items
+	DemoWorkItem          bool // O2O demo_work_items
+	TimeEntries           bool // M2O time_entries
+	WorkItemAssignedUsers bool // M2M work_item_assigned_user
+	WorkItemComments      bool // M2O work_item_comments
+	WorkItemWorkItemTags  bool // M2M work_item_work_item_tag
+	KanbanStep            bool // O2O kanban_steps
+	Team                  bool // O2O teams
+	WorkItemType          bool // O2O work_item_types
 }
 
 // WithWorkItemJoin joins with the given tables.
 func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
 		s.joins = WorkItemJoins{
-			DemoTwoWorkItem:  s.joins.DemoTwoWorkItem || joins.DemoTwoWorkItem,
-			DemoWorkItem:     s.joins.DemoWorkItem || joins.DemoWorkItem,
-			TimeEntries:      s.joins.TimeEntries || joins.TimeEntries,
-			AssignedUsers:    s.joins.AssignedUsers || joins.AssignedUsers,
-			WorkItemComments: s.joins.WorkItemComments || joins.WorkItemComments,
-			WorkItemTags:     s.joins.WorkItemTags || joins.WorkItemTags,
-			KanbanStep:       s.joins.KanbanStep || joins.KanbanStep,
-			Team:             s.joins.Team || joins.Team,
-			WorkItemType:     s.joins.WorkItemType || joins.WorkItemType,
+			DemoTwoWorkItem:       s.joins.DemoTwoWorkItem || joins.DemoTwoWorkItem,
+			DemoWorkItem:          s.joins.DemoWorkItem || joins.DemoWorkItem,
+			TimeEntries:           s.joins.TimeEntries || joins.TimeEntries,
+			WorkItemAssignedUsers: s.joins.WorkItemAssignedUsers || joins.WorkItemAssignedUsers,
+			WorkItemComments:      s.joins.WorkItemComments || joins.WorkItemComments,
+			WorkItemWorkItemTags:  s.joins.WorkItemWorkItemTags || joins.WorkItemWorkItemTags,
+			KanbanStep:            s.joins.KanbanStep || joins.KanbanStep,
+			Team:                  s.joins.Team || joins.Team,
+			WorkItemType:          s.joins.WorkItemType || joins.WorkItemType,
 		}
 	}
 }
@@ -252,7 +252,7 @@ const workItemTableTimeEntriesSelectSQL = `COALESCE(xo_join_time_entries.time_en
 
 const workItemTableTimeEntriesGroupBySQL = `xo_join_time_entries.time_entries, work_items.work_item_id`
 
-const workItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
+const workItemTableWorkItemAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
 left join (
 	select
 		work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
@@ -269,13 +269,13 @@ left join (
 ) as xo_join_work_item_assigned_user_assigned_users on xo_join_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
 `
 
-const workItemTableAssignedUsersSelectSQL = `COALESCE(
+const workItemTableWorkItemAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_assigned_user_assigned_users.__users
 		, xo_join_work_item_assigned_user_assigned_users.role
 		)) filter (where xo_join_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
-const workItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
+const workItemTableWorkItemAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
 
 const workItemTableWorkItemCommentsJoinSQL = `-- M2O join generated from "work_item_comments_work_item_id_fkey"
 left join (
@@ -293,7 +293,7 @@ const workItemTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comme
 
 const workItemTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, work_items.work_item_id`
 
-const workItemTableWorkItemTagsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
+const workItemTableWorkItemWorkItemTagsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey"
 left join (
 	select
 		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
@@ -308,12 +308,12 @@ left join (
 ) as xo_join_work_item_work_item_tag_work_item_tags on xo_join_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
 `
 
-const workItemTableWorkItemTagsSelectSQL = `COALESCE(
+const workItemTableWorkItemWorkItemTagsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where xo_join_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') as work_item_work_item_tag_work_item_tags`
 
-const workItemTableWorkItemTagsGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
+const workItemTableWorkItemWorkItemTagsGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
 
 const workItemTableKanbanStepJoinSQL = `-- O2O join generated from "work_items_kanban_step_id_fkey (inferred)"
 left join kanban_steps as _work_items_kanban_step_id on _work_items_kanban_step_id.kanban_step_id = work_items.kanban_step_id
@@ -570,10 +570,10 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 		groupByClauses = append(groupByClauses, workItemTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	if c.joins.WorkItemAssignedUsers {
+		selectClauses = append(selectClauses, workItemTableWorkItemAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemAssignedUsersGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -582,10 +582,10 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 		groupByClauses = append(groupByClauses, workItemTableWorkItemCommentsGroupBySQL)
 	}
 
-	if c.joins.WorkItemTags {
-		selectClauses = append(selectClauses, workItemTableWorkItemTagsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableWorkItemTagsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableWorkItemTagsGroupBySQL)
+	if c.joins.WorkItemWorkItemTags {
+		selectClauses = append(selectClauses, workItemTableWorkItemWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemWorkItemTagsGroupBySQL)
 	}
 
 	if c.joins.KanbanStep {
@@ -726,10 +726,10 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 		groupByClauses = append(groupByClauses, workItemTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	if c.joins.WorkItemAssignedUsers {
+		selectClauses = append(selectClauses, workItemTableWorkItemAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemAssignedUsersGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -738,10 +738,10 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 		groupByClauses = append(groupByClauses, workItemTableWorkItemCommentsGroupBySQL)
 	}
 
-	if c.joins.WorkItemTags {
-		selectClauses = append(selectClauses, workItemTableWorkItemTagsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableWorkItemTagsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableWorkItemTagsGroupBySQL)
+	if c.joins.WorkItemWorkItemTags {
+		selectClauses = append(selectClauses, workItemTableWorkItemWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemWorkItemTagsGroupBySQL)
 	}
 
 	if c.joins.KanbanStep {
@@ -880,10 +880,10 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 		groupByClauses = append(groupByClauses, workItemTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	if c.joins.WorkItemAssignedUsers {
+		selectClauses = append(selectClauses, workItemTableWorkItemAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemAssignedUsersGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -892,10 +892,10 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 		groupByClauses = append(groupByClauses, workItemTableWorkItemCommentsGroupBySQL)
 	}
 
-	if c.joins.WorkItemTags {
-		selectClauses = append(selectClauses, workItemTableWorkItemTagsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableWorkItemTagsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableWorkItemTagsGroupBySQL)
+	if c.joins.WorkItemWorkItemTags {
+		selectClauses = append(selectClauses, workItemTableWorkItemWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemWorkItemTagsGroupBySQL)
 	}
 
 	if c.joins.KanbanStep {
@@ -1032,10 +1032,10 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...WorkIt
 		groupByClauses = append(groupByClauses, workItemTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, workItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, workItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableAssignedUsersGroupBySQL)
+	if c.joins.WorkItemAssignedUsers {
+		selectClauses = append(selectClauses, workItemTableWorkItemAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemAssignedUsersGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -1044,10 +1044,10 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...WorkIt
 		groupByClauses = append(groupByClauses, workItemTableWorkItemCommentsGroupBySQL)
 	}
 
-	if c.joins.WorkItemTags {
-		selectClauses = append(selectClauses, workItemTableWorkItemTagsSelectSQL)
-		joinClauses = append(joinClauses, workItemTableWorkItemTagsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTableWorkItemTagsGroupBySQL)
+	if c.joins.WorkItemWorkItemTags {
+		selectClauses = append(selectClauses, workItemTableWorkItemWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, workItemTableWorkItemWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemTableWorkItemWorkItemTagsGroupBySQL)
 	}
 
 	if c.joins.KanbanStep {

@@ -28,18 +28,18 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsBookReview struct {
-	BookReviewID XoTestsBookReviewID `json:"bookReviewID" db:"book_review_id" required:"true" nullable:"false"` // book_review_id
-	BookID       XoTestsBookID       `json:"bookID" db:"book_id" required:"true" nullable:"false"`              // book_id
-	Reviewer     XoTestsUserID       `json:"reviewer" db:"reviewer" required:"true" nullable:"false"`           // reviewer
+	BookReviewID XoTestsBookReviewID `db:"book_review_id" json:"bookReviewID" nullable:"false" required:"true"` // book_review_id
+	BookID       XoTestsBookID       `db:"book_id"        json:"bookID"       nullable:"false" required:"true"`              // book_id
+	Reviewer     XoTestsUserID       `db:"reviewer"       json:"reviewer"     nullable:"false" required:"true"`           // reviewer
 
-	BookJoin *XoTestsBook `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O books (generated from M2O)
-	UserJoin *XoTestsUser `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O users (generated from M2O)
+	BookJoin *XoTestsBook `db:"book_book_id"  json:"-" openapi-go:"ignore"`  // O2O books (generated from M2O)
+	UserJoin *XoTestsUser `db:"user_reviewer" json:"-" openapi-go:"ignore"` // O2O users (generated from M2O)
 }
 
 // XoTestsBookReviewCreateParams represents insert params for 'xo_tests.book_reviews'.
 type XoTestsBookReviewCreateParams struct {
-	BookID   XoTestsBookID `json:"bookID" required:"true" nullable:"false"`   // book_id
-	Reviewer XoTestsUserID `json:"reviewer" required:"true" nullable:"false"` // reviewer
+	BookID   XoTestsBookID `json:"bookID"   nullable:"false" required:"true"`   // book_id
+	Reviewer XoTestsUserID `json:"reviewer" nullable:"false" required:"true"` // reviewer
 }
 
 type XoTestsBookReviewID int
@@ -144,7 +144,7 @@ const xoTestsBookReviewTableUserGroupBySQL = `_book_reviews_reviewer.user_id,
 
 // XoTestsBookReviewUpdateParams represents update params for 'xo_tests.book_reviews'.
 type XoTestsBookReviewUpdateParams struct {
-	BookID   *XoTestsBookID `json:"bookID" nullable:"false"`   // book_id
+	BookID   *XoTestsBookID `json:"bookID"   nullable:"false"`   // book_id
 	Reviewer *XoTestsUserID `json:"reviewer" nullable:"false"` // reviewer
 }
 

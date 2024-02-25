@@ -28,21 +28,21 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsWorkItem struct {
-	WorkItemID  XoTestsWorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
-	Title       *string           `json:"title" db:"title"`                                              // title
-	Description *string           `json:"description" db:"description"`                                  // description
-	TeamID      XoTestsTeamID     `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
+	WorkItemID  XoTestsWorkItemID `db:"work_item_id" json:"workItemID"  nullable:"false" required:"true"` // work_item_id
+	Title       *string           `db:"title"        json:"title"`                                              // title
+	Description *string           `db:"description"  json:"description"`                                  // description
+	TeamID      XoTestsTeamID     `db:"team_id"      json:"teamID"      nullable:"false" required:"true"`          // team_id
 
-	DemoWorkItemJoin     *XoTestsDemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
-	AssignedUsersJoin    *[]User__WIAU_XoTestsWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
-	WorkItemCommentsJoin *[]XoTestsWorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O work_items
-	TeamJoin             *XoTestsTeam                  `json:"-" db:"team_team_id" openapi-go:"ignore"`                           // O2O teams (inferred)
+	DemoWorkItemJoin     *XoTestsDemoWorkItem          `db:"demo_work_item_work_item_id"            json:"-" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
+	AssignedUsersJoin    *[]User__WIAU_XoTestsWorkItem `db:"work_item_assigned_user_assigned_users" json:"-" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemCommentsJoin *[]XoTestsWorkItemComment     `db:"work_item_comments"                     json:"-" openapi-go:"ignore"`                     // M2O work_items
+	TeamJoin             *XoTestsTeam                  `db:"team_team_id"                           json:"-" openapi-go:"ignore"`                           // O2O teams (inferred)
 }
 
 // XoTestsWorkItemCreateParams represents insert params for 'xo_tests.work_items'.
 type XoTestsWorkItemCreateParams struct {
 	Description *string       `json:"description"`                             // description
-	TeamID      XoTestsTeamID `json:"teamID" required:"true" nullable:"false"` // team_id
+	TeamID      XoTestsTeamID `json:"teamID"      nullable:"false" required:"true"` // team_id
 	Title       *string       `json:"title"`                                   // title
 }
 
@@ -98,10 +98,10 @@ func WithXoTestsWorkItemJoin(joins XoTestsWorkItemJoins) XoTestsWorkItemSelectCo
 	}
 }
 
-// User__WIAU_XoTestsWorkItem represents a M2M join against "xo_tests.work_item_assigned_user"
+// User__WIAU_XoTestsWorkItem represents a M2M join against "xo_tests.work_item_assigned_user".
 type User__WIAU_XoTestsWorkItem struct {
-	User XoTestsUser          `json:"user" db:"users" required:"true"`
-	Role *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+	User XoTestsUser          `db:"users" json:"user" required:"true"`
+	Role *XoTestsWorkItemRole `db:"role"  json:"role" ref:"#/components/schemas/WorkItemRole" required:"true"`
 }
 
 // WithXoTestsWorkItemFilters adds the given WHERE clause conditions, which can be dynamically parameterized
@@ -200,7 +200,7 @@ const xoTestsWorkItemTableTeamGroupBySQL = `_work_items_team_id.team_id,
 // XoTestsWorkItemUpdateParams represents update params for 'xo_tests.work_items'.
 type XoTestsWorkItemUpdateParams struct {
 	Description **string       `json:"description"`             // description
-	TeamID      *XoTestsTeamID `json:"teamID" nullable:"false"` // team_id
+	TeamID      *XoTestsTeamID `json:"teamID"      nullable:"false"` // team_id
 	Title       **string       `json:"title"`                   // title
 }
 

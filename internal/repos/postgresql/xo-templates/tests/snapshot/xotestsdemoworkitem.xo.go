@@ -28,16 +28,16 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsDemoWorkItem struct {
-	WorkItemID XoTestsWorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
-	Checked    bool              `json:"checked" db:"checked" required:"true" nullable:"false"`         // checked
+	WorkItemID XoTestsWorkItemID `db:"work_item_id" json:"workItemID" nullable:"false" required:"true"` // work_item_id
+	Checked    bool              `db:"checked"      json:"checked"    nullable:"false" required:"true"`         // checked
 
-	WorkItemJoin *XoTestsWorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
+	WorkItemJoin *XoTestsWorkItem `db:"work_item_work_item_id" json:"-" openapi-go:"ignore"` // O2O work_items (inferred)
 }
 
 // XoTestsDemoWorkItemCreateParams represents insert params for 'xo_tests.demo_work_items'.
 type XoTestsDemoWorkItemCreateParams struct {
-	Checked    bool              `json:"checked" required:"true" nullable:"false"` // checked
-	WorkItemID XoTestsWorkItemID `json:"-" required:"true" nullable:"false"`       // work_item_id
+	Checked    bool              `json:"checked" nullable:"false" required:"true"` // checked
+	WorkItemID XoTestsWorkItemID `json:"-"       nullable:"false" required:"true"`       // work_item_id
 }
 
 // CreateXoTestsDemoWorkItem creates a new XoTestsDemoWorkItem in the database with the given params.

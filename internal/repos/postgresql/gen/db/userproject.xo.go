@@ -71,16 +71,16 @@ type UserProjectOrderBy string
 const ()
 
 type UserProjectJoins struct {
-	Projects bool // M2M user_project
-	Members  bool // M2M user_project
+	Projects       bool // M2M user_project
+	ProjectMembers bool // M2M user_project
 }
 
 // WithUserProjectJoin joins with the given tables.
 func WithUserProjectJoin(joins UserProjectJoins) UserProjectSelectConfigOption {
 	return func(s *UserProjectSelectConfig) {
 		s.joins = UserProjectJoins{
-			Projects: s.joins.Projects || joins.Projects,
-			Members:  s.joins.Members || joins.Members,
+			Projects:       s.joins.Projects || joins.Projects,
+			ProjectMembers: s.joins.ProjectMembers || joins.ProjectMembers,
 		}
 	}
 }
@@ -140,7 +140,7 @@ const userProjectTableProjectsSelectSQL = `COALESCE(
 
 const userProjectTableProjectsGroupBySQL = `user_project.project_id, user_project.project_id, user_project.member`
 
-const userProjectTableMembersJoinSQL = `-- M2M join generated from "user_project_member_fkey"
+const userProjectTableProjectMembersJoinSQL = `-- M2M join generated from "user_project_member_fkey"
 left join (
 	select
 		user_project.project_id as user_project_project_id
@@ -155,12 +155,12 @@ left join (
 ) as xo_join_user_project_members on xo_join_user_project_members.user_project_project_id = user_project.member
 `
 
-const userProjectTableMembersSelectSQL = `COALESCE(
+const userProjectTableProjectMembersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_user_project_members.__users
 		)) filter (where xo_join_user_project_members.__users_user_id is not null), '{}') as user_project_members`
 
-const userProjectTableMembersGroupBySQL = `user_project.member, user_project.project_id, user_project.member`
+const userProjectTableProjectMembersGroupBySQL = `user_project.member, user_project.project_id, user_project.member`
 
 // UserProjectUpdateParams represents update params for 'public.user_project'.
 type UserProjectUpdateParams struct {
@@ -274,10 +274,10 @@ func UserProjectsByMember(ctx context.Context, db DB, member UserID, opts ...Use
 		groupByClauses = append(groupByClauses, userProjectTableProjectsGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, userProjectTableMembersSelectSQL)
-		joinClauses = append(joinClauses, userProjectTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userProjectTableMembersGroupBySQL)
+	if c.joins.ProjectMembers {
+		selectClauses = append(selectClauses, userProjectTableProjectMembersSelectSQL)
+		joinClauses = append(joinClauses, userProjectTableProjectMembersJoinSQL)
+		groupByClauses = append(groupByClauses, userProjectTableProjectMembersGroupBySQL)
 	}
 
 	selects := ""
@@ -376,10 +376,10 @@ func UserProjectByMemberProjectID(ctx context.Context, db DB, member UserID, pro
 		groupByClauses = append(groupByClauses, userProjectTableProjectsGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, userProjectTableMembersSelectSQL)
-		joinClauses = append(joinClauses, userProjectTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userProjectTableMembersGroupBySQL)
+	if c.joins.ProjectMembers {
+		selectClauses = append(selectClauses, userProjectTableProjectMembersSelectSQL)
+		joinClauses = append(joinClauses, userProjectTableProjectMembersJoinSQL)
+		groupByClauses = append(groupByClauses, userProjectTableProjectMembersGroupBySQL)
 	}
 
 	selects := ""
@@ -476,10 +476,10 @@ func UserProjectsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 		groupByClauses = append(groupByClauses, userProjectTableProjectsGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, userProjectTableMembersSelectSQL)
-		joinClauses = append(joinClauses, userProjectTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userProjectTableMembersGroupBySQL)
+	if c.joins.ProjectMembers {
+		selectClauses = append(selectClauses, userProjectTableProjectMembersSelectSQL)
+		joinClauses = append(joinClauses, userProjectTableProjectMembersJoinSQL)
+		groupByClauses = append(groupByClauses, userProjectTableProjectMembersGroupBySQL)
 	}
 
 	selects := ""
@@ -578,10 +578,10 @@ func UserProjectsByProjectIDMember(ctx context.Context, db DB, projectID Project
 		groupByClauses = append(groupByClauses, userProjectTableProjectsGroupBySQL)
 	}
 
-	if c.joins.Members {
-		selectClauses = append(selectClauses, userProjectTableMembersSelectSQL)
-		joinClauses = append(joinClauses, userProjectTableMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userProjectTableMembersGroupBySQL)
+	if c.joins.ProjectMembers {
+		selectClauses = append(selectClauses, userProjectTableProjectMembersSelectSQL)
+		joinClauses = append(joinClauses, userProjectTableProjectMembersJoinSQL)
+		groupByClauses = append(groupByClauses, userProjectTableProjectMembersGroupBySQL)
 	}
 
 	selects := ""

@@ -28,20 +28,20 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsNotification struct {
-	NotificationID XoTestsNotificationID `json:"notificationID" db:"notification_id" required:"true" nullable:"false"` // notification_id
-	Body           string                `json:"-" db:"body" nullable:"false" pattern:"^[A-Za-z0-9]*$"`                // body
-	Sender         XoTestsUserID         `json:"sender" db:"sender" required:"true" nullable:"false"`                  // sender
-	Receiver       *XoTestsUserID        `json:"receiver" db:"receiver"`                                               // receiver
+	NotificationID XoTestsNotificationID `db:"notification_id" json:"notificationID" nullable:"false" required:"true"` // notification_id
+	Body           string                `db:"body"            json:"-"              nullable:"false" pattern:"^[A-Za-z0-9]*$"`                // body
+	Sender         XoTestsUserID         `db:"sender"          json:"sender"         nullable:"false" required:"true"`                  // sender
+	Receiver       *XoTestsUserID        `db:"receiver"        json:"receiver"`                                               // receiver
 
-	UserReceiverJoin *XoTestsUser `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
-	UserSenderJoin   *XoTestsUser `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
+	UserReceiverJoin *XoTestsUser `db:"user_receiver" json:"-" openapi-go:"ignore"` // O2O users (generated from M2O)
+	UserSenderJoin   *XoTestsUser `db:"user_sender"   json:"-" openapi-go:"ignore"`   // O2O users (generated from M2O)
 }
 
 // XoTestsNotificationCreateParams represents insert params for 'xo_tests.notifications'.
 type XoTestsNotificationCreateParams struct {
-	Body     string         `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"` // body
+	Body     string         `json:"-"        nullable:"false" pattern:"^[A-Za-z0-9]*$"` // body
 	Receiver *XoTestsUserID `json:"receiver"`                                    // receiver
-	Sender   XoTestsUserID  `json:"sender" required:"true" nullable:"false"`     // sender
+	Sender   XoTestsUserID  `json:"sender"   nullable:"false" required:"true"`     // sender
 }
 
 type XoTestsNotificationID int
@@ -147,9 +147,9 @@ const xoTestsNotificationTableUserSenderGroupBySQL = `_notifications_sender.user
 
 // XoTestsNotificationUpdateParams represents update params for 'xo_tests.notifications'.
 type XoTestsNotificationUpdateParams struct {
-	Body     *string         `json:"-" nullable:"false" pattern:"^[A-Za-z0-9]*$"` // body
+	Body     *string         `json:"-"        nullable:"false" pattern:"^[A-Za-z0-9]*$"` // body
 	Receiver **XoTestsUserID `json:"receiver"`                                    // receiver
-	Sender   *XoTestsUserID  `json:"sender" nullable:"false"`                     // sender
+	Sender   *XoTestsUserID  `json:"sender"   nullable:"false"`                     // sender
 }
 
 // SetUpdateParams updates xo_tests.notifications struct fields with the specified params.

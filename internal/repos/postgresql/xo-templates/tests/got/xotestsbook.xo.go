@@ -74,20 +74,20 @@ func WithXoTestsBookLimit(limit int) XoTestsBookSelectConfigOption {
 type XoTestsBookOrderBy string
 
 type XoTestsBookJoins struct {
-	Authors     bool // M2M book_authors
-	AuthorsBASK bool // M2M book_authors_surrogate_key
-	BookReviews bool // M2O book_reviews
-	Sellers     bool // M2M book_sellers
+	BookAuthors     bool // M2M book_authors
+	BookAuthorsBASK bool // M2M book_authors_surrogate_key
+	BookReviews     bool // M2O book_reviews
+	BookSellers     bool // M2M book_sellers
 }
 
 // WithXoTestsBookJoin joins with the given tables.
 func WithXoTestsBookJoin(joins XoTestsBookJoins) XoTestsBookSelectConfigOption {
 	return func(s *XoTestsBookSelectConfig) {
 		s.joins = XoTestsBookJoins{
-			Authors:     s.joins.Authors || joins.Authors,
-			AuthorsBASK: s.joins.AuthorsBASK || joins.AuthorsBASK,
-			BookReviews: s.joins.BookReviews || joins.BookReviews,
-			Sellers:     s.joins.Sellers || joins.Sellers,
+			BookAuthors:     s.joins.BookAuthors || joins.BookAuthors,
+			BookAuthorsBASK: s.joins.BookAuthorsBASK || joins.BookAuthorsBASK,
+			BookReviews:     s.joins.BookReviews || joins.BookReviews,
+			BookSellers:     s.joins.BookSellers || joins.BookSellers,
 		}
 	}
 }
@@ -137,7 +137,7 @@ func WithXoTestsBookHavingClause(conditions map[string][]any) XoTestsBookSelectC
 	}
 }
 
-const xoTestsBookTableAuthorsJoinSQL = `-- M2M join generated from "book_authors_author_id_fkey"
+const xoTestsBookTableBookAuthorsJoinSQL = `-- M2M join generated from "book_authors_author_id_fkey"
 left join (
 	select
 		book_authors.book_id as book_authors_book_id
@@ -154,15 +154,15 @@ left join (
 ) as xo_join_book_authors_authors on xo_join_book_authors_authors.book_authors_book_id = books.book_id
 `
 
-const xoTestsBookTableAuthorsSelectSQL = `COALESCE(
+const xoTestsBookTableBookAuthorsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_book_authors_authors.__users
 		, xo_join_book_authors_authors.pseudonym
 		)) filter (where xo_join_book_authors_authors.__users_user_id is not null), '{}') as book_authors_authors`
 
-const xoTestsBookTableAuthorsGroupBySQL = `books.book_id, books.book_id`
+const xoTestsBookTableBookAuthorsGroupBySQL = `books.book_id, books.book_id`
 
-const xoTestsBookTableAuthorsBASKJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
+const xoTestsBookTableBookAuthorsBASKJoinSQL = `-- M2M join generated from "book_authors_surrogate_key_author_id_fkey"
 left join (
 	select
 		book_authors_surrogate_key.book_id as book_authors_surrogate_key_book_id
@@ -179,13 +179,13 @@ left join (
 ) as xo_join_book_authors_surrogate_key_authors on xo_join_book_authors_surrogate_key_authors.book_authors_surrogate_key_book_id = books.book_id
 `
 
-const xoTestsBookTableAuthorsBASKSelectSQL = `COALESCE(
+const xoTestsBookTableBookAuthorsBASKSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_book_authors_surrogate_key_authors.__users
 		, xo_join_book_authors_surrogate_key_authors.pseudonym
 		)) filter (where xo_join_book_authors_surrogate_key_authors.__users_user_id is not null), '{}') as book_authors_surrogate_key_authors`
 
-const xoTestsBookTableAuthorsBASKGroupBySQL = `books.book_id, books.book_id`
+const xoTestsBookTableBookAuthorsBASKGroupBySQL = `books.book_id, books.book_id`
 
 const xoTestsBookTableBookReviewsJoinSQL = `-- M2O join generated from "book_reviews_book_id_fkey"
 left join (
@@ -203,7 +203,7 @@ const xoTestsBookTableBookReviewsSelectSQL = `COALESCE(xo_join_book_reviews.book
 
 const xoTestsBookTableBookReviewsGroupBySQL = `xo_join_book_reviews.book_reviews, books.book_id`
 
-const xoTestsBookTableSellersJoinSQL = `-- M2M join generated from "book_sellers_seller_fkey"
+const xoTestsBookTableBookSellersJoinSQL = `-- M2M join generated from "book_sellers_seller_fkey"
 left join (
 	select
 		book_sellers.book_id as book_sellers_book_id
@@ -218,12 +218,12 @@ left join (
 ) as xo_join_book_sellers_sellers on xo_join_book_sellers_sellers.book_sellers_book_id = books.book_id
 `
 
-const xoTestsBookTableSellersSelectSQL = `COALESCE(
+const xoTestsBookTableBookSellersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_book_sellers_sellers.__users
 		)) filter (where xo_join_book_sellers_sellers.__users_user_id is not null), '{}') as book_sellers_sellers`
 
-const xoTestsBookTableSellersGroupBySQL = `books.book_id, books.book_id`
+const xoTestsBookTableBookSellersGroupBySQL = `books.book_id, books.book_id`
 
 // XoTestsBookUpdateParams represents update params for 'xo_tests.books'.
 type XoTestsBookUpdateParams struct {
@@ -371,16 +371,16 @@ func XoTestsBookPaginatedByBookID(ctx context.Context, db DB, bookID XoTestsBook
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.Authors {
-		selectClauses = append(selectClauses, xoTestsBookTableAuthorsSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookTableAuthorsJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookTableAuthorsGroupBySQL)
+	if c.joins.BookAuthors {
+		selectClauses = append(selectClauses, xoTestsBookTableBookAuthorsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookTableBookAuthorsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookTableBookAuthorsGroupBySQL)
 	}
 
-	if c.joins.AuthorsBASK {
-		selectClauses = append(selectClauses, xoTestsBookTableAuthorsBASKSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookTableAuthorsBASKJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookTableAuthorsBASKGroupBySQL)
+	if c.joins.BookAuthorsBASK {
+		selectClauses = append(selectClauses, xoTestsBookTableBookAuthorsBASKSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookTableBookAuthorsBASKJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookTableBookAuthorsBASKGroupBySQL)
 	}
 
 	if c.joins.BookReviews {
@@ -389,10 +389,10 @@ func XoTestsBookPaginatedByBookID(ctx context.Context, db DB, bookID XoTestsBook
 		groupByClauses = append(groupByClauses, xoTestsBookTableBookReviewsGroupBySQL)
 	}
 
-	if c.joins.Sellers {
-		selectClauses = append(selectClauses, xoTestsBookTableSellersSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookTableSellersJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookTableSellersGroupBySQL)
+	if c.joins.BookSellers {
+		selectClauses = append(selectClauses, xoTestsBookTableBookSellersSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookTableBookSellersJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookTableBookSellersGroupBySQL)
 	}
 
 	selects := ""
@@ -487,16 +487,16 @@ func XoTestsBookByBookID(ctx context.Context, db DB, bookID XoTestsBookID, opts 
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.Authors {
-		selectClauses = append(selectClauses, xoTestsBookTableAuthorsSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookTableAuthorsJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookTableAuthorsGroupBySQL)
+	if c.joins.BookAuthors {
+		selectClauses = append(selectClauses, xoTestsBookTableBookAuthorsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookTableBookAuthorsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookTableBookAuthorsGroupBySQL)
 	}
 
-	if c.joins.AuthorsBASK {
-		selectClauses = append(selectClauses, xoTestsBookTableAuthorsBASKSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookTableAuthorsBASKJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookTableAuthorsBASKGroupBySQL)
+	if c.joins.BookAuthorsBASK {
+		selectClauses = append(selectClauses, xoTestsBookTableBookAuthorsBASKSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookTableBookAuthorsBASKJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookTableBookAuthorsBASKGroupBySQL)
 	}
 
 	if c.joins.BookReviews {
@@ -505,10 +505,10 @@ func XoTestsBookByBookID(ctx context.Context, db DB, bookID XoTestsBookID, opts 
 		groupByClauses = append(groupByClauses, xoTestsBookTableBookReviewsGroupBySQL)
 	}
 
-	if c.joins.Sellers {
-		selectClauses = append(selectClauses, xoTestsBookTableSellersSelectSQL)
-		joinClauses = append(joinClauses, xoTestsBookTableSellersJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsBookTableSellersGroupBySQL)
+	if c.joins.BookSellers {
+		selectClauses = append(selectClauses, xoTestsBookTableBookSellersSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookTableBookSellersJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookTableBookSellersGroupBySQL)
 	}
 
 	selects := ""

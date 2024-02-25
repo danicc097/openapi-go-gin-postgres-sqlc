@@ -28,20 +28,20 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsCacheDemoWorkItem struct {
-	WorkItemID XoTestsWorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
-	Title      *string           `json:"title" db:"title"`                                              // title
-	TeamID     XoTestsTeamID     `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
+	WorkItemID XoTestsWorkItemID `db:"work_item_id" json:"workItemID" nullable:"false" required:"true"` // work_item_id
+	Title      *string           `db:"title"        json:"title"`                                              // title
+	TeamID     XoTestsTeamID     `db:"team_id"      json:"teamID"     nullable:"false" required:"true"`          // team_id
 
-	TeamJoin             *XoTestsTeam                           `json:"-" db:"team_team_id" openapi-go:"ignore"`                           // O2O teams (inferred)
-	AssignedUsersJoin    *[]User__WIAU_XoTestsCacheDemoWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
-	WorkItemCommentsJoin *[]XoTestsWorkItemComment              `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O cache__demo_work_items
+	TeamJoin             *XoTestsTeam                           `db:"team_team_id"                           json:"-" openapi-go:"ignore"`                           // O2O teams (inferred)
+	AssignedUsersJoin    *[]User__WIAU_XoTestsCacheDemoWorkItem `db:"work_item_assigned_user_assigned_users" json:"-" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemCommentsJoin *[]XoTestsWorkItemComment              `db:"work_item_comments"                     json:"-" openapi-go:"ignore"`                     // M2O cache__demo_work_items
 }
 
 // XoTestsCacheDemoWorkItemCreateParams represents insert params for 'xo_tests.cache__demo_work_items'.
 type XoTestsCacheDemoWorkItemCreateParams struct {
-	TeamID     XoTestsTeamID     `json:"teamID" required:"true" nullable:"false"` // team_id
+	TeamID     XoTestsTeamID     `json:"teamID" nullable:"false" required:"true"` // team_id
 	Title      *string           `json:"title"`                                   // title
-	WorkItemID XoTestsWorkItemID `json:"-" required:"true" nullable:"false"`      // work_item_id
+	WorkItemID XoTestsWorkItemID `json:"-"      nullable:"false" required:"true"`      // work_item_id
 }
 
 // CreateXoTestsCacheDemoWorkItem creates a new XoTestsCacheDemoWorkItem in the database with the given params.
@@ -92,10 +92,10 @@ func WithXoTestsCacheDemoWorkItemJoin(joins XoTestsCacheDemoWorkItemJoins) XoTes
 	}
 }
 
-// User__WIAU_XoTestsCacheDemoWorkItem represents a M2M join against "xo_tests.work_item_assigned_user"
+// User__WIAU_XoTestsCacheDemoWorkItem represents a M2M join against "xo_tests.work_item_assigned_user".
 type User__WIAU_XoTestsCacheDemoWorkItem struct {
-	User XoTestsUser          `json:"user" db:"users" required:"true"`
-	Role *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+	User XoTestsUser          `db:"users" json:"user" required:"true"`
+	Role *XoTestsWorkItemRole `db:"role"  json:"role" ref:"#/components/schemas/WorkItemRole" required:"true"`
 }
 
 // WithXoTestsCacheDemoWorkItemFilters adds the given WHERE clause conditions, which can be dynamically parameterized

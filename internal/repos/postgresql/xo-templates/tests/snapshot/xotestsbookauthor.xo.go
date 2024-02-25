@@ -27,18 +27,18 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsBookAuthor struct {
-	BookID    XoTestsBookID `json:"bookID" db:"book_id" required:"true" nullable:"false"`     // book_id
-	AuthorID  XoTestsUserID `json:"authorID" db:"author_id" required:"true" nullable:"false"` // author_id
-	Pseudonym *string       `json:"pseudonym" db:"pseudonym"`                                 // pseudonym
+	BookID    XoTestsBookID `db:"book_id"   json:"bookID"    nullable:"false" required:"true"`     // book_id
+	AuthorID  XoTestsUserID `db:"author_id" json:"authorID"  nullable:"false" required:"true"` // author_id
+	Pseudonym *string       `db:"pseudonym" json:"pseudonym"`                                 // pseudonym
 
-	BooksJoin   *[]Book__BA_XoTestsBookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
-	AuthorsJoin *[]User__BA_XoTestsBookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
+	BooksJoin   *[]Book__BA_XoTestsBookAuthor `db:"book_authors_books"   json:"-" openapi-go:"ignore"`   // M2M book_authors
+	AuthorsJoin *[]User__BA_XoTestsBookAuthor `db:"book_authors_authors" json:"-" openapi-go:"ignore"` // M2M book_authors
 }
 
 // XoTestsBookAuthorCreateParams represents insert params for 'xo_tests.book_authors'.
 type XoTestsBookAuthorCreateParams struct {
-	AuthorID  XoTestsUserID `json:"authorID" required:"true" nullable:"false"` // author_id
-	BookID    XoTestsBookID `json:"bookID" required:"true" nullable:"false"`   // book_id
+	AuthorID  XoTestsUserID `json:"authorID"  nullable:"false" required:"true"` // author_id
+	BookID    XoTestsBookID `json:"bookID"    nullable:"false" required:"true"`   // book_id
 	Pseudonym *string       `json:"pseudonym"`                                 // pseudonym
 }
 
@@ -88,16 +88,16 @@ func WithXoTestsBookAuthorJoin(joins XoTestsBookAuthorJoins) XoTestsBookAuthorSe
 	}
 }
 
-// Book__BA_XoTestsBookAuthor represents a M2M join against "xo_tests.book_authors"
+// Book__BA_XoTestsBookAuthor represents a M2M join against "xo_tests.book_authors".
 type Book__BA_XoTestsBookAuthor struct {
-	Book      XoTestsBook `json:"book" db:"books" required:"true"`
-	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
+	Book      XoTestsBook `db:"books"     json:"book"      required:"true"`
+	Pseudonym *string     `db:"pseudonym" json:"pseudonym" required:"true"`
 }
 
-// User__BA_XoTestsBookAuthor represents a M2M join against "xo_tests.book_authors"
+// User__BA_XoTestsBookAuthor represents a M2M join against "xo_tests.book_authors".
 type User__BA_XoTestsBookAuthor struct {
-	User      XoTestsUser `json:"user" db:"users" required:"true"`
-	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
+	User      XoTestsUser `db:"users"     json:"user"      required:"true"`
+	Pseudonym *string     `db:"pseudonym" json:"pseudonym" required:"true"`
 }
 
 // WithXoTestsBookAuthorFilters adds the given WHERE clause conditions, which can be dynamically parameterized
@@ -185,8 +185,8 @@ const xoTestsBookAuthorTableAuthorsGroupBySQL = `book_authors.book_id, book_auth
 
 // XoTestsBookAuthorUpdateParams represents update params for 'xo_tests.book_authors'.
 type XoTestsBookAuthorUpdateParams struct {
-	AuthorID  *XoTestsUserID `json:"authorID" nullable:"false"` // author_id
-	BookID    *XoTestsBookID `json:"bookID" nullable:"false"`   // book_id
+	AuthorID  *XoTestsUserID `json:"authorID"  nullable:"false"` // author_id
+	BookID    *XoTestsBookID `json:"bookID"    nullable:"false"`   // book_id
 	Pseudonym **string       `json:"pseudonym"`                 // pseudonym
 }
 

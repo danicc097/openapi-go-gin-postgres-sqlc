@@ -165,26 +165,26 @@ func WithCacheDemoWorkItemOrderBy(rows ...CacheDemoWorkItemOrderBy) CacheDemoWor
 }
 
 type CacheDemoWorkItemJoins struct {
-	KanbanStep       bool // O2O kanban_steps
-	Team             bool // O2O teams
-	WorkItemType     bool // O2O work_item_types
-	TimeEntries      bool // M2O time_entries
-	AssignedUsers    bool // M2M work_item_assigned_user
-	WorkItemComments bool // M2O work_item_comments
-	WorkItemTags     bool // M2M work_item_work_item_tag
+	KanbanStep            bool // O2O kanban_steps
+	Team                  bool // O2O teams
+	WorkItemType          bool // O2O work_item_types
+	TimeEntries           bool // M2O time_entries
+	WorkItemAssignedUsers bool // M2M work_item_assigned_user
+	WorkItemComments      bool // M2O work_item_comments
+	WorkItemWorkItemTags  bool // M2M work_item_work_item_tag
 }
 
 // WithCacheDemoWorkItemJoin joins with the given tables.
 func WithCacheDemoWorkItemJoin(joins CacheDemoWorkItemJoins) CacheDemoWorkItemSelectConfigOption {
 	return func(s *CacheDemoWorkItemSelectConfig) {
 		s.joins = CacheDemoWorkItemJoins{
-			KanbanStep:       s.joins.KanbanStep || joins.KanbanStep,
-			Team:             s.joins.Team || joins.Team,
-			WorkItemType:     s.joins.WorkItemType || joins.WorkItemType,
-			TimeEntries:      s.joins.TimeEntries || joins.TimeEntries,
-			AssignedUsers:    s.joins.AssignedUsers || joins.AssignedUsers,
-			WorkItemComments: s.joins.WorkItemComments || joins.WorkItemComments,
-			WorkItemTags:     s.joins.WorkItemTags || joins.WorkItemTags,
+			KanbanStep:            s.joins.KanbanStep || joins.KanbanStep,
+			Team:                  s.joins.Team || joins.Team,
+			WorkItemType:          s.joins.WorkItemType || joins.WorkItemType,
+			TimeEntries:           s.joins.TimeEntries || joins.TimeEntries,
+			WorkItemAssignedUsers: s.joins.WorkItemAssignedUsers || joins.WorkItemAssignedUsers,
+			WorkItemComments:      s.joins.WorkItemComments || joins.WorkItemComments,
+			WorkItemWorkItemTags:  s.joins.WorkItemWorkItemTags || joins.WorkItemWorkItemTags,
 		}
 	}
 }
@@ -274,7 +274,7 @@ const cacheDemoWorkItemTableTimeEntriesSelectSQL = `COALESCE(xo_join_time_entrie
 
 const cacheDemoWorkItemTableTimeEntriesGroupBySQL = `xo_join_time_entries.time_entries, cache__demo_work_items.work_item_id`
 
-const cacheDemoWorkItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey-shared-ref-cache__demo_work_items"
+const cacheDemoWorkItemTableWorkItemAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey-shared-ref-cache__demo_work_items"
 left join (
 	select
 		work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
@@ -291,13 +291,13 @@ left join (
 ) as xo_join_work_item_assigned_user_assigned_users on xo_join_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = cache__demo_work_items.work_item_id
 `
 
-const cacheDemoWorkItemTableAssignedUsersSelectSQL = `COALESCE(
+const cacheDemoWorkItemTableWorkItemAssignedUsersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_assigned_user_assigned_users.__users
 		, xo_join_work_item_assigned_user_assigned_users.role
 		)) filter (where xo_join_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
 
-const cacheDemoWorkItemTableAssignedUsersGroupBySQL = `cache__demo_work_items.work_item_id, cache__demo_work_items.work_item_id`
+const cacheDemoWorkItemTableWorkItemAssignedUsersGroupBySQL = `cache__demo_work_items.work_item_id, cache__demo_work_items.work_item_id`
 
 const cacheDemoWorkItemTableWorkItemCommentsJoinSQL = `-- M2O join generated from "work_item_comments_work_item_id_fkey-shared-ref-cache__demo_work_items"
 left join (
@@ -315,7 +315,7 @@ const cacheDemoWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_i
 
 const cacheDemoWorkItemTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, cache__demo_work_items.work_item_id`
 
-const cacheDemoWorkItemTableWorkItemTagsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey-shared-ref-cache__demo_work_items"
+const cacheDemoWorkItemTableWorkItemWorkItemTagsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey-shared-ref-cache__demo_work_items"
 left join (
 	select
 		work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
@@ -330,12 +330,12 @@ left join (
 ) as xo_join_work_item_work_item_tag_work_item_tags on xo_join_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = cache__demo_work_items.work_item_id
 `
 
-const cacheDemoWorkItemTableWorkItemTagsSelectSQL = `COALESCE(
+const cacheDemoWorkItemTableWorkItemWorkItemTagsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_work_item_tag_work_item_tags.__work_item_tags
 		)) filter (where xo_join_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null), '{}') as work_item_work_item_tag_work_item_tags`
 
-const cacheDemoWorkItemTableWorkItemTagsGroupBySQL = `cache__demo_work_items.work_item_id, cache__demo_work_items.work_item_id`
+const cacheDemoWorkItemTableWorkItemWorkItemTagsGroupBySQL = `cache__demo_work_items.work_item_id, cache__demo_work_items.work_item_id`
 
 // CacheDemoWorkItemUpdateParams represents update params for 'public.cache__demo_work_items'.
 type CacheDemoWorkItemUpdateParams struct {
@@ -589,10 +589,10 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, cacheDemoWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, cacheDemoWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableAssignedUsersGroupBySQL)
+	if c.joins.WorkItemAssignedUsers {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemAssignedUsersGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -601,10 +601,10 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemCommentsGroupBySQL)
 	}
 
-	if c.joins.WorkItemTags {
-		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemTagsSelectSQL)
-		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemTagsJoinSQL)
-		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemTagsGroupBySQL)
+	if c.joins.WorkItemWorkItemTags {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemWorkItemTagsGroupBySQL)
 	}
 
 	selects := ""
@@ -737,10 +737,10 @@ func CacheDemoWorkItemsByReopened(ctx context.Context, db DB, reopened bool, opt
 		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, cacheDemoWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, cacheDemoWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableAssignedUsersGroupBySQL)
+	if c.joins.WorkItemAssignedUsers {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemAssignedUsersGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -749,10 +749,10 @@ func CacheDemoWorkItemsByReopened(ctx context.Context, db DB, reopened bool, opt
 		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemCommentsGroupBySQL)
 	}
 
-	if c.joins.WorkItemTags {
-		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemTagsSelectSQL)
-		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemTagsJoinSQL)
-		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemTagsGroupBySQL)
+	if c.joins.WorkItemWorkItemTags {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemWorkItemTagsGroupBySQL)
 	}
 
 	selects := ""
@@ -883,10 +883,10 @@ func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, o
 		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableTimeEntriesGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, cacheDemoWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, cacheDemoWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableAssignedUsersGroupBySQL)
+	if c.joins.WorkItemAssignedUsers {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemAssignedUsersSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemAssignedUsersJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemAssignedUsersGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -895,10 +895,10 @@ func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, o
 		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemCommentsGroupBySQL)
 	}
 
-	if c.joins.WorkItemTags {
-		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemTagsSelectSQL)
-		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemTagsJoinSQL)
-		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemTagsGroupBySQL)
+	if c.joins.WorkItemWorkItemTags {
+		selectClauses = append(selectClauses, cacheDemoWorkItemTableWorkItemWorkItemTagsSelectSQL)
+		joinClauses = append(joinClauses, cacheDemoWorkItemTableWorkItemWorkItemTagsJoinSQL)
+		groupByClauses = append(groupByClauses, cacheDemoWorkItemTableWorkItemWorkItemTagsGroupBySQL)
 	}
 
 	selects := ""

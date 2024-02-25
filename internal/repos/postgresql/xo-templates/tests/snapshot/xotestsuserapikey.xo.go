@@ -29,19 +29,19 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsUserAPIKey struct {
-	UserAPIKeyID XoTestsUserAPIKeyID `json:"-" db:"user_api_key_id" nullable:"false"`                    // user_api_key_id
-	APIKey       string              `json:"apiKey" db:"api_key" required:"true" nullable:"false"`       // api_key
-	ExpiresOn    time.Time           `json:"expiresOn" db:"expires_on" required:"true" nullable:"false"` // expires_on
-	UserID       XoTestsUserID       `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
+	UserAPIKeyID XoTestsUserAPIKeyID `db:"user_api_key_id" json:"-"         nullable:"false"`                    // user_api_key_id
+	APIKey       string              `db:"api_key"         json:"apiKey"    nullable:"false" required:"true"`       // api_key
+	ExpiresOn    time.Time           `db:"expires_on"      json:"expiresOn" nullable:"false" required:"true"` // expires_on
+	UserID       XoTestsUserID       `db:"user_id"         json:"userID"    nullable:"false" required:"true"`       // user_id
 
-	UserJoin *XoTestsUser `json:"-" db:"user_user_id" openapi-go:"ignore"` // O2O users (inferred)
+	UserJoin *XoTestsUser `db:"user_user_id" json:"-" openapi-go:"ignore"` // O2O users (inferred)
 }
 
 // XoTestsUserAPIKeyCreateParams represents insert params for 'xo_tests.user_api_keys'.
 type XoTestsUserAPIKeyCreateParams struct {
-	APIKey    string        `json:"apiKey" required:"true" nullable:"false"`    // api_key
-	ExpiresOn time.Time     `json:"expiresOn" required:"true" nullable:"false"` // expires_on
-	UserID    XoTestsUserID `json:"userID" required:"true" nullable:"false"`    // user_id
+	APIKey    string        `json:"apiKey"    nullable:"false" required:"true"`    // api_key
+	ExpiresOn time.Time     `json:"expiresOn" nullable:"false" required:"true"` // expires_on
+	UserID    XoTestsUserID `json:"userID"    nullable:"false" required:"true"`    // user_id
 }
 
 type XoTestsUserAPIKeyID int
@@ -156,9 +156,9 @@ const xoTestsUserAPIKeyTableUserGroupBySQL = `_user_api_keys_user_id.user_id,
 
 // XoTestsUserAPIKeyUpdateParams represents update params for 'xo_tests.user_api_keys'.
 type XoTestsUserAPIKeyUpdateParams struct {
-	APIKey    *string        `json:"apiKey" nullable:"false"`    // api_key
+	APIKey    *string        `json:"apiKey"    nullable:"false"`    // api_key
 	ExpiresOn *time.Time     `json:"expiresOn" nullable:"false"` // expires_on
-	UserID    *XoTestsUserID `json:"userID" nullable:"false"`    // user_id
+	UserID    *XoTestsUserID `json:"userID"    nullable:"false"`    // user_id
 }
 
 // SetUpdateParams updates xo_tests.user_api_keys struct fields with the specified params.

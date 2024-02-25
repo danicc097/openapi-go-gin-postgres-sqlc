@@ -31,27 +31,27 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsUser struct {
-	UserID    XoTestsUserID        `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
-	Name      string               `json:"name" db:"name" required:"true" nullable:"false"`            // name
-	APIKeyID  *XoTestsUserAPIKeyID `json:"apiKeyID" db:"api_key_id"`                                   // api_key_id
-	CreatedAt time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"` // created_at
-	DeletedAt *time.Time           `json:"deletedAt" db:"deleted_at"`                                  // deleted_at
+	UserID    XoTestsUserID        `db:"user_id"    json:"userID"    nullable:"false" required:"true"`       // user_id
+	Name      string               `db:"name"       json:"name"      nullable:"false" required:"true"`            // name
+	APIKeyID  *XoTestsUserAPIKeyID `db:"api_key_id" json:"apiKeyID"`                                   // api_key_id
+	CreatedAt time.Time            `db:"created_at" json:"createdAt" nullable:"false" required:"true"` // created_at
+	DeletedAt *time.Time           `db:"deleted_at" json:"deletedAt"`                                  // deleted_at
 
-	BooksJoin                 *[]Book__BA_XoTestsUser       `json:"-" db:"book_authors_books" openapi-go:"ignore"`                 // M2M book_authors
-	BooksBASKJoin             *[]Book__BASK_XoTestsUser     `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
-	BookReviewsJoin           *[]XoTestsBookReview          `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O users
-	BooksBSJoin               *[]XoTestsBook                `json:"-" db:"book_sellers_books" openapi-go:"ignore"`                 // M2M book_sellers
-	NotificationsReceiverJoin *[]XoTestsNotification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
-	NotificationsSenderJoin   *[]XoTestsNotification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
-	UserAPIKeyJoin            *XoTestsUserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
-	WorkItemsJoin             *[]WorkItem__WIAU_XoTestsUser `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
-	WorkItemCommentsJoin      *[]XoTestsWorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                 // M2O users
+	BooksJoin                 *[]Book__BA_XoTestsUser       `db:"book_authors_books"                 json:"-" openapi-go:"ignore"`                 // M2M book_authors
+	BooksBASKJoin             *[]Book__BASK_XoTestsUser     `db:"book_authors_surrogate_key_books"   json:"-" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
+	BookReviewsJoin           *[]XoTestsBookReview          `db:"book_reviews"                       json:"-" openapi-go:"ignore"`                       // M2O users
+	BooksBSJoin               *[]XoTestsBook                `db:"book_sellers_books"                 json:"-" openapi-go:"ignore"`                 // M2M book_sellers
+	NotificationsReceiverJoin *[]XoTestsNotification        `db:"notifications_receiver"             json:"-" openapi-go:"ignore"`             // M2O users
+	NotificationsSenderJoin   *[]XoTestsNotification        `db:"notifications_sender"               json:"-" openapi-go:"ignore"`               // M2O users
+	UserAPIKeyJoin            *XoTestsUserAPIKey            `db:"user_api_key_api_key_id"            json:"-" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
+	WorkItemsJoin             *[]WorkItem__WIAU_XoTestsUser `db:"work_item_assigned_user_work_items" json:"-" openapi-go:"ignore"` // M2M work_item_assigned_user
+	WorkItemCommentsJoin      *[]XoTestsWorkItemComment     `db:"work_item_comments"                 json:"-" openapi-go:"ignore"`                 // M2O users
 }
 
 // XoTestsUserCreateParams represents insert params for 'xo_tests.users'.
 type XoTestsUserCreateParams struct {
 	APIKeyID *XoTestsUserAPIKeyID `json:"apiKeyID"`                              // api_key_id
-	Name     string               `json:"name" required:"true" nullable:"false"` // name
+	Name     string               `json:"name"     nullable:"false" required:"true"` // name
 }
 
 type XoTestsUserID struct {
@@ -157,22 +157,22 @@ func WithXoTestsUserJoin(joins XoTestsUserJoins) XoTestsUserSelectConfigOption {
 	}
 }
 
-// Book__BA_XoTestsUser represents a M2M join against "xo_tests.book_authors"
+// Book__BA_XoTestsUser represents a M2M join against "xo_tests.book_authors".
 type Book__BA_XoTestsUser struct {
-	Book      XoTestsBook `json:"book" db:"books" required:"true"`
-	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
+	Book      XoTestsBook `db:"books"     json:"book"      required:"true"`
+	Pseudonym *string     `db:"pseudonym" json:"pseudonym" required:"true"`
 }
 
-// Book__BASK_XoTestsUser represents a M2M join against "xo_tests.book_authors_surrogate_key"
+// Book__BASK_XoTestsUser represents a M2M join against "xo_tests.book_authors_surrogate_key".
 type Book__BASK_XoTestsUser struct {
-	Book      XoTestsBook `json:"book" db:"books" required:"true"`
-	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
+	Book      XoTestsBook `db:"books"     json:"book"      required:"true"`
+	Pseudonym *string     `db:"pseudonym" json:"pseudonym" required:"true"`
 }
 
-// WorkItem__WIAU_XoTestsUser represents a M2M join against "xo_tests.work_item_assigned_user"
+// WorkItem__WIAU_XoTestsUser represents a M2M join against "xo_tests.work_item_assigned_user".
 type WorkItem__WIAU_XoTestsUser struct {
-	WorkItem XoTestsWorkItem      `json:"workItem" db:"work_items" required:"true"`
-	Role     *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
+	WorkItem XoTestsWorkItem      `db:"work_items" json:"workItem" required:"true"`
+	Role     *XoTestsWorkItemRole `db:"role"       json:"role"     ref:"#/components/schemas/WorkItemRole" required:"true"`
 }
 
 // WithXoTestsUserFilters adds the given WHERE clause conditions, which can be dynamically parameterized
@@ -382,7 +382,7 @@ const xoTestsUserTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.w
 // XoTestsUserUpdateParams represents update params for 'xo_tests.users'.
 type XoTestsUserUpdateParams struct {
 	APIKeyID **XoTestsUserAPIKeyID `json:"apiKeyID"`              // api_key_id
-	Name     *string               `json:"name" nullable:"false"` // name
+	Name     *string               `json:"name"     nullable:"false"` // name
 }
 
 // SetUpdateParams updates xo_tests.users struct fields with the specified params.
