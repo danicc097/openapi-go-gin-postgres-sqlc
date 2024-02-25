@@ -28,13 +28,13 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsTeam struct {
-	TeamID XoTestsTeamID `db:"team_id" json:"teamID" nullable:"false" required:"true"` // team_id
-	Name   string        `db:"name"    json:"name"   nullable:"false" required:"true"`      // name
+	TeamID XoTestsTeamID `json:"teamID" db:"team_id" required:"true" nullable:"false"` // team_id
+	Name   string        `json:"name" db:"name" required:"true" nullable:"false"`      // name
 }
 
 // XoTestsTeamCreateParams represents insert params for 'xo_tests.teams'.
 type XoTestsTeamCreateParams struct {
-	Name string `json:"name" nullable:"false" required:"true"` // name
+	Name string `json:"name" required:"true" nullable:"false"` // name
 }
 
 type XoTestsTeamID int

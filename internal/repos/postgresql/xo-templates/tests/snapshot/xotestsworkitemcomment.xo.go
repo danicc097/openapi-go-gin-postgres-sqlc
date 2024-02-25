@@ -29,22 +29,22 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsWorkItemComment struct {
-	WorkItemCommentID XoTestsWorkItemCommentID `db:"work_item_comment_id" json:"workItemCommentID" nullable:"false" required:"true"` // work_item_comment_id
-	WorkItemID        XoTestsWorkItemID        `db:"work_item_id"         json:"workItemID"        nullable:"false" required:"true"`                // work_item_id
-	UserID            XoTestsUserID            `db:"user_id"              json:"userID"            nullable:"false" required:"true"`                         // user_id
-	Message           string                   `db:"message"              json:"message"           nullable:"false" required:"true"`                        // message
-	CreatedAt         time.Time                `db:"created_at"           json:"createdAt"         nullable:"false" required:"true"`                   // created_at
-	UpdatedAt         time.Time                `db:"updated_at"           json:"updatedAt"         nullable:"false" required:"true"`                   // updated_at
+	WorkItemCommentID XoTestsWorkItemCommentID `json:"workItemCommentID" db:"work_item_comment_id" required:"true" nullable:"false"` // work_item_comment_id
+	WorkItemID        XoTestsWorkItemID        `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                // work_item_id
+	UserID            XoTestsUserID            `json:"userID" db:"user_id" required:"true" nullable:"false"`                         // user_id
+	Message           string                   `json:"message" db:"message" required:"true" nullable:"false"`                        // message
+	CreatedAt         time.Time                `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                   // created_at
+	UpdatedAt         time.Time                `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                   // updated_at
 
-	UserJoin     *XoTestsUser     `db:"user_user_id"           json:"-" openapi-go:"ignore"`           // O2O users (generated from M2O)
-	WorkItemJoin *XoTestsWorkItem `db:"work_item_work_item_id" json:"-" openapi-go:"ignore"` // O2O work_items (generated from M2O)
+	UserJoin     *XoTestsUser     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O users (generated from M2O)
+	WorkItemJoin *XoTestsWorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (generated from M2O)
 }
 
 // XoTestsWorkItemCommentCreateParams represents insert params for 'xo_tests.work_item_comments'.
 type XoTestsWorkItemCommentCreateParams struct {
-	Message    string            `json:"message"    nullable:"false" required:"true"`    // message
-	UserID     XoTestsUserID     `json:"userID"     nullable:"false" required:"true"`     // user_id
-	WorkItemID XoTestsWorkItemID `json:"workItemID" nullable:"false" required:"true"` // work_item_id
+	Message    string            `json:"message" required:"true" nullable:"false"`    // message
+	UserID     XoTestsUserID     `json:"userID" required:"true" nullable:"false"`     // user_id
+	WorkItemID XoTestsWorkItemID `json:"workItemID" required:"true" nullable:"false"` // work_item_id
 }
 
 type XoTestsWorkItemCommentID int
@@ -175,8 +175,8 @@ const xoTestsWorkItemCommentTableWorkItemGroupBySQL = `_work_item_comments_work_
 
 // XoTestsWorkItemCommentUpdateParams represents update params for 'xo_tests.work_item_comments'.
 type XoTestsWorkItemCommentUpdateParams struct {
-	Message    *string            `json:"message"    nullable:"false"`    // message
-	UserID     *XoTestsUserID     `json:"userID"     nullable:"false"`     // user_id
+	Message    *string            `json:"message" nullable:"false"`    // message
+	UserID     *XoTestsUserID     `json:"userID" nullable:"false"`     // user_id
 	WorkItemID *XoTestsWorkItemID `json:"workItemID" nullable:"false"` // work_item_id
 }
 

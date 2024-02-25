@@ -60,7 +60,7 @@ func CtxWithUserCaller(c *gin.Context, user *db.User) {
 	c.Set(userCtxKey, services.CtxUser{
 		User:     user,
 		Teams:    *user.MemberTeamsJoin,
-		Projects: *user.ProjectsJoin,
+		Projects: *user.MemberProjectsJoin,
 		APIKey:   user.UserAPIKeyJoin,
 	})
 }

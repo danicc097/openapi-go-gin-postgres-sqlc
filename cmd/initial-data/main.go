@@ -91,7 +91,7 @@ func main() {
 	superAdminCaller := services.CtxUser{
 		User:     superAdmin,
 		Teams:    *superAdmin.MemberTeamsJoin,
-		Projects: *superAdmin.ProjectsJoin,
+		Projects: *superAdmin.MemberProjectsJoin,
 	}
 
 	//
@@ -346,7 +346,7 @@ func main() {
 	ucaller := services.CtxUser{
 		User:     users[0],
 		Teams:    *users[0].MemberTeamsJoin,
-		Projects: *users[0].ProjectsJoin,
+		Projects: *users[0].MemberProjectsJoin,
 	}
 	te1, err := svc.TimeEntry.Create(ctx, pool, ucaller, &db.TimeEntryCreateParams{
 		WorkItemID:      &demoWorkItems[0].WorkItemID,

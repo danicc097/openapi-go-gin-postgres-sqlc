@@ -49,7 +49,7 @@ func NewUser(logger *zap.SugaredLogger, repos *repos.Repos) *User {
 		repos:    repos,
 		authzsvc: authzsvc,
 		getSharedDBOpts: func() []db.UserSelectConfigOption {
-			return []db.UserSelectConfigOption{db.WithUserJoin(db.UserJoins{Projects: true, Teams: true})}
+			return []db.UserSelectConfigOption{db.WithUserJoin(db.UserJoins{MemberProjects: true, MemberTeams: true})}
 		},
 	}
 }

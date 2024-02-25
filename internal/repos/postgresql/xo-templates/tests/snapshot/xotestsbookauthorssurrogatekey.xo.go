@@ -28,19 +28,19 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsBookAuthorsSurrogateKey struct {
-	BookAuthorsSurrogateKeyID XoTestsBookAuthorsSurrogateKeyID `db:"book_authors_surrogate_key_id" json:"bookAuthorsSurrogateKeyID" nullable:"false" required:"true"` // book_authors_surrogate_key_id
-	BookID                    XoTestsBookID                    `db:"book_id"                       json:"bookID"                    nullable:"false" required:"true"`                                          // book_id
-	AuthorID                  XoTestsUserID                    `db:"author_id"                     json:"authorID"                  nullable:"false" required:"true"`                                      // author_id
-	Pseudonym                 *string                          `db:"pseudonym"                     json:"pseudonym"`                                                                      // pseudonym
+	BookAuthorsSurrogateKeyID XoTestsBookAuthorsSurrogateKeyID `json:"bookAuthorsSurrogateKeyID" db:"book_authors_surrogate_key_id" required:"true" nullable:"false"` // book_authors_surrogate_key_id
+	BookID                    XoTestsBookID                    `json:"bookID" db:"book_id" required:"true" nullable:"false"`                                          // book_id
+	AuthorID                  XoTestsUserID                    `json:"authorID" db:"author_id" required:"true" nullable:"false"`                                      // author_id
+	Pseudonym                 *string                          `json:"pseudonym" db:"pseudonym"`                                                                      // pseudonym
 
-	BooksJoin   *[]Book__BASK_XoTestsBookAuthorsSurrogateKey `db:"book_authors_surrogate_key_books"   json:"-" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
-	AuthorsJoin *[]User__BASK_XoTestsBookAuthorsSurrogateKey `db:"book_authors_surrogate_key_authors" json:"-" openapi-go:"ignore"` // M2M book_authors_surrogate_key
+	BooksJoin   *[]Book__BASK_XoTestsBookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
+	AuthorsJoin *[]User__BASK_XoTestsBookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
 }
 
 // XoTestsBookAuthorsSurrogateKeyCreateParams represents insert params for 'xo_tests.book_authors_surrogate_key'.
 type XoTestsBookAuthorsSurrogateKeyCreateParams struct {
-	AuthorID  XoTestsUserID `json:"authorID"  nullable:"false" required:"true"` // author_id
-	BookID    XoTestsBookID `json:"bookID"    nullable:"false" required:"true"`   // book_id
+	AuthorID  XoTestsUserID `json:"authorID" required:"true" nullable:"false"` // author_id
+	BookID    XoTestsBookID `json:"bookID" required:"true" nullable:"false"`   // book_id
 	Pseudonym *string       `json:"pseudonym"`                                 // pseudonym
 }
 
@@ -92,16 +92,16 @@ func WithXoTestsBookAuthorsSurrogateKeyJoin(joins XoTestsBookAuthorsSurrogateKey
 	}
 }
 
-// Book__BASK_XoTestsBookAuthorsSurrogateKey represents a M2M join against "xo_tests.book_authors_surrogate_key".
+// Book__BASK_XoTestsBookAuthorsSurrogateKey represents a M2M join against "xo_tests.book_authors_surrogate_key"
 type Book__BASK_XoTestsBookAuthorsSurrogateKey struct {
-	Book      XoTestsBook `db:"books"     json:"book"      required:"true"`
-	Pseudonym *string     `db:"pseudonym" json:"pseudonym" required:"true"`
+	Book      XoTestsBook `json:"book" db:"books" required:"true"`
+	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// User__BASK_XoTestsBookAuthorsSurrogateKey represents a M2M join against "xo_tests.book_authors_surrogate_key".
+// User__BASK_XoTestsBookAuthorsSurrogateKey represents a M2M join against "xo_tests.book_authors_surrogate_key"
 type User__BASK_XoTestsBookAuthorsSurrogateKey struct {
-	User      XoTestsUser `db:"users"     json:"user"      required:"true"`
-	Pseudonym *string     `db:"pseudonym" json:"pseudonym" required:"true"`
+	User      XoTestsUser `json:"user" db:"users" required:"true"`
+	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
 // WithXoTestsBookAuthorsSurrogateKeyFilters adds the given WHERE clause conditions, which can be dynamically parameterized
@@ -189,8 +189,8 @@ const xoTestsBookAuthorsSurrogateKeyTableAuthorsGroupBySQL = `book_authors_surro
 
 // XoTestsBookAuthorsSurrogateKeyUpdateParams represents update params for 'xo_tests.book_authors_surrogate_key'.
 type XoTestsBookAuthorsSurrogateKeyUpdateParams struct {
-	AuthorID  *XoTestsUserID `json:"authorID"  nullable:"false"` // author_id
-	BookID    *XoTestsBookID `json:"bookID"    nullable:"false"`   // book_id
+	AuthorID  *XoTestsUserID `json:"authorID" nullable:"false"` // author_id
+	BookID    *XoTestsBookID `json:"bookID" nullable:"false"`   // book_id
 	Pseudonym **string       `json:"pseudonym"`                 // pseudonym
 }
 

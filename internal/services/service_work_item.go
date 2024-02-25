@@ -27,7 +27,7 @@ func NewWorkItem(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItem {
 		logger: logger,
 		repos:  repos,
 		getSharedDBOpts: func() []db.WorkItemSelectConfigOption {
-			return []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{WorkItemAssignedUsers: true, WorkItemWorkItemTags: true})}
+			return []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, WorkItemTags: true})}
 		},
 	}
 }

@@ -31,18 +31,18 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsPagElement struct {
-	PaginatedElementID XoTestsPagElementID `db:"paginated_element_id" json:"paginatedElementID" nullable:"false" required:"true"` // paginated_element_id
-	Name               string              `db:"name"                 json:"name"               nullable:"false" required:"true"`                               // name
-	CreatedAt          time.Time           `db:"created_at"           json:"createdAt"          nullable:"false" required:"true"`                    // created_at
-	Dummy              *XoTestsDummyJoinID `db:"dummy"                json:"dummy"`                                                              // dummy
+	PaginatedElementID XoTestsPagElementID `json:"paginatedElementID" db:"paginated_element_id" required:"true" nullable:"false"` // paginated_element_id
+	Name               string              `json:"name" db:"name" required:"true" nullable:"false"`                               // name
+	CreatedAt          time.Time           `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                    // created_at
+	Dummy              *XoTestsDummyJoinID `json:"dummy" db:"dummy"`                                                              // dummy
 
-	DummyJoinJoin *XoTestsDummyJoin `db:"dummy_join_dummy" json:"-" openapi-go:"ignore"` // O2O dummy_join (inferred)
+	DummyJoinJoin *XoTestsDummyJoin `json:"-" db:"dummy_join_dummy" openapi-go:"ignore"` // O2O dummy_join (inferred)
 }
 
 // XoTestsPagElementCreateParams represents insert params for 'xo_tests.pag_element'.
 type XoTestsPagElementCreateParams struct {
 	Dummy *XoTestsDummyJoinID `json:"dummy"`                                 // dummy
-	Name  string              `json:"name"  nullable:"false" required:"true"` // name
+	Name  string              `json:"name" required:"true" nullable:"false"` // name
 }
 
 type XoTestsPagElementID struct {
@@ -165,7 +165,7 @@ const xoTestsPagElementTableDummyJoinGroupBySQL = `_pag_element_dummy.dummy_join
 // XoTestsPagElementUpdateParams represents update params for 'xo_tests.pag_element'.
 type XoTestsPagElementUpdateParams struct {
 	Dummy **XoTestsDummyJoinID `json:"dummy"`                 // dummy
-	Name  *string              `json:"name"  nullable:"false"` // name
+	Name  *string              `json:"name" nullable:"false"` // name
 }
 
 // SetUpdateParams updates xo_tests.pag_element struct fields with the specified params.

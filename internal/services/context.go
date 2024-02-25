@@ -16,6 +16,6 @@ func NewCtxUser(user *db.User) *CtxUser {
 	return &CtxUser{
 		User:     user,
 		Teams:    *user.MemberTeamsJoin,
-		Projects: *user.ProjectsJoin,
+		Projects: *user.MemberProjectsJoin,
 	}
 }

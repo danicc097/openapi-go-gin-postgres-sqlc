@@ -24,17 +24,17 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type XoTestsBookSeller struct {
-	BookID XoTestsBookID `db:"book_id" json:"bookID" nullable:"false" required:"true"` // book_id
-	Seller XoTestsUserID `db:"seller"  json:"seller" nullable:"false" required:"true"`  // seller
+	BookID XoTestsBookID `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
+	Seller XoTestsUserID `json:"seller" db:"seller" required:"true" nullable:"false"`  // seller
 
-	SellersJoin *[]XoTestsUser `db:"book_sellers_sellers" json:"-" openapi-go:"ignore"` // M2M book_sellers
-	BooksJoin   *[]XoTestsBook `db:"book_sellers_books"   json:"-" openapi-go:"ignore"`   // M2M book_sellers
+	SellersJoin *[]XoTestsUser `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"` // M2M book_sellers
+	BooksJoin   *[]XoTestsBook `json:"-" db:"book_sellers_books" openapi-go:"ignore"`   // M2M book_sellers
 }
 
 // XoTestsBookSellerCreateParams represents insert params for 'xo_tests.book_sellers'.
 type XoTestsBookSellerCreateParams struct {
-	BookID XoTestsBookID `json:"bookID" nullable:"false" required:"true"` // book_id
-	Seller XoTestsUserID `json:"seller" nullable:"false" required:"true"` // seller
+	BookID XoTestsBookID `json:"bookID" required:"true" nullable:"false"` // book_id
+	Seller XoTestsUserID `json:"seller" required:"true" nullable:"false"` // seller
 }
 
 // CreateXoTestsBookSeller creates a new XoTestsBookSeller in the database with the given params.
