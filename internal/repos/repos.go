@@ -33,7 +33,7 @@ type WorkItem interface {
 	ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (*db.WorkItem, error)
 	Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error)
 	Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error)
-	AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error
+	AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssigneeCreateParams) error
 	RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID db.UserID, workItemID db.WorkItemID) error
 	AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) error
 	RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) error

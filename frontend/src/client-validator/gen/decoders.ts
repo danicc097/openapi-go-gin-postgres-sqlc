@@ -86,6 +86,7 @@ import {
   DbUserNotification,
   DemoKanbanSteps,
   DemoTwoKanbanSteps,
+  DbUserWIAWorkItem,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -1028,5 +1029,17 @@ export const DemoTwoKanbanStepsDecoder: Decoder<DemoTwoKanbanSteps> = {
       throw new Error(`Schema ${DemoTwoKanbanStepsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DemoTwoKanbanStepsDecoder.definitionName)
+  },
+}
+export const DbUserWIAWorkItemDecoder: Decoder<DbUserWIAWorkItem> = {
+  definitionName: 'DbUserWIAWorkItem',
+  schemaRef: '#/definitions/DbUserWIAWorkItem',
+
+  decode(json: unknown): DbUserWIAWorkItem {
+    const schema = ajv.getSchema(DbUserWIAWorkItemDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbUserWIAWorkItemDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbUserWIAWorkItemDecoder.definitionName)
   },
 }

@@ -56,13 +56,13 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller CtxUser, param
 	}
 
 	if params.WorkItemID != nil {
-		wi, err := a.repos.WorkItem.ByID(ctx, d, *params.WorkItemID, db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true}))
+		wi, err := a.repos.WorkItem.ByID(ctx, d, *params.WorkItemID, db.WithWorkItemJoin(db.WorkItemJoins{Assignees: true}))
 		if err != nil {
 			return nil, fmt.Errorf("repos.WorkItem.ByID: %w", err)
 		}
 
 		memberIDs := make(map[db.UserID]bool)
-		for _, m := range *wi.AssignedUsersJoin {
+		for _, m := range *wi.AssigneesJoin {
 			memberIDs[m.User.UserID] = true
 		}
 		if _, ok := memberIDs[caller.UserID]; !ok {

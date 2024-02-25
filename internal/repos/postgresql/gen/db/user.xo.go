@@ -47,15 +47,15 @@ type User struct {
 	UpdatedAt                time.Time     `json:"-" db:"updated_at" nullable:"false"`                                                        // updated_at
 	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at"`                                                                 // deleted_at
 
-	ReceiverNotificationsJoin *[]Notification        `json:"-" db:"notifications_receiver" openapi-go:"ignore"`             // M2O users
-	SenderNotificationsJoin   *[]Notification        `json:"-" db:"notifications_sender" openapi-go:"ignore"`               // M2O users
-	TimeEntriesJoin           *[]TimeEntry           `json:"-" db:"time_entries" openapi-go:"ignore"`                       // M2O users
-	UserNotificationsJoin     *[]UserNotification    `json:"-" db:"user_notifications" openapi-go:"ignore"`                 // M2O users
-	MemberProjectsJoin        *[]Project             `json:"-" db:"user_project_projects" openapi-go:"ignore"`              // M2M user_project
-	MemberTeamsJoin           *[]Team                `json:"-" db:"user_team_teams" openapi-go:"ignore"`                    // M2M user_team
-	UserAPIKeyJoin            *UserAPIKey            `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`            // O2O user_api_keys (inferred)
-	AssignedUserWorkItemsJoin *[]WorkItem__WIAU_User `json:"-" db:"work_item_assigned_user_work_items" openapi-go:"ignore"` // M2M work_item_assigned_user
-	WorkItemCommentsJoin      *[]WorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                 // M2O users
+	ReceiverNotificationsJoin *[]Notification       `json:"-" db:"notifications_receiver" openapi-go:"ignore"`        // M2O users
+	SenderNotificationsJoin   *[]Notification       `json:"-" db:"notifications_sender" openapi-go:"ignore"`          // M2O users
+	TimeEntriesJoin           *[]TimeEntry          `json:"-" db:"time_entries" openapi-go:"ignore"`                  // M2O users
+	UserNotificationsJoin     *[]UserNotification   `json:"-" db:"user_notifications" openapi-go:"ignore"`            // M2O users
+	MemberProjectsJoin        *[]Project            `json:"-" db:"user_project_projects" openapi-go:"ignore"`         // M2M user_project
+	MemberTeamsJoin           *[]Team               `json:"-" db:"user_team_teams" openapi-go:"ignore"`               // M2M user_team
+	UserAPIKeyJoin            *UserAPIKey           `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`       // O2O user_api_keys (inferred)
+	AssigneeWorkItemsJoin     *[]WorkItem__WIA_User `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"` // M2M work_item_assignee
+	WorkItemCommentsJoin      *[]WorkItemComment    `json:"-" db:"work_item_comments" openapi-go:"ignore"`            // M2O users
 
 }
 
@@ -167,7 +167,7 @@ type UserJoins struct {
 	MemberProjects        bool // M2M user_project
 	MemberTeams           bool // M2M user_team
 	UserAPIKey            bool // O2O user_api_keys
-	AssignedUserWorkItems bool // M2M work_item_assigned_user
+	AssigneeWorkItems     bool // M2M work_item_assignee
 	WorkItemComments      bool // M2O work_item_comments
 }
 
@@ -182,14 +182,14 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 			MemberProjects:        s.joins.MemberProjects || joins.MemberProjects,
 			MemberTeams:           s.joins.MemberTeams || joins.MemberTeams,
 			UserAPIKey:            s.joins.UserAPIKey || joins.UserAPIKey,
-			AssignedUserWorkItems: s.joins.AssignedUserWorkItems || joins.AssignedUserWorkItems,
+			AssigneeWorkItems:     s.joins.AssigneeWorkItems || joins.AssigneeWorkItems,
 			WorkItemComments:      s.joins.WorkItemComments || joins.WorkItemComments,
 		}
 	}
 }
 
-// WorkItem__WIAU_User represents a M2M join against "public.work_item_assigned_user"
-type WorkItem__WIAU_User struct {
+// WorkItem__WIA_User represents a M2M join against "public.work_item_assignee"
+type WorkItem__WIA_User struct {
 	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
 	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
@@ -345,30 +345,30 @@ const userTableUserAPIKeyGroupBySQL = `_users_api_key_id.user_api_key_id,
       _users_api_key_id.user_api_key_id,
 	users.user_id`
 
-const userTableAssignedUserWorkItemsJoinSQL = `-- M2M join generated from "work_item_assigned_user_work_item_id_fkey"
+const userTableAssigneeWorkItemsJoinSQL = `-- M2M join generated from "work_item_assignee_work_item_id_fkey"
 left join (
 	select
-		work_item_assigned_user.assigned_user as work_item_assigned_user_assigned_user
-		, work_item_assigned_user.role as role
+		work_item_assignee.assignee as work_item_assignee_assignee
+		, work_item_assignee.role as role
 		, work_items.work_item_id as __work_items_work_item_id
 		, row(work_items.*) as __work_items
 	from
-		work_item_assigned_user
-	join work_items on work_items.work_item_id = work_item_assigned_user.work_item_id
+		work_item_assignee
+	join work_items on work_items.work_item_id = work_item_assignee.work_item_id
 	group by
-		work_item_assigned_user_assigned_user
+		work_item_assignee_assignee
 		, work_items.work_item_id
 		, role
-) as xo_join_work_item_assigned_user_work_items on xo_join_work_item_assigned_user_work_items.work_item_assigned_user_assigned_user = users.user_id
+) as xo_join_work_item_assignee_work_items on xo_join_work_item_assignee_work_items.work_item_assignee_assignee = users.user_id
 `
 
-const userTableAssignedUserWorkItemsSelectSQL = `COALESCE(
+const userTableAssigneeWorkItemsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		xo_join_work_item_assigned_user_work_items.__work_items
-		, xo_join_work_item_assigned_user_work_items.role
-		)) filter (where xo_join_work_item_assigned_user_work_items.__work_items_work_item_id is not null), '{}') as work_item_assigned_user_work_items`
+		xo_join_work_item_assignee_work_items.__work_items
+		, xo_join_work_item_assignee_work_items.role
+		)) filter (where xo_join_work_item_assignee_work_items.__work_items_work_item_id is not null), '{}') as work_item_assignee_work_items`
 
-const userTableAssignedUserWorkItemsGroupBySQL = `users.user_id, users.user_id`
+const userTableAssigneeWorkItemsGroupBySQL = `users.user_id, users.user_id`
 
 const userTableWorkItemCommentsJoinSQL = `-- M2O join generated from "work_item_comments_user_id_fkey"
 left join (
@@ -645,10 +645,10 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.AssignedUserWorkItems {
-		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
+	if c.joins.AssigneeWorkItems {
+		selectClauses = append(selectClauses, userTableAssigneeWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssigneeWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssigneeWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -804,10 +804,10 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.AssignedUserWorkItems {
-		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
+	if c.joins.AssigneeWorkItems {
+		selectClauses = append(selectClauses, userTableAssigneeWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssigneeWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssigneeWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -959,10 +959,10 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.AssignedUserWorkItems {
-		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
+	if c.joins.AssigneeWorkItems {
+		selectClauses = append(selectClauses, userTableAssigneeWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssigneeWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssigneeWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -1116,10 +1116,10 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.AssignedUserWorkItems {
-		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
+	if c.joins.AssigneeWorkItems {
+		selectClauses = append(selectClauses, userTableAssigneeWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssigneeWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssigneeWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -1271,10 +1271,10 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.AssignedUserWorkItems {
-		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
+	if c.joins.AssigneeWorkItems {
+		selectClauses = append(selectClauses, userTableAssigneeWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssigneeWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssigneeWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -1426,10 +1426,10 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.AssignedUserWorkItems {
-		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
+	if c.joins.AssigneeWorkItems {
+		selectClauses = append(selectClauses, userTableAssigneeWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssigneeWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssigneeWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -1581,10 +1581,10 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.AssignedUserWorkItems {
-		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
+	if c.joins.AssigneeWorkItems {
+		selectClauses = append(selectClauses, userTableAssigneeWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssigneeWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssigneeWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -1738,10 +1738,10 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 		groupByClauses = append(groupByClauses, userTableUserAPIKeyGroupBySQL)
 	}
 
-	if c.joins.AssignedUserWorkItems {
-		selectClauses = append(selectClauses, userTableAssignedUserWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, userTableAssignedUserWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, userTableAssignedUserWorkItemsGroupBySQL)
+	if c.joins.AssigneeWorkItems {
+		selectClauses = append(selectClauses, userTableAssigneeWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, userTableAssigneeWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, userTableAssigneeWorkItemsGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {

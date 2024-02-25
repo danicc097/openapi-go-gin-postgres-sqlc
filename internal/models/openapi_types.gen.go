@@ -480,6 +480,13 @@ type DbUserWIAUWorkItem struct {
 	User DbUser       `json:"user"`
 }
 
+// DbUserWIAWorkItem defines the model for DbUserWIAWorkItem.
+type DbUserWIAWorkItem struct {
+	// Role is generated from database enum 'work_item_role'.
+	Role WorkItemRole `json:"role"`
+	User DbUser       `json:"user"`
+}
+
 // DbWorkItem defines the model for DbWorkItem.
 type DbWorkItem struct {
 	ClosedAt       *time.Time             `json:"closedAt"`
@@ -570,7 +577,7 @@ type DemoTwoWorkItems struct {
 	DemoTwoWorkItem  DbDemoTwoWorkItem      `json:"demoTwoWorkItem"`
 	Description      string                 `json:"description"`
 	KanbanStepID     int                    `json:"kanbanStepID"`
-	Members          *[]DbUserWIAUWorkItem  `json:"members"`
+	Members          *[]DbUserWIAWorkItem   `json:"members"`
 	Metadata         map[string]interface{} `json:"metadata"`
 	TargetDate       time.Time              `json:"targetDate"`
 	TeamID           *int                   `json:"teamID"`
@@ -595,7 +602,7 @@ type DemoWorkItems struct {
 	DemoWorkItem     DbDemoWorkItem         `json:"demoWorkItem"`
 	Description      string                 `json:"description"`
 	KanbanStepID     int                    `json:"kanbanStepID"`
-	Members          *[]DbUserWIAUWorkItem  `json:"members"`
+	Members          *[]DbUserWIAWorkItem   `json:"members"`
 	Metadata         map[string]interface{} `json:"metadata"`
 	TargetDate       time.Time              `json:"targetDate"`
 	TeamID           *int                   `json:"teamID"`
@@ -715,11 +722,11 @@ type ServicesMember struct {
 
 // SharedWorkItemJoins defines the model for SharedWorkItemJoins.
 type SharedWorkItemJoins struct {
-	Members          *[]DbUserWIAUWorkItem `json:"members"`
-	TimeEntries      *[]DbTimeEntry        `json:"timeEntries"`
-	WorkItemComments *[]DbWorkItemComment  `json:"workItemComments"`
-	WorkItemTags     *[]DbWorkItemTag      `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType       `json:"workItemType,omitempty"`
+	Members          *[]DbUserWIAWorkItem `json:"members"`
+	TimeEntries      *[]DbTimeEntry       `json:"timeEntries"`
+	WorkItemComments *[]DbWorkItemComment `json:"workItemComments"`
+	WorkItemTags     *[]DbWorkItemTag     `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType      `json:"workItemType,omitempty"`
 }
 
 // Team defines the model for Team.

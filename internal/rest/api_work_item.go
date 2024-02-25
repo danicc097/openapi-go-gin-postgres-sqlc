@@ -65,7 +65,7 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 		res = DemoWorkItems{
 			WorkItem: *workItem,
 			SharedWorkItemJoins: SharedWorkItemJoins{
-				Members:      workItem.AssignedUsersJoin,
+				Members:      workItem.AssigneesJoin,
 				WorkItemTags: workItem.WorkItemTagsJoin,
 			},
 			DemoWorkItem: *workItem.DemoWorkItemJoin,
@@ -81,7 +81,7 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 		res = DemoTwoWorkItems{
 			WorkItem: *workItem,
 			SharedWorkItemJoins: SharedWorkItemJoins{
-				Members:      workItem.AssignedUsersJoin,
+				Members:      workItem.AssigneesJoin,
 				WorkItemTags: workItem.WorkItemTagsJoin,
 			},
 			DemoTwoWorkItem: *workItem.DemoTwoWorkItemJoin,

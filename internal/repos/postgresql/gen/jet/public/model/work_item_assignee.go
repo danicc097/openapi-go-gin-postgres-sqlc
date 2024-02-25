@@ -11,8 +11,8 @@ import (
 	"github.com/google/uuid"
 )
 
-type WorkItemAssignedUser struct {
-	WorkItemID   int64        `sql:"primary_key" db:"work_item_id"`
-	AssignedUser uuid.UUID    `sql:"primary_key" db:"assigned_user"`
-	Role         WorkItemRole `db:"role"`
+type WorkItemAssignee struct {
+	WorkItemID int64        `sql:"primary_key" db:"work_item_id"`
+	Assignee   uuid.UUID    `sql:"primary_key" db:"assignee"`
+	Role       WorkItemRole `db:"role"`
 }

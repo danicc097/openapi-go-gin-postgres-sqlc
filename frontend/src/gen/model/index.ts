@@ -38,6 +38,7 @@ export * from './dbUserAPIKey';
 export * from './dbUserID';
 export * from './dbUserNotification';
 export * from './dbUserWIAUWorkItem';
+export * from './dbUserWIAWorkItem';
 export * from './dbWorkItem';
 export * from './dbWorkItemComment';
 export * from './dbWorkItemCreateParams';

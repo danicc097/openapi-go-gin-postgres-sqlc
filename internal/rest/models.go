@@ -59,11 +59,11 @@ type User struct {
 type PaginatedUsersResponse = PaginationBaseResponse[User]
 
 type SharedWorkItemJoins struct {
-	TimeEntries      *[]db.TimeEntry           `json:"timeEntries"`
-	WorkItemComments *[]db.WorkItemComment     `json:"workItemComments"`
-	Members          *[]db.User__WIAU_WorkItem `json:"members"`
-	WorkItemTags     *[]db.WorkItemTag         `json:"workItemTags"`
-	WorkItemType     *db.WorkItemType          `json:"workItemType"`
+	TimeEntries      *[]db.TimeEntry          `json:"timeEntries"`
+	WorkItemComments *[]db.WorkItemComment    `json:"workItemComments"`
+	Members          *[]db.User__WIA_WorkItem `json:"members"`
+	WorkItemTags     *[]db.WorkItemTag        `json:"workItemTags"`
+	WorkItemType     *db.WorkItemType         `json:"workItemType"`
 }
 
 type DemoWorkItems struct {

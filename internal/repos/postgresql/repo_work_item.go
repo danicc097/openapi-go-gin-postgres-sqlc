@@ -30,16 +30,16 @@ func (w *WorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts .
 	return db.WorkItemByWorkItemID(ctx, d, id, opts...)
 }
 
-func (w *WorkItem) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) error {
-	_, err := db.CreateWorkItemAssignedUser(ctx, d, params)
+func (w *WorkItem) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssigneeCreateParams) error {
+	_, err := db.CreateWorkItemAssignee(ctx, d, params)
 
 	return err
 }
 
 func (w *WorkItem) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID db.UserID, workItemID db.WorkItemID) error {
-	lookup := &db.WorkItemAssignedUser{
-		AssignedUser: memberID,
-		WorkItemID:   workItemID,
+	lookup := &db.WorkItemAssignee{
+		Assignee:   memberID,
+		WorkItemID: workItemID,
 	}
 
 	return lookup.Delete(ctx, d)

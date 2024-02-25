@@ -32,9 +32,9 @@ type ExtraSchemaWorkItem struct {
 	Title       *string               `json:"title" db:"title"`                                              // title
 	Description *string               `json:"description" db:"description"`                                  // description
 
-	DemoWorkItemJoin  *ExtraSchemaDemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
-	AdminsJoin        *[]ExtraSchemaUser                `json:"-" db:"work_item_admin_admins" openapi-go:"ignore"`                 // M2M work_item_admin
-	AssignedUsersJoin *[]User__WIAU_ExtraSchemaWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
+	DemoWorkItemJoin *ExtraSchemaDemoWorkItem         `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`  // O2O demo_work_items (inferred)
+	AdminsJoin       *[]ExtraSchemaUser               `json:"-" db:"work_item_admin_admins" openapi-go:"ignore"`       // M2M work_item_admin
+	AssigneesJoin    *[]User__WIA_ExtraSchemaWorkItem `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"` // M2M work_item_assignee
 
 }
 
@@ -79,24 +79,24 @@ type ExtraSchemaWorkItemOrderBy string
 const ()
 
 type ExtraSchemaWorkItemJoins struct {
-	DemoWorkItem  bool // O2O demo_work_items
-	Admins        bool // M2M work_item_admin
-	AssignedUsers bool // M2M work_item_assigned_user
+	DemoWorkItem bool // O2O demo_work_items
+	Admins       bool // M2M work_item_admin
+	Assignees    bool // M2M work_item_assignee
 }
 
 // WithExtraSchemaWorkItemJoin joins with the given tables.
 func WithExtraSchemaWorkItemJoin(joins ExtraSchemaWorkItemJoins) ExtraSchemaWorkItemSelectConfigOption {
 	return func(s *ExtraSchemaWorkItemSelectConfig) {
 		s.joins = ExtraSchemaWorkItemJoins{
-			DemoWorkItem:  s.joins.DemoWorkItem || joins.DemoWorkItem,
-			Admins:        s.joins.Admins || joins.Admins,
-			AssignedUsers: s.joins.AssignedUsers || joins.AssignedUsers,
+			DemoWorkItem: s.joins.DemoWorkItem || joins.DemoWorkItem,
+			Admins:       s.joins.Admins || joins.Admins,
+			Assignees:    s.joins.Assignees || joins.Assignees,
 		}
 	}
 }
 
-// User__WIAU_ExtraSchemaWorkItem represents a M2M join against "extra_schema.work_item_assigned_user"
-type User__WIAU_ExtraSchemaWorkItem struct {
+// User__WIA_ExtraSchemaWorkItem represents a M2M join against "extra_schema.work_item_assignee"
+type User__WIA_ExtraSchemaWorkItem struct {
 	User ExtraSchemaUser          `json:"user" db:"users" required:"true"`
 	Role *ExtraSchemaWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
@@ -165,30 +165,30 @@ const extraSchemaWorkItemTableAdminsSelectSQL = `COALESCE(
 
 const extraSchemaWorkItemTableAdminsGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
 
-const extraSchemaWorkItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
+const extraSchemaWorkItemTableAssigneesJoinSQL = `-- M2M join generated from "work_item_assignee_assignee_fkey"
 left join (
 	select
-		work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
-		, work_item_assigned_user.role as role
+		work_item_assignee.work_item_id as work_item_assignee_work_item_id
+		, work_item_assignee.role as role
 		, users.user_id as __users_user_id
 		, row(users.*) as __users
 	from
-		extra_schema.work_item_assigned_user
-	join extra_schema.users on users.user_id = work_item_assigned_user.assigned_user
+		extra_schema.work_item_assignee
+	join extra_schema.users on users.user_id = work_item_assignee.assignee
 	group by
-		work_item_assigned_user_work_item_id
+		work_item_assignee_work_item_id
 		, users.user_id
 		, role
-) as xo_join_work_item_assigned_user_assigned_users on xo_join_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
+) as xo_join_work_item_assignee_assignees on xo_join_work_item_assignee_assignees.work_item_assignee_work_item_id = work_items.work_item_id
 `
 
-const extraSchemaWorkItemTableAssignedUsersSelectSQL = `COALESCE(
+const extraSchemaWorkItemTableAssigneesSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		xo_join_work_item_assigned_user_assigned_users.__users
-		, xo_join_work_item_assigned_user_assigned_users.role
-		)) filter (where xo_join_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
+		xo_join_work_item_assignee_assignees.__users
+		, xo_join_work_item_assignee_assignees.role
+		)) filter (where xo_join_work_item_assignee_assignees.__users_user_id is not null), '{}') as work_item_assignee_assignees`
 
-const extraSchemaWorkItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
+const extraSchemaWorkItemTableAssigneesGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
 
 // ExtraSchemaWorkItemUpdateParams represents update params for 'extra_schema.work_items'.
 type ExtraSchemaWorkItemUpdateParams struct {
@@ -353,10 +353,10 @@ func ExtraSchemaWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableAdminsGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, extraSchemaWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableAssignedUsersGroupBySQL)
+	if c.joins.Assignees {
+		selectClauses = append(selectClauses, extraSchemaWorkItemTableAssigneesSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemTableAssigneesJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableAssigneesGroupBySQL)
 	}
 
 	selects := ""
@@ -464,10 +464,10 @@ func ExtraSchemaWorkItems(ctx context.Context, db DB, opts ...ExtraSchemaWorkIte
 		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableAdminsGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, extraSchemaWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableAssignedUsersGroupBySQL)
+	if c.joins.Assignees {
+		selectClauses = append(selectClauses, extraSchemaWorkItemTableAssigneesSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemTableAssigneesJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableAssigneesGroupBySQL)
 	}
 
 	selects := ""
@@ -573,10 +573,10 @@ func ExtraSchemaWorkItemByWorkItemID(ctx context.Context, db DB, workItemID Extr
 		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableAdminsGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, extraSchemaWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableAssignedUsersGroupBySQL)
+	if c.joins.Assignees {
+		selectClauses = append(selectClauses, extraSchemaWorkItemTableAssigneesSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemTableAssigneesJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableAssigneesGroupBySQL)
 	}
 
 	selects := ""
@@ -680,10 +680,10 @@ func ExtraSchemaWorkItemsByTitle(ctx context.Context, db DB, title *string, opts
 		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableAdminsGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, extraSchemaWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableAssignedUsersGroupBySQL)
+	if c.joins.Assignees {
+		selectClauses = append(selectClauses, extraSchemaWorkItemTableAssigneesSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemTableAssigneesJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemTableAssigneesGroupBySQL)
 	}
 
 	selects := ""

@@ -427,22 +427,22 @@ create type work_item_role as ENUM (
   , 'reviewer'
 );
 
-create table work_item_assigned_user (
+create table work_item_assignee (
   work_item_id bigint not null
-  , assigned_user uuid not null
+  , assignee uuid not null
   , role work_item_role not null
-  , primary key (work_item_id , assigned_user)
+  , primary key (work_item_id , assignee)
   , foreign key (work_item_id) references work_items (work_item_id) on delete cascade
-  , foreign key (assigned_user) references users (user_id) on delete cascade
+  , foreign key (assignee) references users (user_id) on delete cascade
 );
 
-create index on work_item_assigned_user (assigned_user , work_item_id);
+create index on work_item_assignee (assignee , work_item_id);
 
-comment on column work_item_assigned_user.role is '"type":models.WorkItemRole';
+comment on column work_item_assignee.role is '"type":models.WorkItemRole';
 
-comment on column work_item_assigned_user.work_item_id is '"cardinality":M2M';
+comment on column work_item_assignee.work_item_id is '"cardinality":M2M';
 
-comment on column work_item_assigned_user.assigned_user is '"cardinality":M2M';
+comment on column work_item_assignee.assignee is '"cardinality":M2M';
 
 -- must be completely dynamic on a project basis
 create table activities (

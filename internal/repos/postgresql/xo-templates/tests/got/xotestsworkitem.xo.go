@@ -33,10 +33,10 @@ type XoTestsWorkItem struct {
 	Description *string           `json:"description" db:"description"`                                  // description
 	TeamID      XoTestsTeamID     `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
 
-	DemoWorkItemJoin     *XoTestsDemoWorkItem          `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`            // O2O demo_work_items (inferred)
-	AssignedUsersJoin    *[]User__WIAU_XoTestsWorkItem `json:"-" db:"work_item_assigned_user_assigned_users" openapi-go:"ignore"` // M2M work_item_assigned_user
-	WorkItemCommentsJoin *[]XoTestsWorkItemComment     `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O work_items
-	TeamJoin             *XoTestsTeam                  `json:"-" db:"team_team_id" openapi-go:"ignore"`                           // O2O teams (inferred)
+	DemoWorkItemJoin     *XoTestsDemoWorkItem         `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`  // O2O demo_work_items (inferred)
+	AssigneesJoin        *[]User__WIA_XoTestsWorkItem `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"` // M2M work_item_assignee
+	WorkItemCommentsJoin *[]XoTestsWorkItemComment    `json:"-" db:"work_item_comments" openapi-go:"ignore"`           // M2O work_items
+	TeamJoin             *XoTestsTeam                 `json:"-" db:"team_team_id" openapi-go:"ignore"`                 // O2O teams (inferred)
 }
 
 // XoTestsWorkItemCreateParams represents insert params for 'xo_tests.work_items'.
@@ -81,7 +81,7 @@ type XoTestsWorkItemOrderBy string
 
 type XoTestsWorkItemJoins struct {
 	DemoWorkItem     bool // O2O demo_work_items
-	AssignedUsers    bool // M2M work_item_assigned_user
+	Assignees        bool // M2M work_item_assignee
 	WorkItemComments bool // M2O work_item_comments
 	Team             bool // O2O teams
 }
@@ -91,15 +91,15 @@ func WithXoTestsWorkItemJoin(joins XoTestsWorkItemJoins) XoTestsWorkItemSelectCo
 	return func(s *XoTestsWorkItemSelectConfig) {
 		s.joins = XoTestsWorkItemJoins{
 			DemoWorkItem:     s.joins.DemoWorkItem || joins.DemoWorkItem,
-			AssignedUsers:    s.joins.AssignedUsers || joins.AssignedUsers,
+			Assignees:        s.joins.Assignees || joins.Assignees,
 			WorkItemComments: s.joins.WorkItemComments || joins.WorkItemComments,
 			Team:             s.joins.Team || joins.Team,
 		}
 	}
 }
 
-// User__WIAU_XoTestsWorkItem represents a M2M join against "xo_tests.work_item_assigned_user"
-type User__WIAU_XoTestsWorkItem struct {
+// User__WIA_XoTestsWorkItem represents a M2M join against "xo_tests.work_item_assignee"
+type User__WIA_XoTestsWorkItem struct {
 	User XoTestsUser          `json:"user" db:"users" required:"true"`
 	Role *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
@@ -146,30 +146,30 @@ const xoTestsWorkItemTableDemoWorkItemSelectSQL = `(case when _demo_work_items_w
 const xoTestsWorkItemTableDemoWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id`
 
-const xoTestsWorkItemTableAssignedUsersJoinSQL = `-- M2M join generated from "work_item_assigned_user_assigned_user_fkey"
+const xoTestsWorkItemTableAssigneesJoinSQL = `-- M2M join generated from "work_item_assignee_assignee_fkey"
 left join (
 	select
-		work_item_assigned_user.work_item_id as work_item_assigned_user_work_item_id
-		, work_item_assigned_user.role as role
+		work_item_assignee.work_item_id as work_item_assignee_work_item_id
+		, work_item_assignee.role as role
 		, users.user_id as __users_user_id
 		, row(users.*) as __users
 	from
-		xo_tests.work_item_assigned_user
-	join xo_tests.users on users.user_id = work_item_assigned_user.assigned_user
+		xo_tests.work_item_assignee
+	join xo_tests.users on users.user_id = work_item_assignee.assignee
 	group by
-		work_item_assigned_user_work_item_id
+		work_item_assignee_work_item_id
 		, users.user_id
 		, role
-) as xo_join_work_item_assigned_user_assigned_users on xo_join_work_item_assigned_user_assigned_users.work_item_assigned_user_work_item_id = work_items.work_item_id
+) as xo_join_work_item_assignee_assignees on xo_join_work_item_assignee_assignees.work_item_assignee_work_item_id = work_items.work_item_id
 `
 
-const xoTestsWorkItemTableAssignedUsersSelectSQL = `COALESCE(
+const xoTestsWorkItemTableAssigneesSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
-		xo_join_work_item_assigned_user_assigned_users.__users
-		, xo_join_work_item_assigned_user_assigned_users.role
-		)) filter (where xo_join_work_item_assigned_user_assigned_users.__users_user_id is not null), '{}') as work_item_assigned_user_assigned_users`
+		xo_join_work_item_assignee_assignees.__users
+		, xo_join_work_item_assignee_assignees.role
+		)) filter (where xo_join_work_item_assignee_assignees.__users_user_id is not null), '{}') as work_item_assignee_assignees`
 
-const xoTestsWorkItemTableAssignedUsersGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
+const xoTestsWorkItemTableAssigneesGroupBySQL = `work_items.work_item_id, work_items.work_item_id`
 
 const xoTestsWorkItemTableWorkItemCommentsJoinSQL = `-- M2O join generated from "work_item_comments_work_item_id_fkey"
 left join (
@@ -359,10 +359,10 @@ func XoTestsWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 		groupByClauses = append(groupByClauses, xoTestsWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, xoTestsWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, xoTestsWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssignedUsersGroupBySQL)
+	if c.joins.Assignees {
+		selectClauses = append(selectClauses, xoTestsWorkItemTableAssigneesSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableAssigneesJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssigneesGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -477,10 +477,10 @@ func XoTestsWorkItems(ctx context.Context, db DB, opts ...XoTestsWorkItemSelectC
 		groupByClauses = append(groupByClauses, xoTestsWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, xoTestsWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, xoTestsWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssignedUsersGroupBySQL)
+	if c.joins.Assignees {
+		selectClauses = append(selectClauses, xoTestsWorkItemTableAssigneesSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableAssigneesJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssigneesGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -593,10 +593,10 @@ func XoTestsWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTestsW
 		groupByClauses = append(groupByClauses, xoTestsWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, xoTestsWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, xoTestsWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssignedUsersGroupBySQL)
+	if c.joins.Assignees {
+		selectClauses = append(selectClauses, xoTestsWorkItemTableAssigneesSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableAssigneesJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssigneesGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {
@@ -707,10 +707,10 @@ func XoTestsWorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...
 		groupByClauses = append(groupByClauses, xoTestsWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
-	if c.joins.AssignedUsers {
-		selectClauses = append(selectClauses, xoTestsWorkItemTableAssignedUsersSelectSQL)
-		joinClauses = append(joinClauses, xoTestsWorkItemTableAssignedUsersJoinSQL)
-		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssignedUsersGroupBySQL)
+	if c.joins.Assignees {
+		selectClauses = append(selectClauses, xoTestsWorkItemTableAssigneesSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableAssigneesJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableAssigneesGroupBySQL)
 	}
 
 	if c.joins.WorkItemComments {

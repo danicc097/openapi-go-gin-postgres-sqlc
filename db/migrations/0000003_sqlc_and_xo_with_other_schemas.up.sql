@@ -145,20 +145,20 @@ create type extra_schema.work_item_role as ENUM (
   , 'extra_reviewer'
 );
 
-create table extra_schema.work_item_assigned_user (
+create table extra_schema.work_item_assignee (
   work_item_id bigint
-  , assigned_user uuid
+  , assignee uuid
   , role extra_schema.work_item_role
-  , primary key (work_item_id , assigned_user)
+  , primary key (work_item_id , assignee)
   , foreign key (work_item_id) references extra_schema.work_items (work_item_id)
-  , foreign key (assigned_user) references extra_schema.users (user_id)
+  , foreign key (assignee) references extra_schema.users (user_id)
 );
 
-create index on extra_schema.work_item_assigned_user (assigned_user , work_item_id);
+create index on extra_schema.work_item_assignee (assignee , work_item_id);
 
-comment on column extra_schema.work_item_assigned_user.work_item_id is '"cardinality":M2M';
+comment on column extra_schema.work_item_assignee.work_item_id is '"cardinality":M2M';
 
-comment on column extra_schema.work_item_assigned_user.assigned_user is '"cardinality":M2M';
+comment on column extra_schema.work_item_assignee.assignee is '"cardinality":M2M';
 
 create table extra_schema.demo_work_items (
   work_item_id bigint primary key references extra_schema.work_items (work_item_id) on delete cascade

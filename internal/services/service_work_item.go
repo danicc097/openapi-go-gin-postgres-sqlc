@@ -27,7 +27,7 @@ func NewWorkItem(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItem {
 		logger: logger,
 		repos:  repos,
 		getSharedDBOpts: func() []db.WorkItemSelectConfigOption {
-			return []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{AssignedUsers: true, WorkItemTags: true})}
+			return []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{Assignees: true, WorkItemTags: true})}
 		},
 	}
 }
@@ -54,10 +54,10 @@ func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItemID db.Wor
 			return internal.WrapErrorWithLocf(nil, models.ErrorCodeUnauthorized, []string{strconv.Itoa(idx)}, "user %q does not belong to team %q", user.Email, wi.TeamID)
 		}
 
-		err = w.repos.WorkItem.AssignUser(ctx, d, &db.WorkItemAssignedUserCreateParams{
-			AssignedUser: member.UserID,
-			WorkItemID:   wi.WorkItemID,
-			Role:         member.Role,
+		err = w.repos.WorkItem.AssignUser(ctx, d, &db.WorkItemAssigneeCreateParams{
+			Assignee:   member.UserID,
+			WorkItemID: wi.WorkItemID,
+			Role:       member.Role,
 		})
 		var ierr *internal.Error
 		if err != nil {
@@ -75,9 +75,9 @@ func (w *WorkItem) AssignUsers(ctx context.Context, d db.DBTX, workItemID db.Wor
 func (w *WorkItem) RemoveAssignedUsers(ctx context.Context, d db.DBTX, workItemID db.WorkItemID, members []db.UserID) error {
 	for idx, member := range members {
 		// nolint: exhaustruct
-		lookup := &db.WorkItemAssignedUser{
-			AssignedUser: member,
-			WorkItemID:   workItemID,
+		lookup := &db.WorkItemAssignee{
+			Assignee:   member,
+			WorkItemID: workItemID,
 		}
 
 		err := lookup.Delete(ctx, d)

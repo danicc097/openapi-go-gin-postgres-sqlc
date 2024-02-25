@@ -82,6 +82,7 @@ import {
   DbUserNotification,
   DemoKanbanSteps,
   DemoTwoKanbanSteps,
+  DbUserWIAWorkItem,
 } from './models'
 
 export const schemaDefinitions = {
@@ -211,6 +212,7 @@ export const schemaDefinitions = {
   DbUserNotification: info<DbUserNotification>('DbUserNotification', '#/definitions/DbUserNotification'),
   DemoKanbanSteps: info<DemoKanbanSteps>('DemoKanbanSteps', '#/definitions/DemoKanbanSteps'),
   DemoTwoKanbanSteps: info<DemoTwoKanbanSteps>('DemoTwoKanbanSteps', '#/definitions/DemoTwoKanbanSteps'),
+  DbUserWIAWorkItem: info<DbUserWIAWorkItem>('DbUserWIAWorkItem', '#/definitions/DbUserWIAWorkItem'),
 }
 
 export interface SchemaInfo<T> {
