@@ -27,8 +27,8 @@ type ExtraSchemaWorkItemAdmin struct {
 	WorkItemID ExtraSchemaWorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
 	Admin      ExtraSchemaUserID     `json:"admin" db:"admin" required:"true" nullable:"false"`             // admin
 
-	AdminWorkItemsJoin *[]ExtraSchemaWorkItem `json:"-" db:"work_item_admin_work_items" openapi-go:"ignore"` // M2M work_item_admin
-	WorkItemAdminsJoin *[]ExtraSchemaUser     `json:"-" db:"work_item_admin_admins" openapi-go:"ignore"`     // M2M work_item_admin
+	WorkItemsJoin *[]ExtraSchemaWorkItem `json:"-" db:"work_item_admin_work_items" openapi-go:"ignore"` // M2M work_item_admin
+	AdminsJoin    *[]ExtraSchemaUser     `json:"-" db:"work_item_admin_admins" openapi-go:"ignore"`     // M2M work_item_admin
 
 }
 
@@ -71,16 +71,16 @@ type ExtraSchemaWorkItemAdminOrderBy string
 const ()
 
 type ExtraSchemaWorkItemAdminJoins struct {
-	AdminWorkItems bool // M2M work_item_admin
-	WorkItemAdmins bool // M2M work_item_admin
+	WorkItems bool // M2M work_item_admin
+	Admins    bool // M2M work_item_admin
 }
 
 // WithExtraSchemaWorkItemAdminJoin joins with the given tables.
 func WithExtraSchemaWorkItemAdminJoin(joins ExtraSchemaWorkItemAdminJoins) ExtraSchemaWorkItemAdminSelectConfigOption {
 	return func(s *ExtraSchemaWorkItemAdminSelectConfig) {
 		s.joins = ExtraSchemaWorkItemAdminJoins{
-			AdminWorkItems: s.joins.AdminWorkItems || joins.AdminWorkItems,
-			WorkItemAdmins: s.joins.WorkItemAdmins || joins.WorkItemAdmins,
+			WorkItems: s.joins.WorkItems || joins.WorkItems,
+			Admins:    s.joins.Admins || joins.Admins,
 		}
 	}
 }
@@ -118,7 +118,7 @@ func WithExtraSchemaWorkItemAdminHavingClause(conditions map[string][]any) Extra
 	}
 }
 
-const extraSchemaWorkItemAdminTableAdminWorkItemsJoinSQL = `-- M2M join generated from "work_item_admin_work_item_id_fkey"
+const extraSchemaWorkItemAdminTableWorkItemsJoinSQL = `-- M2M join generated from "work_item_admin_work_item_id_fkey"
 left join (
 	select
 		work_item_admin.admin as work_item_admin_admin
@@ -133,14 +133,14 @@ left join (
 ) as xo_join_work_item_admin_work_items on xo_join_work_item_admin_work_items.work_item_admin_admin = work_item_admin.admin
 `
 
-const extraSchemaWorkItemAdminTableAdminWorkItemsSelectSQL = `COALESCE(
+const extraSchemaWorkItemAdminTableWorkItemsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_admin_work_items.__work_items
 		)) filter (where xo_join_work_item_admin_work_items.__work_items_work_item_id is not null), '{}') as work_item_admin_work_items`
 
-const extraSchemaWorkItemAdminTableAdminWorkItemsGroupBySQL = `work_item_admin.admin, work_item_admin.work_item_id, work_item_admin.admin`
+const extraSchemaWorkItemAdminTableWorkItemsGroupBySQL = `work_item_admin.admin, work_item_admin.work_item_id, work_item_admin.admin`
 
-const extraSchemaWorkItemAdminTableWorkItemAdminsJoinSQL = `-- M2M join generated from "work_item_admin_admin_fkey"
+const extraSchemaWorkItemAdminTableAdminsJoinSQL = `-- M2M join generated from "work_item_admin_admin_fkey"
 left join (
 	select
 		work_item_admin.work_item_id as work_item_admin_work_item_id
@@ -155,12 +155,12 @@ left join (
 ) as xo_join_work_item_admin_admins on xo_join_work_item_admin_admins.work_item_admin_work_item_id = work_item_admin.work_item_id
 `
 
-const extraSchemaWorkItemAdminTableWorkItemAdminsSelectSQL = `COALESCE(
+const extraSchemaWorkItemAdminTableAdminsSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_work_item_admin_admins.__users
 		)) filter (where xo_join_work_item_admin_admins.__users_user_id is not null), '{}') as work_item_admin_admins`
 
-const extraSchemaWorkItemAdminTableWorkItemAdminsGroupBySQL = `work_item_admin.work_item_id, work_item_admin.work_item_id, work_item_admin.admin`
+const extraSchemaWorkItemAdminTableAdminsGroupBySQL = `work_item_admin.work_item_id, work_item_admin.work_item_id, work_item_admin.admin`
 
 // ExtraSchemaWorkItemAdminUpdateParams represents update params for 'extra_schema.work_item_admin'.
 type ExtraSchemaWorkItemAdminUpdateParams struct {
@@ -268,16 +268,16 @@ func ExtraSchemaWorkItemAdminsByAdminWorkItemID(ctx context.Context, db DB, admi
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.AdminWorkItems {
-		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableAdminWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableAdminWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableAdminWorkItemsGroupBySQL)
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableWorkItemsGroupBySQL)
 	}
 
-	if c.joins.WorkItemAdmins {
-		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableWorkItemAdminsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableWorkItemAdminsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableWorkItemAdminsGroupBySQL)
+	if c.joins.Admins {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableAdminsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableAdminsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableAdminsGroupBySQL)
 	}
 
 	selects := ""
@@ -370,16 +370,16 @@ func ExtraSchemaWorkItemAdminByWorkItemIDAdmin(ctx context.Context, db DB, workI
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.AdminWorkItems {
-		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableAdminWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableAdminWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableAdminWorkItemsGroupBySQL)
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableWorkItemsGroupBySQL)
 	}
 
-	if c.joins.WorkItemAdmins {
-		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableWorkItemAdminsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableWorkItemAdminsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableWorkItemAdminsGroupBySQL)
+	if c.joins.Admins {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableAdminsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableAdminsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableAdminsGroupBySQL)
 	}
 
 	selects := ""
@@ -470,16 +470,16 @@ func ExtraSchemaWorkItemAdminsByWorkItemID(ctx context.Context, db DB, workItemI
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.AdminWorkItems {
-		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableAdminWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableAdminWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableAdminWorkItemsGroupBySQL)
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableWorkItemsGroupBySQL)
 	}
 
-	if c.joins.WorkItemAdmins {
-		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableWorkItemAdminsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableWorkItemAdminsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableWorkItemAdminsGroupBySQL)
+	if c.joins.Admins {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableAdminsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableAdminsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableAdminsGroupBySQL)
 	}
 
 	selects := ""
@@ -572,16 +572,16 @@ func ExtraSchemaWorkItemAdminsByAdmin(ctx context.Context, db DB, admin ExtraSch
 	var joinClauses []string
 	var groupByClauses []string
 
-	if c.joins.AdminWorkItems {
-		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableAdminWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableAdminWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableAdminWorkItemsGroupBySQL)
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableWorkItemsGroupBySQL)
 	}
 
-	if c.joins.WorkItemAdmins {
-		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableWorkItemAdminsSelectSQL)
-		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableWorkItemAdminsJoinSQL)
-		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableWorkItemAdminsGroupBySQL)
+	if c.joins.Admins {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableAdminsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableAdminsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableAdminsGroupBySQL)
 	}
 
 	selects := ""

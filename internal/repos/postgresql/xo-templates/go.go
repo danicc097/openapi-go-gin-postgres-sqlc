@@ -2278,9 +2278,16 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 			rc := camelExport(strings.TrimSuffix(c.RefColumnName, "_id"))
 			rlc := camelExport(strings.TrimSuffix(c.LookupRefColumnName, "_id"))
 			lc := camelExport(strings.TrimSuffix(c.LookupColumnName, "_id"))
-			if rlc != rc { // with M2M just add acronym if it clashes
+			col := camelExport(strings.TrimSuffix(c.ColumnName, "_id"))
+			_, _, _, _ = rc, rlc, lc, col
+			if rlc != lc && rlc != col {
+				fmt.Printf("(rlc != lc) lc: %v rlc: %v rc: %v col: %v\n", lc, rlc, rc, col)
 				goName = lc + goName
 			}
+			// if rc != col && rlc != col {
+			// 	fmt.Printf("(rc != col) lc: %v rlc: %v rc: %v col: %v\n", lc, rlc, rc, col)
+			// 	goName = col + goName
+			// }
 			lookupTable := tables[c.TableName]
 			m2mExtraCols := getTableRegularFields(lookupTable)
 			if len(m2mExtraCols) > 0 {
@@ -2823,9 +2830,14 @@ func (f *Funcs) joinNames(t Table) []string {
 			rc := camelExport(strings.TrimSuffix(c.RefColumnName, "_id"))
 			rlc := camelExport(strings.TrimSuffix(c.LookupRefColumnName, "_id"))
 			lc := camelExport(strings.TrimSuffix(c.LookupColumnName, "_id"))
-			if rlc != rc { // with M2M just add acronym if it clashes
+			col := camelExport(strings.TrimSuffix(c.ColumnName, "_id"))
+			_, _, _, _ = rc, rlc, lc, col
+			if rlc != lc && rlc != col {
 				joinName = lc + joinName
 			}
+			// if rc != col && rlc != col {
+			// 	joinName = col + joinName
+			// }
 		case M2O:
 			if c.RefTableName != t.SQLName {
 				continue
@@ -4268,9 +4280,14 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			rc := camelExport(strings.TrimSuffix(c.RefColumnName, "_id"))
 			rlc := camelExport(strings.TrimSuffix(c.LookupRefColumnName, "_id"))
 			lc := camelExport(strings.TrimSuffix(c.LookupColumnName, "_id"))
-			if rlc != rc { // with M2M just add acronym if it clashes
+			col := camelExport(strings.TrimSuffix(c.ColumnName, "_id"))
+			_, _, _, _ = rc, rlc, lc, col
+			if rlc != lc && rlc != col {
 				goName = lc + goName
 			}
+			// if rc != col && rlc != col {
+			// 	goName = col + goName
+			// }
 			for _, g := range goNames {
 				if g == goName+"Join" {
 					goName = goName + toAcronym(c.TableName)

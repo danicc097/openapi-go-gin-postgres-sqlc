@@ -27,8 +27,8 @@ type UserTeam struct {
 	TeamID TeamID `json:"teamID" db:"team_id" required:"true" nullable:"false"` // team_id
 	Member UserID `json:"member" db:"member" required:"true" nullable:"false"`  // member
 
-	TeamsJoin       *[]Team `json:"-" db:"user_team_teams" openapi-go:"ignore"`   // M2M user_team
-	TeamMembersJoin *[]User `json:"-" db:"user_team_members" openapi-go:"ignore"` // M2M user_team
+	TeamsJoin   *[]Team `json:"-" db:"user_team_teams" openapi-go:"ignore"`   // M2M user_team
+	MembersJoin *[]User `json:"-" db:"user_team_members" openapi-go:"ignore"` // M2M user_team
 
 }
 
@@ -71,16 +71,16 @@ type UserTeamOrderBy string
 const ()
 
 type UserTeamJoins struct {
-	Teams       bool // M2M user_team
-	TeamMembers bool // M2M user_team
+	Teams   bool // M2M user_team
+	Members bool // M2M user_team
 }
 
 // WithUserTeamJoin joins with the given tables.
 func WithUserTeamJoin(joins UserTeamJoins) UserTeamSelectConfigOption {
 	return func(s *UserTeamSelectConfig) {
 		s.joins = UserTeamJoins{
-			Teams:       s.joins.Teams || joins.Teams,
-			TeamMembers: s.joins.TeamMembers || joins.TeamMembers,
+			Teams:   s.joins.Teams || joins.Teams,
+			Members: s.joins.Members || joins.Members,
 		}
 	}
 }
@@ -140,7 +140,7 @@ const userTeamTableTeamsSelectSQL = `COALESCE(
 
 const userTeamTableTeamsGroupBySQL = `user_team.team_id, user_team.team_id, user_team.member`
 
-const userTeamTableTeamMembersJoinSQL = `-- M2M join generated from "user_team_member_fkey"
+const userTeamTableMembersJoinSQL = `-- M2M join generated from "user_team_member_fkey"
 left join (
 	select
 		user_team.team_id as user_team_team_id
@@ -155,12 +155,12 @@ left join (
 ) as xo_join_user_team_members on xo_join_user_team_members.user_team_team_id = user_team.member
 `
 
-const userTeamTableTeamMembersSelectSQL = `COALESCE(
+const userTeamTableMembersSelectSQL = `COALESCE(
 		ARRAY_AGG( DISTINCT (
 		xo_join_user_team_members.__users
 		)) filter (where xo_join_user_team_members.__users_user_id is not null), '{}') as user_team_members`
 
-const userTeamTableTeamMembersGroupBySQL = `user_team.member, user_team.team_id, user_team.member`
+const userTeamTableMembersGroupBySQL = `user_team.member, user_team.team_id, user_team.member`
 
 // UserTeamUpdateParams represents update params for 'public.user_team'.
 type UserTeamUpdateParams struct {
@@ -274,10 +274,10 @@ func UserTeamsByMember(ctx context.Context, db DB, member UserID, opts ...UserTe
 		groupByClauses = append(groupByClauses, userTeamTableTeamsGroupBySQL)
 	}
 
-	if c.joins.TeamMembers {
-		selectClauses = append(selectClauses, userTeamTableTeamMembersSelectSQL)
-		joinClauses = append(joinClauses, userTeamTableTeamMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userTeamTableTeamMembersGroupBySQL)
+	if c.joins.Members {
+		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
 	}
 
 	selects := ""
@@ -376,10 +376,10 @@ func UserTeamByMemberTeamID(ctx context.Context, db DB, member UserID, teamID Te
 		groupByClauses = append(groupByClauses, userTeamTableTeamsGroupBySQL)
 	}
 
-	if c.joins.TeamMembers {
-		selectClauses = append(selectClauses, userTeamTableTeamMembersSelectSQL)
-		joinClauses = append(joinClauses, userTeamTableTeamMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userTeamTableTeamMembersGroupBySQL)
+	if c.joins.Members {
+		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
 	}
 
 	selects := ""
@@ -476,10 +476,10 @@ func UserTeamsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...UserTe
 		groupByClauses = append(groupByClauses, userTeamTableTeamsGroupBySQL)
 	}
 
-	if c.joins.TeamMembers {
-		selectClauses = append(selectClauses, userTeamTableTeamMembersSelectSQL)
-		joinClauses = append(joinClauses, userTeamTableTeamMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userTeamTableTeamMembersGroupBySQL)
+	if c.joins.Members {
+		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
 	}
 
 	selects := ""
@@ -578,10 +578,10 @@ func UserTeamsByTeamIDMember(ctx context.Context, db DB, teamID TeamID, member U
 		groupByClauses = append(groupByClauses, userTeamTableTeamsGroupBySQL)
 	}
 
-	if c.joins.TeamMembers {
-		selectClauses = append(selectClauses, userTeamTableTeamMembersSelectSQL)
-		joinClauses = append(joinClauses, userTeamTableTeamMembersJoinSQL)
-		groupByClauses = append(groupByClauses, userTeamTableTeamMembersGroupBySQL)
+	if c.joins.Members {
+		selectClauses = append(selectClauses, userTeamTableMembersSelectSQL)
+		joinClauses = append(joinClauses, userTeamTableMembersJoinSQL)
+		groupByClauses = append(groupByClauses, userTeamTableMembersGroupBySQL)
 	}
 
 	selects := ""
