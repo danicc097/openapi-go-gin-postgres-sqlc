@@ -115,12 +115,12 @@ func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.
 }
 
 func (u *User) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamID) ([]db.User, error) {
-	team, err := db.TeamByTeamID(ctx, d, teamID, db.WithTeamJoin(db.TeamJoins{TeamMembers: true}))
+	team, err := db.TeamByTeamID(ctx, d, teamID, db.WithTeamJoin(db.TeamJoins{Members: true}))
 	if err != nil {
 		return []db.User{}, fmt.Errorf("could not get users by team: %w", ParseDBErrorDetail(err))
 	}
 
-	return *team.TeamMembersJoin, nil
+	return *team.MembersJoin, nil
 }
 
 func (u *User) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID) ([]db.User, error) {

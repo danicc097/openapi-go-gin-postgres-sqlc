@@ -73,13 +73,13 @@ func TestSharedRefConstraints(t *testing.T) {
 
 	// generated with refs-ignore,share-ref-constraints
 	ee, err := db.XoTestsCacheDemoWorkItemPaginatedByWorkItemID(ctx, testPool, 0 /* should filter all */, models.DirectionAsc,
-		db.WithXoTestsCacheDemoWorkItemJoin(db.XoTestsCacheDemoWorkItemJoins{WorkItemAssignedUsers: true}),
+		db.WithXoTestsCacheDemoWorkItemJoin(db.XoTestsCacheDemoWorkItemJoins{AssignedUsers: true}),
 	)
 	require.NoError(t, err)
 	require.Len(t, ee, 1)
 	require.EqualValues(t, 1, ee[0].WorkItemID)
-	require.NotNil(t, ee[0].WorkItemAssignedUsersJoin)
-	require.Len(t, *ee[0].WorkItemAssignedUsersJoin, 2)
+	require.NotNil(t, ee[0].AssignedUsersJoin)
+	require.Len(t, *ee[0].AssignedUsersJoin, 2)
 	require.Nil(t, ee[0].WorkItemCommentsJoin)
 }
 
@@ -108,7 +108,7 @@ func TestCursorPagination_HavingClause(t *testing.T) {
 	require.NoError(t, err)
 
 	ee, err := db.XoTestsWorkItemPaginatedByWorkItemID(ctx, testPool, 0 /* should filter all */, models.DirectionAsc,
-		db.WithXoTestsWorkItemJoin(db.XoTestsWorkItemJoins{WorkItemAssignedUsers: true}),
+		db.WithXoTestsWorkItemJoin(db.XoTestsWorkItemJoins{AssignedUsers: true}),
 		db.WithXoTestsWorkItemHavingClause(map[string][]any{
 			"$i = ANY(ARRAY_AGG(xo_join_work_item_assigned_user_assigned_users.__users_user_id))": {u1.UserID},
 		}),
@@ -117,7 +117,7 @@ func TestCursorPagination_HavingClause(t *testing.T) {
 	require.Len(t, ee, 1)
 	assert.Equal(t, ee[0].WorkItemID, wi.WorkItemID)
 
-	au := *ee[0].WorkItemAssignedUsersJoin
+	au := *ee[0].AssignedUsersJoin
 	found := false
 	for _, u := range au {
 		if u.User.UserID == u1.UserID {
@@ -161,11 +161,11 @@ func TestM2M_SelectFilter(t *testing.T) {
 
 	ctx := context.Background()
 
-	wi, err := db.XoTestsWorkItemByWorkItemID(ctx, testPool, 1, db.WithXoTestsWorkItemJoin(db.XoTestsWorkItemJoins{WorkItemAssignedUsers: true}))
+	wi, err := db.XoTestsWorkItemByWorkItemID(ctx, testPool, 1, db.WithXoTestsWorkItemJoin(db.XoTestsWorkItemJoins{AssignedUsers: true}))
 	require.NoError(t, err)
-	assert.NotNil(t, *wi.WorkItemAssignedUsersJoin)
-	require.Len(t, *wi.WorkItemAssignedUsersJoin, 2)
-	for _, member := range *wi.WorkItemAssignedUsersJoin {
+	assert.NotNil(t, *wi.AssignedUsersJoin)
+	require.Len(t, *wi.AssignedUsersJoin, 2)
+	for _, member := range *wi.AssignedUsersJoin {
 		uid := db.NewXoTestsUserID(uuid.MustParse("8bfb8359-28e0-4039-9259-3c98ada7300d"))
 		if member.User.UserID == uid {
 			assert.Nil(t, member.User.DeletedAt) // ensure proper filter clause used. e.g. filter where record is not null will exclude the whole record if just one element is null, see https://github.com/danicc097/openapi-go-gin-postgres-sqlc/blob/7a9affbccc9738e728ba5532d055230f4668034c/FIXME.md#L44

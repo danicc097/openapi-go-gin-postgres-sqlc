@@ -4283,6 +4283,9 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			col := camelExport(strings.TrimSuffix(c.ColumnName, "_id"))
 			_, _, _, _ = rc, rlc, lc, col
 			if rlc != lc && rlc != col {
+				// e.g. m2m join in teams table with ref lookup table column of member (instead of user id) yields just MembersJoin.
+				// if we had something different than team_id in lookup table it would prefix it. but MembersJoin assumes it team member.
+
 				goName = lc + goName
 			}
 			// if rc != col && rlc != col {
