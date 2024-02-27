@@ -213,7 +213,7 @@ x.check-build-deps() {
       [[ $line =~ ^declare\ -f\ install\.bin\. ]] && BIN_INSTALLS+=("${line##declare -f install.bin.}")
     done < <(declare -F)
 
-    echo "Checking dependencies..."
+    echo "Checking dependency minimum versions..."
     for bin in "${BIN_CHECKS[@]}"; do
       # local r
       # r="$(...)" # redirect to var while also streaming unbuffered output with | tee /dev/tty
