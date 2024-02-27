@@ -37,14 +37,14 @@ type XoTestsUser struct {
 	CreatedAt time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"` // created_at
 	DeletedAt *time.Time           `json:"deletedAt" db:"deleted_at"`                                  // deleted_at
 
-	AuthorBooksJoin           *[]Book__BA_XoTestsUser      `json:"-" db:"book_authors_books" openapi-go:"ignore"`               // M2M book_authors
-	AuthorBooksBASKJoin       *[]Book__BASK_XoTestsUser    `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"` // M2M book_authors_surrogate_key
+	AuthorBooksJoin           *[]XoTestsUserM2MBookBA      `json:"-" db:"book_authors_books" openapi-go:"ignore"`               // M2M book_authors
+	AuthorBooksBASKJoin       *[]XoTestsUserM2MBookBASK    `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"` // M2M book_authors_surrogate_key
 	BookReviewsJoin           *[]XoTestsBookReview         `json:"-" db:"book_reviews" openapi-go:"ignore"`                     // M2O users
 	SellerBooksJoin           *[]XoTestsBook               `json:"-" db:"book_sellers_books" openapi-go:"ignore"`               // M2M book_sellers
 	ReceiverNotificationsJoin *[]XoTestsNotification       `json:"-" db:"notifications_receiver" openapi-go:"ignore"`           // M2O users
 	SenderNotificationsJoin   *[]XoTestsNotification       `json:"-" db:"notifications_sender" openapi-go:"ignore"`             // M2O users
 	UserAPIKeyJoin            *XoTestsUserAPIKey           `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`          // O2O user_api_keys (inferred)
-	AssigneeWorkItemsJoin     *[]WorkItem__WIA_XoTestsUser `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"`    // M2M work_item_assignee
+	AssigneeWorkItemsJoin     *[]XoTestsUserM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"`    // M2M work_item_assignee
 	WorkItemCommentsJoin      *[]XoTestsWorkItemComment    `json:"-" db:"work_item_comments" openapi-go:"ignore"`               // M2O users
 }
 
@@ -157,20 +157,20 @@ func WithXoTestsUserJoin(joins XoTestsUserJoins) XoTestsUserSelectConfigOption {
 	}
 }
 
-// Book__BA_XoTestsUser represents a M2M join against "xo_tests.book_authors"
-type Book__BA_XoTestsUser struct {
+// XoTestsUserM2MBookBA represents a M2M join against "xo_tests.book_authors"
+type XoTestsUserM2MBookBA struct {
 	Book      XoTestsBook `json:"book" db:"books" required:"true"`
 	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// Book__BASK_XoTestsUser represents a M2M join against "xo_tests.book_authors_surrogate_key"
-type Book__BASK_XoTestsUser struct {
+// XoTestsUserM2MBookBASK represents a M2M join against "xo_tests.book_authors_surrogate_key"
+type XoTestsUserM2MBookBASK struct {
 	Book      XoTestsBook `json:"book" db:"books" required:"true"`
 	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// WorkItem__WIA_XoTestsUser represents a M2M join against "xo_tests.work_item_assignee"
-type WorkItem__WIA_XoTestsUser struct {
+// XoTestsUserM2MWorkItemWIA represents a M2M join against "xo_tests.work_item_assignee"
+type XoTestsUserM2MWorkItemWIA struct {
 	WorkItem XoTestsWorkItem      `json:"workItem" db:"work_items" required:"true"`
 	Role     *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }

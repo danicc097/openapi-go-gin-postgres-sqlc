@@ -554,6 +554,13 @@ type DbWorkItemCreateParams struct {
 // DbWorkItemID defines the model for DbWorkItemID.
 type DbWorkItemID = interface{}
 
+// DbWorkItemM2MAssigneeWIA defines the model for DbWorkItemM2MAssigneeWIA.
+type DbWorkItemM2MAssigneeWIA struct {
+	// Role is generated from database enum 'work_item_role'.
+	Role externalRef0.WorkItemRole `json:"role"`
+	User externalRef0.DbUser       `json:"user"`
+}
+
 // DbWorkItemRole defines the model for DbWorkItemRole.
 type DbWorkItemRole = string
 
@@ -604,7 +611,7 @@ type DemoTwoWorkItems  struct {
     DemoTwoWorkItem externalRef0.DbDemoTwoWorkItem`json:"demoTwoWorkItem"`
     Description string`json:"description"`
     KanbanStepID int`json:"kanbanStepID"`
-    Members *[]externalRef0.DbUserWIAWorkItem`json:"members"`
+    Members *[]externalRef0.DbWorkItemM2MAssigneeWIA`json:"members"`
     Metadata map[string]interface{}`json:"metadata"`
     TargetDate time.Time`json:"targetDate"`
     TeamID *int`json:"teamID"`
@@ -631,7 +638,7 @@ type DemoWorkItems  struct {
     DemoWorkItem externalRef0.DbDemoWorkItem`json:"demoWorkItem"`
     Description string`json:"description"`
     KanbanStepID int`json:"kanbanStepID"`
-    Members *[]externalRef0.DbUserWIAWorkItem`json:"members"`
+    Members *[]externalRef0.DbWorkItemM2MAssigneeWIA`json:"members"`
     Metadata map[string]interface{}`json:"metadata"`
     TargetDate time.Time`json:"targetDate"`
     TeamID *int`json:"teamID"`
@@ -763,7 +770,7 @@ type ServicesMember struct {
 /* Ignoring existing rest struct
 // SharedWorkItemJoins defines the model for SharedWorkItemJoins.
 type SharedWorkItemJoins  struct {
-    Members *[]externalRef0.DbUserWIAWorkItem`json:"members"`
+    Members *[]externalRef0.DbWorkItemM2MAssigneeWIA`json:"members"`
     TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
     WorkItemComments *[]externalRef0.DbWorkItemComment`json:"workItemComments"`
     WorkItemTags *[]externalRef0.DbWorkItemTag`json:"workItemTags"`

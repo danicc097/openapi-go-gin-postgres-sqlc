@@ -54,7 +54,7 @@ type User struct {
 	MemberProjectsJoin        *[]Project            `json:"-" db:"user_project_projects" openapi-go:"ignore"`         // M2M user_project
 	MemberTeamsJoin           *[]Team               `json:"-" db:"user_team_teams" openapi-go:"ignore"`               // M2M user_team
 	UserAPIKeyJoin            *UserAPIKey           `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`       // O2O user_api_keys (inferred)
-	AssigneeWorkItemsJoin     *[]WorkItem__WIA_User `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"` // M2M work_item_assignee
+	AssigneeWorkItemsJoin     *[]UserM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"` // M2M work_item_assignee
 	WorkItemCommentsJoin      *[]WorkItemComment    `json:"-" db:"work_item_comments" openapi-go:"ignore"`            // M2O users
 
 }
@@ -188,8 +188,8 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 	}
 }
 
-// WorkItem__WIA_User represents a M2M join against "public.work_item_assignee"
-type WorkItem__WIA_User struct {
+// UserM2MWorkItemWIA represents a M2M join against "public.work_item_assignee"
+type UserM2MWorkItemWIA struct {
 	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
 	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }

@@ -44,6 +44,7 @@ export * from './dbWorkItemComment';
 export * from './dbWorkItemCreateParams';
 export * from './dbWorkItemCreateParamsMetadata';
 export * from './dbWorkItemID';
+export * from './dbWorkItemM2MAssigneeWIA';
 export * from './dbWorkItemMetadata';
 export * from './dbWorkItemRole';
 export * from './dbWorkItemTag';

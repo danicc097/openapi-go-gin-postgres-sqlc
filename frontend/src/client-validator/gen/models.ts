@@ -327,7 +327,7 @@ export interface DemoTwoWorkItems {
   demoTwoWorkItem: DbDemoTwoWorkItem
   description: string
   kanbanStepID: number
-  members?: DbUserWIAWorkItem[] | null
+  members?: DbWorkItemM2MAssigneeWIA[] | null
   metadata: {}
   targetDate: string
   teamID: number | null
@@ -340,7 +340,7 @@ export interface DemoTwoWorkItems {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
-export interface DbUserWIAWorkItem {
+export interface DbWorkItemM2MAssigneeWIA {
   role: WorkItemRole
   user: DbUser
 }
@@ -351,7 +351,7 @@ export interface DemoWorkItems {
   demoWorkItem: DbDemoWorkItem
   description: string
   kanbanStepID: number
-  members?: DbUserWIAWorkItem[] | null
+  members?: DbWorkItemM2MAssigneeWIA[] | null
   metadata: {}
   targetDate: string
   teamID: number | null
@@ -403,7 +403,7 @@ export interface ProjectBoard {
   projectName: Project
 }
 export interface SharedWorkItemJoins {
-  members?: DbUserWIAWorkItem[] | null
+  members?: DbWorkItemM2MAssigneeWIA[] | null
   timeEntries?: DbTimeEntry[] | null
   workItemComments?: DbWorkItemComment[] | null
   workItemTags?: DbWorkItemTag[] | null
@@ -536,4 +536,8 @@ export interface DbUserNotification {
   read: boolean
   userID: DbUserID
   userNotificationID: number
+}
+export interface DbUserWIAWorkItem {
+  role: WorkItemRole
+  user: DbUser
 }

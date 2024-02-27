@@ -33,10 +33,10 @@ type XoTestsWorkItem struct {
 	Description *string           `json:"description" db:"description"`                                  // description
 	TeamID      XoTestsTeamID     `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
 
-	DemoWorkItemJoin     *XoTestsDemoWorkItem         `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`  // O2O demo_work_items (inferred)
-	AssigneesJoin        *[]User__WIA_XoTestsWorkItem `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"` // M2M work_item_assignee
-	WorkItemCommentsJoin *[]XoTestsWorkItemComment    `json:"-" db:"work_item_comments" openapi-go:"ignore"`           // M2O work_items
-	TeamJoin             *XoTestsTeam                 `json:"-" db:"team_team_id" openapi-go:"ignore"`                 // O2O teams (inferred)
+	DemoWorkItemJoin     *XoTestsDemoWorkItem             `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`  // O2O demo_work_items (inferred)
+	AssigneesJoin        *[]XoTestsWorkItemM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"` // M2M work_item_assignee
+	WorkItemCommentsJoin *[]XoTestsWorkItemComment        `json:"-" db:"work_item_comments" openapi-go:"ignore"`           // M2O work_items
+	TeamJoin             *XoTestsTeam                     `json:"-" db:"team_team_id" openapi-go:"ignore"`                 // O2O teams (inferred)
 }
 
 // XoTestsWorkItemCreateParams represents insert params for 'xo_tests.work_items'.
@@ -98,8 +98,8 @@ func WithXoTestsWorkItemJoin(joins XoTestsWorkItemJoins) XoTestsWorkItemSelectCo
 	}
 }
 
-// User__WIA_XoTestsWorkItem represents a M2M join against "xo_tests.work_item_assignee"
-type User__WIA_XoTestsWorkItem struct {
+// XoTestsWorkItemM2MAssigneeWIA represents a M2M join against "xo_tests.work_item_assignee"
+type XoTestsWorkItemM2MAssigneeWIA struct {
 	User XoTestsUser          `json:"user" db:"users" required:"true"`
 	Role *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }

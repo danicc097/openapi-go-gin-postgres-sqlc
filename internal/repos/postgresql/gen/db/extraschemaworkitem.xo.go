@@ -32,9 +32,9 @@ type ExtraSchemaWorkItem struct {
 	Title       *string               `json:"title" db:"title"`                                              // title
 	Description *string               `json:"description" db:"description"`                                  // description
 
-	DemoWorkItemJoin *ExtraSchemaDemoWorkItem         `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`  // O2O demo_work_items (inferred)
-	AdminsJoin       *[]ExtraSchemaUser               `json:"-" db:"work_item_admin_admins" openapi-go:"ignore"`       // M2M work_item_admin
-	AssigneesJoin    *[]User__WIA_ExtraSchemaWorkItem `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"` // M2M work_item_assignee
+	DemoWorkItemJoin *ExtraSchemaDemoWorkItem             `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`  // O2O demo_work_items (inferred)
+	AdminsJoin       *[]ExtraSchemaUser                   `json:"-" db:"work_item_admin_admins" openapi-go:"ignore"`       // M2M work_item_admin
+	AssigneesJoin    *[]ExtraSchemaWorkItemM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"` // M2M work_item_assignee
 
 }
 
@@ -95,8 +95,8 @@ func WithExtraSchemaWorkItemJoin(joins ExtraSchemaWorkItemJoins) ExtraSchemaWork
 	}
 }
 
-// User__WIA_ExtraSchemaWorkItem represents a M2M join against "extra_schema.work_item_assignee"
-type User__WIA_ExtraSchemaWorkItem struct {
+// ExtraSchemaWorkItemM2MAssigneeWIA represents a M2M join against "extra_schema.work_item_assignee"
+type ExtraSchemaWorkItemM2MAssigneeWIA struct {
 	User ExtraSchemaUser          `json:"user" db:"users" required:"true"`
 	Role *ExtraSchemaWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }

@@ -32,9 +32,9 @@ type XoTestsCacheDemoWorkItem struct {
 	Title      *string           `json:"title" db:"title"`                                              // title
 	TeamID     XoTestsTeamID     `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
 
-	TeamJoin             *XoTestsTeam                          `json:"-" db:"team_team_id" openapi-go:"ignore"`                 // O2O teams (inferred)
-	AssigneesJoin        *[]User__WIA_XoTestsCacheDemoWorkItem `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"` // M2M work_item_assignee
-	WorkItemCommentsJoin *[]XoTestsWorkItemComment             `json:"-" db:"work_item_comments" openapi-go:"ignore"`           // M2O cache__demo_work_items
+	TeamJoin             *XoTestsTeam                              `json:"-" db:"team_team_id" openapi-go:"ignore"`                 // O2O teams (inferred)
+	AssigneesJoin        *[]XoTestsCacheDemoWorkItemM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"` // M2M work_item_assignee
+	WorkItemCommentsJoin *[]XoTestsWorkItemComment                 `json:"-" db:"work_item_comments" openapi-go:"ignore"`           // M2O cache__demo_work_items
 }
 
 // XoTestsCacheDemoWorkItemCreateParams represents insert params for 'xo_tests.cache__demo_work_items'.
@@ -92,8 +92,8 @@ func WithXoTestsCacheDemoWorkItemJoin(joins XoTestsCacheDemoWorkItemJoins) XoTes
 	}
 }
 
-// User__WIA_XoTestsCacheDemoWorkItem represents a M2M join against "xo_tests.work_item_assignee"
-type User__WIA_XoTestsCacheDemoWorkItem struct {
+// XoTestsCacheDemoWorkItemM2MAssigneeWIA represents a M2M join against "xo_tests.work_item_assignee"
+type XoTestsCacheDemoWorkItemM2MAssigneeWIA struct {
 	User XoTestsUser          `json:"user" db:"users" required:"true"`
 	Role *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }

@@ -43,13 +43,13 @@ type CacheDemoTwoWorkItem struct {
 	UpdatedAt             time.Time      `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`             // updated_at
 	DeletedAt             *time.Time     `json:"deletedAt" db:"deleted_at"`                                              // deleted_at
 
-	KanbanStepJoin       *KanbanStep                       `json:"-" db:"kanban_step_kanban_step_id" openapi-go:"ignore"`             // O2O kanban_steps (inferred)
-	TeamJoin             *Team                             `json:"-" db:"team_team_id" openapi-go:"ignore"`                           // O2O teams (inferred)
-	WorkItemTypeJoin     *WorkItemType                     `json:"-" db:"work_item_type_work_item_type_id" openapi-go:"ignore"`       // O2O work_item_types (inferred)
-	TimeEntriesJoin      *[]TimeEntry                      `json:"-" db:"time_entries" openapi-go:"ignore"`                           // M2O cache__demo_two_work_items
-	AssigneesJoin        *[]User__WIA_CacheDemoTwoWorkItem `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"`           // M2M work_item_assignee
-	WorkItemCommentsJoin *[]WorkItemComment                `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O cache__demo_two_work_items
-	WorkItemTagsJoin     *[]WorkItemTag                    `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
+	KanbanStepJoin       *KanbanStep                           `json:"-" db:"kanban_step_kanban_step_id" openapi-go:"ignore"`             // O2O kanban_steps (inferred)
+	TeamJoin             *Team                                 `json:"-" db:"team_team_id" openapi-go:"ignore"`                           // O2O teams (inferred)
+	WorkItemTypeJoin     *WorkItemType                         `json:"-" db:"work_item_type_work_item_type_id" openapi-go:"ignore"`       // O2O work_item_types (inferred)
+	TimeEntriesJoin      *[]TimeEntry                          `json:"-" db:"time_entries" openapi-go:"ignore"`                           // M2O cache__demo_two_work_items
+	AssigneesJoin        *[]CacheDemoTwoWorkItemM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"`           // M2M work_item_assignee
+	WorkItemCommentsJoin *[]WorkItemComment                    `json:"-" db:"work_item_comments" openapi-go:"ignore"`                     // M2O cache__demo_two_work_items
+	WorkItemTagsJoin     *[]WorkItemTag                        `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
 
 }
 
@@ -180,8 +180,8 @@ func WithCacheDemoTwoWorkItemJoin(joins CacheDemoTwoWorkItemJoins) CacheDemoTwoW
 	}
 }
 
-// User__WIA_CacheDemoTwoWorkItem represents a M2M join against "public.work_item_assignee"
-type User__WIA_CacheDemoTwoWorkItem struct {
+// CacheDemoTwoWorkItemM2MAssigneeWIA represents a M2M join against "public.work_item_assignee"
+type CacheDemoTwoWorkItemM2MAssigneeWIA struct {
 	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }

@@ -31,8 +31,8 @@ type ExtraSchemaBookAuthor struct {
 	AuthorID  ExtraSchemaUserID `json:"authorID" db:"author_id" required:"true" nullable:"false"` // author_id
 	Pseudonym *string           `json:"pseudonym" db:"pseudonym"`                                 // pseudonym
 
-	BooksJoin   *[]Book__BA_ExtraSchemaBookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
-	AuthorsJoin *[]User__BA_ExtraSchemaBookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
+	BooksJoin   *[]ExtraSchemaBookAuthorM2MBookBA   `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
+	AuthorsJoin *[]ExtraSchemaBookAuthorM2MAuthorBA `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
 
 }
 
@@ -91,14 +91,14 @@ func WithExtraSchemaBookAuthorJoin(joins ExtraSchemaBookAuthorJoins) ExtraSchema
 	}
 }
 
-// Book__BA_ExtraSchemaBookAuthor represents a M2M join against "extra_schema.book_authors"
-type Book__BA_ExtraSchemaBookAuthor struct {
+// ExtraSchemaBookAuthorM2MBookBA represents a M2M join against "extra_schema.book_authors"
+type ExtraSchemaBookAuthorM2MBookBA struct {
 	Book      ExtraSchemaBook `json:"book" db:"books" required:"true"`
 	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// User__BA_ExtraSchemaBookAuthor represents a M2M join against "extra_schema.book_authors"
-type User__BA_ExtraSchemaBookAuthor struct {
+// ExtraSchemaBookAuthorM2MAuthorBA represents a M2M join against "extra_schema.book_authors"
+type ExtraSchemaBookAuthorM2MAuthorBA struct {
 	User      ExtraSchemaUser `json:"user" db:"users" required:"true"`
 	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }

@@ -31,8 +31,8 @@ type XoTestsBookAuthor struct {
 	AuthorID  XoTestsUserID `json:"authorID" db:"author_id" required:"true" nullable:"false"` // author_id
 	Pseudonym *string       `json:"pseudonym" db:"pseudonym"`                                 // pseudonym
 
-	BooksJoin   *[]Book__BA_XoTestsBookAuthor `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
-	AuthorsJoin *[]User__BA_XoTestsBookAuthor `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
+	BooksJoin   *[]XoTestsBookAuthorM2MBookBA   `json:"-" db:"book_authors_books" openapi-go:"ignore"`   // M2M book_authors
+	AuthorsJoin *[]XoTestsBookAuthorM2MAuthorBA `json:"-" db:"book_authors_authors" openapi-go:"ignore"` // M2M book_authors
 }
 
 // XoTestsBookAuthorCreateParams represents insert params for 'xo_tests.book_authors'.
@@ -88,14 +88,14 @@ func WithXoTestsBookAuthorJoin(joins XoTestsBookAuthorJoins) XoTestsBookAuthorSe
 	}
 }
 
-// Book__BA_XoTestsBookAuthor represents a M2M join against "xo_tests.book_authors"
-type Book__BA_XoTestsBookAuthor struct {
+// XoTestsBookAuthorM2MBookBA represents a M2M join against "xo_tests.book_authors"
+type XoTestsBookAuthorM2MBookBA struct {
 	Book      XoTestsBook `json:"book" db:"books" required:"true"`
 	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// User__BA_XoTestsBookAuthor represents a M2M join against "xo_tests.book_authors"
-type User__BA_XoTestsBookAuthor struct {
+// XoTestsBookAuthorM2MAuthorBA represents a M2M join against "xo_tests.book_authors"
+type XoTestsBookAuthorM2MAuthorBA struct {
 	User      XoTestsUser `json:"user" db:"users" required:"true"`
 	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
 }

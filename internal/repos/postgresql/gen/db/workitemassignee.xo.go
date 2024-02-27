@@ -32,8 +32,8 @@ type WorkItemAssignee struct {
 	Assignee   UserID              `json:"assignee" db:"assignee" required:"true" nullable:"false"`                                 // assignee
 	Role       models.WorkItemRole `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 
-	WorkItemsJoin *[]WorkItem__WIA_WorkItemAssignee `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"` // M2M work_item_assignee
-	AssigneesJoin *[]User__WIA_WorkItemAssignee     `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"`  // M2M work_item_assignee
+	WorkItemsJoin *[]WorkItemAssigneeM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"` // M2M work_item_assignee
+	AssigneesJoin *[]WorkItemAssigneeM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"`  // M2M work_item_assignee
 
 }
 
@@ -92,14 +92,14 @@ func WithWorkItemAssigneeJoin(joins WorkItemAssigneeJoins) WorkItemAssigneeSelec
 	}
 }
 
-// WorkItem__WIA_WorkItemAssignee represents a M2M join against "public.work_item_assignee"
-type WorkItem__WIA_WorkItemAssignee struct {
+// WorkItemAssigneeM2MWorkItemWIA represents a M2M join against "public.work_item_assignee"
+type WorkItemAssigneeM2MWorkItemWIA struct {
 	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
 	Role     models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
-// User__WIA_WorkItemAssignee represents a M2M join against "public.work_item_assignee"
-type User__WIA_WorkItemAssignee struct {
+// WorkItemAssigneeM2MAssigneeWIA represents a M2M join against "public.work_item_assignee"
+type WorkItemAssigneeM2MAssigneeWIA struct {
 	User User                `json:"user" db:"users" required:"true"`
 	Role models.WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }

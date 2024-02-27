@@ -982,7 +982,7 @@ export type schemas = components['schemas']
 
     {
       orval --config $orval_config
-      orval_branded_types
+      orval_frontend_branded_types
     } &
 
     wait_without_error || err Failed jobs
@@ -1487,7 +1487,7 @@ x.backend.typecheck() {
 }
 
 # depends on gen.xo output
-orval_branded_types() {
+orval_frontend_branded_types() {
   local import_string="import type * as EntityIDs from 'src/gen/entity-ids'"
   local escaped_import_string=$(escape_sed "$import_string")
 

@@ -388,7 +388,7 @@ export interface components {
       demoTwoWorkItem: components["schemas"]["DbDemoTwoWorkItem"];
       description: string;
       kanbanStepID: number;
-      members?: components["schemas"]["DbUserWIAWorkItem"][] | null;
+      members?: components["schemas"]["DbWorkItemM2MAssigneeWIA"][] | null;
       metadata: {
         [key: string]: unknown;
       };
@@ -415,7 +415,7 @@ export interface components {
       demoWorkItem: components["schemas"]["DbDemoWorkItem"];
       description: string;
       kanbanStepID: number;
-      members?: components["schemas"]["DbUserWIAWorkItem"][] | null;
+      members?: components["schemas"]["DbWorkItemM2MAssigneeWIA"][] | null;
       metadata: {
         [key: string]: unknown;
       };
@@ -458,7 +458,7 @@ export interface components {
       userID: components["schemas"]["DbUserID"];
     };
     SharedWorkItemJoins: {
-      members?: components["schemas"]["DbUserWIAWorkItem"][] | null;
+      members?: components["schemas"]["DbWorkItemM2MAssigneeWIA"][] | null;
       timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
       workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
       workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
@@ -720,6 +720,10 @@ export interface components {
      */
     DemoTwoKanbanSteps: "Received";
     DbUserWIAWorkItem: {
+      role: components["schemas"]["WorkItemRole"];
+      user: components["schemas"]["DbUser"];
+    };
+    DbWorkItemM2MAssigneeWIA: {
       role: components["schemas"]["WorkItemRole"];
       user: components["schemas"]["DbUser"];
     };

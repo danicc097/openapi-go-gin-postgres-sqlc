@@ -162,14 +162,19 @@ func toAcronym(input string) string {
 			}
 		}
 	} else {
-		// CamelCase or PascalCase input
-		var prev rune
-		for _, char := range input {
-			if unicode.IsUpper(char) && !unicode.IsUpper(prev) {
-				acronym += string(char)
+		// requires CamelCase or PascalCase input
+		for i, char := range input {
+			if unicode.IsUpper(char) {
+				// Check if it's not the first character and the previous character is not uppercase
+				if i > 0 && !unicode.IsUpper(rune(input[i-1])) {
+					acronym += string(char)
+				}
 			}
-			prev = char
 		}
+	}
+
+	if acronym == "" {
+		acronym = strings.ToUpper(string(input[len(input)-1]))
 	}
 
 	return strings.ToUpper(acronym)
@@ -2316,8 +2321,9 @@ func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
 					lookupFields = append(lookupFields, fmt.Sprintf("%s %s %s", camelExport(col.GoName), typ, tag))
 				}
 				joinField := originalStruct + " " + camelExport(f.schemaPrefix) + originalStruct + " " + tag
-				typ := camelExport(singularize(c.RefTableName))           // same typ as in struct
-				st := typ + "__" + toAcronym(c.TableName) + "_" + tGoName // unique suffixes
+				// typ := camelExport(singularize(c.RefTableName)) // same typ as in struct
+
+				st := camelExport(tGoName) + "M2M" + camelExport(lookupName) + toAcronym(c.TableName)
 				lookupTableSQLName := f.schema + "." + c.TableName
 				docstring := fmt.Sprintf("// %s represents a M2M join against %q", st, lookupTableSQLName)
 
@@ -4271,7 +4277,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			lookupTable := tables[c.TableName]
 			m2mExtraCols := getTableRegularFields(lookupTable)
 			if len(m2mExtraCols) > 0 {
-				typ = typ + "__" + toAcronym(c.TableName) + "_" + camelExport(f.schemaPrefix) + camelExport(singularize(t.SQLName))
+				typ = t.GoName + "M2M" + camelExport(lookupName) + toAcronym(c.TableName)
 			} else {
 				typ = camelExport(f.schemaPrefix) + typ
 			}

@@ -31,8 +31,8 @@ type XoTestsWorkItemAssignee struct {
 	Assignee    XoTestsUserID        `json:"assignee" db:"assignee" required:"true" nullable:"false"`                                 // assignee
 	XoTestsRole *XoTestsWorkItemRole `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 
-	WorkItemsJoin *[]WorkItem__WIA_XoTestsWorkItemAssignee `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"` // M2M work_item_assignee
-	AssigneesJoin *[]User__WIA_XoTestsWorkItemAssignee     `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"`  // M2M work_item_assignee
+	WorkItemsJoin *[]XoTestsWorkItemAssigneeM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"` // M2M work_item_assignee
+	AssigneesJoin *[]XoTestsWorkItemAssigneeM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"`  // M2M work_item_assignee
 }
 
 // XoTestsWorkItemAssigneeCreateParams represents insert params for 'xo_tests.work_item_assignee'.
@@ -88,14 +88,14 @@ func WithXoTestsWorkItemAssigneeJoin(joins XoTestsWorkItemAssigneeJoins) XoTests
 	}
 }
 
-// WorkItem__WIA_XoTestsWorkItemAssignee represents a M2M join against "xo_tests.work_item_assignee"
-type WorkItem__WIA_XoTestsWorkItemAssignee struct {
+// XoTestsWorkItemAssigneeM2MWorkItemWIA represents a M2M join against "xo_tests.work_item_assignee"
+type XoTestsWorkItemAssigneeM2MWorkItemWIA struct {
 	WorkItem XoTestsWorkItem      `json:"workItem" db:"work_items" required:"true"`
 	Role     *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
-// User__WIA_XoTestsWorkItemAssignee represents a M2M join against "xo_tests.work_item_assignee"
-type User__WIA_XoTestsWorkItemAssignee struct {
+// XoTestsWorkItemAssigneeM2MAssigneeWIA represents a M2M join against "xo_tests.work_item_assignee"
+type XoTestsWorkItemAssigneeM2MAssigneeWIA struct {
 	User XoTestsUser          `json:"user" db:"users" required:"true"`
 	Role *XoTestsWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }

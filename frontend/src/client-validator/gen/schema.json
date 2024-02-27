@@ -984,7 +984,7 @@
         },
         "members": {
           "items": {
-            "$ref": "#/definitions/DbUserWIAWorkItem"
+            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
           },
           "type": [
             "array",
@@ -1103,7 +1103,7 @@
         },
         "members": {
           "items": {
-            "$ref": "#/definitions/DbUserWIAWorkItem"
+            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
           },
           "type": [
             "array",
@@ -1307,7 +1307,7 @@
       "properties": {
         "members": {
           "items": {
-            "$ref": "#/definitions/DbUserWIAWorkItem"
+            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
           },
           "type": [
             "array",
@@ -2127,6 +2127,21 @@
         "role"
       ],
       "type": "object"
+    },
+    "DbWorkItemM2MAssigneeWIA": {
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/WorkItemRole"
+        },
+        "user": {
+          "$ref": "#/definitions/DbUser"
+        }
+      },
+      "required": [
+        "user",
+        "role"
+      ],
+      "type": "object"
     }
   },
   "properties": {
@@ -2366,6 +2381,9 @@
     },
     "DbUserWIAWorkItem": {
       "$ref": "#/definitions/DbUserWIAWorkItem"
+    },
+    "DbWorkItemM2MAssigneeWIA": {
+      "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
     }
   }
 }

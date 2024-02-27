@@ -31,8 +31,8 @@ type ExtraSchemaWorkItemAssignee struct {
 	Assignee        ExtraSchemaUserID        `json:"assignee" db:"assignee" required:"true" nullable:"false"`                                 // assignee
 	ExtraSchemaRole *ExtraSchemaWorkItemRole `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 
-	WorkItemsJoin *[]WorkItem__WIA_ExtraSchemaWorkItemAssignee `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"` // M2M work_item_assignee
-	AssigneesJoin *[]User__WIA_ExtraSchemaWorkItemAssignee     `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"`  // M2M work_item_assignee
+	WorkItemsJoin *[]ExtraSchemaWorkItemAssigneeM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"` // M2M work_item_assignee
+	AssigneesJoin *[]ExtraSchemaWorkItemAssigneeM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"`  // M2M work_item_assignee
 
 }
 
@@ -91,14 +91,14 @@ func WithExtraSchemaWorkItemAssigneeJoin(joins ExtraSchemaWorkItemAssigneeJoins)
 	}
 }
 
-// WorkItem__WIA_ExtraSchemaWorkItemAssignee represents a M2M join against "extra_schema.work_item_assignee"
-type WorkItem__WIA_ExtraSchemaWorkItemAssignee struct {
+// ExtraSchemaWorkItemAssigneeM2MWorkItemWIA represents a M2M join against "extra_schema.work_item_assignee"
+type ExtraSchemaWorkItemAssigneeM2MWorkItemWIA struct {
 	WorkItem ExtraSchemaWorkItem      `json:"workItem" db:"work_items" required:"true"`
 	Role     *ExtraSchemaWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
-// User__WIA_ExtraSchemaWorkItemAssignee represents a M2M join against "extra_schema.work_item_assignee"
-type User__WIA_ExtraSchemaWorkItemAssignee struct {
+// ExtraSchemaWorkItemAssigneeM2MAssigneeWIA represents a M2M join against "extra_schema.work_item_assignee"
+type ExtraSchemaWorkItemAssigneeM2MAssigneeWIA struct {
 	User ExtraSchemaUser          `json:"user" db:"users" required:"true"`
 	Role *ExtraSchemaWorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
