@@ -110,7 +110,7 @@
     "@types/react-dom": "^18.0.9",
     "@types/uuid": "^9.0.0",
     "@typescript-eslint/eslint-plugin": "^5.36.2",
-    "@typescript-eslint/parser": "^5.36.2",
+    "@typescript-eslint/parser": "^5.62.0",
     "@vitejs/plugin-react": "4.2.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^8.5.0",
