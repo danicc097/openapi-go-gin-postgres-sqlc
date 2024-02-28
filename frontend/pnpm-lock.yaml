@@ -31,7 +31,7 @@ dependencies:
     version: 0.1.19(@fortawesome/fontawesome-svg-core@6.2.1)(react@18.2.0)
   '@hookform/resolvers':
     specifier: ^3.1.1
-    version: 3.1.1(react-hook-form@7.45.0)
+    version: 3.1.1(react-hook-form@7.50.1)
   '@mantine/code-highlight':
     specifier: 7.4.1
     version: 7.4.1(@mantine/core@7.4.1)(@mantine/hooks@7.4.1)(react-dom@18.2.0)(react@18.2.0)
@@ -219,8 +219,8 @@ dependencies:
     specifier: ^6.1.0
     version: 6.1.0(react@18.2.0)
   react-hook-form:
-    specifier: ^7.45.0
-    version: 7.45.0(react@18.2.0)
+    specifier: ^7.50.1
+    version: 7.50.1(react@18.2.0)
   react-router-dom:
     specifier: ^6.6.1
     version: 6.6.1(react-dom@18.2.0)(react@18.2.0)
@@ -1588,12 +1588,12 @@ packages:
       react: 18.2.0
     dev: false
 
-  /@hookform/resolvers@3.1.1(react-hook-form@7.45.0):
+  /@hookform/resolvers@3.1.1(react-hook-form@7.50.1):
     resolution: {integrity: sha512-tS16bAUkqjITNSvbJuO1x7MXbn7Oe8ZziDTJdA9mMvsoYthnOOiznOTGBYwbdlYBgU+tgpI/BtTU3paRbCuSlg==}
     peerDependencies:
       react-hook-form: ^7.0.0
     dependencies:
-      react-hook-form: 7.45.0(react@18.2.0)
+      react-hook-form: 7.50.1(react@18.2.0)
     dev: false
 
   /@humanwhocodes/config-array@0.11.14:
@@ -7139,8 +7139,8 @@ packages:
       react-side-effect: 2.1.2(react@18.2.0)
     dev: false
 
-  /react-hook-form@7.45.0(react@18.2.0):
-    resolution: {integrity: sha512-AbHeZ4ad+0dEIknSW9dBgIwcvRDfZ1O97sgj75WaMdOX0eg8TBiUf9wxzVkIjZbk76BBIE9lmFOzyD4PN80ZQg==}
+  /react-hook-form@7.50.1(react@18.2.0):
+    resolution: {integrity: sha512-3PCY82oE0WgeOgUtIr3nYNNtNvqtJ7BZjsbxh6TnYNbXButaD5WpjOmTjdxZfheuHKR68qfeFnEDVYoSSFPMTQ==}
     engines: {node: '>=12.22.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18
