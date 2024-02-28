@@ -819,6 +819,96 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 	for _, o := range opts {
 		o(c)
 	}
+	// TODO: M2M joins for m2o
+// 	select
+// 	work_items.work_item_id
+// 	 , (
+// 		 case when _demo_work_items_work_item_id.work_item_id is not null then
+// 			 row (_demo_work_items_work_item_id.*)
+// 		 end) as demo_work_item_work_item_id
+// 		 --, array_to_string(xo_join_time_entries.time_entries, ',') AS time_entries_string
+// 	 --, COALESCE(xo_join_time_entries.time_entries  , '{}') as time_entries
+// 		 , COALESCE(ARRAY_AGG(distinct (xo_join_time_entries.__time_entries)) filter (where xo_join_time_entries.time_entries_work_item_id is not null) , '{}') as
+// 		 work_item_xo_join_time_entries
+// 	 , COALESCE(ARRAY_AGG(distinct (xo_join_work_item_assignee_assignees.__users , xo_join_work_item_assignee_assignees.role))
+// 		 filter (where xo_join_work_item_assignee_assignees.__users_user_id is not null) , '{}') as
+// 		 work_item_assignee_assignees
+// 	 , COALESCE(xo_join_work_item_comments.work_item_comments , '{}') as work_item_comments
+// 	 , COALESCE(ARRAY_AGG(distinct (xo_join_work_item_work_item_tag_work_item_tags.__work_item_tags)) filter (where
+// 		 xo_join_work_item_work_item_tag_work_item_tags.__work_item_tags_work_item_tag_id is not null) , '{}') as
+// 		 work_item_work_item_tag_work_item_tags
+// 	 , (
+// 		 case when _work_items_work_item_type_id.work_item_type_id is not null then
+// 			 row (_work_items_work_item_type_id.*)
+// 		 end) as work_item_type_work_item_type_id
+//  from
+// 	 public.work_items -- O2O join generated from \"demo_work_items_work_item_id_fkey(O2O inferred - PK is FK)\"
+// 	 left join demo_work_items as _demo_work_items_work_item_id on _demo_work_items_work_item_id.work_item_id = work_items.work_item_id
+// 	 -- M2O join generated from \"time_entries_work_item_id_fkey\"
+// 	 left join (
+// 		 select
+// 			 work_item_id as time_entries_work_item_id
+// 			 , row(time_entries.*) as __time_entries
+// 		 from
+// 			 time_entries
+// 		 group by
+// 			 time_entries_work_item_id, time_entries.time_entry_id) as xo_join_time_entries on xo_join_time_entries.time_entries_work_item_id = work_items.work_item_id
+// 	 -- M2M join generated from \"work_item_assignee_assignee_fkey\"
+// 	 left join (
+// 		 select
+// 			 work_item_assignee.work_item_id as work_item_assignee_work_item_id
+// 			 , work_item_assignee.role as role
+// 			 , users.user_id as __users_user_id
+// 			 , row (users.*) as __users
+// 		 from
+// 			 work_item_assignee
+// 			 join users on users.user_id = work_item_assignee.assignee
+// 		 group by
+// 			 work_item_assignee_work_item_id
+// 			 , users.user_id
+// 			 , role) as xo_join_work_item_assignee_assignees on xo_join_work_item_assignee_assignees.work_item_assignee_work_item_id =
+// 	 work_items.work_item_id
+// 	 -- M2O join generated from \"work_item_comments_work_item_id_fkey\"
+// 	 left join (
+// 		 select
+// 			 work_item_id as work_item_comments_work_item_id
+// 			 , ARRAY_AGG(work_item_comments.*) as work_item_comments
+// 		 from
+// 			 work_item_comments
+// 		 group by
+// 			 work_item_id) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
+// 	 -- M2M join generated from \"work_item_work_item_tag_work_item_tag_id_fkey\"
+// 	 left join (
+// 		 select
+// 			 work_item_work_item_tag.work_item_id as work_item_work_item_tag_work_item_id
+// 			 , work_item_tags.work_item_tag_id as __work_item_tags_work_item_tag_id
+// 			 , row (work_item_tags.*) as __work_item_tags
+// 		 from
+// 			 work_item_work_item_tag
+// 			 join work_item_tags on work_item_tags.work_item_tag_id = work_item_work_item_tag.work_item_tag_id
+// 		 group by
+// 			 work_item_work_item_tag_work_item_id
+// 			 , work_item_tags.work_item_tag_id) as xo_join_work_item_work_item_tag_work_item_tags on
+// 	 xo_join_work_item_work_item_tag_work_item_tags.work_item_work_item_tag_work_item_id = work_items.work_item_id
+// 	 -- O2O join generated from \"work_items_work_item_type_id_fkey (inferred)\"
+// 	 left join work_item_types as _work_items_work_item_type_id on _work_items_work_item_type_id.work_item_type_id = work_items.work_item_type_id
+//  where
+// 	 work_items.work_item_id = $1
+// 	 and work_items.deleted_at is null
+//  group by
+// 	 _demo_work_items_work_item_id.work_item_id
+// 	 , work_items.work_item_id
+// 	 , work_items.work_item_id
+// 	 , work_items.work_item_id
+// 	 , work_items.work_item_id
+// 	 , xo_join_work_item_comments.work_item_comments
+// 	 , work_items.work_item_id
+// 	 , work_items.work_item_id
+// 	 , work_items.work_item_id
+// 	 , _work_items_work_item_type_id.work_item_type_id
+// 	 , _work_items_work_item_type_id.work_item_type_id
+// 	 , work_items.work_item_id;
+ 
 
 	c.joins.TimeEntries = true // FIXME m2o cannot scan unknown type (OID 2338946) in text format into **[]db.TimeEntries (not text json! its records...)
 	c.joins.Assignees = true // ok M2M
