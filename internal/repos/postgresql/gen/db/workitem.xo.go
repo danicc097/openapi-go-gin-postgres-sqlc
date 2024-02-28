@@ -820,6 +820,11 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 		o(c)
 	}
 
+	c.joins.TimeEntries = true // FIXME m2o cannot scan unknown type (OID 2338946) in text format into **[]db.TimeEntries (not text json! its records...)
+	c.joins.Assignees = true // ok M2M
+	c.joins.WorkItemComments = true // FIXME m2o cannot scan unknown type (OID 2338946) in text format into **[]db.WorkItemComment (not text json! its records...)
+	// c.joins.WorkItemTags = true
+
 	paramStart := 1
 	nth := func() string {
 		paramStart++
