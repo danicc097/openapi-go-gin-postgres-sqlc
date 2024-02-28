@@ -501,14 +501,14 @@ go.opentelemetry.io/otel/exporters/jaeger/internal/gen-go/agent
 go.opentelemetry.io/otel/exporters/jaeger/internal/gen-go/jaeger
 go.opentelemetry.io/otel/exporters/jaeger/internal/gen-go/zipkincore
 go.opentelemetry.io/otel/exporters/jaeger/internal/third_party/thrift/lib/go/thrift
-# go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.22.0
+# go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.24.0
 ## explicit; go 1.20
 go.opentelemetry.io/otel/exporters/stdout/stdouttrace
 # go.opentelemetry.io/otel/metric v1.24.0
 ## explicit; go 1.20
 go.opentelemetry.io/otel/metric
 go.opentelemetry.io/otel/metric/embedded
-# go.opentelemetry.io/otel/sdk v1.22.0
+# go.opentelemetry.io/otel/sdk v1.24.0
 ## explicit; go 1.20
 go.opentelemetry.io/otel/sdk
 go.opentelemetry.io/otel/sdk/instrumentation
@@ -581,7 +581,7 @@ golang.org/x/oauth2/internal
 ## explicit; go 1.18
 golang.org/x/sync/semaphore
 golang.org/x/sync/singleflight
-# golang.org/x/sys v0.16.0
+# golang.org/x/sys v0.17.0
 ## explicit; go 1.18
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
