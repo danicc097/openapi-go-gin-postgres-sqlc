@@ -984,7 +984,7 @@
         },
         "members": {
           "items": {
-            "$ref": "#/definitions/DbUserWIAUWorkItem"
+            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
           },
           "type": [
             "array",
@@ -1103,7 +1103,7 @@
         },
         "members": {
           "items": {
-            "$ref": "#/definitions/DbUserWIAUWorkItem"
+            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
           },
           "type": [
             "array",
@@ -1307,7 +1307,7 @@
       "properties": {
         "members": {
           "items": {
-            "$ref": "#/definitions/DbUserWIAUWorkItem"
+            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
           },
           "type": [
             "array",
@@ -2112,6 +2112,36 @@
       ],
       "x-is-generated": true,
       "description": "is generated from kanban_steps table."
+    },
+    "DbUserWIAWorkItem": {
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/WorkItemRole"
+        },
+        "user": {
+          "$ref": "#/definitions/DbUser"
+        }
+      },
+      "required": [
+        "user",
+        "role"
+      ],
+      "type": "object"
+    },
+    "DbWorkItemM2MAssigneeWIA": {
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/WorkItemRole"
+        },
+        "user": {
+          "$ref": "#/definitions/DbUser"
+        }
+      },
+      "required": [
+        "user",
+        "role"
+      ],
+      "type": "object"
     }
   },
   "properties": {
@@ -2348,6 +2378,12 @@
     },
     "DemoTwoKanbanSteps": {
       "$ref": "#/definitions/DemoTwoKanbanSteps"
+    },
+    "DbUserWIAWorkItem": {
+      "$ref": "#/definitions/DbUserWIAWorkItem"
+    },
+    "DbWorkItemM2MAssigneeWIA": {
+      "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
     }
   }
 }

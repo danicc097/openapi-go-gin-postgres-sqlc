@@ -33,8 +33,8 @@ type XoTestsBookAuthorsSurrogateKey struct {
 	AuthorID                  XoTestsUserID                    `json:"authorID" db:"author_id" required:"true" nullable:"false"`                                      // author_id
 	Pseudonym                 *string                          `json:"pseudonym" db:"pseudonym"`                                                                      // pseudonym
 
-	BooksJoin   *[]Book__BASK_XoTestsBookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
-	AuthorsJoin *[]User__BASK_XoTestsBookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
+	BooksJoin   *[]XoTestsBookAuthorsSurrogateKeyM2MBookBASK   `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
+	AuthorsJoin *[]XoTestsBookAuthorsSurrogateKeyM2MAuthorBASK `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
 }
 
 // XoTestsBookAuthorsSurrogateKeyCreateParams represents insert params for 'xo_tests.book_authors_surrogate_key'.
@@ -92,14 +92,14 @@ func WithXoTestsBookAuthorsSurrogateKeyJoin(joins XoTestsBookAuthorsSurrogateKey
 	}
 }
 
-// Book__BASK_XoTestsBookAuthorsSurrogateKey represents a M2M join against "xo_tests.book_authors_surrogate_key"
-type Book__BASK_XoTestsBookAuthorsSurrogateKey struct {
+// XoTestsBookAuthorsSurrogateKeyM2MBookBASK represents a M2M join against "xo_tests.book_authors_surrogate_key"
+type XoTestsBookAuthorsSurrogateKeyM2MBookBASK struct {
 	Book      XoTestsBook `json:"book" db:"books" required:"true"`
 	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// User__BASK_XoTestsBookAuthorsSurrogateKey represents a M2M join against "xo_tests.book_authors_surrogate_key"
-type User__BASK_XoTestsBookAuthorsSurrogateKey struct {
+// XoTestsBookAuthorsSurrogateKeyM2MAuthorBASK represents a M2M join against "xo_tests.book_authors_surrogate_key"
+type XoTestsBookAuthorsSurrogateKeyM2MAuthorBASK struct {
 	User      XoTestsUser `json:"user" db:"users" required:"true"`
 	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
 }

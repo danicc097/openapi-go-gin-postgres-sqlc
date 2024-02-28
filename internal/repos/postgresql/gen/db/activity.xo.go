@@ -175,17 +175,17 @@ const activityTableTimeEntriesJoinSQL = `-- M2O join generated from "time_entrie
 left join (
   select
   activity_id as time_entries_activity_id
-    , array_agg(time_entries.*) as time_entries
+    , row(time_entries.*) as __time_entries
   from
     time_entries
   group by
-        activity_id
+	  time_entries_activity_id, time_entries.time_entry_id
 ) as xo_join_time_entries on xo_join_time_entries.time_entries_activity_id = activities.activity_id
 `
 
-const activityTableTimeEntriesSelectSQL = `COALESCE(xo_join_time_entries.time_entries, '{}') as time_entries`
+const activityTableTimeEntriesSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_time_entries.__time_entries)) filter (where xo_join_time_entries.time_entries_activity_id is not null), '{}') as time_entries`
 
-const activityTableTimeEntriesGroupBySQL = `xo_join_time_entries.time_entries, activities.activity_id`
+const activityTableTimeEntriesGroupBySQL = `activities.activity_id`
 
 // ActivityUpdateParams represents update params for 'public.activities'.
 type ActivityUpdateParams struct {

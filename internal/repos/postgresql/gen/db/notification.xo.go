@@ -191,17 +191,17 @@ const notificationTableUserNotificationsJoinSQL = `-- M2O join generated from "u
 left join (
   select
   notification_id as user_notifications_notification_id
-    , array_agg(user_notifications.*) as user_notifications
+    , row(user_notifications.*) as __user_notifications
   from
     user_notifications
   group by
-        notification_id
+	  user_notifications_notification_id, user_notifications.user_notification_id
 ) as xo_join_user_notifications on xo_join_user_notifications.user_notifications_notification_id = notifications.notification_id
 `
 
-const notificationTableUserNotificationsSelectSQL = `COALESCE(xo_join_user_notifications.user_notifications, '{}') as user_notifications`
+const notificationTableUserNotificationsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_user_notifications.__user_notifications)) filter (where xo_join_user_notifications.user_notifications_notification_id is not null), '{}') as user_notifications`
 
-const notificationTableUserNotificationsGroupBySQL = `xo_join_user_notifications.user_notifications, notifications.notification_id`
+const notificationTableUserNotificationsGroupBySQL = `notifications.notification_id`
 
 // NotificationUpdateParams represents update params for 'public.notifications'.
 type NotificationUpdateParams struct {

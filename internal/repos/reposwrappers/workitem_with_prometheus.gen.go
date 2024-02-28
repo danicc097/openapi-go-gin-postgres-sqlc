@@ -53,7 +53,7 @@ func (_d WorkItemWithPrometheus) AssignTag(ctx context.Context, d db.DBTX, param
 }
 
 // AssignUser implements repos.WorkItem
-func (_d WorkItemWithPrometheus) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+func (_d WorkItemWithPrometheus) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssigneeCreateParams) (err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

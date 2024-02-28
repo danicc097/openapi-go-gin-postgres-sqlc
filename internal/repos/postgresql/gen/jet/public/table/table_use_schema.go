@@ -29,7 +29,7 @@ func UseSchema(schema string) {
 	UserProject = UserProject.FromSchema(schema)
 	UserTeam = UserTeam.FromSchema(schema)
 	Users = Users.FromSchema(schema)
-	WorkItemAssignedUser = WorkItemAssignedUser.FromSchema(schema)
+	WorkItemAssignee = WorkItemAssignee.FromSchema(schema)
 	WorkItemComments = WorkItemComments.FromSchema(schema)
 	WorkItemTags = WorkItemTags.FromSchema(schema)
 	WorkItemTypes = WorkItemTypes.FromSchema(schema)

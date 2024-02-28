@@ -162,20 +162,20 @@ create type xo_tests.work_item_role as ENUM (
   , 'reviewer'
 );
 
-create table xo_tests.work_item_assigned_user (
+create table xo_tests.work_item_assignee (
   work_item_id bigint
-  , assigned_user uuid
+  , assignee uuid
   , role xo_tests.work_item_role
-  , primary key (work_item_id , assigned_user)
+  , primary key (work_item_id , assignee)
   , foreign key (work_item_id) references xo_tests.work_items (work_item_id)
-  , foreign key (assigned_user) references xo_tests.users (user_id)
+  , foreign key (assignee) references xo_tests.users (user_id)
 );
 
-create index on xo_tests.work_item_assigned_user (assigned_user , work_item_id);
+create index on xo_tests.work_item_assignee (assignee , work_item_id);
 
-comment on column xo_tests.work_item_assigned_user.work_item_id is '"cardinality":M2M';
+comment on column xo_tests.work_item_assignee.work_item_id is '"cardinality":M2M';
 
-comment on column xo_tests.work_item_assigned_user.assigned_user is '"cardinality":M2M';
+comment on column xo_tests.work_item_assignee.assignee is '"cardinality":M2M';
 
 create table xo_tests.demo_work_items (
   work_item_id bigint primary key references xo_tests.work_items (work_item_id) on delete cascade
@@ -261,9 +261,9 @@ begin
     values (2 , false);
   insert into xo_tests.demo_work_items (work_item_id , checked)
     values (3 , true);
-  insert into xo_tests.work_item_assigned_user (assigned_user , work_item_id , role)
+  insert into xo_tests.work_item_assignee (assignee , work_item_id , role)
     values (user_1_id , 1 , 'preparer');
-  insert into xo_tests.work_item_assigned_user (assigned_user , work_item_id , role)
+  insert into xo_tests.work_item_assignee (assignee , work_item_id , role)
     values (user_2_id , 1 , 'reviewer');
   insert into xo_tests.pag_element (name , created_at)
     values ('element -1 day' , current_timestamp + '-1 day');

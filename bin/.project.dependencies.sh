@@ -25,7 +25,7 @@ check.bin.bash() {
     if ((vers >= minver)); then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -37,7 +37,7 @@ check.bin.column() {
     if [[ "$vers" = *$minver* ]]; then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -63,7 +63,7 @@ check.bin.protoc() {
     if [[ "$vers" = *$minver* ]]; then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -89,7 +89,7 @@ check.bin.curl() {
     if [[ $vers = *$minver* ]]; then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -101,7 +101,7 @@ check.bin.go() {
     if [[ "$vers" =~ ^[^\ ]+\ [^\ ]+\ go1\.([^\ \.]+) ]] && ((BASH_REMATCH[1] >= minver)); then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -113,7 +113,7 @@ check.bin.docker() {
     if [[ "$vers" =~ version[\ ]+([^\ \.]+) ]] && ((BASH_REMATCH[1] >= minver)); then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -125,7 +125,7 @@ check.bin.docker-compose() {
     if [[ "$vers" =~ [\ ]+[v]?([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -137,7 +137,7 @@ check.bin.pg_format() {
     if [[ "$vers" =~ [\ ]+([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -156,13 +156,31 @@ install.bin.pg_format() {
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
 
+check.bin.ripgrep() {
+  { { {
+    vers=$(rg --version)
+    minver=11
+    if [[ "$vers" =~ (ripgrep )([0-9]+) ]] && ((BASH_REMATCH[2] >= minver)); then
+      report_success
+    else
+      report_failure "$@"
+    fi
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
+install.bin.ripgrep() {
+  { { {
+    sudo apt-get install ripgrep -y
+  } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+}
+
 check.bin.parallel() {
   { { {
     vers=$(parallel --version)
     if [[ "$vers" =~ (GNU parallel )([0-9]+) ]]; then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -180,7 +198,7 @@ check.bin.direnv() {
     if [[ "$vers" =~ ([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -198,7 +216,7 @@ check.bin.pnpm() {
     if [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -216,7 +234,7 @@ check.bin.node() {
     if [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -234,7 +252,7 @@ check.bin.sponge() {
     if [[ $vers = */sponge* ]]; then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -252,7 +270,7 @@ check.bin.mkcert() {
     if [[ "$vers" =~ [v]?([0-9]+)[\.]{1} ]] && ((BASH_REMATCH[1] >= minver)); then
       report_success
     else
-      report_failure
+      report_failure "$@"
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }

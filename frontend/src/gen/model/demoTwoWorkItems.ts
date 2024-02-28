@@ -7,7 +7,7 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * OpenAPI spec version: 2.0.0
  */
 import type { DbDemoTwoWorkItem } from './dbDemoTwoWorkItem';
-import type { DbUserWIAUWorkItem } from './dbUserWIAUWorkItem';
+import type { DbWorkItemM2MAssigneeWIA } from './dbWorkItemM2MAssigneeWIA';
 import type { DemoTwoWorkItemsMetadata } from './demoTwoWorkItemsMetadata';
 import type { DbTimeEntry } from './dbTimeEntry';
 import type { DbWorkItemComment } from './dbWorkItemComment';
@@ -21,7 +21,7 @@ export interface DemoTwoWorkItems {
   demoTwoWorkItem: DbDemoTwoWorkItem;
   description: string;
   kanbanStepID: EntityIDs.KanbanStepID;
-  members?: DbUserWIAUWorkItem[] | null;
+  members?: DbWorkItemM2MAssigneeWIA[] | null;
   metadata: DemoTwoWorkItemsMetadata;
   targetDate: Date;
   teamID: EntityIDs.TeamID | null;

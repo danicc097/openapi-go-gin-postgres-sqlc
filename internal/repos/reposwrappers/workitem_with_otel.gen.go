@@ -59,7 +59,7 @@ func (_d WorkItemWithTracing) AssignTag(ctx context.Context, d db.DBTX, params *
 }
 
 // AssignUser implements repos.WorkItem
-func (_d WorkItemWithTracing) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+func (_d WorkItemWithTracing) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssigneeCreateParams) (err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.AssignUser")
 	defer func() {
 		if _d._spanDecorator != nil {

@@ -31,10 +31,10 @@ type XoTestsBook struct {
 	BookID XoTestsBookID `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
 	Name   string        `json:"name" db:"name" required:"true" nullable:"false"`      // name
 
-	AuthorsJoin     *[]User__BA_XoTestsBook   `json:"-" db:"book_authors_authors" openapi-go:"ignore"`               // M2M book_authors
-	AuthorsBASKJoin *[]User__BASK_XoTestsBook `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
-	BookReviewsJoin *[]XoTestsBookReview      `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O books
-	SellersJoin     *[]XoTestsUser            `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"`               // M2M book_sellers
+	AuthorsJoin     *[]XoTestsBookM2MAuthorBA   `json:"-" db:"book_authors_authors" openapi-go:"ignore"`               // M2M book_authors
+	AuthorsBASKJoin *[]XoTestsBookM2MAuthorBASK `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
+	BookReviewsJoin *[]XoTestsBookReview        `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O books
+	SellersJoin     *[]XoTestsUser              `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"`               // M2M book_sellers
 }
 
 // XoTestsBookCreateParams represents insert params for 'xo_tests.books'.
@@ -92,14 +92,14 @@ func WithXoTestsBookJoin(joins XoTestsBookJoins) XoTestsBookSelectConfigOption {
 	}
 }
 
-// User__BA_XoTestsBook represents a M2M join against "xo_tests.book_authors"
-type User__BA_XoTestsBook struct {
+// XoTestsBookM2MAuthorBA represents a M2M join against "xo_tests.book_authors"
+type XoTestsBookM2MAuthorBA struct {
 	User      XoTestsUser `json:"user" db:"users" required:"true"`
 	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// User__BASK_XoTestsBook represents a M2M join against "xo_tests.book_authors_surrogate_key"
-type User__BASK_XoTestsBook struct {
+// XoTestsBookM2MAuthorBASK represents a M2M join against "xo_tests.book_authors_surrogate_key"
+type XoTestsBookM2MAuthorBASK struct {
 	User      XoTestsUser `json:"user" db:"users" required:"true"`
 	Pseudonym *string     `json:"pseudonym" db:"pseudonym" required:"true" `
 }
@@ -191,17 +191,17 @@ const xoTestsBookTableBookReviewsJoinSQL = `-- M2O join generated from "book_rev
 left join (
   select
   book_id as book_reviews_book_id
-    , array_agg(book_reviews.*) as book_reviews
+    , row(book_reviews.*) as __book_reviews
   from
     xo_tests.book_reviews
   group by
-        book_id
+	  book_reviews_book_id, xo_tests.book_reviews.book_review_id
 ) as xo_join_book_reviews on xo_join_book_reviews.book_reviews_book_id = books.book_id
 `
 
-const xoTestsBookTableBookReviewsSelectSQL = `COALESCE(xo_join_book_reviews.book_reviews, '{}') as book_reviews`
+const xoTestsBookTableBookReviewsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_book_reviews.__book_reviews)) filter (where xo_join_book_reviews.book_reviews_book_id is not null), '{}') as book_reviews`
 
-const xoTestsBookTableBookReviewsGroupBySQL = `xo_join_book_reviews.book_reviews, books.book_id`
+const xoTestsBookTableBookReviewsGroupBySQL = `books.book_id`
 
 const xoTestsBookTableSellersJoinSQL = `-- M2M join generated from "book_sellers_seller_fkey"
 left join (

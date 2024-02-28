@@ -173,49 +173,49 @@ const projectTableActivitiesJoinSQL = `-- M2O join generated from "activities_pr
 left join (
   select
   project_id as activities_project_id
-    , array_agg(activities.*) as activities
+    , row(activities.*) as __activities
   from
     activities
   group by
-        project_id
+	  activities_project_id, activities.activity_id
 ) as xo_join_activities on xo_join_activities.activities_project_id = projects.project_id
 `
 
-const projectTableActivitiesSelectSQL = `COALESCE(xo_join_activities.activities, '{}') as activities`
+const projectTableActivitiesSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_activities.__activities)) filter (where xo_join_activities.activities_project_id is not null), '{}') as activities`
 
-const projectTableActivitiesGroupBySQL = `xo_join_activities.activities, projects.project_id`
+const projectTableActivitiesGroupBySQL = `projects.project_id`
 
 const projectTableKanbanStepsJoinSQL = `-- M2O join generated from "kanban_steps_project_id_fkey"
 left join (
   select
   project_id as kanban_steps_project_id
-    , array_agg(kanban_steps.*) as kanban_steps
+    , row(kanban_steps.*) as __kanban_steps
   from
     kanban_steps
   group by
-        project_id
+	  kanban_steps_project_id, kanban_steps.kanban_step_id
 ) as xo_join_kanban_steps on xo_join_kanban_steps.kanban_steps_project_id = projects.project_id
 `
 
-const projectTableKanbanStepsSelectSQL = `COALESCE(xo_join_kanban_steps.kanban_steps, '{}') as kanban_steps`
+const projectTableKanbanStepsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_kanban_steps.__kanban_steps)) filter (where xo_join_kanban_steps.kanban_steps_project_id is not null), '{}') as kanban_steps`
 
-const projectTableKanbanStepsGroupBySQL = `xo_join_kanban_steps.kanban_steps, projects.project_id`
+const projectTableKanbanStepsGroupBySQL = `projects.project_id`
 
 const projectTableTeamsJoinSQL = `-- M2O join generated from "teams_project_id_fkey"
 left join (
   select
   project_id as teams_project_id
-    , array_agg(teams.*) as teams
+    , row(teams.*) as __teams
   from
     teams
   group by
-        project_id
+	  teams_project_id, teams.team_id
 ) as xo_join_teams on xo_join_teams.teams_project_id = projects.project_id
 `
 
-const projectTableTeamsSelectSQL = `COALESCE(xo_join_teams.teams, '{}') as teams`
+const projectTableTeamsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_teams.__teams)) filter (where xo_join_teams.teams_project_id is not null), '{}') as teams`
 
-const projectTableTeamsGroupBySQL = `xo_join_teams.teams, projects.project_id`
+const projectTableTeamsGroupBySQL = `projects.project_id`
 
 const projectTableMembersJoinSQL = `-- M2M join generated from "user_project_member_fkey"
 left join (
@@ -243,33 +243,33 @@ const projectTableWorkItemTagsJoinSQL = `-- M2O join generated from "work_item_t
 left join (
   select
   project_id as work_item_tags_project_id
-    , array_agg(work_item_tags.*) as work_item_tags
+    , row(work_item_tags.*) as __work_item_tags
   from
     work_item_tags
   group by
-        project_id
+	  work_item_tags_project_id, work_item_tags.work_item_tag_id
 ) as xo_join_work_item_tags on xo_join_work_item_tags.work_item_tags_project_id = projects.project_id
 `
 
-const projectTableWorkItemTagsSelectSQL = `COALESCE(xo_join_work_item_tags.work_item_tags, '{}') as work_item_tags`
+const projectTableWorkItemTagsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_work_item_tags.__work_item_tags)) filter (where xo_join_work_item_tags.work_item_tags_project_id is not null), '{}') as work_item_tags`
 
-const projectTableWorkItemTagsGroupBySQL = `xo_join_work_item_tags.work_item_tags, projects.project_id`
+const projectTableWorkItemTagsGroupBySQL = `projects.project_id`
 
 const projectTableWorkItemTypesJoinSQL = `-- M2O join generated from "work_item_types_project_id_fkey"
 left join (
   select
   project_id as work_item_types_project_id
-    , array_agg(work_item_types.*) as work_item_types
+    , row(work_item_types.*) as __work_item_types
   from
     work_item_types
   group by
-        project_id
+	  work_item_types_project_id, work_item_types.work_item_type_id
 ) as xo_join_work_item_types on xo_join_work_item_types.work_item_types_project_id = projects.project_id
 `
 
-const projectTableWorkItemTypesSelectSQL = `COALESCE(xo_join_work_item_types.work_item_types, '{}') as work_item_types`
+const projectTableWorkItemTypesSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_work_item_types.__work_item_types)) filter (where xo_join_work_item_types.work_item_types_project_id is not null), '{}') as work_item_types`
 
-const projectTableWorkItemTypesGroupBySQL = `xo_join_work_item_types.work_item_types, projects.project_id`
+const projectTableWorkItemTypesGroupBySQL = `projects.project_id`
 
 // ProjectUpdateParams represents update params for 'public.projects'.
 type ProjectUpdateParams struct {

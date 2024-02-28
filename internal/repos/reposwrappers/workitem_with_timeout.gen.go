@@ -53,7 +53,7 @@ func (_d WorkItemWithTimeout) AssignTag(ctx context.Context, d db.DBTX, params *
 }
 
 // AssignUser implements repos.WorkItem
-func (_d WorkItemWithTimeout) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+func (_d WorkItemWithTimeout) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssigneeCreateParams) (err error) {
 	var cancelFunc func()
 	if _d.config.AssignUserTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.AssignUserTimeout)

@@ -92,10 +92,10 @@ func main() {
 	// username := "superadmin"
 	user, err := db.UserByUsername(context.Background(), pool, username,
 		db.WithUserJoin(db.UserJoins{
-			TimeEntries:           true,
-			AssignedUserWorkItems: true,
-			MemberTeams:           true,
-			UserAPIKey:            true,
+			TimeEntries:       true,
+			AssigneeWorkItems: true,
+			MemberTeams:       true,
+			UserAPIKey:        true,
 		}),
 		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
 	if err != nil {

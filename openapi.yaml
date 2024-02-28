@@ -1846,7 +1846,7 @@ components:
           type: integer
         members:
           items:
-            $ref: '#/components/schemas/DbUserWIAUWorkItem'
+            $ref: '#/components/schemas/DbWorkItemM2MAssigneeWIA'
           nullable: true
           type: array
         metadata:
@@ -1920,7 +1920,7 @@ components:
           type: integer
         members:
           items:
-            $ref: '#/components/schemas/DbUserWIAUWorkItem'
+            $ref: '#/components/schemas/DbWorkItemM2MAssigneeWIA'
           nullable: true
           type: array
         metadata:
@@ -2054,7 +2054,7 @@ components:
       properties:
         members:
           items:
-            $ref: '#/components/schemas/DbUserWIAUWorkItem'
+            $ref: '#/components/schemas/DbWorkItemM2MAssigneeWIA'
           nullable: true
           type: array
         timeEntries:
@@ -2592,6 +2592,26 @@ components:
       enum: ["Received"]
       x-is-generated: true
       description: is generated from kanban_steps table.
+    DbUserWIAWorkItem: # Generated schema. DO NOT EDIT.
+      properties:
+        role:
+          $ref: '#/components/schemas/WorkItemRole'
+        user:
+          $ref: '#/components/schemas/DbUser'
+      required:
+        - user
+        - role
+      type: object
+    DbWorkItemM2MAssigneeWIA: # Generated schema. DO NOT EDIT.
+      properties:
+        role:
+          $ref: '#/components/schemas/WorkItemRole'
+        user:
+          $ref: '#/components/schemas/DbUser'
+      required:
+        - user
+        - role
+      type: object
   examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:

@@ -74,7 +74,7 @@ func (_d WorkItemWithRetry) AssignTag(ctx context.Context, d db.DBTX, params *db
 }
 
 // AssignUser implements repos.WorkItem
-func (_d WorkItemWithRetry) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssignedUserCreateParams) (err error) {
+func (_d WorkItemWithRetry) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssigneeCreateParams) (err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryAssignUser")
 		if err != nil {

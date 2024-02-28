@@ -420,14 +420,7 @@ export default function DemoGeneratedForm() {
             accordion: {
               'base.items': {
                 defaultOpen: true,
-                title: (
-                  <Flex align="center" gap={10}>
-                    <IconTag size={16} />
-                    <Text fw={700} size={'md'}>
-                      Items
-                    </Text>
-                  </Flex>
-                ),
+                title: formAccordionTitle('Items'),
               },
             },
             defaultValues: {
@@ -493,5 +486,15 @@ export default function DemoGeneratedForm() {
         />
       </FormProvider>
     </>
+  )
+}
+function formAccordionTitle(title: string): JSX.Element {
+  return (
+    <Flex align="center" gap={10}>
+      <IconTag size={16} />
+      <Text fw={700} size={'md'}>
+        {title}
+      </Text>
+    </Flex>
   )
 }

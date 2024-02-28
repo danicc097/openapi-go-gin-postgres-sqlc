@@ -58,12 +58,13 @@ type User struct {
 //	}
 type PaginatedUsersResponse = PaginationBaseResponse[User]
 
+// NOTE: keep in sync with base workitem getSharedDBOpts.
 type SharedWorkItemJoins struct {
-	TimeEntries      *[]db.TimeEntry           `json:"timeEntries"`
-	WorkItemComments *[]db.WorkItemComment     `json:"workItemComments"`
-	Members          *[]db.User__WIAU_WorkItem `json:"members"`
-	WorkItemTags     *[]db.WorkItemTag         `json:"workItemTags"`
-	WorkItemType     *db.WorkItemType          `json:"workItemType"`
+	TimeEntries      *[]db.TimeEntry              `json:"timeEntries"`
+	WorkItemComments *[]db.WorkItemComment        `json:"workItemComments"`
+	Members          *[]db.WorkItemM2MAssigneeWIA `json:"members"`
+	WorkItemTags     *[]db.WorkItemTag            `json:"workItemTags"`
+	WorkItemType     *db.WorkItemType             `json:"workItemType"`
 }
 
 type DemoWorkItems struct {

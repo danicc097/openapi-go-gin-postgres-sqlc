@@ -33,8 +33,8 @@ type ExtraSchemaBookAuthorsSurrogateKey struct {
 	AuthorID                  ExtraSchemaUserID                    `json:"authorID" db:"author_id" required:"true" nullable:"false"`                                      // author_id
 	Pseudonym                 *string                              `json:"pseudonym" db:"pseudonym"`                                                                      // pseudonym
 
-	BooksJoin   *[]Book__BASK_ExtraSchemaBookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
-	AuthorsJoin *[]User__BASK_ExtraSchemaBookAuthorsSurrogateKey `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
+	BooksJoin   *[]ExtraSchemaBookAuthorsSurrogateKeyM2MBookBASK   `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
+	AuthorsJoin *[]ExtraSchemaBookAuthorsSurrogateKeyM2MAuthorBASK `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
 
 }
 
@@ -95,14 +95,14 @@ func WithExtraSchemaBookAuthorsSurrogateKeyJoin(joins ExtraSchemaBookAuthorsSurr
 	}
 }
 
-// Book__BASK_ExtraSchemaBookAuthorsSurrogateKey represents a M2M join against "extra_schema.book_authors_surrogate_key"
-type Book__BASK_ExtraSchemaBookAuthorsSurrogateKey struct {
+// ExtraSchemaBookAuthorsSurrogateKeyM2MBookBASK represents a M2M join against "extra_schema.book_authors_surrogate_key"
+type ExtraSchemaBookAuthorsSurrogateKeyM2MBookBASK struct {
 	Book      ExtraSchemaBook `json:"book" db:"books" required:"true"`
 	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }
 
-// User__BASK_ExtraSchemaBookAuthorsSurrogateKey represents a M2M join against "extra_schema.book_authors_surrogate_key"
-type User__BASK_ExtraSchemaBookAuthorsSurrogateKey struct {
+// ExtraSchemaBookAuthorsSurrogateKeyM2MAuthorBASK represents a M2M join against "extra_schema.book_authors_surrogate_key"
+type ExtraSchemaBookAuthorsSurrogateKeyM2MAuthorBASK struct {
 	User      ExtraSchemaUser `json:"user" db:"users" required:"true"`
 	Pseudonym *string         `json:"pseudonym" db:"pseudonym" required:"true" `
 }

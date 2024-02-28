@@ -86,6 +86,8 @@ import {
   DbUserNotification,
   DemoKanbanSteps,
   DemoTwoKanbanSteps,
+  DbUserWIAWorkItem,
+  DbWorkItemM2MAssigneeWIA,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -1028,5 +1030,29 @@ export const DemoTwoKanbanStepsDecoder: Decoder<DemoTwoKanbanSteps> = {
       throw new Error(`Schema ${DemoTwoKanbanStepsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DemoTwoKanbanStepsDecoder.definitionName)
+  },
+}
+export const DbUserWIAWorkItemDecoder: Decoder<DbUserWIAWorkItem> = {
+  definitionName: 'DbUserWIAWorkItem',
+  schemaRef: '#/definitions/DbUserWIAWorkItem',
+
+  decode(json: unknown): DbUserWIAWorkItem {
+    const schema = ajv.getSchema(DbUserWIAWorkItemDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbUserWIAWorkItemDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbUserWIAWorkItemDecoder.definitionName)
+  },
+}
+export const DbWorkItemM2MAssigneeWIADecoder: Decoder<DbWorkItemM2MAssigneeWIA> = {
+  definitionName: 'DbWorkItemM2MAssigneeWIA',
+  schemaRef: '#/definitions/DbWorkItemM2MAssigneeWIA',
+
+  decode(json: unknown): DbWorkItemM2MAssigneeWIA {
+    const schema = ajv.getSchema(DbWorkItemM2MAssigneeWIADecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbWorkItemM2MAssigneeWIADecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbWorkItemM2MAssigneeWIADecoder.definitionName)
   },
 }

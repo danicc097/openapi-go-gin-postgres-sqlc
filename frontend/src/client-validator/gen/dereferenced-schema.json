@@ -4623,6 +4623,238 @@
       ],
       "x-is-generated": true,
       "description": "is generated from kanban_steps table."
+    },
+    "DbUserWIAWorkItem": {
+      "properties": {
+        "role": {
+          "title": "WorkItem role",
+          "type": "string",
+          "x-is-generated": true,
+          "enum": [
+            "preparer",
+            "reviewer"
+          ],
+          "description": "is generated from database enum 'work_item_role'."
+        },
+        "user": {
+          "properties": {
+            "createdAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "deletedAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "email": {
+              "type": "string",
+              "minLength": 1
+            },
+            "firstName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fullName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "hasGlobalNotifications": {
+              "type": "boolean"
+            },
+            "hasPersonalNotifications": {
+              "type": "boolean"
+            },
+            "lastName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "scopes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "project-member",
+                  "users:read",
+                  "users:write",
+                  "users:delete",
+                  "scopes:write",
+                  "team-settings:write",
+                  "project-settings:write",
+                  "activity:create",
+                  "activity:edit",
+                  "activity:delete",
+                  "work-item-tag:create",
+                  "work-item-tag:edit",
+                  "work-item-tag:delete",
+                  "work-item:review",
+                  "work-item-comment:create",
+                  "work-item-comment:edit",
+                  "work-item-comment:delete"
+                ],
+                "x-is-generated": true,
+                "description": "is generated from scopes.json keys."
+              }
+            },
+            "userID": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "x-is-generated": true
+            },
+            "username": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "userID",
+            "username",
+            "email",
+            "scopes",
+            "hasPersonalNotifications",
+            "hasGlobalNotifications",
+            "createdAt"
+          ],
+          "type": "object",
+          "x-gen-struct": "DbUser",
+          "x-is-generated": true
+        }
+      },
+      "required": [
+        "user",
+        "role"
+      ],
+      "type": "object"
+    },
+    "DbWorkItemM2MAssigneeWIA": {
+      "properties": {
+        "role": {
+          "title": "WorkItem role",
+          "type": "string",
+          "x-is-generated": true,
+          "enum": [
+            "preparer",
+            "reviewer"
+          ],
+          "description": "is generated from database enum 'work_item_role'."
+        },
+        "user": {
+          "properties": {
+            "createdAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "deletedAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "email": {
+              "type": "string",
+              "minLength": 1
+            },
+            "firstName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fullName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "hasGlobalNotifications": {
+              "type": "boolean"
+            },
+            "hasPersonalNotifications": {
+              "type": "boolean"
+            },
+            "lastName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "scopes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "project-member",
+                  "users:read",
+                  "users:write",
+                  "users:delete",
+                  "scopes:write",
+                  "team-settings:write",
+                  "project-settings:write",
+                  "activity:create",
+                  "activity:edit",
+                  "activity:delete",
+                  "work-item-tag:create",
+                  "work-item-tag:edit",
+                  "work-item-tag:delete",
+                  "work-item:review",
+                  "work-item-comment:create",
+                  "work-item-comment:edit",
+                  "work-item-comment:delete"
+                ],
+                "x-is-generated": true,
+                "description": "is generated from scopes.json keys."
+              }
+            },
+            "userID": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "x-is-generated": true
+            },
+            "username": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "userID",
+            "username",
+            "email",
+            "scopes",
+            "hasPersonalNotifications",
+            "hasGlobalNotifications",
+            "createdAt"
+          ],
+          "type": "object",
+          "x-gen-struct": "DbUser",
+          "x-is-generated": true
+        }
+      },
+      "required": [
+        "user",
+        "role"
+      ],
+      "type": "object"
     }
   },
   "properties": {
@@ -9247,6 +9479,238 @@
       ],
       "x-is-generated": true,
       "description": "is generated from kanban_steps table."
+    },
+    "DbUserWIAWorkItem": {
+      "properties": {
+        "role": {
+          "title": "WorkItem role",
+          "type": "string",
+          "x-is-generated": true,
+          "enum": [
+            "preparer",
+            "reviewer"
+          ],
+          "description": "is generated from database enum 'work_item_role'."
+        },
+        "user": {
+          "properties": {
+            "createdAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "deletedAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "email": {
+              "type": "string",
+              "minLength": 1
+            },
+            "firstName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fullName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "hasGlobalNotifications": {
+              "type": "boolean"
+            },
+            "hasPersonalNotifications": {
+              "type": "boolean"
+            },
+            "lastName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "scopes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "project-member",
+                  "users:read",
+                  "users:write",
+                  "users:delete",
+                  "scopes:write",
+                  "team-settings:write",
+                  "project-settings:write",
+                  "activity:create",
+                  "activity:edit",
+                  "activity:delete",
+                  "work-item-tag:create",
+                  "work-item-tag:edit",
+                  "work-item-tag:delete",
+                  "work-item:review",
+                  "work-item-comment:create",
+                  "work-item-comment:edit",
+                  "work-item-comment:delete"
+                ],
+                "x-is-generated": true,
+                "description": "is generated from scopes.json keys."
+              }
+            },
+            "userID": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "x-is-generated": true
+            },
+            "username": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "userID",
+            "username",
+            "email",
+            "scopes",
+            "hasPersonalNotifications",
+            "hasGlobalNotifications",
+            "createdAt"
+          ],
+          "type": "object",
+          "x-gen-struct": "DbUser",
+          "x-is-generated": true
+        }
+      },
+      "required": [
+        "user",
+        "role"
+      ],
+      "type": "object"
+    },
+    "DbWorkItemM2MAssigneeWIA": {
+      "properties": {
+        "role": {
+          "title": "WorkItem role",
+          "type": "string",
+          "x-is-generated": true,
+          "enum": [
+            "preparer",
+            "reviewer"
+          ],
+          "description": "is generated from database enum 'work_item_role'."
+        },
+        "user": {
+          "properties": {
+            "createdAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "deletedAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "email": {
+              "type": "string",
+              "minLength": 1
+            },
+            "firstName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fullName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "hasGlobalNotifications": {
+              "type": "boolean"
+            },
+            "hasPersonalNotifications": {
+              "type": "boolean"
+            },
+            "lastName": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "scopes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "project-member",
+                  "users:read",
+                  "users:write",
+                  "users:delete",
+                  "scopes:write",
+                  "team-settings:write",
+                  "project-settings:write",
+                  "activity:create",
+                  "activity:edit",
+                  "activity:delete",
+                  "work-item-tag:create",
+                  "work-item-tag:edit",
+                  "work-item-tag:delete",
+                  "work-item:review",
+                  "work-item-comment:create",
+                  "work-item-comment:edit",
+                  "work-item-comment:delete"
+                ],
+                "x-is-generated": true,
+                "description": "is generated from scopes.json keys."
+              }
+            },
+            "userID": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "x-is-generated": true
+            },
+            "username": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "userID",
+            "username",
+            "email",
+            "scopes",
+            "hasPersonalNotifications",
+            "hasGlobalNotifications",
+            "createdAt"
+          ],
+          "type": "object",
+          "x-gen-struct": "DbUser",
+          "x-is-generated": true
+        }
+      },
+      "required": [
+        "user",
+        "role"
+      ],
+      "type": "object"
     }
   }
 }
