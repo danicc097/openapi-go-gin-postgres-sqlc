@@ -114,7 +114,7 @@
     "@vitejs/plugin-react": "4.2.1",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-html": "^6.2.0",
+    "eslint-plugin-html": "^8.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-jest-dom": "^3.9.4",
     "eslint-plugin-jsx-a11y": "^6.6.1",
