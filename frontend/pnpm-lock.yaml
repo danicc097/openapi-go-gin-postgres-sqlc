@@ -231,8 +231,8 @@ dependencies:
     specifier: ^5.25.1
     version: 5.25.1(react-dom@18.2.0)(react@18.2.0)
   react-virtuoso:
-    specifier: ^4.6.2
-    version: 4.6.2(react-dom@18.2.0)(react@18.2.0)
+    specifier: ^4.7.1
+    version: 4.7.1(react-dom@18.2.0)(react@18.2.0)
   regenerator-runtime:
     specifier: ^0.13.11
     version: 0.13.11
@@ -7278,8 +7278,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /react-virtuoso@4.6.2(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-vvlqvzPif+MvBrJ09+hJJrVY0xJK9yran+A+/1iwY78k0YCVKsyoNPqoLxOxzYPggspNBNXqUXEcvckN29OxyQ==}
+  /react-virtuoso@4.7.1(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-V1JIZLEwgX7R+YNkbY8dq6NcnIGKGWXe4mnMJJPsA2L4qeFKst0LY3mDk6sBCJyKRbMzYFxTZWyTT4QsA1JvVQ==}
     engines: {node: '>=10'}
     peerDependencies:
       react: '>=16 || >=17 || >= 18'
