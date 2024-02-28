@@ -269,7 +269,7 @@ github.com/jackc/pgservicefile
 # github.com/jackc/pgx-zap v0.0.0-20221202020421-94b1cb2f889f
 ## explicit; go 1.17
 github.com/jackc/pgx-zap
-# github.com/jackc/pgx/v5 v5.5.2
+# github.com/jackc/pgx/v5 v5.5.3
 ## explicit; go 1.19
 github.com/jackc/pgx/v5
 github.com/jackc/pgx/v5/internal/anynil
