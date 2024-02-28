@@ -1026,8 +1026,7 @@ x.gen() {
     x.gen.gowrap &
     x.gen.proto &
     # might be race between xo and sqlc
-    { retry 5 x.gen.xo; } &
-    { retry 5 x.gen.sqlc; } &
+    { x.gen.xo && x.gen.sqlc; } &
     x.gen.jet &
     generate_repo_constructor &
 
