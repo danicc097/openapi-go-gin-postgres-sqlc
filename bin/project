@@ -1429,8 +1429,8 @@ x.run.all() {
 
 # Syncs backend dependencies.
 x.backend.sync-deps() {
-  go mod tidy
-  go mod vendor
+  GOWORK=off go mod tidy
+  GOWORK=off go mod vendor
 }
 
 # Run project in production mode, i.e. dockerized and bundled.
