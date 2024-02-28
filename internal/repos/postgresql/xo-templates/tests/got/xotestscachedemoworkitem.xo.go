@@ -170,17 +170,17 @@ const xoTestsCacheDemoWorkItemTableWorkItemCommentsJoinSQL = `-- M2O join genera
 left join (
   select
   work_item_id as work_item_comments_work_item_id
-    , array_agg(work_item_comments.*) as work_item_comments
+    , row(work_item_comments.*) as __work_item_comments
   from
     xo_tests.work_item_comments
   group by
-        work_item_id
+	  work_item_comments_work_item_id, xo_tests.work_item_comments.work_item_comment_id
 ) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_work_item_id = cache__demo_work_items.work_item_id
 `
 
-const xoTestsCacheDemoWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const xoTestsCacheDemoWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_work_item_comments.__work_item_comments)) filter (where xo_join_work_item_comments.work_item_comments_work_item_id is not null), '{}') as work_item_comments`
 
-const xoTestsCacheDemoWorkItemTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, cache__demo_work_items.work_item_id`
+const xoTestsCacheDemoWorkItemTableWorkItemCommentsGroupBySQL = `cache__demo_work_items.work_item_id`
 
 // XoTestsCacheDemoWorkItemUpdateParams represents update params for 'xo_tests.cache__demo_work_items'.
 type XoTestsCacheDemoWorkItemUpdateParams struct {

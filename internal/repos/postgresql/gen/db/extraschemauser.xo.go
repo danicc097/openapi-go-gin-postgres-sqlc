@@ -263,17 +263,17 @@ const extraSchemaUserTableBookReviewsJoinSQL = `-- M2O join generated from "book
 left join (
   select
   reviewer as book_reviews_user_id
-    , array_agg(book_reviews.*) as book_reviews
+    , row(book_reviews.*) as __book_reviews
   from
     extra_schema.book_reviews
   group by
-        reviewer
+	  book_reviews_user_id, extra_schema.book_reviews.book_review_id
 ) as xo_join_book_reviews on xo_join_book_reviews.book_reviews_user_id = users.user_id
 `
 
-const extraSchemaUserTableBookReviewsSelectSQL = `COALESCE(xo_join_book_reviews.book_reviews, '{}') as book_reviews`
+const extraSchemaUserTableBookReviewsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_book_reviews.__book_reviews)) filter (where xo_join_book_reviews.book_reviews_user_id is not null), '{}') as book_reviews`
 
-const extraSchemaUserTableBookReviewsGroupBySQL = `xo_join_book_reviews.book_reviews, users.user_id`
+const extraSchemaUserTableBookReviewsGroupBySQL = `users.user_id`
 
 const extraSchemaUserTableSellerBooksJoinSQL = `-- M2M join generated from "book_sellers_book_id_fkey"
 left join (
@@ -301,33 +301,33 @@ const extraSchemaUserTableReceiverNotificationsJoinSQL = `-- M2O join generated 
 left join (
   select
   receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
+    , row(notifications.*) as __notifications
   from
     extra_schema.notifications
   group by
-        receiver
+	  notifications_user_id, extra_schema.notifications.notification_id
 ) as xo_join_notifications_receiver on xo_join_notifications_receiver.notifications_user_id = users.user_id
 `
 
-const extraSchemaUserTableReceiverNotificationsSelectSQL = `COALESCE(xo_join_notifications_receiver.notifications, '{}') as notifications_receiver`
+const extraSchemaUserTableReceiverNotificationsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_notifications_receiver.__notifications)) filter (where xo_join_notifications_receiver.notifications_user_id is not null), '{}') as notifications_receiver`
 
-const extraSchemaUserTableReceiverNotificationsGroupBySQL = `xo_join_notifications_receiver.notifications, users.user_id`
+const extraSchemaUserTableReceiverNotificationsGroupBySQL = `users.user_id`
 
 const extraSchemaUserTableSenderNotificationsJoinSQL = `-- M2O join generated from "notifications_sender_fkey"
 left join (
   select
   sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
+    , row(notifications.*) as __notifications
   from
     extra_schema.notifications
   group by
-        sender
+	  notifications_user_id, extra_schema.notifications.notification_id
 ) as xo_join_notifications_sender on xo_join_notifications_sender.notifications_user_id = users.user_id
 `
 
-const extraSchemaUserTableSenderNotificationsSelectSQL = `COALESCE(xo_join_notifications_sender.notifications, '{}') as notifications_sender`
+const extraSchemaUserTableSenderNotificationsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_notifications_sender.__notifications)) filter (where xo_join_notifications_sender.notifications_user_id is not null), '{}') as notifications_sender`
 
-const extraSchemaUserTableSenderNotificationsGroupBySQL = `xo_join_notifications_sender.notifications, users.user_id`
+const extraSchemaUserTableSenderNotificationsGroupBySQL = `users.user_id`
 
 const extraSchemaUserTableUserAPIKeyJoinSQL = `-- O2O join generated from "users_api_key_id_fkey (inferred)"
 left join extra_schema.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id

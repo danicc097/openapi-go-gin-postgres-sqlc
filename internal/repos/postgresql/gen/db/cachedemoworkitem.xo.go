@@ -262,17 +262,17 @@ const cacheDemoWorkItemTableTimeEntriesJoinSQL = `-- M2O join generated from "ti
 left join (
   select
   work_item_id as time_entries_work_item_id
-    , array_agg(time_entries.*) as time_entries
+    , row(time_entries.*) as __time_entries
   from
     time_entries
   group by
-        work_item_id
+	  time_entries_work_item_id, time_entries.time_entry_id
 ) as xo_join_time_entries on xo_join_time_entries.time_entries_work_item_id = cache__demo_work_items.work_item_id
 `
 
-const cacheDemoWorkItemTableTimeEntriesSelectSQL = `COALESCE(xo_join_time_entries.time_entries, '{}') as time_entries`
+const cacheDemoWorkItemTableTimeEntriesSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_time_entries.__time_entries)) filter (where xo_join_time_entries.time_entries_work_item_id is not null), '{}') as time_entries`
 
-const cacheDemoWorkItemTableTimeEntriesGroupBySQL = `xo_join_time_entries.time_entries, cache__demo_work_items.work_item_id`
+const cacheDemoWorkItemTableTimeEntriesGroupBySQL = `cache__demo_work_items.work_item_id`
 
 const cacheDemoWorkItemTableAssigneesJoinSQL = `-- M2M join generated from "work_item_assignee_assignee_fkey-shared-ref-cache__demo_work_items"
 left join (
@@ -303,17 +303,17 @@ const cacheDemoWorkItemTableWorkItemCommentsJoinSQL = `-- M2O join generated fro
 left join (
   select
   work_item_id as work_item_comments_work_item_id
-    , array_agg(work_item_comments.*) as work_item_comments
+    , row(work_item_comments.*) as __work_item_comments
   from
     work_item_comments
   group by
-        work_item_id
+	  work_item_comments_work_item_id, work_item_comments.work_item_comment_id
 ) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_work_item_id = cache__demo_work_items.work_item_id
 `
 
-const cacheDemoWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const cacheDemoWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_work_item_comments.__work_item_comments)) filter (where xo_join_work_item_comments.work_item_comments_work_item_id is not null), '{}') as work_item_comments`
 
-const cacheDemoWorkItemTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, cache__demo_work_items.work_item_id`
+const cacheDemoWorkItemTableWorkItemCommentsGroupBySQL = `cache__demo_work_items.work_item_id`
 
 const cacheDemoWorkItemTableWorkItemTagsJoinSQL = `-- M2M join generated from "work_item_work_item_tag_work_item_tag_id_fkey-shared-ref-cache__demo_work_items"
 left join (

@@ -3329,14 +3329,15 @@ const (
 		, xo_join_{{$.LookupJoinTablePKSuffix}}{{$.ClashSuffix}}.{{ . -}}
 		{{- end }}
 		)) filter (where xo_join_{{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}.__{{.LookupJoinTablePKAgg}}_{{.JoinTablePK}} is not null), '{}') as {{.LookupJoinTablePKSuffix}}{{.ClashSuffix}}`
-	M2OSelect = `COALESCE(xo_join_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, '{}') as {{.JoinTable}}{{.ClashSuffix}}`
+	// TODO: xo_tests both empty m2o and >1 joined array
+	M2OSelect = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_{{.JoinTable}}{{.ClashSuffix}}.__{{.JoinTable}})) filter (where xo_join_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}_{{.JoinRefColumn}} is not null), '{}') as {{.JoinTable}}{{.ClashSuffix}}`
 	// extra check needed to prevent pgx from trying to scan a record with NULL values into the ???Join struct
 	O2OSelect = `(case when {{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}} is not null then row({{ .Alias}}_{{.JoinTableAlias}}.*) end) as {{ singularize .JoinTable}}_{{ singularize .JoinTableAlias}}`
 )
 
 const (
 	M2MGroupBy = `{{.CurrentTable}}.{{.LookupRefColumn}}, {{.CurrentTablePKGroupBys}}`
-	M2OGroupBy = `xo_join_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}, {{.CurrentTablePKGroupBys}}`
+	M2OGroupBy = `{{.CurrentTablePKGroupBys}}`
 	O2OGroupBy = `{{ .Alias}}_{{.JoinTableAlias}}.{{.JoinColumn}},
 	{{- range $g := .JoinTablePKGroupBys}}
       {{if $g}}{{$g}},{{end}}
@@ -3371,11 +3372,11 @@ left join (
 left join (
   select
   {{.JoinColumn}} as {{.JoinTable}}_{{.JoinRefColumn}}
-    , array_agg({{.JoinTable}}.*) as {{.JoinTable}}
+    , row({{.JoinTable}}.*) as __{{.JoinTable}}
   from
     {{.Schema}}{{.JoinTable}}
   group by
-        {{.JoinColumn}}
+	  {{.JoinTable}}_{{.JoinRefColumn}}, {{.Schema}}{{.JoinTable}}.{{.JoinTablePKName}}
 ) as xo_join_{{.JoinTable}}{{.ClashSuffix}} on xo_join_{{.JoinTable}}{{.ClashSuffix}}.{{.JoinTable}}_{{.JoinRefColumn}} = {{.CurrentTable}}.{{.JoinRefColumn}}
 `
 	O2OJoin = `
@@ -3634,10 +3635,16 @@ func (f *Funcs) createJoinStatement(tables Tables, c Constraint, table Table, fu
 			}
 		}
 	case M2O:
+		// TODO: must be the same as M2M, just without lookup table join
 		joinTpl = M2OJoin
 		selectTpl = M2OSelect
 		groupbyTpl = M2OGroupBy
 		if c.RefTableName == table.SQLName {
+			for _, t := range tables {
+				if t.SQLName == c.TableName && t.Schema == f.schema {
+					params["JoinTablePKName"] = t.PrimaryKeys[0].SQLName
+				}
+			}
 			params["JoinColumn"] = c.ColumnName
 			params["JoinTable"] = c.TableName
 			params["JoinRefColumn"] = c.RefColumnName

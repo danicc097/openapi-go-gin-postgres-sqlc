@@ -191,17 +191,17 @@ const xoTestsBookTableBookReviewsJoinSQL = `-- M2O join generated from "book_rev
 left join (
   select
   book_id as book_reviews_book_id
-    , array_agg(book_reviews.*) as book_reviews
+    , row(book_reviews.*) as __book_reviews
   from
     xo_tests.book_reviews
   group by
-        book_id
+	  book_reviews_book_id, xo_tests.book_reviews.book_review_id
 ) as xo_join_book_reviews on xo_join_book_reviews.book_reviews_book_id = books.book_id
 `
 
-const xoTestsBookTableBookReviewsSelectSQL = `COALESCE(xo_join_book_reviews.book_reviews, '{}') as book_reviews`
+const xoTestsBookTableBookReviewsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_book_reviews.__book_reviews)) filter (where xo_join_book_reviews.book_reviews_book_id is not null), '{}') as book_reviews`
 
-const xoTestsBookTableBookReviewsGroupBySQL = `xo_join_book_reviews.book_reviews, books.book_id`
+const xoTestsBookTableBookReviewsGroupBySQL = `books.book_id`
 
 const xoTestsBookTableSellersJoinSQL = `-- M2M join generated from "book_sellers_seller_fkey"
 left join (

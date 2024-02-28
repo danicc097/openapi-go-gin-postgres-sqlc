@@ -29,11 +29,11 @@ func NewWorkItem(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItem {
 		getSharedDBOpts: func() []db.WorkItemSelectConfigOption {
 			// keep in sync with SharedWorkItemJoins
 			return []db.WorkItemSelectConfigOption{db.WithWorkItemJoin(db.WorkItemJoins{
-				Assignees:    true,
-				WorkItemTags: true,
-				// TimeEntries:      true,
-				// WorkItemComments: true,
-				// WorkItemType:     true,
+				Assignees:        true,
+				WorkItemTags:     true,
+				TimeEntries:      true,
+				WorkItemComments: true,
+				WorkItemType:     true,
 			})}
 		},
 	}

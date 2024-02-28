@@ -175,17 +175,17 @@ const xoTestsWorkItemTableWorkItemCommentsJoinSQL = `-- M2O join generated from 
 left join (
   select
   work_item_id as work_item_comments_work_item_id
-    , array_agg(work_item_comments.*) as work_item_comments
+    , row(work_item_comments.*) as __work_item_comments
   from
     xo_tests.work_item_comments
   group by
-        work_item_id
+	  work_item_comments_work_item_id, xo_tests.work_item_comments.work_item_comment_id
 ) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_work_item_id = work_items.work_item_id
 `
 
-const xoTestsWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const xoTestsWorkItemTableWorkItemCommentsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_work_item_comments.__work_item_comments)) filter (where xo_join_work_item_comments.work_item_comments_work_item_id is not null), '{}') as work_item_comments`
 
-const xoTestsWorkItemTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, work_items.work_item_id`
+const xoTestsWorkItemTableWorkItemCommentsGroupBySQL = `work_items.work_item_id`
 
 const xoTestsWorkItemTableTeamJoinSQL = `-- O2O join generated from "work_items_team_id_fkey (inferred)"
 left join xo_tests.teams as _work_items_team_id on _work_items_team_id.team_id = work_items.team_id

@@ -171,17 +171,17 @@ const teamTableTimeEntriesJoinSQL = `-- M2O join generated from "time_entries_te
 left join (
   select
   team_id as time_entries_team_id
-    , array_agg(time_entries.*) as time_entries
+    , row(time_entries.*) as __time_entries
   from
     time_entries
   group by
-        team_id
+	  time_entries_team_id, time_entries.time_entry_id
 ) as xo_join_time_entries on xo_join_time_entries.time_entries_team_id = teams.team_id
 `
 
-const teamTableTimeEntriesSelectSQL = `COALESCE(xo_join_time_entries.time_entries, '{}') as time_entries`
+const teamTableTimeEntriesSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_time_entries.__time_entries)) filter (where xo_join_time_entries.time_entries_team_id is not null), '{}') as time_entries`
 
-const teamTableTimeEntriesGroupBySQL = `xo_join_time_entries.time_entries, teams.team_id`
+const teamTableTimeEntriesGroupBySQL = `teams.team_id`
 
 const teamTableMembersJoinSQL = `-- M2M join generated from "user_team_member_fkey"
 left join (

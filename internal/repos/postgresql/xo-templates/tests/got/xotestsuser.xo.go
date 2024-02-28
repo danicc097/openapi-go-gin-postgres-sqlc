@@ -262,17 +262,17 @@ const xoTestsUserTableBookReviewsJoinSQL = `-- M2O join generated from "book_rev
 left join (
   select
   reviewer as book_reviews_user_id
-    , array_agg(book_reviews.*) as book_reviews
+    , row(book_reviews.*) as __book_reviews
   from
     xo_tests.book_reviews
   group by
-        reviewer
+	  book_reviews_user_id, xo_tests.book_reviews.book_review_id
 ) as xo_join_book_reviews on xo_join_book_reviews.book_reviews_user_id = users.user_id
 `
 
-const xoTestsUserTableBookReviewsSelectSQL = `COALESCE(xo_join_book_reviews.book_reviews, '{}') as book_reviews`
+const xoTestsUserTableBookReviewsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_book_reviews.__book_reviews)) filter (where xo_join_book_reviews.book_reviews_user_id is not null), '{}') as book_reviews`
 
-const xoTestsUserTableBookReviewsGroupBySQL = `xo_join_book_reviews.book_reviews, users.user_id`
+const xoTestsUserTableBookReviewsGroupBySQL = `users.user_id`
 
 const xoTestsUserTableSellerBooksJoinSQL = `-- M2M join generated from "book_sellers_book_id_fkey"
 left join (
@@ -300,33 +300,33 @@ const xoTestsUserTableReceiverNotificationsJoinSQL = `-- M2O join generated from
 left join (
   select
   receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
+    , row(notifications.*) as __notifications
   from
     xo_tests.notifications
   group by
-        receiver
+	  notifications_user_id, xo_tests.notifications.notification_id
 ) as xo_join_notifications_receiver on xo_join_notifications_receiver.notifications_user_id = users.user_id
 `
 
-const xoTestsUserTableReceiverNotificationsSelectSQL = `COALESCE(xo_join_notifications_receiver.notifications, '{}') as notifications_receiver`
+const xoTestsUserTableReceiverNotificationsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_notifications_receiver.__notifications)) filter (where xo_join_notifications_receiver.notifications_user_id is not null), '{}') as notifications_receiver`
 
-const xoTestsUserTableReceiverNotificationsGroupBySQL = `xo_join_notifications_receiver.notifications, users.user_id`
+const xoTestsUserTableReceiverNotificationsGroupBySQL = `users.user_id`
 
 const xoTestsUserTableSenderNotificationsJoinSQL = `-- M2O join generated from "notifications_sender_fkey"
 left join (
   select
   sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
+    , row(notifications.*) as __notifications
   from
     xo_tests.notifications
   group by
-        sender
+	  notifications_user_id, xo_tests.notifications.notification_id
 ) as xo_join_notifications_sender on xo_join_notifications_sender.notifications_user_id = users.user_id
 `
 
-const xoTestsUserTableSenderNotificationsSelectSQL = `COALESCE(xo_join_notifications_sender.notifications, '{}') as notifications_sender`
+const xoTestsUserTableSenderNotificationsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_notifications_sender.__notifications)) filter (where xo_join_notifications_sender.notifications_user_id is not null), '{}') as notifications_sender`
 
-const xoTestsUserTableSenderNotificationsGroupBySQL = `xo_join_notifications_sender.notifications, users.user_id`
+const xoTestsUserTableSenderNotificationsGroupBySQL = `users.user_id`
 
 const xoTestsUserTableUserAPIKeyJoinSQL = `-- O2O join generated from "users_api_key_id_fkey (inferred)"
 left join xo_tests.user_api_keys as _users_api_key_id on _users_api_key_id.user_api_key_id = users.api_key_id
@@ -367,17 +367,17 @@ const xoTestsUserTableWorkItemCommentsJoinSQL = `-- M2O join generated from "wor
 left join (
   select
   user_id as work_item_comments_user_id
-    , array_agg(work_item_comments.*) as work_item_comments
+    , row(work_item_comments.*) as __work_item_comments
   from
     xo_tests.work_item_comments
   group by
-        user_id
+	  work_item_comments_user_id, xo_tests.work_item_comments.work_item_comment_id
 ) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_user_id = users.user_id
 `
 
-const xoTestsUserTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const xoTestsUserTableWorkItemCommentsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_work_item_comments.__work_item_comments)) filter (where xo_join_work_item_comments.work_item_comments_user_id is not null), '{}') as work_item_comments`
 
-const xoTestsUserTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, users.user_id`
+const xoTestsUserTableWorkItemCommentsGroupBySQL = `users.user_id`
 
 // XoTestsUserUpdateParams represents update params for 'xo_tests.users'.
 type XoTestsUserUpdateParams struct {

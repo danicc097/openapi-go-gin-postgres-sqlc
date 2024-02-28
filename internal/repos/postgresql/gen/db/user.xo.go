@@ -231,65 +231,65 @@ const userTableReceiverNotificationsJoinSQL = `-- M2O join generated from "notif
 left join (
   select
   receiver as notifications_user_id
-    , array_agg(notifications.*) as notifications
+    , row(notifications.*) as __notifications
   from
     notifications
   group by
-        receiver
+	  notifications_user_id, notifications.notification_id
 ) as xo_join_notifications_receiver on xo_join_notifications_receiver.notifications_user_id = users.user_id
 `
 
-const userTableReceiverNotificationsSelectSQL = `COALESCE(xo_join_notifications_receiver.notifications, '{}') as notifications_receiver`
+const userTableReceiverNotificationsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_notifications_receiver.__notifications)) filter (where xo_join_notifications_receiver.notifications_user_id is not null), '{}') as notifications_receiver`
 
-const userTableReceiverNotificationsGroupBySQL = `xo_join_notifications_receiver.notifications, users.user_id`
+const userTableReceiverNotificationsGroupBySQL = `users.user_id`
 
 const userTableSenderNotificationsJoinSQL = `-- M2O join generated from "notifications_sender_fkey"
 left join (
   select
   sender as notifications_user_id
-    , array_agg(notifications.*) as notifications
+    , row(notifications.*) as __notifications
   from
     notifications
   group by
-        sender
+	  notifications_user_id, notifications.notification_id
 ) as xo_join_notifications_sender on xo_join_notifications_sender.notifications_user_id = users.user_id
 `
 
-const userTableSenderNotificationsSelectSQL = `COALESCE(xo_join_notifications_sender.notifications, '{}') as notifications_sender`
+const userTableSenderNotificationsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_notifications_sender.__notifications)) filter (where xo_join_notifications_sender.notifications_user_id is not null), '{}') as notifications_sender`
 
-const userTableSenderNotificationsGroupBySQL = `xo_join_notifications_sender.notifications, users.user_id`
+const userTableSenderNotificationsGroupBySQL = `users.user_id`
 
 const userTableTimeEntriesJoinSQL = `-- M2O join generated from "time_entries_user_id_fkey"
 left join (
   select
   user_id as time_entries_user_id
-    , array_agg(time_entries.*) as time_entries
+    , row(time_entries.*) as __time_entries
   from
     time_entries
   group by
-        user_id
+	  time_entries_user_id, time_entries.time_entry_id
 ) as xo_join_time_entries on xo_join_time_entries.time_entries_user_id = users.user_id
 `
 
-const userTableTimeEntriesSelectSQL = `COALESCE(xo_join_time_entries.time_entries, '{}') as time_entries`
+const userTableTimeEntriesSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_time_entries.__time_entries)) filter (where xo_join_time_entries.time_entries_user_id is not null), '{}') as time_entries`
 
-const userTableTimeEntriesGroupBySQL = `xo_join_time_entries.time_entries, users.user_id`
+const userTableTimeEntriesGroupBySQL = `users.user_id`
 
 const userTableUserNotificationsJoinSQL = `-- M2O join generated from "user_notifications_user_id_fkey"
 left join (
   select
   user_id as user_notifications_user_id
-    , array_agg(user_notifications.*) as user_notifications
+    , row(user_notifications.*) as __user_notifications
   from
     user_notifications
   group by
-        user_id
+	  user_notifications_user_id, user_notifications.user_notification_id
 ) as xo_join_user_notifications on xo_join_user_notifications.user_notifications_user_id = users.user_id
 `
 
-const userTableUserNotificationsSelectSQL = `COALESCE(xo_join_user_notifications.user_notifications, '{}') as user_notifications`
+const userTableUserNotificationsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_user_notifications.__user_notifications)) filter (where xo_join_user_notifications.user_notifications_user_id is not null), '{}') as user_notifications`
 
-const userTableUserNotificationsGroupBySQL = `xo_join_user_notifications.user_notifications, users.user_id`
+const userTableUserNotificationsGroupBySQL = `users.user_id`
 
 const userTableMemberProjectsJoinSQL = `-- M2M join generated from "user_project_project_id_fkey"
 left join (
@@ -374,17 +374,17 @@ const userTableWorkItemCommentsJoinSQL = `-- M2O join generated from "work_item_
 left join (
   select
   user_id as work_item_comments_user_id
-    , array_agg(work_item_comments.*) as work_item_comments
+    , row(work_item_comments.*) as __work_item_comments
   from
     work_item_comments
   group by
-        user_id
+	  work_item_comments_user_id, work_item_comments.work_item_comment_id
 ) as xo_join_work_item_comments on xo_join_work_item_comments.work_item_comments_user_id = users.user_id
 `
 
-const userTableWorkItemCommentsSelectSQL = `COALESCE(xo_join_work_item_comments.work_item_comments, '{}') as work_item_comments`
+const userTableWorkItemCommentsSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_work_item_comments.__work_item_comments)) filter (where xo_join_work_item_comments.work_item_comments_user_id is not null), '{}') as work_item_comments`
 
-const userTableWorkItemCommentsGroupBySQL = `xo_join_work_item_comments.work_item_comments, users.user_id`
+const userTableWorkItemCommentsGroupBySQL = `users.user_id`
 
 // UserUpdateParams represents update params for 'public.users'.
 type UserUpdateParams struct {
