@@ -58,6 +58,7 @@ type User struct {
 //	}
 type PaginatedUsersResponse = PaginationBaseResponse[User]
 
+// NOTE: keep in sync with base workitem getSharedDBOpts.
 type SharedWorkItemJoins struct {
 	TimeEntries      *[]db.TimeEntry              `json:"timeEntries"`
 	WorkItemComments *[]db.WorkItemComment        `json:"workItemComments"`
