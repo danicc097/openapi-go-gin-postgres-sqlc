@@ -1269,7 +1269,7 @@ x.test.xo() {
     echo "Running xo template tests"
 
     test_dir="$XO_TEMPLATES_DIR/tests"
-    docker.postgres.psql -d $POSTGRES_DB <"$test_dir/schema.sql" # need correct schema for xo gen
+    docker.postgres.psql -d $POSTGRES_DB <"$test_dir/xotests_schema.sql" # need correct schema for xo gen
     echo "Schema loaded"
 
     rm -rf "$test_dir/got"

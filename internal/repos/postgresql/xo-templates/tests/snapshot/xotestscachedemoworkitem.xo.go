@@ -33,6 +33,7 @@ type XoTestsCacheDemoWorkItem struct {
 	TeamID     XoTestsTeamID     `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
 
 	TeamJoin             *XoTestsTeam                              `json:"-" db:"team_team_id" openapi-go:"ignore"`                 // O2O teams (inferred)
+	TimeEntriesJoin      *[]XoTestsTimeEntry                       `json:"-" db:"time_entries" openapi-go:"ignore"`                 // M2O cache__demo_work_items
 	AssigneesJoin        *[]XoTestsCacheDemoWorkItemM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"` // M2M work_item_assignee
 	WorkItemCommentsJoin *[]XoTestsWorkItemComment                 `json:"-" db:"work_item_comments" openapi-go:"ignore"`           // M2O cache__demo_work_items
 }
@@ -77,6 +78,7 @@ type XoTestsCacheDemoWorkItemOrderBy string
 
 type XoTestsCacheDemoWorkItemJoins struct {
 	Team             bool // O2O teams
+	TimeEntries      bool // M2O time_entries
 	Assignees        bool // M2M work_item_assignee
 	WorkItemComments bool // M2O work_item_comments
 }
@@ -86,6 +88,7 @@ func WithXoTestsCacheDemoWorkItemJoin(joins XoTestsCacheDemoWorkItemJoins) XoTes
 	return func(s *XoTestsCacheDemoWorkItemSelectConfig) {
 		s.joins = XoTestsCacheDemoWorkItemJoins{
 			Team:             s.joins.Team || joins.Team,
+			TimeEntries:      s.joins.TimeEntries || joins.TimeEntries,
 			Assignees:        s.joins.Assignees || joins.Assignees,
 			WorkItemComments: s.joins.WorkItemComments || joins.WorkItemComments,
 		}
@@ -140,6 +143,22 @@ const xoTestsCacheDemoWorkItemTableTeamSelectSQL = `(case when _cache__demo_work
 const xoTestsCacheDemoWorkItemTableTeamGroupBySQL = `_cache__demo_work_items_team_id.team_id,
       _cache__demo_work_items_team_id.team_id,
 	cache__demo_work_items.work_item_id`
+
+const xoTestsCacheDemoWorkItemTableTimeEntriesJoinSQL = `-- M2O join generated from "time_entries_work_item_id_fkey-shared-ref-cache__demo_work_items"
+left join (
+  select
+  work_item_id as time_entries_work_item_id
+    , row(time_entries.*) as __time_entries
+  from
+    xo_tests.time_entries
+  group by
+	  time_entries_work_item_id, xo_tests.time_entries.time_entry_id
+) as xo_join_time_entries on xo_join_time_entries.time_entries_work_item_id = cache__demo_work_items.work_item_id
+`
+
+const xoTestsCacheDemoWorkItemTableTimeEntriesSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_time_entries.__time_entries)) filter (where xo_join_time_entries.time_entries_work_item_id is not null), '{}') as time_entries`
+
+const xoTestsCacheDemoWorkItemTableTimeEntriesGroupBySQL = `cache__demo_work_items.work_item_id`
 
 const xoTestsCacheDemoWorkItemTableAssigneesJoinSQL = `-- M2M join generated from "work_item_assignee_assignee_fkey-shared-ref-cache__demo_work_items"
 left join (
@@ -339,6 +358,12 @@ func XoTestsCacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, w
 		groupByClauses = append(groupByClauses, xoTestsCacheDemoWorkItemTableTeamGroupBySQL)
 	}
 
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, xoTestsCacheDemoWorkItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, xoTestsCacheDemoWorkItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsCacheDemoWorkItemTableTimeEntriesGroupBySQL)
+	}
+
 	if c.joins.Assignees {
 		selectClauses = append(selectClauses, xoTestsCacheDemoWorkItemTableAssigneesSelectSQL)
 		joinClauses = append(joinClauses, xoTestsCacheDemoWorkItemTableAssigneesJoinSQL)
@@ -448,6 +473,12 @@ func XoTestsCacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID
 		selectClauses = append(selectClauses, xoTestsCacheDemoWorkItemTableTeamSelectSQL)
 		joinClauses = append(joinClauses, xoTestsCacheDemoWorkItemTableTeamJoinSQL)
 		groupByClauses = append(groupByClauses, xoTestsCacheDemoWorkItemTableTeamGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, xoTestsCacheDemoWorkItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, xoTestsCacheDemoWorkItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsCacheDemoWorkItemTableTimeEntriesGroupBySQL)
 	}
 
 	if c.joins.Assignees {

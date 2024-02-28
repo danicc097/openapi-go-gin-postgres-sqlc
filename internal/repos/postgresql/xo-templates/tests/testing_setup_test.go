@@ -42,7 +42,7 @@ func testMain(m *testing.M) int {
 	}
 	defer tempTestPool.Close()
 
-	schemaPath := "schema.sql"
+	schemaPath := "xotests_schema.sql"
 	schema, err := os.ReadFile(schemaPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't read %s: %s\n", schemaPath, err)
@@ -55,7 +55,7 @@ func testMain(m *testing.M) int {
 		return 1
 	}
 
-	// refresh pgxpool types now that schema.sql is loaded.
+	// refresh pgxpool types now that xotests_schema.sql is loaded.
 	// maybe a postgresl.New postgresql.WithSchemas(schemas...) executed in order is worth it
 	// to avoid this if it's in demand
 	testPool, _, err = postgresql.New(logger.Sugar())

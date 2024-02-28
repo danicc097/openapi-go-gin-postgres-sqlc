@@ -177,6 +177,17 @@ comment on column xo_tests.work_item_assignee.work_item_id is '"cardinality":M2M
 
 comment on column xo_tests.work_item_assignee.assignee is '"cardinality":M2M';
 
+-- NOTE: do no insert and test join is applying filter properly, so that we get empty array
+-- when xo join is specified and there are no items, instead of NULL
+create table xo_tests.time_entries (
+  time_entry_id bigserial primary key
+  , work_item_id bigint
+  , start timestamp with time zone default current_timestamp not null
+  , foreign key (work_item_id) references xo_tests.work_items (work_item_id) on delete cascade
+);
+
+comment on column xo_tests.time_entries.work_item_id is '"cardinality":M2O';
+
 create table xo_tests.demo_work_items (
   work_item_id bigint primary key references xo_tests.work_items (work_item_id) on delete cascade
   , checked boolean not null default false
