@@ -41,27 +41,8 @@ func (te *TimeEntry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*d
 func (te *TimeEntry) Create(ctx context.Context, d db.DBTX, caller CtxUser, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	if err := te.validateUserAuthorized(caller, params.UserID); err != nil {
+	if err := te.validateCreateParams(d, caller, params); err != nil {
 		return nil, err
-	}
-	if err := te.validateUserIsInTeam(caller, params.TeamID); err != nil {
-		return nil, err
-	}
-
-	if params.WorkItemID != nil {
-		wi, err := te.repos.WorkItem.ByID(ctx, d, *params.WorkItemID, db.WithWorkItemJoin(db.WorkItemJoins{Assignees: true}))
-		if err != nil {
-			return nil, fmt.Errorf("repos.WorkItem.ByID: %w", err)
-		}
-
-		memberIDs := make(map[db.UserID]bool)
-		for _, m := range *wi.AssigneesJoin {
-			memberIDs[m.User.UserID] = true
-		}
-		if _, ok := memberIDs[caller.UserID]; !ok {
-			// FIXME filter where not null for m2m in assigned members not doing what we think
-			return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot link activity to an unassigned work item")
-		}
 	}
 
 	teObj, err := te.repos.TimeEntry.Create(ctx, d, params)
@@ -74,22 +55,55 @@ func (te *TimeEntry) Create(ctx context.Context, d db.DBTX, caller CtxUser, para
 	return teObj, nil
 }
 
-func (te *TimeEntry) validateUserAuthorized(caller CtxUser, userID db.UserID) error {
-	if caller.UserID != userID {
-		return internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot add activity for a different user")
+func (te *TimeEntry) validateCreateParams(d db.DBTX, caller CtxUser, params *db.TimeEntryCreateParams) error {
+	if err := te.validateBaseParams(d, caller, params); err != nil {
+		return err
 	}
+
+	// extra create param validation, if any
 
 	return nil
 }
 
-func (te *TimeEntry) validateUserIsInTeam(caller CtxUser, teamID *db.TeamID) error {
-	if teamID != nil {
+func (te *TimeEntry) validateUpdateParams(d db.DBTX, caller CtxUser, params *db.TimeEntryUpdateParams) error {
+	if err := te.validateBaseParams(d, caller, params); err != nil {
+		return err
+	}
+
+	// extra update param validation, if any
+
+	return nil
+}
+
+func (te *TimeEntry) validateBaseParams(d db.DBTX, caller CtxUser, params db.TimeEntryParams) error {
+	if params.GetUserID() != nil {
+		if caller.UserID != *params.GetUserID() {
+			return internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot add activity for a different user")
+		}
+	}
+
+	if params.GetTeamID() != nil {
 		teamIDs := make([]db.TeamID, len(caller.Teams))
 		for i, t := range caller.Teams {
 			teamIDs[i] = t.TeamID
 		}
-		if !slices.Contains(teamIDs, *teamID) {
+		if !slices.Contains(teamIDs, *params.GetTeamID()) {
 			return internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot link activity to an unassigned team")
+		}
+	}
+
+	if params.GetWorkItemID() != nil {
+		wi, err := te.repos.WorkItem.ByID(context.Background(), d, *params.GetWorkItemID(), db.WithWorkItemJoin(db.WorkItemJoins{Assignees: true}))
+		if err != nil {
+			return fmt.Errorf("repos.WorkItem.ByID: %w", err)
+		}
+
+		memberIDs := make(map[db.UserID]bool)
+		for _, m := range *wi.AssigneesJoin {
+			memberIDs[m.User.UserID] = true
+		}
+		if _, ok := memberIDs[caller.UserID]; !ok {
+			return internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot link activity to an unassigned work item")
 		}
 	}
 
@@ -100,18 +114,8 @@ func (te *TimeEntry) validateUserIsInTeam(caller CtxUser, teamID *db.TeamID) err
 func (te *TimeEntry) Update(ctx context.Context, d db.DBTX, caller CtxUser, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	// TODO: xo should create interface for params, with GetUserID shared. therefore we could have a generic validate function that works for both create and update params.
-	// if for some reason we want to skip a validation on either update or create we could pass a flag easily.
-	if params.UserID != nil {
-		if err := te.validateUserAuthorized(caller, *params.UserID); err != nil {
-			return nil, err
-		}
-	}
-
-	if params.TeamID != nil {
-		if err := te.validateUserIsInTeam(caller, *params.TeamID); err != nil {
-			return nil, err
-		}
+	if err := te.validateUpdateParams(d, caller, params); err != nil {
+		return nil, err
 	}
 
 	teObj, err := te.repos.TimeEntry.Update(ctx, d, id, params)
