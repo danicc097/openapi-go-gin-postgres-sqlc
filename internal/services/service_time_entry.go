@@ -75,6 +75,8 @@ func (te *TimeEntry) validateUpdateParams(d db.DBTX, caller CtxUser, params *db.
 	return nil
 }
 
+// if we need service update/create params later, embed db params in services.*{Create|Update}Params
+// and add new fields+accessors as required.
 func (te *TimeEntry) validateBaseParams(d db.DBTX, caller CtxUser, params db.TimeEntryParams) error {
 	if params.GetUserID() != nil {
 		if caller.UserID != *params.GetUserID() {
