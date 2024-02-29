@@ -217,6 +217,92 @@ type TimeEntryUpdateParams struct {
 	WorkItemID      **WorkItemID `json:"workItemID"`                  // work_item_id
 }
 
+// update params is a subset of createparams, so we use the subset.
+// we cannot use the superset anyway since it wont satisfy iface
+// for validation, createparams will have specific logic for extra fields anyway, so we dont care that its not abstracted away
+// for createparams shared validation, we know fields without pointers are not nil beforehand.
+// in case of optional createparams fields, validation ends up being the same as with updateparams
+// e.g. case when we assign time entry to a workitem or a team, we will validate one is set on db level,
+// but service validation may also check at most one is not nil without issue
+type TimeEntryParams interface {
+	GetActivityID() *ActivityID
+	GetComment() *string
+	GetDurationMinutes() *int
+	GetStart() *time.Time
+	GetTeamID() *TeamID
+	GetUserID() *UserID
+	GetWorkItemID() *WorkItemID
+}
+
+func (p TimeEntryCreateParams) GetActivityID() *ActivityID {
+	activityID := p.ActivityID
+	return &activityID
+}
+
+func (p TimeEntryCreateParams) GetComment() *string {
+	comment := p.Comment
+	return &comment
+}
+
+func (p TimeEntryCreateParams) GetDurationMinutes() *int {
+	return p.DurationMinutes
+}
+
+func (p TimeEntryCreateParams) GetStart() *time.Time {
+	start := p.Start
+	return &start
+}
+
+func (p TimeEntryCreateParams) GetTeamID() *TeamID {
+	return p.TeamID
+}
+
+func (p TimeEntryCreateParams) GetUserID() *UserID {
+	userID := p.UserID
+	return &userID
+}
+
+func (p TimeEntryCreateParams) GetWorkItemID() *WorkItemID {
+	return p.WorkItemID
+}
+
+func (p TimeEntryUpdateParams) GetActivityID() *ActivityID {
+	return p.ActivityID
+}
+
+func (p TimeEntryUpdateParams) GetComment() *string {
+	return p.Comment
+}
+
+func (p TimeEntryUpdateParams) GetDurationMinutes() *int {
+	if p.DurationMinutes != nil {
+		return *p.DurationMinutes
+	}
+	return nil
+}
+
+func (p TimeEntryUpdateParams) GetStart() *time.Time {
+	return p.Start
+}
+
+func (p TimeEntryUpdateParams) GetTeamID() *TeamID {
+	if p.TeamID != nil {
+		return *p.TeamID
+	}
+	return nil
+}
+
+func (p TimeEntryUpdateParams) GetUserID() *UserID {
+	return p.UserID
+}
+
+func (p TimeEntryUpdateParams) GetWorkItemID() *WorkItemID {
+	if p.WorkItemID != nil {
+		return *p.WorkItemID
+	}
+	return nil
+}
+
 // SetUpdateParams updates public.time_entries struct fields with the specified params.
 func (te *TimeEntry) SetUpdateParams(params *TimeEntryUpdateParams) {
 	if params.ActivityID != nil {
