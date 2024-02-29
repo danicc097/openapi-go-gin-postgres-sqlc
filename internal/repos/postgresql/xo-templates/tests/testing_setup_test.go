@@ -55,9 +55,8 @@ func testMain(m *testing.M) int {
 		return 1
 	}
 
-	// NOTE: not needed anymore since both M2O and M2M now use `row` instead of array_agg,
-	// else err: cannot scan unknown type (OID ..) in text format into **[]<...>
-	// refresh pgxpool types now that xotests_schema.sql is loaded.
+	// NOTE: not needed anymore since both M2O and M2M now use `row` instead of array_agg
+	// refresh pgxpool types now that xotests_schema.sql is loaded - before no types existed to be registered.
 	// maybe a postgresl.New postgresql.WithSchemas(schemas...) executed in order is worth it
 	// to avoid this if it's in demand
 	// testPool, _, err = postgresql.New(logger.Sugar())
