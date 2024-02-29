@@ -26,10 +26,10 @@ func NewTimeEntry(logger *zap.SugaredLogger, repos *repos.Repos) *TimeEntry {
 }
 
 // ByID gets a time entry by ID.
-func (a *TimeEntry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error) {
+func (te *TimeEntry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	teObj, err := a.repos.TimeEntry.ByID(ctx, d, id)
+	teObj, err := te.repos.TimeEntry.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("repos.TimeEntry.ByID: %w", err)
 	}
@@ -38,25 +38,18 @@ func (a *TimeEntry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db
 }
 
 // Create creates a new time entry.
-func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller CtxUser, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
+func (te *TimeEntry) Create(ctx context.Context, d db.DBTX, caller CtxUser, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	if caller.UserID != params.UserID {
-		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot add activity for a different user")
+	if err := te.validateUserAuthorized(caller, params.UserID); err != nil {
+		return nil, err
 	}
-
-	if params.TeamID != nil {
-		teamIDs := make([]db.TeamID, len(caller.Teams))
-		for i, t := range caller.Teams {
-			teamIDs[i] = t.TeamID
-		}
-		if !slices.Contains(teamIDs, *params.TeamID) {
-			return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot link activity to an unassigned team")
-		}
+	if err := te.validateUserIsInTeam(caller, params.TeamID); err != nil {
+		return nil, err
 	}
 
 	if params.WorkItemID != nil {
-		wi, err := a.repos.WorkItem.ByID(ctx, d, *params.WorkItemID, db.WithWorkItemJoin(db.WorkItemJoins{Assignees: true}))
+		wi, err := te.repos.WorkItem.ByID(ctx, d, *params.WorkItemID, db.WithWorkItemJoin(db.WorkItemJoins{Assignees: true}))
 		if err != nil {
 			return nil, fmt.Errorf("repos.WorkItem.ByID: %w", err)
 		}
@@ -71,21 +64,57 @@ func (a *TimeEntry) Create(ctx context.Context, d db.DBTX, caller CtxUser, param
 		}
 	}
 
-	teObj, err := a.repos.TimeEntry.Create(ctx, d, params)
+	teObj, err := te.repos.TimeEntry.Create(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("repos.TimeEntry.Create: %w", err)
 	}
 
-	a.logger.Infof("created time entry by user %q", teObj.UserID)
+	te.logger.Infof("created time entry by user %q", teObj.UserID)
 
 	return teObj, nil
 }
 
+func (te *TimeEntry) validateUserAuthorized(caller CtxUser, userID db.UserID) error {
+	if caller.UserID != userID {
+		return internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot add activity for a different user")
+	}
+
+	return nil
+}
+
+func (te *TimeEntry) validateUserIsInTeam(caller CtxUser, teamID *db.TeamID) error {
+	if teamID != nil {
+		teamIDs := make([]db.TeamID, len(caller.Teams))
+		for i, t := range caller.Teams {
+			teamIDs[i] = t.TeamID
+		}
+		if !slices.Contains(teamIDs, *teamID) {
+			return internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot link activity to an unassigned team")
+		}
+	}
+
+	return nil
+}
+
 // Update updates an existing time entry.
-func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
+func (te *TimeEntry) Update(ctx context.Context, d db.DBTX, caller CtxUser, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	teObj, err := a.repos.TimeEntry.Update(ctx, d, id, params)
+	// TODO: xo should create interface for params, with GetUserID shared. therefore we could have a generic validate function that works for both create and update params.
+	// if for some reason we want to skip a validation on either update or create we could pass a flag easily.
+	if params.UserID != nil {
+		if err := te.validateUserAuthorized(caller, *params.UserID); err != nil {
+			return nil, err
+		}
+	}
+
+	if params.TeamID != nil {
+		if err := te.validateUserIsInTeam(caller, *params.TeamID); err != nil {
+			return nil, err
+		}
+	}
+
+	teObj, err := te.repos.TimeEntry.Update(ctx, d, id, params)
 	if err != nil {
 		return nil, fmt.Errorf("repos.TimeEntry.Update: %w", err)
 	}
@@ -94,10 +123,10 @@ func (a *TimeEntry) Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, pa
 }
 
 // Delete deletes a time entry by ID.
-func (a *TimeEntry) Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error) {
+func (te *TimeEntry) Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	teObj, err := a.repos.TimeEntry.Delete(ctx, d, id)
+	teObj, err := te.repos.TimeEntry.Delete(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("repos.TimeEntry.Delete: %w", err)
 	}
