@@ -7,6 +7,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
 )
@@ -63,12 +64,9 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 		}
 
 		res = DemoWorkItems{
-			WorkItem: *workItem,
-			SharedWorkItemJoins: SharedWorkItemJoins{
-				Members:      workItem.AssigneesJoin,
-				WorkItemTags: workItem.WorkItemTagsJoin,
-			},
-			DemoWorkItem: *workItem.DemoWorkItemJoin,
+			WorkItem:            *workItem,
+			SharedWorkItemJoins: fillSharedWorkItemJoins(workItem),
+			DemoWorkItem:        *workItem.DemoWorkItemJoin,
 		}
 	case CreateDemoTwoWorkItemRequest:
 		workItem, err := h.svc.DemoTwoWorkItem.Create(ctx, tx, body.DemoTwoWorkItemCreateParams)
@@ -79,12 +77,9 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 		}
 
 		res = DemoTwoWorkItems{
-			WorkItem: *workItem,
-			SharedWorkItemJoins: SharedWorkItemJoins{
-				Members:      workItem.AssigneesJoin,
-				WorkItemTags: workItem.WorkItemTagsJoin,
-			},
-			DemoTwoWorkItem: *workItem.DemoTwoWorkItemJoin,
+			WorkItem:            *workItem,
+			SharedWorkItemJoins: fillSharedWorkItemJoins(workItem),
+			DemoTwoWorkItem:     *workItem.DemoTwoWorkItemJoin,
 		}
 	default:
 		renderErrorResponse(c, "Unknown body", internal.NewErrorf(models.ErrorCodeUnknown, "%+v", b))
@@ -99,4 +94,16 @@ func (h *StrictHandlers) GetWorkItem(c *gin.Context, request GetWorkItemRequestO
 	c.JSON(http.StatusNotImplemented, "not implemented")
 
 	return nil, nil
+}
+
+func fillSharedWorkItemJoins(workItem *db.WorkItem) SharedWorkItemJoins {
+	x := SharedWorkItemJoins{
+		Members:          workItem.AssigneesJoin,
+		WorkItemTags:     workItem.WorkItemTagsJoin,
+		TimeEntries:      workItem.TimeEntriesJoin,
+		WorkItemComments: workItem.WorkItemCommentsJoin,
+		WorkItemType:     workItem.WorkItemTypeJoin,
+	}
+
+	return x
 }
