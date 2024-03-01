@@ -75,25 +75,24 @@ type CacheDemoWorkItemCreateParams struct {
 
 // CacheDemoWorkItemParams represents common params for both insert and update of 'public.cache__demo_work_items'.
 type CacheDemoWorkItemParams interface {
-	GetClosedAt() **time.Time
+	GetClosedAt() *time.Time
 	GetDescription() *string
-	GetKanbanStepID() *int
+	GetKanbanStepID() *KanbanStepID
 	GetLastMessageAt() *time.Time
 	GetLine() *string
 	GetMetadata() *map[string]any
 	GetRef() *string
 	GetReopened() *bool
 	GetTargetDate() *time.Time
-	GetTeamID() *int
+	GetTeamID() *TeamID
 	GetTitle() *string
-	GetWorkItemID() *int
-	GetWorkItemTypeID() *int
+	GetWorkItemTypeID() *WorkItemTypeID
 }
 
-func (p CacheDemoWorkItemCreateParams) GetClosedAt() **time.Time {
+func (p CacheDemoWorkItemCreateParams) GetClosedAt() *time.Time {
 	return p.ClosedAt
 }
-func (p CacheDemoWorkItemUpdateParams) GetClosedAt() **time.Time {
+func (p CacheDemoWorkItemUpdateParams) GetClosedAt() *time.Time {
 	if p.ClosedAt != nil {
 		return *p.ClosedAt
 	}
@@ -108,11 +107,11 @@ func (p CacheDemoWorkItemUpdateParams) GetDescription() *string {
 	return p.Description
 }
 
-func (p CacheDemoWorkItemCreateParams) GetKanbanStepID() *int {
+func (p CacheDemoWorkItemCreateParams) GetKanbanStepID() *KanbanStepID {
 	x := p.KanbanStepID
 	return &x
 }
-func (p CacheDemoWorkItemUpdateParams) GetKanbanStepID() *int {
+func (p CacheDemoWorkItemUpdateParams) GetKanbanStepID() *KanbanStepID {
 	return p.KanbanStepID
 }
 
@@ -164,11 +163,11 @@ func (p CacheDemoWorkItemUpdateParams) GetTargetDate() *time.Time {
 	return p.TargetDate
 }
 
-func (p CacheDemoWorkItemCreateParams) GetTeamID() *int {
+func (p CacheDemoWorkItemCreateParams) GetTeamID() *TeamID {
 	x := p.TeamID
 	return &x
 }
-func (p CacheDemoWorkItemUpdateParams) GetTeamID() *int {
+func (p CacheDemoWorkItemUpdateParams) GetTeamID() *TeamID {
 	return p.TeamID
 }
 
@@ -180,19 +179,11 @@ func (p CacheDemoWorkItemUpdateParams) GetTitle() *string {
 	return p.Title
 }
 
-func (p CacheDemoWorkItemCreateParams) GetWorkItemID() *int {
-	x := p.WorkItemID
-	return &x
-}
-func (p CacheDemoWorkItemUpdateParams) GetWorkItemID() *int {
-	return p.WorkItemID
-}
-
-func (p CacheDemoWorkItemCreateParams) GetWorkItemTypeID() *int {
+func (p CacheDemoWorkItemCreateParams) GetWorkItemTypeID() *WorkItemTypeID {
 	x := p.WorkItemTypeID
 	return &x
 }
-func (p CacheDemoWorkItemUpdateParams) GetWorkItemTypeID() *int {
+func (p CacheDemoWorkItemUpdateParams) GetWorkItemTypeID() *WorkItemTypeID {
 	return p.WorkItemTypeID
 }
 

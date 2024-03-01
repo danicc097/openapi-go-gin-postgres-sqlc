@@ -75,22 +75,22 @@ type UserCreateParams struct {
 
 // UserParams represents common params for both insert and update of 'public.users'.
 type UserParams interface {
-	GetAPIKeyID() **int
+	GetAPIKeyID() *UserAPIKeyID
 	GetEmail() *string
 	GetExternalID() *string
-	GetFirstName() **string
+	GetFirstName() *string
 	GetHasGlobalNotifications() *bool
 	GetHasPersonalNotifications() *bool
-	GetLastName() **string
+	GetLastName() *string
 	GetRoleRank() *int
 	GetScopes() *models.Scopes
 	GetUsername() *string
 }
 
-func (p UserCreateParams) GetAPIKeyID() **int {
+func (p UserCreateParams) GetAPIKeyID() *UserAPIKeyID {
 	return p.APIKeyID
 }
-func (p UserUpdateParams) GetAPIKeyID() **int {
+func (p UserUpdateParams) GetAPIKeyID() *UserAPIKeyID {
 	if p.APIKeyID != nil {
 		return *p.APIKeyID
 	}
@@ -113,10 +113,10 @@ func (p UserUpdateParams) GetExternalID() *string {
 	return p.ExternalID
 }
 
-func (p UserCreateParams) GetFirstName() **string {
+func (p UserCreateParams) GetFirstName() *string {
 	return p.FirstName
 }
-func (p UserUpdateParams) GetFirstName() **string {
+func (p UserUpdateParams) GetFirstName() *string {
 	if p.FirstName != nil {
 		return *p.FirstName
 	}
@@ -139,10 +139,10 @@ func (p UserUpdateParams) GetHasPersonalNotifications() *bool {
 	return p.HasPersonalNotifications
 }
 
-func (p UserCreateParams) GetLastName() **string {
+func (p UserCreateParams) GetLastName() *string {
 	return p.LastName
 }
-func (p UserUpdateParams) GetLastName() **string {
+func (p UserUpdateParams) GetLastName() *string {
 	if p.LastName != nil {
 		return *p.LastName
 	}

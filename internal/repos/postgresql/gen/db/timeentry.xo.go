@@ -14,8 +14,6 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-
-	"github.com/google/uuid"
 )
 
 // TimeEntry represents a row from 'public.time_entries'.
@@ -60,20 +58,20 @@ type TimeEntryCreateParams struct {
 
 // TimeEntryParams represents common params for both insert and update of 'public.time_entries'.
 type TimeEntryParams interface {
-	GetActivityID() *int
+	GetActivityID() *ActivityID
 	GetComment() *string
-	GetDurationMinutes() **int
+	GetDurationMinutes() *int
 	GetStart() *time.Time
-	GetTeamID() **int
-	GetUserID() *uuid.UUID
-	GetWorkItemID() **int
+	GetTeamID() *TeamID
+	GetUserID() *UserID
+	GetWorkItemID() *WorkItemID
 }
 
-func (p TimeEntryCreateParams) GetActivityID() *int {
+func (p TimeEntryCreateParams) GetActivityID() *ActivityID {
 	x := p.ActivityID
 	return &x
 }
-func (p TimeEntryUpdateParams) GetActivityID() *int {
+func (p TimeEntryUpdateParams) GetActivityID() *ActivityID {
 	return p.ActivityID
 }
 
@@ -85,10 +83,10 @@ func (p TimeEntryUpdateParams) GetComment() *string {
 	return p.Comment
 }
 
-func (p TimeEntryCreateParams) GetDurationMinutes() **int {
+func (p TimeEntryCreateParams) GetDurationMinutes() *int {
 	return p.DurationMinutes
 }
-func (p TimeEntryUpdateParams) GetDurationMinutes() **int {
+func (p TimeEntryUpdateParams) GetDurationMinutes() *int {
 	if p.DurationMinutes != nil {
 		return *p.DurationMinutes
 	}
@@ -103,28 +101,28 @@ func (p TimeEntryUpdateParams) GetStart() *time.Time {
 	return p.Start
 }
 
-func (p TimeEntryCreateParams) GetTeamID() **int {
+func (p TimeEntryCreateParams) GetTeamID() *TeamID {
 	return p.TeamID
 }
-func (p TimeEntryUpdateParams) GetTeamID() **int {
+func (p TimeEntryUpdateParams) GetTeamID() *TeamID {
 	if p.TeamID != nil {
 		return *p.TeamID
 	}
 	return nil
 }
 
-func (p TimeEntryCreateParams) GetUserID() *uuid.UUID {
+func (p TimeEntryCreateParams) GetUserID() *UserID {
 	x := p.UserID
 	return &x
 }
-func (p TimeEntryUpdateParams) GetUserID() *uuid.UUID {
+func (p TimeEntryUpdateParams) GetUserID() *UserID {
 	return p.UserID
 }
 
-func (p TimeEntryCreateParams) GetWorkItemID() **int {
+func (p TimeEntryCreateParams) GetWorkItemID() *WorkItemID {
 	return p.WorkItemID
 }
-func (p TimeEntryUpdateParams) GetWorkItemID() **int {
+func (p TimeEntryUpdateParams) GetWorkItemID() *WorkItemID {
 	if p.WorkItemID != nil {
 		return *p.WorkItemID
 	}

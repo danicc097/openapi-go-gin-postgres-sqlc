@@ -55,7 +55,7 @@ type KanbanStepParams interface {
 	GetColor() *string
 	GetDescription() *string
 	GetName() *string
-	GetProjectID() *int
+	GetProjectID() *ProjectID
 	GetStepOrder() *int
 	GetTimeTrackable() *bool
 }
@@ -84,11 +84,11 @@ func (p KanbanStepUpdateParams) GetName() *string {
 	return p.Name
 }
 
-func (p KanbanStepCreateParams) GetProjectID() *int {
+func (p KanbanStepCreateParams) GetProjectID() *ProjectID {
 	x := p.ProjectID
 	return &x
 }
-func (p KanbanStepUpdateParams) GetProjectID() *int {
+func (p KanbanStepUpdateParams) GetProjectID() *ProjectID {
 	return p.ProjectID
 }
 

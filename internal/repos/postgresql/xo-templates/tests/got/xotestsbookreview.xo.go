@@ -42,6 +42,30 @@ type XoTestsBookReviewCreateParams struct {
 	Reviewer XoTestsUserID `json:"reviewer" required:"true" nullable:"false"` // reviewer
 }
 
+// XoTestsBookReviewParams represents common params for both insert and update of 'xo_tests.book_reviews'.
+type XoTestsBookReviewParams interface {
+	GetBookID() *XoTestsBookID
+	GetReviewer() *XoTestsUserID
+}
+
+func (p XoTestsBookReviewCreateParams) GetBookID() *XoTestsBookID {
+	x := p.BookID
+	return &x
+}
+
+func (p XoTestsBookReviewUpdateParams) GetBookID() *XoTestsBookID {
+	return p.BookID
+}
+
+func (p XoTestsBookReviewCreateParams) GetReviewer() *XoTestsUserID {
+	x := p.Reviewer
+	return &x
+}
+
+func (p XoTestsBookReviewUpdateParams) GetReviewer() *XoTestsUserID {
+	return p.Reviewer
+}
+
 type XoTestsBookReviewID int
 
 // CreateXoTestsBookReview creates a new XoTestsBookReview in the database with the given params.

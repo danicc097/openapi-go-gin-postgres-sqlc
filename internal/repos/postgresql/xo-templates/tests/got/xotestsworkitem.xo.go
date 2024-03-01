@@ -47,6 +47,44 @@ type XoTestsWorkItemCreateParams struct {
 	Title       *string       `json:"title"`                                   // title
 }
 
+// XoTestsWorkItemParams represents common params for both insert and update of 'xo_tests.work_items'.
+type XoTestsWorkItemParams interface {
+	GetDescription() *string
+	GetTeamID() *XoTestsTeamID
+	GetTitle() *string
+}
+
+func (p XoTestsWorkItemCreateParams) GetDescription() *string {
+	return p.Description
+}
+
+func (p XoTestsWorkItemUpdateParams) GetDescription() *string {
+	if p.Description != nil {
+		return *p.Description
+	}
+	return nil
+}
+
+func (p XoTestsWorkItemCreateParams) GetTeamID() *XoTestsTeamID {
+	x := p.TeamID
+	return &x
+}
+
+func (p XoTestsWorkItemUpdateParams) GetTeamID() *XoTestsTeamID {
+	return p.TeamID
+}
+
+func (p XoTestsWorkItemCreateParams) GetTitle() *string {
+	return p.Title
+}
+
+func (p XoTestsWorkItemUpdateParams) GetTitle() *string {
+	if p.Title != nil {
+		return *p.Title
+	}
+	return nil
+}
+
 type XoTestsWorkItemID int
 
 // CreateXoTestsWorkItem creates a new XoTestsWorkItem in the database with the given params.

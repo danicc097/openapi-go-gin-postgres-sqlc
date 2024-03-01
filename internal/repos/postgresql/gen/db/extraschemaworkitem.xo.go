@@ -46,24 +46,24 @@ type ExtraSchemaWorkItemCreateParams struct {
 
 // ExtraSchemaWorkItemParams represents common params for both insert and update of 'extra_schema.work_items'.
 type ExtraSchemaWorkItemParams interface {
-	GetDescription() **string
-	GetTitle() **string
+	GetDescription() *string
+	GetTitle() *string
 }
 
-func (p ExtraSchemaWorkItemCreateParams) GetDescription() **string {
+func (p ExtraSchemaWorkItemCreateParams) GetDescription() *string {
 	return p.Description
 }
-func (p ExtraSchemaWorkItemUpdateParams) GetDescription() **string {
+func (p ExtraSchemaWorkItemUpdateParams) GetDescription() *string {
 	if p.Description != nil {
 		return *p.Description
 	}
 	return nil
 }
 
-func (p ExtraSchemaWorkItemCreateParams) GetTitle() **string {
+func (p ExtraSchemaWorkItemCreateParams) GetTitle() *string {
 	return p.Title
 }
-func (p ExtraSchemaWorkItemUpdateParams) GetTitle() **string {
+func (p ExtraSchemaWorkItemUpdateParams) GetTitle() *string {
 	if p.Title != nil {
 		return *p.Title
 	}

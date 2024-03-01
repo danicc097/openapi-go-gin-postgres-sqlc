@@ -41,23 +41,23 @@ type WorkItemWorkItemTagCreateParams struct {
 
 // WorkItemWorkItemTagParams represents common params for both insert and update of 'public.work_item_work_item_tag'.
 type WorkItemWorkItemTagParams interface {
-	GetWorkItemID() *int
-	GetWorkItemTagID() *int
+	GetWorkItemID() *WorkItemID
+	GetWorkItemTagID() *WorkItemTagID
 }
 
-func (p WorkItemWorkItemTagCreateParams) GetWorkItemID() *int {
+func (p WorkItemWorkItemTagCreateParams) GetWorkItemID() *WorkItemID {
 	x := p.WorkItemID
 	return &x
 }
-func (p WorkItemWorkItemTagUpdateParams) GetWorkItemID() *int {
+func (p WorkItemWorkItemTagUpdateParams) GetWorkItemID() *WorkItemID {
 	return p.WorkItemID
 }
 
-func (p WorkItemWorkItemTagCreateParams) GetWorkItemTagID() *int {
+func (p WorkItemWorkItemTagCreateParams) GetWorkItemTagID() *WorkItemTagID {
 	x := p.WorkItemTagID
 	return &x
 }
-func (p WorkItemWorkItemTagUpdateParams) GetWorkItemTagID() *int {
+func (p WorkItemWorkItemTagUpdateParams) GetWorkItemTagID() *WorkItemTagID {
 	return p.WorkItemTagID
 }
 

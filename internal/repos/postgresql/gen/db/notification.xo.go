@@ -14,8 +14,6 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-
-	"github.com/google/uuid"
 )
 
 // Notification represents a row from 'public.notifications'.
@@ -64,11 +62,11 @@ type NotificationCreateParams struct {
 type NotificationParams interface {
 	GetBody() *string
 	GetLabels() *[]string
-	GetLink() **string
+	GetLink() *string
 	GetNotificationType() *NotificationType
-	GetReceiver() **uuid.UUID
-	GetReceiverRank() **int
-	GetSender() *uuid.UUID
+	GetReceiver() *UserID
+	GetReceiverRank() *int
+	GetSender() *UserID
 	GetTitle() *string
 }
 
@@ -88,10 +86,10 @@ func (p NotificationUpdateParams) GetLabels() *[]string {
 	return p.Labels
 }
 
-func (p NotificationCreateParams) GetLink() **string {
+func (p NotificationCreateParams) GetLink() *string {
 	return p.Link
 }
-func (p NotificationUpdateParams) GetLink() **string {
+func (p NotificationUpdateParams) GetLink() *string {
 	if p.Link != nil {
 		return *p.Link
 	}
@@ -106,31 +104,31 @@ func (p NotificationUpdateParams) GetNotificationType() *NotificationType {
 	return p.NotificationType
 }
 
-func (p NotificationCreateParams) GetReceiver() **uuid.UUID {
+func (p NotificationCreateParams) GetReceiver() *UserID {
 	return p.Receiver
 }
-func (p NotificationUpdateParams) GetReceiver() **uuid.UUID {
+func (p NotificationUpdateParams) GetReceiver() *UserID {
 	if p.Receiver != nil {
 		return *p.Receiver
 	}
 	return nil
 }
 
-func (p NotificationCreateParams) GetReceiverRank() **int {
+func (p NotificationCreateParams) GetReceiverRank() *int {
 	return p.ReceiverRank
 }
-func (p NotificationUpdateParams) GetReceiverRank() **int {
+func (p NotificationUpdateParams) GetReceiverRank() *int {
 	if p.ReceiverRank != nil {
 		return *p.ReceiverRank
 	}
 	return nil
 }
 
-func (p NotificationCreateParams) GetSender() *uuid.UUID {
+func (p NotificationCreateParams) GetSender() *UserID {
 	x := p.Sender
 	return &x
 }
-func (p NotificationUpdateParams) GetSender() *uuid.UUID {
+func (p NotificationUpdateParams) GetSender() *UserID {
 	return p.Sender
 }
 

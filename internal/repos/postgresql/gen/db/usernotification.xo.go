@@ -13,8 +13,6 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-
-	"github.com/google/uuid"
 )
 
 // UserNotification represents a row from 'public.user_notifications'.
@@ -49,16 +47,16 @@ type UserNotificationCreateParams struct {
 
 // UserNotificationParams represents common params for both insert and update of 'public.user_notifications'.
 type UserNotificationParams interface {
-	GetNotificationID() *int
+	GetNotificationID() *NotificationID
 	GetRead() *bool
-	GetUserID() *uuid.UUID
+	GetUserID() *UserID
 }
 
-func (p UserNotificationCreateParams) GetNotificationID() *int {
+func (p UserNotificationCreateParams) GetNotificationID() *NotificationID {
 	x := p.NotificationID
 	return &x
 }
-func (p UserNotificationUpdateParams) GetNotificationID() *int {
+func (p UserNotificationUpdateParams) GetNotificationID() *NotificationID {
 	return p.NotificationID
 }
 
@@ -70,11 +68,11 @@ func (p UserNotificationUpdateParams) GetRead() *bool {
 	return p.Read
 }
 
-func (p UserNotificationCreateParams) GetUserID() *uuid.UUID {
+func (p UserNotificationCreateParams) GetUserID() *UserID {
 	x := p.UserID
 	return &x
 }
-func (p UserNotificationUpdateParams) GetUserID() *uuid.UUID {
+func (p UserNotificationUpdateParams) GetUserID() *UserID {
 	return p.UserID
 }
 

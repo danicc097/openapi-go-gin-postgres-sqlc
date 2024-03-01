@@ -54,7 +54,7 @@ type ActivityParams interface {
 	GetDescription() *string
 	GetIsProductive() *bool
 	GetName() *string
-	GetProjectID() *int
+	GetProjectID() *ProjectID
 }
 
 func (p ActivityCreateParams) GetDescription() *string {
@@ -81,11 +81,11 @@ func (p ActivityUpdateParams) GetName() *string {
 	return p.Name
 }
 
-func (p ActivityCreateParams) GetProjectID() *int {
+func (p ActivityCreateParams) GetProjectID() *ProjectID {
 	x := p.ProjectID
 	return &x
 }
-func (p ActivityUpdateParams) GetProjectID() *int {
+func (p ActivityUpdateParams) GetProjectID() *ProjectID {
 	return p.ProjectID
 }
 

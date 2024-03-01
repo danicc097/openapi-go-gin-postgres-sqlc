@@ -54,7 +54,7 @@ type WorkItemTagParams interface {
 	GetColor() *string
 	GetDescription() *string
 	GetName() *string
-	GetProjectID() *int
+	GetProjectID() *ProjectID
 }
 
 func (p WorkItemTagCreateParams) GetColor() *string {
@@ -81,11 +81,11 @@ func (p WorkItemTagUpdateParams) GetName() *string {
 	return p.Name
 }
 
-func (p WorkItemTagCreateParams) GetProjectID() *int {
+func (p WorkItemTagCreateParams) GetProjectID() *ProjectID {
 	x := p.ProjectID
 	return &x
 }
-func (p WorkItemTagUpdateParams) GetProjectID() *int {
+func (p WorkItemTagUpdateParams) GetProjectID() *ProjectID {
 	return p.ProjectID
 }
 

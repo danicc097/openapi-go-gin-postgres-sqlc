@@ -13,8 +13,6 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-
-	"github.com/google/uuid"
 )
 
 // WorkItemAssignee represents a row from 'public.work_item_assignee'.
@@ -48,16 +46,16 @@ type WorkItemAssigneeCreateParams struct {
 
 // WorkItemAssigneeParams represents common params for both insert and update of 'public.work_item_assignee'.
 type WorkItemAssigneeParams interface {
-	GetAssignee() *uuid.UUID
+	GetAssignee() *UserID
 	GetRole() *models.WorkItemRole
-	GetWorkItemID() *int
+	GetWorkItemID() *WorkItemID
 }
 
-func (p WorkItemAssigneeCreateParams) GetAssignee() *uuid.UUID {
+func (p WorkItemAssigneeCreateParams) GetAssignee() *UserID {
 	x := p.Assignee
 	return &x
 }
-func (p WorkItemAssigneeUpdateParams) GetAssignee() *uuid.UUID {
+func (p WorkItemAssigneeUpdateParams) GetAssignee() *UserID {
 	return p.Assignee
 }
 
@@ -69,11 +67,11 @@ func (p WorkItemAssigneeUpdateParams) GetRole() *models.WorkItemRole {
 	return p.Role
 }
 
-func (p WorkItemAssigneeCreateParams) GetWorkItemID() *int {
+func (p WorkItemAssigneeCreateParams) GetWorkItemID() *WorkItemID {
 	x := p.WorkItemID
 	return &x
 }
-func (p WorkItemAssigneeUpdateParams) GetWorkItemID() *int {
+func (p WorkItemAssigneeUpdateParams) GetWorkItemID() *WorkItemID {
 	return p.WorkItemID
 }
 

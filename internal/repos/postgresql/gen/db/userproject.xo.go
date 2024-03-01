@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -41,23 +40,23 @@ type UserProjectCreateParams struct {
 
 // UserProjectParams represents common params for both insert and update of 'public.user_project'.
 type UserProjectParams interface {
-	GetMember() *uuid.UUID
-	GetProjectID() *int
+	GetMember() *UserID
+	GetProjectID() *ProjectID
 }
 
-func (p UserProjectCreateParams) GetMember() *uuid.UUID {
+func (p UserProjectCreateParams) GetMember() *UserID {
 	x := p.Member
 	return &x
 }
-func (p UserProjectUpdateParams) GetMember() *uuid.UUID {
+func (p UserProjectUpdateParams) GetMember() *UserID {
 	return p.Member
 }
 
-func (p UserProjectCreateParams) GetProjectID() *int {
+func (p UserProjectCreateParams) GetProjectID() *ProjectID {
 	x := p.ProjectID
 	return &x
 }
-func (p UserProjectUpdateParams) GetProjectID() *int {
+func (p UserProjectUpdateParams) GetProjectID() *ProjectID {
 	return p.ProjectID
 }
 

@@ -37,6 +37,22 @@ type XoTestsDummyJoinCreateParams struct {
 	Name *string `json:"name"` // name
 }
 
+// XoTestsDummyJoinParams represents common params for both insert and update of 'xo_tests.dummy_join'.
+type XoTestsDummyJoinParams interface {
+	GetName() *string
+}
+
+func (p XoTestsDummyJoinCreateParams) GetName() *string {
+	return p.Name
+}
+
+func (p XoTestsDummyJoinUpdateParams) GetName() *string {
+	if p.Name != nil {
+		return *p.Name
+	}
+	return nil
+}
+
 type XoTestsDummyJoinID int
 
 // CreateXoTestsDummyJoin creates a new XoTestsDummyJoin in the database with the given params.

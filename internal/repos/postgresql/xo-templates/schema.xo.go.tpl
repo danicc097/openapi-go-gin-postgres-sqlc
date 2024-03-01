@@ -247,12 +247,12 @@ type {{ $t.GoName }}CreateParams struct {
 // {{ $t.GoName }}Params represents common params for both insert and update of '{{ schema $t.SQLName }}'.
 type {{ $t.GoName }}Params interface {
 {{ range sort_fields $t.Fields -}}
-	{{ params_interface_field . $t -}}
+	{{ field . "ParamsInterface" $t -}}
 {{ end -}}
 }
 
 {{ range sort_fields $t.Fields -}}
-	{{ params_getters . $t -}} {{/* will create getter for both create and update structs */}}
+	{{ field . "ParamsGetter" $t -}} {{/* will create getter for both create and update structs */}}
 {{ end -}}
 
 {{ range sort_fields $t.Fields -}}

@@ -69,32 +69,31 @@ type CacheDemoTwoWorkItemCreateParams struct {
 
 // CacheDemoTwoWorkItemParams represents common params for both insert and update of 'public.cache__demo_two_work_items'.
 type CacheDemoTwoWorkItemParams interface {
-	GetClosedAt() **time.Time
-	GetCustomDateForProject2() **time.Time
+	GetClosedAt() *time.Time
+	GetCustomDateForProject2() *time.Time
 	GetDescription() *string
-	GetKanbanStepID() *int
+	GetKanbanStepID() *KanbanStepID
 	GetMetadata() *map[string]any
 	GetTargetDate() *time.Time
-	GetTeamID() *int
+	GetTeamID() *TeamID
 	GetTitle() *string
-	GetWorkItemID() *int
-	GetWorkItemTypeID() *int
+	GetWorkItemTypeID() *WorkItemTypeID
 }
 
-func (p CacheDemoTwoWorkItemCreateParams) GetClosedAt() **time.Time {
+func (p CacheDemoTwoWorkItemCreateParams) GetClosedAt() *time.Time {
 	return p.ClosedAt
 }
-func (p CacheDemoTwoWorkItemUpdateParams) GetClosedAt() **time.Time {
+func (p CacheDemoTwoWorkItemUpdateParams) GetClosedAt() *time.Time {
 	if p.ClosedAt != nil {
 		return *p.ClosedAt
 	}
 	return nil
 }
 
-func (p CacheDemoTwoWorkItemCreateParams) GetCustomDateForProject2() **time.Time {
+func (p CacheDemoTwoWorkItemCreateParams) GetCustomDateForProject2() *time.Time {
 	return p.CustomDateForProject2
 }
-func (p CacheDemoTwoWorkItemUpdateParams) GetCustomDateForProject2() **time.Time {
+func (p CacheDemoTwoWorkItemUpdateParams) GetCustomDateForProject2() *time.Time {
 	if p.CustomDateForProject2 != nil {
 		return *p.CustomDateForProject2
 	}
@@ -109,11 +108,11 @@ func (p CacheDemoTwoWorkItemUpdateParams) GetDescription() *string {
 	return p.Description
 }
 
-func (p CacheDemoTwoWorkItemCreateParams) GetKanbanStepID() *int {
+func (p CacheDemoTwoWorkItemCreateParams) GetKanbanStepID() *KanbanStepID {
 	x := p.KanbanStepID
 	return &x
 }
-func (p CacheDemoTwoWorkItemUpdateParams) GetKanbanStepID() *int {
+func (p CacheDemoTwoWorkItemUpdateParams) GetKanbanStepID() *KanbanStepID {
 	return p.KanbanStepID
 }
 
@@ -133,11 +132,11 @@ func (p CacheDemoTwoWorkItemUpdateParams) GetTargetDate() *time.Time {
 	return p.TargetDate
 }
 
-func (p CacheDemoTwoWorkItemCreateParams) GetTeamID() *int {
+func (p CacheDemoTwoWorkItemCreateParams) GetTeamID() *TeamID {
 	x := p.TeamID
 	return &x
 }
-func (p CacheDemoTwoWorkItemUpdateParams) GetTeamID() *int {
+func (p CacheDemoTwoWorkItemUpdateParams) GetTeamID() *TeamID {
 	return p.TeamID
 }
 
@@ -149,19 +148,11 @@ func (p CacheDemoTwoWorkItemUpdateParams) GetTitle() *string {
 	return p.Title
 }
 
-func (p CacheDemoTwoWorkItemCreateParams) GetWorkItemID() *int {
-	x := p.WorkItemID
-	return &x
-}
-func (p CacheDemoTwoWorkItemUpdateParams) GetWorkItemID() *int {
-	return p.WorkItemID
-}
-
-func (p CacheDemoTwoWorkItemCreateParams) GetWorkItemTypeID() *int {
+func (p CacheDemoTwoWorkItemCreateParams) GetWorkItemTypeID() *WorkItemTypeID {
 	x := p.WorkItemTypeID
 	return &x
 }
-func (p CacheDemoTwoWorkItemUpdateParams) GetWorkItemTypeID() *int {
+func (p CacheDemoTwoWorkItemUpdateParams) GetWorkItemTypeID() *WorkItemTypeID {
 	return p.WorkItemTypeID
 }
 

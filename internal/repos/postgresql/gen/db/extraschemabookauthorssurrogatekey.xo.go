@@ -13,8 +13,6 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-
-	"github.com/google/uuid"
 )
 
 // ExtraSchemaBookAuthorsSurrogateKey represents a row from 'extra_schema.book_authors_surrogate_key'.
@@ -49,31 +47,31 @@ type ExtraSchemaBookAuthorsSurrogateKeyCreateParams struct {
 
 // ExtraSchemaBookAuthorsSurrogateKeyParams represents common params for both insert and update of 'extra_schema.book_authors_surrogate_key'.
 type ExtraSchemaBookAuthorsSurrogateKeyParams interface {
-	GetAuthorID() *uuid.UUID
-	GetBookID() *int
-	GetPseudonym() **string
+	GetAuthorID() *ExtraSchemaUserID
+	GetBookID() *ExtraSchemaBookID
+	GetPseudonym() *string
 }
 
-func (p ExtraSchemaBookAuthorsSurrogateKeyCreateParams) GetAuthorID() *uuid.UUID {
+func (p ExtraSchemaBookAuthorsSurrogateKeyCreateParams) GetAuthorID() *ExtraSchemaUserID {
 	x := p.AuthorID
 	return &x
 }
-func (p ExtraSchemaBookAuthorsSurrogateKeyUpdateParams) GetAuthorID() *uuid.UUID {
+func (p ExtraSchemaBookAuthorsSurrogateKeyUpdateParams) GetAuthorID() *ExtraSchemaUserID {
 	return p.AuthorID
 }
 
-func (p ExtraSchemaBookAuthorsSurrogateKeyCreateParams) GetBookID() *int {
+func (p ExtraSchemaBookAuthorsSurrogateKeyCreateParams) GetBookID() *ExtraSchemaBookID {
 	x := p.BookID
 	return &x
 }
-func (p ExtraSchemaBookAuthorsSurrogateKeyUpdateParams) GetBookID() *int {
+func (p ExtraSchemaBookAuthorsSurrogateKeyUpdateParams) GetBookID() *ExtraSchemaBookID {
 	return p.BookID
 }
 
-func (p ExtraSchemaBookAuthorsSurrogateKeyCreateParams) GetPseudonym() **string {
+func (p ExtraSchemaBookAuthorsSurrogateKeyCreateParams) GetPseudonym() *string {
 	return p.Pseudonym
 }
-func (p ExtraSchemaBookAuthorsSurrogateKeyUpdateParams) GetPseudonym() **string {
+func (p ExtraSchemaBookAuthorsSurrogateKeyUpdateParams) GetPseudonym() *string {
 	if p.Pseudonym != nil {
 		return *p.Pseudonym
 	}

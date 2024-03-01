@@ -42,6 +42,32 @@ type XoTestsTimeEntryCreateParams struct {
 	WorkItemID *XoTestsWorkItemID `json:"workItemID"`                             // work_item_id
 }
 
+// XoTestsTimeEntryParams represents common params for both insert and update of 'xo_tests.time_entries'.
+type XoTestsTimeEntryParams interface {
+	GetStart() *time.Time
+	GetWorkItemID() *XoTestsWorkItemID
+}
+
+func (p XoTestsTimeEntryCreateParams) GetStart() *time.Time {
+	x := p.Start
+	return &x
+}
+
+func (p XoTestsTimeEntryUpdateParams) GetStart() *time.Time {
+	return p.Start
+}
+
+func (p XoTestsTimeEntryCreateParams) GetWorkItemID() *XoTestsWorkItemID {
+	return p.WorkItemID
+}
+
+func (p XoTestsTimeEntryUpdateParams) GetWorkItemID() *XoTestsWorkItemID {
+	if p.WorkItemID != nil {
+		return *p.WorkItemID
+	}
+	return nil
+}
+
 type XoTestsTimeEntryID int
 
 // CreateXoTestsTimeEntry creates a new XoTestsTimeEntry in the database with the given params.

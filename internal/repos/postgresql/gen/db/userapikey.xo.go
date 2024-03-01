@@ -14,8 +14,6 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-
-	"github.com/google/uuid"
 )
 
 // UserAPIKey represents a row from 'public.user_api_keys'.
@@ -51,7 +49,7 @@ type UserAPIKeyCreateParams struct {
 type UserAPIKeyParams interface {
 	GetAPIKey() *string
 	GetExpiresOn() *time.Time
-	GetUserID() *uuid.UUID
+	GetUserID() *UserID
 }
 
 func (p UserAPIKeyCreateParams) GetAPIKey() *string {
@@ -70,11 +68,11 @@ func (p UserAPIKeyUpdateParams) GetExpiresOn() *time.Time {
 	return p.ExpiresOn
 }
 
-func (p UserAPIKeyCreateParams) GetUserID() *uuid.UUID {
+func (p UserAPIKeyCreateParams) GetUserID() *UserID {
 	x := p.UserID
 	return &x
 }
-func (p UserAPIKeyUpdateParams) GetUserID() *uuid.UUID {
+func (p UserAPIKeyUpdateParams) GetUserID() *UserID {
 	return p.UserID
 }
 

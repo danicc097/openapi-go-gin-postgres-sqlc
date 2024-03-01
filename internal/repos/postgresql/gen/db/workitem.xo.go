@@ -68,20 +68,20 @@ type WorkItemCreateParams struct {
 
 // WorkItemParams represents common params for both insert and update of 'public.work_items'.
 type WorkItemParams interface {
-	GetClosedAt() **time.Time
+	GetClosedAt() *time.Time
 	GetDescription() *string
-	GetKanbanStepID() *int
+	GetKanbanStepID() *KanbanStepID
 	GetMetadata() *map[string]any
 	GetTargetDate() *time.Time
-	GetTeamID() *int
+	GetTeamID() *TeamID
 	GetTitle() *string
-	GetWorkItemTypeID() *int
+	GetWorkItemTypeID() *WorkItemTypeID
 }
 
-func (p WorkItemCreateParams) GetClosedAt() **time.Time {
+func (p WorkItemCreateParams) GetClosedAt() *time.Time {
 	return p.ClosedAt
 }
-func (p WorkItemUpdateParams) GetClosedAt() **time.Time {
+func (p WorkItemUpdateParams) GetClosedAt() *time.Time {
 	if p.ClosedAt != nil {
 		return *p.ClosedAt
 	}
@@ -96,11 +96,11 @@ func (p WorkItemUpdateParams) GetDescription() *string {
 	return p.Description
 }
 
-func (p WorkItemCreateParams) GetKanbanStepID() *int {
+func (p WorkItemCreateParams) GetKanbanStepID() *KanbanStepID {
 	x := p.KanbanStepID
 	return &x
 }
-func (p WorkItemUpdateParams) GetKanbanStepID() *int {
+func (p WorkItemUpdateParams) GetKanbanStepID() *KanbanStepID {
 	return p.KanbanStepID
 }
 
@@ -120,11 +120,11 @@ func (p WorkItemUpdateParams) GetTargetDate() *time.Time {
 	return p.TargetDate
 }
 
-func (p WorkItemCreateParams) GetTeamID() *int {
+func (p WorkItemCreateParams) GetTeamID() *TeamID {
 	x := p.TeamID
 	return &x
 }
-func (p WorkItemUpdateParams) GetTeamID() *int {
+func (p WorkItemUpdateParams) GetTeamID() *TeamID {
 	return p.TeamID
 }
 
@@ -136,11 +136,11 @@ func (p WorkItemUpdateParams) GetTitle() *string {
 	return p.Title
 }
 
-func (p WorkItemCreateParams) GetWorkItemTypeID() *int {
+func (p WorkItemCreateParams) GetWorkItemTypeID() *WorkItemTypeID {
 	x := p.WorkItemTypeID
 	return &x
 }
-func (p WorkItemUpdateParams) GetWorkItemTypeID() *int {
+func (p WorkItemUpdateParams) GetWorkItemTypeID() *WorkItemTypeID {
 	return p.WorkItemTypeID
 }
 

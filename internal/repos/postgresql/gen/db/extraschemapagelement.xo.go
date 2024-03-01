@@ -48,14 +48,14 @@ type ExtraSchemaPagElementCreateParams struct {
 
 // ExtraSchemaPagElementParams represents common params for both insert and update of 'extra_schema.pag_element'.
 type ExtraSchemaPagElementParams interface {
-	GetDummy() **int
+	GetDummy() *ExtraSchemaDummyJoinID
 	GetName() *string
 }
 
-func (p ExtraSchemaPagElementCreateParams) GetDummy() **int {
+func (p ExtraSchemaPagElementCreateParams) GetDummy() *ExtraSchemaDummyJoinID {
 	return p.Dummy
 }
-func (p ExtraSchemaPagElementUpdateParams) GetDummy() **int {
+func (p ExtraSchemaPagElementUpdateParams) GetDummy() *ExtraSchemaDummyJoinID {
 	if p.Dummy != nil {
 		return *p.Dummy
 	}

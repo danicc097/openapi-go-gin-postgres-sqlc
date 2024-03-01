@@ -45,6 +45,32 @@ type XoTestsCacheDemoWorkItemCreateParams struct {
 	WorkItemID XoTestsWorkItemID `json:"-" required:"true" nullable:"false"`      // work_item_id
 }
 
+// XoTestsCacheDemoWorkItemParams represents common params for both insert and update of 'xo_tests.cache__demo_work_items'.
+type XoTestsCacheDemoWorkItemParams interface {
+	GetTeamID() *XoTestsTeamID
+	GetTitle() *string
+}
+
+func (p XoTestsCacheDemoWorkItemCreateParams) GetTeamID() *XoTestsTeamID {
+	x := p.TeamID
+	return &x
+}
+
+func (p XoTestsCacheDemoWorkItemUpdateParams) GetTeamID() *XoTestsTeamID {
+	return p.TeamID
+}
+
+func (p XoTestsCacheDemoWorkItemCreateParams) GetTitle() *string {
+	return p.Title
+}
+
+func (p XoTestsCacheDemoWorkItemUpdateParams) GetTitle() *string {
+	if p.Title != nil {
+		return *p.Title
+	}
+	return nil
+}
+
 // CreateXoTestsCacheDemoWorkItem creates a new XoTestsCacheDemoWorkItem in the database with the given params.
 func CreateXoTestsCacheDemoWorkItem(ctx context.Context, db DB, params *XoTestsCacheDemoWorkItemCreateParams) (*XoTestsCacheDemoWorkItem, error) {
 	xtcdwi := &XoTestsCacheDemoWorkItem{

@@ -57,14 +57,14 @@ type ExtraSchemaUserCreateParams struct {
 
 // ExtraSchemaUserParams represents common params for both insert and update of 'extra_schema.users'.
 type ExtraSchemaUserParams interface {
-	GetAPIKeyID() **int
+	GetAPIKeyID() *ExtraSchemaUserAPIKeyID
 	GetName() *string
 }
 
-func (p ExtraSchemaUserCreateParams) GetAPIKeyID() **int {
+func (p ExtraSchemaUserCreateParams) GetAPIKeyID() *ExtraSchemaUserAPIKeyID {
 	return p.APIKeyID
 }
-func (p ExtraSchemaUserUpdateParams) GetAPIKeyID() **int {
+func (p ExtraSchemaUserUpdateParams) GetAPIKeyID() *ExtraSchemaUserAPIKeyID {
 	if p.APIKeyID != nil {
 		return *p.APIKeyID
 	}

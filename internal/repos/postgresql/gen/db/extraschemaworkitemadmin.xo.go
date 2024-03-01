@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -41,23 +40,23 @@ type ExtraSchemaWorkItemAdminCreateParams struct {
 
 // ExtraSchemaWorkItemAdminParams represents common params for both insert and update of 'extra_schema.work_item_admin'.
 type ExtraSchemaWorkItemAdminParams interface {
-	GetAdmin() *uuid.UUID
-	GetWorkItemID() *int
+	GetAdmin() *ExtraSchemaUserID
+	GetWorkItemID() *ExtraSchemaWorkItemID
 }
 
-func (p ExtraSchemaWorkItemAdminCreateParams) GetAdmin() *uuid.UUID {
+func (p ExtraSchemaWorkItemAdminCreateParams) GetAdmin() *ExtraSchemaUserID {
 	x := p.Admin
 	return &x
 }
-func (p ExtraSchemaWorkItemAdminUpdateParams) GetAdmin() *uuid.UUID {
+func (p ExtraSchemaWorkItemAdminUpdateParams) GetAdmin() *ExtraSchemaUserID {
 	return p.Admin
 }
 
-func (p ExtraSchemaWorkItemAdminCreateParams) GetWorkItemID() *int {
+func (p ExtraSchemaWorkItemAdminCreateParams) GetWorkItemID() *ExtraSchemaWorkItemID {
 	x := p.WorkItemID
 	return &x
 }
-func (p ExtraSchemaWorkItemAdminUpdateParams) GetWorkItemID() *int {
+func (p ExtraSchemaWorkItemAdminUpdateParams) GetWorkItemID() *ExtraSchemaWorkItemID {
 	return p.WorkItemID
 }
 

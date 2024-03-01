@@ -13,8 +13,6 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-
-	"github.com/google/uuid"
 )
 
 // ExtraSchemaNotification represents a row from 'extra_schema.notifications'.
@@ -52,9 +50,9 @@ type ExtraSchemaNotificationCreateParams struct {
 // ExtraSchemaNotificationParams represents common params for both insert and update of 'extra_schema.notifications'.
 type ExtraSchemaNotificationParams interface {
 	GetBody() *string
-	GetNotificationType() *NotificationType
-	GetReceiver() **uuid.UUID
-	GetSender() *uuid.UUID
+	GetExtraSchemaNotificationType() *ExtraSchemaNotificationType
+	GetReceiver() *ExtraSchemaUserID
+	GetSender() *ExtraSchemaUserID
 }
 
 func (p ExtraSchemaNotificationCreateParams) GetBody() *string {
@@ -65,29 +63,29 @@ func (p ExtraSchemaNotificationUpdateParams) GetBody() *string {
 	return p.Body
 }
 
-func (p ExtraSchemaNotificationCreateParams) GetNotificationType() *NotificationType {
-	x := p.NotificationType
+func (p ExtraSchemaNotificationCreateParams) GetExtraSchemaNotificationType() *ExtraSchemaNotificationType {
+	x := p.ExtraSchemaNotificationType
 	return &x
 }
-func (p ExtraSchemaNotificationUpdateParams) GetNotificationType() *NotificationType {
-	return p.NotificationType
+func (p ExtraSchemaNotificationUpdateParams) GetExtraSchemaNotificationType() *ExtraSchemaNotificationType {
+	return p.ExtraSchemaNotificationType
 }
 
-func (p ExtraSchemaNotificationCreateParams) GetReceiver() **uuid.UUID {
+func (p ExtraSchemaNotificationCreateParams) GetReceiver() *ExtraSchemaUserID {
 	return p.Receiver
 }
-func (p ExtraSchemaNotificationUpdateParams) GetReceiver() **uuid.UUID {
+func (p ExtraSchemaNotificationUpdateParams) GetReceiver() *ExtraSchemaUserID {
 	if p.Receiver != nil {
 		return *p.Receiver
 	}
 	return nil
 }
 
-func (p ExtraSchemaNotificationCreateParams) GetSender() *uuid.UUID {
+func (p ExtraSchemaNotificationCreateParams) GetSender() *ExtraSchemaUserID {
 	x := p.Sender
 	return &x
 }
-func (p ExtraSchemaNotificationUpdateParams) GetSender() *uuid.UUID {
+func (p ExtraSchemaNotificationUpdateParams) GetSender() *ExtraSchemaUserID {
 	return p.Sender
 }
 

@@ -151,10 +151,6 @@ issues:
     - path: cmd/internal/repos/postgresql.go
       linters:
         - revive # blank-imports
-    # XXX: This will be reremove in future episodes when "exhaustruct" is enabled
-    - path: internal/repos/postgresql/task.go
-      linters:
-        - lll
     - path: internal/memcached/task.go
       linters:
         - lll

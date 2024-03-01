@@ -53,7 +53,7 @@ type TeamCreateParams struct {
 type TeamParams interface {
 	GetDescription() *string
 	GetName() *string
-	GetProjectID() *int
+	GetProjectID() *ProjectID
 }
 
 func (p TeamCreateParams) GetDescription() *string {
@@ -72,11 +72,11 @@ func (p TeamUpdateParams) GetName() *string {
 	return p.Name
 }
 
-func (p TeamCreateParams) GetProjectID() *int {
+func (p TeamCreateParams) GetProjectID() *ProjectID {
 	x := p.ProjectID
 	return &x
 }
-func (p TeamUpdateParams) GetProjectID() *int {
+func (p TeamUpdateParams) GetProjectID() *ProjectID {
 	return p.ProjectID
 }
 

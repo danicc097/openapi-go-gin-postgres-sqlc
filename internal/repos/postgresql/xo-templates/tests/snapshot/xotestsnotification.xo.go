@@ -44,6 +44,42 @@ type XoTestsNotificationCreateParams struct {
 	Sender   XoTestsUserID  `json:"sender" required:"true" nullable:"false"`     // sender
 }
 
+// XoTestsNotificationParams represents common params for both insert and update of 'xo_tests.notifications'.
+type XoTestsNotificationParams interface {
+	GetBody() *string
+	GetReceiver() *XoTestsUserID
+	GetSender() *XoTestsUserID
+}
+
+func (p XoTestsNotificationCreateParams) GetBody() *string {
+	x := p.Body
+	return &x
+}
+
+func (p XoTestsNotificationUpdateParams) GetBody() *string {
+	return p.Body
+}
+
+func (p XoTestsNotificationCreateParams) GetReceiver() *XoTestsUserID {
+	return p.Receiver
+}
+
+func (p XoTestsNotificationUpdateParams) GetReceiver() *XoTestsUserID {
+	if p.Receiver != nil {
+		return *p.Receiver
+	}
+	return nil
+}
+
+func (p XoTestsNotificationCreateParams) GetSender() *XoTestsUserID {
+	x := p.Sender
+	return &x
+}
+
+func (p XoTestsNotificationUpdateParams) GetSender() *XoTestsUserID {
+	return p.Sender
+}
+
 type XoTestsNotificationID int
 
 // CreateXoTestsNotification creates a new XoTestsNotification in the database with the given params.

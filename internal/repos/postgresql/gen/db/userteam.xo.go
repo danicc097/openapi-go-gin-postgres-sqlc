@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -41,23 +40,23 @@ type UserTeamCreateParams struct {
 
 // UserTeamParams represents common params for both insert and update of 'public.user_team'.
 type UserTeamParams interface {
-	GetMember() *uuid.UUID
-	GetTeamID() *int
+	GetMember() *UserID
+	GetTeamID() *TeamID
 }
 
-func (p UserTeamCreateParams) GetMember() *uuid.UUID {
+func (p UserTeamCreateParams) GetMember() *UserID {
 	x := p.Member
 	return &x
 }
-func (p UserTeamUpdateParams) GetMember() *uuid.UUID {
+func (p UserTeamUpdateParams) GetMember() *UserID {
 	return p.Member
 }
 
-func (p UserTeamCreateParams) GetTeamID() *int {
+func (p UserTeamCreateParams) GetTeamID() *TeamID {
 	x := p.TeamID
 	return &x
 }
-func (p UserTeamUpdateParams) GetTeamID() *int {
+func (p UserTeamUpdateParams) GetTeamID() *TeamID {
 	return p.TeamID
 }
 

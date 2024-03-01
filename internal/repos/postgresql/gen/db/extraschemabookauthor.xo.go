@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -46,31 +45,31 @@ type ExtraSchemaBookAuthorCreateParams struct {
 
 // ExtraSchemaBookAuthorParams represents common params for both insert and update of 'extra_schema.book_authors'.
 type ExtraSchemaBookAuthorParams interface {
-	GetAuthorID() *uuid.UUID
-	GetBookID() *int
-	GetPseudonym() **string
+	GetAuthorID() *ExtraSchemaUserID
+	GetBookID() *ExtraSchemaBookID
+	GetPseudonym() *string
 }
 
-func (p ExtraSchemaBookAuthorCreateParams) GetAuthorID() *uuid.UUID {
+func (p ExtraSchemaBookAuthorCreateParams) GetAuthorID() *ExtraSchemaUserID {
 	x := p.AuthorID
 	return &x
 }
-func (p ExtraSchemaBookAuthorUpdateParams) GetAuthorID() *uuid.UUID {
+func (p ExtraSchemaBookAuthorUpdateParams) GetAuthorID() *ExtraSchemaUserID {
 	return p.AuthorID
 }
 
-func (p ExtraSchemaBookAuthorCreateParams) GetBookID() *int {
+func (p ExtraSchemaBookAuthorCreateParams) GetBookID() *ExtraSchemaBookID {
 	x := p.BookID
 	return &x
 }
-func (p ExtraSchemaBookAuthorUpdateParams) GetBookID() *int {
+func (p ExtraSchemaBookAuthorUpdateParams) GetBookID() *ExtraSchemaBookID {
 	return p.BookID
 }
 
-func (p ExtraSchemaBookAuthorCreateParams) GetPseudonym() **string {
+func (p ExtraSchemaBookAuthorCreateParams) GetPseudonym() *string {
 	return p.Pseudonym
 }
-func (p ExtraSchemaBookAuthorUpdateParams) GetPseudonym() **string {
+func (p ExtraSchemaBookAuthorUpdateParams) GetPseudonym() *string {
 	if p.Pseudonym != nil {
 		return *p.Pseudonym
 	}

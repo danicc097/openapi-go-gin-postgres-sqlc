@@ -14,8 +14,6 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-
-	"github.com/google/uuid"
 )
 
 // ExtraSchemaUserAPIKey represents a row from 'extra_schema.user_api_keys'.
@@ -51,7 +49,7 @@ type ExtraSchemaUserAPIKeyCreateParams struct {
 type ExtraSchemaUserAPIKeyParams interface {
 	GetAPIKey() *string
 	GetExpiresOn() *time.Time
-	GetUserID() *uuid.UUID
+	GetUserID() *ExtraSchemaUserID
 }
 
 func (p ExtraSchemaUserAPIKeyCreateParams) GetAPIKey() *string {
@@ -70,11 +68,11 @@ func (p ExtraSchemaUserAPIKeyUpdateParams) GetExpiresOn() *time.Time {
 	return p.ExpiresOn
 }
 
-func (p ExtraSchemaUserAPIKeyCreateParams) GetUserID() *uuid.UUID {
+func (p ExtraSchemaUserAPIKeyCreateParams) GetUserID() *ExtraSchemaUserID {
 	x := p.UserID
 	return &x
 }
-func (p ExtraSchemaUserAPIKeyUpdateParams) GetUserID() *uuid.UUID {
+func (p ExtraSchemaUserAPIKeyUpdateParams) GetUserID() *ExtraSchemaUserID {
 	return p.UserID
 }
 

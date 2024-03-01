@@ -54,6 +54,32 @@ type XoTestsUserCreateParams struct {
 	Name     string               `json:"name" required:"true" nullable:"false"` // name
 }
 
+// XoTestsUserParams represents common params for both insert and update of 'xo_tests.users'.
+type XoTestsUserParams interface {
+	GetAPIKeyID() *XoTestsUserAPIKeyID
+	GetName() *string
+}
+
+func (p XoTestsUserCreateParams) GetAPIKeyID() *XoTestsUserAPIKeyID {
+	return p.APIKeyID
+}
+
+func (p XoTestsUserUpdateParams) GetAPIKeyID() *XoTestsUserAPIKeyID {
+	if p.APIKeyID != nil {
+		return *p.APIKeyID
+	}
+	return nil
+}
+
+func (p XoTestsUserCreateParams) GetName() *string {
+	x := p.Name
+	return &x
+}
+
+func (p XoTestsUserUpdateParams) GetName() *string {
+	return p.Name
+}
+
 type XoTestsUserID struct {
 	uuid.UUID
 }

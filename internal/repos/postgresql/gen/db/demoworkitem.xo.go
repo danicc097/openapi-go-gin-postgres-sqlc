@@ -54,7 +54,6 @@ type DemoWorkItemParams interface {
 	GetLine() *string
 	GetRef() *string
 	GetReopened() *bool
-	GetWorkItemID() *int
 }
 
 func (p DemoWorkItemCreateParams) GetLastMessageAt() *time.Time {
@@ -87,14 +86,6 @@ func (p DemoWorkItemCreateParams) GetReopened() *bool {
 }
 func (p DemoWorkItemUpdateParams) GetReopened() *bool {
 	return p.Reopened
-}
-
-func (p DemoWorkItemCreateParams) GetWorkItemID() *int {
-	x := p.WorkItemID
-	return &x
-}
-func (p DemoWorkItemUpdateParams) GetWorkItemID() *int {
-	return p.WorkItemID
 }
 
 // CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.

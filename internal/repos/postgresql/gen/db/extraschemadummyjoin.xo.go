@@ -40,13 +40,13 @@ type ExtraSchemaDummyJoinCreateParams struct {
 
 // ExtraSchemaDummyJoinParams represents common params for both insert and update of 'extra_schema.dummy_join'.
 type ExtraSchemaDummyJoinParams interface {
-	GetName() **string
+	GetName() *string
 }
 
-func (p ExtraSchemaDummyJoinCreateParams) GetName() **string {
+func (p ExtraSchemaDummyJoinCreateParams) GetName() *string {
 	return p.Name
 }
-func (p ExtraSchemaDummyJoinUpdateParams) GetName() **string {
+func (p ExtraSchemaDummyJoinUpdateParams) GetName() *string {
 	if p.Name != nil {
 		return *p.Name
 	}

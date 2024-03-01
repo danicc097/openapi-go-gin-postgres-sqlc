@@ -42,6 +42,42 @@ type XoTestsBookAuthorCreateParams struct {
 	Pseudonym *string       `json:"pseudonym"`                                 // pseudonym
 }
 
+// XoTestsBookAuthorParams represents common params for both insert and update of 'xo_tests.book_authors'.
+type XoTestsBookAuthorParams interface {
+	GetAuthorID() *XoTestsUserID
+	GetBookID() *XoTestsBookID
+	GetPseudonym() *string
+}
+
+func (p XoTestsBookAuthorCreateParams) GetAuthorID() *XoTestsUserID {
+	x := p.AuthorID
+	return &x
+}
+
+func (p XoTestsBookAuthorUpdateParams) GetAuthorID() *XoTestsUserID {
+	return p.AuthorID
+}
+
+func (p XoTestsBookAuthorCreateParams) GetBookID() *XoTestsBookID {
+	x := p.BookID
+	return &x
+}
+
+func (p XoTestsBookAuthorUpdateParams) GetBookID() *XoTestsBookID {
+	return p.BookID
+}
+
+func (p XoTestsBookAuthorCreateParams) GetPseudonym() *string {
+	return p.Pseudonym
+}
+
+func (p XoTestsBookAuthorUpdateParams) GetPseudonym() *string {
+	if p.Pseudonym != nil {
+		return *p.Pseudonym
+	}
+	return nil
+}
+
 // CreateXoTestsBookAuthor creates a new XoTestsBookAuthor in the database with the given params.
 func CreateXoTestsBookAuthor(ctx context.Context, db DB, params *XoTestsBookAuthorCreateParams) (*XoTestsBookAuthor, error) {
 	xtba := &XoTestsBookAuthor{

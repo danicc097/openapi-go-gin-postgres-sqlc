@@ -44,6 +44,42 @@ type XoTestsBookAuthorsSurrogateKeyCreateParams struct {
 	Pseudonym *string       `json:"pseudonym"`                                 // pseudonym
 }
 
+// XoTestsBookAuthorsSurrogateKeyParams represents common params for both insert and update of 'xo_tests.book_authors_surrogate_key'.
+type XoTestsBookAuthorsSurrogateKeyParams interface {
+	GetAuthorID() *XoTestsUserID
+	GetBookID() *XoTestsBookID
+	GetPseudonym() *string
+}
+
+func (p XoTestsBookAuthorsSurrogateKeyCreateParams) GetAuthorID() *XoTestsUserID {
+	x := p.AuthorID
+	return &x
+}
+
+func (p XoTestsBookAuthorsSurrogateKeyUpdateParams) GetAuthorID() *XoTestsUserID {
+	return p.AuthorID
+}
+
+func (p XoTestsBookAuthorsSurrogateKeyCreateParams) GetBookID() *XoTestsBookID {
+	x := p.BookID
+	return &x
+}
+
+func (p XoTestsBookAuthorsSurrogateKeyUpdateParams) GetBookID() *XoTestsBookID {
+	return p.BookID
+}
+
+func (p XoTestsBookAuthorsSurrogateKeyCreateParams) GetPseudonym() *string {
+	return p.Pseudonym
+}
+
+func (p XoTestsBookAuthorsSurrogateKeyUpdateParams) GetPseudonym() *string {
+	if p.Pseudonym != nil {
+		return *p.Pseudonym
+	}
+	return nil
+}
+
 type XoTestsBookAuthorsSurrogateKeyID int
 
 // CreateXoTestsBookAuthorsSurrogateKey creates a new XoTestsBookAuthorsSurrogateKey in the database with the given params.

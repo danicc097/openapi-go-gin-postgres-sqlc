@@ -13,8 +13,6 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-
-	"github.com/google/uuid"
 )
 
 // ExtraSchemaBookReview represents a row from 'extra_schema.book_reviews'.
@@ -47,23 +45,23 @@ type ExtraSchemaBookReviewCreateParams struct {
 
 // ExtraSchemaBookReviewParams represents common params for both insert and update of 'extra_schema.book_reviews'.
 type ExtraSchemaBookReviewParams interface {
-	GetBookID() *int
-	GetReviewer() *uuid.UUID
+	GetBookID() *ExtraSchemaBookID
+	GetReviewer() *ExtraSchemaUserID
 }
 
-func (p ExtraSchemaBookReviewCreateParams) GetBookID() *int {
+func (p ExtraSchemaBookReviewCreateParams) GetBookID() *ExtraSchemaBookID {
 	x := p.BookID
 	return &x
 }
-func (p ExtraSchemaBookReviewUpdateParams) GetBookID() *int {
+func (p ExtraSchemaBookReviewUpdateParams) GetBookID() *ExtraSchemaBookID {
 	return p.BookID
 }
 
-func (p ExtraSchemaBookReviewCreateParams) GetReviewer() *uuid.UUID {
+func (p ExtraSchemaBookReviewCreateParams) GetReviewer() *ExtraSchemaUserID {
 	x := p.Reviewer
 	return &x
 }
-func (p ExtraSchemaBookReviewUpdateParams) GetReviewer() *uuid.UUID {
+func (p ExtraSchemaBookReviewUpdateParams) GetReviewer() *ExtraSchemaUserID {
 	return p.Reviewer
 }
 

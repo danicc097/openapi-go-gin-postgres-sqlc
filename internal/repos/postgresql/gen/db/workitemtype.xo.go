@@ -51,7 +51,7 @@ type WorkItemTypeParams interface {
 	GetColor() *string
 	GetDescription() *string
 	GetName() *string
-	GetProjectID() *int
+	GetProjectID() *ProjectID
 }
 
 func (p WorkItemTypeCreateParams) GetColor() *string {
@@ -78,11 +78,11 @@ func (p WorkItemTypeUpdateParams) GetName() *string {
 	return p.Name
 }
 
-func (p WorkItemTypeCreateParams) GetProjectID() *int {
+func (p WorkItemTypeCreateParams) GetProjectID() *ProjectID {
 	x := p.ProjectID
 	return &x
 }
-func (p WorkItemTypeUpdateParams) GetProjectID() *int {
+func (p WorkItemTypeUpdateParams) GetProjectID() *ProjectID {
 	return p.ProjectID
 }
 
