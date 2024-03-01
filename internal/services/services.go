@@ -38,7 +38,7 @@ func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Ser
 	workitemtypesvc := NewWorkItemType(logger, repos)
 	notificationsvc := NewNotification(logger, repos)
 	authnsvc := NewAuthentication(logger, repos, pool)
-	authzsvc, err := NewAuthorization(authnsvc.logger)
+	authzsvc, err := NewAuthorization(logger)
 	if err != nil {
 		panic(fmt.Sprintf("NewAuthorization: %v", err))
 	}
