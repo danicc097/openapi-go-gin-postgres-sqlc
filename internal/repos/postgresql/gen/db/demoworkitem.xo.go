@@ -48,6 +48,55 @@ type DemoWorkItemCreateParams struct {
 	WorkItemID    WorkItemID `json:"-" required:"true" nullable:"false"`                        // work_item_id
 }
 
+// DemoWorkItemParams represents common params for both insert and update of 'public.demo_work_items'.
+type DemoWorkItemParams interface {
+	GetLastMessageAt() *time.Time
+	GetLine() *string
+	GetRef() *string
+	GetReopened() *bool
+	GetWorkItemID() *int
+}
+
+func (p DemoWorkItemCreateParams) GetLastMessageAt() *time.Time {
+	x := p.LastMessageAt
+	return &x
+}
+func (p DemoWorkItemUpdateParams) GetLastMessageAt() *time.Time {
+	return p.LastMessageAt
+}
+
+func (p DemoWorkItemCreateParams) GetLine() *string {
+	x := p.Line
+	return &x
+}
+func (p DemoWorkItemUpdateParams) GetLine() *string {
+	return p.Line
+}
+
+func (p DemoWorkItemCreateParams) GetRef() *string {
+	x := p.Ref
+	return &x
+}
+func (p DemoWorkItemUpdateParams) GetRef() *string {
+	return p.Ref
+}
+
+func (p DemoWorkItemCreateParams) GetReopened() *bool {
+	x := p.Reopened
+	return &x
+}
+func (p DemoWorkItemUpdateParams) GetReopened() *bool {
+	return p.Reopened
+}
+
+func (p DemoWorkItemCreateParams) GetWorkItemID() *int {
+	x := p.WorkItemID
+	return &x
+}
+func (p DemoWorkItemUpdateParams) GetWorkItemID() *int {
+	return p.WorkItemID
+}
+
 // CreateDemoWorkItem creates a new DemoWorkItem in the database with the given params.
 func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreateParams) (*DemoWorkItem, error) {
 	dwi := &DemoWorkItem{

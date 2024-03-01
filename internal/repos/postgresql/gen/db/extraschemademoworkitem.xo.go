@@ -41,6 +41,28 @@ type ExtraSchemaDemoWorkItemCreateParams struct {
 	WorkItemID ExtraSchemaWorkItemID `json:"-" required:"true" nullable:"false"`       // work_item_id
 }
 
+// ExtraSchemaDemoWorkItemParams represents common params for both insert and update of 'extra_schema.demo_work_items'.
+type ExtraSchemaDemoWorkItemParams interface {
+	GetChecked() *bool
+	GetWorkItemID() *int
+}
+
+func (p ExtraSchemaDemoWorkItemCreateParams) GetChecked() *bool {
+	x := p.Checked
+	return &x
+}
+func (p ExtraSchemaDemoWorkItemUpdateParams) GetChecked() *bool {
+	return p.Checked
+}
+
+func (p ExtraSchemaDemoWorkItemCreateParams) GetWorkItemID() *int {
+	x := p.WorkItemID
+	return &x
+}
+func (p ExtraSchemaDemoWorkItemUpdateParams) GetWorkItemID() *int {
+	return p.WorkItemID
+}
+
 // CreateExtraSchemaDemoWorkItem creates a new ExtraSchemaDemoWorkItem in the database with the given params.
 func CreateExtraSchemaDemoWorkItem(ctx context.Context, db DB, params *ExtraSchemaDemoWorkItemCreateParams) (*ExtraSchemaDemoWorkItem, error) {
 	esdwi := &ExtraSchemaDemoWorkItem{

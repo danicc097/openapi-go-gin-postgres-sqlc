@@ -44,6 +44,32 @@ type ExtraSchemaWorkItemCreateParams struct {
 	Title       *string `json:"title"`       // title
 }
 
+// ExtraSchemaWorkItemParams represents common params for both insert and update of 'extra_schema.work_items'.
+type ExtraSchemaWorkItemParams interface {
+	GetDescription() **string
+	GetTitle() **string
+}
+
+func (p ExtraSchemaWorkItemCreateParams) GetDescription() **string {
+	return p.Description
+}
+func (p ExtraSchemaWorkItemUpdateParams) GetDescription() **string {
+	if p.Description != nil {
+		return *p.Description
+	}
+	return nil
+}
+
+func (p ExtraSchemaWorkItemCreateParams) GetTitle() **string {
+	return p.Title
+}
+func (p ExtraSchemaWorkItemUpdateParams) GetTitle() **string {
+	if p.Title != nil {
+		return *p.Title
+	}
+	return nil
+}
+
 type ExtraSchemaWorkItemID int
 
 // CreateExtraSchemaWorkItem creates a new ExtraSchemaWorkItem in the database with the given params.

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -41,6 +42,37 @@ type ExtraSchemaWorkItemAssigneeCreateParams struct {
 	Assignee        ExtraSchemaUserID        `json:"assignee" required:"true" nullable:"false"`                                     // assignee
 	ExtraSchemaRole *ExtraSchemaWorkItemRole `json:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 	WorkItemID      ExtraSchemaWorkItemID    `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
+}
+
+// ExtraSchemaWorkItemAssigneeParams represents common params for both insert and update of 'extra_schema.work_item_assignee'.
+type ExtraSchemaWorkItemAssigneeParams interface {
+	GetAssignee() *uuid.UUID
+	GetRole() *NullWorkItemRole
+	GetWorkItemID() *int
+}
+
+func (p ExtraSchemaWorkItemAssigneeCreateParams) GetAssignee() *uuid.UUID {
+	x := p.Assignee
+	return &x
+}
+func (p ExtraSchemaWorkItemAssigneeUpdateParams) GetAssignee() *uuid.UUID {
+	return p.Assignee
+}
+
+func (p ExtraSchemaWorkItemAssigneeCreateParams) GetRole() *NullWorkItemRole {
+	x := p.Role
+	return &x
+}
+func (p ExtraSchemaWorkItemAssigneeUpdateParams) GetRole() *NullWorkItemRole {
+	return p.Role
+}
+
+func (p ExtraSchemaWorkItemAssigneeCreateParams) GetWorkItemID() *int {
+	x := p.WorkItemID
+	return &x
+}
+func (p ExtraSchemaWorkItemAssigneeUpdateParams) GetWorkItemID() *int {
+	return p.WorkItemID
 }
 
 // CreateExtraSchemaWorkItemAssignee creates a new ExtraSchemaWorkItemAssignee in the database with the given params.

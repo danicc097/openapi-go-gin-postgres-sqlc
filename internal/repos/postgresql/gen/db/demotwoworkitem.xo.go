@@ -42,6 +42,30 @@ type DemoTwoWorkItemCreateParams struct {
 	WorkItemID            WorkItemID `json:"-" required:"true" nullable:"false"` // work_item_id
 }
 
+// DemoTwoWorkItemParams represents common params for both insert and update of 'public.demo_two_work_items'.
+type DemoTwoWorkItemParams interface {
+	GetCustomDateForProject2() **time.Time
+	GetWorkItemID() *int
+}
+
+func (p DemoTwoWorkItemCreateParams) GetCustomDateForProject2() **time.Time {
+	return p.CustomDateForProject2
+}
+func (p DemoTwoWorkItemUpdateParams) GetCustomDateForProject2() **time.Time {
+	if p.CustomDateForProject2 != nil {
+		return *p.CustomDateForProject2
+	}
+	return nil
+}
+
+func (p DemoTwoWorkItemCreateParams) GetWorkItemID() *int {
+	x := p.WorkItemID
+	return &x
+}
+func (p DemoTwoWorkItemUpdateParams) GetWorkItemID() *int {
+	return p.WorkItemID
+}
+
 // CreateDemoTwoWorkItem creates a new DemoTwoWorkItem in the database with the given params.
 func CreateDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCreateParams) (*DemoTwoWorkItem, error) {
 	dtwi := &DemoTwoWorkItem{

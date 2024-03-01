@@ -56,7 +56,7 @@ func (te *TimeEntry) Create(ctx context.Context, d db.DBTX, caller CtxUser, para
 }
 
 func (te *TimeEntry) validateCreateParams(d db.DBTX, caller CtxUser, params *db.TimeEntryCreateParams) error {
-	if err := te.validateBaseParams(d, caller, params, validateModeCreate); err != nil {
+	if err := te.validateBaseParams(validateModeCreate, d, caller, params); err != nil {
 		return err
 	}
 
@@ -66,7 +66,7 @@ func (te *TimeEntry) validateCreateParams(d db.DBTX, caller CtxUser, params *db.
 }
 
 func (te *TimeEntry) validateUpdateParams(d db.DBTX, caller CtxUser, params *db.TimeEntryUpdateParams) error {
-	if err := te.validateBaseParams(d, caller, params, validateModeUpdate); err != nil {
+	if err := te.validateBaseParams(validateModeUpdate, d, caller, params); err != nil {
 		return err
 	}
 
@@ -92,7 +92,7 @@ type TimeEntryUpdateParams struct {
 
 // if we need service update/create params later, embed db params in services.*{Create|Update}Params
 // and add new fields+accessors as required.
-func (te *TimeEntry) validateBaseParams(d db.DBTX, caller CtxUser, params db.TimeEntryParams, mode validateMode) error {
+func (te *TimeEntry) validateBaseParams(mode validateMode, d db.DBTX, caller CtxUser, params db.TimeEntryParams) error {
 	if params.GetUserID() != nil {
 		if caller.UserID != *params.GetUserID() {
 			return internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot add activity for a different user")

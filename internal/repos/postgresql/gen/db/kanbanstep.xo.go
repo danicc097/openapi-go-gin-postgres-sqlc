@@ -50,6 +50,64 @@ type KanbanStepCreateParams struct {
 	TimeTrackable bool      `json:"timeTrackable" required:"true" nullable:"false"`                                      // time_trackable
 }
 
+// KanbanStepParams represents common params for both insert and update of 'public.kanban_steps'.
+type KanbanStepParams interface {
+	GetColor() *string
+	GetDescription() *string
+	GetName() *string
+	GetProjectID() *int
+	GetStepOrder() *int
+	GetTimeTrackable() *bool
+}
+
+func (p KanbanStepCreateParams) GetColor() *string {
+	x := p.Color
+	return &x
+}
+func (p KanbanStepUpdateParams) GetColor() *string {
+	return p.Color
+}
+
+func (p KanbanStepCreateParams) GetDescription() *string {
+	x := p.Description
+	return &x
+}
+func (p KanbanStepUpdateParams) GetDescription() *string {
+	return p.Description
+}
+
+func (p KanbanStepCreateParams) GetName() *string {
+	x := p.Name
+	return &x
+}
+func (p KanbanStepUpdateParams) GetName() *string {
+	return p.Name
+}
+
+func (p KanbanStepCreateParams) GetProjectID() *int {
+	x := p.ProjectID
+	return &x
+}
+func (p KanbanStepUpdateParams) GetProjectID() *int {
+	return p.ProjectID
+}
+
+func (p KanbanStepCreateParams) GetStepOrder() *int {
+	x := p.StepOrder
+	return &x
+}
+func (p KanbanStepUpdateParams) GetStepOrder() *int {
+	return p.StepOrder
+}
+
+func (p KanbanStepCreateParams) GetTimeTrackable() *bool {
+	x := p.TimeTrackable
+	return &x
+}
+func (p KanbanStepUpdateParams) GetTimeTrackable() *bool {
+	return p.TimeTrackable
+}
+
 type KanbanStepID int
 
 // CreateKanbanStep creates a new KanbanStep in the database with the given params.

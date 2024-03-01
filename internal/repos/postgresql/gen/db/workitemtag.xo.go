@@ -49,6 +49,46 @@ type WorkItemTagCreateParams struct {
 	ProjectID   ProjectID `json:"-" openapi-go:"ignore"`                                                               // project_id
 }
 
+// WorkItemTagParams represents common params for both insert and update of 'public.work_item_tags'.
+type WorkItemTagParams interface {
+	GetColor() *string
+	GetDescription() *string
+	GetName() *string
+	GetProjectID() *int
+}
+
+func (p WorkItemTagCreateParams) GetColor() *string {
+	x := p.Color
+	return &x
+}
+func (p WorkItemTagUpdateParams) GetColor() *string {
+	return p.Color
+}
+
+func (p WorkItemTagCreateParams) GetDescription() *string {
+	x := p.Description
+	return &x
+}
+func (p WorkItemTagUpdateParams) GetDescription() *string {
+	return p.Description
+}
+
+func (p WorkItemTagCreateParams) GetName() *string {
+	x := p.Name
+	return &x
+}
+func (p WorkItemTagUpdateParams) GetName() *string {
+	return p.Name
+}
+
+func (p WorkItemTagCreateParams) GetProjectID() *int {
+	x := p.ProjectID
+	return &x
+}
+func (p WorkItemTagUpdateParams) GetProjectID() *int {
+	return p.ProjectID
+}
+
 type WorkItemTagID int
 
 // CreateWorkItemTag creates a new WorkItemTag in the database with the given params.

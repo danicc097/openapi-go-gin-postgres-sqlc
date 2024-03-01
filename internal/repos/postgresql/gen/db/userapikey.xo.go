@@ -14,6 +14,8 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/google/uuid"
 )
 
 // UserAPIKey represents a row from 'public.user_api_keys'.
@@ -43,6 +45,37 @@ type UserAPIKeyCreateParams struct {
 	APIKey    string    `json:"apiKey" required:"true" nullable:"false"`    // api_key
 	ExpiresOn time.Time `json:"expiresOn" required:"true" nullable:"false"` // expires_on
 	UserID    UserID    `json:"userID" required:"true" nullable:"false"`    // user_id
+}
+
+// UserAPIKeyParams represents common params for both insert and update of 'public.user_api_keys'.
+type UserAPIKeyParams interface {
+	GetAPIKey() *string
+	GetExpiresOn() *time.Time
+	GetUserID() *uuid.UUID
+}
+
+func (p UserAPIKeyCreateParams) GetAPIKey() *string {
+	x := p.APIKey
+	return &x
+}
+func (p UserAPIKeyUpdateParams) GetAPIKey() *string {
+	return p.APIKey
+}
+
+func (p UserAPIKeyCreateParams) GetExpiresOn() *time.Time {
+	x := p.ExpiresOn
+	return &x
+}
+func (p UserAPIKeyUpdateParams) GetExpiresOn() *time.Time {
+	return p.ExpiresOn
+}
+
+func (p UserAPIKeyCreateParams) GetUserID() *uuid.UUID {
+	x := p.UserID
+	return &x
+}
+func (p UserAPIKeyUpdateParams) GetUserID() *uuid.UUID {
+	return p.UserID
 }
 
 type UserAPIKeyID int

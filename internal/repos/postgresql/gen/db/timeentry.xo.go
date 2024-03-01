@@ -14,6 +14,8 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/google/uuid"
 )
 
 // TimeEntry represents a row from 'public.time_entries'.
@@ -54,6 +56,79 @@ type TimeEntryCreateParams struct {
 	TeamID          *TeamID     `json:"teamID"`                                      // team_id
 	UserID          UserID      `json:"userID" required:"true" nullable:"false"`     // user_id
 	WorkItemID      *WorkItemID `json:"workItemID"`                                  // work_item_id
+}
+
+// TimeEntryParams represents common params for both insert and update of 'public.time_entries'.
+type TimeEntryParams interface {
+	GetActivityID() *int
+	GetComment() *string
+	GetDurationMinutes() **int
+	GetStart() *time.Time
+	GetTeamID() **int
+	GetUserID() *uuid.UUID
+	GetWorkItemID() **int
+}
+
+func (p TimeEntryCreateParams) GetActivityID() *int {
+	x := p.ActivityID
+	return &x
+}
+func (p TimeEntryUpdateParams) GetActivityID() *int {
+	return p.ActivityID
+}
+
+func (p TimeEntryCreateParams) GetComment() *string {
+	x := p.Comment
+	return &x
+}
+func (p TimeEntryUpdateParams) GetComment() *string {
+	return p.Comment
+}
+
+func (p TimeEntryCreateParams) GetDurationMinutes() **int {
+	return p.DurationMinutes
+}
+func (p TimeEntryUpdateParams) GetDurationMinutes() **int {
+	if p.DurationMinutes != nil {
+		return *p.DurationMinutes
+	}
+	return nil
+}
+
+func (p TimeEntryCreateParams) GetStart() *time.Time {
+	x := p.Start
+	return &x
+}
+func (p TimeEntryUpdateParams) GetStart() *time.Time {
+	return p.Start
+}
+
+func (p TimeEntryCreateParams) GetTeamID() **int {
+	return p.TeamID
+}
+func (p TimeEntryUpdateParams) GetTeamID() **int {
+	if p.TeamID != nil {
+		return *p.TeamID
+	}
+	return nil
+}
+
+func (p TimeEntryCreateParams) GetUserID() *uuid.UUID {
+	x := p.UserID
+	return &x
+}
+func (p TimeEntryUpdateParams) GetUserID() *uuid.UUID {
+	return p.UserID
+}
+
+func (p TimeEntryCreateParams) GetWorkItemID() **int {
+	return p.WorkItemID
+}
+func (p TimeEntryUpdateParams) GetWorkItemID() **int {
+	if p.WorkItemID != nil {
+		return *p.WorkItemID
+	}
+	return nil
 }
 
 type TimeEntryID int
@@ -215,92 +290,6 @@ type TimeEntryUpdateParams struct {
 	TeamID          **TeamID     `json:"teamID"`                      // team_id
 	UserID          *UserID      `json:"userID" nullable:"false"`     // user_id
 	WorkItemID      **WorkItemID `json:"workItemID"`                  // work_item_id
-}
-
-// update params is a subset of createparams, so we use the subset.
-// we cannot use the superset anyway since it wont satisfy iface
-// for validation, createparams will have specific logic for extra fields anyway, so we dont care that its not abstracted away
-// for createparams shared validation, we know fields without pointers are not nil beforehand.
-// in case of optional createparams fields, validation ends up being the same as with updateparams
-// e.g. case when we assign time entry to a workitem or a team, we will validate one is set on db level,
-// but service validation may also check at most one is not nil without issue
-type TimeEntryParams interface {
-	GetActivityID() *ActivityID
-	GetComment() *string
-	GetDurationMinutes() *int
-	GetStart() *time.Time
-	GetTeamID() *TeamID
-	GetUserID() *UserID
-	GetWorkItemID() *WorkItemID
-}
-
-func (p TimeEntryCreateParams) GetActivityID() *ActivityID {
-	activityID := p.ActivityID
-	return &activityID
-}
-
-func (p TimeEntryCreateParams) GetComment() *string {
-	comment := p.Comment
-	return &comment
-}
-
-func (p TimeEntryCreateParams) GetDurationMinutes() *int {
-	return p.DurationMinutes
-}
-
-func (p TimeEntryCreateParams) GetStart() *time.Time {
-	start := p.Start
-	return &start
-}
-
-func (p TimeEntryCreateParams) GetTeamID() *TeamID {
-	return p.TeamID
-}
-
-func (p TimeEntryCreateParams) GetUserID() *UserID {
-	userID := p.UserID
-	return &userID
-}
-
-func (p TimeEntryCreateParams) GetWorkItemID() *WorkItemID {
-	return p.WorkItemID
-}
-
-func (p TimeEntryUpdateParams) GetActivityID() *ActivityID {
-	return p.ActivityID
-}
-
-func (p TimeEntryUpdateParams) GetComment() *string {
-	return p.Comment
-}
-
-func (p TimeEntryUpdateParams) GetDurationMinutes() *int {
-	if p.DurationMinutes != nil {
-		return *p.DurationMinutes
-	}
-	return nil
-}
-
-func (p TimeEntryUpdateParams) GetStart() *time.Time {
-	return p.Start
-}
-
-func (p TimeEntryUpdateParams) GetTeamID() *TeamID {
-	if p.TeamID != nil {
-		return *p.TeamID
-	}
-	return nil
-}
-
-func (p TimeEntryUpdateParams) GetUserID() *UserID {
-	return p.UserID
-}
-
-func (p TimeEntryUpdateParams) GetWorkItemID() *WorkItemID {
-	if p.WorkItemID != nil {
-		return *p.WorkItemID
-	}
-	return nil
 }
 
 // SetUpdateParams updates public.time_entries struct fields with the specified params.

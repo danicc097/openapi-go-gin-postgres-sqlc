@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -36,6 +37,28 @@ type ExtraSchemaBookSeller struct {
 type ExtraSchemaBookSellerCreateParams struct {
 	BookID ExtraSchemaBookID `json:"bookID" required:"true" nullable:"false"` // book_id
 	Seller ExtraSchemaUserID `json:"seller" required:"true" nullable:"false"` // seller
+}
+
+// ExtraSchemaBookSellerParams represents common params for both insert and update of 'extra_schema.book_sellers'.
+type ExtraSchemaBookSellerParams interface {
+	GetBookID() *int
+	GetSeller() *uuid.UUID
+}
+
+func (p ExtraSchemaBookSellerCreateParams) GetBookID() *int {
+	x := p.BookID
+	return &x
+}
+func (p ExtraSchemaBookSellerUpdateParams) GetBookID() *int {
+	return p.BookID
+}
+
+func (p ExtraSchemaBookSellerCreateParams) GetSeller() *uuid.UUID {
+	x := p.Seller
+	return &x
+}
+func (p ExtraSchemaBookSellerUpdateParams) GetSeller() *uuid.UUID {
+	return p.Seller
 }
 
 // CreateExtraSchemaBookSeller creates a new ExtraSchemaBookSeller in the database with the given params.

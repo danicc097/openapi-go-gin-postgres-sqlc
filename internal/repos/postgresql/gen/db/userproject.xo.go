@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -36,6 +37,28 @@ type UserProject struct {
 type UserProjectCreateParams struct {
 	Member    UserID    `json:"member" required:"true" nullable:"false"`    // member
 	ProjectID ProjectID `json:"projectID" required:"true" nullable:"false"` // project_id
+}
+
+// UserProjectParams represents common params for both insert and update of 'public.user_project'.
+type UserProjectParams interface {
+	GetMember() *uuid.UUID
+	GetProjectID() *int
+}
+
+func (p UserProjectCreateParams) GetMember() *uuid.UUID {
+	x := p.Member
+	return &x
+}
+func (p UserProjectUpdateParams) GetMember() *uuid.UUID {
+	return p.Member
+}
+
+func (p UserProjectCreateParams) GetProjectID() *int {
+	x := p.ProjectID
+	return &x
+}
+func (p UserProjectUpdateParams) GetProjectID() *int {
+	return p.ProjectID
 }
 
 // CreateUserProject creates a new UserProject in the database with the given params.

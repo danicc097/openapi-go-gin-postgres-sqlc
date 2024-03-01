@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -36,6 +37,28 @@ type ExtraSchemaWorkItemAdmin struct {
 type ExtraSchemaWorkItemAdminCreateParams struct {
 	Admin      ExtraSchemaUserID     `json:"admin" required:"true" nullable:"false"`      // admin
 	WorkItemID ExtraSchemaWorkItemID `json:"workItemID" required:"true" nullable:"false"` // work_item_id
+}
+
+// ExtraSchemaWorkItemAdminParams represents common params for both insert and update of 'extra_schema.work_item_admin'.
+type ExtraSchemaWorkItemAdminParams interface {
+	GetAdmin() *uuid.UUID
+	GetWorkItemID() *int
+}
+
+func (p ExtraSchemaWorkItemAdminCreateParams) GetAdmin() *uuid.UUID {
+	x := p.Admin
+	return &x
+}
+func (p ExtraSchemaWorkItemAdminUpdateParams) GetAdmin() *uuid.UUID {
+	return p.Admin
+}
+
+func (p ExtraSchemaWorkItemAdminCreateParams) GetWorkItemID() *int {
+	x := p.WorkItemID
+	return &x
+}
+func (p ExtraSchemaWorkItemAdminUpdateParams) GetWorkItemID() *int {
+	return p.WorkItemID
 }
 
 // CreateExtraSchemaWorkItemAdmin creates a new ExtraSchemaWorkItemAdmin in the database with the given params.

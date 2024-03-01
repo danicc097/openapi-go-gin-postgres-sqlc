@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -36,6 +37,28 @@ type UserTeam struct {
 type UserTeamCreateParams struct {
 	Member UserID `json:"member" required:"true" nullable:"false"` // member
 	TeamID TeamID `json:"teamID" required:"true" nullable:"false"` // team_id
+}
+
+// UserTeamParams represents common params for both insert and update of 'public.user_team'.
+type UserTeamParams interface {
+	GetMember() *uuid.UUID
+	GetTeamID() *int
+}
+
+func (p UserTeamCreateParams) GetMember() *uuid.UUID {
+	x := p.Member
+	return &x
+}
+func (p UserTeamUpdateParams) GetMember() *uuid.UUID {
+	return p.Member
+}
+
+func (p UserTeamCreateParams) GetTeamID() *int {
+	x := p.TeamID
+	return &x
+}
+func (p UserTeamUpdateParams) GetTeamID() *int {
+	return p.TeamID
 }
 
 // CreateUserTeam creates a new UserTeam in the database with the given params.

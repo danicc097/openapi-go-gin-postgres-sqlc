@@ -14,6 +14,8 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/google/uuid"
 )
 
 // Notification represents a row from 'public.notifications'.
@@ -56,6 +58,88 @@ type NotificationCreateParams struct {
 	ReceiverRank     *int             `json:"-"`                                                                                             // receiver_rank
 	Sender           UserID           `json:"sender" required:"true" nullable:"false"`                                                       // sender
 	Title            string           `json:"title" required:"true" nullable:"false"`                                                        // title
+}
+
+// NotificationParams represents common params for both insert and update of 'public.notifications'.
+type NotificationParams interface {
+	GetBody() *string
+	GetLabels() *[]string
+	GetLink() **string
+	GetNotificationType() *NotificationType
+	GetReceiver() **uuid.UUID
+	GetReceiverRank() **int
+	GetSender() *uuid.UUID
+	GetTitle() *string
+}
+
+func (p NotificationCreateParams) GetBody() *string {
+	x := p.Body
+	return &x
+}
+func (p NotificationUpdateParams) GetBody() *string {
+	return p.Body
+}
+
+func (p NotificationCreateParams) GetLabels() *[]string {
+	x := p.Labels
+	return &x
+}
+func (p NotificationUpdateParams) GetLabels() *[]string {
+	return p.Labels
+}
+
+func (p NotificationCreateParams) GetLink() **string {
+	return p.Link
+}
+func (p NotificationUpdateParams) GetLink() **string {
+	if p.Link != nil {
+		return *p.Link
+	}
+	return nil
+}
+
+func (p NotificationCreateParams) GetNotificationType() *NotificationType {
+	x := p.NotificationType
+	return &x
+}
+func (p NotificationUpdateParams) GetNotificationType() *NotificationType {
+	return p.NotificationType
+}
+
+func (p NotificationCreateParams) GetReceiver() **uuid.UUID {
+	return p.Receiver
+}
+func (p NotificationUpdateParams) GetReceiver() **uuid.UUID {
+	if p.Receiver != nil {
+		return *p.Receiver
+	}
+	return nil
+}
+
+func (p NotificationCreateParams) GetReceiverRank() **int {
+	return p.ReceiverRank
+}
+func (p NotificationUpdateParams) GetReceiverRank() **int {
+	if p.ReceiverRank != nil {
+		return *p.ReceiverRank
+	}
+	return nil
+}
+
+func (p NotificationCreateParams) GetSender() *uuid.UUID {
+	x := p.Sender
+	return &x
+}
+func (p NotificationUpdateParams) GetSender() *uuid.UUID {
+	return p.Sender
+}
+
+func (p NotificationCreateParams) GetTitle() *string {
+	x := p.Title
+	return &x
+}
+func (p NotificationUpdateParams) GetTitle() *string {
+	return p.Title
 }
 
 type NotificationID int

@@ -43,6 +43,19 @@ type ExtraSchemaBookCreateParams struct {
 	Name string `json:"name" required:"true" nullable:"false"` // name
 }
 
+// ExtraSchemaBookParams represents common params for both insert and update of 'extra_schema.books'.
+type ExtraSchemaBookParams interface {
+	GetName() *string
+}
+
+func (p ExtraSchemaBookCreateParams) GetName() *string {
+	x := p.Name
+	return &x
+}
+func (p ExtraSchemaBookUpdateParams) GetName() *string {
+	return p.Name
+}
+
 type ExtraSchemaBookID int
 
 // CreateExtraSchemaBook creates a new ExtraSchemaBook in the database with the given params.

@@ -244,6 +244,16 @@ type {{ $t.GoName }}CreateParams struct {
 {{ end -}}
 }
 
+// {{ $t.GoName }}Params represents common params for both insert and update of '{{ schema $t.SQLName }}'.
+type {{ $t.GoName }}Params interface {
+{{ range sort_fields $t.Fields -}}
+	{{ params_interface_field . $t -}}
+{{ end -}}
+}
+
+{{ range sort_fields $t.Fields -}}
+	{{ params_getters . $t -}} {{/* will create getter for both create and update structs */}}
+{{ end -}}
 
 {{ range sort_fields $t.Fields -}}
 	{{ field . "IDTypes" $t -}}

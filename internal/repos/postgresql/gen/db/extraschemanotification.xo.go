@@ -13,6 +13,8 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/google/uuid"
 )
 
 // ExtraSchemaNotification represents a row from 'extra_schema.notifications'.
@@ -45,6 +47,48 @@ type ExtraSchemaNotificationCreateParams struct {
 	ExtraSchemaNotificationType ExtraSchemaNotificationType `json:"notificationType" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 	Receiver                    *ExtraSchemaUserID          `json:"receiver"`                                                                                      // receiver
 	Sender                      ExtraSchemaUserID           `json:"sender" required:"true" nullable:"false"`                                                       // sender
+}
+
+// ExtraSchemaNotificationParams represents common params for both insert and update of 'extra_schema.notifications'.
+type ExtraSchemaNotificationParams interface {
+	GetBody() *string
+	GetNotificationType() *NotificationType
+	GetReceiver() **uuid.UUID
+	GetSender() *uuid.UUID
+}
+
+func (p ExtraSchemaNotificationCreateParams) GetBody() *string {
+	x := p.Body
+	return &x
+}
+func (p ExtraSchemaNotificationUpdateParams) GetBody() *string {
+	return p.Body
+}
+
+func (p ExtraSchemaNotificationCreateParams) GetNotificationType() *NotificationType {
+	x := p.NotificationType
+	return &x
+}
+func (p ExtraSchemaNotificationUpdateParams) GetNotificationType() *NotificationType {
+	return p.NotificationType
+}
+
+func (p ExtraSchemaNotificationCreateParams) GetReceiver() **uuid.UUID {
+	return p.Receiver
+}
+func (p ExtraSchemaNotificationUpdateParams) GetReceiver() **uuid.UUID {
+	if p.Receiver != nil {
+		return *p.Receiver
+	}
+	return nil
+}
+
+func (p ExtraSchemaNotificationCreateParams) GetSender() *uuid.UUID {
+	x := p.Sender
+	return &x
+}
+func (p ExtraSchemaNotificationUpdateParams) GetSender() *uuid.UUID {
+	return p.Sender
 }
 
 type ExtraSchemaNotificationID int

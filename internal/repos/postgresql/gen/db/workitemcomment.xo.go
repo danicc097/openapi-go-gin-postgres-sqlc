@@ -14,6 +14,8 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/google/uuid"
 )
 
 // WorkItemComment represents a row from 'public.work_item_comments'.
@@ -46,6 +48,37 @@ type WorkItemCommentCreateParams struct {
 	Message    string     `json:"message" required:"true" nullable:"false"`    // message
 	UserID     UserID     `json:"userID" required:"true" nullable:"false"`     // user_id
 	WorkItemID WorkItemID `json:"workItemID" required:"true" nullable:"false"` // work_item_id
+}
+
+// WorkItemCommentParams represents common params for both insert and update of 'public.work_item_comments'.
+type WorkItemCommentParams interface {
+	GetMessage() *string
+	GetUserID() *uuid.UUID
+	GetWorkItemID() *int
+}
+
+func (p WorkItemCommentCreateParams) GetMessage() *string {
+	x := p.Message
+	return &x
+}
+func (p WorkItemCommentUpdateParams) GetMessage() *string {
+	return p.Message
+}
+
+func (p WorkItemCommentCreateParams) GetUserID() *uuid.UUID {
+	x := p.UserID
+	return &x
+}
+func (p WorkItemCommentUpdateParams) GetUserID() *uuid.UUID {
+	return p.UserID
+}
+
+func (p WorkItemCommentCreateParams) GetWorkItemID() *int {
+	x := p.WorkItemID
+	return &x
+}
+func (p WorkItemCommentUpdateParams) GetWorkItemID() *int {
+	return p.WorkItemID
 }
 
 type WorkItemCommentID int

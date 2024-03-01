@@ -13,6 +13,8 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/google/uuid"
 )
 
 // WorkItemAssignee represents a row from 'public.work_item_assignee'.
@@ -42,6 +44,37 @@ type WorkItemAssigneeCreateParams struct {
 	Assignee   UserID              `json:"assignee" required:"true" nullable:"false"`                                     // assignee
 	Role       models.WorkItemRole `json:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 	WorkItemID WorkItemID          `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
+}
+
+// WorkItemAssigneeParams represents common params for both insert and update of 'public.work_item_assignee'.
+type WorkItemAssigneeParams interface {
+	GetAssignee() *uuid.UUID
+	GetRole() *models.WorkItemRole
+	GetWorkItemID() *int
+}
+
+func (p WorkItemAssigneeCreateParams) GetAssignee() *uuid.UUID {
+	x := p.Assignee
+	return &x
+}
+func (p WorkItemAssigneeUpdateParams) GetAssignee() *uuid.UUID {
+	return p.Assignee
+}
+
+func (p WorkItemAssigneeCreateParams) GetRole() *models.WorkItemRole {
+	x := p.Role
+	return &x
+}
+func (p WorkItemAssigneeUpdateParams) GetRole() *models.WorkItemRole {
+	return p.Role
+}
+
+func (p WorkItemAssigneeCreateParams) GetWorkItemID() *int {
+	x := p.WorkItemID
+	return &x
+}
+func (p WorkItemAssigneeUpdateParams) GetWorkItemID() *int {
+	return p.WorkItemID
 }
 
 // CreateWorkItemAssignee creates a new WorkItemAssignee in the database with the given params.

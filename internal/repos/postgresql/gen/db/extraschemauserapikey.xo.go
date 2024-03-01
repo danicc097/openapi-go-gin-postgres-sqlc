@@ -14,6 +14,8 @@ import (
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
+
+	"github.com/google/uuid"
 )
 
 // ExtraSchemaUserAPIKey represents a row from 'extra_schema.user_api_keys'.
@@ -43,6 +45,37 @@ type ExtraSchemaUserAPIKeyCreateParams struct {
 	APIKey    string            `json:"apiKey" required:"true" nullable:"false"`    // api_key
 	ExpiresOn time.Time         `json:"expiresOn" required:"true" nullable:"false"` // expires_on
 	UserID    ExtraSchemaUserID `json:"userID" required:"true" nullable:"false"`    // user_id
+}
+
+// ExtraSchemaUserAPIKeyParams represents common params for both insert and update of 'extra_schema.user_api_keys'.
+type ExtraSchemaUserAPIKeyParams interface {
+	GetAPIKey() *string
+	GetExpiresOn() *time.Time
+	GetUserID() *uuid.UUID
+}
+
+func (p ExtraSchemaUserAPIKeyCreateParams) GetAPIKey() *string {
+	x := p.APIKey
+	return &x
+}
+func (p ExtraSchemaUserAPIKeyUpdateParams) GetAPIKey() *string {
+	return p.APIKey
+}
+
+func (p ExtraSchemaUserAPIKeyCreateParams) GetExpiresOn() *time.Time {
+	x := p.ExpiresOn
+	return &x
+}
+func (p ExtraSchemaUserAPIKeyUpdateParams) GetExpiresOn() *time.Time {
+	return p.ExpiresOn
+}
+
+func (p ExtraSchemaUserAPIKeyCreateParams) GetUserID() *uuid.UUID {
+	x := p.UserID
+	return &x
+}
+func (p ExtraSchemaUserAPIKeyUpdateParams) GetUserID() *uuid.UUID {
+	return p.UserID
 }
 
 type ExtraSchemaUserAPIKeyID int

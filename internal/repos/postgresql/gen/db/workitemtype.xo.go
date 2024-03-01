@@ -46,6 +46,46 @@ type WorkItemTypeCreateParams struct {
 	ProjectID   ProjectID `json:"-" openapi-go:"ignore"`                                                               // project_id
 }
 
+// WorkItemTypeParams represents common params for both insert and update of 'public.work_item_types'.
+type WorkItemTypeParams interface {
+	GetColor() *string
+	GetDescription() *string
+	GetName() *string
+	GetProjectID() *int
+}
+
+func (p WorkItemTypeCreateParams) GetColor() *string {
+	x := p.Color
+	return &x
+}
+func (p WorkItemTypeUpdateParams) GetColor() *string {
+	return p.Color
+}
+
+func (p WorkItemTypeCreateParams) GetDescription() *string {
+	x := p.Description
+	return &x
+}
+func (p WorkItemTypeUpdateParams) GetDescription() *string {
+	return p.Description
+}
+
+func (p WorkItemTypeCreateParams) GetName() *string {
+	x := p.Name
+	return &x
+}
+func (p WorkItemTypeUpdateParams) GetName() *string {
+	return p.Name
+}
+
+func (p WorkItemTypeCreateParams) GetProjectID() *int {
+	x := p.ProjectID
+	return &x
+}
+func (p WorkItemTypeUpdateParams) GetProjectID() *int {
+	return p.ProjectID
+}
+
 type WorkItemTypeID int
 
 // CreateWorkItemType creates a new WorkItemType in the database with the given params.

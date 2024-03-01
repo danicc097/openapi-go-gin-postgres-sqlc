@@ -54,6 +54,46 @@ type ProjectCreateParams struct {
 	WorkItemsTableName string               `json:"-" nullable:"false"`                                                                    // work_items_table_name
 }
 
+// ProjectParams represents common params for both insert and update of 'public.projects'.
+type ProjectParams interface {
+	GetBoardConfig() *models.ProjectConfig
+	GetDescription() *string
+	GetName() *models.Project
+	GetWorkItemsTableName() *string
+}
+
+func (p ProjectCreateParams) GetBoardConfig() *models.ProjectConfig {
+	x := p.BoardConfig
+	return &x
+}
+func (p ProjectUpdateParams) GetBoardConfig() *models.ProjectConfig {
+	return p.BoardConfig
+}
+
+func (p ProjectCreateParams) GetDescription() *string {
+	x := p.Description
+	return &x
+}
+func (p ProjectUpdateParams) GetDescription() *string {
+	return p.Description
+}
+
+func (p ProjectCreateParams) GetName() *models.Project {
+	x := p.Name
+	return &x
+}
+func (p ProjectUpdateParams) GetName() *models.Project {
+	return p.Name
+}
+
+func (p ProjectCreateParams) GetWorkItemsTableName() *string {
+	x := p.WorkItemsTableName
+	return &x
+}
+func (p ProjectUpdateParams) GetWorkItemsTableName() *string {
+	return p.WorkItemsTableName
+}
+
 type ProjectID int
 
 // CreateProject creates a new Project in the database with the given params.

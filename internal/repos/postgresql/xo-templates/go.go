@@ -1,6 +1,6 @@
 //go:build xotpl
 
-package gotpl
+package xotemplates
 
 import (
 	"bytes"
@@ -1738,6 +1738,8 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"zero":                   f.zero,
 		"type":                   f.typefn,
 		"field":                  f.field,
+		"params_interface_field": f.params_interface_field,
+		"params_getters":         f.params_getters,
 		"set_field":              f.set_field,
 		"sort_fields":            f.sort_fields,
 		"fieldmapping":           f.fieldmapping,
@@ -3973,6 +3975,62 @@ func (f *Funcs) typefn(typ string) string {
 	return prefix + f.custom + "." + typ
 }
 
+func (f *Funcs) params_interface_field(field Field, table Table) (string, error) {
+	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
+	if skipField {
+		return "", nil
+	}
+	return fmt.Sprintf("Get%[1]s() *%[2]s \n", field.GoName, field.Type), nil
+}
+
+func (f *Funcs) params_getters(field Field, table Table) (string, error) {
+	skipField := field.IsGenerated || field.IsIgnored || field.SQLName == "deleted_at" //|| contains(table.ForeignKeys, field.SQLName)
+	if skipField {
+		return "", nil
+	}
+	if strings.Count(field.Type, "*") == 0 {
+		return fmt.Sprintf(`
+		func (p %[1]sCreateParams) Get%[2]s() *%[3]s {
+			x := p.%[2]s
+			return &x
+		}
+		func (p %[1]sUpdateParams) Get%[2]s() *%[3]s {
+			return p.%[2]s
+		}
+		`, table.GoName, field.GoName, field.Type), nil
+	} else {
+		return fmt.Sprintf(`
+		func (p %[1]sCreateParams) Get%[2]s() *%[3]s {
+			return p.%[2]s
+		}
+		func (p %[1]sUpdateParams) Get%[2]s() *%[3]s {
+			if p.%[2]s != nil {
+				return *p.%[2]s
+			}
+			return nil
+		}
+		`, table.GoName, field.GoName, field.Type), nil
+	}
+	// if it doesn't have pointer in createparams (count * == 0)
+	// func (p TimeEntryCreateParams) GetComment() *string {
+	// 	comment := p.Comment
+	// 	return &comment
+	// }
+	// func (p TimeEntryUpdateParams) GetComment() *string {
+	// 	return p.Comment
+	// }
+	// else if its an optional field:
+	// func (p TimeEntryCreateParams) GetDurationMinutes() *int {
+	// 	return p.DurationMinutes
+	// }
+	// func (p TimeEntryUpdateParams) GetDurationMinutes() *int {
+	// 	if p.DurationMinutes != nil {
+	// 		return *p.DurationMinutes
+	// 	}
+	// 	return nil
+	// }
+}
+
 // field generates a field definition for a struct.
 func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	buf := new(bytes.Buffer)
@@ -4121,6 +4179,9 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	if mode == "UpdateParams" {
 		fieldType = "*" + fieldType // we do want **<field> and *<field>
 	}
+
+	// TODO: if mode paramsInterface or paramsGetters just return methods, not struct fields,
+	// to prevent duplicating logic above.
 
 	return fmt.Sprintf("\t%s %s%s // %s\n", goName, fieldType, tag, field.SQLName), nil
 }

@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -41,6 +42,39 @@ type ExtraSchemaBookAuthorCreateParams struct {
 	AuthorID  ExtraSchemaUserID `json:"authorID" required:"true" nullable:"false"` // author_id
 	BookID    ExtraSchemaBookID `json:"bookID" required:"true" nullable:"false"`   // book_id
 	Pseudonym *string           `json:"pseudonym"`                                 // pseudonym
+}
+
+// ExtraSchemaBookAuthorParams represents common params for both insert and update of 'extra_schema.book_authors'.
+type ExtraSchemaBookAuthorParams interface {
+	GetAuthorID() *uuid.UUID
+	GetBookID() *int
+	GetPseudonym() **string
+}
+
+func (p ExtraSchemaBookAuthorCreateParams) GetAuthorID() *uuid.UUID {
+	x := p.AuthorID
+	return &x
+}
+func (p ExtraSchemaBookAuthorUpdateParams) GetAuthorID() *uuid.UUID {
+	return p.AuthorID
+}
+
+func (p ExtraSchemaBookAuthorCreateParams) GetBookID() *int {
+	x := p.BookID
+	return &x
+}
+func (p ExtraSchemaBookAuthorUpdateParams) GetBookID() *int {
+	return p.BookID
+}
+
+func (p ExtraSchemaBookAuthorCreateParams) GetPseudonym() **string {
+	return p.Pseudonym
+}
+func (p ExtraSchemaBookAuthorUpdateParams) GetPseudonym() **string {
+	if p.Pseudonym != nil {
+		return *p.Pseudonym
+	}
+	return nil
 }
 
 // CreateExtraSchemaBookAuthor creates a new ExtraSchemaBookAuthor in the database with the given params.
