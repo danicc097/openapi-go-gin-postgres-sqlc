@@ -39,10 +39,7 @@ type UserRegisterParams struct {
 
 // NewUser returns a new User service.
 func NewUser(logger *zap.SugaredLogger, repos *repos.Repos) *User {
-	authzsvc, err := NewAuthorization(logger)
-	if err != nil {
-		panic(fmt.Sprintf("NewAuthorization: %v", err))
-	}
+	authzsvc := NewAuthorization(logger)
 
 	return &User{
 		logger:   logger,

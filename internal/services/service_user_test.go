@@ -120,8 +120,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	authzsvc, err := services.NewAuthorization(logger)
-	require.NoError(t, err, "newTestAuthService")
+	authzsvc := services.NewAuthorization(logger)
 
 	// TODO create users on demand with parameterized tests. same as repo ucp but using FakeUserRepo instead
 	// e.g. cannot_set_scope_unassigned_to_self  and can_set_scopes_asigned_to_self

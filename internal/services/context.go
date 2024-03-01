@@ -17,7 +17,7 @@ type CtxUser struct {
 // NewCtxUser returns a new CtxUser.
 // Required joins: Teams, Projects.
 func NewCtxUser(user *db.User) *CtxUser {
-	authzsvc, _ := NewAuthorization(zap.S())
+	authzsvc := NewAuthorization(zap.S())
 	role, _ := authzsvc.RoleByRank(user.RoleRank)
 
 	return &CtxUser{

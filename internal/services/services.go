@@ -1,8 +1,6 @@
 package services
 
 import (
-	"fmt"
-
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
@@ -38,10 +36,7 @@ func New(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxpool.Pool) *Ser
 	workitemtypesvc := NewWorkItemType(logger, repos)
 	notificationsvc := NewNotification(logger, repos)
 	authnsvc := NewAuthentication(logger, repos, pool)
-	authzsvc, err := NewAuthorization(logger)
-	if err != nil {
-		panic(fmt.Sprintf("NewAuthorization: %v", err))
-	}
+	authzsvc := NewAuthorization(logger)
 
 	// this would solve nothing. workitemtagsvc.usersvc may call a function that depends
 	// on workitemtagsvc.usersvc.workitemtagsvc being set.

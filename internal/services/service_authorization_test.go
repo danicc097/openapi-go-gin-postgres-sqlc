@@ -15,8 +15,7 @@ func TestAuthorization_Roles(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	authzsvc, err := services.NewAuthorization(logger)
-	require.NoError(t, err)
+	authzsvc := services.NewAuthorization(logger)
 
 	userRole := authzsvc.RoleByName(models.RoleUser)
 	managerRole := authzsvc.RoleByName(models.RoleManager)
@@ -34,8 +33,7 @@ func TestAuthorization_Scopes(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	authzsvc, err := services.NewAuthorization(logger)
-	require.NoError(t, err)
+	authzsvc := services.NewAuthorization(logger)
 
 	req := models.Scopes{models.ScopeTeamSettingsWrite}
 	assert.ErrorContains(t, authzsvc.HasRequiredScopes(models.Scopes{}, req), "access restricted")

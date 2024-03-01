@@ -20,10 +20,7 @@ type TimeEntry struct {
 
 // NewTimeEntry returns a new TimeEntry service.
 func NewTimeEntry(logger *zap.SugaredLogger, repos *repos.Repos) *TimeEntry {
-	authzsvc, err := NewAuthorization(logger)
-	if err != nil {
-		panic(fmt.Sprintf("NewAuthorization: %v", err))
-	}
+	authzsvc := NewAuthorization(logger)
 
 	return &TimeEntry{
 		logger:   logger,

@@ -74,23 +74,23 @@ type Authorization struct {
 
 // NewAuthorization returns a new Authorization service.
 // Existing roles and scopes will be loaded from the given policy JSON file paths.
-func NewAuthorization(logger *zap.SugaredLogger) (*Authorization, error) {
+func NewAuthorization(logger *zap.SugaredLogger) *Authorization {
 	roles := make(roles)
 	scopes := make(scopes)
 
 	scopeBlob, err := os.ReadFile(internal.Config.ScopePolicyPath)
 	if err != nil {
-		return nil, fmt.Errorf("scope policy: %w", err)
+		panic(fmt.Sprintf("scope policy: %s", err))
 	}
 	roleBlob, err := os.ReadFile(internal.Config.RolePolicyPath)
 	if err != nil {
-		return nil, fmt.Errorf("role policy: %w", err)
+		panic(fmt.Sprintf("role policy: %s", err))
 	}
 	if err := json.Unmarshal(scopeBlob, &scopes); err != nil {
-		return nil, fmt.Errorf("scope policy loading: %w", err)
+		panic(fmt.Sprintf("scope policy loading: %s", err))
 	}
 	if err := json.Unmarshal(roleBlob, &roles); err != nil {
-		return nil, fmt.Errorf("role policy loading: %w", err)
+		panic(fmt.Sprintf("role policy loading: %s", err))
 	}
 
 	return &Authorization{
@@ -99,7 +99,7 @@ func NewAuthorization(logger *zap.SugaredLogger) (*Authorization, error) {
 		scopes:         scopes,
 		existingRoles:  models.AllRoleValues(),
 		existingScopes: models.AllScopeValues(),
-	}, nil
+	}
 }
 
 func (a *Authorization) RoleByName(role models.Role) Role {
