@@ -78,6 +78,7 @@ import { useGetPaginatedUsers } from 'src/gen/user/user'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import { reactQueryDefaultAppOptions } from 'src/react-query'
 import DemoGeneratedForm from 'src/views/DemoGeneratedForm/DemoGeneratedForm'
+import DemoMantineReactTable from 'src/views/DemoMantineReactTable/DemoMantineReactTable'
 
 function ErrorFallback({ error }: any) {
   return (
@@ -104,6 +105,7 @@ const routes = Object.freeze({
     </ProtectedRoute>
   ),
   '/demo/generated-form': <DemoGeneratedForm />,
+  '/demo/mantine-react-table': <DemoMantineReactTable />,
   // TODO: update from eui
   // '/admin/project-management': (
   //   <ProtectedRoute>

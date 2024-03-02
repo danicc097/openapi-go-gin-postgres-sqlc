@@ -250,7 +250,7 @@ export default function DemoGeneratedForm() {
 
   const [cursor, setCursor] = useState(new Date().toISOString())
 
-  useStopInfiniteRenders(10)
+  useStopInfiniteRenders(20)
 
   // watch out for queryKey slugs having dynamic values (like new Date() or anything generated)
   const { data: usersData } = useGetPaginatedUsers({ direction: 'desc', cursor, limit: 0 })
