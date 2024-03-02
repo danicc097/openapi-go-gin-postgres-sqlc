@@ -26,12 +26,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Notifications } from '@mantine/notifications'
 import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
 import HttpStatus from 'src/utils/httpStatus'
-import DynamicForm, {
-  selectOptionsBuilder,
-  type SelectOptions,
-  type DynamicFormOptions,
-  InputOptions,
-} from 'src/utils/formGeneration'
+import DynamicForm, { type SelectOptions, type DynamicFormOptions, InputOptions } from 'src/utils/formGeneration'
 import type { CreateWorkItemTagRequest, DbWorkItemTag, User, WorkItemRole } from 'src/gen/model'
 import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import { validateField } from 'src/utils/validation'
@@ -61,6 +56,7 @@ import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import { useFormSlice } from 'src/slices/form'
 import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
 import { WorkItemTagID, ProjectID } from 'src/gen/entity-ids'
+import { selectOptionsBuilder } from 'src/utils/formGeneration.context'
 
 const schema = {
   properties: {

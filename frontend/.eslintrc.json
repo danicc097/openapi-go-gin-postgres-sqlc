@@ -22,7 +22,8 @@
     "prettier",
     "react",
     "@typescript-eslint",
-    "jest-dom"
+    "jest-dom",
+    "react-refresh"
   ],
   "rules": {
     "prettier/prettier": "error",
@@ -34,6 +35,7 @@
         ]
       }
     ],
+    "react-refresh/only-export-components": "error",
     "@typescript-eslint/no-non-null-assertion": "off",
     "react/display-name": "off",
     "@typescript-eslint/no-explicit-any": "off",

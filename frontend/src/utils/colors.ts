@@ -1,4 +1,3 @@
-import SCOPES from 'src/scopes'
 import _ from 'lodash'
 import type { Role, WorkItemRole } from 'src/gen/model'
 import { DefaultMantineColor } from '@mantine/core'

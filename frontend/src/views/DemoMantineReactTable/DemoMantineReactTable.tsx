@@ -13,7 +13,7 @@ import { IconRefresh } from '@tabler/icons-react'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { useGetPaginatedUsers } from 'src/gen/user/user'
 import dayjs from 'dayjs'
-import { User } from 'src/gen/model'
+import { Scopes, User } from 'src/gen/model'
 import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
 import { colorBlindPalette, getContrastYIQ, scopeColor } from 'src/utils/colors'
 import _ from 'lodash'
@@ -28,7 +28,7 @@ interface Params {
 }
 
 //custom react-query hook
-const a = ({ columnFilterFns, columnFilters, globalFilter, sorting, pagination }: Params) => {
+const A = ({ columnFilterFns, columnFilters, globalFilter, sorting, pagination }: Params) => {
   //build the URL (https://www.mantine-react-table.com/api/data?start=0&size=10&filters=[]&globalFilter=&sorting=[])
   const fetchURL = new URL(
     '/api/data',
@@ -70,12 +70,12 @@ export default function DemoMantineReactTable() {
       {
         accessorKey: 'scopes',
         header: 'Scopes',
-        Cell({ renderedCellValue, a }) {
+        Cell({ renderedCellValue }) {
           const maxItems = 2
 
           return (
             <Group p={'xs'} m={'xs'}>
-              {renderedCellValue?.map((el, idx) => {
+              {(renderedCellValue as Scopes)?.map((el, idx) => {
                 if (idx === maxItems) return <Text>...</Text>
                 // if (idx > maxItems) return null
 
@@ -104,7 +104,7 @@ export default function DemoMantineReactTable() {
         accessorKey: 'hasGlobalNotifications',
         header: 'Global notifications',
         Cell({ renderedCellValue }) {
-          return <Checkbox readOnly checked={renderedCellValue}></Checkbox>
+          return <Checkbox readOnly checked={renderedCellValue as boolean}></Checkbox>
         },
       },
     ],

@@ -95,6 +95,7 @@ import { useFormSlice } from 'src/slices/form'
 import RandExp, { randexp } from 'randexp'
 import type { FormField, SchemaKey } from 'src/utils/form'
 import { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
+import { inputBuilder, selectOptionsBuilder, useDynamicFormContext } from 'src/utils/formGeneration.context'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
 
@@ -124,29 +125,6 @@ export interface InputOptions<Return, E = unknown> {
   component: JSX.Element
   propsFn?: (registerOnChange: ChangeHandler) => React.ComponentProps<'input'>
 }
-
-// NOTE: handles select (single return value) and multiselect (array return).
-export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends unknown[] ? Return[number] : Return>({
-  type,
-  values,
-  formValueTransformer,
-  searchValueTransformer,
-  optionTransformer,
-  pillTransformer,
-  labelColor,
-}: SelectOptions<ReturnElement, V>): SelectOptions<ReturnElement, V> => ({
-  type,
-  values,
-  optionTransformer,
-  pillTransformer,
-  formValueTransformer,
-  searchValueTransformer,
-  labelColor,
-})
-
-export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>): InputOptions<Return, V> => ({
-  component,
-})
 
 const comboboxOptionTemplate = (transformer: (...args: any[]) => JSX.Element, option) => {
   return <Box m={2}>{transformer(option)}</Box>
@@ -216,13 +194,13 @@ export type DynamicFormOptions<
   }>
 }
 
-type DynamicFormContextValue = {
+export type DynamicFormContextValue = {
   formName: string
   schemaFields: Record<SchemaKey, SchemaField>
   options: DynamicFormOptions<any, null, SchemaKey> // for more performant internal intellisense. for user it will be typed
 }
 
-const DynamicFormContext = createContext<DynamicFormContextValue | undefined>(undefined)
+export const DynamicFormContext = createContext<DynamicFormContextValue | undefined>(undefined)
 
 type DynamicFormProviderProps = {
   value: DynamicFormContextValue
@@ -231,16 +209,6 @@ type DynamicFormProviderProps = {
 
 const DynamicFormProvider = ({ value, children }: DynamicFormProviderProps) => {
   return <DynamicFormContext.Provider value={value}>{children}</DynamicFormContext.Provider>
-}
-
-export const useDynamicFormContext = (): DynamicFormContextValue => {
-  const context = useContext(DynamicFormContext)
-
-  if (!context) {
-    throw new Error('useDynamicFormContext must be used within a DynamicFormProvider')
-  }
-
-  return context
 }
 
 type DynamicFormProps<T extends object, IgnoredFormKeys extends GetKeys<T> | null = null> = {
