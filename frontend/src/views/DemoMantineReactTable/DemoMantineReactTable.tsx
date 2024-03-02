@@ -8,13 +8,15 @@ import {
   type MRT_SortingState,
   type MRT_ColumnFilterFnsState,
 } from 'mantine-react-table'
-import { ActionIcon, Tooltip } from '@mantine/core'
+import { ActionIcon, Badge, Checkbox, Group, Pill, Text, Tooltip } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons-react'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { useGetPaginatedUsers } from 'src/gen/user/user'
 import dayjs from 'dayjs'
 import { User } from 'src/gen/model'
 import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
+import { colorBlindPalette, getContrastYIQ, scopeColor } from 'src/utils/colors'
+import _ from 'lodash'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -25,7 +27,7 @@ interface Params {
 }
 
 //custom react-query hook
-const _ = ({ columnFilterFns, columnFilters, globalFilter, sorting, pagination }: Params) => {
+const a = ({ columnFilterFns, columnFilters, globalFilter, sorting, pagination }: Params) => {
   //build the URL (https://www.mantine-react-table.com/api/data?start=0&size=10&filters=[]&globalFilter=&sorting=[])
   const fetchURL = new URL(
     '/api/data',
@@ -64,10 +66,44 @@ export default function DemoMantineReactTable() {
       {
         accessorKey: 'scopes',
         header: 'Scopes',
+        Cell({ renderedCellValue }) {
+          return (
+            <Group p={'xs'} m={'xs'}>
+              {renderedCellValue?.map((el, idx) => {
+                if (idx === 2) return <Text>...</Text>
+                if (idx > 2) return null
+
+                console.log({ i: el })
+                const [scopeName, scopePermission] = el.split(':')
+                const color = scopeColor(scopePermission)
+
+                return (
+                  // <Pill style={{ backgroundColor: _.sample(colorBlindPalette) }} key={i}>
+                  //   {i}
+                  // </Pill>
+                  <Badge
+                    key={el}
+                    size="xs"
+                    radius="md"
+                    style={{
+                      backgroundColor: color,
+                      color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black',
+                    }}
+                  >
+                    {el}
+                  </Badge>
+                )
+              })}
+            </Group>
+          )
+        },
       },
       {
         accessorKey: 'hasGlobalNotifications',
         header: 'Global notifications',
+        Cell({ renderedCellValue }) {
+          return <Checkbox checked={renderedCellValue}></Checkbox>
+        },
       },
     ],
     [],

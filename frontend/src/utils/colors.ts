@@ -1,6 +1,7 @@
 import SCOPES from 'src/scopes'
 import _ from 'lodash'
 import type { Role, WorkItemRole } from 'src/gen/model'
+import { DefaultMantineColor } from '@mantine/core'
 
 const LIGHT_BLUE = '#4EC5F1'
 const LIGHT_GREEN = '#0DF2C8'
@@ -165,3 +166,17 @@ export const colorBlindPalette = [
   '#bcbd22', // Olive
   '#17becf', // Teal
 ]
+
+export function scopeColor(scopePermission?: string): string {
+  switch (scopePermission) {
+    case 'read':
+      return '#008000'
+    case 'write':
+    case 'edit':
+      return '#f8ce45'
+    case 'delete':
+      return '#990000'
+    default:
+      return '#1971c2'
+  }
+}

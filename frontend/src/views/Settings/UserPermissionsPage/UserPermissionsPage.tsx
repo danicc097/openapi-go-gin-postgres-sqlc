@@ -1,7 +1,7 @@
 import _, { capitalize, concat, random, startCase, upperCase } from 'lodash'
 import React, { Fragment, forwardRef, memo, useEffect, useReducer, useState } from 'react'
 import type { Scope, Scopes, UpdateUserAuthRequest, User } from 'src/gen/model'
-import { getContrastYIQ, roleColor } from 'src/utils/colors'
+import { getContrastYIQ, roleColor, scopeColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
 
 import type { Role } from 'src/client-validator/gen/models'
@@ -73,20 +73,6 @@ interface SelectUserItemProps extends React.ComponentPropsWithoutRef<'div'> {
 interface SelectRoleItemProps extends React.ComponentPropsWithoutRef<'div'> {
   label: string
   value: User['role']
-}
-
-function scopeColor(scopeName?: string): DefaultMantineColor {
-  switch (scopeName) {
-    case 'read':
-      return 'green'
-    case 'write':
-    case 'edit':
-      return 'orange'
-    case 'delete':
-      return 'red'
-    default:
-      return 'blue'
-  }
 }
 
 const SelectRoleItem = ({ value }: SelectRoleItemProps) => {
