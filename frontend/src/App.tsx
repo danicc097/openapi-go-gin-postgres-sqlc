@@ -1,8 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import 'src/assets/css/fonts.css'
 import 'src/assets/css/overrides.css'
 import 'src/assets/css/pulsate.css'
+import '@mantine/core/styles.css'
+import '@mantine/notifications/styles.css'
+import '@mantine/code-highlight/styles.css'
+import '@mantine/dates/styles.css'
+import 'mantine-react-table/styles.css' //import MRT styles
+
+import React, { useEffect, useMemo, useState } from 'react'
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import FallbackLoading from 'src/components/Loading/FallbackLoading'
 // import 'regenerator-runtime/runtime'
 import {
@@ -59,10 +65,6 @@ import WorkItemRoleBadge from 'src/components/Badges/WorkItemRoleBadge'
 import { WORK_ITEM_ROLES } from 'src/services/authorization'
 import { v4 as uuidv4 } from 'uuid'
 
-import '@mantine/core/styles.css'
-import '@mantine/notifications/styles.css'
-import '@mantine/code-highlight/styles.css'
-import '@mantine/dates/styles.css'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { useFormSlice } from 'src/slices/form'
 import { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
@@ -93,7 +95,7 @@ const ProjectManagementPage = React.lazy(() => import('src/views/Admin/ProjectMa
 
 const colorSchemeManager = localStorageColorSchemeManager({ key: 'theme' })
 
-const routes = {
+const routes = Object.freeze({
   '/project': <Project />,
   '/': <h1>Home</h1>,
   '/settings/user-permissions-management': (
@@ -113,7 +115,7 @@ const routes = {
       <ErrorPage status={HttpStatus.NOT_FOUND_404} />
     </ProtectedRoute>
   ),
-}
+})
 
 export default function App() {
   useEffect(() => {

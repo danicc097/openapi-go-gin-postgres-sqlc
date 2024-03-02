@@ -14,6 +14,7 @@ import {
   createTheme,
   localStorageColorSchemeManager,
   Textarea,
+  Container,
 } from '@mantine/core'
 import { PersistQueryClientProvider, type PersistedClient } from '@tanstack/react-query-persist-client'
 import axios from 'axios'
@@ -332,7 +333,7 @@ export default function DemoGeneratedForm() {
   })
 
   return (
-    <>
+    <Container maw={600}>
       {/* <LandingPage /> */}
 
       <Title size={20}>This form has been automatically generated from an openapi spec</Title>
@@ -485,7 +486,7 @@ export default function DemoGeneratedForm() {
           }} // satisfies DynamicFormOptions<TestTypes.DemoWorkItemCreateRequest, ExcludedFormKeys> // not needed anymore for some reason
         />
       </FormProvider>
-    </>
+    </Container>
   )
 }
 function formAccordionTitle(title: string): JSX.Element {
