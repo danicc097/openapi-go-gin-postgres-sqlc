@@ -1314,7 +1314,7 @@ function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPil
       css={css`
         background-color: ${color};
         * {
-          color: ${getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black'};
+          color: ${getContrastYIQ(color) === 'black' ? 'whitesmoke' : '#131313'};
         }
       `}
       {...props}

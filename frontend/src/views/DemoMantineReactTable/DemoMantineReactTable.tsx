@@ -77,22 +77,19 @@ export default function DemoMantineReactTable() {
             <Group p={'xs'} m={'xs'}>
               {renderedCellValue?.map((el, idx) => {
                 if (idx === maxItems) return <Text>...</Text>
-                if (idx > maxItems) return null
+                // if (idx > maxItems) return null
 
                 const [scopeName, scopePermission] = el.split(':')
                 const color = scopeColor(scopePermission)
 
                 return (
-                  // <Pill style={{ backgroundColor: _.sample(colorBlindPalette) }} key={i}>
-                  //   {i}
-                  // </Pill>
                   <Badge
                     key={el}
                     size="xs"
                     radius="md"
                     style={{
                       backgroundColor: color,
-                      color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black',
+                      color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : '#131313',
                     }}
                   >
                     {el}

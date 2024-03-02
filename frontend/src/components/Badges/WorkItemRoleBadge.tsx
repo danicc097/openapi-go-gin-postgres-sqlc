@@ -12,7 +12,7 @@ function WorkItemRoleBadge({ role }: { role: WorkItemRole }) {
     <Badge
       size="sm"
       radius="sm"
-      style={{ backgroundColor: color, color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black' }}
+      style={{ backgroundColor: color, color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : '#131313' }}
     >
       {name}
     </Badge>
