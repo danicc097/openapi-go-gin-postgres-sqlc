@@ -11,7 +11,7 @@ import type { HTTPError } from 'src/gen/model'
 import { type CalloutError, useFormSlice } from 'src/slices/form'
 import type { AppError } from 'src/types/ui'
 import { flattenRHFError, type SchemaKey } from 'src/utils/form'
-import { useDynamicFormContext } from 'src/utils/formGeneration'
+import { useDynamicFormContext } from 'src/utils/formGeneration.context'
 import { entries } from 'src/utils/object'
 
 export default function DynamicFormErrorCallout() {

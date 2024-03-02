@@ -61,23 +61,23 @@ export default function DemoMantineReactTable() {
         header: 'Last Name',
       },
       {
-        accessorKey: 'teams.name',
+        accessorKey: 'teams',
         header: 'Teams',
-        // Cell({ renderedCellValue, a }) {
-        //   return <p>{renderedCellValue}</p>
-        // },
+        Cell({ row }) {
+          return <p>{row.original.teams?.map((t) => t.name).join(',')}</p>
+        },
       },
       {
         accessorKey: 'scopes',
         header: 'Scopes',
-        Cell({ renderedCellValue }) {
+        Cell({ row }) {
           const maxItems = 2
 
           return (
             <Group p={'xs'} m={'xs'}>
-              {(renderedCellValue as Scopes)?.map((el, idx) => {
+              {row.original.scopes?.map((el, idx) => {
                 if (idx === maxItems) return <Text>...</Text>
-                // if (idx > maxItems) return null
+                if (idx > maxItems) return null
 
                 const [scopeName, scopePermission] = el.split(':')
                 const color = scopeColor(scopePermission)
@@ -103,8 +103,8 @@ export default function DemoMantineReactTable() {
       {
         accessorKey: 'hasGlobalNotifications',
         header: 'Global notifications',
-        Cell({ renderedCellValue }) {
-          return <Checkbox readOnly checked={renderedCellValue as boolean}></Checkbox>
+        Cell({ row }) {
+          return <Checkbox readOnly checked={row.original.hasGlobalNotifications}></Checkbox>
         },
       },
     ],
