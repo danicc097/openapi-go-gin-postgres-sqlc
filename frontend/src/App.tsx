@@ -7,76 +7,22 @@ import '@mantine/code-highlight/styles.css'
 import '@mantine/dates/styles.css'
 import 'mantine-react-table/styles.css' //import MRT styles
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 import FallbackLoading from 'src/components/Loading/FallbackLoading'
 // import 'regenerator-runtime/runtime'
-import {
-  MantineProvider,
-  Title,
-  ColorInput,
-  Accordion,
-  Button,
-  Text,
-  Flex,
-  useMantineTheme,
-  Avatar,
-  Group,
-  Space,
-  Box,
-  createTheme,
-  localStorageColorSchemeManager,
-  Textarea,
-} from '@mantine/core'
-import { PersistQueryClientProvider, type PersistedClient } from '@tanstack/react-query-persist-client'
-import axios from 'axios'
+import { MantineProvider, createTheme, localStorageColorSchemeManager } from '@mantine/core'
 import ProtectedRoute from 'src/components/Permissions/ProtectedRoute'
 import { useNotificationAPI } from 'src/hooks/ui/useNotificationAPI'
-import { responseInterceptor } from 'src/queries/interceptors'
 import { ModalsProvider } from '@mantine/modals'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Notifications } from '@mantine/notifications'
 import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
 import HttpStatus from 'src/utils/httpStatus'
-import DynamicForm, {
-  selectOptionsBuilder,
-  type SelectOptions,
-  type DynamicFormOptions,
-  InputOptions,
-} from 'src/utils/formGeneration'
-import type { CreateWorkItemTagRequest, DbWorkItemTag, User, WorkItemRole } from 'src/gen/model'
-import type { GetKeys, RecursiveKeyOfArray, PathType } from 'src/types/utils'
-import { validateField } from 'src/utils/validation'
-import { FormProvider, useForm, useFormState, useWatch } from 'react-hook-form'
-import { ajvResolver } from '@hookform/resolvers/ajv'
-import dayjs from 'dayjs'
-import { ErrorBoundary } from 'react-error-boundary'
-import { CodeHighlight } from '@mantine/code-highlight'
-import _, { initial } from 'lodash'
-import { colorBlindPalette } from 'src/utils/colors'
-import { validateJson } from 'src/client-validator/validate'
-import Ajv from 'ajv'
-import addFormats from 'ajv-formats'
-import { IconCircle, IconTag } from '@tabler/icons'
-import useRenders from 'src/hooks/utils/useRenders'
-import { fullFormats } from 'ajv-formats/dist/formats'
-import { nameInitials } from 'src/utils/strings'
-import WorkItemRoleBadge from 'src/components/Badges/WorkItemRoleBadge'
-import { WORK_ITEM_ROLES } from 'src/services/authorization'
-import { v4 as uuidv4 } from 'uuid'
+import _ from 'lodash'
 
-import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
-import { useFormSlice } from 'src/slices/form'
-import { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
-import { persister } from 'src/idb'
-import { parseSchemaFields } from 'src/utils/jsonSchema'
-import { schemaDefinitions } from 'src/client-validator/gen/meta'
 import Project from 'src/views/Project/Project'
-import { colorSwatchComponentInputOption } from 'src/components/formGeneration/components'
 import { AppTourProvider } from 'src/tours/AppTourProvider'
-import { useGetPaginatedUsers } from 'src/gen/user/user'
-import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
-import { reactQueryDefaultAppOptions } from 'src/react-query'
 import DemoGeneratedForm from 'src/views/DemoGeneratedForm/DemoGeneratedForm'
 import DemoMantineReactTable from 'src/views/DemoMantineReactTable/DemoMantineReactTable'
 
