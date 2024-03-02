@@ -8,7 +8,7 @@ import {
   type MRT_SortingState,
   type MRT_ColumnFilterFnsState,
 } from 'mantine-react-table'
-import { ActionIcon, Badge, Checkbox, Group, Pill, Text, Tooltip } from '@mantine/core'
+import { Accordion, ActionIcon, Badge, Checkbox, Group, Pill, Text, Tooltip } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons-react'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { useGetPaginatedUsers } from 'src/gen/user/user'
@@ -17,6 +17,7 @@ import { User } from 'src/gen/model'
 import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
 import { colorBlindPalette, getContrastYIQ, scopeColor } from 'src/utils/colors'
 import _ from 'lodash'
+import { CodeHighlight } from '@mantine/code-highlight'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -60,20 +61,24 @@ export default function DemoMantineReactTable() {
         header: 'Last Name',
       },
       {
-        accessorKey: 'email',
-        header: 'Email',
+        accessorKey: 'teams.name',
+        header: 'Teams',
+        // Cell({ renderedCellValue, a }) {
+        //   return <p>{renderedCellValue}</p>
+        // },
       },
       {
         accessorKey: 'scopes',
         header: 'Scopes',
-        Cell({ renderedCellValue }) {
+        Cell({ renderedCellValue, a }) {
+          const maxItems = 2
+
           return (
             <Group p={'xs'} m={'xs'}>
               {renderedCellValue?.map((el, idx) => {
-                if (idx === 2) return <Text>...</Text>
-                if (idx > 2) return null
+                if (idx === maxItems) return <Text>...</Text>
+                if (idx > maxItems) return null
 
-                console.log({ i: el })
                 const [scopeName, scopePermission] = el.split(':')
                 const color = scopeColor(scopePermission)
 
@@ -102,7 +107,7 @@ export default function DemoMantineReactTable() {
         accessorKey: 'hasGlobalNotifications',
         header: 'Global notifications',
         Cell({ renderedCellValue }) {
-          return <Checkbox checked={renderedCellValue}></Checkbox>
+          return <Checkbox readOnly checked={renderedCellValue}></Checkbox>
         },
       },
     ],
@@ -181,5 +186,21 @@ export default function DemoMantineReactTable() {
     },
   })
 
-  return <MantineReactTable table={table} />
+  return (
+    <>
+      <Accordion
+        styles={{
+          content: { paddingRight: 0, paddingLeft: 0 },
+        }}
+      >
+        <Accordion.Item value={'ffff'}>
+          <Accordion.Control>Data</Accordion.Control>
+          <Accordion.Panel>
+            <CodeHighlight lang="json" code={JSON.stringify({ usersData }, null, '  ')}></CodeHighlight>
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
+      <MantineReactTable table={table} />
+    </>
+  )
 }
