@@ -178,7 +178,7 @@ func queryDatabaseTypeNames(conn *pgx.Conn, logger *zap.SugaredLogger, searchPat
 	}
 
 	if len(typeNames) == 0 {
-		logger.Warn("database typenames not found - make sure migrations have been run")
+		logger.Info("database typenames not found - make sure migrations have been run")
 	}
 
 	return typeNames, nil

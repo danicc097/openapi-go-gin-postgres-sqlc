@@ -178,9 +178,23 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 					Scopes: &models.Scopes{models.ScopeUsersRead, models.ScopeProjectSettingsWrite, models.ScopeUsersWrite},
 				},
 				id:     testUsers.user.User.UserID,
-				caller: *services.NewCtxUser(testUsers.admin.User),
+				caller: *services.NewCtxUser(testUsers.manager.User),
 			},
 			error: "cannot set a scope unassigned to self",
+		},
+		{
+			name: "admin_can_set_scope_unassigned_to_self",
+			args: args{
+				params: &models.UpdateUserAuthRequest{
+					Scopes: &models.Scopes{models.ScopeUsersRead, models.ScopeProjectSettingsWrite, models.ScopeUsersWrite},
+				},
+				id:     testUsers.user.User.UserID,
+				caller: *services.NewCtxUser(testUsers.admin.User),
+			},
+			want: want{
+				Scopes: models.Scopes{models.ScopeUsersRead, models.ScopeProjectSettingsWrite, models.ScopeUsersWrite},
+				Rank:   testUsers.user.User.RoleRank, // unchanged
+			},
 		},
 		{
 			name: "can_set_scopes_assigned_to_self_without_role_update",

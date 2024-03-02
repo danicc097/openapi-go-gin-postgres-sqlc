@@ -154,17 +154,3 @@ func (a *Authorization) DefaultScopes(role models.Role) models.Scopes {
 
 	return scopes
 }
-
-/*
-In the future, clone the project and implement the auth server openapi spec, etc.
-for jwt, refresh token, redis...
-https://developer.vonage.com/blog/2020/03/13/using-jwt-for-authentication-in-a-golang-application-dr
-we would need a redis repo for auth
-see https://github.com/joeferner/redis-commander for web interface
-refresh_token brings increased security in case the auth server is better secured than
-the resource server.
-It also improves scalability and performance.
-We can have access_token's stored in some fast, temporary storage (Redis).
-and they will get deleted by Redis automatically based on expiration field (redis built-in functionality)
-If refresh_token is valid, quickly grab the existing access_token or create a new one (scopes, etc. might change as well) and save it
-*/
