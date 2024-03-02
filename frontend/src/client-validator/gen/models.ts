@@ -541,3 +541,31 @@ export interface DbUserWIAWorkItem {
   role: WorkItemRole
   user: DbUser
 }
+export interface CreateTimeEntryRequest {
+  activityID: number
+  comment: string
+  durationMinutes?: number | null
+  start: string
+  teamID?: number | null
+  userID: DbUserID
+  workItemID?: number | null
+}
+export interface TimeEntry {
+  activityID: number
+  comment: string
+  durationMinutes?: number | null
+  start: string
+  teamID?: number | null
+  timeEntryID: number
+  userID: DbUserID
+  workItemID?: number | null
+}
+export interface UpdateTimeEntryRequest {
+  activityID?: number
+  comment?: string
+  durationMinutes?: number | null
+  start?: string
+  teamID?: number | null
+  userID?: DbUserID
+  workItemID?: number | null
+}

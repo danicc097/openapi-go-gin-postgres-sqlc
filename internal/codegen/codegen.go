@@ -420,7 +420,18 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 		snakeTag := strcase.ToSnake(tag)
 		handlersPath := filepath.Join(o.handlersPath, fmt.Sprintf("api_%s.go", snakeTag))
 		if _, err := os.Stat(handlersPath); err != nil {
-			errs = append(errs, fmt.Sprintf("missing file %s for new tag %q", handlersPath, tag))
+			file, err := os.Create(handlersPath)
+			if err != nil {
+				errs = append(errs, fmt.Sprintf("failed to open file %s for writing: %v", handlersPath, err))
+
+				continue
+			}
+			defer file.Close()
+			if _, err := file.WriteString("package rest\n"); err != nil {
+				errs = append(errs, fmt.Sprintf("failed to write content to file %s: %v", handlersPath, err))
+
+				continue
+			}
 		}
 	}
 

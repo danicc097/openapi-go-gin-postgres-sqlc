@@ -173,21 +173,6 @@ func (h *StrictHandlers) Baz() {}
 			}(),
 		},
 		{
-			name:        "no correct file created yet",
-			errContains: []string{`api_bar_camel_case.go for new tag "barCamelCase"`, "missing file"},
-			operations:  map[tag][]string{foo: {"Foo"}, barCamelCase: {"Bar"}},
-			files: func() handlerFiles {
-				content := `package rest
-
-				func (h *StrictHandlers) Foo() {}
-				`
-
-				return handlerFiles{
-					foo: {content: content, newContent: content},
-				}
-			}(),
-		},
-		{
 			name:        "misplaced with no correct file created yet",
 			errContains: []string{`misplaced method for operation ID "Bar" - should be in api_bar.go (file does not exist)`},
 			operations:  map[tag][]string{foo: {"Foo"}, bar: {"Bar"}},

@@ -88,6 +88,9 @@ import {
   DemoTwoKanbanSteps,
   DbUserWIAWorkItem,
   DbWorkItemM2MAssigneeWIA,
+  CreateTimeEntryRequest,
+  TimeEntry,
+  UpdateTimeEntryRequest,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -1054,5 +1057,41 @@ export const DbWorkItemM2MAssigneeWIADecoder: Decoder<DbWorkItemM2MAssigneeWIA> 
       throw new Error(`Schema ${DbWorkItemM2MAssigneeWIADecoder.definitionName} not found`)
     }
     return validateJson(json, schema, DbWorkItemM2MAssigneeWIADecoder.definitionName)
+  },
+}
+export const CreateTimeEntryRequestDecoder: Decoder<CreateTimeEntryRequest> = {
+  definitionName: 'CreateTimeEntryRequest',
+  schemaRef: '#/definitions/CreateTimeEntryRequest',
+
+  decode(json: unknown): CreateTimeEntryRequest {
+    const schema = ajv.getSchema(CreateTimeEntryRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${CreateTimeEntryRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, CreateTimeEntryRequestDecoder.definitionName)
+  },
+}
+export const TimeEntryDecoder: Decoder<TimeEntry> = {
+  definitionName: 'TimeEntry',
+  schemaRef: '#/definitions/TimeEntry',
+
+  decode(json: unknown): TimeEntry {
+    const schema = ajv.getSchema(TimeEntryDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${TimeEntryDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, TimeEntryDecoder.definitionName)
+  },
+}
+export const UpdateTimeEntryRequestDecoder: Decoder<UpdateTimeEntryRequest> = {
+  definitionName: 'UpdateTimeEntryRequest',
+  schemaRef: '#/definitions/UpdateTimeEntryRequest',
+
+  decode(json: unknown): UpdateTimeEntryRequest {
+    const schema = ajv.getSchema(UpdateTimeEntryRequestDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${UpdateTimeEntryRequestDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, UpdateTimeEntryRequestDecoder.definitionName)
   },
 }

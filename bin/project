@@ -2867,11 +2867,13 @@ if [[ -n "$1" ]]; then
       ensure_tools_up_to_date
 
       "x.$CMD" "$@"
+      err_code=$?
 
       if test -f "$failed_tool_build_marker"; then
         echo "${YELLOW}[WARNING] At least one gen tool build failed. A gen rerun may be required"
       fi
-      exit $? # do not quote
+
+      exit $err_code # do not quote
     fi
   done
 fi

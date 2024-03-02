@@ -68,6 +68,26 @@
     "role": null,
     "requiresAuthentication": true
   },
+  "CreateTimeEntry": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "GetTimeEntry": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "UpdateTimeEntry": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "DeleteTimeEntry": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
   "GetActivity": {
     "scopes": null,
     "role": null,

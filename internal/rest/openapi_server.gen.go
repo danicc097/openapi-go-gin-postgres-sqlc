@@ -318,6 +318,19 @@ type CreateTeamRequest  struct {
 */
 
 /* Ignoring existing rest struct
+// CreateTimeEntryRequest defines the model for CreateTimeEntryRequest.
+type CreateTimeEntryRequest  struct {
+    ActivityID int`json:"activityID"`
+    Comment string`json:"comment"`
+    DurationMinutes *int`json:"durationMinutes"`
+    Start time.Time`json:"start"`
+    TeamID *int`json:"teamID"`
+    UserID externalRef0.DbUserID`json:"userID"`
+    WorkItemID *int`json:"workItemID"`
+}
+*/
+
+/* Ignoring existing rest struct
 // CreateWorkItemCommentRequest defines the model for CreateWorkItemCommentRequest.
 type CreateWorkItemCommentRequest  struct {
     Message string`json:"message"`
@@ -790,6 +803,20 @@ type Team  struct {
 }
 */
 
+/* Ignoring existing rest struct
+// TimeEntry defines the model for TimeEntry.
+type TimeEntry  struct {
+    ActivityID int`json:"activityID"`
+    Comment string`json:"comment"`
+    DurationMinutes *int`json:"durationMinutes"`
+    Start time.Time`json:"start"`
+    TeamID *int`json:"teamID"`
+    TimeEntryID int`json:"timeEntryID"`
+    UserID externalRef0.DbUserID`json:"userID"`
+    WorkItemID *int`json:"workItemID"`
+}
+*/
+
 // Topics string identifiers for SSE event listeners.
 type Topics string
 
@@ -807,6 +834,19 @@ type UpdateActivityRequest  struct {
 type UpdateTeamRequest  struct {
     Description *string`json:"description,omitempty"`
     Name *string`json:"name,omitempty"`
+}
+*/
+
+/* Ignoring existing rest struct
+// UpdateTimeEntryRequest defines the model for UpdateTimeEntryRequest.
+type UpdateTimeEntryRequest  struct {
+    ActivityID *int`json:"activityID,omitempty"`
+    Comment *string`json:"comment,omitempty"`
+    DurationMinutes *int`json:"durationMinutes"`
+    Start *time.Time`json:"start,omitempty"`
+    TeamID *int`json:"teamID"`
+    UserID *externalRef0.DbUserID`json:"userID,omitempty"`
+    WorkItemID *int`json:"workItemID"`
 }
 */
 
@@ -1023,6 +1063,14 @@ type CreateWorkItemTypeJSONRequestBody = CreateWorkItemTypeRequest
 
 type UpdateTeamJSONRequestBody = UpdateTeamRequest
 
+// CreateTimeEntryJSONRequestBody defines body for CreateTimeEntry for application/json ContentType.
+
+type CreateTimeEntryJSONRequestBody = CreateTimeEntryRequest
+
+// UpdateTimeEntryJSONRequestBody defines body for UpdateTimeEntry for application/json ContentType.
+
+type UpdateTimeEntryJSONRequestBody = UpdateTimeEntryRequest
+
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 
 type UpdateUserJSONRequestBody = UpdateUserRequest
@@ -1169,6 +1217,18 @@ type ServerInterface interface {
 	// update team.
 	// (PATCH /team/{teamID})
 	UpdateTeam(c *gin.Context, teamID db.TeamID)
+	// create time entry.
+	// (POST /time-entry/)
+	CreateTimeEntry(c *gin.Context)
+	// delete time-entry.
+	// (DELETE /time-entry/{timeEntryID})
+	DeleteTimeEntry(c *gin.Context, timeEntryID db.TimeEntryID)
+	// get time-entry.
+	// (GET /time-entry/{timeEntryID})
+	GetTimeEntry(c *gin.Context, timeEntryID db.TimeEntryID)
+	// update time-entry.
+	// (PATCH /time-entry/{timeEntryID})
+	UpdateTimeEntry(c *gin.Context, timeEntryID db.TimeEntryID)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context)
@@ -1703,6 +1763,75 @@ func (siw *ServerInterfaceWrapper) UpdateTeam(c *gin.Context) {
 	c.Set(externalRef0.Api_keyScopes, []string{})
 
 	siw.Handler.UpdateTeam(c, teamID)
+}
+
+// CreateTimeEntry operation with its own middleware.
+func (siw *ServerInterfaceWrapper) CreateTimeEntry(c *gin.Context) {
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.CreateTimeEntry(c)
+}
+
+// DeleteTimeEntry operation with its own middleware.
+func (siw *ServerInterfaceWrapper) DeleteTimeEntry(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "timeEntryID" -------------
+	var timeEntryID db.TimeEntryID // db.TimeEntryID
+
+	err = runtime.BindStyledParameter("simple", false, "timeEntryID", c.Param("timeEntryID"), &timeEntryID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter timeEntryID: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.DeleteTimeEntry(c, timeEntryID)
+}
+
+// GetTimeEntry operation with its own middleware.
+func (siw *ServerInterfaceWrapper) GetTimeEntry(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "timeEntryID" -------------
+	var timeEntryID db.TimeEntryID // db.TimeEntryID
+
+	err = runtime.BindStyledParameter("simple", false, "timeEntryID", c.Param("timeEntryID"), &timeEntryID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter timeEntryID: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.GetTimeEntry(c, timeEntryID)
+}
+
+// UpdateTimeEntry operation with its own middleware.
+func (siw *ServerInterfaceWrapper) UpdateTimeEntry(c *gin.Context) {
+	var err error
+
+	// ------------- Path parameter "timeEntryID" -------------
+	var timeEntryID db.TimeEntryID // db.TimeEntryID
+
+	err = runtime.BindStyledParameter("simple", false, "timeEntryID", c.Param("timeEntryID"), &timeEntryID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter timeEntryID: %s", err)})
+		return
+	}
+
+	c.Set(externalRef0.Bearer_authScopes, []string{})
+
+	c.Set(externalRef0.Api_keyScopes, []string{})
+
+	siw.Handler.UpdateTimeEntry(c, timeEntryID)
 }
 
 // GetCurrentUser operation with its own middleware.
@@ -2280,6 +2409,26 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PATCH(options.BaseURL+"/team/:teamID", append(
 		wrapper.Handler.authMiddlewares(UpdateTeam),
 		append(wrapper.Handler.middlewares(UpdateTeam), wrapper.UpdateTeam)...,
+	)...)
+
+	router.POST(options.BaseURL+"/time-entry/", append(
+		wrapper.Handler.authMiddlewares(CreateTimeEntry),
+		append(wrapper.Handler.middlewares(CreateTimeEntry), wrapper.CreateTimeEntry)...,
+	)...)
+
+	router.DELETE(options.BaseURL+"/time-entry/:timeEntryID", append(
+		wrapper.Handler.authMiddlewares(DeleteTimeEntry),
+		append(wrapper.Handler.middlewares(DeleteTimeEntry), wrapper.DeleteTimeEntry)...,
+	)...)
+
+	router.GET(options.BaseURL+"/time-entry/:timeEntryID", append(
+		wrapper.Handler.authMiddlewares(GetTimeEntry),
+		append(wrapper.Handler.middlewares(GetTimeEntry), wrapper.GetTimeEntry)...,
+	)...)
+
+	router.PATCH(options.BaseURL+"/time-entry/:timeEntryID", append(
+		wrapper.Handler.authMiddlewares(UpdateTimeEntry),
+		append(wrapper.Handler.middlewares(UpdateTimeEntry), wrapper.UpdateTimeEntry)...,
 	)...)
 
 	router.GET(options.BaseURL+"/user/me", append(
@@ -3134,6 +3283,177 @@ func (response UpdateTeam4XXJSONResponse) VisitUpdateTeamResponse(w http.Respons
 	return json.NewEncoder(w).Encode(response.Body)
 }
 
+type CreateTimeEntryRequestObject struct {
+	Body *CreateTimeEntryRequest
+}
+
+type CreateTimeEntryResponseObject interface {
+	VisitCreateTimeEntryResponse(w http.ResponseWriter) error
+}
+
+type CreateTimeEntry201JSONResponse TimeEntry
+
+func (response CreateTimeEntry201JSONResponse) VisitCreateTimeEntryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateTimeEntry401Response struct{}
+
+func (response CreateTimeEntry401Response) VisitCreateTimeEntryResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type CreateTimeEntry403Response struct{}
+
+func (response CreateTimeEntry403Response) VisitCreateTimeEntryResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type CreateTimeEntry4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response CreateTimeEntry4XXJSONResponse) VisitCreateTimeEntryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type DeleteTimeEntryRequestObject struct {
+	TimeEntryID db.TimeEntryID `json:"timeEntryID"`
+}
+
+type DeleteTimeEntryResponseObject interface {
+	VisitDeleteTimeEntryResponse(w http.ResponseWriter) error
+}
+
+type DeleteTimeEntry204Response struct{}
+
+func (response DeleteTimeEntry204Response) VisitDeleteTimeEntryResponse(w http.ResponseWriter) error {
+	w.WriteHeader(204)
+	return nil
+}
+
+type DeleteTimeEntry401Response struct{}
+
+func (response DeleteTimeEntry401Response) VisitDeleteTimeEntryResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type DeleteTimeEntry403Response struct{}
+
+func (response DeleteTimeEntry403Response) VisitDeleteTimeEntryResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type DeleteTimeEntry4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response DeleteTimeEntry4XXJSONResponse) VisitDeleteTimeEntryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type GetTimeEntryRequestObject struct {
+	TimeEntryID db.TimeEntryID `json:"timeEntryID"`
+}
+
+type GetTimeEntryResponseObject interface {
+	VisitGetTimeEntryResponse(w http.ResponseWriter) error
+}
+
+type GetTimeEntry200JSONResponse TimeEntry
+
+func (response GetTimeEntry200JSONResponse) VisitGetTimeEntryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetTimeEntry401Response struct{}
+
+func (response GetTimeEntry401Response) VisitGetTimeEntryResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type GetTimeEntry403Response struct{}
+
+func (response GetTimeEntry403Response) VisitGetTimeEntryResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type GetTimeEntry4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response GetTimeEntry4XXJSONResponse) VisitGetTimeEntryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
+type UpdateTimeEntryRequestObject struct {
+	TimeEntryID db.TimeEntryID `json:"timeEntryID"`
+	Body        *UpdateTimeEntryRequest
+}
+
+type UpdateTimeEntryResponseObject interface {
+	VisitUpdateTimeEntryResponse(w http.ResponseWriter) error
+}
+
+type UpdateTimeEntry200JSONResponse TimeEntry
+
+func (response UpdateTimeEntry200JSONResponse) VisitUpdateTimeEntryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateTimeEntry401Response struct{}
+
+func (response UpdateTimeEntry401Response) VisitUpdateTimeEntryResponse(w http.ResponseWriter) error {
+	w.WriteHeader(401)
+	return nil
+}
+
+type UpdateTimeEntry403Response struct{}
+
+func (response UpdateTimeEntry403Response) VisitUpdateTimeEntryResponse(w http.ResponseWriter) error {
+	w.WriteHeader(403)
+	return nil
+}
+
+type UpdateTimeEntry4XXJSONResponse struct {
+	Body       externalRef0.HTTPError
+	StatusCode int
+}
+
+func (response UpdateTimeEntry4XXJSONResponse) VisitUpdateTimeEntryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(response.StatusCode)
+
+	return json.NewEncoder(w).Encode(response.Body)
+}
+
 type GetCurrentUserRequestObject struct{}
 
 type GetCurrentUserResponseObject interface {
@@ -3841,6 +4161,18 @@ type StrictServerInterface interface {
 	// update team.
 	// (PATCH /team/{teamID})
 	UpdateTeam(c *gin.Context, request UpdateTeamRequestObject) (UpdateTeamResponseObject, error)
+	// create time entry.
+	// (POST /time-entry/)
+	CreateTimeEntry(c *gin.Context, request CreateTimeEntryRequestObject) (CreateTimeEntryResponseObject, error)
+	// delete time-entry.
+	// (DELETE /time-entry/{timeEntryID})
+	DeleteTimeEntry(c *gin.Context, request DeleteTimeEntryRequestObject) (DeleteTimeEntryResponseObject, error)
+	// get time-entry.
+	// (GET /time-entry/{timeEntryID})
+	GetTimeEntry(c *gin.Context, request GetTimeEntryRequestObject) (GetTimeEntryResponseObject, error)
+	// update time-entry.
+	// (PATCH /time-entry/{timeEntryID})
+	UpdateTimeEntry(c *gin.Context, request UpdateTimeEntryRequestObject) (UpdateTimeEntryResponseObject, error)
 	// returns the logged in user
 	// (GET /user/me)
 	GetCurrentUser(c *gin.Context, request GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error)
@@ -4603,6 +4935,130 @@ func (sh *strictHandlers) UpdateTeam(ctx *gin.Context, teamID db.TeamID) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(UpdateTeamResponseObject); ok {
 		if err := validResponse.VisitUpdateTeamResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// CreateTimeEntry operation middleware
+func (sh *strictHandlers) CreateTimeEntry(ctx *gin.Context) {
+	var request CreateTimeEntryRequestObject
+
+	// CreateTimeEntryRequest
+	var body CreateTimeEntryRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.CreateTimeEntry(ctx, request.(CreateTimeEntryRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "CreateTimeEntry")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(CreateTimeEntryResponseObject); ok {
+		if err := validResponse.VisitCreateTimeEntryResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteTimeEntry operation middleware
+func (sh *strictHandlers) DeleteTimeEntry(ctx *gin.Context, timeEntryID db.TimeEntryID) {
+	var request DeleteTimeEntryRequestObject
+
+	request.TimeEntryID = timeEntryID
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteTimeEntry(ctx, request.(DeleteTimeEntryRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "DeleteTimeEntry")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteTimeEntryResponseObject); ok {
+		if err := validResponse.VisitDeleteTimeEntryResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetTimeEntry operation middleware
+func (sh *strictHandlers) GetTimeEntry(ctx *gin.Context, timeEntryID db.TimeEntryID) {
+	var request GetTimeEntryRequestObject
+
+	request.TimeEntryID = timeEntryID
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetTimeEntry(ctx, request.(GetTimeEntryRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "GetTimeEntry")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetTimeEntryResponseObject); ok {
+		if err := validResponse.VisitGetTimeEntryResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// UpdateTimeEntry operation middleware
+func (sh *strictHandlers) UpdateTimeEntry(ctx *gin.Context, timeEntryID db.TimeEntryID) {
+	var request UpdateTimeEntryRequestObject
+
+	request.TimeEntryID = timeEntryID
+
+	// UpdateTimeEntryRequest
+	var body UpdateTimeEntryRequest
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateTimeEntry(ctx, request.(UpdateTimeEntryRequestObject))
+	}
+	for _, middleware := range sh.strictMiddlewares {
+		handler = middleware(handler, "UpdateTimeEntry")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(UpdateTimeEntryResponseObject); ok {
+		if err := validResponse.VisitUpdateTimeEntryResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

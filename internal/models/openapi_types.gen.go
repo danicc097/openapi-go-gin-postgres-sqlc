@@ -297,6 +297,17 @@ type CreateTeamRequest struct {
 	Name        string `json:"name"`
 }
 
+// CreateTimeEntryRequest defines the model for CreateTimeEntryRequest.
+type CreateTimeEntryRequest struct {
+	ActivityID      int       `json:"activityID"`
+	Comment         string    `json:"comment"`
+	DurationMinutes *int      `json:"durationMinutes"`
+	Start           time.Time `json:"start"`
+	TeamID          *int      `json:"teamID"`
+	UserID          DbUserID  `json:"userID"`
+	WorkItemID      *int      `json:"workItemID"`
+}
+
 // CreateWorkItemCommentRequest defines the model for CreateWorkItemCommentRequest.
 type CreateWorkItemCommentRequest struct {
 	Message    string   `json:"message"`
@@ -746,6 +757,18 @@ type Team struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
+// TimeEntry defines the model for TimeEntry.
+type TimeEntry struct {
+	ActivityID      int       `json:"activityID"`
+	Comment         string    `json:"comment"`
+	DurationMinutes *int      `json:"durationMinutes"`
+	Start           time.Time `json:"start"`
+	TeamID          *int      `json:"teamID"`
+	TimeEntryID     int       `json:"timeEntryID"`
+	UserID          DbUserID  `json:"userID"`
+	WorkItemID      *int      `json:"workItemID"`
+}
+
 // Topics string identifiers for SSE event listeners.
 type Topics string
 
@@ -760,6 +783,17 @@ type UpdateActivityRequest struct {
 type UpdateTeamRequest struct {
 	Description *string `json:"description,omitempty"`
 	Name        *string `json:"name,omitempty"`
+}
+
+// UpdateTimeEntryRequest defines the model for UpdateTimeEntryRequest.
+type UpdateTimeEntryRequest struct {
+	ActivityID      *int       `json:"activityID,omitempty"`
+	Comment         *string    `json:"comment,omitempty"`
+	DurationMinutes *int       `json:"durationMinutes"`
+	Start           *time.Time `json:"start,omitempty"`
+	TeamID          *int       `json:"teamID"`
+	UserID          *DbUserID  `json:"userID,omitempty"`
+	WorkItemID      *int       `json:"workItemID"`
 }
 
 // UpdateUserAuthRequest represents User authorization data to update
@@ -960,6 +994,14 @@ type CreateWorkItemTypeJSONRequestBody = CreateWorkItemTypeRequest
 // UpdateTeamJSONRequestBody defines body for UpdateTeam for application/json ContentType.
 
 type UpdateTeamJSONRequestBody = UpdateTeamRequest
+
+// CreateTimeEntryJSONRequestBody defines body for CreateTimeEntry for application/json ContentType.
+
+type CreateTimeEntryJSONRequestBody = CreateTimeEntryRequest
+
+// UpdateTimeEntryJSONRequestBody defines body for UpdateTimeEntry for application/json ContentType.
+
+type UpdateTimeEntryJSONRequestBody = UpdateTimeEntryRequest
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 

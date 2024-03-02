@@ -31,6 +31,10 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
+	case CreateTimeEntry:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
 	case CreateWorkItemComment:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
@@ -71,6 +75,10 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 				}),
 		}
 	case DeleteTeam:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case DeleteTimeEntry:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
@@ -149,6 +157,10 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}
+	case GetTimeEntry:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
 	case GetWorkItem:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
@@ -200,6 +212,10 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 				}),
 		}
 	case UpdateTeam:
+		return []gin.HandlerFunc{
+			h.authmw.EnsureAuthenticated(),
+		}
+	case UpdateTimeEntry:
 		return []gin.HandlerFunc{
 			h.authmw.EnsureAuthenticated(),
 		}

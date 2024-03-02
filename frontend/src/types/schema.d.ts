@@ -56,6 +56,18 @@ export interface paths {
     /** create activity. */
     post: operations["CreateActivity"];
   };
+  "/time-entry/": {
+    /** create time entry. */
+    post: operations["CreateTimeEntry"];
+  };
+  [path: `/time-entry/${number}`]: {
+    /** get time-entry. */
+    get: operations["GetTimeEntry"];
+    /** delete time-entry. */
+    delete: operations["DeleteTimeEntry"];
+    /** update time-entry. */
+    patch: operations["UpdateTimeEntry"];
+  };
   [path: `/activity/${number}`]: {
     /** get activity. */
     get: operations["GetActivity"];
@@ -727,6 +739,37 @@ export interface components {
       role: components["schemas"]["WorkItemRole"];
       user: components["schemas"]["DbUser"];
     };
+    CreateTimeEntryRequest: {
+      activityID: number;
+      comment: string;
+      durationMinutes?: number | null;
+      /** Format: date-time */
+      start: string;
+      teamID?: number | null;
+      userID: components["schemas"]["DbUserID"];
+      workItemID?: number | null;
+    };
+    TimeEntry: {
+      activityID: number;
+      comment: string;
+      durationMinutes?: number | null;
+      /** Format: date-time */
+      start: string;
+      teamID?: number | null;
+      timeEntryID: number;
+      userID: components["schemas"]["DbUserID"];
+      workItemID?: number | null;
+    };
+    UpdateTimeEntryRequest: {
+      activityID?: number;
+      comment?: string;
+      durationMinutes?: number | null;
+      /** Format: date-time */
+      start?: string;
+      teamID?: number | null;
+      userID?: components["schemas"]["DbUserID"];
+      workItemID?: number | null;
+    };
   };
   responses: never;
   parameters: {
@@ -1033,6 +1076,123 @@ export interface operations {
       201: {
         content: {
           "application/json": components["schemas"]["Activity"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** create time entry. */
+  CreateTimeEntry: {
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CreateTimeEntryRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      201: {
+        content: {
+          "application/json": components["schemas"]["TimeEntry"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** get time-entry. */
+  GetTimeEntry: {
+    parameters: {
+      path: {
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        timeEntryID: number;
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["TimeEntry"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** delete time-entry. */
+  DeleteTimeEntry: {
+    parameters: {
+      path: {
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        timeEntryID: number;
+      };
+    };
+    responses: {
+      /** @description Success. */
+      204: never;
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
+        };
+      };
+    };
+  };
+  /** update time-entry. */
+  UpdateTimeEntry: {
+    parameters: {
+      path: {
+        /**
+         * @description integer identifier
+         * @example 41131
+         */
+        timeEntryID: number;
+      };
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["UpdateTimeEntryRequest"];
+      };
+    };
+    responses: {
+      /** @description Success. */
+      200: {
+        content: {
+          "application/json": components["schemas"]["TimeEntry"];
         };
       };
       /** @description Unauthenticated */

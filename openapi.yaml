@@ -601,6 +601,78 @@ paths:
         !!merge <<: *x-error-response
       tags:
         - activity
+  /time-entry/:
+    post:
+      summary: create time entry.
+      !!merge <<: *x-require-authenticated
+      operationId: CreateTimeEntry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTimeEntryRequest'
+        required: true
+      responses:
+        201:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntry'
+        !!merge <<: *x-error-response
+      tags:
+        - timeEntry
+  /time-entry/{timeEntryID}:
+    get:
+      summary: get time-entry.
+      !!merge <<: *x-require-authenticated
+      operationId: GetTimeEntry
+      parameters:
+        - *x-timeEntryIDParameter
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntry'
+        !!merge <<: *x-error-response
+      tags:
+        - timeEntry
+    patch:
+      summary: update time-entry.
+      !!merge <<: *x-require-authenticated
+      operationId: UpdateTimeEntry
+      parameters:
+        - *x-timeEntryIDParameter
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTimeEntryRequest'
+        required: true
+      responses:
+        200:
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimeEntry'
+        !!merge <<: *x-error-response
+      tags:
+        - timeEntry
+    delete:
+      summary: delete time-entry.
+      !!merge <<: *x-require-authenticated
+      operationId: DeleteTimeEntry
+      parameters:
+        - *x-timeEntryIDParameter
+      responses:
+        204:
+          description: Success.
+        !!merge <<: *x-error-response
+      tags:
+        - timeEntry
   /activity/{activityID}:
     get:
       summary: get activity.
@@ -2612,6 +2684,88 @@ components:
         - user
         - role
       type: object
+    CreateTimeEntryRequest:
+      properties:
+        activityID:
+          type: integer
+        comment:
+          type: string
+        durationMinutes:
+          nullable: true
+          type: integer
+        start:
+          format: date-time
+          type: string
+        teamID:
+          nullable: true
+          type: integer
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        workItemID:
+          nullable: true
+          type: integer
+      required:
+        - activityID
+        - comment
+        - start
+        - userID
+      type: object
+      x-gen-struct: CreateTimeEntryRequest
+      x-is-generated: true
+    TimeEntry:
+      properties:
+        activityID:
+          type: integer
+        comment:
+          type: string
+        durationMinutes:
+          nullable: true
+          type: integer
+        start:
+          format: date-time
+          type: string
+        teamID:
+          nullable: true
+          type: integer
+        timeEntryID:
+          type: integer
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        workItemID:
+          nullable: true
+          type: integer
+      required:
+        - timeEntryID
+        - activityID
+        - userID
+        - comment
+        - start
+      type: object
+      x-gen-struct: TimeEntry
+      x-is-generated: true
+    UpdateTimeEntryRequest:
+      properties:
+        activityID:
+          type: integer
+        comment:
+          type: string
+        durationMinutes:
+          nullable: true
+          type: integer
+        start:
+          format: date-time
+          type: string
+        teamID:
+          nullable: true
+          type: integer
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        workItemID:
+          nullable: true
+          type: integer
+      type: object
+      x-gen-struct: UpdateTimeEntryRequest
+      x-is-generated: true
   examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:

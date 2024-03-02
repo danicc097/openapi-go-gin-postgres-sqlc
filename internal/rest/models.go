@@ -137,6 +137,18 @@ type UpdateActivityRequest struct {
 	db.ActivityUpdateParams
 }
 
+type TimeEntry struct {
+	db.TimeEntry
+}
+
+type CreateTimeEntryRequest struct {
+	db.TimeEntryCreateParams
+}
+
+type UpdateTimeEntryRequest struct {
+	db.TimeEntryUpdateParams
+}
+
 type CreateDemoWorkItemRequest struct {
 	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 	services.DemoWorkItemCreateParams
