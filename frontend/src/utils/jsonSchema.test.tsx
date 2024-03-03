@@ -2,7 +2,7 @@ import type { DeepPartial, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, PathTyp
 import DynamicForm from 'src/utils/formGeneration'
 import { parseSchemaFields, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
-import { getByTestId, render, screen, renderHook, fireEvent, act, getByText } from '@testing-library/react'
+import { getByTestId, render, screen, renderHook, fireEvent, act, getByText, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import dayjs from 'dayjs'
 import { entries, keys } from 'src/utils/object'
@@ -412,21 +412,30 @@ describe('form generation', () => {
 
     // test should submit with default values if none changed
 
-    // FIXME: dont check state, its not updated. call submit with mock onsubmit that returns data and check
+    // FIXME: dont check state, its not updated and theres no sensible workaround:
+    // https://stackoverflow.com/questions/61813319/check-state-of-a-component-using-react-testing-library.
+    // maybe call submit with mock onsubmit that sets global var and check
     // that return value is what we expect.
     // https://react-hook-form.com/advanced-usage#TestingForm
     // but this is still not updated in test for some reason: formisbool: true  but 'demoProject.reopened' false
-    expect(form.current.getValues('members.0.role')).toEqual('preparer') // was intentionally undefined
-    // expect(form.current.getValues('demoProject.reopened')).toEqual(true)
-
     const formElement = screen.getByTestId(formName)
+    const checkbox = screen.getByTestId('demoWorkItemCreateForm-demoProject.reopened')
+    expect(checkbox).toBeChecked()
+    checkbox.click()
+    expect(checkbox).not.toBeChecked()
+    // checkbox.click()
     fireEvent.submit(formElement)
+    // await waitFor(() => {
+    //   expect(form.current.getValues('members.0.role')).toEqual('preparer') // was intentionally undefined
+    // })
+    // await waitFor(() => {
+    //   expect(form.current.getValues('demoProject.reopened')).toEqual(true)
+    // })
     console.log({ formValues: form.current.getValues() })
     console.log(form.current.formState.errors)
     console.log(form.current.formState.isValid)
     expect(form.current.formState.errors).toEqual({})
 
-    const checkbox = screen.getByTestId('demoWorkItemCreateForm-demoProject.reopened')
     console.log({ checkbox: checkbox.innerHTML })
 
     // TODO: test comboboxes options get rendered
