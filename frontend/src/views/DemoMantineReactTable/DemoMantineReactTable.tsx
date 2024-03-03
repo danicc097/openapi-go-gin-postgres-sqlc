@@ -145,6 +145,8 @@ export default function DemoMantineReactTable() {
 
   const table = useMantineReactTable({
     columns,
+    enableDensityToggle: true,
+    mantineTableBodyCellProps: {},
     data: fetchedUsers,
     enableColumnFilterModes: true,
     columnFilterModeOptions: ['contains', 'startsWith', 'endsWith'],
@@ -197,6 +199,7 @@ export default function DemoMantineReactTable() {
           </Accordion.Panel>
         </Accordion.Item>
       </Accordion>
+      {/* when using hook, set all props there */}
       <MantineReactTable table={table} />
     </>
   )
