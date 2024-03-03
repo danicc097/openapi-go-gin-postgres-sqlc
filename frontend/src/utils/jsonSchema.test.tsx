@@ -350,86 +350,65 @@ describe('form generation', () => {
     // console.log(view.container.innerHTML)
 
     const ids = [
-      'demoWorkItemCreateForm-base.closed',
-      'demoWorkItemCreateForm-base.closed-label',
-      'demoWorkItemCreateForm-base.description',
-      'demoWorkItemCreateForm-base.description-label',
-      'demoWorkItemCreateForm-base.items-add-button',
-      'demoWorkItemCreateForm-base.items-remove-button-0',
-      'demoWorkItemCreateForm-base.items-remove-button-1',
-      'demoWorkItemCreateForm-base.items.0.items-0',
-      'demoWorkItemCreateForm-base.items.0.items-1',
-      'demoWorkItemCreateForm-base.items.0.items-add-button',
-      'demoWorkItemCreateForm-base.items.0.items-remove-button-0',
-      'demoWorkItemCreateForm-base.items.0.items-remove-button-1',
-      'demoWorkItemCreateForm-base.items.0.name',
-      'demoWorkItemCreateForm-base.items.0.name-label',
-      'demoWorkItemCreateForm-base.items.0.userId-add-button',
-      'demoWorkItemCreateForm-base.items.1.items-0',
-      'demoWorkItemCreateForm-base.items.1.items-1',
-      'demoWorkItemCreateForm-base.items.1.items-add-button',
-      'demoWorkItemCreateForm-base.items.1.items-remove-button-0',
-      'demoWorkItemCreateForm-base.items.1.items-remove-button-1',
-      'demoWorkItemCreateForm-base.items.1.name',
-      'demoWorkItemCreateForm-base.items.1.name-label',
-      'demoWorkItemCreateForm-base.items.1.userId-add-button',
-      'demoWorkItemCreateForm-base.kanbanStepID',
-      'demoWorkItemCreateForm-base.kanbanStepID-label',
-      'demoWorkItemCreateForm-base.targetDate',
-      'demoWorkItemCreateForm-base.targetDate-label',
-      'demoWorkItemCreateForm-base.teamID',
-      'demoWorkItemCreateForm-base.teamID-label',
-      'demoWorkItemCreateForm-base.workItemTypeID',
-      'demoWorkItemCreateForm-base.workItemTypeID-label',
-      'demoWorkItemCreateForm-demoProject.lastMessageAt',
-      'demoWorkItemCreateForm-demoProject.lastMessageAt-label',
-      'demoWorkItemCreateForm-demoProject.line',
-      'demoWorkItemCreateForm-demoProject.line-label',
-      'demoWorkItemCreateForm-demoProject.ref',
-      'demoWorkItemCreateForm-demoProject.ref-label',
-      'demoWorkItemCreateForm-demoProject.reopened',
-      'demoWorkItemCreateForm-demoProject.workItemID',
-      'demoWorkItemCreateForm-demoProject.workItemID-label',
+      'demoWorkItemCreateForm',
+      'demoWorkItemCreateForm-tagIDs-title',
+      'demoWorkItemCreateForm-tagIDs-add-button',
+      'demoWorkItemCreateForm-tagIDs-0',
+      'demoWorkItemCreateForm-tagIDs-remove-button-0',
+      'demoWorkItemCreateForm-tagIDs-1',
+      'demoWorkItemCreateForm-tagIDs-remove-button-1',
+      'demoWorkItemCreateForm-tagIDs-2',
+      'demoWorkItemCreateForm-tagIDs-remove-button-2',
+      'demoWorkItemCreateForm-tagIDsMultiselect', // multiselects dont have titles - using vanilla
+      'demoWorkItemCreateForm-members-title',
       'demoWorkItemCreateForm-members-add-button',
       'demoWorkItemCreateForm-members-remove-button-0',
-      'demoWorkItemCreateForm-members-remove-button-1',
       'demoWorkItemCreateForm-members.0.role',
-      'demoWorkItemCreateForm-members.0.role-label',
       'demoWorkItemCreateForm-members.0.userID',
-      'demoWorkItemCreateForm-members.0.userID-label',
+      'demoWorkItemCreateForm-members-remove-button-1',
       'demoWorkItemCreateForm-members.1.role',
-      'demoWorkItemCreateForm-members.1.role-label',
       'demoWorkItemCreateForm-members.1.userID',
-      'demoWorkItemCreateForm-members.1.userID-label',
-      'demoWorkItemCreateForm-tagIDs-0',
-      'demoWorkItemCreateForm-tagIDs-1',
-      'demoWorkItemCreateForm-tagIDs-2',
-      'demoWorkItemCreateForm-tagIDs-add-button',
-      'demoWorkItemCreateForm-tagIDs-remove-button-0',
-      'demoWorkItemCreateForm-tagIDs-remove-button-1',
-      'demoWorkItemCreateForm-tagIDs-remove-button-2',
-      'demoWorkItemCreateForm-tagIDsMultiselect',
-      'demoWorkItemCreateForm-tagIDsMultiselect-label',
+      'demoWorkItemCreateForm-base-title',
+      'demoWorkItemCreateForm-base.closed',
+      'demoWorkItemCreateForm-base.description',
+      'demoWorkItemCreateForm-base.kanbanStepID',
+      'demoWorkItemCreateForm-base.targetDate',
+      'demoWorkItemCreateForm-base.teamID',
+      'demoWorkItemCreateForm-base.items-title',
+      'demoWorkItemCreateForm-base.items-add-button',
+      'demoWorkItemCreateForm-base.items-remove-button-0',
+      'demoWorkItemCreateForm-base.items.0.name',
+      'demoWorkItemCreateForm-base.items.0.userId-title',
+      'demoWorkItemCreateForm-base.items.0.userId-add-button',
+      'demoWorkItemCreateForm-base.items.0.items-title',
+      'demoWorkItemCreateForm-base.items.0.items-add-button',
+      'demoWorkItemCreateForm-base.items.0.items-0',
+      'demoWorkItemCreateForm-base.items.0.items-remove-button-0',
+      'demoWorkItemCreateForm-base.items.0.items-1',
+      'demoWorkItemCreateForm-base.items.0.items-remove-button-1',
+      'demoWorkItemCreateForm-base.items-remove-button-1',
+      'demoWorkItemCreateForm-base.items.1.name',
+      'demoWorkItemCreateForm-base.items.1.userId-title',
+      'demoWorkItemCreateForm-base.items.1.userId-add-button',
+      'demoWorkItemCreateForm-base.items.1.items-title',
+      'demoWorkItemCreateForm-base.items.1.items-add-button',
+      'demoWorkItemCreateForm-base.items.1.items-0',
+      'demoWorkItemCreateForm-base.items.1.items-remove-button-0',
+      'demoWorkItemCreateForm-base.items.1.items-1',
+      'demoWorkItemCreateForm-base.items.1.items-remove-button-1',
+      'demoWorkItemCreateForm-base.workItemTypeID',
+      'demoWorkItemCreateForm-demoProject.lastMessageAt',
+      'demoWorkItemCreateForm-demoProject.line',
+      'demoWorkItemCreateForm-demoProject.ref',
+      'demoWorkItemCreateForm-demoProject.reopened',
+      'demoWorkItemCreateForm-demoProject.workItemID',
     ]
 
-    const actualIds = [...document.querySelectorAll('[id^="demoWorkItemCreateForm"]')].map((e) => e.id)
+    const actualIds = [...document.querySelectorAll('[data-testid^="demoWorkItemCreateForm"]')].map((e) =>
+      e.getAttribute('data-testid'),
+    )
+    console.log({ actualIds })
     expect(actualIds.sort()).toEqual(ids.sort())
-
-    const dataTestIds = [
-      'demoWorkItemCreateForm',
-      'base-title',
-      'base.items-title',
-      'base.items.0.items-title',
-      'base.items.0.userId-title',
-      'base.items.1.items-title',
-      'base.items.1.userId-title',
-      'members-title',
-      'tagIDs-title',
-      // 'tagIDsMultiselect-title', // multiselects don't have titles, they use vanilla input labels
-    ]
-    const actualDataTestIds = [...document.querySelectorAll('[data-testid]')].map((e) => e.getAttribute('data-testid'))
-
-    expect(actualDataTestIds.sort()).toEqual(dataTestIds.sort())
 
     // test should submit with default values if none changed
 
@@ -443,6 +422,9 @@ describe('form generation', () => {
     console.log(form.current.formState.errors)
     console.log(form.current.formState.isValid)
     expect(form.current.formState.errors).toEqual({})
+
+    const checkbox = screen.getByTestId('demoWorkItemCreateForm-demoProject.reopened')
+    console.log({ checkbox: checkbox.innerHTML })
 
     // TODO: test comboboxes options get rendered
   })

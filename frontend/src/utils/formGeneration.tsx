@@ -56,6 +56,7 @@ import React, {
   forwardRef,
   useRef,
   useEffect,
+  ReactNode,
 } from 'react'
 import {
   useFormContext,
@@ -218,10 +219,10 @@ type DynamicFormProps<T extends object, IgnoredFormKeys extends GetKeys<T> | nul
   onSubmit: React.FormEventHandler<HTMLFormElement>
 }
 
-function renderTitle(key: FormField, title) {
+function renderTitle(key: FormField, formName: string, title: ReactNode) {
   return (
     <>
-      <Title data-testid={`${key}-title`} size={18}>
+      <Title data-testid={`${formName}-${key}-title`} size={18}>
         {title}
       </Title>
       <Space p={8} />
@@ -337,7 +338,7 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
       `,
       ...(!field.isArray && { label: options.labels[schemaKey] }),
       required: field.required,
-      id: `${formName}-${formField}`,
+      'data-testid': `${formName}-${formField}`,
       onKeyPress: (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         if (e.key !== 'Enter') {
           return
@@ -420,7 +421,7 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
             />
           </>
         ) : (
-          <>{options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}</>
+          <>{options.labels[schemaKey] && renderTitle(formField, formName, options.labels[schemaKey])}</>
         )}
       </Group>
     )
@@ -542,7 +543,7 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
           props={{
             input: {
               ...inputProps,
-              id: `${formName}-${formField}`,
+              'data-testid': `${formName}-${formField}`,
             },
             container: {
               ...containerProps,
@@ -568,7 +569,7 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
           schemaKey={schemaKey}
           formField={`${formField}.${k}` as FormField}
           props={{
-            input: { ...inputProps, id: `${formName}-${formField}-${k}` },
+            input: { ...inputProps, 'data-testid': `${formName}-${formField}-${k}` },
             container: containerProps,
           }}
           index={k}
@@ -776,7 +777,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         )
         break
       case 'boolean':
-        console.log({ _props, _propsWithoutRegister, registerraw: form.register(formField) })
         // cannot set both defaultValue and have defaultValues in form for checkboxes. see discussions in gh
         const { defaultValue: ____, ...checkboxProps } = _props
         formFieldComponent = <Checkbox pt={10} pb={4} {...{ ...checkboxProps, ...form.register(formField) }} />
@@ -885,7 +885,7 @@ const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) =
         }}
         color={'#bd3535'}
         size="sm"
-        id={`${formName}-${formField}-remove-button-${index}`}
+        data-testid={`${formName}-${formField}-remove-button-${index}`}
       >
         {icon}
       </ActionIcon>
@@ -908,7 +908,7 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
   return options.selectOptions?.[schemaKey]?.type !== 'multiselect' ? (
     <div>
       <Flex direction="row" align="center">
-        {!accordion && options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}
+        {!accordion && options.labels[schemaKey] && renderTitle(formField, formName, options.labels[schemaKey])}
         {
           <Button
             size="xs"
@@ -924,7 +924,7 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
             }}
             variant="filled"
             color={'green'}
-            id={`${formName}-${formField}-add-button`}
+            data-testid={`${formName}-${formField}-add-button`}
           >{`Add ${lowerFirst(itemName)}`}</Button>
         }
       </Flex>
