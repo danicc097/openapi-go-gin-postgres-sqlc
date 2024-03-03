@@ -424,20 +424,12 @@ describe('form generation', () => {
     checkbox.click()
     expect(checkbox).not.toBeChecked()
     // checkbox.click()
-    fireEvent.submit(formElement)
-    // await waitFor(() => {
-    //   expect(form.current.getValues('members.0.role')).toEqual('preparer') // was intentionally undefined
-    // })
-    // await waitFor(() => {
-    //   expect(form.current.getValues('demoProject.reopened')).toEqual(true)
-    // })
-    console.log({ formValues: form.current.getValues() })
-    console.log(form.current.formState.errors)
-    console.log(form.current.formState.isValid)
-    expect(form.current.formState.errors).toEqual({})
-
-    console.log({ checkbox: checkbox.innerHTML })
-
-    // TODO: test comboboxes options get rendered
+    // expect(formElement).toHaveFormValues({}) // always empty...
+    const submitButton = screen.getByTestId('submitButtonTestId')
+    fireEvent.click(submitButton)
+    const firstMember = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
+    expect(firstMember).toHaveDisplayValue('preparer')
+    const secondMember = screen.getByTestId('demoWorkItemCreateForm-members.1.role')
+    expect(secondMember).toHaveDisplayValue('reviewer')
   })
 })
