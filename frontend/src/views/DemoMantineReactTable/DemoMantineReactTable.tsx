@@ -137,7 +137,7 @@ export default function DemoMantineReactTable() {
     isLoading,
   } = useGetPaginatedUsers({ direction: 'desc', cursor, limit: 5 })
 
-  useStopInfiniteRenders(20)
+  // useStopInfiniteRenders(60)
 
   //this will depend on your API response shape
   const fetchedUsers = usersData?.items ?? []
@@ -149,7 +149,7 @@ export default function DemoMantineReactTable() {
     mantineTableBodyCellProps: {},
     data: fetchedUsers,
     enableColumnFilterModes: true,
-    columnFilterModeOptions: ['contains', 'startsWith', 'endsWith'],
+    columnFilterModeOptions: ['contains', 'startsWith', 'endsWith', 'lessThanOrEqualTo'],
     initialState: { showColumnFilters: true },
     manualFiltering: true,
     manualPagination: true,
