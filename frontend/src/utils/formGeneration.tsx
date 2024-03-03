@@ -990,7 +990,6 @@ function CustomMultiselect({
       formValues.filter((v) => v !== val),
     )
   }
-
   const comboboxOptions = selectOptions.values
     .filter((item: any) => {
       const inSearch = JSON.stringify(
@@ -1005,7 +1004,6 @@ function CustomMultiselect({
     })
     .map((option) => {
       const value = String(selectOptions.formValueTransformer(option))
-
       return (
         <Combobox.Option value={value} key={value} active={formValues.includes(value)}>
           <Group align="stretch" justify="space-between">

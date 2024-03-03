@@ -70,6 +70,7 @@ export default function DemoMantineReactTable() {
       {
         accessorKey: 'scopes',
         header: 'Scopes',
+        filterFn: (row, id, filterValue) => row.original.scopes.includes(filterValue),
         Cell({ row }) {
           const maxItems = 2
 
@@ -149,7 +150,8 @@ export default function DemoMantineReactTable() {
     mantineTableBodyCellProps: {},
     data: fetchedUsers,
     enableColumnFilterModes: true,
-    columnFilterModeOptions: ['contains', 'startsWith', 'endsWith', 'lessThanOrEqualTo'],
+    // shared filter modes
+    columnFilterModeOptions: ['contains', 'startsWith', 'endsWith'],
     initialState: { showColumnFilters: true },
     manualFiltering: true,
     manualPagination: true,

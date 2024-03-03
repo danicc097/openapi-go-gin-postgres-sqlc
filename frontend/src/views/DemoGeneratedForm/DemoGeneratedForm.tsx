@@ -184,7 +184,7 @@ const tags = [...Array(1000)].map((x, i) => {
   const tag: DbWorkItemTag = {
     name: `tag #${i}`,
     color: _.sample(colorBlindPalette)!,
-    workItemTagID: 1 as WorkItemTagID,
+    workItemTagID: i as WorkItemTagID,
     projectID: 1 as ProjectID,
     description: `description for tag #${i}`,
   } // TODO: get workitem tags endpoint

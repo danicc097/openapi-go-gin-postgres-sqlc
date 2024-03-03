@@ -1,5 +1,5 @@
 import type { DeepPartial, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, PathType } from 'src/types/utils'
-import DynamicForm, { selectOptionsBuilder } from 'src/utils/formGeneration'
+import DynamicForm from 'src/utils/formGeneration'
 import { parseSchemaFields, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test } from 'vitest'
 import { getByTestId, render, screen, renderHook, fireEvent, act, getByText } from '@testing-library/react'
@@ -11,6 +11,8 @@ import { ajvResolver } from '@hookform/resolvers/ajv'
 import { fullFormats } from 'ajv-formats/dist/formats'
 import { Group, Avatar, Space, Flex, MantineProvider } from '@mantine/core'
 import { nameInitials } from 'src/utils/strings'
+import { JSONSchemaType } from 'ajv'
+import { selectOptionsBuilder } from 'src/utils/formGeneration.context'
 
 const tags = [...Array(10)].map((x, i) => {
   return {
@@ -152,7 +154,7 @@ const schema = {
   required: ['demoProject', 'base', 'tagIDsMultiselect', 'members'],
   type: 'object',
   'x-gen-struct': 'RestDemoWorkItemCreateRequest',
-} as JsonSchemaField
+} as JSONSchemaType<true>
 
 const formInitialValues = {
   base: {
@@ -441,5 +443,7 @@ describe('form generation', () => {
     console.log(form.current.formState.errors)
     console.log(form.current.formState.isValid)
     expect(form.current.formState.errors).toEqual({})
+
+    // TODO: test comboboxes options get rendered
   })
 })
