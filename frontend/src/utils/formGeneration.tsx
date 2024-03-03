@@ -245,7 +245,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
   const form = useFormContext()
   const formSlice = useFormSlice()
   const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
-
+  console.log({ formboolis: form.getValues('demoProject.reopened') })
   let _schemaFields: DynamicFormContextValue['schemaFields'] = schemaFields
   if (options.renderOrderPriority) {
     const _schemaKeys: SchemaKey[] = []
@@ -600,7 +600,6 @@ function FormData() {
   const form = useFormContext()
   const myFormState = useFormState({ control: form.control })
 
-  console.log(myFormState.errors)
   console.log(`form has errors: ${hasNonEmptyValue(myFormState.errors)}`)
 
   let code = ''
@@ -665,7 +664,12 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       : type === 'number'
       ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseFloat(v)) }
       : type === 'boolean'
-      ? { setValueAs: (v) => (v === '' ? false : v === 'true') }
+      ? {
+          setValueAs: (v) => {
+            console.log({ settingValueBoolean: v })
+            return v === '' ? false : v === 'true'
+          },
+        }
       : null),
   })
 
@@ -772,14 +776,10 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         )
         break
       case 'boolean':
-        formFieldComponent = (
-          <Checkbox
-            onChange={(e) => registerOnChange({ target: { name: formField, value: e.target.checked } })}
-            pt={10}
-            pb={4}
-            {..._props}
-          />
-        )
+        console.log({ _props, _propsWithoutRegister, registerraw: form.register(formField) })
+        // FIXME: something in _props breaks it. remove and works properly
+        const { id, ...checkboxProps } = _props
+        formFieldComponent = <Checkbox pt={10} pb={4} {...{ ...checkboxProps, ...form.register(formField) }} />
         break
       case 'date':
         formFieldComponent = (
