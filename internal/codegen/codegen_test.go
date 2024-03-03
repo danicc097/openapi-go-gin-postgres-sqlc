@@ -3,8 +3,6 @@ package codegen
 import (
 	"bytes"
 	"fmt"
-	"go/printer"
-	"go/token"
 	"os"
 	"path"
 	"path/filepath"
@@ -12,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/dave/dst"
+	"github.com/dave/dst/decorator"
 	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -103,6 +102,7 @@ func TestEnsureFunctionMethods_MisplacedMethod(t *testing.T) {
 	t.Parallel()
 
 	type tagHandlerFile struct {
+		// leave empty to skip file creation
 		content    string
 		newContent string
 	}
@@ -160,11 +160,11 @@ func (h *StrictHandlers) Baz() {}
 
 				func (h *StrictHandlers) Foo() {}
 				func (h *StrictHandlers) Bar() {}
-				`
+`
 				barContent := `package rest
 
 				func (h *StrictHandlers) Baz() {}
-				`
+`
 
 				return handlerFiles{
 					foo: {content: fooContent, newContent: fooContent},
@@ -173,18 +173,34 @@ func (h *StrictHandlers) Baz() {}
 			}(),
 		},
 		{
-			name:        "misplaced with no correct file created yet",
-			errContains: []string{`misplaced method for operation ID "Bar" - should be in api_bar.go (file does not exist)`},
-			operations:  map[tag][]string{foo: {"Foo"}, bar: {"Bar"}},
+			name:       "misplaced with no correct file created yet gets transferred retaining method body",
+			operations: map[tag][]string{foo: {"Foo"}, bar: {"Bar"}},
 			files: func() handlerFiles {
-				content := `package rest
-
-				func (h *StrictHandlers) Foo() {}
-				func (h *StrictHandlers) Bar() {}
-				`
-
 				return handlerFiles{
-					foo: {content: content, newContent: content},
+					foo: {
+						content: `package rest
+
+func (h *StrictHandlers) Foo() {}
+func (h *StrictHandlers) Bar() {
+	a := 1
+	_ = a
+}
+`,
+						newContent: `package rest
+
+func (h *StrictHandlers) Foo() {}
+`,
+					},
+					bar: {
+						content: "", // won't create
+						newContent: `package rest
+
+func (h *StrictHandlers) Bar() {
+	a := 1
+	_ = a
+}
+`,
+					},
 				}
 			}(),
 		},
@@ -213,6 +229,9 @@ func (h *StrictHandlers) Baz() {}
 			tmpDir := t.TempDir()
 
 			for tag, file := range tc.files {
+				if file.content == "" {
+					continue
+				}
 				apiFilePath := filepath.Join(tmpDir, fmt.Sprintf("api_%s.go", tag))
 
 				f, err := os.Create(apiFilePath)
@@ -229,7 +248,7 @@ func (h *StrictHandlers) Baz() {}
 			err := o.ensureHandlerMethodsExist()
 			if len(tc.errContains) > 0 {
 				for _, e := range tc.errContains {
-					assert.ErrorContains(t, err, e)
+					require.ErrorContains(t, err, e)
 				}
 			} else {
 				require.NoError(t, err)
@@ -241,8 +260,8 @@ func (h *StrictHandlers) Baz() {}
 				c, err := os.ReadFile(apiFilePath)
 				require.NoError(t, err, "Failed to read test file %s", apiFilePath)
 
-				if diff := cmp.Diff(string(c), file.newContent); diff != "" {
-					t.Errorf("file content mismatch (-want +got):\n%s", diff)
+				if diff := cmp.Diff(file.newContent, string(c)); diff != "" {
+					t.Errorf("file.newContent mismatch (tag=%s) (-want +got):\n%s", tag, diff)
 				}
 			}
 		})
@@ -300,7 +319,7 @@ func main() {}
 		}
 	}
 	var buf bytes.Buffer
-	if err := printer.Fprint(&buf, &token.FileSet{}, secondFile); err != nil {
+	if err := decorator.Fprint(&buf, secondFile); err != nil {
 		fmt.Println("Error printing AST:", err)
 		return
 	}
