@@ -176,7 +176,7 @@ const formInitialValues = {
     line: '3e3e2',
     ref: '124321', // should fail pattern validation
     workItemID: 1,
-    reopened: false,
+    reopened: true,
   },
   tagIDs: [0, 1, 2],
   tagIDsMultiselect: [0, 1, 2],
@@ -407,7 +407,7 @@ describe('form generation', () => {
     const actualIds = [...document.querySelectorAll('[data-testid^="demoWorkItemCreateForm"]')].map((e) =>
       e.getAttribute('data-testid'),
     )
-    console.log({ actualIds })
+    // console.log({ actualIds })
     expect(actualIds.sort()).toEqual(ids.sort())
 
     // test should submit with default values if none changed
@@ -415,10 +415,13 @@ describe('form generation', () => {
     // FIXME: dont check state, its not updated. call submit with mock onsubmit that returns data and check
     // that return value is what we expect.
     // https://react-hook-form.com/advanced-usage#TestingForm
+    // but this is still not updated in test for some reason: formisbool: true  but 'demoProject.reopened' false
     expect(form.current.getValues('members.0.role')).toEqual('preparer') // was intentionally undefined
+    // expect(form.current.getValues('demoProject.reopened')).toEqual(true)
 
     const formElement = screen.getByTestId(formName)
     fireEvent.submit(formElement)
+    console.log({ formValues: form.current.getValues() })
     console.log(form.current.formState.errors)
     console.log(form.current.formState.isValid)
     expect(form.current.formState.errors).toEqual({})
