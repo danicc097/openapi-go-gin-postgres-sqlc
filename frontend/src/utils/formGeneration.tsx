@@ -777,8 +777,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         break
       case 'boolean':
         console.log({ _props, _propsWithoutRegister, registerraw: form.register(formField) })
-        // FIXME: something in _props breaks it. remove and works properly
-        const { id, ...checkboxProps } = _props
+        // cannot set both defaultValue and have defaultValues in form for checkboxes. see discussions in gh
+        const { defaultValue: ____, ...checkboxProps } = _props
         formFieldComponent = <Checkbox pt={10} pb={4} {...{ ...checkboxProps, ...form.register(formField) }} />
         break
       case 'date':

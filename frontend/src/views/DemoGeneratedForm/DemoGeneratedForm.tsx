@@ -223,9 +223,9 @@ const formInitialValues = {
   // tagIDs: [0, 5, 8],
   demoProject: {
     lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-    ref: '12341234',
+    // ref: '12341234', // will set defaultValue if unset
     workItemID: 1,
-    reopened: false, // for create will ignore field for form gen
+    reopened: true, // TODO: test it does work (requires no defaultValue being set on checkbox component)
   },
   members: [{ userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65' }, { role: 'preparer', userID: 'bad userID' }],
 } as TestTypes.DemoWorkItemCreateRequest
@@ -421,7 +421,7 @@ export default function DemoGeneratedForm() {
               },
             },
             defaultValues: {
-              'demoProject.line': '1111',
+              'demoProject.ref': '11112222',
               'members.role': 'preparer',
             },
             selectOptions: {
@@ -474,7 +474,7 @@ export default function DemoGeneratedForm() {
             },
             // these should probably be all required later, to ensure formField is never used.
             propsOverride: {
-              'demoProject.line': {
+              'base.workItemTypeID': {
                 description: 'This is some help text for a disabled field.',
                 disabled: true,
               },
