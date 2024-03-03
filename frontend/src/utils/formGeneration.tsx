@@ -654,7 +654,9 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   const type = schemaFields[schemaKey]?.type
   const itemName = singularize(options.labels[schemaKey] || '')
 
+  // registerOnChange's type refers to onChange event's type
   const { onChange: registerOnChange, ...registerProps } = form.register(formField, {
+    // IMPORTANT: this is the type set in registerOnChange!
     ...(type === 'date' || type === 'date-time'
       ? // TODO: use convertValueByType
         { valueAsDate: true, setValueAs: (v) => (v === '' ? undefined : new Date(v)) }
@@ -663,7 +665,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       : type === 'number'
       ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseFloat(v)) }
       : type === 'boolean'
-      ? { setValueAs: (v) => (v === '' ? undefined : v === 'true') }
+      ? { setValueAs: (v) => (v === '' ? false : v === 'true') }
       : null),
   })
 
