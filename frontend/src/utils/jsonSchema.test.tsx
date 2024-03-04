@@ -29,8 +29,8 @@ import { VirtuosoMockContext } from 'react-virtuoso'
 
 const tags = [...Array(10)].map((x, i) => {
   return {
-    name: `${i} tag`,
-    color: `#${i}34236`,
+    name: `tag #${i}`,
+    color: `#${i % 10}34236`,
     workItemTagID: i,
     projectID: 1,
     description: 'description',
@@ -326,13 +326,12 @@ describe('form generation', () => {
                 selectOptions: {
                   'members.userID': selectOptionsBuilder({
                     type: 'select',
-                    values: [...Array(1)].map((x, i) => {
-                      const user = {
-                        username: '1',
-                        email: '1@mail.com',
-                        userID: 'a446259c-1083-4212-98fe-bd080c41e7d7',
+                    values: [...Array(5)].map((x, i) => {
+                      return {
+                        username: `user${i}`,
+                        email: `user${i}@mail.com`,
+                        userID: `a446259c-1083-4212-98fe-bd080c41e7d${i}`,
                       }
-                      return user
                     }),
                     optionTransformer(el) {
                       return (
@@ -368,6 +367,9 @@ describe('form generation', () => {
                           <div style={{ marginLeft: 'auto' }}>{el?.name}</div>
                         </Group>
                       )
+                    },
+                    ariaLabelTransformer(el) {
+                      return el.name
                     },
                     formValueTransformer(el) {
                       return el.workItemTagID
@@ -471,37 +473,27 @@ describe('form generation', () => {
     })
     // TODO: fix errors in ref and tagids and then
     // compare mock data with expected (requires fixing combobox options in rtl first)
-    const comboboxInput = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
-    expect(comboboxInput).toBeInTheDocument()
-    await userEvent.click(comboboxInput, { pointerState: await userEvent.pointer({ target: comboboxInput }) }) // jsdom not displaying combobox
-    // expect(baseElement).toMatchInlineSnapshot()
-    await waitFor(async () => {
-      const dropdownMenu = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
 
-      const opts = screen.getAllByRole('option', { hidden: true })
-      console.log({ options: opts.map((opt) => opt.getAttribute('aria-label')) })
+    // document.body includes options, etc. for debugging
+    // expect(document.body).toMatchInlineSnapshot()
 
-      await userEvent.click(screen.getByRole('option', { name: /preparer/i, hidden: true }))
-    })
-    // fireEvent.pointerDown(
-    //   combobox,
-    //   new PointerEvent('pointerdown', {
-    //     ctrlKey: false,
-    //     button: 0,
-    //   }),
-    // )
-    // expect(container).toMatchInlineSnapshot()
-
-    const getTopicsSelect = screen.getByLabelText('User')
-    await userEvent.click(getTopicsSelect)
+    // console.log({ options: screen.getAllByRole('option', { hidden: true }).map((opt) => opt.getAttribute('aria-label')) })
 
     await waitFor(async () => {
-      const dropdownMenu = document.querySelector('.mantine-Select-dropdown')
-      await userEvent.click(screen.getByRole('option', { name: /reviewer/i, hidden: true }))
+      const comboboxInput = screen.getByTestId('demoWorkItemCreateForm-members.0.userID') // FIXME: its just a text input! userID is the combobox
+      expect(comboboxInput).toBeInTheDocument()
+      await userEvent.click(comboboxInput, { pointerState: await userEvent.pointer({ target: comboboxInput }) }) // jsdom not displaying combobox
+
+      console.log({ options: screen.getAllByRole('option').map((opt) => opt.getAttribute('aria-label')) })
+      console.log({
+        allOptions: screen.getAllByRole('option', { hidden: true }).map((opt) => opt.getAttribute('aria-label')),
+      })
+
+      await userEvent.click(screen.getByRole('option', { name: 'user5@mail.com', hidden: true })) // TODO: should include formKey as discriminator somewhere, else we have duplicates on multiple items.
     })
     // screen.debug(document)
 
-    let firstMember = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
+    let firstMember = screen.getByTestId('demoWorkItemCreateForm-members.0.role') // FIXME: its just a text input! 0.member is the combobox
     expect(firstMember).toHaveDisplayValue('preparer')
 
     const option = await screen.findByRole('option', { name: /reviewer/i, hidden: true }) // [role="option"][value="preparer"]

@@ -348,12 +348,6 @@ export default function DemoGeneratedForm() {
       >
         Validate form
       </Button>
-      <SelectOptionComponentDebug
-        onSubmit={(data) => {
-          console.log(data)
-        }}
-        defaultOption="Broccoli"
-      />
       <FormProvider {...form}>
         <DynamicForm<TestTypes.DemoWorkItemCreateRequest, ExcludedFormKeys>
           onSubmit={(e) => {

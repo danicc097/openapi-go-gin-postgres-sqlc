@@ -1006,9 +1006,17 @@ function CustomMultiselect({
       return inSearch && notSelected
     })
     .map((option) => {
-      const value = String(selectOptions.formValueTransformer(option))
+      const formValue = String(selectOptions.formValueTransformer(option))
+      const selected = formValues.includes(formValue) // all are not selecvted...
+
       return (
-        <Combobox.Option value={value} key={value} active={formValues.includes(value)}>
+        <Combobox.Option
+          value={formValue}
+          key={formValue}
+          active={selected}
+          aria-selected={selected}
+          aria-label={selectOptions.ariaLabelTransformer ? selectOptions.ariaLabelTransformer(option) : formValue}
+        >
           <Group align="stretch" justify="space-between">
             {selectOptions.optionTransformer(option)}
             <CloseButton

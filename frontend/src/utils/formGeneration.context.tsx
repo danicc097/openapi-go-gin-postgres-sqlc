@@ -16,6 +16,7 @@ export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends u
   type,
   values,
   formValueTransformer,
+  ariaLabelTransformer,
   searchValueTransformer,
   optionTransformer,
   pillTransformer,
@@ -26,6 +27,7 @@ export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends u
   optionTransformer,
   pillTransformer,
   formValueTransformer,
+  ariaLabelTransformer,
   searchValueTransformer,
   labelColor,
 })
