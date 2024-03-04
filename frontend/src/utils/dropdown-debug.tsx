@@ -78,7 +78,7 @@ export function SelectOptionComponentDebug({ onSubmit, defaultOption }: Props) {
             totalCount={options.length}
             itemContent={(index) => (
               <Combobox.Option
-                data-selected={options[index]!.value === value}
+                aria-selected={options[index]!.value === value}
                 value={options[index]!.value}
                 key={value}
                 aria-label={`${options[index]!.value}`}

@@ -25,6 +25,7 @@ import { JSONSchemaType } from 'ajv'
 import { selectOptionsBuilder } from 'src/utils/formGeneration.context'
 import { JSONSchema } from 'json-schema-to-ts'
 import userEvent from '@testing-library/user-event'
+import { VirtuosoMockContext } from 'react-virtuoso'
 
 const tags = [...Array(10)].map((x, i) => {
   return {
@@ -35,6 +36,8 @@ const tags = [...Array(10)].map((x, i) => {
     description: 'description',
   }
 })
+
+const refPattern = '^[0-9]{8}$'
 
 const schema = {
   properties: {
@@ -114,7 +117,7 @@ const schema = {
           type: 'string',
         },
         ref: {
-          pattern: '^[0-9]{8}$',
+          pattern: refPattern,
           type: 'string',
         },
         reopened: {
@@ -268,111 +271,113 @@ describe('form generation', () => {
     const mockSubmit = vitest.fn()
     const mockSubmitWithErrors = vitest.fn()
     const { container, baseElement } = render(
-      <MantineProvider>
-        <FormProvider {...form.current}>
-          <DynamicForm<TestTypes.DemoWorkItemCreateRequest, 'base.metadata'>
-            onSubmit={(e) => {
-              e.preventDefault()
-              form.current.handleSubmit(
-                // needs to be called
-                (data) => {
-                  console.log({ data })
-                  mockSubmit(data)
+      <VirtuosoMockContext.Provider value={{ viewportHeight: 300, itemHeight: 100 }}>
+        <MantineProvider>
+          <FormProvider {...form.current}>
+            <DynamicForm<TestTypes.DemoWorkItemCreateRequest, 'base.metadata'>
+              onSubmit={(e) => {
+                e.preventDefault()
+                form.current.handleSubmit(
+                  // needs to be called
+                  (data) => {
+                    console.log({ data })
+                    mockSubmit(data)
+                  },
+                  (errors) => {
+                    console.log({ errors })
+                    mockSubmitWithErrors(errors)
+                  },
+                )(e)
+              }}
+              formName={formName}
+              schemaFields={schemaFields}
+              options={{
+                renderOrderPriority: ['tagIDs', 'members'],
+                labels: {
+                  base: 'base', // just title via renderTitle
+                  'base.closed': 'closed',
+                  'base.description': 'description',
+                  // 'base.metadata': 'metadata', // ignored -> not a key
+                  'base.kanbanStepID': 'kanbanStepID',
+                  'base.targetDate': 'targetDate',
+                  'demoProject.reopened': 'reopened',
+                  'base.teamID': 'teamID',
+                  'base.items': 'items',
+                  'base.items.name': 'name',
+                  'base.items.items': 'items',
+                  'base.items.userId': 'user',
+                  'base.workItemTypeID': 'workItemTypeID',
+                  demoProject: null, // won't render title
+                  'demoProject.lastMessageAt': 'lastMessageAt',
+                  'demoProject.line': 'line',
+                  'demoProject.ref': 'ref',
+                  'demoProject.workItemID': 'workItemID',
+                  members: 'members',
+                  'members.role': 'role',
+                  'members.userID': 'User',
+                  tagIDs: 'tagIDs',
+                  tagIDsMultiselect: 'tagIDsMultiselect',
                 },
-                (errors) => {
-                  console.log({ errors })
-                  mockSubmitWithErrors(errors)
+                defaultValues: {
+                  'demoProject.line': '43121234', // should be ignored since it's set
+                  'members.role': 'preparer',
                 },
-              )(e)
-            }}
-            formName={formName}
-            schemaFields={schemaFields}
-            options={{
-              renderOrderPriority: ['tagIDs', 'members'],
-              labels: {
-                base: 'base', // just title via renderTitle
-                'base.closed': 'closed',
-                'base.description': 'description',
-                // 'base.metadata': 'metadata', // ignored -> not a key
-                'base.kanbanStepID': 'kanbanStepID',
-                'base.targetDate': 'targetDate',
-                'demoProject.reopened': 'reopened',
-                'base.teamID': 'teamID',
-                'base.items': 'items',
-                'base.items.name': 'name',
-                'base.items.items': 'items',
-                'base.items.userId': 'user',
-                'base.workItemTypeID': 'workItemTypeID',
-                demoProject: null, // won't render title
-                'demoProject.lastMessageAt': 'lastMessageAt',
-                'demoProject.line': 'line',
-                'demoProject.ref': 'ref',
-                'demoProject.workItemID': 'workItemID',
-                members: 'members',
-                'members.role': 'role',
-                'members.userID': 'User',
-                tagIDs: 'tagIDs',
-                tagIDsMultiselect: 'tagIDsMultiselect',
-              },
-              defaultValues: {
-                'demoProject.line': '43121234', // should be ignored since it's set
-                'members.role': 'preparer',
-              },
-              selectOptions: {
-                'members.userID': selectOptionsBuilder({
-                  type: 'select',
-                  values: [...Array(1)].map((x, i) => {
-                    const user = {
-                      username: '1',
-                      email: '1@mail.com',
-                      userID: 'a446259c-1083-4212-98fe-bd080c41e7d7',
-                    }
-                    return user
-                  }),
-                  optionTransformer(el) {
-                    return (
-                      <Group align="center">
-                        <div style={{ display: 'flex', alignItems: 'center' }}>
-                          <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={el?.username}>
-                            {nameInitials(el?.email || '')}
-                          </Avatar>
-                          <Space p={5} />
-                        </div>
+                selectOptions: {
+                  'members.userID': selectOptionsBuilder({
+                    type: 'select',
+                    values: [...Array(1)].map((x, i) => {
+                      const user = {
+                        username: '1',
+                        email: '1@mail.com',
+                        userID: 'a446259c-1083-4212-98fe-bd080c41e7d7',
+                      }
+                      return user
+                    }),
+                    optionTransformer(el) {
+                      return (
+                        <Group align="center">
+                          <div style={{ display: 'flex', alignItems: 'center' }}>
+                            <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={el?.username}>
+                              {nameInitials(el?.email || '')}
+                            </Avatar>
+                            <Space p={5} />
+                          </div>
 
-                        <div style={{ marginLeft: 'auto' }}>{el?.email}</div>
-                      </Group>
-                    )
-                  },
-                  formValueTransformer(el) {
-                    return el.userID
-                  },
-                  pillTransformer(el) {
-                    return <>el.email</>
-                  },
-                }),
-                tagIDsMultiselect: selectOptionsBuilder({
-                  type: 'multiselect',
-                  values: tags,
-                  optionTransformer(el) {
-                    return (
-                      <Group align="center">
-                        <Flex align={'center'}></Flex>
-                        <div style={{ marginLeft: 'auto' }}>{el?.name}</div>
-                      </Group>
-                    )
-                  },
-                  formValueTransformer(el) {
-                    return el.workItemTagID
-                  },
-                  pillTransformer(el) {
-                    return <>{el.name} label</>
-                  },
-                }),
-              },
-            }}
-          />
-        </FormProvider>
-      </MantineProvider>,
+                          <div style={{ marginLeft: 'auto' }}>{el?.email}</div>
+                        </Group>
+                      )
+                    },
+                    formValueTransformer(el) {
+                      return el.userID
+                    },
+                    pillTransformer(el) {
+                      return <>el.email</>
+                    },
+                  }),
+                  tagIDsMultiselect: selectOptionsBuilder({
+                    type: 'multiselect',
+                    values: tags,
+                    optionTransformer(el) {
+                      return (
+                        <Group align="center">
+                          <Flex align={'center'}></Flex>
+                          <div style={{ marginLeft: 'auto' }}>{el?.name}</div>
+                        </Group>
+                      )
+                    },
+                    formValueTransformer(el) {
+                      return el.workItemTagID
+                    },
+                    pillTransformer(el) {
+                      return <>{el.name} label</>
+                    },
+                  }),
+                },
+              }}
+            />
+          </FormProvider>
+        </MantineProvider>
+      </VirtuosoMockContext.Provider>,
     )
 
     const dataTestIds = [
@@ -457,25 +462,21 @@ describe('form generation', () => {
     expect(screen.getAllByRole('alert')).toHaveLength(3) // incl box
     expect(mockSubmitWithErrors).toBeCalled()
     expect(mockSubmitWithErrors.mock.calls[0][0]).toMatchObject({
-      demoProject: { ref: { message: 'must match pattern "^[0-9]{8}$"' } },
+      demoProject: { ref: { message: `must match pattern "${refPattern}"` } },
       tagIDs: [{ message: 'must be integer' }],
     })
     // TODO: fix errors in ref and tagids and then
-    // compare mock data with expected
-    // eslint-disable-next-line testing-library/no-container
-    // const combobox = container.querySelector('[name="members.0.role"]') as HTMLInputElement
-    // expect(combobox).toBeInTheDocument()
+    // compare mock data with expected (requires fixing combobox options in rtl first)
     const comboboxInput = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
     expect(comboboxInput).toBeInTheDocument()
     await userEvent.click(comboboxInput, { pointerState: await userEvent.pointer({ target: comboboxInput }) }) // jsdom not displaying combobox
     await waitFor(async () => {
-      // FIXME: virtuoso prevents rendering beforehand so options are hidden but exist. virtuoso should be an empty fragment when testing, or removed
       const dropdownMenu = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
 
-      const opts = getQueriesForElement(baseElement).queryAllByRole('option', {})
-      console.log({ opts })
+      const opts = screen.getAllByRole('option', { hidden: true })
+      console.log({ options: opts.map((opt) => opt.textContent) })
 
-      await userEvent.click(screen.getByRole('option', { name: 'preparer' }))
+      await userEvent.click(screen.getByRole('option', { name: /preparer/i, hidden: true }))
     })
     // fireEvent.pointerDown(
     //   combobox,
@@ -489,21 +490,16 @@ describe('form generation', () => {
     const getTopicsSelect = screen.getByLabelText('User')
     await userEvent.click(getTopicsSelect)
 
-    await waitFor(() => {
+    await waitFor(async () => {
       const dropdownMenu = document.querySelector('.mantine-Select-dropdown')
-      userEvent.click(screen.getByText('reviewer'))
+      await userEvent.click(screen.getByRole('option', { name: /reviewer/i, hidden: true }))
     })
     // screen.debug(document)
 
     let firstMember = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
     expect(firstMember).toHaveDisplayValue('preparer')
 
-    const fesfsefse = container.querySelector('[role="option"][value="preparer"]') as HTMLInputElement
-    console.log({ fesfsefse })
-
-    const options = await screen.findAllByRole('option')
-    console.log({ options })
-    const option = await screen.findByRole('option', { name: /reviewer/i }) // [role="option"][value="preparer"]
+    const option = await screen.findByRole('option', { name: /reviewer/i, hidden: true }) // [role="option"][value="preparer"]
     await act(() => {
       option.click()
     })

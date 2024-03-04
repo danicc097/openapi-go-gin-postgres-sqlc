@@ -65,13 +65,13 @@ describe('Combobox component', () => {
     const getOptionBananas = () => screen.getByRole('option', { name: 'Bananas', hidden: true }) as HTMLOptionElement
     const getOptionBroccoli = () => screen.getByRole('option', { name: 'Broccoli', hidden: true }) as HTMLOptionElement
 
-    expect(getOptionBananas().getAttribute('data-selected')).toBe('true') // mantine does not set selected and rtl ignores aria-selected ...
+    expect(getOptionBananas().getAttribute('aria-selected')).toBe('true') // mantine does not set selected
 
     await waitFor(async () => {
       const dropdownMenu = screen.getByTestId('select')
       await userEvent.click(screen.getByRole('option', { name: 'Broccoli', hidden: true }))
     })
-    expect(getOptionBroccoli().getAttribute('data-selected')).toBe('true')
+    expect(getOptionBroccoli().getAttribute('aria-selected')).toBe('true')
 
     expect(handleChange).toHaveBeenCalledTimes(1)
     expect(handleChange).toHaveBeenCalledWith('Broccoli')

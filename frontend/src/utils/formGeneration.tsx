@@ -1166,7 +1166,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
       const value = String(selectOptions.formValueTransformer(option))
 
       return (
-        <Combobox.Option value={value} key={value}>
+        <Combobox.Option value={value} key={value} aria-selected={selectedOption === value} aria-label={`${value}`}>
           {comboboxOptionTemplate(selectOptions.optionTransformer, option)}
         </Combobox.Option>
       )
