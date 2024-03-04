@@ -274,111 +274,116 @@ describe('form generation', () => {
     const mockSubmit = vitest.fn()
     const mockSubmitWithErrors = vitest.fn()
     const { container, baseElement } = render(
-      <VirtuosoMockContext.Provider value={{ viewportHeight: 300, itemHeight: 100 }}>
-        <MantineProvider>
-          <FormProvider {...form.current}>
-            <DynamicForm<TestTypes.DemoWorkItemCreateRequest, 'base.metadata'>
-              onSubmit={(e) => {
-                e.preventDefault()
-                form.current.handleSubmit(
-                  // needs to be called
-                  (data) => {
-                    console.log({ data })
-                    mockSubmit(data)
-                  },
-                  (errors) => {
-                    console.log({ errors })
-                    mockSubmitWithErrors(errors)
-                  },
-                )(e)
-              }}
-              formName={formName}
-              schemaFields={schemaFields}
-              options={{
-                renderOrderPriority: ['tagIDs', 'members'],
-                labels: {
-                  base: 'base', // just title via renderTitle
-                  'base.closed': 'closed',
-                  'base.description': 'description',
-                  // 'base.metadata': 'metadata', // ignored -> not a key
-                  'base.kanbanStepID': 'kanbanStepID',
-                  'base.targetDate': 'targetDate',
-                  'demoProject.reopened': 'reopened',
-                  'base.teamID': 'teamID',
-                  'base.items': 'items',
-                  'base.items.name': 'name',
-                  'base.items.items': 'items',
-                  'base.items.userId': 'user',
-                  'base.workItemTypeID': 'workItemTypeID',
-                  demoProject: null, // won't render title
-                  'demoProject.lastMessageAt': 'lastMessageAt',
-                  'demoProject.line': 'line',
-                  'demoProject.ref': 'ref',
-                  'demoProject.workItemID': 'workItemID',
-                  members: 'members',
-                  'members.role': 'role',
-                  'members.userID': 'User',
-                  tagIDs: 'tagIDs',
-                  tagIDsMultiselect: 'tagIDsMultiselect',
+      <FormProvider {...form.current}>
+        <DynamicForm<TestTypes.DemoWorkItemCreateRequest, 'base.metadata'>
+          onSubmit={(e) => {
+            e.preventDefault()
+            form.current.handleSubmit(
+              // needs to be called
+              (data) => {
+                console.log({ data })
+                mockSubmit(data)
+              },
+              (errors) => {
+                console.log({ errors })
+                mockSubmitWithErrors(errors)
+              },
+            )(e)
+          }}
+          formName={formName}
+          schemaFields={schemaFields}
+          options={{
+            renderOrderPriority: ['tagIDs', 'members'],
+            labels: {
+              base: 'base', // just title via renderTitle
+              'base.closed': 'closed',
+              'base.description': 'description',
+              // 'base.metadata': 'metadata', // ignored -> not a key
+              'base.kanbanStepID': 'kanbanStepID',
+              'base.targetDate': 'targetDate',
+              'demoProject.reopened': 'reopened',
+              'base.teamID': 'teamID',
+              'base.items': 'items',
+              'base.items.name': 'name',
+              'base.items.items': 'items',
+              'base.items.userId': 'user',
+              'base.workItemTypeID': 'workItemTypeID',
+              demoProject: null, // won't render title
+              'demoProject.lastMessageAt': 'lastMessageAt',
+              'demoProject.line': 'line',
+              'demoProject.ref': 'ref',
+              'demoProject.workItemID': 'workItemID',
+              members: 'members',
+              'members.role': 'role',
+              'members.userID': 'User',
+              tagIDs: 'tagIDs',
+              tagIDsMultiselect: 'tagIDsMultiselect',
+            },
+            defaultValues: {
+              'demoProject.line': '43121234', // should be ignored since it's set
+              'members.role': 'preparer',
+            },
+            selectOptions: {
+              'members.userID': selectOptionsBuilder({
+                type: 'select',
+                values: [...Array(10)].map((x, i) => {
+                  return {
+                    username: `user${i}`,
+                    email: `user${i}@mail.com`,
+                    userID: `a446259c-1083-4212-98fe-bd080c41e7d${i}`,
+                    role: 'user',
+                  } as User
+                }),
+                optionTransformer(el) {
+                  return <UserComboboxOption user={el} />
                 },
-                defaultValues: {
-                  'demoProject.line': '43121234', // should be ignored since it's set
-                  'members.role': 'preparer',
+                ariaLabelTransformer(el) {
+                  return el.email
                 },
-                selectOptions: {
-                  'members.userID': selectOptionsBuilder({
-                    type: 'select',
-                    values: [...Array(10)].map((x, i) => {
-                      return {
-                        username: `user${i}`,
-                        email: `user${i}@mail.com`,
-                        userID: `a446259c-1083-4212-98fe-bd080c41e7d${i}`,
-                        role: 'user',
-                      } as User
-                    }),
-                    optionTransformer(el) {
-                      return <UserComboboxOption user={el} />
-                    },
-                    ariaLabelTransformer(el) {
-                      return el.email
-                    },
-                    formValueTransformer(el) {
-                      return el.userID
-                    },
-                    pillTransformer(el) {
-                      return <>el.email</>
-                    },
-                    searchValueTransformer(el) {
-                      return `${el.email} ${el.username}`
-                    },
-                  }),
-                  tagIDsMultiselect: selectOptionsBuilder({
-                    type: 'multiselect',
-                    values: tags,
-                    optionTransformer(el) {
-                      return (
-                        <Group align="center">
-                          <Flex align={'center'}></Flex>
-                          <div style={{ marginLeft: 'auto' }}>{el?.name}</div>
-                        </Group>
-                      )
-                    },
-                    ariaLabelTransformer(el) {
-                      return el.name
-                    },
-                    formValueTransformer(el) {
-                      return el.workItemTagID
-                    },
-                    pillTransformer(el) {
-                      return <>{el.name} label</>
-                    },
-                  }),
+                formValueTransformer(el) {
+                  return el.userID
                 },
-              }}
-            />
-          </FormProvider>
-        </MantineProvider>
-      </VirtuosoMockContext.Provider>,
+                pillTransformer(el) {
+                  return <>el.email</>
+                },
+                searchValueTransformer(el) {
+                  return `${el.email} ${el.username}`
+                },
+              }),
+              tagIDsMultiselect: selectOptionsBuilder({
+                type: 'multiselect',
+                values: tags,
+                optionTransformer(el) {
+                  return (
+                    <Group align="center">
+                      <Flex align={'center'}></Flex>
+                      <div style={{ marginLeft: 'auto' }}>{el?.name}</div>
+                    </Group>
+                  )
+                },
+                ariaLabelTransformer(el) {
+                  return el.name
+                },
+                formValueTransformer(el) {
+                  return el.workItemTagID
+                },
+                pillTransformer(el) {
+                  return <>{el.name} label</>
+                },
+              }),
+            },
+          }}
+        />
+      </FormProvider>,
+      {
+        wrapper: ({ children }) => {
+          return (
+            <VirtuosoMockContext.Provider value={{ viewportHeight: Infinity, itemHeight: 100 }}>
+              <MantineProvider>{children}</MantineProvider>
+            </VirtuosoMockContext.Provider>
+          )
+        },
+      },
     )
 
     const dataTestIds = [
@@ -436,6 +441,14 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-demoProject.workItemID',
     ]
 
+    const opts1 = [...document.querySelectorAll('[role="option"]')].map((opt) => ({
+      selected: opt.getAttribute('aria-selected') === 'true',
+      label: opt.getAttribute('aria-label'),
+    }))
+    console.log({
+      opts1,
+    })
+
     const actualIds = [...document.querySelectorAll('[data-testid^="demoWorkItemCreateForm"]')].map((e) =>
       e.getAttribute('data-testid'),
     )
@@ -483,14 +496,13 @@ describe('form generation', () => {
     })
     const tagsSearchInput = screen.getByTestId('search--tagIDsMultiselect')
     await userEvent.click(tagsSearchInput, { pointerState: await userEvent.pointer({ target: tagsSearchInput }) }) // no need for discriminator if there's only a visible opt
-    // FIXME: most missing
-    const selectedOpts = [...document.querySelectorAll('[role="option"]')].map((opt) => ({
+    // FIXME: most missing because of virtuoso mock - must use extremely high mocked height
+    const opts = [...document.querySelectorAll('[role="option"]')].map((opt) => ({
       selected: opt.getAttribute('aria-selected') === 'true',
       label: opt.getAttribute('aria-label'),
     }))
     console.log({
-      selectedOpts,
-      options: screen.getAllByRole('option', { hidden: true }).map((opt) => opt.getAttribute('aria-label')),
+      opts,
     })
     // once selecting, the option is gone. must check pill has display value of "tag #4"
     expect(screen.getByRole('option', { name: 'tag #4', hidden: true }).getAttribute('aria-selected')).toBe('true') // here would need discriminator since its hidden after click
@@ -510,6 +522,6 @@ describe('form generation', () => {
       await userEvent.clear(firstUserIDSearchInput)
     })
     // once selecting, the option is gone. must check input has display value that contains the email
-    expect(screen.getByRole('option', { name: email, hidden: true }).getAttribute('aria-selected')).toBe('true') // here would need discriminator since its hidden after click
+    expect(screen.getByRole('option', { name: email, hidden: true }).getAttribute('aria-selected')).toBe('true') // FIXME: here would need discriminator since its hidden after click
   })
 })
