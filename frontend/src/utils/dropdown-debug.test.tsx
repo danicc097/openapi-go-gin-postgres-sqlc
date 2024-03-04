@@ -1,8 +1,9 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Combobox, Group, InputBase, MantineProvider, Select, Text } from '@mantine/core'
 import { vitest } from 'vitest'
 import { SelectOptionComponentDebug } from 'src/utils/dropdown-debug'
+import { VirtuosoMockContext } from 'react-virtuoso'
 
 it('should correctly set default option', async () => {
   render(
@@ -53,18 +54,24 @@ describe('Combobox component', () => {
   it('calls onChange handler when an option is selected', async () => {
     const handleChange = vitest.fn()
 
-    // TODO:
     render(
-      <MantineProvider>
-        <SelectOptionComponentDebug onSubmit={handleChange} />
-      </MantineProvider>,
+      <VirtuosoMockContext.Provider value={{ viewportHeight: 300, itemHeight: 100 }}>
+        <MantineProvider>
+          <SelectOptionComponentDebug onSubmit={handleChange} defaultOption="Bananas" />
+        </MantineProvider>
+      </VirtuosoMockContext.Provider>,
     )
+
+    const getOptionBananas = () => screen.getByRole('option', { name: 'Bananas', hidden: true }) as HTMLOptionElement
+    const getOptionBroccoli = () => screen.getByRole('option', { name: 'Broccoli', hidden: true }) as HTMLOptionElement
+
+    expect(getOptionBananas().getAttribute('data-selected')).toBe('true') // mantine does not set selected and rtl ignores aria-selected ...
 
     await waitFor(async () => {
       const dropdownMenu = screen.getByTestId('select')
-
-      await userEvent.click(screen.getByText('Broccoli'))
+      await userEvent.click(screen.getByRole('option', { name: 'Broccoli', hidden: true }))
     })
+    expect(getOptionBroccoli().getAttribute('data-selected')).toBe('true')
 
     expect(handleChange).toHaveBeenCalledTimes(1)
     expect(handleChange).toHaveBeenCalledWith('Broccoli')

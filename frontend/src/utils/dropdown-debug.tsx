@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Combobox, Group, Input, InputBase, Text, useCombobox } from '@mantine/core'
+import { Virtuoso, VirtuosoMockContext } from 'react-virtuoso'
+import { ArrayElement } from 'src/types/utils'
 
 interface Item {
   emoji: string
@@ -7,7 +9,7 @@ interface Item {
   description: string
 }
 
-const groceries: Item[] = [
+const options: Item[] = [
   { emoji: '🍎', value: 'Apples', description: 'Crisp and refreshing fruit' },
   { emoji: '🍌', value: 'Bananas', description: 'Naturally sweet and potassium-rich fruit' },
   { emoji: '🥦', value: 'Broccoli', description: 'Nutrient-packed green vegetable' },
@@ -31,28 +33,27 @@ function SelectOption({ emoji, value, description }: Item) {
   )
 }
 
-export function SelectOptionComponentDebug({ onSubmit }: { onSubmit: (val: string) => void }) {
+interface Props {
+  onSubmit: (val: string) => void
+  defaultOption?: string
+}
+
+export function SelectOptionComponentDebug({ onSubmit, defaultOption }: Props) {
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),
   })
 
-  const [value, setValue] = useState<string | null>(null)
-  const selectedOption = groceries.find((item) => item.value === value)
-
-  const options = groceries.map((item) => (
-    <Combobox.Option value={item.value} key={item.value}>
-      <SelectOption {...item} />
-    </Combobox.Option>
-  ))
+  const [value, setValue] = useState<string | null>(defaultOption ?? null)
+  const selectedOption = options.find((item) => item.value === value)
 
   return (
     <Combobox
       store={combobox}
-      withinPortal={false}
+      withinPortal={true}
       onOptionSubmit={(val) => {
+        onSubmit(val)
         setValue(val)
         combobox.closeDropdown()
-        onSubmit(val)
       }}
     >
       <Combobox.Target>
@@ -71,7 +72,22 @@ export function SelectOptionComponentDebug({ onSubmit }: { onSubmit: (val: strin
       </Combobox.Target>
 
       <Combobox.Dropdown>
-        <Combobox.Options>{options}</Combobox.Options>
+        <Combobox.Options>
+          <Virtuoso
+            style={{ height: '200px' }}
+            totalCount={options.length}
+            itemContent={(index) => (
+              <Combobox.Option
+                data-selected={options[index]!.value === value}
+                value={options[index]!.value}
+                key={value}
+                aria-label={`${options[index]!.value}`}
+              >
+                {options[index]?.value}
+              </Combobox.Option>
+            )}
+          ></Virtuoso>
+        </Combobox.Options>
       </Combobox.Dropdown>
     </Combobox>
   )

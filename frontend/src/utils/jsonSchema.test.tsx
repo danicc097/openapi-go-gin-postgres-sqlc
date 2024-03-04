@@ -463,10 +463,20 @@ describe('form generation', () => {
     // TODO: fix errors in ref and tagids and then
     // compare mock data with expected
     // eslint-disable-next-line testing-library/no-container
-    const combobox = container.querySelector('[name="members.0.role"]') as HTMLInputElement
-    expect(combobox).toBeInTheDocument()
+    // const combobox = container.querySelector('[name="members.0.role"]') as HTMLInputElement
+    // expect(combobox).toBeInTheDocument()
+    const comboboxInput = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
+    expect(comboboxInput).toBeInTheDocument()
+    await userEvent.click(comboboxInput, { pointerState: await userEvent.pointer({ target: comboboxInput }) }) // jsdom not displaying combobox
+    await waitFor(async () => {
+      // FIXME: virtuoso prevents rendering beforehand so options are hidden but exist. virtuoso should be an empty fragment when testing, or removed
+      const dropdownMenu = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
 
-    await userEvent.click(combobox, { pointerState: await userEvent.pointer({ target: combobox }) }) // jsdom not displaying
+      const opts = getQueriesForElement(baseElement).queryAllByRole('option', {})
+      console.log({ opts })
+
+      await userEvent.click(screen.getByRole('option', { name: 'preparer' }))
+    })
     // fireEvent.pointerDown(
     //   combobox,
     //   new PointerEvent('pointerdown', {
@@ -474,7 +484,6 @@ describe('form generation', () => {
     //     button: 0,
     //   }),
     // )
-    const portals = getQueriesForElement(baseElement).queryAllByRole('presentation', {})
     // expect(container).toMatchInlineSnapshot()
 
     const getTopicsSelect = screen.getByLabelText('User')

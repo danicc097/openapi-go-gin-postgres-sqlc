@@ -57,6 +57,7 @@ import { useFormSlice } from 'src/slices/form'
 import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
 import { WorkItemTagID, ProjectID } from 'src/gen/entity-ids'
 import { selectOptionsBuilder } from 'src/utils/formGeneration.context'
+import { SelectOptionComponentDebug } from 'src/utils/dropdown-debug'
 
 const schema = {
   properties: {
@@ -347,6 +348,12 @@ export default function DemoGeneratedForm() {
       >
         Validate form
       </Button>
+      <SelectOptionComponentDebug
+        onSubmit={(data) => {
+          console.log(data)
+        }}
+        defaultOption="Broccoli"
+      />
       <FormProvider {...form}>
         <DynamicForm<TestTypes.DemoWorkItemCreateRequest, ExcludedFormKeys>
           onSubmit={(e) => {
