@@ -1202,7 +1202,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
           combobox.closeDropdown()
         }}
       >
-        <Combobox.Target withAriaAttributes={false}>
+        <Combobox.Target withAriaAttributes={true}>
           <InputBase
             label={!schemaFields[parentSchemaKey]?.isArray ? singularize(upperFirst(itemName)) : null}
             className={classes.select}
@@ -1213,6 +1213,8 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
             onClick={() => combobox.toggleDropdown()}
             rightSectionPointerEvents="none"
             multiline
+            name={formField}
+            role="combobox"
             {...inputProps}
           >
             {selectedOption ? (

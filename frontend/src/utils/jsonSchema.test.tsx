@@ -2,7 +2,17 @@ import type { DeepPartial, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, PathTyp
 import DynamicForm from 'src/utils/formGeneration'
 import { JsonSchemaField, parseSchemaFields, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test, vitest } from 'vitest'
-import { getByTestId, render, screen, renderHook, fireEvent, act, getByText, waitFor } from '@testing-library/react'
+import {
+  getByTestId,
+  render,
+  screen,
+  renderHook,
+  fireEvent,
+  act,
+  getByText,
+  waitFor,
+  getQueriesForElement,
+} from '@testing-library/react'
 import '@testing-library/jest-dom'
 import dayjs from 'dayjs'
 import { entries, keys } from 'src/utils/object'
@@ -14,6 +24,7 @@ import { nameInitials } from 'src/utils/strings'
 import { JSONSchemaType } from 'ajv'
 import { selectOptionsBuilder } from 'src/utils/formGeneration.context'
 import { JSONSchema } from 'json-schema-to-ts'
+import userEvent from '@testing-library/user-event'
 
 const tags = [...Array(10)].map((x, i) => {
   return {
@@ -256,7 +267,7 @@ describe('form generation', () => {
 
     const mockSubmit = vitest.fn()
     const mockSubmitWithErrors = vitest.fn()
-    render(
+    const { container, baseElement } = render(
       <MantineProvider>
         <FormProvider {...form.current}>
           <DynamicForm<TestTypes.DemoWorkItemCreateRequest, 'base.metadata'>
@@ -451,9 +462,44 @@ describe('form generation', () => {
     })
     // TODO: fix errors in ref and tagids and then
     // compare mock data with expected
+    // eslint-disable-next-line testing-library/no-container
+    const combobox = container.querySelector('[name="members.0.role"]') as HTMLInputElement
+    expect(combobox).toBeInTheDocument()
 
-    const firstMember = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
+    await userEvent.click(combobox, { pointerState: await userEvent.pointer({ target: combobox }) }) // jsdom not displaying
+    // fireEvent.pointerDown(
+    //   combobox,
+    //   new PointerEvent('pointerdown', {
+    //     ctrlKey: false,
+    //     button: 0,
+    //   }),
+    // )
+    const portals = getQueriesForElement(baseElement).queryAllByRole('presentation', {})
+    // expect(container).toMatchInlineSnapshot()
+
+    const getTopicsSelect = screen.getByLabelText('User')
+    await userEvent.click(getTopicsSelect)
+
+    await waitFor(() => {
+      const dropdownMenu = document.querySelector('.mantine-Select-dropdown')
+      userEvent.click(screen.getByText('reviewer'))
+    })
+    // screen.debug(document)
+
+    let firstMember = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
     expect(firstMember).toHaveDisplayValue('preparer')
+
+    const fesfsefse = container.querySelector('[role="option"][value="preparer"]') as HTMLInputElement
+    console.log({ fesfsefse })
+
+    const options = await screen.findAllByRole('option')
+    console.log({ options })
+    const option = await screen.findByRole('option', { name: /reviewer/i }) // [role="option"][value="preparer"]
+    await act(() => {
+      option.click()
+    })
+    firstMember = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
+    expect(firstMember).toHaveDisplayValue('reviewer')
     const secondMember = screen.getByTestId('demoWorkItemCreateForm-members.1.role')
     expect(secondMember).toHaveDisplayValue('reviewer')
   })

@@ -22,18 +22,6 @@ afterEach(() => {
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 window.URL.createObjectURL = (() => {}) as any
 
-global.ResizeObserver = class ResizeObserver {
-  observe() {
-    // do nothing
-  }
-  unobserve() {
-    // do nothing
-  }
-  disconnect() {
-    // do nothing
-  }
-}
-
 window.matchMedia = (query) => ({
   matches: false,
   media: query,
@@ -68,4 +56,27 @@ export default class EventSourceSetup {
       console.error('EventSource failed: ', error)
     }
   }
+}
+
+export class PointerEvent extends Event {
+  button: number
+  ctrlKey: boolean
+
+  constructor(type, props) {
+    super(type, props)
+    if (props.button != null) {
+      this.button = props.button
+    }
+    if (props.ctrlKey != null) {
+      this.ctrlKey = props.ctrlKey
+    }
+  }
+}
+
+window.PointerEvent = PointerEvent as any
+
+import * as ResizeObserverModule from 'resize-observer-polyfill'
+;(global as any).ResizeObserver = ResizeObserverModule.default
+;(global as any).DOMRect = {
+  fromRect: () => ({ top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0 }),
 }
