@@ -481,7 +481,15 @@ describe('form generation', () => {
       await userEvent.click(screen.getByRole('option', { name: 'tag #4', hidden: false })) // no need for discriminator if there's only a visible opt
       await userEvent.clear(tagsSearchInput)
     })
+    const tagsSearchInput = screen.getByTestId('search--tagIDsMultiselect')
+    await userEvent.click(tagsSearchInput, { pointerState: await userEvent.pointer({ target: tagsSearchInput }) }) // no need for discriminator if there's only a visible opt
+    // FIXME: most missing
+    const selectedOpts = [...document.querySelectorAll('[role="option"]')].map((opt) => ({
+      selected: opt.getAttribute('aria-selected') === 'true',
+      label: opt.getAttribute('aria-label'),
+    }))
     console.log({
+      selectedOpts,
       options: screen.getAllByRole('option', { hidden: true }).map((opt) => opt.getAttribute('aria-label')),
     })
     // once selecting, the option is gone. must check pill has display value of "tag #4"
