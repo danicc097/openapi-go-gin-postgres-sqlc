@@ -104,6 +104,7 @@ export type SelectOptions<Return, E = unknown> = {
   type: SelectOptionsTypes
   values: E[]
   formValueTransformer: <V extends E>(el: V & E) => Return extends unknown[] ? Return[number] : Return
+  ariaLabelTransformer?: <V extends E>(el: V & E) => string
   /** Modify search behavior, e.g. matching against `${el.<field_1>} ${el.<field_2>} ${el.field_3}`.
    * It searches in the whole stringified object by default.
    */
@@ -1163,10 +1164,15 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
         .includes(search.toLowerCase().trim()),
     )
     .map((option) => {
-      const value = String(selectOptions.formValueTransformer(option))
+      const formValue = String(selectOptions.formValueTransformer(option))
 
       return (
-        <Combobox.Option value={value} key={value} aria-selected={selectedOption === value} aria-label={`${value}`}>
+        <Combobox.Option
+          value={formValue}
+          key={formValue}
+          aria-selected={selectedOption === formValue}
+          aria-label={selectOptions.ariaLabelTransformer ? selectOptions.ariaLabelTransformer(option) : formValue}
+        >
           {comboboxOptionTemplate(selectOptions.optionTransformer, option)}
         </Combobox.Option>
       )

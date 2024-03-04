@@ -200,7 +200,8 @@ const formInitialValues = {
     // since userid exists and it's an initial value, it will show custom select card to work around https://github.com/mantinedev/mantine/issues/980
     // therefore its element input id does not exist
     { userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' },
-    // userid does not exist in selectOptions users -> will show input directly instead
+    // userid does not exist in selectOptions users -> will show empty input directly instead
+    // TODO: should show warning on top of form
     { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
   ],
 } as TestTypes.DemoWorkItemCreateRequest
@@ -347,6 +348,9 @@ describe('form generation', () => {
                         </Group>
                       )
                     },
+                    ariaLabelTransformer(el) {
+                      return el.email
+                    },
                     formValueTransformer(el) {
                       return el.userID
                     },
@@ -470,11 +474,12 @@ describe('form generation', () => {
     const comboboxInput = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
     expect(comboboxInput).toBeInTheDocument()
     await userEvent.click(comboboxInput, { pointerState: await userEvent.pointer({ target: comboboxInput }) }) // jsdom not displaying combobox
+    // expect(baseElement).toMatchInlineSnapshot()
     await waitFor(async () => {
       const dropdownMenu = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
 
       const opts = screen.getAllByRole('option', { hidden: true })
-      console.log({ options: opts.map((opt) => opt.textContent) })
+      console.log({ options: opts.map((opt) => opt.getAttribute('aria-label')) })
 
       await userEvent.click(screen.getByRole('option', { name: /preparer/i, hidden: true }))
     })
