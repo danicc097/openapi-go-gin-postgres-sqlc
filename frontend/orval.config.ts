@@ -32,7 +32,7 @@ export default defineConfig({
           },
           properties: {
             // will use basic string replace to get BrandedTypes.
-            // userID: () => faker.datatype.uuid(),
+            // userID: () => faker.string.uuid(),
             email: () => faker.internet.email(),
             metadata: () => ({
               key: faker.string.sample(),

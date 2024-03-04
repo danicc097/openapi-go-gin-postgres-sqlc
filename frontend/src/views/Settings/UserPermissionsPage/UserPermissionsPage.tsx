@@ -47,7 +47,7 @@ import RoleBadge from 'src/components/Badges/RoleBadge'
 import { entries, keys } from 'src/utils/object'
 import { css } from '@emotion/css'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
-import ErrorCallout, { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
+import ErrorCallout from 'src/components/Callout/ErrorCallout'
 import { ApiError } from 'src/api/mutator'
 import { AxiosError } from 'axios'
 import { isAuthorized } from 'src/services/authorization'
@@ -61,6 +61,7 @@ import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { useFormSlice } from 'src/slices/form'
 import { JSON_SCHEMA, ROLES, SCOPES } from 'src/config'
 import InfiniteLoader from 'src/components/Loading/InfiniteLoader'
+import { useCalloutErrors } from 'src/components/Callout/useCalloutErrors'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -467,6 +468,7 @@ const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProp
         const { allowed, message } = scopeChangeAllowed(key)
         const isChecked = form.getValues('scopes')?.includes(key)
 
+        const color = scopeColor(scopePermission)
         return (
           <div key={key}>
             <Tooltip
@@ -496,7 +498,15 @@ const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProp
                     {scopePermission && (
                       <>
                         <Space pl={10} />
-                        <Badge radius={4} size="xs" color={scopeColor(scopePermission)}>
+
+                        <Badge
+                          size="xs"
+                          radius="sm"
+                          style={{
+                            backgroundColor: color,
+                            color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : '#131313',
+                          }}
+                        >
                           {scopePermission}
                         </Badge>
                       </>

@@ -15,11 +15,11 @@ import {
   http
 } from 'msw'
 
-export const getCreateWorkItemCommentMock = () => ({createdAt: (() => faker.date.past())(), message: faker.word.sample(), updatedAt: (() => faker.date.past())(), userID: faker.word.sample() as EntityIDs.UserID, workItemCommentID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemCommentID, workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID})
+export const getCreateWorkItemCommentMock = () => ({createdAt: (() => faker.date.past())(), message: faker.word.sample(), updatedAt: (() => faker.date.past())(), userID: faker.string.uuid() as EntityIDs.UserID, workItemCommentID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemCommentID, workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID})
 
-export const getGetWorkItemCommentMock = () => ({createdAt: (() => faker.date.past())(), message: faker.word.sample(), updatedAt: (() => faker.date.past())(), userID: faker.word.sample() as EntityIDs.UserID, workItemCommentID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemCommentID, workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID})
+export const getGetWorkItemCommentMock = () => ({createdAt: (() => faker.date.past())(), message: faker.word.sample(), updatedAt: (() => faker.date.past())(), userID: faker.string.uuid() as EntityIDs.UserID, workItemCommentID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemCommentID, workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID})
 
-export const getUpdateWorkItemCommentMock = () => ({createdAt: (() => faker.date.past())(), message: faker.word.sample(), updatedAt: (() => faker.date.past())(), userID: faker.word.sample() as EntityIDs.UserID, workItemCommentID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemCommentID, workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID})
+export const getUpdateWorkItemCommentMock = () => ({createdAt: (() => faker.date.past())(), message: faker.word.sample(), updatedAt: (() => faker.date.past())(), userID: faker.string.uuid() as EntityIDs.UserID, workItemCommentID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemCommentID, workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID})
 
 export const getWorkItemCommentMock = () => [
 http.post('*/work-item/:workItemID/comment/', async () => {

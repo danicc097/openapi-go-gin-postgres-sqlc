@@ -1,7 +1,7 @@
 import type { DeepPartial, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import DynamicForm from 'src/utils/formGeneration'
-import { parseSchemaFields, type SchemaField } from 'src/utils/jsonSchema'
-import { describe, expect, test } from 'vitest'
+import { JsonSchemaField, parseSchemaFields, type SchemaField } from 'src/utils/jsonSchema'
+import { describe, expect, test, vitest } from 'vitest'
 import { getByTestId, render, screen, renderHook, fireEvent, act, getByText, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom'
 import dayjs from 'dayjs'
@@ -13,6 +13,7 @@ import { Group, Avatar, Space, Flex, MantineProvider } from '@mantine/core'
 import { nameInitials } from 'src/utils/strings'
 import { JSONSchemaType } from 'ajv'
 import { selectOptionsBuilder } from 'src/utils/formGeneration.context'
+import { JSONSchema } from 'json-schema-to-ts'
 
 const tags = [...Array(10)].map((x, i) => {
   return {
@@ -154,7 +155,7 @@ const schema = {
   required: ['demoProject', 'base', 'tagIDsMultiselect', 'members'],
   type: 'object',
   'x-gen-struct': 'RestDemoWorkItemCreateRequest',
-} as JSONSchemaType<true>
+} as JsonSchemaField
 
 const formInitialValues = {
   base: {
@@ -178,7 +179,7 @@ const formInitialValues = {
     workItemID: 1,
     reopened: true,
   },
-  tagIDs: [0, 1, 2],
+  tagIDs: ['aaa', 1, 2],
   tagIDsMultiselect: [0, 1, 2],
   members: [
     // with defaultValue of "member.role": {role: 'preparer'} it will fill null or undefined form values.
@@ -216,17 +217,30 @@ const schemaFields: Record<GetKeys<TestTypes.DemoWorkItemCreateRequest>, SchemaF
   tagIDsMultiselect: { type: 'integer', required: false, isArray: true },
 }
 
-describe('form generation', () => {
-  test('should extract field types correctly from a JSON schema', () => {
-    expect(parseSchemaFields(schema)).toEqual(schemaFields)
-  })
+// ok
+// test('toHaveFormValues', () => {
+//   render(
+//     <form data-testid="login-form">
+//       <input type="text" name="username" value="jane.doe" />
+//       <input type="password" name="password" value="12345678" />
+//       <input type="checkbox" name="rememberMe" checked />
+//       <button type="submit">Sign in</button>
+//     </form>,
+//   )
 
+//   const form = screen.getByTestId('login-form') as HTMLFormElement
+//   expect(form).toHaveFormValues({
+//     username: 'jane.doe',
+//   })
+// })
+
+test('should extract field types correctly from a JSON schema', () => {
+  expect(parseSchemaFields(schema)).toEqual(schemaFields)
+})
+
+describe('form generation', () => {
   test('should render form fields and buttons', async () => {
-    /**
-     * FIXME: no need for renderHook. test via ui.
-     * https://react-hook-form.com/advanced-usage#TestingForm
-     */
-    const { result: form } = renderHook(() =>
+    const { result: form, rerender } = renderHook(() =>
       useForm<TestTypes.DemoWorkItemCreateRequest>({
         resolver: ajvResolver(schema as any, {
           strict: false,
@@ -240,20 +254,23 @@ describe('form generation', () => {
 
     const formName = 'demoWorkItemCreateForm'
 
-    const { isDirty, isSubmitting, submitCount } = form.current.formState
-
-    const view = render(
+    const mockSubmit = vitest.fn()
+    const mockSubmitWithErrors = vitest.fn()
+    render(
       <MantineProvider>
         <FormProvider {...form.current}>
           <DynamicForm<TestTypes.DemoWorkItemCreateRequest, 'base.metadata'>
             onSubmit={(e) => {
               e.preventDefault()
               form.current.handleSubmit(
+                // needs to be called
                 (data) => {
                   console.log({ data })
+                  mockSubmit(data)
                 },
                 (errors) => {
                   console.log({ errors })
+                  mockSubmitWithErrors(errors)
                 },
               )(e)
             }}
@@ -347,9 +364,7 @@ describe('form generation', () => {
       </MantineProvider>,
     )
 
-    // console.log(view.container.innerHTML)
-
-    const ids = [
+    const dataTestIds = [
       'demoWorkItemCreateForm',
       'demoWorkItemCreateForm-tagIDs-title',
       'demoWorkItemCreateForm-tagIDs-add-button',
@@ -408,7 +423,7 @@ describe('form generation', () => {
       e.getAttribute('data-testid'),
     )
     // console.log({ actualIds })
-    expect(actualIds.sort()).toEqual(ids.sort())
+    expect(actualIds.sort()).toEqual(dataTestIds.sort())
 
     // test should submit with default values if none changed
 
@@ -417,16 +432,26 @@ describe('form generation', () => {
     // maybe call submit with mock onsubmit that sets global var and check
     // that return value is what we expect.
     // https://react-hook-form.com/advanced-usage#TestingForm
-    // but this is still not updated in test for some reason: formisbool: true  but 'demoProject.reopened' false
-    const formElement = screen.getByTestId(formName)
+    // for better testing see : https://claritydev.net/blog/testing-react-hook-form-with-react-testing-library
     const checkbox = screen.getByTestId('demoWorkItemCreateForm-demoProject.reopened')
     expect(checkbox).toBeChecked()
     checkbox.click()
     expect(checkbox).not.toBeChecked()
-    // checkbox.click()
-    // expect(formElement).toHaveFormValues({}) // always empty...
-    const submitButton = screen.getByTestId('submitButtonTestId')
-    fireEvent.click(submitButton)
+    const formElement = screen.getByTestId(formName)
+    const submitButton = screen.getByRole('button', { name: /Submit/ })
+    await act(() => {
+      submitButton.click()
+    })
+
+    expect(screen.getAllByRole('alert')).toHaveLength(3) // incl box
+    expect(mockSubmitWithErrors).toBeCalled()
+    expect(mockSubmitWithErrors.mock.calls[0][0]).toMatchObject({
+      demoProject: { ref: { message: 'must match pattern "^[0-9]{8}$"' } },
+      tagIDs: [{ message: 'must be integer' }],
+    })
+    // TODO: fix errors in ref and tagids and then
+    // compare mock data with expected
+
     const firstMember = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
     expect(firstMember).toHaveDisplayValue('preparer')
     const secondMember = screen.getByTestId('demoWorkItemCreateForm-members.1.role')
