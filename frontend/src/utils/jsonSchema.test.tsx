@@ -484,12 +484,14 @@ describe('form generation', () => {
       expect(comboboxInput).toBeInTheDocument()
       await userEvent.click(comboboxInput, { pointerState: await userEvent.pointer({ target: comboboxInput }) }) // jsdom not displaying combobox
 
+      // TODO: type in combobox search and then we will just have a single option.
+      // not need for formKey discominator
       console.log({ options: screen.getAllByRole('option').map((opt) => opt.getAttribute('aria-label')) })
       console.log({
         allOptions: screen.getAllByRole('option', { hidden: true }).map((opt) => opt.getAttribute('aria-label')),
       })
 
-      await userEvent.click(screen.getByRole('option', { name: 'user5@mail.com', hidden: true })) // TODO: should include formKey as discriminator somewhere, else we have duplicates on multiple items.
+      await userEvent.click(screen.getByRole('option', { name: 'user5@mail.com', hidden: false })) // no need for discriminator. search until just one option is visible to user
     })
     // screen.debug(document)
 
