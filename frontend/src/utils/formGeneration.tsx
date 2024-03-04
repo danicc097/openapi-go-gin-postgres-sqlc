@@ -1096,6 +1096,7 @@ function CustomMultiselect({
                     combobox.updateSelectedOptionIndex()
                     setSearch(event.currentTarget.value)
                   }}
+                  data-testid={`search--${formField}`}
                   value={search}
                   onFocus={() => combobox.openDropdown()}
                   onBlur={() => combobox.closeDropdown()}
@@ -1245,6 +1246,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
             value={search}
             onChange={(event) => setSearch(event.currentTarget.value)}
             placeholder={`Search ${lowerFirst(itemName)}`}
+            data-testid={`search--${formField}`}
           />
           <Combobox.Options
             mah={200} // scrollable

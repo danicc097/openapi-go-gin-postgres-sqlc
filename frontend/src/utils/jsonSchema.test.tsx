@@ -326,11 +326,11 @@ describe('form generation', () => {
                 selectOptions: {
                   'members.userID': selectOptionsBuilder({
                     type: 'select',
-                    values: [...Array(5)].map((x, i) => {
+                    values: [...Array(10)].map((x, i) => {
                       return {
                         username: `user${i}`,
                         email: `user${i}@mail.com`,
-                        userID: `a446259c-1083-4212-98fe-bd080c41e7d${i}`,
+                        userID: `a446259c-1083-4212-98fe-bd080c41e7d${i % 10}`,
                       }
                     }),
                     optionTransformer(el) {
@@ -355,6 +355,9 @@ describe('form generation', () => {
                     },
                     pillTransformer(el) {
                       return <>el.email</>
+                    },
+                    searchValueTransformer(el) {
+                      return `${el.email} ${el.username}`
                     },
                   }),
                   tagIDsMultiselect: selectOptionsBuilder({
@@ -480,31 +483,25 @@ describe('form generation', () => {
     // console.log({ options: screen.getAllByRole('option', { hidden: true }).map((opt) => opt.getAttribute('aria-label')) })
 
     await waitFor(async () => {
-      const comboboxInput = screen.getByTestId('demoWorkItemCreateForm-members.0.userID') // FIXME: its just a text input! userID is the combobox
-      expect(comboboxInput).toBeInTheDocument()
-      await userEvent.click(comboboxInput, { pointerState: await userEvent.pointer({ target: comboboxInput }) }) // jsdom not displaying combobox
+      const tagsSearchInput = screen.getByTestId('search--tagIDsMultiselect')
+      await userEvent.type(tagsSearchInput, 'tag #4')
 
-      // TODO: type in combobox search and then we will just have a single option.
-      // not need for formKey discominator
-      console.log({ options: screen.getAllByRole('option').map((opt) => opt.getAttribute('aria-label')) })
-      console.log({
-        allOptions: screen.getAllByRole('option', { hidden: true }).map((opt) => opt.getAttribute('aria-label')),
-      })
-
-      await userEvent.click(screen.getByRole('option', { name: 'user5@mail.com', hidden: false })) // no need for discriminator. search until just one option is visible to user
+      await userEvent.click(screen.getByRole('option', { name: 'tag #4', hidden: false })) // no need for discriminator if there's only a visible opt
     })
+
     // screen.debug(document)
 
-    let firstMember = screen.getByTestId('demoWorkItemCreateForm-members.0.role') // FIXME: its just a text input! 0.member is the combobox
-    expect(firstMember).toHaveDisplayValue('preparer')
+    const getFirstMemberUserID = () => screen.getByTestId('demoWorkItemCreateForm-members.0.userID') as HTMLInputElement // text
+    const m = getFirstMemberUserID()
+    expect(m).toHaveAccessibleName('User')
 
-    const option = await screen.findByRole('option', { name: /reviewer/i, hidden: true }) // [role="option"][value="preparer"]
-    await act(() => {
-      option.click()
+    await userEvent.click(m, { pointerState: await userEvent.pointer({ target: m }) })
+    const firstUserIDSearchInput = screen.getByTestId('search--tagIDsMultiselect')
+    const email = 'user9@mail.com'
+    await waitFor(async () => {
+      await userEvent.type(firstUserIDSearchInput, email)
+      await userEvent.click(screen.getByRole('option', { name: email, hidden: false })) // no need for discriminator if there's only a visible opt
     })
-    firstMember = screen.getByTestId('demoWorkItemCreateForm-members.0.role')
-    expect(firstMember).toHaveDisplayValue('reviewer')
-    const secondMember = screen.getByTestId('demoWorkItemCreateForm-members.1.role')
-    expect(secondMember).toHaveDisplayValue('reviewer')
+    expect(screen.getByRole('option', { name: email, hidden: false }).getAttribute('aria-selected')).toBe('true')
   })
 })
