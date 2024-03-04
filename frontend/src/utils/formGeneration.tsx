@@ -33,6 +33,7 @@ import {
   PillsInput,
   Pill,
   ScrollArea,
+  CheckIcon,
 } from '@mantine/core'
 import classes from './form.module.css'
 import { DateInput, DateTimePicker } from '@mantine/dates'
@@ -1001,32 +1002,25 @@ function CustomMultiselect({
         .toLowerCase()
         .includes(search.toLowerCase().trim())
 
-      const notSelected = !formValues.includes(selectOptions.formValueTransformer(item))
-
-      return inSearch && notSelected
+      return inSearch
     })
     .map((option) => {
-      const formValue = String(selectOptions.formValueTransformer(option))
-      const selected = formValues.includes(formValue) // all are not selecvted...
+      const formValue = selectOptions.formValueTransformer(option)
+      const selected = formValues.includes(selectOptions.formValueTransformer(option))
 
       return (
         <Combobox.Option
-          value={formValue}
-          key={formValue}
+          value={String(formValue)}
+          key={String(formValue)}
           active={selected}
           aria-selected={selected}
-          aria-label={selectOptions.ariaLabelTransformer ? selectOptions.ariaLabelTransformer(option) : formValue}
+          aria-label={
+            selectOptions.ariaLabelTransformer ? selectOptions.ariaLabelTransformer(option) : String(formValue)
+          }
         >
-          <Group align="stretch" justify="space-between">
+          <Group align="center" justify="start">
+            {selected && <CheckIcon size={12} />}
             {selectOptions.optionTransformer(option)}
-            <CloseButton
-              onMouseDown={() => handleValueRemove(selectOptions.formValueTransformer(option))}
-              variant="transparent"
-              color="gray"
-              size={22}
-              iconSize={14}
-              tabIndex={-1}
-            />
           </Group>
         </Combobox.Option>
       )
@@ -1057,6 +1051,11 @@ function CustomMultiselect({
           const option = selectOptions.values.find(
             (option) => String(selectOptions.formValueTransformer(option)) === value,
           )
+          const selected = formValues.includes(selectOptions.formValueTransformer(option))
+          if (selected) {
+            handleValueRemove(selectOptions.formValueTransformer(option))
+            return
+          }
           formSlice.setCustomError(formName, formField, null)
           registerOnChange({
             target: {
