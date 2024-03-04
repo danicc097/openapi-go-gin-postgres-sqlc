@@ -26,6 +26,8 @@ import { selectOptionsBuilder } from 'src/utils/formGeneration.context'
 import { JSONSchema } from 'json-schema-to-ts'
 import userEvent from '@testing-library/user-event'
 import { VirtuosoMockContext } from 'react-virtuoso'
+import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
+import { User } from 'src/gen/model'
 
 const tags = [...Array(10)].map((x, i) => {
   return {
@@ -331,21 +333,11 @@ describe('form generation', () => {
                         username: `user${i}`,
                         email: `user${i}@mail.com`,
                         userID: `a446259c-1083-4212-98fe-bd080c41e7d${i}`,
-                      }
+                        role: 'user',
+                      } as User
                     }),
                     optionTransformer(el) {
-                      return (
-                        <Group align="center">
-                          <div style={{ display: 'flex', alignItems: 'center' }}>
-                            <Avatar size={35} radius="xl" data-test-id="header-profile-avatar" alt={el?.username}>
-                              {nameInitials(el?.email || '')}
-                            </Avatar>
-                            <Space p={5} />
-                          </div>
-
-                          <div style={{ marginLeft: 'auto' }}>{el?.email}</div>
-                        </Group>
-                      )
+                      return <UserComboboxOption user={el} />
                     },
                     ariaLabelTransformer(el) {
                       return el.email
@@ -493,7 +485,7 @@ describe('form generation', () => {
       options: screen.getAllByRole('option', { hidden: true }).map((opt) => opt.getAttribute('aria-label')),
     })
     // once selecting, the option is gone. must check pill has display value of "tag #4"
-    // expect(screen.getByRole('option', { name: 'tag #4', hidden: true }).getAttribute('aria-selected')).toBe('true') // here would need discriminator since its hidden after click
+    expect(screen.getByRole('option', { name: 'tag #4', hidden: true }).getAttribute('aria-selected')).toBe('true') // here would need discriminator since its hidden after click
 
     // screen.debug(document)
 
@@ -510,6 +502,6 @@ describe('form generation', () => {
       await userEvent.clear(firstUserIDSearchInput)
     })
     // once selecting, the option is gone. must check input has display value that contains the email
-    // expect(screen.getByRole('option', { name: email, hidden: true }).getAttribute('aria-selected')).toBe('true') // here would need discriminator since its hidden after click
+    expect(screen.getByRole('option', { name: email, hidden: true }).getAttribute('aria-selected')).toBe('true') // here would need discriminator since its hidden after click
   })
 })
