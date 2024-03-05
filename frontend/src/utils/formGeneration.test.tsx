@@ -199,9 +199,11 @@ describe('form generation', () => {
       {
         wrapper: ({ children }) => {
           return (
-            <VirtuosoMockContext.Provider value={{ viewportHeight: Infinity, itemHeight: 100 }}>
-              <MantineProvider>{children}</MantineProvider>
-            </VirtuosoMockContext.Provider>
+            <MantineProvider>
+              <VirtuosoMockContext.Provider value={{ viewportHeight: Infinity, itemHeight: 100 }}>
+                {children}
+              </VirtuosoMockContext.Provider>
+            </MantineProvider>
           )
         },
       },

@@ -44,7 +44,13 @@ export default defineConfig((env) =>
         deps: {
           optimizer: {
             web: {
-              include: ['framer-motion'],
+              include: [
+                'framer-motion',
+                '@tabler/icons',
+                '@tabler/icons-react',
+                //
+                // '@mantine/core',
+              ],
               enabled: true,
             },
           },
