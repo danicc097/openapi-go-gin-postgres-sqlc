@@ -3,5 +3,8 @@ rm -rf "$alias_dir"
 # export_alias docker-compose 'docker compose $@'
 export_alias greet 'echo Hello, $@'
 export_alias pr_status "gh pr status --repo danicc097/openapi-go-gin-postgres-sqlc"
+
 export_alias branches.latest "git for-each-ref --sort=-authordate | grep 'refs/remotes/origin/' -m 10 | awk '{ gsub(\"refs/remotes/origin/\", \"\"); print \$3 }'"
 export_alias branches.active "git branch -r --sort=-committerdate | head -15"
+
+export_alias dependabot.rebase_all 'gh pr list --repo danicc097/openapi-go-gin-postgres-sqlc --state open --label dependencies --json "url" --jq ".[] | .url" | xargs -n 1 -I{} gh pr comment -b "@dependabot rebase" {}'
