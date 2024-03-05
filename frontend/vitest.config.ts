@@ -41,6 +41,7 @@ export default defineConfig((env) =>
         'process.env.TESTING': true,
       },
       test: {
+        isolate: false, // if we dont depend on global state can be false to make tests faster
         deps: {
           optimizer: {
             web: {
@@ -48,9 +49,10 @@ export default defineConfig((env) =>
                 'framer-motion',
                 '@tabler/icons',
                 '@tabler/icons-react',
-                //
-                // '@mantine/core',
+                // breaks all imports
+                //'@mantine/core',
               ],
+              // exclude: ['@mantine/core'],
               enabled: true,
             },
           },

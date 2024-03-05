@@ -189,6 +189,8 @@ export const schemaFields: Record<GetKeys<TestTypes.DemoWorkItemCreateRequest>, 
   tagIDsMultiselect: { type: 'integer', required: false, isArray: true },
 }
 
-test('should extract field types correctly from a JSON schema', () => {
-  expect(parseSchemaFields(schema)).toEqual(schemaFields)
+describe('schemas', () => {
+  test('should extract field types correctly from a JSON schema', () => {
+    expect(parseSchemaFields(schema)).toStrictEqual(schemaFields)
+  })
 })

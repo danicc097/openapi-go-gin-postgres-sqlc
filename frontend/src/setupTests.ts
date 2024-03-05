@@ -6,6 +6,7 @@ import indexeddb from 'fake-indexeddb'
 import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers'
 import matchers from '@testing-library/jest-dom/matchers'
 import '@testing-library/jest-dom'
+import '@testing-library/jest-dom/extend-expect'
 
 declare module 'vitest' {
   interface Assertion<T = any> extends jest.Matchers<void, T>, TestingLibraryMatchers<T, void> {}

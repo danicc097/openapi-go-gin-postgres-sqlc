@@ -4,7 +4,6 @@ import { JsonSchemaField, parseSchemaFields, type SchemaField } from 'src/utils/
 import { describe, expect, test, vitest } from 'vitest'
 import {
   getByTestId,
-  render,
   screen,
   renderHook,
   fireEvent,
@@ -29,6 +28,7 @@ import { VirtuosoMockContext } from 'react-virtuoso'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { User } from 'src/gen/model'
 import { schema, refPattern, schemaFields } from 'src/utils/jsonSchema.test'
+import { render } from 'src/test-utils/render'
 
 const tags = [...Array(10)].map((x, i) => {
   return {
@@ -196,17 +196,6 @@ describe('form generation', () => {
           }}
         />
       </FormProvider>,
-      {
-        wrapper: ({ children }) => {
-          return (
-            <MantineProvider>
-              <VirtuosoMockContext.Provider value={{ viewportHeight: Infinity, itemHeight: 100 }}>
-                {children}
-              </VirtuosoMockContext.Provider>
-            </MantineProvider>
-          )
-        },
-      },
     )
 
     const dataTestIds = [
