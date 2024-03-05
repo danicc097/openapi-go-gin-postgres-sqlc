@@ -310,23 +310,6 @@ describe('form generation', () => {
     await userEvent.type(refInput, '99998888')
     const badTagCloseButton = screen.getByTestId(`demoWorkItemCreateForm-tagIDsMultiselect-remove--aaaa`) // index starts at one
     console.log(badTagCloseButton.parentNode?.textContent)
-    await waitFor(async () => {
-      await userEvent.click(badTagCloseButton, { pointerState: await userEvent.pointer({ target: badTagCloseButton }) })
-    })
-    await act(() => {
-      submitButton.click()
-    })
-
-    expect(screen.queryAllByRole('alert')).toHaveLength(0)
-    expect(mockSubmitWithErrors).toBeCalledTimes(1)
-    expect(mockSubmit).toBeCalledTimes(1)
-
-    const newFormValues = formInitialValues
-    newFormValues.tagIDsMultiselect = [0, 2]
-    newFormValues.members![0]!.role = 'preparer' // nested defaultValues if empty
-    newFormValues.demoProject.ref = '99998888'
-
-    expect(mockSubmit.mock.calls[0]).toStrictEqual([newFormValues])
 
     await waitFor(async () => {
       const tagsSearchInput = screen.getByTestId('demoWorkItemCreateForm-search--tagIDsMultiselect')
@@ -352,5 +335,26 @@ describe('form generation', () => {
     })
     await userEvent.click(firstUserIDInput, { pointerState: await userEvent.pointer({ target: firstUserIDInput }) }) // show opt with search filter
     expect(screen.getByRole('option', { name: email, hidden: false }).getAttribute('aria-selected')).toBe('true')
+
+    /**
+     * test final form values
+     *  */
+    await waitFor(async () => {
+      await userEvent.click(badTagCloseButton, { pointerState: await userEvent.pointer({ target: badTagCloseButton }) })
+    })
+    await act(() => {
+      submitButton.click()
+    })
+
+    expect(screen.queryAllByRole('alert')).toHaveLength(0)
+    expect(mockSubmit).toBeCalledTimes(1)
+
+    const newFormValues = formInitialValues
+    newFormValues.tagIDsMultiselect = [0, 2, 4]
+    newFormValues.members![0]!.role = 'preparer' // nested defaultValues if empty
+    newFormValues.members![0]!.userID = 'a446259c-1083-4212-98fe-bd080c41e7d9'
+    newFormValues.demoProject.ref = '99998888'
+
+    expect(mockSubmit.mock.calls[0]).toStrictEqual([newFormValues])
   })
 })
