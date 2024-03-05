@@ -22,8 +22,10 @@ var (
 	typeOfDate            = reflect.TypeOf(Date{})
 	typeOfTextUnmarshaler = reflect.TypeOf((*encoding.TextUnmarshaler)(nil)).Elem()
 	typeOfTextMarshaler   = reflect.TypeOf((*encoding.TextMarshaler)(nil)).Elem()
+	typeOfJSONMarshaler   = reflect.TypeOf((*json.Marshaler)(nil)).Elem()
 	typeOfEmptyInterface  = reflect.TypeOf((*interface{})(nil)).Elem()
 	typeOfSchemaInliner   = reflect.TypeOf((*SchemaInliner)(nil)).Elem()
+	typeOfEmbedReferencer = reflect.TypeOf((*EmbedReferencer)(nil)).Elem()
 )
 
 const (
@@ -45,6 +47,11 @@ type IgnoreTypeName interface {
 // SchemaInliner is a marker interface to inline schema without creating a definition.
 type SchemaInliner interface {
 	InlineJSONSchema()
+}
+
+// EmbedReferencer is a marker interface to enable reference to embedded struct type.
+type EmbedReferencer interface {
+	ReferEmbedded()
 }
 
 // IgnoreTypeName instructs reflector to keep original type name during mapping.
@@ -261,6 +268,10 @@ func checkSchemaSetup(params InterceptSchemaParams) (bool, error) {
 //		ProcessWithoutTags
 //		SkipEmbeddedMapsSlices
 //		SkipUnsupportedProperties
+//
+// Fields from embedded structures are processed as if they were defined in the root structure.
+// Alternatively, if embedded structure has a field tag `refer:"true"` or implements EmbedReferencer,
+// its reference will be added to `allOf` of the parent schema.
 func (r *Reflector) Reflect(i interface{}, options ...func(rc *ReflectContext)) (Schema, error) {
 	rc := ReflectContext{}
 	rc.Context = context.Background()
@@ -484,10 +495,7 @@ func (r *Reflector) reflect(i interface{}, rc *ReflectContext, keepType bool, pa
 		return schema, nil
 	}
 
-	if (t.Implements(typeOfTextUnmarshaler) || reflect.PtrTo(t).Implements(typeOfTextUnmarshaler)) &&
-		(t.Implements(typeOfTextMarshaler) || reflect.PtrTo(t).Implements(typeOfTextMarshaler)) {
-		schema.AddType(String)
-	}
+	isTextMarshaler := checkTextMarshaler(t, &schema)
 
 	if ref, ok := rc.definitionRefs[typeString]; ok && defName != "" {
 		return ref.Schema(), nil
@@ -507,8 +515,10 @@ func (r *Reflector) reflect(i interface{}, rc *ReflectContext, keepType bool, pa
 		return schema, err
 	}
 
-	if err = r.kindSwitch(t, v, sp, rc); err != nil {
-		return schema, err
+	if !isTextMarshaler {
+		if err = r.kindSwitch(t, v, sp, rc); err != nil {
+			return schema, err
+		}
 	}
 
 	if rc.interceptSchema != nil {
@@ -529,6 +539,20 @@ func (r *Reflector) reflect(i interface{}, rc *ReflectContext, keepType bool, pa
 	}
 
 	return schema, nil
+}
+
+func checkTextMarshaler(t reflect.Type, schema *Schema) bool {
+	if (t.Implements(typeOfTextUnmarshaler) || reflect.PtrTo(t).Implements(typeOfTextUnmarshaler)) &&
+		(t.Implements(typeOfTextMarshaler) || reflect.PtrTo(t).Implements(typeOfTextMarshaler)) {
+		if !t.Implements(typeOfJSONMarshaler) && !reflect.PtrTo(t).Implements(typeOfJSONMarshaler) {
+			schema.TypeEns().WithSimpleTypes(String)
+			schema.Type.SliceOfSimpleTypeValues = nil
+
+			return true
+		}
+	}
+
+	return false
 }
 
 func (r *Reflector) applySubSchemas(v reflect.Value, rc *ReflectContext, schema *Schema) error {
@@ -813,7 +837,7 @@ func (r *Reflector) kindSwitch(t reflect.Type, v reflect.Value, schema *Schema, 
 func MakePropertyNameMapping(v interface{}, tagName string) map[string]string {
 	res := make(map[string]string)
 
-	refl.WalkTaggedFields(reflect.ValueOf(v), func(v reflect.Value, sf reflect.StructField, tag string) {
+	refl.WalkTaggedFields(reflect.ValueOf(v), func(_ reflect.Value, sf reflect.StructField, tag string) {
 		res[sf.Name] = tag
 	}, tagName)
 
@@ -914,7 +938,19 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 
 		if tag == "" && field.Anonymous &&
 			(field.Type.Kind() == reflect.Struct || deepIndirect.Kind() == reflect.Struct) {
-			if err := r.walkProperties(values[i], parent, rc); err != nil {
+			forceReference := (field.Type.Implements(typeOfEmbedReferencer) && field.Tag.Get("refer") == "") ||
+				field.Tag.Get("refer") == "true"
+
+			if forceReference {
+				rc.Path = append(rc.Path, "")
+
+				s, err := r.reflect(values[i].Interface(), rc, false, parent)
+				if err != nil {
+					return err
+				}
+
+				parent.AllOf = append(parent.AllOf, s.ToSchemaOrBool())
+			} else if err := r.walkProperties(values[i], parent, rc); err != nil {
 				return err
 			}
 
