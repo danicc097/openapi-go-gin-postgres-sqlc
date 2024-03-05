@@ -45,6 +45,7 @@ export default defineConfig((env) =>
           optimizer: {
             web: {
               include: ['framer-motion'],
+              enabled: true,
             },
           },
         },
