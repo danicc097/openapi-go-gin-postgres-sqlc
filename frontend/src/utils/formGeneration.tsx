@@ -957,6 +957,7 @@ const initialValueByType = (type?: SchemaField['type']) => {
 
 type CustomPillProps = {
   value: any
+  formField: FormField
   schemaKey: SchemaKey
   handleValueRemove: (val: string) => void
   props?: React.HTMLProps<HTMLDivElement>
@@ -1085,7 +1086,8 @@ function CustomMultiselect({
               {formValues.length > 0 &&
                 formValues.map((formValue, i) => (
                   <CustomPill
-                    key={`${formField}-${i}-pill`}
+                    formField={formField}
+                    key={`${formName}-${formField}-${i}-pill`}
                     value={formValue}
                     handleValueRemove={handleValueRemove}
                     schemaKey={schemaKey}
@@ -1099,7 +1101,7 @@ function CustomMultiselect({
                     combobox.updateSelectedOptionIndex()
                     setSearch(event.currentTarget.value)
                   }}
-                  data-testid={`search--${formField}`}
+                  data-testid={`${formName}-search--${formField}`}
                   value={search}
                   onFocus={() => combobox.openDropdown()}
                   onBlur={() => combobox.closeDropdown()}
@@ -1255,7 +1257,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
             value={search}
             onChange={(event) => setSearch(event.currentTarget.value)}
             placeholder={`Search ${lowerFirst(itemName)}`}
-            data-testid={`search--${formField}`}
+            data-testid={`${formName}-search--${formField}`}
           />
           <Combobox.Options
             mah={200} // scrollable
@@ -1279,7 +1281,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
   )
 }
 
-function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPillProps): JSX.Element | null {
+function CustomPill({ value, schemaKey, handleValueRemove, formField, ...props }: CustomPillProps): JSX.Element | null {
   const { formName, options, schemaFields } = useDynamicFormContext()
   const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
   const selectOptions = options.selectOptions![schemaKey]!
@@ -1321,6 +1323,8 @@ function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPil
         size={22}
         iconSize={14}
         tabIndex={-1}
+        data-testid={`${formName}-${formField}-remove--${value}`}
+        aria-label={`Remove ${itemName} ${value}`}
       />
     </Box>
   )

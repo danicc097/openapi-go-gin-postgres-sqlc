@@ -39,7 +39,7 @@ const tags = [...Array(10)].map((x, i) => {
     description: 'description',
   }
 })
-
+const badId = 'aaaa'
 const formInitialValues = {
   base: {
     items: [
@@ -62,8 +62,8 @@ const formInitialValues = {
     workItemID: 1,
     reopened: true,
   },
-  tagIDs: ['aaa', 1, 2],
-  tagIDsMultiselect: [0, 1, 2],
+  tagIDs: [1, 3, 2],
+  tagIDsMultiselect: [0, badId, 2],
   members: [
     // with defaultValue of "member.role": {role: 'preparer'} it will fill null or undefined form values.
     // since userid exists and it's an initial value, it will show custom select card to work around https://github.com/mantinedev/mantine/issues/980
@@ -260,15 +260,13 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-demoProject.ref',
       'demoWorkItemCreateForm-demoProject.reopened',
       'demoWorkItemCreateForm-demoProject.workItemID',
+      'demoWorkItemCreateForm-search--members.0.userID',
+      'demoWorkItemCreateForm-search--members.1.userID',
+      'demoWorkItemCreateForm-search--tagIDsMultiselect',
+      'demoWorkItemCreateForm-tagIDsMultiselect-remove--0',
+      'demoWorkItemCreateForm-tagIDsMultiselect-remove--aaaa',
+      'demoWorkItemCreateForm-tagIDsMultiselect-remove--2',
     ]
-
-    const opts1 = [...document.querySelectorAll('[role="option"]')].map((opt) => ({
-      selected: opt.getAttribute('aria-selected') === 'true',
-      label: opt.getAttribute('aria-label'),
-    }))
-    console.log({
-      opts1,
-    })
 
     const actualIds = [...document.querySelectorAll('[data-testid^="demoWorkItemCreateForm"]')].map((e) =>
       e.getAttribute('data-testid'),
@@ -288,6 +286,8 @@ describe('form generation', () => {
     expect(checkbox).toBeChecked()
     checkbox.click()
     expect(checkbox).not.toBeChecked()
+    checkbox.click()
+    expect(checkbox).toBeChecked()
     const formElement = screen.getByTestId(formName)
     const submitButton = screen.getByRole('button', { name: /Submit/ })
     await act(() => {
@@ -295,22 +295,70 @@ describe('form generation', () => {
     })
 
     expect(screen.getAllByRole('alert')).toHaveLength(3) // incl box
-    expect(mockSubmitWithErrors).toBeCalled()
-    expect(mockSubmitWithErrors.mock.calls[0][0]).toMatchObject({
-      demoProject: { ref: { message: `must match pattern "${refPattern}"` } },
-      tagIDs: [{ message: 'must be integer' }],
-    })
+    expect(mockSubmitWithErrors).toBeCalledTimes(1)
+    expect(mockSubmit).toBeCalledTimes(0)
+    expect(mockSubmitWithErrors.mock.calls[0]).toMatchObject([
+      {
+        demoProject: { ref: { message: `must match pattern "${refPattern}"` } },
+        tagIDsMultiselect: [undefined, { message: 'must be integer' }],
+      },
+    ])
     // TODO: fix errors in ref and tagids and then
     // compare mock data via mockSubmit with expected (requires fixing combobox options in rtl first)
+    const refInput = screen.getByTestId('demoWorkItemCreateForm-demoProject.ref')
+    await userEvent.clear(refInput)
+    await userEvent.type(refInput, '99998888')
+    const badTagCloseButton = screen.getByTestId(`demoWorkItemCreateForm-tagIDsMultiselect-remove--aaaa`) // index starts at one
+    console.log(badTagCloseButton.parentNode?.textContent)
+    await waitFor(async () => {
+      await userEvent.click(badTagCloseButton, { pointerState: await userEvent.pointer({ target: badTagCloseButton }) })
+    })
+    await act(() => {
+      submitButton.click()
+    })
+
+    expect(screen.queryAllByRole('alert')).toHaveLength(0)
+    expect(mockSubmitWithErrors).toBeCalledTimes(1)
+    expect(mockSubmit).toBeCalledTimes(1)
+    expect(mockSubmit.mock.calls[0]).toStrictEqual([
+      {
+        base: {
+          items: [
+            { items: ['0001', '0002'], userId: [], name: 'item-1' },
+            { items: ['0011', '0012'], userId: [], name: 'item-2' },
+          ],
+          closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
+          description: 'some text',
+          kanbanStepID: 1,
+          teamID: 1,
+          metadata: {},
+          workItemTypeID: 1,
+          targetDate: dayjs('2024-03-24T20:42:00.000Z').toDate(),
+        },
+        demoProject: {
+          lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
+          line: '3e3e2',
+          ref: '99998888',
+          workItemID: 1,
+          reopened: true,
+        },
+        tagIDs: [1, 3, 2],
+        members: [
+          { userID: 'a446259c-1083-4212-98fe-bd080c41e7d7', role: 'preparer' },
+          { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
+        ],
+        tagIDsMultiselect: [0, 2],
+      },
+    ])
 
     await waitFor(async () => {
-      const tagsSearchInput = screen.getByTestId('search--tagIDsMultiselect')
+      const tagsSearchInput = screen.getByTestId('demoWorkItemCreateForm-search--tagIDsMultiselect')
       await userEvent.type(tagsSearchInput, 'tag #4')
 
       await userEvent.click(screen.getByRole('option', { name: 'tag #4', hidden: false })) // no need for discriminator if there's only a visible opt
       await userEvent.clear(tagsSearchInput)
     })
-    const tagsSearchInput = screen.getByTestId('search--tagIDsMultiselect')
+    const tagsSearchInput = screen.getByTestId('demoWorkItemCreateForm-search--tagIDsMultiselect')
     await userEvent.click(tagsSearchInput, { pointerState: await userEvent.pointer({ target: tagsSearchInput }) }) // no need for discriminator if there's only a visible opt
 
     expect(screen.getByRole('option', { name: 'tag #4', hidden: true }).getAttribute('aria-selected')).toBe('true') // here would need discriminator since its hidden after click
@@ -319,7 +367,7 @@ describe('form generation', () => {
     expect(firstUserIDInput).toHaveAccessibleName('User')
 
     const email = 'user9@mail.com'
-    const firstUserIDSearchInput = screen.getByTestId('search--members.0.userID')
+    const firstUserIDSearchInput = screen.getByTestId('demoWorkItemCreateForm-search--members.0.userID')
     await waitFor(async () => {
       await userEvent.click(firstUserIDInput, { pointerState: await userEvent.pointer({ target: firstUserIDInput }) })
       await userEvent.type(firstUserIDSearchInput, email)
