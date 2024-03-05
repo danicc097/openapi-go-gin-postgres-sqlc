@@ -55,7 +55,7 @@ describe('Combobox component', () => {
     const handleChange = vitest.fn()
 
     render(
-      <VirtuosoMockContext.Provider value={{ viewportHeight: 300, itemHeight: 100 }}>
+      <VirtuosoMockContext.Provider value={{ viewportHeight: Infinity, itemHeight: 100 }}>
         <MantineProvider>
           <SelectOptionComponentDebug onSubmit={handleChange} defaultOption="Bananas" />
         </MantineProvider>

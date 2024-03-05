@@ -1172,16 +1172,22 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
         .includes(search.toLowerCase().trim()),
     )
     .map((option) => {
-      const formValue = String(selectOptions.formValueTransformer(option))
+      const formValue = selectOptions.formValueTransformer(option)
+      const selected = selectedOption ? selectOptions.formValueTransformer(selectedOption) === formValue : false
 
       return (
         <Combobox.Option
-          value={formValue}
-          key={formValue}
-          aria-selected={selectedOption === formValue}
-          aria-label={selectOptions.ariaLabelTransformer ? selectOptions.ariaLabelTransformer(option) : formValue}
+          value={String(formValue)}
+          key={String(formValue)}
+          aria-selected={selected}
+          aria-label={
+            selectOptions.ariaLabelTransformer ? selectOptions.ariaLabelTransformer(option) : String(formValue)
+          }
         >
-          {comboboxOptionTemplate(selectOptions.optionTransformer, option)}
+          <Group align="center" justify="start">
+            {selected && <CheckIcon size={12} />}
+            {comboboxOptionTemplate(selectOptions.optionTransformer, option)}
+          </Group>
         </Combobox.Option>
       )
     })

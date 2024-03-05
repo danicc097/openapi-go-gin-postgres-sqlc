@@ -234,23 +234,6 @@ const schemaFields: Record<GetKeys<TestTypes.DemoWorkItemCreateRequest>, SchemaF
   tagIDsMultiselect: { type: 'integer', required: false, isArray: true },
 }
 
-// ok
-// test('toHaveFormValues', () => {
-//   render(
-//     <form data-testid="login-form">
-//       <input type="text" name="username" value="jane.doe" />
-//       <input type="password" name="password" value="12345678" />
-//       <input type="checkbox" name="rememberMe" checked />
-//       <button type="submit">Sign in</button>
-//     </form>,
-//   )
-
-//   const form = screen.getByTestId('login-form') as HTMLFormElement
-//   expect(form).toHaveFormValues({
-//     username: 'jane.doe',
-//   })
-// })
-
 test('should extract field types correctly from a JSON schema', () => {
   expect(parseSchemaFields(schema)).toEqual(schemaFields)
 })
@@ -396,7 +379,7 @@ describe('form generation', () => {
       'demoWorkItemCreateForm-tagIDs-remove-button-1',
       'demoWorkItemCreateForm-tagIDs-2',
       'demoWorkItemCreateForm-tagIDs-remove-button-2',
-      'demoWorkItemCreateForm-tagIDsMultiselect', // multiselects dont have titles - using vanilla
+      'demoWorkItemCreateForm-tagIDsMultiselect', // multiselects dont have titles - using vanilla input label
       'demoWorkItemCreateForm-members-title',
       'demoWorkItemCreateForm-members-add-button',
       'demoWorkItemCreateForm-members-remove-button-0',
@@ -480,12 +463,7 @@ describe('form generation', () => {
       tagIDs: [{ message: 'must be integer' }],
     })
     // TODO: fix errors in ref and tagids and then
-    // compare mock data with expected (requires fixing combobox options in rtl first)
-
-    // document.body includes options, etc. for debugging
-    // expect(document.body).toMatchInlineSnapshot()
-
-    // console.log({ options: screen.getAllByRole('option', { hidden: true }).map((opt) => opt.getAttribute('aria-label')) })
+    // compare mock data via mockSubmit with expected (requires fixing combobox options in rtl first)
 
     await waitFor(async () => {
       const tagsSearchInput = screen.getByTestId('search--tagIDsMultiselect')
@@ -496,32 +474,20 @@ describe('form generation', () => {
     })
     const tagsSearchInput = screen.getByTestId('search--tagIDsMultiselect')
     await userEvent.click(tagsSearchInput, { pointerState: await userEvent.pointer({ target: tagsSearchInput }) }) // no need for discriminator if there's only a visible opt
-    // FIXME: most missing because of virtuoso mock - must use extremely high mocked height
-    const opts = [...document.querySelectorAll('[role="option"]')].map((opt) => ({
-      selected: opt.getAttribute('aria-selected') === 'true',
-      label: opt.getAttribute('aria-label'),
-    }))
-    console.log({
-      opts,
-    })
-    // once selecting, the option is gone. must check pill has display value of "tag #4"
+
     expect(screen.getByRole('option', { name: 'tag #4', hidden: true }).getAttribute('aria-selected')).toBe('true') // here would need discriminator since its hidden after click
 
-    // screen.debug(document)
+    const firstUserIDInput = screen.getByTestId('demoWorkItemCreateForm-members.0.userID') as HTMLInputElement
+    expect(firstUserIDInput).toHaveAccessibleName('User')
 
-    const getFirstMemberUserID = () => screen.getByTestId('demoWorkItemCreateForm-members.0.userID') as HTMLInputElement // text
-    const m = getFirstMemberUserID()
-    expect(m).toHaveAccessibleName('User')
-
-    const email = 'user9@mail.com' // FIXME: is not filtering (passes when using e.g. user1 which is shown on open)
+    const email = 'user9@mail.com'
+    const firstUserIDSearchInput = screen.getByTestId('search--members.0.userID')
     await waitFor(async () => {
-      await userEvent.click(m, { pointerState: await userEvent.pointer({ target: m }) })
-      const firstUserIDSearchInput = screen.getByTestId('search--tagIDsMultiselect')
+      await userEvent.click(firstUserIDInput, { pointerState: await userEvent.pointer({ target: firstUserIDInput }) })
       await userEvent.type(firstUserIDSearchInput, email)
       await userEvent.click(screen.getByRole('option', { name: email, hidden: false })) // no need for discriminator if there's only a visible opt
-      await userEvent.clear(firstUserIDSearchInput)
     })
-    // once selecting, the option is gone. must check input has display value that contains the email
-    expect(screen.getByRole('option', { name: email, hidden: true }).getAttribute('aria-selected')).toBe('true') // FIXME: here would need discriminator since its hidden after click
+    await userEvent.click(firstUserIDInput, { pointerState: await userEvent.pointer({ target: firstUserIDInput }) }) // show opt with search filter
+    expect(screen.getByRole('option', { name: email, hidden: false }).getAttribute('aria-selected')).toBe('true')
   })
 })
