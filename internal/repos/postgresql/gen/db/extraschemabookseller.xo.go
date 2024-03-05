@@ -38,6 +38,28 @@ type ExtraSchemaBookSellerCreateParams struct {
 	Seller ExtraSchemaUserID `json:"seller" required:"true" nullable:"false"` // seller
 }
 
+// ExtraSchemaBookSellerParams represents common params for both insert and update of 'extra_schema.book_sellers'.
+type ExtraSchemaBookSellerParams interface {
+	GetBookID() *ExtraSchemaBookID
+	GetSeller() *ExtraSchemaUserID
+}
+
+func (p ExtraSchemaBookSellerCreateParams) GetBookID() *ExtraSchemaBookID {
+	x := p.BookID
+	return &x
+}
+func (p ExtraSchemaBookSellerUpdateParams) GetBookID() *ExtraSchemaBookID {
+	return p.BookID
+}
+
+func (p ExtraSchemaBookSellerCreateParams) GetSeller() *ExtraSchemaUserID {
+	x := p.Seller
+	return &x
+}
+func (p ExtraSchemaBookSellerUpdateParams) GetSeller() *ExtraSchemaUserID {
+	return p.Seller
+}
+
 // CreateExtraSchemaBookSeller creates a new ExtraSchemaBookSeller in the database with the given params.
 func CreateExtraSchemaBookSeller(ctx context.Context, db DB, params *ExtraSchemaBookSellerCreateParams) (*ExtraSchemaBookSeller, error) {
 	esbs := &ExtraSchemaBookSeller{

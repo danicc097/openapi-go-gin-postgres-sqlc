@@ -1,7 +1,7 @@
 import _, { capitalize, concat, random, startCase, upperCase } from 'lodash'
 import React, { Fragment, forwardRef, memo, useEffect, useReducer, useState } from 'react'
 import type { Scope, Scopes, UpdateUserAuthRequest, User } from 'src/gen/model'
-import { getContrastYIQ, roleColor } from 'src/utils/colors'
+import { getContrastYIQ, roleColor, scopeColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
 
 import type { Role } from 'src/client-validator/gen/models'
@@ -47,7 +47,7 @@ import RoleBadge from 'src/components/Badges/RoleBadge'
 import { entries, keys } from 'src/utils/object'
 import { css } from '@emotion/css'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
-import ErrorCallout, { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
+import ErrorCallout from 'src/components/Callout/ErrorCallout'
 import { ApiError } from 'src/api/mutator'
 import { AxiosError } from 'axios'
 import { isAuthorized } from 'src/services/authorization'
@@ -61,6 +61,7 @@ import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { useFormSlice } from 'src/slices/form'
 import { JSON_SCHEMA, ROLES, SCOPES } from 'src/config'
 import InfiniteLoader from 'src/components/Loading/InfiniteLoader'
+import { useCalloutErrors } from 'src/components/Callout/useCalloutErrors'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 
@@ -73,20 +74,6 @@ interface SelectUserItemProps extends React.ComponentPropsWithoutRef<'div'> {
 interface SelectRoleItemProps extends React.ComponentPropsWithoutRef<'div'> {
   label: string
   value: User['role']
-}
-
-function scopeColor(scopeName?: string): DefaultMantineColor {
-  switch (scopeName) {
-    case 'read':
-      return 'green'
-    case 'write':
-    case 'edit':
-      return 'orange'
-    case 'delete':
-      return 'red'
-    default:
-      return 'blue'
-  }
 }
 
 const SelectRoleItem = ({ value }: SelectRoleItemProps) => {
@@ -481,6 +468,7 @@ const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProp
         const { allowed, message } = scopeChangeAllowed(key)
         const isChecked = form.getValues('scopes')?.includes(key)
 
+        const color = scopeColor(scopePermission)
         return (
           <div key={key}>
             <Tooltip
@@ -510,7 +498,15 @@ const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProp
                     {scopePermission && (
                       <>
                         <Space pl={10} />
-                        <Badge radius={4} size="xs" color={scopeColor(scopePermission)}>
+
+                        <Badge
+                          size="xs"
+                          radius="sm"
+                          style={{
+                            backgroundColor: color,
+                            color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : '#131313',
+                          }}
+                        >
                           {scopePermission}
                         </Badge>
                       </>

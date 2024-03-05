@@ -46,22 +46,21 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			team, err := svc.Team.Create(context.Background(), testPool, postgresqlrandom.TeamCreateParams(internal.ProjectIDByName[requiredProject]))
-			require.NoError(t, err)
-			ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
+			teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
+			userf := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				Role:       tc.role,
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
 			})
 			require.NoError(t, err)
 
-			_, err = svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, team.TeamID)
+			_, err = svc.User.AssignTeam(context.Background(), testPool, userf.User.UserID, teamf.Team.TeamID)
 			require.NoError(t, err)
 
 			witCreateParams := postgresqlrandom.WorkItemTagCreateParams(internal.ProjectIDByName[requiredProject])
 			res, err := srv.client.CreateWorkItemTagWithResponse(context.Background(), requiredProject, rest.CreateWorkItemTagRequest{
 				WorkItemTagCreateParams: *witCreateParams,
-			}, ReqWithAPIKey(ufixture.APIKey.APIKey))
+			}, ReqWithAPIKey(userf.APIKey.APIKey))
 
 			require.NoError(t, err)
 			require.Equal(t, tc.status, res.StatusCode(), string(res.Body))

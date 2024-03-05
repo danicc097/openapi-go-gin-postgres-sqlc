@@ -73,6 +73,106 @@ type UserCreateParams struct {
 	Username                 string        `json:"username" required:"true" nullable:"false"`                                 // username
 }
 
+// UserParams represents common params for both insert and update of 'public.users'.
+type UserParams interface {
+	GetAPIKeyID() *UserAPIKeyID
+	GetEmail() *string
+	GetExternalID() *string
+	GetFirstName() *string
+	GetHasGlobalNotifications() *bool
+	GetHasPersonalNotifications() *bool
+	GetLastName() *string
+	GetRoleRank() *int
+	GetScopes() *models.Scopes
+	GetUsername() *string
+}
+
+func (p UserCreateParams) GetAPIKeyID() *UserAPIKeyID {
+	return p.APIKeyID
+}
+func (p UserUpdateParams) GetAPIKeyID() *UserAPIKeyID {
+	if p.APIKeyID != nil {
+		return *p.APIKeyID
+	}
+	return nil
+}
+
+func (p UserCreateParams) GetEmail() *string {
+	x := p.Email
+	return &x
+}
+func (p UserUpdateParams) GetEmail() *string {
+	return p.Email
+}
+
+func (p UserCreateParams) GetExternalID() *string {
+	x := p.ExternalID
+	return &x
+}
+func (p UserUpdateParams) GetExternalID() *string {
+	return p.ExternalID
+}
+
+func (p UserCreateParams) GetFirstName() *string {
+	return p.FirstName
+}
+func (p UserUpdateParams) GetFirstName() *string {
+	if p.FirstName != nil {
+		return *p.FirstName
+	}
+	return nil
+}
+
+func (p UserCreateParams) GetHasGlobalNotifications() *bool {
+	x := p.HasGlobalNotifications
+	return &x
+}
+func (p UserUpdateParams) GetHasGlobalNotifications() *bool {
+	return p.HasGlobalNotifications
+}
+
+func (p UserCreateParams) GetHasPersonalNotifications() *bool {
+	x := p.HasPersonalNotifications
+	return &x
+}
+func (p UserUpdateParams) GetHasPersonalNotifications() *bool {
+	return p.HasPersonalNotifications
+}
+
+func (p UserCreateParams) GetLastName() *string {
+	return p.LastName
+}
+func (p UserUpdateParams) GetLastName() *string {
+	if p.LastName != nil {
+		return *p.LastName
+	}
+	return nil
+}
+
+func (p UserCreateParams) GetRoleRank() *int {
+	x := p.RoleRank
+	return &x
+}
+func (p UserUpdateParams) GetRoleRank() *int {
+	return p.RoleRank
+}
+
+func (p UserCreateParams) GetScopes() *models.Scopes {
+	x := p.Scopes
+	return &x
+}
+func (p UserUpdateParams) GetScopes() *models.Scopes {
+	return p.Scopes
+}
+
+func (p UserCreateParams) GetUsername() *string {
+	x := p.Username
+	return &x
+}
+func (p UserUpdateParams) GetUsername() *string {
+	return p.Username
+}
+
 type UserID struct {
 	uuid.UUID
 }

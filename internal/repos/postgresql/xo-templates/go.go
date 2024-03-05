@@ -1,6 +1,6 @@
 //go:build xotpl
 
-package gotpl
+package xotemplates
 
 import (
 	"bytes"
@@ -4121,6 +4121,45 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	if mode == "UpdateParams" {
 		fieldType = "*" + fieldType // we do want **<field> and *<field>
 	}
+
+	if mode == "ParamsInterface" {
+		if skipField || af.PKisFK != nil {
+			return "", nil
+		}
+		return fmt.Sprintf("Get%[1]s() *%[2]s \n", goName, strings.TrimPrefix(fieldType, "*")), nil
+	}
+
+	if mode == "ParamsGetter" {
+		if skipField || af.PKisFK != nil {
+			return "", nil
+		}
+		if strings.Count(fieldType, "*") == 0 {
+			return fmt.Sprintf(`
+			func (p %[1]sCreateParams) Get%[2]s() *%[3]s {
+				x := p.%[2]s
+				return &x
+			}
+			func (p %[1]sUpdateParams) Get%[2]s() *%[3]s {
+				return p.%[2]s
+			}
+			`, table.GoName, goName, strings.TrimPrefix(fieldType, "*")), nil
+		} else {
+			return fmt.Sprintf(`
+			func (p %[1]sCreateParams) Get%[2]s() *%[3]s {
+				return p.%[2]s
+			}
+			func (p %[1]sUpdateParams) Get%[2]s() *%[3]s {
+				if p.%[2]s != nil {
+					return *p.%[2]s
+				}
+				return nil
+			}
+			`, table.GoName, goName, strings.TrimPrefix(fieldType, "*")), nil
+		}
+	}
+
+	// TODO: if mode paramsInterface or paramsGetters just return methods, not struct fields,
+	// to prevent duplicating logic above.
 
 	return fmt.Sprintf("\t%s %s%s // %s\n", goName, fieldType, tag, field.SQLName), nil
 }

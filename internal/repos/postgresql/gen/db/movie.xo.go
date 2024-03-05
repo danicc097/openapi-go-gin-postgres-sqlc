@@ -42,6 +42,37 @@ type MovieCreateParams struct {
 	Year     int    `json:"year" required:"true" nullable:"false"`     // year
 }
 
+// MovieParams represents common params for both insert and update of 'public.movies'.
+type MovieParams interface {
+	GetSynopsis() *string
+	GetTitle() *string
+	GetYear() *int
+}
+
+func (p MovieCreateParams) GetSynopsis() *string {
+	x := p.Synopsis
+	return &x
+}
+func (p MovieUpdateParams) GetSynopsis() *string {
+	return p.Synopsis
+}
+
+func (p MovieCreateParams) GetTitle() *string {
+	x := p.Title
+	return &x
+}
+func (p MovieUpdateParams) GetTitle() *string {
+	return p.Title
+}
+
+func (p MovieCreateParams) GetYear() *int {
+	x := p.Year
+	return &x
+}
+func (p MovieUpdateParams) GetYear() *int {
+	return p.Year
+}
+
 type MovieID int
 
 // CreateMovie creates a new Movie in the database with the given params.

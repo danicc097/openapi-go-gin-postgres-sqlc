@@ -43,6 +43,39 @@ type ExtraSchemaWorkItemAssigneeCreateParams struct {
 	WorkItemID      ExtraSchemaWorkItemID    `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
 }
 
+// ExtraSchemaWorkItemAssigneeParams represents common params for both insert and update of 'extra_schema.work_item_assignee'.
+type ExtraSchemaWorkItemAssigneeParams interface {
+	GetAssignee() *ExtraSchemaUserID
+	GetExtraSchemaRole() *ExtraSchemaWorkItemRole
+	GetWorkItemID() *ExtraSchemaWorkItemID
+}
+
+func (p ExtraSchemaWorkItemAssigneeCreateParams) GetAssignee() *ExtraSchemaUserID {
+	x := p.Assignee
+	return &x
+}
+func (p ExtraSchemaWorkItemAssigneeUpdateParams) GetAssignee() *ExtraSchemaUserID {
+	return p.Assignee
+}
+
+func (p ExtraSchemaWorkItemAssigneeCreateParams) GetExtraSchemaRole() *ExtraSchemaWorkItemRole {
+	return p.ExtraSchemaRole
+}
+func (p ExtraSchemaWorkItemAssigneeUpdateParams) GetExtraSchemaRole() *ExtraSchemaWorkItemRole {
+	if p.ExtraSchemaRole != nil {
+		return *p.ExtraSchemaRole
+	}
+	return nil
+}
+
+func (p ExtraSchemaWorkItemAssigneeCreateParams) GetWorkItemID() *ExtraSchemaWorkItemID {
+	x := p.WorkItemID
+	return &x
+}
+func (p ExtraSchemaWorkItemAssigneeUpdateParams) GetWorkItemID() *ExtraSchemaWorkItemID {
+	return p.WorkItemID
+}
+
 // CreateExtraSchemaWorkItemAssignee creates a new ExtraSchemaWorkItemAssignee in the database with the given params.
 func CreateExtraSchemaWorkItemAssignee(ctx context.Context, db DB, params *ExtraSchemaWorkItemAssigneeCreateParams) (*ExtraSchemaWorkItemAssignee, error) {
 	eswia := &ExtraSchemaWorkItemAssignee{

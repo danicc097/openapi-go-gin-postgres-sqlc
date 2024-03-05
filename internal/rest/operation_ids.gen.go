@@ -42,6 +42,12 @@ const (
 	GetTeam    OperationID = "GetTeam"
 	UpdateTeam OperationID = "UpdateTeam"
 
+	// Operation IDs for the 'timeEntry' tag.
+	CreateTimeEntry OperationID = "CreateTimeEntry"
+	DeleteTimeEntry OperationID = "DeleteTimeEntry"
+	GetTimeEntry    OperationID = "GetTimeEntry"
+	UpdateTimeEntry OperationID = "UpdateTimeEntry"
+
 	// Operation IDs for the 'user' tag.
 	DeleteUser              OperationID = "DeleteUser"
 	GetCurrentUser          OperationID = "GetCurrentUser"

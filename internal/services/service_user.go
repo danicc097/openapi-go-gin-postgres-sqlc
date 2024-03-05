@@ -39,10 +39,7 @@ type UserRegisterParams struct {
 
 // NewUser returns a new User service.
 func NewUser(logger *zap.SugaredLogger, repos *repos.Repos) *User {
-	authzsvc, err := NewAuthorization(logger)
-	if err != nil {
-		panic(fmt.Sprintf("NewAuthorization: %v", err))
-	}
+	authzsvc := NewAuthorization(logger)
 
 	return &User{
 		logger:   logger,
@@ -55,6 +52,7 @@ func NewUser(logger *zap.SugaredLogger, repos *repos.Repos) *User {
 }
 
 // Register registers a user.
+// IMPORTANT: for internal use only.
 func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParams) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
@@ -164,7 +162,7 @@ func (u *User) UpdateUserAuthorization(ctx context.Context, d db.DBTX, id db.Use
 
 	if params.Scopes != nil {
 		for _, s := range *params.Scopes {
-			if !slices.Contains(caller.Scopes, s) {
+			if !slices.Contains(caller.Scopes, s) && caller.RoleRank < adminRole.Rank {
 				return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "cannot set a scope unassigned to self")
 			}
 		}

@@ -66,6 +66,84 @@ type WorkItemCreateParams struct {
 	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" required:"true" nullable:"false"` // work_item_type_id
 }
 
+// WorkItemParams represents common params for both insert and update of 'public.work_items'.
+type WorkItemParams interface {
+	GetClosedAt() *time.Time
+	GetDescription() *string
+	GetKanbanStepID() *KanbanStepID
+	GetMetadata() *map[string]any
+	GetTargetDate() *time.Time
+	GetTeamID() *TeamID
+	GetTitle() *string
+	GetWorkItemTypeID() *WorkItemTypeID
+}
+
+func (p WorkItemCreateParams) GetClosedAt() *time.Time {
+	return p.ClosedAt
+}
+func (p WorkItemUpdateParams) GetClosedAt() *time.Time {
+	if p.ClosedAt != nil {
+		return *p.ClosedAt
+	}
+	return nil
+}
+
+func (p WorkItemCreateParams) GetDescription() *string {
+	x := p.Description
+	return &x
+}
+func (p WorkItemUpdateParams) GetDescription() *string {
+	return p.Description
+}
+
+func (p WorkItemCreateParams) GetKanbanStepID() *KanbanStepID {
+	x := p.KanbanStepID
+	return &x
+}
+func (p WorkItemUpdateParams) GetKanbanStepID() *KanbanStepID {
+	return p.KanbanStepID
+}
+
+func (p WorkItemCreateParams) GetMetadata() *map[string]any {
+	x := p.Metadata
+	return &x
+}
+func (p WorkItemUpdateParams) GetMetadata() *map[string]any {
+	return p.Metadata
+}
+
+func (p WorkItemCreateParams) GetTargetDate() *time.Time {
+	x := p.TargetDate
+	return &x
+}
+func (p WorkItemUpdateParams) GetTargetDate() *time.Time {
+	return p.TargetDate
+}
+
+func (p WorkItemCreateParams) GetTeamID() *TeamID {
+	x := p.TeamID
+	return &x
+}
+func (p WorkItemUpdateParams) GetTeamID() *TeamID {
+	return p.TeamID
+}
+
+func (p WorkItemCreateParams) GetTitle() *string {
+	x := p.Title
+	return &x
+}
+func (p WorkItemUpdateParams) GetTitle() *string {
+	return p.Title
+}
+
+func (p WorkItemCreateParams) GetWorkItemTypeID() *WorkItemTypeID {
+	x := p.WorkItemTypeID
+	return &x
+}
+func (p WorkItemUpdateParams) GetWorkItemTypeID() *WorkItemTypeID {
+	return p.WorkItemTypeID
+}
+
 type WorkItemID int
 
 // CreateWorkItem creates a new WorkItem in the database with the given params.

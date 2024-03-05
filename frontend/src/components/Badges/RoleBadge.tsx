@@ -12,7 +12,7 @@ function RoleBadge({ role }: { role: Role }) {
     <Badge
       size="sm"
       radius="md"
-      style={{ backgroundColor: color, color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black' }}
+      style={{ backgroundColor: color, color: getContrastYIQ(color) === 'black' ? 'whitesmoke' : '#131313' }}
     >
       {name}
     </Badge>

@@ -44,6 +44,37 @@ type EntityNotificationCreateParams struct {
 	Topic   models.Topics `json:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"` // topic
 }
 
+// EntityNotificationParams represents common params for both insert and update of 'public.entity_notifications'.
+type EntityNotificationParams interface {
+	GetID() *string
+	GetMessage() *string
+	GetTopic() *models.Topics
+}
+
+func (p EntityNotificationCreateParams) GetID() *string {
+	x := p.ID
+	return &x
+}
+func (p EntityNotificationUpdateParams) GetID() *string {
+	return p.ID
+}
+
+func (p EntityNotificationCreateParams) GetMessage() *string {
+	x := p.Message
+	return &x
+}
+func (p EntityNotificationUpdateParams) GetMessage() *string {
+	return p.Message
+}
+
+func (p EntityNotificationCreateParams) GetTopic() *models.Topics {
+	x := p.Topic
+	return &x
+}
+func (p EntityNotificationUpdateParams) GetTopic() *models.Topics {
+	return p.Topic
+}
+
 type EntityNotificationID int
 
 // CreateEntityNotification creates a new EntityNotification in the database with the given params.

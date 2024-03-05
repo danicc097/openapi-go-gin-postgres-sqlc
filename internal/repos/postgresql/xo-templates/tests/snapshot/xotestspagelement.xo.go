@@ -45,6 +45,32 @@ type XoTestsPagElementCreateParams struct {
 	Name  string              `json:"name" required:"true" nullable:"false"` // name
 }
 
+// XoTestsPagElementParams represents common params for both insert and update of 'xo_tests.pag_element'.
+type XoTestsPagElementParams interface {
+	GetDummy() *XoTestsDummyJoinID
+	GetName() *string
+}
+
+func (p XoTestsPagElementCreateParams) GetDummy() *XoTestsDummyJoinID {
+	return p.Dummy
+}
+
+func (p XoTestsPagElementUpdateParams) GetDummy() *XoTestsDummyJoinID {
+	if p.Dummy != nil {
+		return *p.Dummy
+	}
+	return nil
+}
+
+func (p XoTestsPagElementCreateParams) GetName() *string {
+	x := p.Name
+	return &x
+}
+
+func (p XoTestsPagElementUpdateParams) GetName() *string {
+	return p.Name
+}
+
 type XoTestsPagElementID struct {
 	uuid.UUID
 }

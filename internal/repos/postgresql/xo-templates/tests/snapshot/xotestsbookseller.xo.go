@@ -37,6 +37,30 @@ type XoTestsBookSellerCreateParams struct {
 	Seller XoTestsUserID `json:"seller" required:"true" nullable:"false"` // seller
 }
 
+// XoTestsBookSellerParams represents common params for both insert and update of 'xo_tests.book_sellers'.
+type XoTestsBookSellerParams interface {
+	GetBookID() *XoTestsBookID
+	GetSeller() *XoTestsUserID
+}
+
+func (p XoTestsBookSellerCreateParams) GetBookID() *XoTestsBookID {
+	x := p.BookID
+	return &x
+}
+
+func (p XoTestsBookSellerUpdateParams) GetBookID() *XoTestsBookID {
+	return p.BookID
+}
+
+func (p XoTestsBookSellerCreateParams) GetSeller() *XoTestsUserID {
+	x := p.Seller
+	return &x
+}
+
+func (p XoTestsBookSellerUpdateParams) GetSeller() *XoTestsUserID {
+	return p.Seller
+}
+
 // CreateXoTestsBookSeller creates a new XoTestsBookSeller in the database with the given params.
 func CreateXoTestsBookSeller(ctx context.Context, db DB, params *XoTestsBookSellerCreateParams) (*XoTestsBookSeller, error) {
 	xtbs := &XoTestsBookSeller{

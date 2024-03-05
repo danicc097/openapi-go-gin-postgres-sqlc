@@ -73,6 +73,120 @@ type CacheDemoWorkItemCreateParams struct {
 	WorkItemTypeID WorkItemTypeID `json:"workItemTypeID" required:"true" nullable:"false"`           // work_item_type_id
 }
 
+// CacheDemoWorkItemParams represents common params for both insert and update of 'public.cache__demo_work_items'.
+type CacheDemoWorkItemParams interface {
+	GetClosedAt() *time.Time
+	GetDescription() *string
+	GetKanbanStepID() *KanbanStepID
+	GetLastMessageAt() *time.Time
+	GetLine() *string
+	GetMetadata() *map[string]any
+	GetRef() *string
+	GetReopened() *bool
+	GetTargetDate() *time.Time
+	GetTeamID() *TeamID
+	GetTitle() *string
+	GetWorkItemTypeID() *WorkItemTypeID
+}
+
+func (p CacheDemoWorkItemCreateParams) GetClosedAt() *time.Time {
+	return p.ClosedAt
+}
+func (p CacheDemoWorkItemUpdateParams) GetClosedAt() *time.Time {
+	if p.ClosedAt != nil {
+		return *p.ClosedAt
+	}
+	return nil
+}
+
+func (p CacheDemoWorkItemCreateParams) GetDescription() *string {
+	x := p.Description
+	return &x
+}
+func (p CacheDemoWorkItemUpdateParams) GetDescription() *string {
+	return p.Description
+}
+
+func (p CacheDemoWorkItemCreateParams) GetKanbanStepID() *KanbanStepID {
+	x := p.KanbanStepID
+	return &x
+}
+func (p CacheDemoWorkItemUpdateParams) GetKanbanStepID() *KanbanStepID {
+	return p.KanbanStepID
+}
+
+func (p CacheDemoWorkItemCreateParams) GetLastMessageAt() *time.Time {
+	x := p.LastMessageAt
+	return &x
+}
+func (p CacheDemoWorkItemUpdateParams) GetLastMessageAt() *time.Time {
+	return p.LastMessageAt
+}
+
+func (p CacheDemoWorkItemCreateParams) GetLine() *string {
+	x := p.Line
+	return &x
+}
+func (p CacheDemoWorkItemUpdateParams) GetLine() *string {
+	return p.Line
+}
+
+func (p CacheDemoWorkItemCreateParams) GetMetadata() *map[string]any {
+	x := p.Metadata
+	return &x
+}
+func (p CacheDemoWorkItemUpdateParams) GetMetadata() *map[string]any {
+	return p.Metadata
+}
+
+func (p CacheDemoWorkItemCreateParams) GetRef() *string {
+	x := p.Ref
+	return &x
+}
+func (p CacheDemoWorkItemUpdateParams) GetRef() *string {
+	return p.Ref
+}
+
+func (p CacheDemoWorkItemCreateParams) GetReopened() *bool {
+	x := p.Reopened
+	return &x
+}
+func (p CacheDemoWorkItemUpdateParams) GetReopened() *bool {
+	return p.Reopened
+}
+
+func (p CacheDemoWorkItemCreateParams) GetTargetDate() *time.Time {
+	x := p.TargetDate
+	return &x
+}
+func (p CacheDemoWorkItemUpdateParams) GetTargetDate() *time.Time {
+	return p.TargetDate
+}
+
+func (p CacheDemoWorkItemCreateParams) GetTeamID() *TeamID {
+	x := p.TeamID
+	return &x
+}
+func (p CacheDemoWorkItemUpdateParams) GetTeamID() *TeamID {
+	return p.TeamID
+}
+
+func (p CacheDemoWorkItemCreateParams) GetTitle() *string {
+	x := p.Title
+	return &x
+}
+func (p CacheDemoWorkItemUpdateParams) GetTitle() *string {
+	return p.Title
+}
+
+func (p CacheDemoWorkItemCreateParams) GetWorkItemTypeID() *WorkItemTypeID {
+	x := p.WorkItemTypeID
+	return &x
+}
+func (p CacheDemoWorkItemUpdateParams) GetWorkItemTypeID() *WorkItemTypeID {
+	return p.WorkItemTypeID
+}
+
 // CreateCacheDemoWorkItem creates a new CacheDemoWorkItem in the database with the given params.
 func CreateCacheDemoWorkItem(ctx context.Context, db DB, params *CacheDemoWorkItemCreateParams) (*CacheDemoWorkItem, error) {
 	cdwi := &CacheDemoWorkItem{

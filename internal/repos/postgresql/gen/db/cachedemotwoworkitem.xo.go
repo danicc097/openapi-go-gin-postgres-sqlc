@@ -67,6 +67,95 @@ type CacheDemoTwoWorkItemCreateParams struct {
 	WorkItemTypeID        WorkItemTypeID `json:"workItemTypeID" required:"true" nullable:"false"` // work_item_type_id
 }
 
+// CacheDemoTwoWorkItemParams represents common params for both insert and update of 'public.cache__demo_two_work_items'.
+type CacheDemoTwoWorkItemParams interface {
+	GetClosedAt() *time.Time
+	GetCustomDateForProject2() *time.Time
+	GetDescription() *string
+	GetKanbanStepID() *KanbanStepID
+	GetMetadata() *map[string]any
+	GetTargetDate() *time.Time
+	GetTeamID() *TeamID
+	GetTitle() *string
+	GetWorkItemTypeID() *WorkItemTypeID
+}
+
+func (p CacheDemoTwoWorkItemCreateParams) GetClosedAt() *time.Time {
+	return p.ClosedAt
+}
+func (p CacheDemoTwoWorkItemUpdateParams) GetClosedAt() *time.Time {
+	if p.ClosedAt != nil {
+		return *p.ClosedAt
+	}
+	return nil
+}
+
+func (p CacheDemoTwoWorkItemCreateParams) GetCustomDateForProject2() *time.Time {
+	return p.CustomDateForProject2
+}
+func (p CacheDemoTwoWorkItemUpdateParams) GetCustomDateForProject2() *time.Time {
+	if p.CustomDateForProject2 != nil {
+		return *p.CustomDateForProject2
+	}
+	return nil
+}
+
+func (p CacheDemoTwoWorkItemCreateParams) GetDescription() *string {
+	x := p.Description
+	return &x
+}
+func (p CacheDemoTwoWorkItemUpdateParams) GetDescription() *string {
+	return p.Description
+}
+
+func (p CacheDemoTwoWorkItemCreateParams) GetKanbanStepID() *KanbanStepID {
+	x := p.KanbanStepID
+	return &x
+}
+func (p CacheDemoTwoWorkItemUpdateParams) GetKanbanStepID() *KanbanStepID {
+	return p.KanbanStepID
+}
+
+func (p CacheDemoTwoWorkItemCreateParams) GetMetadata() *map[string]any {
+	x := p.Metadata
+	return &x
+}
+func (p CacheDemoTwoWorkItemUpdateParams) GetMetadata() *map[string]any {
+	return p.Metadata
+}
+
+func (p CacheDemoTwoWorkItemCreateParams) GetTargetDate() *time.Time {
+	x := p.TargetDate
+	return &x
+}
+func (p CacheDemoTwoWorkItemUpdateParams) GetTargetDate() *time.Time {
+	return p.TargetDate
+}
+
+func (p CacheDemoTwoWorkItemCreateParams) GetTeamID() *TeamID {
+	x := p.TeamID
+	return &x
+}
+func (p CacheDemoTwoWorkItemUpdateParams) GetTeamID() *TeamID {
+	return p.TeamID
+}
+
+func (p CacheDemoTwoWorkItemCreateParams) GetTitle() *string {
+	x := p.Title
+	return &x
+}
+func (p CacheDemoTwoWorkItemUpdateParams) GetTitle() *string {
+	return p.Title
+}
+
+func (p CacheDemoTwoWorkItemCreateParams) GetWorkItemTypeID() *WorkItemTypeID {
+	x := p.WorkItemTypeID
+	return &x
+}
+func (p CacheDemoTwoWorkItemUpdateParams) GetWorkItemTypeID() *WorkItemTypeID {
+	return p.WorkItemTypeID
+}
+
 // CreateCacheDemoTwoWorkItem creates a new CacheDemoTwoWorkItem in the database with the given params.
 func CreateCacheDemoTwoWorkItem(ctx context.Context, db DB, params *CacheDemoTwoWorkItemCreateParams) (*CacheDemoTwoWorkItem, error) {
 	cdtwi := &CacheDemoTwoWorkItem{

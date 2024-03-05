@@ -84,16 +84,6 @@ func New(logger *zap.SugaredLogger, options ...Option) (*pgxpool.Pool, *sql.DB, 
 		}
 	}
 
-	searchPaths := []string{"public", "xo_tests"}
-	conn, err := pgx.Connect(context.Background(), dsn.String())
-	if err != nil {
-		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not connect to database")
-	}
-	typeNames, err := queryDatabaseTypeNames(context.Background(), conn, searchPaths...)
-	if err != nil {
-		return nil, nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not query database types")
-	}
-
 	var atLeastOneConnInPool atomic.Bool
 
 	poolConfig.MinConns = 4
@@ -106,23 +96,19 @@ func New(logger *zap.SugaredLogger, options ...Option) (*pgxpool.Pool, *sql.DB, 
 
 	// called after a connection is established, but before it is added to the pool.
 	// Will run once.
-	const retries = 10
 	poolConfig.AfterConnect = func(ctx context.Context, c *pgx.Conn) error {
-		// DATA RACE for some reason
-		pgxAfterConnectLock.Lock()
-		defer pgxAfterConnectLock.Unlock()
-
+		// DATA RACE (when using shared typeNames)
+		// pgxAfterConnectLock.Lock()
+		// defer pgxAfterConnectLock.Unlock()
 		var err error
 
-		for i := 1; i <= retries; i++ {
-			if err = registerDataTypes(ctx, c, typeNames); err == nil {
-				break
-			}
-
-			time.Sleep(100 * time.Millisecond)
+		searchPaths := []string{"public", "xo_tests"}
+		typeNames, err := queryDatabaseTypeNames(c, logger, searchPaths...)
+		if err != nil {
+			return internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not query database types")
 		}
 
-		if err != nil {
+		if err := registerDataTypes(ctx, c, typeNames); err != nil {
 			return internal.WrapErrorf(err, models.ErrorCodeUnknown, "could not register data types")
 		}
 
@@ -157,7 +143,6 @@ func New(logger *zap.SugaredLogger, options ...Option) (*pgxpool.Pool, *sql.DB, 
 // See https://pkg.go.dev/github.com/jackc/pgx/v5@v5.3.1/pgtype#hdr-New_PostgreSQL_Type_Support
 func registerDataTypes(ctx context.Context, conn *pgx.Conn, typeNames []string) error {
 	for _, typeName := range typeNames {
-		// fmt.Printf("registering %v\n", typeName)
 		dataType, err := conn.LoadType(ctx, typeName)
 		if err != nil {
 			return err
@@ -168,7 +153,7 @@ func registerDataTypes(ctx context.Context, conn *pgx.Conn, typeNames []string) 
 	return nil
 }
 
-func queryDatabaseTypeNames(ctx context.Context, conn *pgx.Conn, searchPaths ...string) ([]string, error) {
+func queryDatabaseTypeNames(conn *pgx.Conn, logger *zap.SugaredLogger, searchPaths ...string) ([]string, error) {
 	var typeNames []string
 	for _, sp := range searchPaths {
 		query := fmt.Sprintf(`SELECT table_name
@@ -189,8 +174,11 @@ func queryDatabaseTypeNames(ctx context.Context, conn *pgx.Conn, searchPaths ...
 		}
 
 		// register enumTypes first, in case they're used in tables
-		tn := append(enumTypes, tableTypes...)
-		typeNames = append(typeNames, tn...)
+		typeNames = append(typeNames, append(enumTypes, tableTypes...)...)
+	}
+
+	if len(typeNames) == 0 {
+		logger.Info("database typenames not found - make sure migrations have been run")
 	}
 
 	return typeNames, nil
@@ -206,8 +194,8 @@ func queryTypeNames(conn *pgx.Conn, query string, searchPath string) ([]string, 
 
 	for rows.Next() {
 		var enumName string
-		err = rows.Scan(&enumName)
-		if err != nil {
+
+		if err := rows.Scan(&enumName); err != nil {
 			return []string{}, fmt.Errorf("rows.Scan: %w", err)
 		}
 		names = append(names, searchPath+"."+enumName)

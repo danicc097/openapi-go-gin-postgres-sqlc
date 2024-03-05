@@ -43,6 +43,39 @@ type ExtraSchemaBookAuthorCreateParams struct {
 	Pseudonym *string           `json:"pseudonym"`                                 // pseudonym
 }
 
+// ExtraSchemaBookAuthorParams represents common params for both insert and update of 'extra_schema.book_authors'.
+type ExtraSchemaBookAuthorParams interface {
+	GetAuthorID() *ExtraSchemaUserID
+	GetBookID() *ExtraSchemaBookID
+	GetPseudonym() *string
+}
+
+func (p ExtraSchemaBookAuthorCreateParams) GetAuthorID() *ExtraSchemaUserID {
+	x := p.AuthorID
+	return &x
+}
+func (p ExtraSchemaBookAuthorUpdateParams) GetAuthorID() *ExtraSchemaUserID {
+	return p.AuthorID
+}
+
+func (p ExtraSchemaBookAuthorCreateParams) GetBookID() *ExtraSchemaBookID {
+	x := p.BookID
+	return &x
+}
+func (p ExtraSchemaBookAuthorUpdateParams) GetBookID() *ExtraSchemaBookID {
+	return p.BookID
+}
+
+func (p ExtraSchemaBookAuthorCreateParams) GetPseudonym() *string {
+	return p.Pseudonym
+}
+func (p ExtraSchemaBookAuthorUpdateParams) GetPseudonym() *string {
+	if p.Pseudonym != nil {
+		return *p.Pseudonym
+	}
+	return nil
+}
+
 // CreateExtraSchemaBookAuthor creates a new ExtraSchemaBookAuthor in the database with the given params.
 func CreateExtraSchemaBookAuthor(ctx context.Context, db DB, params *ExtraSchemaBookAuthorCreateParams) (*ExtraSchemaBookAuthor, error) {
 	esba := &ExtraSchemaBookAuthor{

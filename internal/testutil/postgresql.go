@@ -165,14 +165,20 @@ func NewDB(options ...TestDBOption) (*pgxpool.Pool, *sql.DB, error) {
 		panic(fmt.Sprintf("Couldnt' migrate up (post-migrations): %s\n", err))
 	}
 
+	// previous pool has no migrations -> no types to load for pgx. must create a new pool
+	pool, sqlpool, err = postgresql.New(logger.Sugar(), postgresql.WithDBName(dbName))
+	if err != nil {
+		panic(fmt.Sprintf("Couldn't create pool: %s\n", err))
+	}
+
 	return pool, sqlpool, nil
 }
 
 // DropAndRecreateDB drops and recreates a given database.
 func DropAndRecreateDB(dbName string) {
-	defaultDb := "postgres"
-	if dbName == defaultDb {
-		panic(fmt.Sprintf("cannot drop default %q database", defaultDb))
+	defaultDB := "postgres"
+	if dbName == defaultDB {
+		panic(fmt.Sprintf("cannot drop default %q database", defaultDB))
 	}
 
 	cfg := internal.Config
@@ -180,7 +186,7 @@ func DropAndRecreateDB(dbName string) {
 		Scheme: "postgres",
 		User:   url.UserPassword(cfg.Postgres.User, cfg.Postgres.Password),
 		Host:   fmt.Sprintf("%s:%s", cfg.Postgres.Server, strconv.Itoa(cfg.Postgres.Port)),
-		Path:   defaultDb,
+		Path:   defaultDB,
 	}
 
 	q := dsn.Query()

@@ -45,6 +45,37 @@ type UserNotificationCreateParams struct {
 	UserID         UserID         `json:"userID" required:"true" nullable:"false"`         // user_id
 }
 
+// UserNotificationParams represents common params for both insert and update of 'public.user_notifications'.
+type UserNotificationParams interface {
+	GetNotificationID() *NotificationID
+	GetRead() *bool
+	GetUserID() *UserID
+}
+
+func (p UserNotificationCreateParams) GetNotificationID() *NotificationID {
+	x := p.NotificationID
+	return &x
+}
+func (p UserNotificationUpdateParams) GetNotificationID() *NotificationID {
+	return p.NotificationID
+}
+
+func (p UserNotificationCreateParams) GetRead() *bool {
+	x := p.Read
+	return &x
+}
+func (p UserNotificationUpdateParams) GetRead() *bool {
+	return p.Read
+}
+
+func (p UserNotificationCreateParams) GetUserID() *UserID {
+	x := p.UserID
+	return &x
+}
+func (p UserNotificationUpdateParams) GetUserID() *UserID {
+	return p.UserID
+}
+
 type UserNotificationID int
 
 // CreateUserNotification creates a new UserNotification in the database with the given params.

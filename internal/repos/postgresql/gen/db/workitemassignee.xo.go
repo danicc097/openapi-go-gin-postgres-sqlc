@@ -44,6 +44,37 @@ type WorkItemAssigneeCreateParams struct {
 	WorkItemID WorkItemID          `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
 }
 
+// WorkItemAssigneeParams represents common params for both insert and update of 'public.work_item_assignee'.
+type WorkItemAssigneeParams interface {
+	GetAssignee() *UserID
+	GetRole() *models.WorkItemRole
+	GetWorkItemID() *WorkItemID
+}
+
+func (p WorkItemAssigneeCreateParams) GetAssignee() *UserID {
+	x := p.Assignee
+	return &x
+}
+func (p WorkItemAssigneeUpdateParams) GetAssignee() *UserID {
+	return p.Assignee
+}
+
+func (p WorkItemAssigneeCreateParams) GetRole() *models.WorkItemRole {
+	x := p.Role
+	return &x
+}
+func (p WorkItemAssigneeUpdateParams) GetRole() *models.WorkItemRole {
+	return p.Role
+}
+
+func (p WorkItemAssigneeCreateParams) GetWorkItemID() *WorkItemID {
+	x := p.WorkItemID
+	return &x
+}
+func (p WorkItemAssigneeUpdateParams) GetWorkItemID() *WorkItemID {
+	return p.WorkItemID
+}
+
 // CreateWorkItemAssignee creates a new WorkItemAssignee in the database with the given params.
 func CreateWorkItemAssignee(ctx context.Context, db DB, params *WorkItemAssigneeCreateParams) (*WorkItemAssignee, error) {
 	wia := &WorkItemAssignee{

@@ -49,6 +49,46 @@ type ActivityCreateParams struct {
 	ProjectID    ProjectID `json:"-" openapi-go:"ignore"`                         // project_id
 }
 
+// ActivityParams represents common params for both insert and update of 'public.activities'.
+type ActivityParams interface {
+	GetDescription() *string
+	GetIsProductive() *bool
+	GetName() *string
+	GetProjectID() *ProjectID
+}
+
+func (p ActivityCreateParams) GetDescription() *string {
+	x := p.Description
+	return &x
+}
+func (p ActivityUpdateParams) GetDescription() *string {
+	return p.Description
+}
+
+func (p ActivityCreateParams) GetIsProductive() *bool {
+	x := p.IsProductive
+	return &x
+}
+func (p ActivityUpdateParams) GetIsProductive() *bool {
+	return p.IsProductive
+}
+
+func (p ActivityCreateParams) GetName() *string {
+	x := p.Name
+	return &x
+}
+func (p ActivityUpdateParams) GetName() *string {
+	return p.Name
+}
+
+func (p ActivityCreateParams) GetProjectID() *ProjectID {
+	x := p.ProjectID
+	return &x
+}
+func (p ActivityUpdateParams) GetProjectID() *ProjectID {
+	return p.ProjectID
+}
+
 type ActivityID int
 
 // CreateActivity creates a new Activity in the database with the given params.

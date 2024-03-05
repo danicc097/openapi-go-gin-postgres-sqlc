@@ -161,13 +161,21 @@ func main() {
 	handleError(err, teamDemo)
 	teamDemo2, err := svc.Team.Create(ctx, pool, &db.TeamCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
-		Name:        "Team 2",
-		Description: "Team 2 description",
+		Name:        "Team 2-1",
+		Description: "Team 2-1 description",
 	})
 	handleError(err, teamDemo2)
+	team2Demo2, err := svc.Team.Create(ctx, pool, &db.TeamCreateParams{
+		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
+		Name:        "Team 2-2",
+		Description: "Team 2-2 description",
+	})
+	handleError(err, team2Demo2)
 
 	for i, u := range users {
 		users[i], err = svc.User.AssignTeam(ctx, pool, u.UserID, teamDemo.TeamID)
+		handleError(err)
+		users[i], err = svc.User.AssignTeam(ctx, pool, u.UserID, team2Demo2.TeamID)
 		handleError(err)
 	}
 	// format.PrintJSONByTag(users, "db")

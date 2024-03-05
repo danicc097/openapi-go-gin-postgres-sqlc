@@ -46,6 +46,30 @@ type ExtraSchemaPagElementCreateParams struct {
 	Name  string                  `json:"name" required:"true" nullable:"false"` // name
 }
 
+// ExtraSchemaPagElementParams represents common params for both insert and update of 'extra_schema.pag_element'.
+type ExtraSchemaPagElementParams interface {
+	GetDummy() *ExtraSchemaDummyJoinID
+	GetName() *string
+}
+
+func (p ExtraSchemaPagElementCreateParams) GetDummy() *ExtraSchemaDummyJoinID {
+	return p.Dummy
+}
+func (p ExtraSchemaPagElementUpdateParams) GetDummy() *ExtraSchemaDummyJoinID {
+	if p.Dummy != nil {
+		return *p.Dummy
+	}
+	return nil
+}
+
+func (p ExtraSchemaPagElementCreateParams) GetName() *string {
+	x := p.Name
+	return &x
+}
+func (p ExtraSchemaPagElementUpdateParams) GetName() *string {
+	return p.Name
+}
+
 type ExtraSchemaPagElementID struct {
 	uuid.UUID
 }

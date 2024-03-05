@@ -49,6 +49,37 @@ type TeamCreateParams struct {
 	ProjectID   ProjectID `json:"-" openapi-go:"ignore"`                        // project_id
 }
 
+// TeamParams represents common params for both insert and update of 'public.teams'.
+type TeamParams interface {
+	GetDescription() *string
+	GetName() *string
+	GetProjectID() *ProjectID
+}
+
+func (p TeamCreateParams) GetDescription() *string {
+	x := p.Description
+	return &x
+}
+func (p TeamUpdateParams) GetDescription() *string {
+	return p.Description
+}
+
+func (p TeamCreateParams) GetName() *string {
+	x := p.Name
+	return &x
+}
+func (p TeamUpdateParams) GetName() *string {
+	return p.Name
+}
+
+func (p TeamCreateParams) GetProjectID() *ProjectID {
+	x := p.ProjectID
+	return &x
+}
+func (p TeamUpdateParams) GetProjectID() *ProjectID {
+	return p.ProjectID
+}
+
 type TeamID int
 
 // CreateTeam creates a new Team in the database with the given params.

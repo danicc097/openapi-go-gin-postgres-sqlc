@@ -44,6 +44,40 @@ type XoTestsUserAPIKeyCreateParams struct {
 	UserID    XoTestsUserID `json:"userID" required:"true" nullable:"false"`    // user_id
 }
 
+// XoTestsUserAPIKeyParams represents common params for both insert and update of 'xo_tests.user_api_keys'.
+type XoTestsUserAPIKeyParams interface {
+	GetAPIKey() *string
+	GetExpiresOn() *time.Time
+	GetUserID() *XoTestsUserID
+}
+
+func (p XoTestsUserAPIKeyCreateParams) GetAPIKey() *string {
+	x := p.APIKey
+	return &x
+}
+
+func (p XoTestsUserAPIKeyUpdateParams) GetAPIKey() *string {
+	return p.APIKey
+}
+
+func (p XoTestsUserAPIKeyCreateParams) GetExpiresOn() *time.Time {
+	x := p.ExpiresOn
+	return &x
+}
+
+func (p XoTestsUserAPIKeyUpdateParams) GetExpiresOn() *time.Time {
+	return p.ExpiresOn
+}
+
+func (p XoTestsUserAPIKeyCreateParams) GetUserID() *XoTestsUserID {
+	x := p.UserID
+	return &x
+}
+
+func (p XoTestsUserAPIKeyUpdateParams) GetUserID() *XoTestsUserID {
+	return p.UserID
+}
+
 type XoTestsUserAPIKeyID int
 
 // CreateXoTestsUserAPIKey creates a new XoTestsUserAPIKey in the database with the given params.

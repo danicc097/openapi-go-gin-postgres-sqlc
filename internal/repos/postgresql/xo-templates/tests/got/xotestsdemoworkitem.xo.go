@@ -40,6 +40,20 @@ type XoTestsDemoWorkItemCreateParams struct {
 	WorkItemID XoTestsWorkItemID `json:"-" required:"true" nullable:"false"`       // work_item_id
 }
 
+// XoTestsDemoWorkItemParams represents common params for both insert and update of 'xo_tests.demo_work_items'.
+type XoTestsDemoWorkItemParams interface {
+	GetChecked() *bool
+}
+
+func (p XoTestsDemoWorkItemCreateParams) GetChecked() *bool {
+	x := p.Checked
+	return &x
+}
+
+func (p XoTestsDemoWorkItemUpdateParams) GetChecked() *bool {
+	return p.Checked
+}
+
 // CreateXoTestsDemoWorkItem creates a new XoTestsDemoWorkItem in the database with the given params.
 func CreateXoTestsDemoWorkItem(ctx context.Context, db DB, params *XoTestsDemoWorkItemCreateParams) (*XoTestsDemoWorkItem, error) {
 	xtdwi := &XoTestsDemoWorkItem{

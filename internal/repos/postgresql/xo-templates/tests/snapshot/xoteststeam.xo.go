@@ -37,6 +37,20 @@ type XoTestsTeamCreateParams struct {
 	Name string `json:"name" required:"true" nullable:"false"` // name
 }
 
+// XoTestsTeamParams represents common params for both insert and update of 'xo_tests.teams'.
+type XoTestsTeamParams interface {
+	GetName() *string
+}
+
+func (p XoTestsTeamCreateParams) GetName() *string {
+	x := p.Name
+	return &x
+}
+
+func (p XoTestsTeamUpdateParams) GetName() *string {
+	return p.Name
+}
+
 type XoTestsTeamID int
 
 // CreateXoTestsTeam creates a new XoTestsTeam in the database with the given params.

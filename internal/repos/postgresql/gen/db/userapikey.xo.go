@@ -45,6 +45,37 @@ type UserAPIKeyCreateParams struct {
 	UserID    UserID    `json:"userID" required:"true" nullable:"false"`    // user_id
 }
 
+// UserAPIKeyParams represents common params for both insert and update of 'public.user_api_keys'.
+type UserAPIKeyParams interface {
+	GetAPIKey() *string
+	GetExpiresOn() *time.Time
+	GetUserID() *UserID
+}
+
+func (p UserAPIKeyCreateParams) GetAPIKey() *string {
+	x := p.APIKey
+	return &x
+}
+func (p UserAPIKeyUpdateParams) GetAPIKey() *string {
+	return p.APIKey
+}
+
+func (p UserAPIKeyCreateParams) GetExpiresOn() *time.Time {
+	x := p.ExpiresOn
+	return &x
+}
+func (p UserAPIKeyUpdateParams) GetExpiresOn() *time.Time {
+	return p.ExpiresOn
+}
+
+func (p UserAPIKeyCreateParams) GetUserID() *UserID {
+	x := p.UserID
+	return &x
+}
+func (p UserAPIKeyUpdateParams) GetUserID() *UserID {
+	return p.UserID
+}
+
 type UserAPIKeyID int
 
 // CreateUserAPIKey creates a new UserAPIKey in the database with the given params.

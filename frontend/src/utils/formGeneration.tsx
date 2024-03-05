@@ -33,6 +33,7 @@ import {
   PillsInput,
   Pill,
   ScrollArea,
+  CheckIcon,
 } from '@mantine/core'
 import classes from './form.module.css'
 import { DateInput, DateTimePicker } from '@mantine/dates'
@@ -56,6 +57,7 @@ import React, {
   forwardRef,
   useRef,
   useEffect,
+  ReactNode,
 } from 'react'
 import {
   useFormContext,
@@ -94,7 +96,8 @@ import { nameInitials, sentenceCase } from 'src/utils/strings'
 import { useFormSlice } from 'src/slices/form'
 import RandExp, { randexp } from 'randexp'
 import type { FormField, SchemaKey } from 'src/utils/form'
-import { useCalloutErrors } from 'src/components/Callout/ErrorCallout'
+import { useCalloutErrors } from 'src/components/Callout/useCalloutErrors'
+import { inputBuilder, selectOptionsBuilder, useDynamicFormContext } from 'src/utils/formGeneration.context'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
 
@@ -102,6 +105,7 @@ export type SelectOptions<Return, E = unknown> = {
   type: SelectOptionsTypes
   values: E[]
   formValueTransformer: <V extends E>(el: V & E) => Return extends unknown[] ? Return[number] : Return
+  ariaLabelTransformer?: <V extends E>(el: V & E) => string
   /** Modify search behavior, e.g. matching against `${el.<field_1>} ${el.<field_2>} ${el.field_3}`.
    * It searches in the whole stringified object by default.
    */
@@ -125,29 +129,6 @@ export interface InputOptions<Return, E = unknown> {
   propsFn?: (registerOnChange: ChangeHandler) => React.ComponentProps<'input'>
 }
 
-// NOTE: handles select (single return value) and multiselect (array return).
-export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends unknown[] ? Return[number] : Return>({
-  type,
-  values,
-  formValueTransformer,
-  searchValueTransformer,
-  optionTransformer,
-  pillTransformer,
-  labelColor,
-}: SelectOptions<ReturnElement, V>): SelectOptions<ReturnElement, V> => ({
-  type,
-  values,
-  optionTransformer,
-  pillTransformer,
-  formValueTransformer,
-  searchValueTransformer,
-  labelColor,
-})
-
-export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>): InputOptions<Return, V> => ({
-  component,
-})
-
 const comboboxOptionTemplate = (transformer: (...args: any[]) => JSX.Element, option) => {
   return <Box m={2}>{transformer(option)}</Box>
 }
@@ -158,13 +139,17 @@ export type DynamicFormOptions<
   U extends PropertyKey = GetKeys<T>,
 > = {
   /**
-   * Label mapping for fields. Use null to skip rendering field entirely.
+   * Label mapping for fields.
+   * To ignore fields, add leaf keys to IgnoredFormKeys.
+   * Ignoring intermediate object/array keys in IgnoredFormKeys just skips rendering its titles.
    */
   labels: {
-    [key in Exclude<U, IgnoredFormKeys>]: string | null
+    [key in Exclude<U, IgnoredFormKeys>]: string
   }
   renderOrderPriority?: Array<Exclude<keyof T, IgnoredFormKeys>>
-  // used to populate form inputs if the form field is empty. Applies to all nested fields.
+  /**
+   * Used to populate form inputs if the form field is empty. Applies to all nested fields, including array elements
+   *  */
   defaultValues?: Partial<{
     [key in Exclude<U, IgnoredFormKeys>]: DeepPartial<
       PathType<
@@ -216,13 +201,13 @@ export type DynamicFormOptions<
   }>
 }
 
-type DynamicFormContextValue = {
+export type DynamicFormContextValue = {
   formName: string
   schemaFields: Record<SchemaKey, SchemaField>
   options: DynamicFormOptions<any, null, SchemaKey> // for more performant internal intellisense. for user it will be typed
 }
 
-const DynamicFormContext = createContext<DynamicFormContextValue | undefined>(undefined)
+export const DynamicFormContext = createContext<DynamicFormContextValue | undefined>(undefined)
 
 type DynamicFormProviderProps = {
   value: DynamicFormContextValue
@@ -233,16 +218,6 @@ const DynamicFormProvider = ({ value, children }: DynamicFormProviderProps) => {
   return <DynamicFormContext.Provider value={value}>{children}</DynamicFormContext.Provider>
 }
 
-export const useDynamicFormContext = (): DynamicFormContextValue => {
-  const context = useContext(DynamicFormContext)
-
-  if (!context) {
-    throw new Error('useDynamicFormContext must be used within a DynamicFormProvider')
-  }
-
-  return context
-}
-
 type DynamicFormProps<T extends object, IgnoredFormKeys extends GetKeys<T> | null = null> = {
   schemaFields: Record<Exclude<GetKeys<T>, IgnoredFormKeys>, SchemaField>
   options: DynamicFormOptions<T, IgnoredFormKeys, GetKeys<T>>
@@ -250,10 +225,10 @@ type DynamicFormProps<T extends object, IgnoredFormKeys extends GetKeys<T> | nul
   onSubmit: React.FormEventHandler<HTMLFormElement>
 }
 
-function renderTitle(key: FormField, title) {
+function renderTitle(key: FormField, formName: string, title: ReactNode) {
   return (
     <>
-      <Title data-testid={`${key}-title`} size={18}>
+      <Title data-testid={`${formName}-${key}-title`} size={18}>
         {title}
       </Title>
       <Space p={8} />
@@ -277,7 +252,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
   const form = useFormContext()
   const formSlice = useFormSlice()
   const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
-
+  console.log({ formboolis: form.getValues('demoProject.reopened') })
   let _schemaFields: DynamicFormContextValue['schemaFields'] = schemaFields
   if (options.renderOrderPriority) {
     const _schemaKeys: SchemaKey[] = []
@@ -369,7 +344,7 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
       `,
       ...(!field.isArray && { label: options.labels[schemaKey] }),
       required: field.required,
-      id: `${formName}-${formField}`,
+      'data-testid': `${formName}-${formField}`,
       onKeyPress: (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         if (e.key !== 'Enter') {
           return
@@ -452,7 +427,7 @@ function GeneratedInputs({ parentSchemaKey, parentFormField }: GeneratedInputsPr
             />
           </>
         ) : (
-          <>{options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}</>
+          <>{options.labels[schemaKey] && renderTitle(formField, formName, options.labels[schemaKey])}</>
         )}
       </Group>
     )
@@ -574,7 +549,7 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
           props={{
             input: {
               ...inputProps,
-              id: `${formName}-${formField}`,
+              'data-testid': `${formName}-${formField}`,
             },
             container: {
               ...containerProps,
@@ -600,7 +575,7 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
           schemaKey={schemaKey}
           formField={`${formField}.${k}` as FormField}
           props={{
-            input: { ...inputProps, id: `${formName}-${formField}-${k}` },
+            input: { ...inputProps, 'data-testid': `${formName}-${formField}-${k}` },
             container: containerProps,
           }}
           index={k}
@@ -632,7 +607,6 @@ function FormData() {
   const form = useFormContext()
   const myFormState = useFormState({ control: form.control })
 
-  console.log(myFormState.errors)
   console.log(`form has errors: ${hasNonEmptyValue(myFormState.errors)}`)
 
   let code = ''
@@ -686,7 +660,9 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   const type = schemaFields[schemaKey]?.type
   const itemName = singularize(options.labels[schemaKey] || '')
 
+  // registerOnChange's type refers to onChange event's type
   const { onChange: registerOnChange, ...registerProps } = form.register(formField, {
+    // IMPORTANT: this is the type set in registerOnChange!
     ...(type === 'date' || type === 'date-time'
       ? // TODO: use convertValueByType
         { valueAsDate: true, setValueAs: (v) => (v === '' ? undefined : new Date(v)) }
@@ -695,7 +671,12 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       : type === 'number'
       ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseFloat(v)) }
       : type === 'boolean'
-      ? { setValueAs: (v) => (v === '' ? undefined : v === 'true') }
+      ? {
+          setValueAs: (v) => {
+            console.log({ settingValueBoolean: v })
+            return v === '' ? false : v === 'true'
+          },
+        }
       : null),
   })
 
@@ -802,14 +783,9 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         )
         break
       case 'boolean':
-        formFieldComponent = (
-          <Checkbox
-            onChange={(e) => registerOnChange({ target: { name: formField, value: e.target.checked } })}
-            pt={10}
-            pb={4}
-            {..._props}
-          />
-        )
+        // cannot set both defaultValue and have defaultValues in form for checkboxes. see discussions in gh
+        const { defaultValue: ____, ...checkboxProps } = _props
+        formFieldComponent = <Checkbox pt={10} pb={4} {...{ ...checkboxProps, ...form.register(formField) }} />
         break
       case 'date':
         formFieldComponent = (
@@ -915,7 +891,7 @@ const RemoveButton = ({ formField, index, itemName, icon }: RemoveButtonProps) =
         }}
         color={'#bd3535'}
         size="sm"
-        id={`${formName}-${formField}-remove-button-${index}`}
+        data-testid={`${formName}-${formField}-remove-button-${index}`}
       >
         {icon}
       </ActionIcon>
@@ -938,7 +914,7 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
   return options.selectOptions?.[schemaKey]?.type !== 'multiselect' ? (
     <div>
       <Flex direction="row" align="center">
-        {!accordion && options.labels[schemaKey] && renderTitle(formField, options.labels[schemaKey])}
+        {!accordion && options.labels[schemaKey] && renderTitle(formField, formName, options.labels[schemaKey])}
         {
           <Button
             size="xs"
@@ -954,7 +930,7 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
             }}
             variant="filled"
             color={'green'}
-            id={`${formName}-${formField}-add-button`}
+            data-testid={`${formName}-${formField}-add-button`}
           >{`Add ${lowerFirst(itemName)}`}</Button>
         }
       </Flex>
@@ -981,6 +957,7 @@ const initialValueByType = (type?: SchemaField['type']) => {
 
 type CustomPillProps = {
   value: any
+  formField: FormField
   schemaKey: SchemaKey
   handleValueRemove: (val: string) => void
   props?: React.HTMLProps<HTMLDivElement>
@@ -1022,7 +999,6 @@ function CustomMultiselect({
       formValues.filter((v) => v !== val),
     )
   }
-
   const comboboxOptions = selectOptions.values
     .filter((item: any) => {
       const inSearch = JSON.stringify(
@@ -1031,25 +1007,25 @@ function CustomMultiselect({
         .toLowerCase()
         .includes(search.toLowerCase().trim())
 
-      const notSelected = !formValues.includes(selectOptions.formValueTransformer(item))
-
-      return inSearch && notSelected
+      return inSearch
     })
     .map((option) => {
-      const value = String(selectOptions.formValueTransformer(option))
+      const formValue = selectOptions.formValueTransformer(option)
+      const selected = formValues.includes(selectOptions.formValueTransformer(option))
 
       return (
-        <Combobox.Option value={value} key={value} active={formValues.includes(value)}>
-          <Group align="stretch" justify="space-between">
+        <Combobox.Option
+          value={String(formValue)}
+          key={String(formValue)}
+          active={selected}
+          aria-selected={selected}
+          aria-label={
+            selectOptions.ariaLabelTransformer ? selectOptions.ariaLabelTransformer(option) : String(formValue)
+          }
+        >
+          <Group align="center" justify="start">
+            {selected && <CheckIcon size={12} />}
             {selectOptions.optionTransformer(option)}
-            <CloseButton
-              onMouseDown={() => handleValueRemove(selectOptions.formValueTransformer(option))}
-              variant="transparent"
-              color="gray"
-              size={22}
-              iconSize={14}
-              tabIndex={-1}
-            />
           </Group>
         </Combobox.Option>
       )
@@ -1080,6 +1056,11 @@ function CustomMultiselect({
           const option = selectOptions.values.find(
             (option) => String(selectOptions.formValueTransformer(option)) === value,
           )
+          const selected = formValues.includes(selectOptions.formValueTransformer(option))
+          if (selected) {
+            handleValueRemove(selectOptions.formValueTransformer(option))
+            return
+          }
           formSlice.setCustomError(formName, formField, null)
           registerOnChange({
             target: {
@@ -1105,7 +1086,8 @@ function CustomMultiselect({
               {formValues.length > 0 &&
                 formValues.map((formValue, i) => (
                   <CustomPill
-                    key={`${formField}-${i}-pill`}
+                    formField={formField}
+                    key={`${formName}-${formField}-${i}-pill`}
                     value={formValue}
                     handleValueRemove={handleValueRemove}
                     schemaKey={schemaKey}
@@ -1119,6 +1101,7 @@ function CustomMultiselect({
                     combobox.updateSelectedOptionIndex()
                     setSearch(event.currentTarget.value)
                   }}
+                  data-testid={`${formName}-search--${formField}`}
                   value={search}
                   onFocus={() => combobox.openDropdown()}
                   onBlur={() => combobox.closeDropdown()}
@@ -1195,11 +1178,22 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
         .includes(search.toLowerCase().trim()),
     )
     .map((option) => {
-      const value = String(selectOptions.formValueTransformer(option))
+      const formValue = selectOptions.formValueTransformer(option)
+      const selected = selectedOption ? selectOptions.formValueTransformer(selectedOption) === formValue : false
 
       return (
-        <Combobox.Option value={value} key={value}>
-          {comboboxOptionTemplate(selectOptions.optionTransformer, option)}
+        <Combobox.Option
+          value={String(formValue)}
+          key={String(formValue)}
+          aria-selected={selected}
+          aria-label={
+            selectOptions.ariaLabelTransformer ? selectOptions.ariaLabelTransformer(option) : String(formValue)
+          }
+        >
+          <Group align="center" justify="start">
+            {selected && <CheckIcon size={12} />}
+            {comboboxOptionTemplate(selectOptions.optionTransformer, option)}
+          </Group>
         </Combobox.Option>
       )
     })
@@ -1234,7 +1228,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
           combobox.closeDropdown()
         }}
       >
-        <Combobox.Target withAriaAttributes={false}>
+        <Combobox.Target withAriaAttributes={true}>
           <InputBase
             label={!schemaFields[parentSchemaKey]?.isArray ? singularize(upperFirst(itemName)) : null}
             className={classes.select}
@@ -1245,6 +1239,8 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
             onClick={() => combobox.toggleDropdown()}
             rightSectionPointerEvents="none"
             multiline
+            name={formField}
+            role="combobox"
             {...inputProps}
           >
             {selectedOption ? (
@@ -1261,6 +1257,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
             value={search}
             onChange={(event) => setSearch(event.currentTarget.value)}
             placeholder={`Search ${lowerFirst(itemName)}`}
+            data-testid={`${formName}-search--${formField}`}
           />
           <Combobox.Options
             mah={200} // scrollable
@@ -1284,7 +1281,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
   )
 }
 
-function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPillProps): JSX.Element | null {
+function CustomPill({ value, schemaKey, handleValueRemove, formField, ...props }: CustomPillProps): JSX.Element | null {
   const { formName, options, schemaFields } = useDynamicFormContext()
   const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
   const selectOptions = options.selectOptions![schemaKey]!
@@ -1314,7 +1311,7 @@ function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPil
       css={css`
         background-color: ${color};
         * {
-          color: ${getContrastYIQ(color) === 'black' ? 'whitesmoke' : 'black'};
+          color: ${getContrastYIQ(color) === 'black' ? 'whitesmoke' : '#131313'};
         }
       `}
       {...props}
@@ -1326,6 +1323,8 @@ function CustomPill({ value, schemaKey, handleValueRemove, ...props }: CustomPil
         size={22}
         iconSize={14}
         tabIndex={-1}
+        data-testid={`${formName}-${formField}-remove--${value}`}
+        aria-label={`Remove ${itemName} ${value}`}
       />
     </Box>
   )

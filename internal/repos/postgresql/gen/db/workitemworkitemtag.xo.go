@@ -39,6 +39,28 @@ type WorkItemWorkItemTagCreateParams struct {
 	WorkItemTagID WorkItemTagID `json:"workItemTagID" required:"true" nullable:"false"` // work_item_tag_id
 }
 
+// WorkItemWorkItemTagParams represents common params for both insert and update of 'public.work_item_work_item_tag'.
+type WorkItemWorkItemTagParams interface {
+	GetWorkItemID() *WorkItemID
+	GetWorkItemTagID() *WorkItemTagID
+}
+
+func (p WorkItemWorkItemTagCreateParams) GetWorkItemID() *WorkItemID {
+	x := p.WorkItemID
+	return &x
+}
+func (p WorkItemWorkItemTagUpdateParams) GetWorkItemID() *WorkItemID {
+	return p.WorkItemID
+}
+
+func (p WorkItemWorkItemTagCreateParams) GetWorkItemTagID() *WorkItemTagID {
+	x := p.WorkItemTagID
+	return &x
+}
+func (p WorkItemWorkItemTagUpdateParams) GetWorkItemTagID() *WorkItemTagID {
+	return p.WorkItemTagID
+}
+
 // CreateWorkItemWorkItemTag creates a new WorkItemWorkItemTag in the database with the given params.
 func CreateWorkItemWorkItemTag(ctx context.Context, db DB, params *WorkItemWorkItemTagCreateParams) (*WorkItemWorkItemTag, error) {
 	wiwit := &WorkItemWorkItemTag{

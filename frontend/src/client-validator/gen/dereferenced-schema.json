@@ -4855,6 +4855,165 @@
         "role"
       ],
       "type": "object"
+    },
+    "CreateTimeEntryRequest": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "activityID",
+        "comment",
+        "start",
+        "userID"
+      ],
+      "type": "object",
+      "x-gen-struct": "CreateTimeEntryRequest",
+      "x-is-generated": true
+    },
+    "TimeEntry": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeEntryID": {
+          "type": "integer"
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "timeEntryID",
+        "activityID",
+        "userID",
+        "comment",
+        "start"
+      ],
+      "type": "object",
+      "x-gen-struct": "TimeEntry",
+      "x-is-generated": true
+    },
+    "UpdateTimeEntryRequest": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "x-gen-struct": "UpdateTimeEntryRequest",
+      "x-is-generated": true
     }
   },
   "properties": {
@@ -9711,6 +9870,165 @@
         "role"
       ],
       "type": "object"
+    },
+    "CreateTimeEntryRequest": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "activityID",
+        "comment",
+        "start",
+        "userID"
+      ],
+      "type": "object",
+      "x-gen-struct": "CreateTimeEntryRequest",
+      "x-is-generated": true
+    },
+    "TimeEntry": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeEntryID": {
+          "type": "integer"
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "timeEntryID",
+        "activityID",
+        "userID",
+        "comment",
+        "start"
+      ],
+      "type": "object",
+      "x-gen-struct": "TimeEntry",
+      "x-is-generated": true
+    },
+    "UpdateTimeEntryRequest": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "x-gen-struct": "UpdateTimeEntryRequest",
+      "x-is-generated": true
     }
   }
 }

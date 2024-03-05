@@ -34,6 +34,7 @@ type XoTestsWorkItem struct {
 	TeamID      XoTestsTeamID     `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
 
 	DemoWorkItemJoin     *XoTestsDemoWorkItem             `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`  // O2O demo_work_items (inferred)
+	TimeEntriesJoin      *[]XoTestsTimeEntry              `json:"-" db:"time_entries" openapi-go:"ignore"`                 // M2O work_items
 	AssigneesJoin        *[]XoTestsWorkItemM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"` // M2M work_item_assignee
 	WorkItemCommentsJoin *[]XoTestsWorkItemComment        `json:"-" db:"work_item_comments" openapi-go:"ignore"`           // M2O work_items
 	TeamJoin             *XoTestsTeam                     `json:"-" db:"team_team_id" openapi-go:"ignore"`                 // O2O teams (inferred)
@@ -44,6 +45,44 @@ type XoTestsWorkItemCreateParams struct {
 	Description *string       `json:"description"`                             // description
 	TeamID      XoTestsTeamID `json:"teamID" required:"true" nullable:"false"` // team_id
 	Title       *string       `json:"title"`                                   // title
+}
+
+// XoTestsWorkItemParams represents common params for both insert and update of 'xo_tests.work_items'.
+type XoTestsWorkItemParams interface {
+	GetDescription() *string
+	GetTeamID() *XoTestsTeamID
+	GetTitle() *string
+}
+
+func (p XoTestsWorkItemCreateParams) GetDescription() *string {
+	return p.Description
+}
+
+func (p XoTestsWorkItemUpdateParams) GetDescription() *string {
+	if p.Description != nil {
+		return *p.Description
+	}
+	return nil
+}
+
+func (p XoTestsWorkItemCreateParams) GetTeamID() *XoTestsTeamID {
+	x := p.TeamID
+	return &x
+}
+
+func (p XoTestsWorkItemUpdateParams) GetTeamID() *XoTestsTeamID {
+	return p.TeamID
+}
+
+func (p XoTestsWorkItemCreateParams) GetTitle() *string {
+	return p.Title
+}
+
+func (p XoTestsWorkItemUpdateParams) GetTitle() *string {
+	if p.Title != nil {
+		return *p.Title
+	}
+	return nil
 }
 
 type XoTestsWorkItemID int
@@ -81,6 +120,7 @@ type XoTestsWorkItemOrderBy string
 
 type XoTestsWorkItemJoins struct {
 	DemoWorkItem     bool // O2O demo_work_items
+	TimeEntries      bool // M2O time_entries
 	Assignees        bool // M2M work_item_assignee
 	WorkItemComments bool // M2O work_item_comments
 	Team             bool // O2O teams
@@ -91,6 +131,7 @@ func WithXoTestsWorkItemJoin(joins XoTestsWorkItemJoins) XoTestsWorkItemSelectCo
 	return func(s *XoTestsWorkItemSelectConfig) {
 		s.joins = XoTestsWorkItemJoins{
 			DemoWorkItem:     s.joins.DemoWorkItem || joins.DemoWorkItem,
+			TimeEntries:      s.joins.TimeEntries || joins.TimeEntries,
 			Assignees:        s.joins.Assignees || joins.Assignees,
 			WorkItemComments: s.joins.WorkItemComments || joins.WorkItemComments,
 			Team:             s.joins.Team || joins.Team,
@@ -145,6 +186,22 @@ const xoTestsWorkItemTableDemoWorkItemSelectSQL = `(case when _demo_work_items_w
 
 const xoTestsWorkItemTableDemoWorkItemGroupBySQL = `_demo_work_items_work_item_id.work_item_id,
 	work_items.work_item_id`
+
+const xoTestsWorkItemTableTimeEntriesJoinSQL = `-- M2O join generated from "time_entries_work_item_id_fkey"
+left join (
+  select
+  work_item_id as time_entries_work_item_id
+    , row(time_entries.*) as __time_entries
+  from
+    xo_tests.time_entries
+  group by
+	  time_entries_work_item_id, xo_tests.time_entries.time_entry_id
+) as xo_join_time_entries on xo_join_time_entries.time_entries_work_item_id = work_items.work_item_id
+`
+
+const xoTestsWorkItemTableTimeEntriesSelectSQL = `COALESCE(ARRAY_AGG( DISTINCT (xo_join_time_entries.__time_entries)) filter (where xo_join_time_entries.time_entries_work_item_id is not null), '{}') as time_entries`
+
+const xoTestsWorkItemTableTimeEntriesGroupBySQL = `work_items.work_item_id`
 
 const xoTestsWorkItemTableAssigneesJoinSQL = `-- M2M join generated from "work_item_assignee_assignee_fkey"
 left join (
@@ -359,6 +416,12 @@ func XoTestsWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID
 		groupByClauses = append(groupByClauses, xoTestsWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, xoTestsWorkItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableTimeEntriesGroupBySQL)
+	}
+
 	if c.joins.Assignees {
 		selectClauses = append(selectClauses, xoTestsWorkItemTableAssigneesSelectSQL)
 		joinClauses = append(joinClauses, xoTestsWorkItemTableAssigneesJoinSQL)
@@ -477,6 +540,12 @@ func XoTestsWorkItems(ctx context.Context, db DB, opts ...XoTestsWorkItemSelectC
 		groupByClauses = append(groupByClauses, xoTestsWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, xoTestsWorkItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableTimeEntriesGroupBySQL)
+	}
+
 	if c.joins.Assignees {
 		selectClauses = append(selectClauses, xoTestsWorkItemTableAssigneesSelectSQL)
 		joinClauses = append(joinClauses, xoTestsWorkItemTableAssigneesJoinSQL)
@@ -593,6 +662,12 @@ func XoTestsWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTestsW
 		groupByClauses = append(groupByClauses, xoTestsWorkItemTableDemoWorkItemGroupBySQL)
 	}
 
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, xoTestsWorkItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableTimeEntriesGroupBySQL)
+	}
+
 	if c.joins.Assignees {
 		selectClauses = append(selectClauses, xoTestsWorkItemTableAssigneesSelectSQL)
 		joinClauses = append(joinClauses, xoTestsWorkItemTableAssigneesJoinSQL)
@@ -705,6 +780,12 @@ func XoTestsWorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...
 		selectClauses = append(selectClauses, xoTestsWorkItemTableDemoWorkItemSelectSQL)
 		joinClauses = append(joinClauses, xoTestsWorkItemTableDemoWorkItemJoinSQL)
 		groupByClauses = append(groupByClauses, xoTestsWorkItemTableDemoWorkItemGroupBySQL)
+	}
+
+	if c.joins.TimeEntries {
+		selectClauses = append(selectClauses, xoTestsWorkItemTableTimeEntriesSelectSQL)
+		joinClauses = append(joinClauses, xoTestsWorkItemTableTimeEntriesJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsWorkItemTableTimeEntriesGroupBySQL)
 	}
 
 	if c.joins.Assignees {

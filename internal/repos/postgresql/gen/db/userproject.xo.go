@@ -38,6 +38,28 @@ type UserProjectCreateParams struct {
 	ProjectID ProjectID `json:"projectID" required:"true" nullable:"false"` // project_id
 }
 
+// UserProjectParams represents common params for both insert and update of 'public.user_project'.
+type UserProjectParams interface {
+	GetMember() *UserID
+	GetProjectID() *ProjectID
+}
+
+func (p UserProjectCreateParams) GetMember() *UserID {
+	x := p.Member
+	return &x
+}
+func (p UserProjectUpdateParams) GetMember() *UserID {
+	return p.Member
+}
+
+func (p UserProjectCreateParams) GetProjectID() *ProjectID {
+	x := p.ProjectID
+	return &x
+}
+func (p UserProjectUpdateParams) GetProjectID() *ProjectID {
+	return p.ProjectID
+}
+
 // CreateUserProject creates a new UserProject in the database with the given params.
 func CreateUserProject(ctx context.Context, db DB, params *UserProjectCreateParams) (*UserProject, error) {
 	up := &UserProject{

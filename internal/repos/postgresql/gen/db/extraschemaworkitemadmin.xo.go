@@ -38,6 +38,28 @@ type ExtraSchemaWorkItemAdminCreateParams struct {
 	WorkItemID ExtraSchemaWorkItemID `json:"workItemID" required:"true" nullable:"false"` // work_item_id
 }
 
+// ExtraSchemaWorkItemAdminParams represents common params for both insert and update of 'extra_schema.work_item_admin'.
+type ExtraSchemaWorkItemAdminParams interface {
+	GetAdmin() *ExtraSchemaUserID
+	GetWorkItemID() *ExtraSchemaWorkItemID
+}
+
+func (p ExtraSchemaWorkItemAdminCreateParams) GetAdmin() *ExtraSchemaUserID {
+	x := p.Admin
+	return &x
+}
+func (p ExtraSchemaWorkItemAdminUpdateParams) GetAdmin() *ExtraSchemaUserID {
+	return p.Admin
+}
+
+func (p ExtraSchemaWorkItemAdminCreateParams) GetWorkItemID() *ExtraSchemaWorkItemID {
+	x := p.WorkItemID
+	return &x
+}
+func (p ExtraSchemaWorkItemAdminUpdateParams) GetWorkItemID() *ExtraSchemaWorkItemID {
+	return p.WorkItemID
+}
+
 // CreateExtraSchemaWorkItemAdmin creates a new ExtraSchemaWorkItemAdmin in the database with the given params.
 func CreateExtraSchemaWorkItemAdmin(ctx context.Context, db DB, params *ExtraSchemaWorkItemAdminCreateParams) (*ExtraSchemaWorkItemAdmin, error) {
 	eswia := &ExtraSchemaWorkItemAdmin{

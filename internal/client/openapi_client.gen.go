@@ -192,6 +192,22 @@ type ClientInterface interface {
 
 	UpdateTeam(ctx context.Context, teamID db.TeamID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// CreateTimeEntry request with any body
+	CreateTimeEntryWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateTimeEntry(ctx context.Context, body CreateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteTimeEntry request
+	DeleteTimeEntry(ctx context.Context, timeEntryID db.TimeEntryID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetTimeEntry request
+	GetTimeEntry(ctx context.Context, timeEntryID db.TimeEntryID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateTimeEntry request with any body
+	UpdateTimeEntryWithBody(ctx context.Context, timeEntryID db.TimeEntryID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateTimeEntry(ctx context.Context, timeEntryID db.TimeEntryID, body UpdateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetCurrentUser request
 	GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -836,6 +852,120 @@ func (c *Client) UpdateTeamWithBody(ctx context.Context, teamID db.TeamID, conte
 
 func (c *Client) UpdateTeam(ctx context.Context, teamID db.TeamID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateTeamRequest(c.Server, teamID, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) CreateTimeEntryWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateTimeEntryRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) CreateTimeEntry(ctx context.Context, body CreateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateTimeEntryRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) DeleteTimeEntry(ctx context.Context, timeEntryID db.TimeEntryID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteTimeEntryRequest(c.Server, timeEntryID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) GetTimeEntry(ctx context.Context, timeEntryID db.TimeEntryID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetTimeEntryRequest(c.Server, timeEntryID)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) UpdateTimeEntryWithBody(ctx context.Context, timeEntryID db.TimeEntryID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTimeEntryRequestWithBody(c.Server, timeEntryID, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	if c.testHandler != nil {
+		resp := httptest.NewRecorder()
+		c.testHandler.ServeHTTP(resp, req)
+
+		return resp.Result(), nil
+	} else {
+		return c.Client.Do(req)
+	}
+}
+
+func (c *Client) UpdateTimeEntry(ctx context.Context, timeEntryID db.TimeEntryID, body UpdateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateTimeEntryRequest(c.Server, timeEntryID, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2300,6 +2430,161 @@ func NewUpdateTeamRequestWithBody(server string, teamID db.TeamID, contentType s
 	return req, nil
 }
 
+// NewCreateTimeEntryRequest calls the generic CreateTimeEntry builder with application/json body
+func NewCreateTimeEntryRequest(server string, body CreateTimeEntryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateTimeEntryRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewCreateTimeEntryRequestWithBody generates requests for CreateTimeEntry with any type of body
+func NewCreateTimeEntryRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/time-entry/")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteTimeEntryRequest generates requests for DeleteTimeEntry
+func NewDeleteTimeEntryRequest(server string, timeEntryID db.TimeEntryID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "timeEntryID", runtime.ParamLocationPath, timeEntryID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/time-entry/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetTimeEntryRequest generates requests for GetTimeEntry
+func NewGetTimeEntryRequest(server string, timeEntryID db.TimeEntryID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "timeEntryID", runtime.ParamLocationPath, timeEntryID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/time-entry/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewUpdateTimeEntryRequest calls the generic UpdateTimeEntry builder with application/json body
+func NewUpdateTimeEntryRequest(server string, timeEntryID db.TimeEntryID, body UpdateTimeEntryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateTimeEntryRequestWithBody(server, timeEntryID, "application/json", bodyReader)
+}
+
+// NewUpdateTimeEntryRequestWithBody generates requests for UpdateTimeEntry with any type of body
+func NewUpdateTimeEntryRequestWithBody(server string, timeEntryID db.TimeEntryID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "timeEntryID", runtime.ParamLocationPath, timeEntryID)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/time-entry/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetCurrentUserRequest generates requests for GetCurrentUser
 func NewGetCurrentUserRequest(server string) (*http.Request, error) {
 	var err error
@@ -3255,6 +3540,22 @@ type ClientWithResponsesInterface interface {
 
 	UpdateTeamWithResponse(ctx context.Context, teamID db.TeamID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTeamResponse, error)
 
+	// CreateTimeEntry request with any body
+	CreateTimeEntryWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTimeEntryResponse, error)
+
+	CreateTimeEntryWithResponse(ctx context.Context, body CreateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTimeEntryResponse, error)
+
+	// DeleteTimeEntry request
+	DeleteTimeEntryWithResponse(ctx context.Context, timeEntryID db.TimeEntryID, reqEditors ...RequestEditorFn) (*DeleteTimeEntryResponse, error)
+
+	// GetTimeEntry request
+	GetTimeEntryWithResponse(ctx context.Context, timeEntryID db.TimeEntryID, reqEditors ...RequestEditorFn) (*GetTimeEntryResponse, error)
+
+	// UpdateTimeEntry request with any body
+	UpdateTimeEntryWithBodyWithResponse(ctx context.Context, timeEntryID db.TimeEntryID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTimeEntryResponse, error)
+
+	UpdateTimeEntryWithResponse(ctx context.Context, timeEntryID db.TimeEntryID, body UpdateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTimeEntryResponse, error)
+
 	// GetCurrentUser request
 	GetCurrentUserWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetCurrentUserResponse, error)
 
@@ -3833,6 +4134,97 @@ func (r UpdateTeamResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateTeamResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateTimeEntryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *TimeEntry
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateTimeEntryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateTimeEntryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteTimeEntryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteTimeEntryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteTimeEntryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetTimeEntryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TimeEntry
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetTimeEntryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetTimeEntryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type UpdateTimeEntryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *TimeEntry
+	JSON4XX      *HTTPError
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateTimeEntryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateTimeEntryResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4538,6 +4930,58 @@ func (c *ClientWithResponses) UpdateTeamWithResponse(ctx context.Context, teamID
 		return nil, err
 	}
 	return ParseUpdateTeamResponse(rsp)
+}
+
+// CreateTimeEntryWithBodyWithResponse request with arbitrary body returning *CreateTimeEntryResponse
+func (c *ClientWithResponses) CreateTimeEntryWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateTimeEntryResponse, error) {
+	rsp, err := c.CreateTimeEntryWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateTimeEntryResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateTimeEntryWithResponse(ctx context.Context, body CreateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateTimeEntryResponse, error) {
+	rsp, err := c.CreateTimeEntry(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateTimeEntryResponse(rsp)
+}
+
+// DeleteTimeEntryWithResponse request returning *DeleteTimeEntryResponse
+func (c *ClientWithResponses) DeleteTimeEntryWithResponse(ctx context.Context, timeEntryID db.TimeEntryID, reqEditors ...RequestEditorFn) (*DeleteTimeEntryResponse, error) {
+	rsp, err := c.DeleteTimeEntry(ctx, timeEntryID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteTimeEntryResponse(rsp)
+}
+
+// GetTimeEntryWithResponse request returning *GetTimeEntryResponse
+func (c *ClientWithResponses) GetTimeEntryWithResponse(ctx context.Context, timeEntryID db.TimeEntryID, reqEditors ...RequestEditorFn) (*GetTimeEntryResponse, error) {
+	rsp, err := c.GetTimeEntry(ctx, timeEntryID, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetTimeEntryResponse(rsp)
+}
+
+// UpdateTimeEntryWithBodyWithResponse request with arbitrary body returning *UpdateTimeEntryResponse
+func (c *ClientWithResponses) UpdateTimeEntryWithBodyWithResponse(ctx context.Context, timeEntryID db.TimeEntryID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateTimeEntryResponse, error) {
+	rsp, err := c.UpdateTimeEntryWithBody(ctx, timeEntryID, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTimeEntryResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateTimeEntryWithResponse(ctx context.Context, timeEntryID db.TimeEntryID, body UpdateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateTimeEntryResponse, error) {
+	rsp, err := c.UpdateTimeEntry(ctx, timeEntryID, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateTimeEntryResponse(rsp)
 }
 
 // GetCurrentUserWithResponse request returning *GetCurrentUserResponse
@@ -5363,6 +5807,131 @@ func ParseUpdateTeamResponse(rsp *http.Response) (*UpdateTeamResponse, error) {
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest Team
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateTimeEntryResponse parses an HTTP response from a CreateTimeEntryWithResponse call
+func ParseCreateTimeEntryResponse(rsp *http.Response) (*CreateTimeEntryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateTimeEntryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest TimeEntry
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteTimeEntryResponse parses an HTTP response from a DeleteTimeEntryWithResponse call
+func ParseDeleteTimeEntryResponse(rsp *http.Response) (*DeleteTimeEntryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteTimeEntryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetTimeEntryResponse parses an HTTP response from a GetTimeEntryWithResponse call
+func ParseGetTimeEntryResponse(rsp *http.Response) (*GetTimeEntryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetTimeEntryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TimeEntry
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode/100 == 4:
+		var dest HTTPError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON4XX = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseUpdateTimeEntryResponse parses an HTTP response from a UpdateTimeEntryWithResponse call
+func ParseUpdateTimeEntryResponse(rsp *http.Response) (*UpdateTimeEntryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateTimeEntryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest TimeEntry
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

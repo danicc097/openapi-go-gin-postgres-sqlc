@@ -2142,6 +2142,144 @@
         "role"
       ],
       "type": "object"
+    },
+    "CreateTimeEntryRequest": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "activityID",
+        "comment",
+        "start",
+        "userID"
+      ],
+      "type": "object",
+      "x-gen-struct": "CreateTimeEntryRequest",
+      "x-is-generated": true
+    },
+    "TimeEntry": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeEntryID": {
+          "type": "integer"
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "timeEntryID",
+        "activityID",
+        "userID",
+        "comment",
+        "start"
+      ],
+      "type": "object",
+      "x-gen-struct": "TimeEntry",
+      "x-is-generated": true
+    },
+    "UpdateTimeEntryRequest": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "userID": {
+          "$ref": "#/definitions/DbUserID"
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "x-gen-struct": "UpdateTimeEntryRequest",
+      "x-is-generated": true
     }
   },
   "properties": {
@@ -2384,6 +2522,15 @@
     },
     "DbWorkItemM2MAssigneeWIA": {
       "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
+    },
+    "CreateTimeEntryRequest": {
+      "$ref": "#/definitions/CreateTimeEntryRequest"
+    },
+    "TimeEntry": {
+      "$ref": "#/definitions/TimeEntry"
+    },
+    "UpdateTimeEntryRequest": {
+      "$ref": "#/definitions/UpdateTimeEntryRequest"
     }
   }
 }

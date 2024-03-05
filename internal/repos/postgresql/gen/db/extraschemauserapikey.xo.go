@@ -45,6 +45,37 @@ type ExtraSchemaUserAPIKeyCreateParams struct {
 	UserID    ExtraSchemaUserID `json:"userID" required:"true" nullable:"false"`    // user_id
 }
 
+// ExtraSchemaUserAPIKeyParams represents common params for both insert and update of 'extra_schema.user_api_keys'.
+type ExtraSchemaUserAPIKeyParams interface {
+	GetAPIKey() *string
+	GetExpiresOn() *time.Time
+	GetUserID() *ExtraSchemaUserID
+}
+
+func (p ExtraSchemaUserAPIKeyCreateParams) GetAPIKey() *string {
+	x := p.APIKey
+	return &x
+}
+func (p ExtraSchemaUserAPIKeyUpdateParams) GetAPIKey() *string {
+	return p.APIKey
+}
+
+func (p ExtraSchemaUserAPIKeyCreateParams) GetExpiresOn() *time.Time {
+	x := p.ExpiresOn
+	return &x
+}
+func (p ExtraSchemaUserAPIKeyUpdateParams) GetExpiresOn() *time.Time {
+	return p.ExpiresOn
+}
+
+func (p ExtraSchemaUserAPIKeyCreateParams) GetUserID() *ExtraSchemaUserID {
+	x := p.UserID
+	return &x
+}
+func (p ExtraSchemaUserAPIKeyUpdateParams) GetUserID() *ExtraSchemaUserID {
+	return p.UserID
+}
+
 type ExtraSchemaUserAPIKeyID int
 
 // CreateExtraSchemaUserAPIKey creates a new ExtraSchemaUserAPIKey in the database with the given params.

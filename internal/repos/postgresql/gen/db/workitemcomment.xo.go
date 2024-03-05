@@ -48,6 +48,37 @@ type WorkItemCommentCreateParams struct {
 	WorkItemID WorkItemID `json:"workItemID" required:"true" nullable:"false"` // work_item_id
 }
 
+// WorkItemCommentParams represents common params for both insert and update of 'public.work_item_comments'.
+type WorkItemCommentParams interface {
+	GetMessage() *string
+	GetUserID() *UserID
+	GetWorkItemID() *WorkItemID
+}
+
+func (p WorkItemCommentCreateParams) GetMessage() *string {
+	x := p.Message
+	return &x
+}
+func (p WorkItemCommentUpdateParams) GetMessage() *string {
+	return p.Message
+}
+
+func (p WorkItemCommentCreateParams) GetUserID() *UserID {
+	x := p.UserID
+	return &x
+}
+func (p WorkItemCommentUpdateParams) GetUserID() *UserID {
+	return p.UserID
+}
+
+func (p WorkItemCommentCreateParams) GetWorkItemID() *WorkItemID {
+	x := p.WorkItemID
+	return &x
+}
+func (p WorkItemCommentUpdateParams) GetWorkItemID() *WorkItemID {
+	return p.WorkItemID
+}
+
 type WorkItemCommentID int
 
 // CreateWorkItemComment creates a new WorkItemComment in the database with the given params.

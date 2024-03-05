@@ -42,6 +42,42 @@ type XoTestsWorkItemAssigneeCreateParams struct {
 	WorkItemID  XoTestsWorkItemID    `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
 }
 
+// XoTestsWorkItemAssigneeParams represents common params for both insert and update of 'xo_tests.work_item_assignee'.
+type XoTestsWorkItemAssigneeParams interface {
+	GetAssignee() *XoTestsUserID
+	GetXoTestsRole() *XoTestsWorkItemRole
+	GetWorkItemID() *XoTestsWorkItemID
+}
+
+func (p XoTestsWorkItemAssigneeCreateParams) GetAssignee() *XoTestsUserID {
+	x := p.Assignee
+	return &x
+}
+
+func (p XoTestsWorkItemAssigneeUpdateParams) GetAssignee() *XoTestsUserID {
+	return p.Assignee
+}
+
+func (p XoTestsWorkItemAssigneeCreateParams) GetXoTestsRole() *XoTestsWorkItemRole {
+	return p.XoTestsRole
+}
+
+func (p XoTestsWorkItemAssigneeUpdateParams) GetXoTestsRole() *XoTestsWorkItemRole {
+	if p.XoTestsRole != nil {
+		return *p.XoTestsRole
+	}
+	return nil
+}
+
+func (p XoTestsWorkItemAssigneeCreateParams) GetWorkItemID() *XoTestsWorkItemID {
+	x := p.WorkItemID
+	return &x
+}
+
+func (p XoTestsWorkItemAssigneeUpdateParams) GetWorkItemID() *XoTestsWorkItemID {
+	return p.WorkItemID
+}
+
 // CreateXoTestsWorkItemAssignee creates a new XoTestsWorkItemAssignee in the database with the given params.
 func CreateXoTestsWorkItemAssignee(ctx context.Context, db DB, params *XoTestsWorkItemAssigneeCreateParams) (*XoTestsWorkItemAssignee, error) {
 	xtwia := &XoTestsWorkItemAssignee{

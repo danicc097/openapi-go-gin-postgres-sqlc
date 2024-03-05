@@ -27,10 +27,7 @@ type NotificationCreateParams struct {
 // NewNotification returns a new Notification service.
 func NewNotification(logger *zap.SugaredLogger, repos *repos.Repos) *Notification {
 	usvc := NewUser(logger, repos)
-	authzsvc, err := NewAuthorization(logger)
-	if err != nil {
-		panic(fmt.Sprintf("NewAuthorization: %v", err))
-	}
+	authzsvc := NewAuthorization(logger)
 
 	return &Notification{
 		logger:   logger,

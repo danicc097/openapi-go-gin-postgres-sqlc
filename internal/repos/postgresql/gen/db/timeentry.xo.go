@@ -56,6 +56,79 @@ type TimeEntryCreateParams struct {
 	WorkItemID      *WorkItemID `json:"workItemID"`                                  // work_item_id
 }
 
+// TimeEntryParams represents common params for both insert and update of 'public.time_entries'.
+type TimeEntryParams interface {
+	GetActivityID() *ActivityID
+	GetComment() *string
+	GetDurationMinutes() *int
+	GetStart() *time.Time
+	GetTeamID() *TeamID
+	GetUserID() *UserID
+	GetWorkItemID() *WorkItemID
+}
+
+func (p TimeEntryCreateParams) GetActivityID() *ActivityID {
+	x := p.ActivityID
+	return &x
+}
+func (p TimeEntryUpdateParams) GetActivityID() *ActivityID {
+	return p.ActivityID
+}
+
+func (p TimeEntryCreateParams) GetComment() *string {
+	x := p.Comment
+	return &x
+}
+func (p TimeEntryUpdateParams) GetComment() *string {
+	return p.Comment
+}
+
+func (p TimeEntryCreateParams) GetDurationMinutes() *int {
+	return p.DurationMinutes
+}
+func (p TimeEntryUpdateParams) GetDurationMinutes() *int {
+	if p.DurationMinutes != nil {
+		return *p.DurationMinutes
+	}
+	return nil
+}
+
+func (p TimeEntryCreateParams) GetStart() *time.Time {
+	x := p.Start
+	return &x
+}
+func (p TimeEntryUpdateParams) GetStart() *time.Time {
+	return p.Start
+}
+
+func (p TimeEntryCreateParams) GetTeamID() *TeamID {
+	return p.TeamID
+}
+func (p TimeEntryUpdateParams) GetTeamID() *TeamID {
+	if p.TeamID != nil {
+		return *p.TeamID
+	}
+	return nil
+}
+
+func (p TimeEntryCreateParams) GetUserID() *UserID {
+	x := p.UserID
+	return &x
+}
+func (p TimeEntryUpdateParams) GetUserID() *UserID {
+	return p.UserID
+}
+
+func (p TimeEntryCreateParams) GetWorkItemID() *WorkItemID {
+	return p.WorkItemID
+}
+func (p TimeEntryUpdateParams) GetWorkItemID() *WorkItemID {
+	if p.WorkItemID != nil {
+		return *p.WorkItemID
+	}
+	return nil
+}
+
 type TimeEntryID int
 
 // CreateTimeEntry creates a new TimeEntry in the database with the given params.

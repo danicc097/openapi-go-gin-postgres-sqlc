@@ -84,6 +84,9 @@ import {
   DemoTwoKanbanSteps,
   DbUserWIAWorkItem,
   DbWorkItemM2MAssigneeWIA,
+  CreateTimeEntryRequest,
+  TimeEntry,
+  UpdateTimeEntryRequest,
 } from './models'
 
 export const schemaDefinitions = {
@@ -217,6 +220,15 @@ export const schemaDefinitions = {
   DbWorkItemM2MAssigneeWIA: info<DbWorkItemM2MAssigneeWIA>(
     'DbWorkItemM2MAssigneeWIA',
     '#/definitions/DbWorkItemM2MAssigneeWIA',
+  ),
+  CreateTimeEntryRequest: info<CreateTimeEntryRequest>(
+    'CreateTimeEntryRequest',
+    '#/definitions/CreateTimeEntryRequest',
+  ),
+  TimeEntry: info<TimeEntry>('TimeEntry', '#/definitions/TimeEntry'),
+  UpdateTimeEntryRequest: info<UpdateTimeEntryRequest>(
+    'UpdateTimeEntryRequest',
+    '#/definitions/UpdateTimeEntryRequest',
   ),
 }
 

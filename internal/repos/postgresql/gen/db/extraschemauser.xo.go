@@ -55,6 +55,30 @@ type ExtraSchemaUserCreateParams struct {
 	Name     string                   `json:"name" required:"true" nullable:"false"` // name
 }
 
+// ExtraSchemaUserParams represents common params for both insert and update of 'extra_schema.users'.
+type ExtraSchemaUserParams interface {
+	GetAPIKeyID() *ExtraSchemaUserAPIKeyID
+	GetName() *string
+}
+
+func (p ExtraSchemaUserCreateParams) GetAPIKeyID() *ExtraSchemaUserAPIKeyID {
+	return p.APIKeyID
+}
+func (p ExtraSchemaUserUpdateParams) GetAPIKeyID() *ExtraSchemaUserAPIKeyID {
+	if p.APIKeyID != nil {
+		return *p.APIKeyID
+	}
+	return nil
+}
+
+func (p ExtraSchemaUserCreateParams) GetName() *string {
+	x := p.Name
+	return &x
+}
+func (p ExtraSchemaUserUpdateParams) GetName() *string {
+	return p.Name
+}
+
 type ExtraSchemaUserID struct {
 	uuid.UUID
 }

@@ -43,6 +43,28 @@ type ExtraSchemaBookReviewCreateParams struct {
 	Reviewer ExtraSchemaUserID `json:"reviewer" required:"true" nullable:"false"` // reviewer
 }
 
+// ExtraSchemaBookReviewParams represents common params for both insert and update of 'extra_schema.book_reviews'.
+type ExtraSchemaBookReviewParams interface {
+	GetBookID() *ExtraSchemaBookID
+	GetReviewer() *ExtraSchemaUserID
+}
+
+func (p ExtraSchemaBookReviewCreateParams) GetBookID() *ExtraSchemaBookID {
+	x := p.BookID
+	return &x
+}
+func (p ExtraSchemaBookReviewUpdateParams) GetBookID() *ExtraSchemaBookID {
+	return p.BookID
+}
+
+func (p ExtraSchemaBookReviewCreateParams) GetReviewer() *ExtraSchemaUserID {
+	x := p.Reviewer
+	return &x
+}
+func (p ExtraSchemaBookReviewUpdateParams) GetReviewer() *ExtraSchemaUserID {
+	return p.Reviewer
+}
+
 type ExtraSchemaBookReviewID int
 
 // CreateExtraSchemaBookReview creates a new ExtraSchemaBookReview in the database with the given params.

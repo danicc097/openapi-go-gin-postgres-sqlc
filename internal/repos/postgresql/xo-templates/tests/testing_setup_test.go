@@ -35,35 +35,36 @@ func testMain(m *testing.M) int {
 
 	logger, _ := zap.NewDevelopment()
 
-	tempTestPool, _, err := postgresql.New(logger.Sugar())
+	testPool, _, err = postgresql.New(logger.Sugar())
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't create temporary pool: %s\n", err)
 		os.Exit(1)
 	}
-	defer tempTestPool.Close()
+	defer testPool.Close()
 
-	schemaPath := "schema.sql"
+	schemaPath := "xotests_schema.sql"
 	schema, err := os.ReadFile(schemaPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't read %s: %s\n", schemaPath, err)
 		return 1
 	}
 
-	_, err = tempTestPool.Exec(context.Background(), string(schema))
+	_, err = testPool.Exec(context.Background(), string(schema))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Couldn't execute %s: %s\n", schemaPath, err)
 		return 1
 	}
 
-	// refresh pgxpool types now that schema.sql is loaded.
+	// NOTE: not needed anymore since both M2O and M2M now use `row` instead of array_agg
+	// refresh pgxpool types now that xotests_schema.sql is loaded - before no types existed to be registered.
 	// maybe a postgresl.New postgresql.WithSchemas(schemas...) executed in order is worth it
 	// to avoid this if it's in demand
-	testPool, _, err = postgresql.New(logger.Sugar())
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Couldn't create testPool: %s\n", err)
-		return 1
-	}
-	defer testPool.Close()
+	// testPool, _, err = postgresql.New(logger.Sugar())
+	// if err != nil {
+	// 	fmt.Fprintf(os.Stderr, "Couldn't create testPool: %s\n", err)
+	// 	return 1
+	// }
+	// defer testPool.Close()
 
 	return m.Run()
 }

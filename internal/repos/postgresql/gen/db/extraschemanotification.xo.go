@@ -47,6 +47,48 @@ type ExtraSchemaNotificationCreateParams struct {
 	Sender                      ExtraSchemaUserID           `json:"sender" required:"true" nullable:"false"`                                                       // sender
 }
 
+// ExtraSchemaNotificationParams represents common params for both insert and update of 'extra_schema.notifications'.
+type ExtraSchemaNotificationParams interface {
+	GetBody() *string
+	GetExtraSchemaNotificationType() *ExtraSchemaNotificationType
+	GetReceiver() *ExtraSchemaUserID
+	GetSender() *ExtraSchemaUserID
+}
+
+func (p ExtraSchemaNotificationCreateParams) GetBody() *string {
+	x := p.Body
+	return &x
+}
+func (p ExtraSchemaNotificationUpdateParams) GetBody() *string {
+	return p.Body
+}
+
+func (p ExtraSchemaNotificationCreateParams) GetExtraSchemaNotificationType() *ExtraSchemaNotificationType {
+	x := p.ExtraSchemaNotificationType
+	return &x
+}
+func (p ExtraSchemaNotificationUpdateParams) GetExtraSchemaNotificationType() *ExtraSchemaNotificationType {
+	return p.ExtraSchemaNotificationType
+}
+
+func (p ExtraSchemaNotificationCreateParams) GetReceiver() *ExtraSchemaUserID {
+	return p.Receiver
+}
+func (p ExtraSchemaNotificationUpdateParams) GetReceiver() *ExtraSchemaUserID {
+	if p.Receiver != nil {
+		return *p.Receiver
+	}
+	return nil
+}
+
+func (p ExtraSchemaNotificationCreateParams) GetSender() *ExtraSchemaUserID {
+	x := p.Sender
+	return &x
+}
+func (p ExtraSchemaNotificationUpdateParams) GetSender() *ExtraSchemaUserID {
+	return p.Sender
+}
+
 type ExtraSchemaNotificationID int
 
 // CreateExtraSchemaNotification creates a new ExtraSchemaNotification in the database with the given params.

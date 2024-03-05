@@ -38,6 +38,28 @@ type UserTeamCreateParams struct {
 	TeamID TeamID `json:"teamID" required:"true" nullable:"false"` // team_id
 }
 
+// UserTeamParams represents common params for both insert and update of 'public.user_team'.
+type UserTeamParams interface {
+	GetMember() *UserID
+	GetTeamID() *TeamID
+}
+
+func (p UserTeamCreateParams) GetMember() *UserID {
+	x := p.Member
+	return &x
+}
+func (p UserTeamUpdateParams) GetMember() *UserID {
+	return p.Member
+}
+
+func (p UserTeamCreateParams) GetTeamID() *TeamID {
+	x := p.TeamID
+	return &x
+}
+func (p UserTeamUpdateParams) GetTeamID() *TeamID {
+	return p.TeamID
+}
+
 // CreateUserTeam creates a new UserTeam in the database with the given params.
 func CreateUserTeam(ctx context.Context, db DB, params *UserTeamCreateParams) (*UserTeam, error) {
 	ut := &UserTeam{

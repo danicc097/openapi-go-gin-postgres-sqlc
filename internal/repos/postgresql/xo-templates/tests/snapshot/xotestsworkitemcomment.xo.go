@@ -47,6 +47,40 @@ type XoTestsWorkItemCommentCreateParams struct {
 	WorkItemID XoTestsWorkItemID `json:"workItemID" required:"true" nullable:"false"` // work_item_id
 }
 
+// XoTestsWorkItemCommentParams represents common params for both insert and update of 'xo_tests.work_item_comments'.
+type XoTestsWorkItemCommentParams interface {
+	GetMessage() *string
+	GetUserID() *XoTestsUserID
+	GetWorkItemID() *XoTestsWorkItemID
+}
+
+func (p XoTestsWorkItemCommentCreateParams) GetMessage() *string {
+	x := p.Message
+	return &x
+}
+
+func (p XoTestsWorkItemCommentUpdateParams) GetMessage() *string {
+	return p.Message
+}
+
+func (p XoTestsWorkItemCommentCreateParams) GetUserID() *XoTestsUserID {
+	x := p.UserID
+	return &x
+}
+
+func (p XoTestsWorkItemCommentUpdateParams) GetUserID() *XoTestsUserID {
+	return p.UserID
+}
+
+func (p XoTestsWorkItemCommentCreateParams) GetWorkItemID() *XoTestsWorkItemID {
+	x := p.WorkItemID
+	return &x
+}
+
+func (p XoTestsWorkItemCommentUpdateParams) GetWorkItemID() *XoTestsWorkItemID {
+	return p.WorkItemID
+}
+
 type XoTestsWorkItemCommentID int
 
 // CreateXoTestsWorkItemComment creates a new XoTestsWorkItemComment in the database with the given params.

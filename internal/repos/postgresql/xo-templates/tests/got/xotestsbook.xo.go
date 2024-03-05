@@ -42,6 +42,20 @@ type XoTestsBookCreateParams struct {
 	Name string `json:"name" required:"true" nullable:"false"` // name
 }
 
+// XoTestsBookParams represents common params for both insert and update of 'xo_tests.books'.
+type XoTestsBookParams interface {
+	GetName() *string
+}
+
+func (p XoTestsBookCreateParams) GetName() *string {
+	x := p.Name
+	return &x
+}
+
+func (p XoTestsBookUpdateParams) GetName() *string {
+	return p.Name
+}
+
 type XoTestsBookID int
 
 // CreateXoTestsBook creates a new XoTestsBook in the database with the given params.

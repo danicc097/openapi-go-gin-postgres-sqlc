@@ -1022,11 +1022,12 @@ x.gen() {
 
     x.lint.sql
 
-    go generate ./... &
     x.gen.gowrap &
     x.gen.proto &
-    # might be race between xo and sqlc
-    { x.gen.xo && x.gen.sqlc; } &
+    # might be race between these
+    { retry 5 go generate ./...; } &
+    { retry 5 x.gen.xo; } &
+    { retry 5 x.gen.sqlc; } &
     x.gen.jet &
     generate_repo_constructor &
 
@@ -1269,7 +1270,7 @@ x.test.xo() {
     echo "Running xo template tests"
 
     test_dir="$XO_TEMPLATES_DIR/tests"
-    docker.postgres.psql -d $POSTGRES_DB <"$test_dir/schema.sql" # need correct schema for xo gen
+    docker.postgres.psql -d $POSTGRES_DB <"$test_dir/xotests_schema.sql" # need correct schema for xo gen
     echo "Schema loaded"
 
     rm -rf "$test_dir/got"
@@ -1513,7 +1514,7 @@ orval_frontend_branded_types() {
     replace_commands+=(
       "-e" "s/${camel}?: Db${pascal}/${camel}?: EntityIDs.${pascal}/g"
       "-e" "s/${camel}: Db${pascal}/${camel}: EntityIDs.${pascal}/g"
-      "-e" "s/${camel}: faker.word.sample()/${camel}: faker.word.sample() as EntityIDs.${pascal}/g"
+      "-e" "s/${camel}: faker.word.sample()/${camel}: faker.string.uuid() as EntityIDs.${pascal}/g"
     )
   done
 
@@ -2866,11 +2867,13 @@ if [[ -n "$1" ]]; then
       ensure_tools_up_to_date
 
       "x.$CMD" "$@"
+      err_code=$?
 
       if test -f "$failed_tool_build_marker"; then
         echo "${YELLOW}[WARNING] At least one gen tool build failed. A gen rerun may be required"
       fi
-      exit $? # do not quote
+
+      exit $err_code # do not quote
     fi
   done
 fi
