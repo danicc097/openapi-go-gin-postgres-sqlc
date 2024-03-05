@@ -320,36 +320,13 @@ describe('form generation', () => {
     expect(screen.queryAllByRole('alert')).toHaveLength(0)
     expect(mockSubmitWithErrors).toBeCalledTimes(1)
     expect(mockSubmit).toBeCalledTimes(1)
-    expect(mockSubmit.mock.calls[0]).toStrictEqual([
-      {
-        base: {
-          items: [
-            { items: ['0001', '0002'], userId: [], name: 'item-1' },
-            { items: ['0011', '0012'], userId: [], name: 'item-2' },
-          ],
-          closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-          description: 'some text',
-          kanbanStepID: 1,
-          teamID: 1,
-          metadata: {},
-          workItemTypeID: 1,
-          targetDate: dayjs('2024-03-24T20:42:00.000Z').toDate(),
-        },
-        demoProject: {
-          lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-          line: '3e3e2',
-          ref: '99998888',
-          workItemID: 1,
-          reopened: true,
-        },
-        tagIDs: [1, 3, 2],
-        members: [
-          { userID: 'a446259c-1083-4212-98fe-bd080c41e7d7', role: 'preparer' },
-          { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
-        ],
-        tagIDsMultiselect: [0, 2],
-      },
-    ])
+
+    const newFormValues = formInitialValues
+    newFormValues.tagIDsMultiselect = [0, 2]
+    newFormValues.members![0]!.role = 'preparer' // nested defaultValues if empty
+    newFormValues.demoProject.ref = '99998888'
+
+    expect(mockSubmit.mock.calls[0]).toStrictEqual([newFormValues])
 
     await waitFor(async () => {
       const tagsSearchInput = screen.getByTestId('demoWorkItemCreateForm-search--tagIDsMultiselect')
