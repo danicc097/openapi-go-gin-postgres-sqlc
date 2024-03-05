@@ -198,6 +198,9 @@ const formInitialValues = {
     items: [
       {
         items: ['0001', '0002'],
+        // TODO: use usersData below but leave some that dont exist.
+        // TODO: if select or multiselect not found, it should show a warning callout
+        // stating option was not found so its being ignored (persistent callout)
         userId: ['120cb364-2b18-49fb-b505-568834614c5d', 'fcd252dc-72a4-4514-bdd1-3cac573a5fac'],
         name: 'item-1',
       },
@@ -302,7 +305,7 @@ export default function DemoGeneratedForm() {
   //   }
   // }, [demoWorkItemCreateForm])
 
-  type ExcludedFormKeys = 'base.metadata' | 'tagIDsMultiselect'
+  type ExcludedFormKeys = 'base.metadata' | 'tagIDsMultiselect' | 'demoProject' | 'base'
 
   const users = usersData?.items
 
@@ -365,7 +368,6 @@ export default function DemoGeneratedForm() {
           // schemaFields will come from `parseSchemaFields(schema.RestDemo... OR  asConst(jsonSchema.definitions.<...>))`
           // using this hardcoded for testing purposes
           schemaFields={{
-            base: { isArray: false, required: true, type: 'object' },
             'base.closed': { type: 'date-time', required: false, isArray: false },
             'base.description': { type: 'string', required: true, isArray: false },
             'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
@@ -376,7 +378,6 @@ export default function DemoGeneratedForm() {
             'base.items.userId': { type: 'string', required: false, isArray: true },
             'base.items.items': { type: 'string', required: false, isArray: true },
             'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
-            demoProject: { isArray: false, required: true, type: 'object' },
             'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
             'demoProject.line': { type: 'string', required: true, isArray: false },
             'demoProject.ref': { type: 'string', required: true, isArray: false },
@@ -388,10 +389,8 @@ export default function DemoGeneratedForm() {
             tagIDs: { type: 'integer', required: false, isArray: true },
           }}
           options={{
-            // since labels is mandatory, instead of duplicating with ignore: U[] just
-            // check if labels hasOwnProperty fieldKey and if not exclude from form.
+            // labels are mandatory. Use null to exclude if needed.
             labels: {
-              base: null,
               'base.closed': 'Closed',
               'base.description': 'Description',
               // 'base.metadata': 'metadata', // ignored -> not a key
@@ -404,7 +403,6 @@ export default function DemoGeneratedForm() {
               'base.items.items': 'Items',
               'base.items.userId': 'User',
               'base.workItemTypeID': 'Type',
-              demoProject: null,
               'demoProject.lastMessageAt': 'Last message at',
               'demoProject.line': 'Line',
               'demoProject.ref': 'Ref',

@@ -1,4 +1,5 @@
 import { useContext } from 'react'
+import { AllKeysMandatory } from 'src/types/utils'
 import { DynamicFormContext, DynamicFormContextValue, InputOptions, SelectOptions } from 'src/utils/formGeneration'
 
 export const useDynamicFormContext = (): DynamicFormContextValue => {
@@ -21,15 +22,16 @@ export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends u
   optionTransformer,
   pillTransformer,
   labelColor,
-}: SelectOptions<ReturnElement, V>): SelectOptions<ReturnElement, V> => ({
+}: SelectOptions<ReturnElement, V>): AllKeysMandatory<SelectOptions<ReturnElement, V>> => ({
   type,
   values,
   optionTransformer,
-  pillTransformer,
   formValueTransformer,
-  ariaLabelTransformer,
-  searchValueTransformer,
-  labelColor,
+  // workaround to never forget adding new fields to selectOptionsBuilder
+  pillTransformer: pillTransformer!,
+  ariaLabelTransformer: ariaLabelTransformer!,
+  searchValueTransformer: searchValueTransformer!,
+  labelColor: labelColor!,
 })
 
 export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>): InputOptions<Return, V> => ({

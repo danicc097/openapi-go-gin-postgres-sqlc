@@ -139,13 +139,17 @@ export type DynamicFormOptions<
   U extends PropertyKey = GetKeys<T>,
 > = {
   /**
-   * Label mapping for fields. Use null to skip rendering field entirely.
+   * Label mapping for fields.
+   * To ignore fields, add leaf keys to IgnoredFormKeys.
+   * Ignoring intermediate object/array keys in IgnoredFormKeys just skips rendering its titles.
    */
   labels: {
-    [key in Exclude<U, IgnoredFormKeys>]: string | null
+    [key in Exclude<U, IgnoredFormKeys>]: string
   }
   renderOrderPriority?: Array<Exclude<keyof T, IgnoredFormKeys>>
-  // used to populate form inputs if the form field is empty. Applies to all nested fields.
+  /**
+   * Used to populate form inputs if the form field is empty. Applies to all nested fields, including array elements
+   *  */
   defaultValues?: Partial<{
     [key in Exclude<U, IgnoredFormKeys>]: DeepPartial<
       PathType<

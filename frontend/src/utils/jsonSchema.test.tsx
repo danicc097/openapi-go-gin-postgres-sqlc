@@ -256,9 +256,10 @@ describe('form generation', () => {
 
     const mockSubmit = vitest.fn()
     const mockSubmitWithErrors = vitest.fn()
+
     const { container, baseElement } = render(
       <FormProvider {...form.current}>
-        <DynamicForm<TestTypes.DemoWorkItemCreateRequest, 'base.metadata'>
+        <DynamicForm<TestTypes.DemoWorkItemCreateRequest, 'base.metadata' | 'demoProject'>
           onSubmit={(e) => {
             e.preventDefault()
             form.current.handleSubmit(
@@ -291,7 +292,7 @@ describe('form generation', () => {
               'base.items.items': 'items',
               'base.items.userId': 'user',
               'base.workItemTypeID': 'workItemTypeID',
-              demoProject: null, // won't render title
+              // demoProject: null, // won't render title
               'demoProject.lastMessageAt': 'lastMessageAt',
               'demoProject.line': 'line',
               'demoProject.ref': 'ref',

@@ -169,6 +169,10 @@ export type OptionalKeys<T> = {
   [K in keyof T]-?: T extends Record<K, T[K]> ? never : K
 }[keyof T]
 
+export type AllKeysMandatory<T> = {
+  [K in keyof T]-?: T[K]
+}
+
 export type RequiredKeys<T> = {
   [K in keyof T]-?: T extends Record<K, T[K]> ? K : never
 }[keyof T] &
