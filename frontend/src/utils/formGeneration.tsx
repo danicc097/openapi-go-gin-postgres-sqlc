@@ -278,7 +278,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
         <DynamicFormErrorCallout />
         <form
           onSubmit={(e) => {
-            formSlice.setCalloutWarnings(formName, [])
+            formSlice.resetCustomWarnings(formName)
             onSubmit(e)
           }}
           css={css`
@@ -1162,12 +1162,14 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
     return selectOptions.formValueTransformer(option) === formValue
   })
 
-  // FIXME: duplicated messages because of strict mode
+  // FIXME: duplicated messages found when in strict mode
   // should use formField here as well and only append messages if they're not the same
   if (formValue !== null && formValue !== undefined && selectedOption === undefined) {
     const message = `${itemName} "${formValue}" does not exist and has been removed`
-    formSlice.setCalloutWarnings(formName, concat(formSlice.form[formName]?.calloutWarnings ?? [], message))
-    form.setValue(formField, null)
+    // else inf loop. we could unregister - direct form changes work - but state updates are lost (e.g. api call updates possible values) so its a no go
+    if (formSlice.form[formName]?.customWarnings[formField] !== message) {
+      formSlice.setCustomWarning(formName, formField, message)
+    }
   }
 
   const comboboxOptions = selectOptions.values

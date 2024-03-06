@@ -15,7 +15,7 @@ export type CalloutWarning = string
 
 interface Form {
   calloutErrors: CalloutError[]
-  calloutWarnings: CalloutWarning[]
+  customWarnings: Record<string, string | null>
   // indexed by formField. Used for errors that aren't registered in react hook form
   customErrors: Record<string, string | null>
 }
@@ -24,16 +24,14 @@ interface FormState {
   form: {
     [formName: string]: Form
   }
-  setCalloutWarnings: (formName: string, warning: CalloutWarning[]) => void
   setCalloutErrors: (formName: string, error: CalloutError[]) => void
-  // TODO:
-  // setCustomWarning: (formName: string, formField: string, warning: string | null) => void
-  // resetCustomWarnings: (formName: string) => void
+  setCustomWarning: (formName: string, formField: string, warning: string | null) => void
+  resetCustomWarnings: (formName: string) => void
   setCustomError: (formName: string, formField: string, error: string | null) => void
   resetCustomErrors: (formName: string) => void
 }
 
-const initialForm: Form = { calloutErrors: [], calloutWarnings: [], customErrors: {} }
+const initialForm: Form = { calloutErrors: [], customWarnings: {}, customErrors: {} }
 
 const useFormSlice = create<FormState>()(
   devtools(
@@ -41,85 +39,88 @@ const useFormSlice = create<FormState>()(
     (set) => {
       return {
         form: {},
-        setCalloutWarnings: (formName: string, warnings: CalloutWarning[]) =>
-          set(
-            (state) => {
-              const form = state.form[formName] || initialForm
-
-              return {
-                ...state,
-                form: {
-                  ...state.form,
-                  [formName]: {
-                    ...form,
-                    calloutWarnings: warnings,
-                  },
-                },
-              }
-            },
-            false,
-            `setCalloutWarning`,
-          ),
         setCalloutErrors: (formName: string, errors: CalloutError[]) =>
-          set(
-            (state) => {
-              const form = state.form[formName] || initialForm
+          set((state) => {
+            const form = state.form[formName] || initialForm
 
-              return {
-                ...state,
-                form: {
-                  ...state.form,
-                  [formName]: {
-                    ...form,
-                    calloutErrors: errors,
-                  },
+            return {
+              ...state,
+              form: {
+                ...state.form,
+                [formName]: {
+                  ...form,
+                  calloutErrors: errors,
                 },
-              }
-            },
-            false,
-            `setCalloutErrors`,
-          ),
+              },
+            }
+          }),
         setCustomError: (formName: string, formField: string, error: string | null) =>
-          set(
-            (state) => {
-              const form = state.form[formName] || initialForm
+          set((state) => {
+            const form = state.form[formName] || initialForm
 
-              return {
-                ...state,
-                form: {
-                  ...state.form,
-                  [formName]: {
-                    ...form,
-                    customErrors: {
-                      ...form.customErrors,
-                      [formField]: error,
-                    },
+            return {
+              ...state,
+              form: {
+                ...state.form,
+                [formName]: {
+                  ...form,
+                  customErrors: {
+                    ...form.customErrors,
+                    [formField]: error,
                   },
                 },
-              }
-            },
-            false,
-            `setCalloutErrors`,
-          ),
+              },
+            }
+          }),
         resetCustomErrors: (formName: string) =>
-          set(
-            (state) => {
-              const form = state.form[formName] || initialForm
+          set((state) => {
+            const form = state.form[formName] || initialForm
 
-              return {
-                ...state,
-                form: {
-                  ...state.form,
-                  [formName]: {
-                    ...form,
-                    customErrors: {},
+            return {
+              ...state,
+              form: {
+                ...state.form,
+                [formName]: {
+                  ...form,
+                  customErrors: {},
+                },
+              },
+            }
+          }),
+
+        setCustomWarning: (formName: string, formField: string, warning: string | null) =>
+          set((state) => {
+            const form = state.form[formName] || initialForm
+
+            return {
+              ...state,
+              form: {
+                ...state.form,
+                [formName]: {
+                  ...form,
+                  customWarnings: {
+                    ...form.customWarnings,
+                    [formField]: warning,
                   },
                 },
-              }
-            },
-            false,
-            `setCalloutErrors`,
-          ),
+              },
+            }
+          }),
+        resetCustomWarnings: (formName: string) =>
+          set((state) => {
+            const form = state.form[formName] || initialForm
+
+            return {
+              ...state,
+              form: {
+                ...state.form,
+                [formName]: {
+                  ...form,
+                  customWarnings: {},
+                },
+              },
+            }
+          }),
       }
     },
     // { version: 3, name: FORM_SLICE_PERSIST_KEY },

@@ -237,7 +237,7 @@ export default function DemoGeneratedForm() {
       reopened: true, // TODO: test it does work (requires no defaultValue being set on checkbox component)
     },
     members: [
-      { userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65', role: null as any /** test defaultValues */ },
+      { userID: '81c662f2-c014-4681-a75a-4a56a0d87a93', role: null as any /** test defaultValues */ },
       { role: 'preparer', userID: 'bad userID' },
     ],
   }

@@ -33,12 +33,12 @@ export default function DynamicFormErrorCallout() {
 
   const title = extractCalloutTitle()
 
-  const warnings = calloutWarnings ?? []
+  const warnings = calloutWarnings ? entries(calloutWarnings).map(([schemaKey, warning], idx) => warning) : []
   const errors = concat(
     extractCalloutErrors(),
     entries(rhfErrors).map(([schemaKey, error], idx) => {
       let message = lowerFirst(error.message) // lowerCase breaks regexes
-      schemaKey = schemaKey.replace(/\.\d+$/, '') as SchemaKey // FIXME: in flattener instead
+      schemaKey = schemaKey.replace(/\.\d+$/, '') as SchemaKey // TODO: in flattener instead
 
       console.log({ schemaKey, error })
       const itemName = options.labels[schemaKey] || ''

@@ -10,7 +10,7 @@ export const useCalloutErrors = (formName: string) => {
   const formSlice = useFormSlice()
   const calloutErrors = formSlice.form[formName]?.calloutErrors
   const customErrors = formSlice.form[formName]?.customErrors
-  const calloutWarnings = formSlice.form[formName]?.calloutWarnings
+  const calloutWarnings = formSlice.form[formName]?.customWarnings
   const setCalloutErrors = (errors: CalloutError[]) => formSlice.setCalloutErrors(formName, errors)
 
   const extractCalloutErrors = () => {
