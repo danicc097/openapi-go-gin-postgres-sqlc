@@ -34,7 +34,6 @@ export default function DynamicFormErrorCallout() {
   const title = extractCalloutTitle()
 
   const warnings = calloutWarnings ?? []
-  console.log({ warnings })
   const errors = concat(
     extractCalloutErrors(),
     entries(rhfErrors).map(([schemaKey, error], idx) => {

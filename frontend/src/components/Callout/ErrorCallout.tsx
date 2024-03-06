@@ -1,4 +1,4 @@
-import { Alert } from '@mantine/core'
+import { Alert, List } from '@mantine/core'
 import { IconAlertCircle } from '@tabler/icons'
 
 interface ErrorCalloutProps {
@@ -11,11 +11,11 @@ export default function ErrorCallout({ title, errors }: ErrorCalloutProps) {
 
   return (
     <Alert mb={12} icon={<IconAlertCircle size={16} />} title={title} color="red">
-      {errors.map((error, i) => (
-        <div role="alert" key={i}>
-          {error}
-        </div>
-      ))}
+      <List spacing="xs" size="sm" center mr={60}>
+        {errors.map((error, i) => (
+          <List.Item key={i}>{error}</List.Item>
+        ))}
+      </List>
     </Alert>
   )
 }

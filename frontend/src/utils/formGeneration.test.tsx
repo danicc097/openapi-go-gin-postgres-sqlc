@@ -30,6 +30,67 @@ import { User } from 'src/gen/model'
 import { schema, refPattern, schemaFields } from 'src/utils/jsonSchema.test'
 import { render } from 'src/test-utils/render'
 
+const dataTestIds = [
+  'demoWorkItemCreateForm',
+  'demoWorkItemCreateForm-tagIDs-title',
+  'demoWorkItemCreateForm-tagIDs-add-button',
+  'demoWorkItemCreateForm-tagIDs-0',
+  'demoWorkItemCreateForm-tagIDs-remove-button-0',
+  'demoWorkItemCreateForm-tagIDs-1',
+  'demoWorkItemCreateForm-tagIDs-remove-button-1',
+  'demoWorkItemCreateForm-tagIDs-2',
+  'demoWorkItemCreateForm-tagIDs-remove-button-2',
+  'demoWorkItemCreateForm-tagIDsMultiselect', // multiselects dont have titles - using vanilla input label
+  'demoWorkItemCreateForm-members-title',
+  'demoWorkItemCreateForm-members-add-button',
+  'demoWorkItemCreateForm-members-remove-button-0',
+  'demoWorkItemCreateForm-members.0.role',
+  'demoWorkItemCreateForm-members.0.userID',
+  'demoWorkItemCreateForm-members-remove-button-1',
+  'demoWorkItemCreateForm-members.1.role',
+  'demoWorkItemCreateForm-members.1.userID',
+  'demoWorkItemCreateForm-base-title',
+  'demoWorkItemCreateForm-base.closed',
+  'demoWorkItemCreateForm-base.description',
+  'demoWorkItemCreateForm-base.kanbanStepID',
+  'demoWorkItemCreateForm-base.targetDate',
+  'demoWorkItemCreateForm-base.teamID',
+  'demoWorkItemCreateForm-base.items-title',
+  'demoWorkItemCreateForm-base.items-add-button',
+  'demoWorkItemCreateForm-base.items-remove-button-0',
+  'demoWorkItemCreateForm-base.items.0.name',
+  'demoWorkItemCreateForm-base.items.0.userId-title',
+  'demoWorkItemCreateForm-base.items.0.userId-add-button',
+  'demoWorkItemCreateForm-base.items.0.items-title',
+  'demoWorkItemCreateForm-base.items.0.items-add-button',
+  'demoWorkItemCreateForm-base.items.0.items-0',
+  'demoWorkItemCreateForm-base.items.0.items-remove-button-0',
+  'demoWorkItemCreateForm-base.items.0.items-1',
+  'demoWorkItemCreateForm-base.items.0.items-remove-button-1',
+  'demoWorkItemCreateForm-base.items-remove-button-1',
+  'demoWorkItemCreateForm-base.items.1.name',
+  'demoWorkItemCreateForm-base.items.1.userId-title',
+  'demoWorkItemCreateForm-base.items.1.userId-add-button',
+  'demoWorkItemCreateForm-base.items.1.items-title',
+  'demoWorkItemCreateForm-base.items.1.items-add-button',
+  'demoWorkItemCreateForm-base.items.1.items-0',
+  'demoWorkItemCreateForm-base.items.1.items-remove-button-0',
+  'demoWorkItemCreateForm-base.items.1.items-1',
+  'demoWorkItemCreateForm-base.items.1.items-remove-button-1',
+  'demoWorkItemCreateForm-base.workItemTypeID',
+  'demoWorkItemCreateForm-demoProject.lastMessageAt',
+  'demoWorkItemCreateForm-demoProject.line',
+  'demoWorkItemCreateForm-demoProject.ref',
+  'demoWorkItemCreateForm-demoProject.reopened',
+  'demoWorkItemCreateForm-demoProject.workItemID',
+  'demoWorkItemCreateForm-search--members.0.userID',
+  'demoWorkItemCreateForm-search--members.1.userID',
+  'demoWorkItemCreateForm-search--tagIDsMultiselect',
+  'demoWorkItemCreateForm-tagIDsMultiselect-remove--0',
+  'demoWorkItemCreateForm-tagIDsMultiselect-remove--aaaa',
+  'demoWorkItemCreateForm-tagIDsMultiselect-remove--2',
+]
+
 const tags = [...Array(10)].map((x, i) => {
   return {
     name: `tag #${i}`,
@@ -39,7 +100,9 @@ const tags = [...Array(10)].map((x, i) => {
     description: 'description',
   }
 })
+
 const badId = 'aaaa'
+
 const formInitialValues = {
   base: {
     items: [
@@ -94,7 +157,7 @@ describe('form generation', () => {
     const mockSubmit = vitest.fn()
     const mockSubmitWithErrors = vitest.fn()
 
-    const { container, baseElement } = render(
+    render(
       <FormProvider {...form.current}>
         <DynamicForm<TestTypes.DemoWorkItemCreateRequest, 'base.metadata' | 'demoProject'>
           onSubmit={(e) => {
@@ -196,66 +259,8 @@ describe('form generation', () => {
       </FormProvider>,
     )
 
-    const dataTestIds = [
-      'demoWorkItemCreateForm',
-      'demoWorkItemCreateForm-tagIDs-title',
-      'demoWorkItemCreateForm-tagIDs-add-button',
-      'demoWorkItemCreateForm-tagIDs-0',
-      'demoWorkItemCreateForm-tagIDs-remove-button-0',
-      'demoWorkItemCreateForm-tagIDs-1',
-      'demoWorkItemCreateForm-tagIDs-remove-button-1',
-      'demoWorkItemCreateForm-tagIDs-2',
-      'demoWorkItemCreateForm-tagIDs-remove-button-2',
-      'demoWorkItemCreateForm-tagIDsMultiselect', // multiselects dont have titles - using vanilla input label
-      'demoWorkItemCreateForm-members-title',
-      'demoWorkItemCreateForm-members-add-button',
-      'demoWorkItemCreateForm-members-remove-button-0',
-      'demoWorkItemCreateForm-members.0.role',
-      'demoWorkItemCreateForm-members.0.userID',
-      'demoWorkItemCreateForm-members-remove-button-1',
-      'demoWorkItemCreateForm-members.1.role',
-      'demoWorkItemCreateForm-members.1.userID',
-      'demoWorkItemCreateForm-base-title',
-      'demoWorkItemCreateForm-base.closed',
-      'demoWorkItemCreateForm-base.description',
-      'demoWorkItemCreateForm-base.kanbanStepID',
-      'demoWorkItemCreateForm-base.targetDate',
-      'demoWorkItemCreateForm-base.teamID',
-      'demoWorkItemCreateForm-base.items-title',
-      'demoWorkItemCreateForm-base.items-add-button',
-      'demoWorkItemCreateForm-base.items-remove-button-0',
-      'demoWorkItemCreateForm-base.items.0.name',
-      'demoWorkItemCreateForm-base.items.0.userId-title',
-      'demoWorkItemCreateForm-base.items.0.userId-add-button',
-      'demoWorkItemCreateForm-base.items.0.items-title',
-      'demoWorkItemCreateForm-base.items.0.items-add-button',
-      'demoWorkItemCreateForm-base.items.0.items-0',
-      'demoWorkItemCreateForm-base.items.0.items-remove-button-0',
-      'demoWorkItemCreateForm-base.items.0.items-1',
-      'demoWorkItemCreateForm-base.items.0.items-remove-button-1',
-      'demoWorkItemCreateForm-base.items-remove-button-1',
-      'demoWorkItemCreateForm-base.items.1.name',
-      'demoWorkItemCreateForm-base.items.1.userId-title',
-      'demoWorkItemCreateForm-base.items.1.userId-add-button',
-      'demoWorkItemCreateForm-base.items.1.items-title',
-      'demoWorkItemCreateForm-base.items.1.items-add-button',
-      'demoWorkItemCreateForm-base.items.1.items-0',
-      'demoWorkItemCreateForm-base.items.1.items-remove-button-0',
-      'demoWorkItemCreateForm-base.items.1.items-1',
-      'demoWorkItemCreateForm-base.items.1.items-remove-button-1',
-      'demoWorkItemCreateForm-base.workItemTypeID',
-      'demoWorkItemCreateForm-demoProject.lastMessageAt',
-      'demoWorkItemCreateForm-demoProject.line',
-      'demoWorkItemCreateForm-demoProject.ref',
-      'demoWorkItemCreateForm-demoProject.reopened',
-      'demoWorkItemCreateForm-demoProject.workItemID',
-      'demoWorkItemCreateForm-search--members.0.userID',
-      'demoWorkItemCreateForm-search--members.1.userID',
-      'demoWorkItemCreateForm-search--tagIDsMultiselect',
-      'demoWorkItemCreateForm-tagIDsMultiselect-remove--0',
-      'demoWorkItemCreateForm-tagIDsMultiselect-remove--aaaa',
-      'demoWorkItemCreateForm-tagIDsMultiselect-remove--2',
-    ]
+    const submitButton = await screen.findByRole('button', { name: /Submit/i })
+    expect(submitButton).toBeInTheDocument()
 
     const actualIds = [...document.querySelectorAll('[data-testid^="demoWorkItemCreateForm"]')].map((e) =>
       e.getAttribute('data-testid'),
@@ -277,13 +282,13 @@ describe('form generation', () => {
     expect(checkbox).not.toBeChecked()
     checkbox.click()
     expect(checkbox).toBeChecked()
-    const formElement = screen.getByTestId(formName)
-    const submitButton = screen.getByRole('button', { name: /Submit/ })
+
+    expect(screen.getAllByRole('alert')).toHaveLength(1) // warning callout before submit
     await act(() => {
       submitButton.click()
     })
 
-    expect(screen.getAllByRole('alert')).toHaveLength(3) // incl box
+    expect(screen.getAllByRole('alert')).toHaveLength(1) // error callout only after submit
     expect(mockSubmitWithErrors).toBeCalledTimes(1)
     expect(mockSubmit).toBeCalledTimes(0)
     expect(mockSubmitWithErrors.mock.calls[0]).toMatchObject([
@@ -323,13 +328,20 @@ describe('form generation', () => {
     await userEvent.click(firstUserIDInput, { pointerState: await userEvent.pointer({ target: firstUserIDInput }) }) // show opt with search filter
     expect(screen.getByRole('option', { name: email, hidden: false }).getAttribute('aria-selected')).toBe('true')
 
-    /**
-     * test final form values
-     *  */
-    const badTagCloseButton = screen.getByTestId('demoWorkItemCreateForm-tagIDsMultiselect-remove--aaaa') // index starts at one
+    const badTagCloseButton = screen.getByTestId('demoWorkItemCreateForm-tagIDsMultiselect-remove--aaaa')
     await waitFor(async () => {
       await userEvent.click(badTagCloseButton, { pointerState: await userEvent.pointer({ target: badTagCloseButton }) })
     })
+
+    // test remove entry in array of objects
+    const closeButton = screen.getByTestId('demoWorkItemCreateForm-members-remove-button-1')
+    await waitFor(async () => {
+      await userEvent.click(closeButton, { pointerState: await userEvent.pointer({ target: closeButton }) })
+    })
+
+    /**
+     * test final form values
+     *  */
     await act(() => {
       submitButton.click()
     })
@@ -340,7 +352,8 @@ describe('form generation', () => {
     const newFormValues = formInitialValues
     newFormValues.tagIDsMultiselect = [0, 2, 4]
     newFormValues.members![0]!.role = 'preparer' // nested defaultValues if empty
-    newFormValues.members![0]!.userID = 'a446259c-1083-4212-98fe-bd080c41e7d9'
+    newFormValues.members![0]!.userID = 'a446259c-1083-4212-98fe-bd080c41e7d9' // user 9
+    newFormValues.members?.splice(1, 1) // removed
     newFormValues.demoProject.ref = '99998888'
 
     expect(mockSubmit.mock.calls[0]).toStrictEqual([newFormValues])

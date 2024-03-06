@@ -96,7 +96,6 @@ import { nameInitials, sentenceCase } from 'src/utils/strings'
 import { useFormSlice } from 'src/slices/form'
 import RandExp, { randexp } from 'randexp'
 import type { FormField, SchemaKey } from 'src/utils/form'
-import { useCalloutErrors } from 'src/components/Callout/useCalloutErrors'
 import { inputBuilder, selectOptionsBuilder, useDynamicFormContext } from 'src/utils/formGeneration.context'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
@@ -278,7 +277,10 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
         <FormData />
         <DynamicFormErrorCallout />
         <form
-          onSubmit={onSubmit}
+          onSubmit={(e) => {
+            formSlice.setCalloutWarnings(formName, [])
+            onSubmit(e)
+          }}
           css={css`
             min-width: 100%;
           `}

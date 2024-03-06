@@ -1,4 +1,5 @@
-import { Alert } from '@mantine/core'
+import { css } from '@emotion/react'
+import { Alert, List } from '@mantine/core'
 import { IconAlertCircle } from '@tabler/icons'
 
 interface WarningCalloutProps {
@@ -11,11 +12,11 @@ export default function WarningCallout({ title, warnings }: WarningCalloutProps)
 
   return (
     <Alert mb={12} icon={<IconAlertCircle size={16} />} title={title} color="yellow">
-      {warnings.map((warning, i) => (
-        <div role="alert" key={i}>
-          {warning}
-        </div>
-      ))}
+      <List spacing="xs" size="sm" center mr={60}>
+        {warnings.map((warning, i) => (
+          <List.Item key={i}>{warning}</List.Item>
+        ))}
+      </List>
     </Alert>
   )
 }
