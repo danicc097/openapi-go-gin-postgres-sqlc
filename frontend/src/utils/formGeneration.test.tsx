@@ -199,7 +199,7 @@ describe('form generation', () => {
               'members.role': 'role',
               'members.userID': 'User',
               tagIDs: 'tagIDs',
-              tagIDsMultiselect: 'tagIDsMultiselect',
+              tagIDsMultiselect: 'Tag IDs',
             },
             defaultValues: {
               'demoProject.line': '43121234', // should be ignored since it's set
@@ -278,15 +278,13 @@ describe('form generation', () => {
     // for better testing see : https://claritydev.net/blog/testing-react-hook-form-with-react-testing-library
     const checkbox = screen.getByTestId('demoWorkItemCreateForm-demoProject.reopened')
     expect(checkbox).toBeChecked()
-    checkbox.click()
+    await act(() => checkbox.click())
     expect(checkbox).not.toBeChecked()
-    checkbox.click()
+    await act(() => checkbox.click())
     expect(checkbox).toBeChecked()
 
     expect(screen.getAllByRole('alert')).toHaveLength(1) // warning callout before submit
-    await act(() => {
-      submitButton.click()
-    })
+    await act(() => submitButton.click())
 
     expect(screen.getAllByRole('alert')).toHaveLength(1) // error callout only after submit
     expect(mockSubmitWithErrors).toBeCalledTimes(1)
@@ -342,9 +340,7 @@ describe('form generation', () => {
     /**
      * test final form values
      *  */
-    await act(() => {
-      submitButton.click()
-    })
+    await act(() => submitButton.click())
 
     expect(screen.queryAllByRole('alert')).toHaveLength(0)
     expect(mockSubmit).toBeCalledTimes(1)

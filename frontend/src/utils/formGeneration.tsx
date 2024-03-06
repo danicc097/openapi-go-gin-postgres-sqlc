@@ -1290,12 +1290,12 @@ function CustomPill({ value, schemaKey, handleValueRemove, formField, ...props }
   if (!option) {
     console.log(`${value} is not a valid ${singularize(lowerCase(itemName))}`)
 
-    // explicitly set wrong values so that error positions make sense and the user knows there is a wrong form value beforehand
+    // for multiselects, explicitly set wrong values so that error positions make sense and the user knows there is a wrong form value beforehand
     // instead of us deleting it implicitly
     invalidValue = value
   }
 
-  let color = '#bbbbbb' // for invalid values
+  let color = '#bbbbbb'
   if (selectOptions?.labelColor && !invalidValue) {
     color = selectOptions?.labelColor(option)
   }
