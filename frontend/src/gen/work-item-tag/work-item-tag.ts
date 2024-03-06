@@ -34,6 +34,7 @@ import type {
   WorkItemTag
 } from '../model/workItemTag'
 import { customInstance } from '../../api/mutator';
+import type { ErrorType } from '../../api/mutator';
 
 
 // eslint-disable-next-line
@@ -64,7 +65,7 @@ export const createWorkItemTag = (
   
 
 
-export const getCreateWorkItemTagMutationOptions = <TError = void | HTTPError,
+export const getCreateWorkItemTagMutationOptions = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkItemTag>>, TError,{projectName: 'demo' | 'demo_two';data: CreateWorkItemTagRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createWorkItemTag>>, TError,{projectName: 'demo' | 'demo_two';data: CreateWorkItemTagRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -85,12 +86,12 @@ export const getCreateWorkItemTagMutationOptions = <TError = void | HTTPError,
 
     export type CreateWorkItemTagMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkItemTag>>>
     export type CreateWorkItemTagMutationBody = CreateWorkItemTagRequest
-    export type CreateWorkItemTagMutationError = void | HTTPError
+    export type CreateWorkItemTagMutationError = ErrorType<void | HTTPError>
 
     /**
  * @summary create workitemtag.
  */
-export const useCreateWorkItemTag = <TError = void | HTTPError,
+export const useCreateWorkItemTag = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkItemTag>>, TError,{projectName: 'demo' | 'demo_two';data: CreateWorkItemTagRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -119,7 +120,7 @@ export const getGetWorkItemTagQueryKey = (workItemTagID: EntityIDs.WorkItemTagID
     }
 
     
-export const getGetWorkItemTagInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getWorkItemTag>>, TError = void | HTTPError>(workItemTagID: EntityIDs.WorkItemTagID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItemTag>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetWorkItemTagInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getWorkItemTag>>, TError = ErrorType<void | HTTPError>>(workItemTagID: EntityIDs.WorkItemTagID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItemTag>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -140,12 +141,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetWorkItemTagInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItemTag>>>
-export type GetWorkItemTagInfiniteQueryError = void | HTTPError
+export type GetWorkItemTagInfiniteQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary get workitemtag.
  */
-export const useGetWorkItemTagInfinite = <TData = Awaited<ReturnType<typeof getWorkItemTag>>, TError = void | HTTPError>(
+export const useGetWorkItemTagInfinite = <TData = Awaited<ReturnType<typeof getWorkItemTag>>, TError = ErrorType<void | HTTPError>>(
  workItemTagID: EntityIDs.WorkItemTagID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItemTag>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -161,7 +162,7 @@ export const useGetWorkItemTagInfinite = <TData = Awaited<ReturnType<typeof getW
 
 
 
-export const getGetWorkItemTagQueryOptions = <TData = Awaited<ReturnType<typeof getWorkItemTag>>, TError = void | HTTPError>(workItemTagID: EntityIDs.WorkItemTagID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWorkItemTag>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetWorkItemTagQueryOptions = <TData = Awaited<ReturnType<typeof getWorkItemTag>>, TError = ErrorType<void | HTTPError>>(workItemTagID: EntityIDs.WorkItemTagID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWorkItemTag>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -182,12 +183,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetWorkItemTagQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItemTag>>>
-export type GetWorkItemTagQueryError = void | HTTPError
+export type GetWorkItemTagQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary get workitemtag.
  */
-export const useGetWorkItemTag = <TData = Awaited<ReturnType<typeof getWorkItemTag>>, TError = void | HTTPError>(
+export const useGetWorkItemTag = <TData = Awaited<ReturnType<typeof getWorkItemTag>>, TError = ErrorType<void | HTTPError>>(
  workItemTagID: EntityIDs.WorkItemTagID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWorkItemTag>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -222,7 +223,7 @@ export const updateWorkItemTag = (
   
 
 
-export const getUpdateWorkItemTagMutationOptions = <TError = void | HTTPError,
+export const getUpdateWorkItemTagMutationOptions = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemTag>>, TError,{workItemTagID: EntityIDs.WorkItemTagID;data: UpdateWorkItemTagRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemTag>>, TError,{workItemTagID: EntityIDs.WorkItemTagID;data: UpdateWorkItemTagRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -243,12 +244,12 @@ export const getUpdateWorkItemTagMutationOptions = <TError = void | HTTPError,
 
     export type UpdateWorkItemTagMutationResult = NonNullable<Awaited<ReturnType<typeof updateWorkItemTag>>>
     export type UpdateWorkItemTagMutationBody = UpdateWorkItemTagRequest
-    export type UpdateWorkItemTagMutationError = void | HTTPError
+    export type UpdateWorkItemTagMutationError = ErrorType<void | HTTPError>
 
     /**
  * @summary update workitemtag.
  */
-export const useUpdateWorkItemTag = <TError = void | HTTPError,
+export const useUpdateWorkItemTag = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkItemTag>>, TError,{workItemTagID: EntityIDs.WorkItemTagID;data: UpdateWorkItemTagRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -272,7 +273,7 @@ export const deleteWorkItemTag = (
   
 
 
-export const getDeleteWorkItemTagMutationOptions = <TError = HTTPError,
+export const getDeleteWorkItemTagMutationOptions = <TError = ErrorType<HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteWorkItemTag>>, TError,{workItemTagID: EntityIDs.WorkItemTagID}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteWorkItemTag>>, TError,{workItemTagID: EntityIDs.WorkItemTagID}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -293,12 +294,12 @@ export const getDeleteWorkItemTagMutationOptions = <TError = HTTPError,
 
     export type DeleteWorkItemTagMutationResult = NonNullable<Awaited<ReturnType<typeof deleteWorkItemTag>>>
     
-    export type DeleteWorkItemTagMutationError = HTTPError
+    export type DeleteWorkItemTagMutationError = ErrorType<HTTPError>
 
     /**
  * @summary delete workitemtag.
  */
-export const useDeleteWorkItemTag = <TError = HTTPError,
+export const useDeleteWorkItemTag = <TError = ErrorType<HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteWorkItemTag>>, TError,{workItemTagID: EntityIDs.WorkItemTagID}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 

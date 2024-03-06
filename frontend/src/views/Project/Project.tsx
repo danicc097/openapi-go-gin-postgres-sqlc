@@ -75,8 +75,9 @@ export default function Project() {
                     onError(error, variables, context) {
                       if (!error) return
 
-                      // FIXME: bad typing, should be regular axios error, with httperror in data
-                      console.log({ onError: error.response.data })
+                      // FIXME: backend appends extraneous json to response
+                      // {"detail":"commit unexpectedly resulted in rollback","error":"could not commit transaction (rollback error: tx is closed): commit unexpectedly resulted in rollback","loc":null,"status":500,"title":"Database error","type":"Private"}
+                      console.log({ onError: error.response?.data })
                     },
                   },
                 )

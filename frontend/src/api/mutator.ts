@@ -35,3 +35,7 @@ export const customInstance = <T>(config: AxiosRequestConfig, options?: AxiosReq
 
   return promise
 }
+
+// must be called ErrorType for orval to replace. other options:
+// https://github.com/anymaniax/orval/blob/b63ffe671e5eeb4e06730add9cb1b947b59798f5/docs/src/pages/guides/custom-axios.md?plain=1#L50
+export type ErrorType<Error> = AxiosError<HTTPError>

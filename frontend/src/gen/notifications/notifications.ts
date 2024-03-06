@@ -28,6 +28,7 @@ import type {
   PaginatedNotificationsResponse
 } from '../model/paginatedNotificationsResponse'
 import { customInstance } from '../../api/mutator';
+import type { ErrorType } from '../../api/mutator';
 
 
 // eslint-disable-next-line
@@ -61,7 +62,7 @@ export const getGetPaginatedNotificationsQueryKey = (params: GetPaginatedNotific
     }
 
     
-export const getGetPaginatedNotificationsInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getPaginatedNotifications>>, TError = void | HTTPError>(params: GetPaginatedNotificationsParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedNotifications>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetPaginatedNotificationsInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getPaginatedNotifications>>, TError = ErrorType<void | HTTPError>>(params: GetPaginatedNotificationsParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedNotifications>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -82,12 +83,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetPaginatedNotificationsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getPaginatedNotifications>>>
-export type GetPaginatedNotificationsInfiniteQueryError = void | HTTPError
+export type GetPaginatedNotificationsInfiniteQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary Get paginated user notifications
  */
-export const useGetPaginatedNotificationsInfinite = <TData = Awaited<ReturnType<typeof getPaginatedNotifications>>, TError = void | HTTPError>(
+export const useGetPaginatedNotificationsInfinite = <TData = Awaited<ReturnType<typeof getPaginatedNotifications>>, TError = ErrorType<void | HTTPError>>(
  params: GetPaginatedNotificationsParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedNotifications>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -103,7 +104,7 @@ export const useGetPaginatedNotificationsInfinite = <TData = Awaited<ReturnType<
 
 
 
-export const getGetPaginatedNotificationsQueryOptions = <TData = Awaited<ReturnType<typeof getPaginatedNotifications>>, TError = void | HTTPError>(params: GetPaginatedNotificationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPaginatedNotifications>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetPaginatedNotificationsQueryOptions = <TData = Awaited<ReturnType<typeof getPaginatedNotifications>>, TError = ErrorType<void | HTTPError>>(params: GetPaginatedNotificationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPaginatedNotifications>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -124,12 +125,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetPaginatedNotificationsQueryResult = NonNullable<Awaited<ReturnType<typeof getPaginatedNotifications>>>
-export type GetPaginatedNotificationsQueryError = void | HTTPError
+export type GetPaginatedNotificationsQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary Get paginated user notifications
  */
-export const useGetPaginatedNotifications = <TData = Awaited<ReturnType<typeof getPaginatedNotifications>>, TError = void | HTTPError>(
+export const useGetPaginatedNotifications = <TData = Awaited<ReturnType<typeof getPaginatedNotifications>>, TError = ErrorType<void | HTTPError>>(
  params: GetPaginatedNotificationsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPaginatedNotifications>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {

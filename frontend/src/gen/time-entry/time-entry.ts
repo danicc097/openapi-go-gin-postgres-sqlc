@@ -34,6 +34,7 @@ import type {
   UpdateTimeEntryRequest
 } from '../model/updateTimeEntryRequest'
 import { customInstance } from '../../api/mutator';
+import type { ErrorType } from '../../api/mutator';
 
 
 // eslint-disable-next-line
@@ -63,7 +64,7 @@ export const createTimeEntry = (
   
 
 
-export const getCreateTimeEntryMutationOptions = <TError = void | HTTPError,
+export const getCreateTimeEntryMutationOptions = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTimeEntry>>, TError,{data: CreateTimeEntryRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createTimeEntry>>, TError,{data: CreateTimeEntryRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -84,12 +85,12 @@ export const getCreateTimeEntryMutationOptions = <TError = void | HTTPError,
 
     export type CreateTimeEntryMutationResult = NonNullable<Awaited<ReturnType<typeof createTimeEntry>>>
     export type CreateTimeEntryMutationBody = CreateTimeEntryRequest
-    export type CreateTimeEntryMutationError = void | HTTPError
+    export type CreateTimeEntryMutationError = ErrorType<void | HTTPError>
 
     /**
  * @summary create time entry.
  */
-export const useCreateTimeEntry = <TError = void | HTTPError,
+export const useCreateTimeEntry = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTimeEntry>>, TError,{data: CreateTimeEntryRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -118,7 +119,7 @@ export const getGetTimeEntryQueryKey = (timeEntryID: EntityIDs.TimeEntryID,) => 
     }
 
     
-export const getGetTimeEntryInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getTimeEntry>>, TError = void | HTTPError>(timeEntryID: EntityIDs.TimeEntryID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTimeEntry>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetTimeEntryInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getTimeEntry>>, TError = ErrorType<void | HTTPError>>(timeEntryID: EntityIDs.TimeEntryID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTimeEntry>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -139,12 +140,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetTimeEntryInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTimeEntry>>>
-export type GetTimeEntryInfiniteQueryError = void | HTTPError
+export type GetTimeEntryInfiniteQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary get time-entry.
  */
-export const useGetTimeEntryInfinite = <TData = Awaited<ReturnType<typeof getTimeEntry>>, TError = void | HTTPError>(
+export const useGetTimeEntryInfinite = <TData = Awaited<ReturnType<typeof getTimeEntry>>, TError = ErrorType<void | HTTPError>>(
  timeEntryID: EntityIDs.TimeEntryID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTimeEntry>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -160,7 +161,7 @@ export const useGetTimeEntryInfinite = <TData = Awaited<ReturnType<typeof getTim
 
 
 
-export const getGetTimeEntryQueryOptions = <TData = Awaited<ReturnType<typeof getTimeEntry>>, TError = void | HTTPError>(timeEntryID: EntityIDs.TimeEntryID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTimeEntry>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetTimeEntryQueryOptions = <TData = Awaited<ReturnType<typeof getTimeEntry>>, TError = ErrorType<void | HTTPError>>(timeEntryID: EntityIDs.TimeEntryID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTimeEntry>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -181,12 +182,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetTimeEntryQueryResult = NonNullable<Awaited<ReturnType<typeof getTimeEntry>>>
-export type GetTimeEntryQueryError = void | HTTPError
+export type GetTimeEntryQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary get time-entry.
  */
-export const useGetTimeEntry = <TData = Awaited<ReturnType<typeof getTimeEntry>>, TError = void | HTTPError>(
+export const useGetTimeEntry = <TData = Awaited<ReturnType<typeof getTimeEntry>>, TError = ErrorType<void | HTTPError>>(
  timeEntryID: EntityIDs.TimeEntryID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTimeEntry>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -221,7 +222,7 @@ export const updateTimeEntry = (
   
 
 
-export const getUpdateTimeEntryMutationOptions = <TError = void | HTTPError,
+export const getUpdateTimeEntryMutationOptions = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTimeEntry>>, TError,{timeEntryID: EntityIDs.TimeEntryID;data: UpdateTimeEntryRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateTimeEntry>>, TError,{timeEntryID: EntityIDs.TimeEntryID;data: UpdateTimeEntryRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -242,12 +243,12 @@ export const getUpdateTimeEntryMutationOptions = <TError = void | HTTPError,
 
     export type UpdateTimeEntryMutationResult = NonNullable<Awaited<ReturnType<typeof updateTimeEntry>>>
     export type UpdateTimeEntryMutationBody = UpdateTimeEntryRequest
-    export type UpdateTimeEntryMutationError = void | HTTPError
+    export type UpdateTimeEntryMutationError = ErrorType<void | HTTPError>
 
     /**
  * @summary update time-entry.
  */
-export const useUpdateTimeEntry = <TError = void | HTTPError,
+export const useUpdateTimeEntry = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTimeEntry>>, TError,{timeEntryID: EntityIDs.TimeEntryID;data: UpdateTimeEntryRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -271,7 +272,7 @@ export const deleteTimeEntry = (
   
 
 
-export const getDeleteTimeEntryMutationOptions = <TError = HTTPError,
+export const getDeleteTimeEntryMutationOptions = <TError = ErrorType<HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTimeEntry>>, TError,{timeEntryID: EntityIDs.TimeEntryID}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteTimeEntry>>, TError,{timeEntryID: EntityIDs.TimeEntryID}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -292,12 +293,12 @@ export const getDeleteTimeEntryMutationOptions = <TError = HTTPError,
 
     export type DeleteTimeEntryMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTimeEntry>>>
     
-    export type DeleteTimeEntryMutationError = HTTPError
+    export type DeleteTimeEntryMutationError = ErrorType<HTTPError>
 
     /**
  * @summary delete time-entry.
  */
-export const useDeleteTimeEntry = <TError = HTTPError,
+export const useDeleteTimeEntry = <TError = ErrorType<HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTimeEntry>>, TError,{timeEntryID: EntityIDs.TimeEntryID}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 

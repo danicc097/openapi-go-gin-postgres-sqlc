@@ -22,6 +22,7 @@ import type {
   HTTPError
 } from '../model/hTTPError'
 import { customInstance } from '../../api/mutator';
+import type { ErrorType } from '../../api/mutator';
 
 
 // eslint-disable-next-line
@@ -54,7 +55,7 @@ export const getPingQueryKey = () => {
     }
 
     
-export const getPingInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof ping>>, TError = void | HTTPError>( options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getPingInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof ping>>, TError = ErrorType<void | HTTPError>>( options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -75,12 +76,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type PingInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof ping>>>
-export type PingInfiniteQueryError = void | HTTPError
+export type PingInfiniteQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary Ping pongs
  */
-export const usePingInfinite = <TData = Awaited<ReturnType<typeof ping>>, TError = void | HTTPError>(
+export const usePingInfinite = <TData = Awaited<ReturnType<typeof ping>>, TError = ErrorType<void | HTTPError>>(
   options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -96,7 +97,7 @@ export const usePingInfinite = <TData = Awaited<ReturnType<typeof ping>>, TError
 
 
 
-export const getPingQueryOptions = <TData = Awaited<ReturnType<typeof ping>>, TError = void | HTTPError>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getPingQueryOptions = <TData = Awaited<ReturnType<typeof ping>>, TError = ErrorType<void | HTTPError>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -117,12 +118,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type PingQueryResult = NonNullable<Awaited<ReturnType<typeof ping>>>
-export type PingQueryError = void | HTTPError
+export type PingQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary Ping pongs
  */
-export const usePing = <TData = Awaited<ReturnType<typeof ping>>, TError = void | HTTPError>(
+export const usePing = <TData = Awaited<ReturnType<typeof ping>>, TError = ErrorType<void | HTTPError>>(
   options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof ping>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -160,7 +161,7 @@ export const getOpenapiYamlGetQueryKey = () => {
     }
 
     
-export const getOpenapiYamlGetInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof openapiYamlGet>>, TError = unknown>( options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getOpenapiYamlGetInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof openapiYamlGet>>, TError = ErrorType<unknown>>( options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -181,12 +182,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type OpenapiYamlGetInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof openapiYamlGet>>>
-export type OpenapiYamlGetInfiniteQueryError = unknown
+export type OpenapiYamlGetInfiniteQueryError = ErrorType<unknown>
 
 /**
  * @summary Returns this very OpenAPI spec.
  */
-export const useOpenapiYamlGetInfinite = <TData = Awaited<ReturnType<typeof openapiYamlGet>>, TError = unknown>(
+export const useOpenapiYamlGetInfinite = <TData = Awaited<ReturnType<typeof openapiYamlGet>>, TError = ErrorType<unknown>>(
   options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -202,7 +203,7 @@ export const useOpenapiYamlGetInfinite = <TData = Awaited<ReturnType<typeof open
 
 
 
-export const getOpenapiYamlGetQueryOptions = <TData = Awaited<ReturnType<typeof openapiYamlGet>>, TError = unknown>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getOpenapiYamlGetQueryOptions = <TData = Awaited<ReturnType<typeof openapiYamlGet>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -223,12 +224,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type OpenapiYamlGetQueryResult = NonNullable<Awaited<ReturnType<typeof openapiYamlGet>>>
-export type OpenapiYamlGetQueryError = unknown
+export type OpenapiYamlGetQueryError = ErrorType<unknown>
 
 /**
  * @summary Returns this very OpenAPI spec.
  */
-export const useOpenapiYamlGet = <TData = Awaited<ReturnType<typeof openapiYamlGet>>, TError = unknown>(
+export const useOpenapiYamlGet = <TData = Awaited<ReturnType<typeof openapiYamlGet>>, TError = ErrorType<unknown>>(
   options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof openapiYamlGet>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {

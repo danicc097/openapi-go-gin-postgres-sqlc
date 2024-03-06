@@ -28,6 +28,7 @@ import type {
   DbWorkItem
 } from '../model/dbWorkItem'
 import { customInstance } from '../../api/mutator';
+import type { ErrorType } from '../../api/mutator';
 
 
 // eslint-disable-next-line
@@ -57,7 +58,7 @@ export const createWorkitem = (
   
 
 
-export const getCreateWorkitemMutationOptions = <TError = unknown,
+export const getCreateWorkitemMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkitem>>, TError,{data: CreateWorkItemRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createWorkitem>>, TError,{data: CreateWorkItemRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -78,12 +79,12 @@ export const getCreateWorkitemMutationOptions = <TError = unknown,
 
     export type CreateWorkitemMutationResult = NonNullable<Awaited<ReturnType<typeof createWorkitem>>>
     export type CreateWorkitemMutationBody = CreateWorkItemRequest
-    export type CreateWorkitemMutationError = unknown
+    export type CreateWorkitemMutationError = ErrorType<unknown>
 
     /**
  * @summary create workitem
  */
-export const useCreateWorkitem = <TError = unknown,
+export const useCreateWorkitem = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createWorkitem>>, TError,{data: CreateWorkItemRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -112,7 +113,7 @@ export const getGetWorkItemQueryKey = (workItemID: EntityIDs.WorkItemID,) => {
     }
 
     
-export const getGetWorkItemInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = unknown>(workItemID: EntityIDs.WorkItemID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetWorkItemInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = ErrorType<unknown>>(workItemID: EntityIDs.WorkItemID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -133,12 +134,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetWorkItemInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItem>>>
-export type GetWorkItemInfiniteQueryError = unknown
+export type GetWorkItemInfiniteQueryError = ErrorType<unknown>
 
 /**
  * @summary get workitem
  */
-export const useGetWorkItemInfinite = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = unknown>(
+export const useGetWorkItemInfinite = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = ErrorType<unknown>>(
  workItemID: EntityIDs.WorkItemID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -154,7 +155,7 @@ export const useGetWorkItemInfinite = <TData = Awaited<ReturnType<typeof getWork
 
 
 
-export const getGetWorkItemQueryOptions = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = unknown>(workItemID: EntityIDs.WorkItemID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetWorkItemQueryOptions = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = ErrorType<unknown>>(workItemID: EntityIDs.WorkItemID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -175,12 +176,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetWorkItemQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItem>>>
-export type GetWorkItemQueryError = unknown
+export type GetWorkItemQueryError = ErrorType<unknown>
 
 /**
  * @summary get workitem
  */
-export const useGetWorkItem = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = unknown>(
+export const useGetWorkItem = <TData = Awaited<ReturnType<typeof getWorkItem>>, TError = ErrorType<unknown>>(
  workItemID: EntityIDs.WorkItemID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getWorkItem>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -212,7 +213,7 @@ export const updateWorkitem = (
   
 
 
-export const getUpdateWorkitemMutationOptions = <TError = unknown,
+export const getUpdateWorkitemMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkitem>>, TError,{workItemID: EntityIDs.WorkItemID}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateWorkitem>>, TError,{workItemID: EntityIDs.WorkItemID}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -233,12 +234,12 @@ export const getUpdateWorkitemMutationOptions = <TError = unknown,
 
     export type UpdateWorkitemMutationResult = NonNullable<Awaited<ReturnType<typeof updateWorkitem>>>
     
-    export type UpdateWorkitemMutationError = unknown
+    export type UpdateWorkitemMutationError = ErrorType<unknown>
 
     /**
  * @summary update workitem
  */
-export const useUpdateWorkitem = <TError = unknown,
+export const useUpdateWorkitem = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateWorkitem>>, TError,{workItemID: EntityIDs.WorkItemID}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -262,7 +263,7 @@ export const deleteWorkitem = (
   
 
 
-export const getDeleteWorkitemMutationOptions = <TError = unknown,
+export const getDeleteWorkitemMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteWorkitem>>, TError,{workItemID: EntityIDs.WorkItemID}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteWorkitem>>, TError,{workItemID: EntityIDs.WorkItemID}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -283,12 +284,12 @@ export const getDeleteWorkitemMutationOptions = <TError = unknown,
 
     export type DeleteWorkitemMutationResult = NonNullable<Awaited<ReturnType<typeof deleteWorkitem>>>
     
-    export type DeleteWorkitemMutationError = unknown
+    export type DeleteWorkitemMutationError = ErrorType<unknown>
 
     /**
  * @summary delete workitem
  */
-export const useDeleteWorkitem = <TError = unknown,
+export const useDeleteWorkitem = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteWorkitem>>, TError,{workItemID: EntityIDs.WorkItemID}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 

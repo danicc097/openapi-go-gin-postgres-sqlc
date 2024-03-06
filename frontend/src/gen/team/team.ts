@@ -34,6 +34,7 @@ import type {
   UpdateTeamRequest
 } from '../model/updateTeamRequest'
 import { customInstance } from '../../api/mutator';
+import type { ErrorType } from '../../api/mutator';
 
 
 // eslint-disable-next-line
@@ -64,7 +65,7 @@ export const createTeam = (
   
 
 
-export const getCreateTeamMutationOptions = <TError = void | HTTPError,
+export const getCreateTeamMutationOptions = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTeam>>, TError,{projectName: 'demo' | 'demo_two';data: CreateTeamRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createTeam>>, TError,{projectName: 'demo' | 'demo_two';data: CreateTeamRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -85,12 +86,12 @@ export const getCreateTeamMutationOptions = <TError = void | HTTPError,
 
     export type CreateTeamMutationResult = NonNullable<Awaited<ReturnType<typeof createTeam>>>
     export type CreateTeamMutationBody = CreateTeamRequest
-    export type CreateTeamMutationError = void | HTTPError
+    export type CreateTeamMutationError = ErrorType<void | HTTPError>
 
     /**
  * @summary create team.
  */
-export const useCreateTeam = <TError = void | HTTPError,
+export const useCreateTeam = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTeam>>, TError,{projectName: 'demo' | 'demo_two';data: CreateTeamRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -119,7 +120,7 @@ export const getGetTeamQueryKey = (teamID: EntityIDs.TeamID,) => {
     }
 
     
-export const getGetTeamInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getTeam>>, TError = void | HTTPError>(teamID: EntityIDs.TeamID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTeam>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetTeamInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getTeam>>, TError = ErrorType<void | HTTPError>>(teamID: EntityIDs.TeamID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTeam>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -140,12 +141,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetTeamInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTeam>>>
-export type GetTeamInfiniteQueryError = void | HTTPError
+export type GetTeamInfiniteQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary get team.
  */
-export const useGetTeamInfinite = <TData = Awaited<ReturnType<typeof getTeam>>, TError = void | HTTPError>(
+export const useGetTeamInfinite = <TData = Awaited<ReturnType<typeof getTeam>>, TError = ErrorType<void | HTTPError>>(
  teamID: EntityIDs.TeamID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTeam>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -161,7 +162,7 @@ export const useGetTeamInfinite = <TData = Awaited<ReturnType<typeof getTeam>>, 
 
 
 
-export const getGetTeamQueryOptions = <TData = Awaited<ReturnType<typeof getTeam>>, TError = void | HTTPError>(teamID: EntityIDs.TeamID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTeam>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetTeamQueryOptions = <TData = Awaited<ReturnType<typeof getTeam>>, TError = ErrorType<void | HTTPError>>(teamID: EntityIDs.TeamID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTeam>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -182,12 +183,12 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type GetTeamQueryResult = NonNullable<Awaited<ReturnType<typeof getTeam>>>
-export type GetTeamQueryError = void | HTTPError
+export type GetTeamQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary get team.
  */
-export const useGetTeam = <TData = Awaited<ReturnType<typeof getTeam>>, TError = void | HTTPError>(
+export const useGetTeam = <TData = Awaited<ReturnType<typeof getTeam>>, TError = ErrorType<void | HTTPError>>(
  teamID: EntityIDs.TeamID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getTeam>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -222,7 +223,7 @@ export const updateTeam = (
   
 
 
-export const getUpdateTeamMutationOptions = <TError = void | HTTPError,
+export const getUpdateTeamMutationOptions = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTeam>>, TError,{teamID: EntityIDs.TeamID;data: UpdateTeamRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateTeam>>, TError,{teamID: EntityIDs.TeamID;data: UpdateTeamRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -243,12 +244,12 @@ export const getUpdateTeamMutationOptions = <TError = void | HTTPError,
 
     export type UpdateTeamMutationResult = NonNullable<Awaited<ReturnType<typeof updateTeam>>>
     export type UpdateTeamMutationBody = UpdateTeamRequest
-    export type UpdateTeamMutationError = void | HTTPError
+    export type UpdateTeamMutationError = ErrorType<void | HTTPError>
 
     /**
  * @summary update team.
  */
-export const useUpdateTeam = <TError = void | HTTPError,
+export const useUpdateTeam = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTeam>>, TError,{teamID: EntityIDs.TeamID;data: UpdateTeamRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -272,7 +273,7 @@ export const deleteTeam = (
   
 
 
-export const getDeleteTeamMutationOptions = <TError = HTTPError,
+export const getDeleteTeamMutationOptions = <TError = ErrorType<HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTeam>>, TError,{teamID: EntityIDs.TeamID}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteTeam>>, TError,{teamID: EntityIDs.TeamID}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -293,12 +294,12 @@ export const getDeleteTeamMutationOptions = <TError = HTTPError,
 
     export type DeleteTeamMutationResult = NonNullable<Awaited<ReturnType<typeof deleteTeam>>>
     
-    export type DeleteTeamMutationError = HTTPError
+    export type DeleteTeamMutationError = ErrorType<HTTPError>
 
     /**
  * @summary delete team.
  */
-export const useDeleteTeam = <TError = HTTPError,
+export const useDeleteTeam = <TError = ErrorType<HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTeam>>, TError,{teamID: EntityIDs.TeamID}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
