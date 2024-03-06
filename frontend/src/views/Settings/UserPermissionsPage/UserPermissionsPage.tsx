@@ -10,7 +10,6 @@ import type { ValidationErrors } from 'src/client-validator/validate'
 import { updateUserAuthorization, useUpdateUserAuthorization } from 'src/gen/user/user'
 import { validateField } from 'src/utils/validation'
 import { UpdateUserAuthRequestDecoder } from 'src/client-validator/gen/decoders'
-import { newFrontendSpan } from 'src/AttributeKeys'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
@@ -62,6 +61,7 @@ import { useFormSlice } from 'src/slices/form'
 import { JSON_SCHEMA, ROLES, SCOPES } from 'src/config'
 import InfiniteLoader from 'src/components/Loading/InfiniteLoader'
 import { useCalloutErrors } from 'src/components/Callout/useCalloutErrors'
+import { newFrontendSpan } from 'src/traceProvider'
 
 type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 

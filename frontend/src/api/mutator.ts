@@ -1,5 +1,6 @@
 import Axios, { AxiosError, type AxiosRequestConfig } from 'axios'
 import { CONFIG } from 'src/config'
+import { HTTPError } from 'src/gen/model'
 import { apiPath } from 'src/services/apiPaths'
 
 export const AXIOS_INSTANCE = Axios.create()

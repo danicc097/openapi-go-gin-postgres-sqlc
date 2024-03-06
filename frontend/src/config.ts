@@ -8,6 +8,7 @@ import { operations } from 'src/types/schema'
 import ROLES_JSON from '../roles.json'
 import SCOPES_JSON from '../scopes.json'
 import type { Scope } from 'src/gen/model'
+import { JSONSchema4 } from 'json-schema'
 
 export const CONFIG = CONFIG_JSON
 
@@ -33,6 +34,6 @@ export type SchemaDefinitions = keyof typeof jsonSchema.definitions
 
 export const JSON_SCHEMA = JSON_SCHEMA_JSON as unknown as {
   definitions: {
-    [key in SchemaDefinitions]: JSONSchemaType<true>
+    [key in SchemaDefinitions]: JSONSchema4
   }
 }
