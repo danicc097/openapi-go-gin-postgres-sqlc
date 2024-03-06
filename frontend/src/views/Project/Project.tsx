@@ -70,14 +70,16 @@ export default function Project() {
                   { data, projectName: 'demo' },
                   {
                     onSuccess(data, variables, context) {
+                      formSlice.setCalloutErrors(formName, [])
                       console.log({ onSuccess: data })
                     },
                     onError(error, variables, context) {
-                      if (!error) return
+                      if (!error.response) return
 
-                      // FIXME: backend appends extraneous json to response
-                      // {"detail":"commit unexpectedly resulted in rollback","error":"could not commit transaction (rollback error: tx is closed): commit unexpectedly resulted in rollback","loc":null,"status":500,"title":"Database error","type":"Private"}
+                      // TODO: callouterror accepts httperror and will handle bare httperror and
+                      // httperror with array of validationerror
                       console.log({ onError: error.response?.data })
+                      formSlice.setCalloutErrors(formName, [error.response.data.detail])
                     },
                   },
                 )

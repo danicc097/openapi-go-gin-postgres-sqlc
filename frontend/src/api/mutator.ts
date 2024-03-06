@@ -6,8 +6,8 @@ import { apiPath } from 'src/services/apiPaths'
 export const AXIOS_INSTANCE = Axios.create()
 
 export class ApiError extends Error {
-  response?: AxiosError['response']
-  constructor(message: string, response?: AxiosError['response']) {
+  response?: AxiosError<HTTPError>['response']
+  constructor(message: string, response?: AxiosError<HTTPError>['response']) {
     super(message)
     this.name = 'ApiError'
     this.response = response
