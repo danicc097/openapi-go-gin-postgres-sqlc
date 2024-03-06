@@ -58,8 +58,10 @@ import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
 import { WorkItemTagID, ProjectID } from 'src/gen/entity-ids'
 import { selectOptionsBuilder } from 'src/utils/formGeneration.context'
 import { SelectOptionComponentDebug } from 'src/utils/dropdown-debug'
+import { parseSchemaFields } from 'src/utils/jsonSchema'
+import { JSONSchema4 } from 'json-schema'
 
-const schema = {
+const schema: JSONSchema4 = {
   properties: {
     base: {
       properties: {
@@ -161,14 +163,14 @@ const schema = {
       },
       type: ['array', 'null'],
     },
-    tagIDs: {
+    tagIDsMultiselect: {
       items: {
         type: 'integer',
       },
       type: ['array', 'null'],
     },
   },
-  required: ['demoProject', 'base', 'tagIDs', 'members'],
+  required: ['demoProject', 'base', 'tagIDsMultiselect', 'members'],
   type: 'object',
   'x-gen-struct': 'RestDemoWorkItemCreateRequest',
 }
@@ -192,65 +194,59 @@ const tags = [...Array(1000)].map((x, i) => {
   return tag
 })
 
-// cannot be inside component, else invalid date returned by mantine dates and RHF
-const formInitialValues = {
-  base: {
-    items: [
-      {
-        items: ['0001', '0002'],
-        // TODO: use usersData below but leave some that dont exist.
-        // TODO: if select or multiselect not found, it should show a warning callout
-        // stating option was not found so its being ignored (persistent callout)
-        userId: ['120cb364-2b18-49fb-b505-568834614c5d', 'fcd252dc-72a4-4514-bdd1-3cac573a5fac'],
-        name: 'item-1',
-      },
-      { items: ['0011', '0012'], userId: ['badid', 'badid2'], name: 'item-2' },
-    ],
-    // closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-    targetDate: dayjs('2023-02-22').toDate(),
-    description: 'some text',
-    kanbanStepID: 1,
-    teamID: 1,
-    metadata: {},
-    // title: {},
-    workItemTypeID: 1,
-  },
-  // TODO: formGeneration must not assume options do exist, else all fails catastrophically.
-  // it's not just checking types...
-  // 1. move callout errors state to zustand, and create callout warnings too
-  // 2.(sol 1) if option not found for initial data, remove from form values
-  // and show persistent callout _warning_ that X was deleted since it was not found.
-  // it should update the form but show callout error saying ignoring bad type in `formField`, in this case `tagIDs.1`
-  // 2. (sol 2 which wont work) leave form as is and validate on first render will not catch errors for options not found, if type is right...
-  tagIDs: [1, 2, 'badid'], // {"invalidParams":{"name":"tagIDs.1","reason":"must be integer"} and we can set invalid manually via component id (which will be `input-tagIDs.1` )
-  tagIDsMultiselect: null,
-  // tagIDs: [0, 5, 8],
-  demoProject: {
-    lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
-    // ref: '12341234', // will set defaultValue if unset
-    workItemID: 1,
-    reopened: true, // TODO: test it does work (requires no defaultValue being set on checkbox component)
-  },
-  members: [{ userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65' }, { role: 'preparer', userID: 'bad userID' }],
-} as TestTypes.DemoWorkItemCreateRequest
-
 export default function DemoGeneratedForm() {
-  // TODO: GetPaginatedUsers table
-  // also see excalidraw
-  // will be used on generated filterable mantine datatable table as in
-  // https://v2.mantine-react-table.com/docs/examples/react-query
-  // https://v2.mantine-react-table.com/docs/guides/column-filtering#manual-server-side-column-filtering
-  // (note v2 in alpha but is the only one supporting v7)
-  // lots of filter variants already:
-  // https://v2.mantine-react-table.com/docs/guides/column-filtering#filter-variants
-  // will try adapt to internal format so filters object it can be sent as query params to pagination queries
-  // and easily parsed in backend with minimal adapters.
+  const formInitialValues: TestTypes.DemoWorkItemCreateRequest = {
+    base: {
+      items: [
+        {
+          items: ['0001', '0002'],
+          // TODO: use usersData below but leave some that dont exist.
+          // TODO: if select or multiselect not found, it should show a warning callout
+          // stating option was not found so its being ignored (persistent callout)
+          userId: ['120cb364-2b18-49fb-b505-568834614c5d', 'fcd252dc-72a4-4514-bdd1-3cac573a5fac'],
+          name: 'item-1',
+        },
+        { items: ['0011', '0012'], userId: ['baduserid'], name: 'item-2' },
+      ],
+      // closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
+      targetDate: dayjs('2023-02-22').toDate(),
+      description: 'some text',
+      kanbanStepID: 1,
+      teamID: 1,
+      metadata: {},
+      // title: {},
+      workItemTypeID: 1,
+      closed: null,
+    },
+    // TODO: formGeneration must not assume options do exist, else all fails catastrophically.
+    // it's not just checking types...
+    // 1. move callout errors state to zustand, and create callout warnings too
+    // 2.(sol 1) if option not found for initial data, remove from form values
+    // and show persistent callout _warning_ that X was deleted since it was not found.
+    // it should update the form but show callout error saying ignoring bad type in `formField`, in this case `tagIDs.1`
+    // 2. (sol 2 which wont work) leave form as is and validate on first render will not catch errors for options not found, if type is right...
+    tagIDs: null,
+    tagIDsMultiselect: [1, 2, 'badid' as any /** FIXME: show warning callout, it should not create it at all */],
+    // tagIDs: [0, 5, 8],
+    demoProject: {
+      line: '',
+      ref: '12341234',
+      lastMessageAt: dayjs('2023-03-24T20:42:00.000Z').toDate(),
+      // ref: '12341234', // will set defaultValue if unset
+      workItemID: 1,
+      reopened: true, // TODO: test it does work (requires no defaultValue being set on checkbox component)
+    },
+    members: [
+      { userID: '2ae4bc55-5c26-4b93-8dc7-e2bc0e9e3a65', role: null as any /** test defaultValues */ },
+      { role: 'preparer', userID: 'bad userID' },
+    ],
+  }
 
   const { user } = useAuthenticatedUser()
 
   const [cursor, setCursor] = useState(new Date().toISOString())
 
-  // useStopInfiniteRenders(60)
+  useStopInfiniteRenders(20)
 
   // watch out for queryKey slugs having dynamic values (like new Date() or anything generated)
   const { data: usersData } = useGetPaginatedUsers({ direction: 'desc', cursor, limit: 0 })
@@ -305,7 +301,7 @@ export default function DemoGeneratedForm() {
   //   }
   // }, [demoWorkItemCreateForm])
 
-  type ExcludedFormKeys = 'base.metadata' | 'tagIDsMultiselect' | 'demoProject' | 'base'
+  type ExcludedFormKeys = 'base.metadata' | 'tagIDs' | 'demoProject' | 'base'
 
   const users = usersData?.items
 
@@ -367,27 +363,7 @@ export default function DemoGeneratedForm() {
           formName="demoWorkItemCreateForm"
           // schemaFields will come from `parseSchemaFields(schema.RestDemo... OR  asConst(jsonSchema.definitions.<...>))`
           // using this hardcoded for testing purposes
-          schemaFields={{
-            'base.closed': { type: 'date-time', required: false, isArray: false },
-            'base.description': { type: 'string', required: true, isArray: false },
-            'base.kanbanStepID': { type: 'integer', required: true, isArray: false },
-            'base.targetDate': { type: 'date', required: true, isArray: false },
-            'base.teamID': { type: 'integer', required: true, isArray: false },
-            'base.items': { type: 'object', required: false, isArray: true },
-            'base.items.name': { type: 'string', required: true, isArray: false },
-            'base.items.userId': { type: 'string', required: false, isArray: true },
-            'base.items.items': { type: 'string', required: false, isArray: true },
-            'base.workItemTypeID': { type: 'integer', required: true, isArray: false },
-            'demoProject.lastMessageAt': { type: 'date-time', required: true, isArray: false },
-            'demoProject.line': { type: 'string', required: true, isArray: false },
-            'demoProject.ref': { type: 'string', required: true, isArray: false },
-            'demoProject.reopened': { type: 'boolean', required: true, isArray: false },
-            'demoProject.workItemID': { type: 'integer', required: true, isArray: false },
-            members: { type: 'object', required: false, isArray: true },
-            'members.role': { type: 'string', required: true, isArray: false },
-            'members.userID': { type: 'string', required: true, isArray: false },
-            tagIDs: { type: 'integer', required: false, isArray: true },
-          }}
+          schemaFields={parseSchemaFields(schema)}
           options={{
             // labels are mandatory. Use null to exclude if needed.
             labels: {
@@ -410,9 +386,9 @@ export default function DemoGeneratedForm() {
               members: 'Members',
               'members.role': 'Role',
               'members.userID': 'User',
-              tagIDs: 'Tags',
+              tagIDsMultiselect: 'Tags',
             },
-            renderOrderPriority: ['tagIDs', 'members'],
+            renderOrderPriority: ['tagIDsMultiselect', 'members'],
             accordion: {
               'base.items': {
                 defaultOpen: true,
@@ -426,7 +402,7 @@ export default function DemoGeneratedForm() {
             selectOptions: {
               'members.userID': userIdSelectOption,
               'base.items.userId': userIdSelectOption,
-              tagIDs: selectOptionsBuilder({
+              tagIDsMultiselect: selectOptionsBuilder({
                 type: 'multiselect',
                 searchValueTransformer(el) {
                   return el.name

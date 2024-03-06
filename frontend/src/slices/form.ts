@@ -24,8 +24,11 @@ interface FormState {
   form: {
     [formName: string]: Form
   }
-  setCalloutWarning: (formName: string, warning: CalloutWarning[]) => void
+  setCalloutWarnings: (formName: string, warning: CalloutWarning[]) => void
   setCalloutErrors: (formName: string, error: CalloutError[]) => void
+  // TODO:
+  // setCustomWarning: (formName: string, formField: string, warning: string | null) => void
+  // resetCustomWarnings: (formName: string) => void
   setCustomError: (formName: string, formField: string, error: string | null) => void
   resetCustomErrors: (formName: string) => void
 }
@@ -38,7 +41,7 @@ const useFormSlice = create<FormState>()(
     (set) => {
       return {
         form: {},
-        setCalloutWarning: (formName: string, warnings: CalloutWarning[]) =>
+        setCalloutWarnings: (formName: string, warnings: CalloutWarning[]) =>
           set(
             (state) => {
               const form = state.form[formName] || initialForm

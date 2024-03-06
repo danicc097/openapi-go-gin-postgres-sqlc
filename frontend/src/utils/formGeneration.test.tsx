@@ -1,6 +1,6 @@
 import type { DeepPartial, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import DynamicForm from 'src/utils/formGeneration'
-import { JsonSchemaField, parseSchemaFields, type SchemaField } from 'src/utils/jsonSchema'
+import { parseSchemaFields, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test, vitest } from 'vitest'
 import {
   getByTestId,
@@ -102,11 +102,9 @@ describe('form generation', () => {
             form.current.handleSubmit(
               // needs to be called
               (data) => {
-                console.log({ data })
                 mockSubmit(data)
               },
               (errors) => {
-                console.log({ errors })
                 mockSubmitWithErrors(errors)
               },
             )(e)
@@ -299,8 +297,6 @@ describe('form generation', () => {
     const refInput = screen.getByTestId('demoWorkItemCreateForm-demoProject.ref')
     await userEvent.clear(refInput)
     await userEvent.type(refInput, '99998888')
-    const badTagCloseButton = screen.getByTestId(`demoWorkItemCreateForm-tagIDsMultiselect-remove--aaaa`) // index starts at one
-    console.log(badTagCloseButton.parentNode?.textContent)
 
     await waitFor(async () => {
       const tagsSearchInput = screen.getByTestId('demoWorkItemCreateForm-search--tagIDsMultiselect')
@@ -330,6 +326,7 @@ describe('form generation', () => {
     /**
      * test final form values
      *  */
+    const badTagCloseButton = screen.getByTestId('demoWorkItemCreateForm-tagIDsMultiselect-remove--aaaa') // index starts at one
     await waitFor(async () => {
       await userEvent.click(badTagCloseButton, { pointerState: await userEvent.pointer({ target: badTagCloseButton }) })
     })

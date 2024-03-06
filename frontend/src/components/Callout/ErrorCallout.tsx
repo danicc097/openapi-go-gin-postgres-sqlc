@@ -9,13 +9,13 @@ interface ErrorCalloutProps {
 export default function ErrorCallout({ title, errors }: ErrorCalloutProps) {
   if (!errors || errors.length === 0) return null
 
-  return errors?.length > 0 ? (
-    <Alert icon={<IconAlertCircle size={16} />} title={title} color="red">
+  return (
+    <Alert mb={12} icon={<IconAlertCircle size={16} />} title={title} color="red">
       {errors.map((error, i) => (
         <div role="alert" key={i}>
           {error}
         </div>
       ))}
     </Alert>
-  ) : null
+  )
 }

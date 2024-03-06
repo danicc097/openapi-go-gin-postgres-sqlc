@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { useFormContext, useFormState } from 'react-hook-form'
 import { ApiError } from 'src/api/mutator'
 import ErrorCallout from 'src/components/Callout/ErrorCallout'
+import WarningCallout from 'src/components/Callout/WarningCallout'
 import { useCalloutErrors } from 'src/components/Callout/useCalloutErrors'
 import type { HTTPError } from 'src/gen/model'
 import { type CalloutError, useFormSlice } from 'src/slices/form'
@@ -15,11 +16,15 @@ import { flattenRHFError, type SchemaKey } from 'src/utils/form'
 import { useDynamicFormContext } from 'src/utils/formGeneration.context'
 import { entries } from 'src/utils/object'
 
+/**
+ * Shows errors and warnings of the current context dynamic form
+ */
 export default function DynamicFormErrorCallout() {
   const formSlice = useFormSlice()
   const form = useFormContext()
   const { formName, options, schemaFields } = useDynamicFormContext()
-  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
+  const { extractCalloutErrors, calloutWarnings, setCalloutErrors, calloutErrors, extractCalloutTitle } =
+    useCalloutErrors(formName)
   const formState = useFormState({ control: form.control })
 
   const rhfErrors = flattenRHFError({
@@ -28,6 +33,8 @@ export default function DynamicFormErrorCallout() {
 
   const title = extractCalloutTitle()
 
+  const warnings = calloutWarnings ?? []
+  console.log({ warnings })
   const errors = concat(
     extractCalloutErrors(),
     entries(rhfErrors).map(([schemaKey, error], idx) => {
@@ -52,7 +59,10 @@ export default function DynamicFormErrorCallout() {
     }),
   )
 
-  if (!errors || errors.length === 0) return null
-
-  return errors?.length > 0 ? <ErrorCallout title={title} errors={errors} /> : null
+  return (
+    <>
+      {errors?.length > 0 ? <ErrorCallout title={title} errors={errors} /> : null}
+      {warnings?.length > 0 ? <WarningCallout title={'Warning'} warnings={warnings} /> : null}
+    </>
+  )
 }

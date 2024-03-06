@@ -1,6 +1,6 @@
 import type { DeepPartial, GetKeys, RecursiveKeyOf, RecursiveKeyOfArray, PathType } from 'src/types/utils'
 import DynamicForm from 'src/utils/formGeneration'
-import { JsonSchemaField, parseSchemaFields, type SchemaField } from 'src/utils/jsonSchema'
+import { parseSchemaFields, type SchemaField } from 'src/utils/jsonSchema'
 import { describe, expect, test, vitest } from 'vitest'
 import {
   getByTestId,
@@ -28,10 +28,11 @@ import userEvent from '@testing-library/user-event'
 import { VirtuosoMockContext } from 'react-virtuoso'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { User } from 'src/gen/model'
+import { JSONSchema4 } from 'json-schema'
 
 export const refPattern = '^[0-9]{8}$'
 
-export const schema = {
+export const schema: JSONSchema4 = {
   properties: {
     base: {
       properties: {
@@ -161,7 +162,7 @@ export const schema = {
   required: ['demoProject', 'base', 'tagIDsMultiselect', 'members'],
   type: 'object',
   'x-gen-struct': 'RestDemoWorkItemCreateRequest',
-} as JsonSchemaField
+}
 
 export const schemaFields: Record<GetKeys<TestTypes.DemoWorkItemCreateRequest>, SchemaField> = {
   base: { isArray: false, required: true, type: 'object' },
