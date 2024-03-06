@@ -35,7 +35,12 @@
         ]
       }
     ],
-    "react-refresh/only-export-components": "warn",
+    "react-refresh/only-export-components": [
+      "error",
+      {
+        "allowConstantExport": true
+      }
+    ],
     "@typescript-eslint/no-non-null-assertion": "off",
     "react/display-name": "off",
     "@typescript-eslint/no-explicit-any": "off",
