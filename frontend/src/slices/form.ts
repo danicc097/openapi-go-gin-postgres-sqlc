@@ -92,6 +92,11 @@ const useFormSlice = create<FormState>()(
           set((state) => {
             const form = state.form[formName] || initialForm
 
+            if (warning === null) {
+              delete state.form[formName]?.customWarnings?.[formField]
+              return state
+            }
+
             return {
               ...state,
               form: {

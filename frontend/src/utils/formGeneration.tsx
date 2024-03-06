@@ -97,6 +97,7 @@ import { useFormSlice } from 'src/slices/form'
 import RandExp, { randexp } from 'randexp'
 import type { FormField, SchemaKey } from 'src/utils/form'
 import { inputBuilder, selectOptionsBuilder, useDynamicFormContext } from 'src/utils/formGeneration.context'
+import { useCalloutErrors } from 'src/components/Callout/useCalloutErrors'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
 
@@ -249,8 +250,8 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
 }: DynamicFormProps<Form, IgnoredFormKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
-  const formSlice = useFormSlice()
-  console.log({ formboolis: form.getValues('demoProject.reopened') })
+  const { resetCustomWarnings } = useCalloutErrors(formName)
+
   let _schemaFields: DynamicFormContextValue['schemaFields'] = schemaFields
   if (options.renderOrderPriority) {
     const _schemaKeys: SchemaKey[] = []
@@ -278,7 +279,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
         <DynamicFormErrorCallout />
         <form
           onSubmit={(e) => {
-            formSlice.resetCustomWarnings(formName)
+            resetCustomWarnings()
             onSubmit(e)
           }}
           css={css`
@@ -1162,14 +1163,16 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
     return selectOptions.formValueTransformer(option) === formValue
   })
 
-  // FIXME: duplicated messages found when in strict mode
-  // should use formField here as well and only append messages if they're not the same
+  // TODO: test.
   if (formValue !== null && formValue !== undefined && selectedOption === undefined) {
-    const message = `${itemName} "${formValue}" does not exist and has been removed`
+    const message = `${itemName} "${formValue}" does not exist`
     // else inf loop. we could unregister - direct form changes work - but state updates are lost (e.g. api call updates possible values) so its a no go
     if (formSlice.form[formName]?.customWarnings[formField] !== message) {
       formSlice.setCustomWarning(formName, formField, message)
     }
+  } else {
+    // once we receive api calls with correct data, etc. invalidate old warnings
+    formSlice.setCustomWarning(formName, formField, null)
   }
 
   const comboboxOptions = selectOptions.values

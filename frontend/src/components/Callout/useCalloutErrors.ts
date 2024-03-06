@@ -8,10 +8,13 @@ import { entries } from 'src/utils/object'
 
 export const useCalloutErrors = (formName: string) => {
   const formSlice = useFormSlice()
-  const calloutErrors = formSlice.form[formName]?.calloutErrors
-  const customErrors = formSlice.form[formName]?.customErrors
-  const calloutWarnings = formSlice.form[formName]?.customWarnings
+  const form = formSlice.form[formName]
+  const calloutErrors = form?.calloutErrors
+  const customErrors = form?.customErrors
+  const calloutWarnings = form?.customWarnings
   const setCalloutErrors = (errors: CalloutError[]) => formSlice.setCalloutErrors(formName, errors)
+
+  const resetCustomWarnings = () => formSlice.resetCustomWarnings(formName)
 
   const extractCalloutErrors = () => {
     const errors: string[] = []
@@ -51,7 +54,7 @@ export const useCalloutErrors = (formName: string) => {
   }
 
   const extractCalloutTitle = () => {
-    if (formSlice.form[formName]?.customErrors) {
+    if (Object.keys(form?.customErrors ?? {}).length > 0) {
       return 'Validation error'
     }
     const unknownError = 'An unknown error ocurred'
@@ -94,5 +97,6 @@ export const useCalloutErrors = (formName: string) => {
     setCalloutErrors,
     extractCalloutTitle,
     calloutWarnings,
+    resetCustomWarnings,
   }
 }

@@ -12,7 +12,7 @@ export default function WarningCallout({ title, warnings }: WarningCalloutProps)
 
   return (
     <Alert mb={12} icon={<IconAlertCircle size={16} />} title={title} color="yellow">
-      <List spacing="xs" size="sm" center mr={60}>
+      <List pb={6} spacing="xs" size="sm" center mr={60}>
         {warnings.map((warning, i) => (
           <List.Item key={i}>{warning}</List.Item>
         ))}
