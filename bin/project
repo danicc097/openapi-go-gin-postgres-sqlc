@@ -1402,7 +1402,7 @@ x.run.all() {
   run_hot_reload
 
   while true; do
-    sleep 1000
+    sleep 5
   done
 
   # TODO fix won't kill children
