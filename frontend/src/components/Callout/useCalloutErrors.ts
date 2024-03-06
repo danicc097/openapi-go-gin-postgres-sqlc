@@ -14,7 +14,8 @@ export const useCalloutErrors = (formName: string) => {
   const calloutWarnings = form?.customWarnings
   const setCalloutErrors = (errors: CalloutError[]) => formSlice.setCalloutErrors(formName, errors)
 
-  const resetCustomWarnings = () => formSlice.resetCustomWarnings(formName)
+  const hasClickedSubmit = !!formSlice.form[formName]?.hasClickedSubmit
+  const setHasClickedSubmit = (v: boolean) => formSlice.setHasClickedSubmit(formName, v)
 
   const extractCalloutErrors = () => {
     const errors: string[] = []
@@ -97,6 +98,7 @@ export const useCalloutErrors = (formName: string) => {
     setCalloutErrors,
     extractCalloutTitle,
     calloutWarnings,
-    resetCustomWarnings,
+    setHasClickedSubmit,
+    hasClickedSubmit,
   }
 }

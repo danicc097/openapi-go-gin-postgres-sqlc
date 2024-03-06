@@ -250,7 +250,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
 }: DynamicFormProps<Form, IgnoredFormKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
-  const { resetCustomWarnings } = useCalloutErrors(formName)
+  const { setHasClickedSubmit } = useCalloutErrors(formName)
 
   let _schemaFields: DynamicFormContextValue['schemaFields'] = schemaFields
   if (options.renderOrderPriority) {
@@ -279,7 +279,7 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
         <DynamicFormErrorCallout />
         <form
           onSubmit={(e) => {
-            resetCustomWarnings()
+            setHasClickedSubmit(true)
             onSubmit(e)
           }}
           css={css`

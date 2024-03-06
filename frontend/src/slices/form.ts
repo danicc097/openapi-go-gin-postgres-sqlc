@@ -18,20 +18,26 @@ interface Form {
   customWarnings: Record<string, string | null>
   // indexed by formField. Used for errors that aren't registered in react hook form
   customErrors: Record<string, string | null>
+  hasClickedSubmit: boolean
 }
 
 interface FormState {
   form: {
     [formName: string]: Form
   }
+  setHasClickedSubmit: (formName: string, value: boolean) => void
   setCalloutErrors: (formName: string, error: CalloutError[]) => void
   setCustomWarning: (formName: string, formField: string, warning: string | null) => void
-  resetCustomWarnings: (formName: string) => void
   setCustomError: (formName: string, formField: string, error: string | null) => void
   resetCustomErrors: (formName: string) => void
 }
 
-const initialForm: Form = { calloutErrors: [], customWarnings: {}, customErrors: {} }
+const initialForm: Form = {
+  calloutErrors: [],
+  customWarnings: {},
+  customErrors: {},
+  hasClickedSubmit: false,
+}
 
 const useFormSlice = create<FormState>()(
   devtools(
@@ -39,6 +45,21 @@ const useFormSlice = create<FormState>()(
     (set) => {
       return {
         form: {},
+        setHasClickedSubmit: (formName: string, value: boolean) =>
+          set((state) => {
+            const form = state.form[formName] || initialForm
+
+            return {
+              ...state,
+              form: {
+                ...state.form,
+                [formName]: {
+                  ...form,
+                  hasClickedSubmit: value,
+                },
+              },
+            }
+          }),
         setCalloutErrors: (formName: string, errors: CalloutError[]) =>
           set((state) => {
             const form = state.form[formName] || initialForm
@@ -107,21 +128,6 @@ const useFormSlice = create<FormState>()(
                     ...form.customWarnings,
                     [formField]: warning,
                   },
-                },
-              },
-            }
-          }),
-        resetCustomWarnings: (formName: string) =>
-          set((state) => {
-            const form = state.form[formName] || initialForm
-
-            return {
-              ...state,
-              form: {
-                ...state.form,
-                [formName]: {
-                  ...form,
-                  customWarnings: {},
                 },
               },
             }
