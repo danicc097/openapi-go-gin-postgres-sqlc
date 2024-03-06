@@ -4,7 +4,7 @@ import { memo } from 'react'
 import type { Role, WorkItemRole } from 'src/gen/model'
 import { workItemRoleColor, getContrastYIQ } from 'src/utils/colors'
 
-function _workItemRoleBadge({ role }: { role: WorkItemRole }) {
+const WorkItemRoleBadge = memo(function ({ role }: { role: WorkItemRole }) {
   const color = workItemRoleColor(role)
   const name = capitalize(role.replace(/([A-Z])/g, ' $1').trim())
 
@@ -17,8 +17,6 @@ function _workItemRoleBadge({ role }: { role: WorkItemRole }) {
       {name}
     </Badge>
   )
-}
-
-const WorkItemRoleBadge = memo(_workItemRoleBadge)
+})
 
 export default WorkItemRoleBadge

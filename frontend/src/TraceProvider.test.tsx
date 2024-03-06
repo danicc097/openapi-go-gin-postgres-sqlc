@@ -1,6 +1,7 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import TraceProvider, { newFrontendSpan, tracer } from './TraceProvider' // Assuming TraceProvider is in the same directory
+import TraceProvider from './TraceProvider' // Assuming TraceProvider is in the same directory
+import { newFrontendSpan } from './traceProvider'
 import { vitest } from 'vitest'
 
 describe('TraceProvider', () => {
