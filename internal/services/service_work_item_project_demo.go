@@ -74,14 +74,8 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, caller CtxUser, pa
 		return nil, fmt.Errorf("repos.DemoWorkItem.Create: %w", err)
 	}
 
-	err = w.wiSvc.AssignTags(ctx, d, demoWi.WorkItemID, params.TagIDs)
-	if err != nil {
-		return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs"}, "could not assign tags")
-	}
-
-	err = w.wiSvc.AssignUsers(ctx, d, demoWi.WorkItemID, params.Members)
-	if err != nil {
-		return nil, internal.WrapErrorWithLocf(err, "", []string{"members"}, "could not assign members")
+	if err := w.wiSvc.postCreate(ctx, d, demoWi.WorkItemID, params.WorkItemCreateParams); err != nil {
+		return nil, err
 	}
 
 	opts := append(w.wiSvc.getSharedDBOpts(), db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))

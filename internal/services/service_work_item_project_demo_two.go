@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
@@ -53,23 +52,17 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, caller CtxUser,
 		return nil, err
 	}
 
-	demoWi, err := w.repos.DemoTwoWorkItem.Create(ctx, d, params.DemoTwoWorkItemCreateParams)
+	demoTwoWi, err := w.repos.DemoTwoWorkItem.Create(ctx, d, params.DemoTwoWorkItemCreateParams)
 	if err != nil {
 		return nil, fmt.Errorf("repos.DemoTwoWorkItem.Create: %w", err)
 	}
 
-	err = w.wiSvc.AssignTags(ctx, d, demoWi.WorkItemID, params.TagIDs)
-	if err != nil {
-		return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs"}, "could not assign tags")
-	}
-
-	err = w.wiSvc.AssignUsers(ctx, d, demoWi.WorkItemID, params.Members)
-	if err != nil {
-		return nil, fmt.Errorf("could not assign members: %w", err)
+	if err := w.wiSvc.postCreate(ctx, d, demoTwoWi.WorkItemID, params.WorkItemCreateParams); err != nil {
+		return nil, err
 	}
 
 	opts := append(w.wiSvc.getSharedDBOpts(), db.WithWorkItemJoin(db.WorkItemJoins{DemoTwoWorkItem: true}))
-	wi, err := w.repos.DemoTwoWorkItem.ByID(ctx, d, demoWi.WorkItemID, opts...)
+	wi, err := w.repos.DemoTwoWorkItem.ByID(ctx, d, demoTwoWi.WorkItemID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.DemoTwoWorkItem.ByID: %w", err)
 	}
