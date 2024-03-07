@@ -7,10 +7,10 @@
  */
 import type { CreateProjectBoardRequest } from '../model/createProjectBoardRequest'
 import type { DbProject } from '../model/dbProject'
-import type { GetProjectWorkitems200 } from '../model/getProjectWorkitems200'
 import type { GetProjectWorkitemsParams } from '../model/getProjectWorkitemsParams'
 import type { ProjectBoard } from '../model/projectBoard'
 import type { ProjectConfig } from '../model/projectConfig'
+import type { WorkItem } from '../model/workItem'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -81,10 +81,7 @@ export const getProjectWorkitems = (
   params?: GetProjectWorkitemsParams,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<GetProjectWorkitems200>(
-    { url: `/project/${projectName}/workitems`, method: 'GET', params },
-    options,
-  )
+  return customInstance<WorkItem>({ url: `/project/${projectName}/workitems`, method: 'GET', params }, options)
 }
 export type InitializeProjectResult = NonNullable<Awaited<ReturnType<typeof initializeProject>>>
 export type GetProjectResult = NonNullable<Awaited<ReturnType<typeof getProject>>>

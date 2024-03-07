@@ -25,8 +25,8 @@ import type {
   CreateWorkItemRequest
 } from '../model/createWorkItemRequest'
 import type {
-  DbWorkItem
-} from '../model/dbWorkItem'
+  WorkItem
+} from '../model/workItem'
 import { customInstance } from '../../api/mutator';
 import type { ErrorType } from '../../api/mutator';
 
@@ -48,7 +48,7 @@ export const createWorkitem = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<DbWorkItem>(
+      return customInstance<WorkItem>(
       {url: `/work-item/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createWorkItemRequest
@@ -101,7 +101,7 @@ export const getWorkItem = (
 ) => {
       
       
-      return customInstance<DbWorkItem>(
+      return customInstance<WorkItem>(
       {url: `/work-item/${workItemID}/`, method: 'GET', signal
     },
       options);
@@ -205,7 +205,7 @@ export const updateWorkitem = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<DbWorkItem>(
+      return customInstance<WorkItem>(
       {url: `/work-item/${workItemID}/`, method: 'PATCH'
     },
       options);

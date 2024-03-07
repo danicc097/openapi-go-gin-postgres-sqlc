@@ -12,6 +12,7 @@ import (
 
 type CreateWorkItemParams struct {
 	Project models.Project
+	Caller  services.CtxUser
 }
 
 type CreateWorkItemFixture struct {
@@ -27,23 +28,23 @@ func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, params CreateWorkI
 
 	switch params.Project {
 	case models.ProjectDemo:
-		params := postgresqlrandom.DemoWorkItemCreateParams(
+		p := postgresqlrandom.DemoWorkItemCreateParams(
 			postgresqlrandom.KanbanStepID(params.Project),
 			postgresqlrandom.WorkItemTypeID(params.Project),
 			teamf.Team.TeamID,
 		)
-		workItem, err = ff.svc.DemoWorkItem.Create(ctx, ff.d, services.DemoWorkItemCreateParams{
-			DemoWorkItemCreateParams: params,
+		workItem, err = ff.svc.DemoWorkItem.Create(ctx, ff.d, params.Caller, services.DemoWorkItemCreateParams{
+			DemoWorkItemCreateParams: p,
 		})
 		require.NoError(ff.t, err)
 	case models.ProjectDemoTwo:
-		params := postgresqlrandom.DemoTwoWorkItemCreateParams(
+		p := postgresqlrandom.DemoTwoWorkItemCreateParams(
 			postgresqlrandom.KanbanStepID(params.Project),
 			postgresqlrandom.WorkItemTypeID(params.Project),
 			teamf.Team.TeamID,
 		)
-		workItem, err = ff.svc.DemoTwoWorkItem.Create(ctx, ff.d, services.DemoTwoWorkItemCreateParams{
-			DemoTwoWorkItemCreateParams: params,
+		workItem, err = ff.svc.DemoTwoWorkItem.Create(ctx, ff.d, params.Caller, services.DemoTwoWorkItemCreateParams{
+			DemoTwoWorkItemCreateParams: p,
 		})
 		require.NoError(ff.t, err)
 	}

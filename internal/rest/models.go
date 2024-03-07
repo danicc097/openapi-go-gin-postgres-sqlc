@@ -67,15 +67,20 @@ type SharedWorkItemJoins struct {
 	WorkItemType     *db.WorkItemType             `json:"workItemType"`
 }
 
-type DemoWorkItems struct {
+type WorkItemBase struct {
 	db.WorkItem
 	SharedWorkItemJoins
-	DemoWorkItem db.DemoWorkItem `json:"demoWorkItem" required:"true"`
+	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 }
 
-type DemoTwoWorkItems struct {
-	db.WorkItem
-	SharedWorkItemJoins
+type DemoWorkItem struct {
+	WorkItemBase
+
+	DemoWorkItem db.DemoWorkItem `json:"demoWorkItem" required:"true"`
+}
+type DemoTwoWorkItem struct {
+	WorkItemBase
+
 	DemoTwoWorkItem db.DemoTwoWorkItem `json:"demoTwoWorkItem" required:"true"`
 }
 

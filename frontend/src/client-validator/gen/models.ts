@@ -91,6 +91,7 @@ export type Location1 = string[]
  */
 export type Topics = 'GlobalAlerts'
 export type UuidUUID = string
+export type WorkItem = DemoWorkItem | DemoTwoWorkItem
 export type CreateWorkItemRequest = CreateDemoWorkItemRequest | CreateDemoTwoWorkItemRequest
 export type DbWorkItemRole = string
 /**
@@ -320,50 +321,6 @@ export interface DbWorkItemType {
   projectID: number
   workItemTypeID: number
 }
-export interface DemoTwoWorkItems {
-  closedAt?: string | null
-  createdAt: string
-  deletedAt?: string | null
-  demoTwoWorkItem: DbDemoTwoWorkItem
-  description: string
-  kanbanStepID: number
-  members?: DbWorkItemM2MAssigneeWIA[] | null
-  metadata: {}
-  targetDate: string
-  teamID: number | null
-  timeEntries?: DbTimeEntry[] | null
-  title: string
-  updatedAt: string
-  workItemComments?: DbWorkItemComment[] | null
-  workItemID: number
-  workItemTags?: DbWorkItemTag[] | null
-  workItemType?: DbWorkItemType
-  workItemTypeID: number
-}
-export interface DbWorkItemM2MAssigneeWIA {
-  role: WorkItemRole
-  user: DbUser
-}
-export interface DemoWorkItems {
-  closedAt?: string | null
-  createdAt: string
-  deletedAt?: string | null
-  demoWorkItem: DbDemoWorkItem
-  description: string
-  kanbanStepID: number
-  members?: DbWorkItemM2MAssigneeWIA[] | null
-  metadata: {}
-  targetDate: string
-  teamID: number | null
-  timeEntries?: DbTimeEntry[] | null
-  title: string
-  updatedAt: string
-  workItemComments?: DbWorkItemComment[] | null
-  workItemID: number
-  workItemTags?: DbWorkItemTag[] | null
-  workItemType?: DbWorkItemType
-  workItemTypeID: number
-}
 export interface Notification {
   notification: DbNotification
   notificationID: number
@@ -408,6 +365,10 @@ export interface SharedWorkItemJoins {
   workItemComments?: DbWorkItemComment[] | null
   workItemTags?: DbWorkItemTag[] | null
   workItemType?: DbWorkItemType
+}
+export interface DbWorkItemM2MAssigneeWIA {
+  role: WorkItemRole
+  user: DbUser
 }
 export interface Team {
   createdAt: string
@@ -521,6 +482,48 @@ export interface UpdateUserAuthRequest {
   role?: Role
   scopes?: Scopes
 }
+export interface DemoWorkItem {
+  closedAt?: string | null
+  createdAt: string
+  deletedAt?: string | null
+  demoWorkItem: DbDemoWorkItem
+  description: string
+  kanbanStepID: number
+  members?: DbWorkItemM2MAssigneeWIA[] | null
+  metadata: {}
+  projectName: Project
+  targetDate: string
+  teamID: number | null
+  timeEntries?: DbTimeEntry[] | null
+  title: string
+  updatedAt: string
+  workItemComments?: DbWorkItemComment[] | null
+  workItemID: number
+  workItemTags?: DbWorkItemTag[] | null
+  workItemType?: DbWorkItemType
+  workItemTypeID: number
+}
+export interface DemoTwoWorkItem {
+  closedAt?: string | null
+  createdAt: string
+  deletedAt?: string | null
+  demoTwoWorkItem: DbDemoTwoWorkItem
+  description: string
+  kanbanStepID: number
+  members?: DbWorkItemM2MAssigneeWIA[] | null
+  metadata: {}
+  projectName: Project
+  targetDate: string
+  teamID: number | null
+  timeEntries?: DbTimeEntry[] | null
+  title: string
+  updatedAt: string
+  workItemComments?: DbWorkItemComment[] | null
+  workItemID: number
+  workItemTags?: DbWorkItemTag[] | null
+  workItemType?: DbWorkItemType
+  workItemTypeID: number
+}
 export interface DbActivityCreateParams {
   description: string
   isProductive: boolean
@@ -568,4 +571,24 @@ export interface UpdateTimeEntryRequest {
   teamID?: number | null
   userID?: DbUserID
   workItemID?: number | null
+}
+export interface WorkItemBase {
+  closedAt?: string | null
+  createdAt: string
+  deletedAt?: string | null
+  description: string
+  kanbanStepID: number
+  members?: DbWorkItemM2MAssigneeWIA[] | null
+  metadata: {}
+  projectName: Project
+  targetDate: string
+  teamID: number | null
+  timeEntries?: DbTimeEntry[] | null
+  title: string
+  updatedAt: string
+  workItemComments?: DbWorkItemComment[] | null
+  workItemID: number
+  workItemTags?: DbWorkItemTag[] | null
+  workItemType?: DbWorkItemType
+  workItemTypeID: number
 }

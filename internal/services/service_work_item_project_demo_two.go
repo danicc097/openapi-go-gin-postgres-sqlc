@@ -19,8 +19,7 @@ type DemoTwoWorkItem struct {
 
 type DemoTwoWorkItemCreateParams struct {
 	repos.DemoTwoWorkItemCreateParams
-	TagIDs  []db.WorkItemTagID `json:"tagIDs"  nullable:"false" required:"true"`
-	Members []Member           `json:"members" nullable:"false" required:"true"`
+	WorkItemCreateParams
 }
 
 // NewDemoTwoWorkItem returns a new DemoTwoWorkItem service.
@@ -47,8 +46,12 @@ func (w *DemoTwoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID)
 }
 
 // Create creates a new work item.
-func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoWorkItemCreateParams) (*db.WorkItem, error) {
+func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, caller CtxUser, params DemoTwoWorkItemCreateParams) (*db.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
+
+	if err := w.wiSvc.validateCreateParams(d, caller, &params.Base); err != nil {
+		return nil, err
+	}
 
 	demoWi, err := w.repos.DemoTwoWorkItem.Create(ctx, d, params.DemoTwoWorkItemCreateParams)
 	if err != nil {
@@ -75,8 +78,12 @@ func (w *DemoTwoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoTwoW
 }
 
 // Update updates an existing work item.
-func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (*db.WorkItem, error) {
+func (w *DemoTwoWorkItem) Update(ctx context.Context, d db.DBTX, caller CtxUser, id db.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (*db.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
+
+	if err := w.wiSvc.validateUpdateParams(d, caller, params.Base); err != nil {
+		return nil, err
+	}
 
 	wi, err := w.repos.DemoTwoWorkItem.Update(ctx, d, id, params)
 	if err != nil {

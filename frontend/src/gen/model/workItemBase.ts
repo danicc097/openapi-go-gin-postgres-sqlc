@@ -6,23 +6,23 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbDemoWorkItem } from './dbDemoWorkItem';
 import type { DbWorkItemM2MAssigneeWIA } from './dbWorkItemM2MAssigneeWIA';
-import type { DemoWorkItemsMetadata } from './demoWorkItemsMetadata';
+import type { WorkItemBaseMetadata } from './workItemBaseMetadata';
+import type { Project } from './project';
 import type { DbTimeEntry } from './dbTimeEntry';
 import type { DbWorkItemComment } from './dbWorkItemComment';
 import type { DbWorkItemTag } from './dbWorkItemTag';
 import type { DbWorkItemType } from './dbWorkItemType';
 
-export interface DemoWorkItems {
+export interface WorkItemBase {
   closedAt?: Date | null;
   createdAt: Date;
   deletedAt?: Date | null;
-  demoWorkItem: DbDemoWorkItem;
   description: string;
   kanbanStepID: EntityIDs.KanbanStepID;
   members?: DbWorkItemM2MAssigneeWIA[] | null;
-  metadata: DemoWorkItemsMetadata;
+  metadata: WorkItemBaseMetadata;
+  projectName: Project;
   targetDate: Date;
   teamID: EntityIDs.TeamID | null;
   timeEntries?: DbTimeEntry[] | null;

@@ -23,6 +23,8 @@ import { Tooltip as ReactTooltip } from 'react-tooltip'
 import { AppTourProvider } from 'src/tours/AppTourProvider'
 import { useTour } from '@reactour/tour'
 import { useCreateWorkItemTag } from 'src/gen/work-item-tag/work-item-tag'
+import { IconCheck, IconCross, IconX } from '@tabler/icons'
+import { notifications } from '@mantine/notifications'
 
 export default function Project() {
   const formSlice = useFormSlice()
@@ -35,11 +37,14 @@ export default function Project() {
     }),
     mode: 'all',
     reValidateMode: 'onChange',
+    defaultValues: {
+      color: '#123123',
+      description: 'a',
+      name: 'c',
+    },
   })
   const formName = 'createWorkItemTagForm'
-  const { register, handleSubmit, control, formState } = createWorkItemTagForm
-  const errors = formState.errors
-  const createWIT = useCreateWorkItemTag()
+  const createWorkItemTag = useCreateWorkItemTag()
   const authorization = OPERATION_AUTH.CreateWorkItemTag
 
   const tour = useTour()
@@ -66,12 +71,20 @@ export default function Project() {
             createWorkItemTagForm.handleSubmit(
               (data) => {
                 console.log({ data })
-                createWIT.mutate(
+                createWorkItemTag.mutate(
                   { data, projectName: 'demo' },
                   {
                     onSuccess(data, variables, context) {
                       formSlice.setCalloutErrors(formName, [])
                       console.log({ onSuccess: data })
+                      notifications.show({
+                        title: 'Success',
+                        color: 'green',
+                        icon: <IconCheck size="1.2rem" />,
+                        autoClose: 5000,
+                        message: 'Item created successfully',
+                      })
+                      createWorkItemTagForm.reset()
                     },
                     onError(error, variables, context) {
                       if (!error.response) return
@@ -80,6 +93,13 @@ export default function Project() {
                       // httperror with array of validationerror
                       console.log({ onError: error.response?.data })
                       formSlice.setCalloutErrors(formName, [error.response.data.detail])
+                      notifications.show({
+                        title: error.response.data.title,
+                        color: 'red',
+                        icon: <IconX size="1.2rem" />,
+                        autoClose: 10000,
+                        message: error.response.data.detail,
+                      })
                     },
                   },
                 )

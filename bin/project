@@ -834,8 +834,11 @@ x.gen.client-server() {
 
     local all_types=()
     mapfile -t all_types < <(ast-parser find-types --exclude-generics --public-only "$REST_MODELS")
-
     types_list=$(join_by "," ${all_types[*]})
+
+    mapfile -t server_types < <(yq e '.components.schemas[] | select(.x-use-server-type == true) | key' $SPEC_PATH)
+    server_types_list=$(join_by "," ${server_types[*]})
+
     # hack to get separate types generation
     sed "s/\$ref: '\#\//\$ref: '$SPEC_PATH\#\//g" $SPEC_PATH >"$paths_file"
 
@@ -846,11 +849,22 @@ x.gen.client-server() {
     # models from rest/models.go (source of generated spec schemas)
     # and not the generated ones to avoid (a lot of) unnecessary conversions.
     oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed types generation" &
-    oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models --types "$types_list" "$paths_file" || err "Failed server generation" &
+    oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models --server-types "$server_types_list" --types "$types_list" "$paths_file" || err "Failed server generation" &
     oapi-codegen --config internal/rest/oapi-codegen-test-client.yaml "$SPEC_PATH" || err "Failed client generation" &
     oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation" &
 
     wait_without_error
+
+    # local configs=(
+    #   "internal/models/oapi-codegen-types.yaml"
+    #   "internal/rest/oapi-codegen-server.yaml"
+    #   "internal/rest/oapi-codegen-test-client.yaml"
+    #   "internal/client/oapi-codegen-client.yaml"
+    # )
+    # for config in ${configs[@]}; do
+    #   local file_path=$(yq e ".output" $config)
+    #   sed -Ei 's/union([[:space:]])json.RawMessage/Union\1json.RawMessage/g' "$file_path"
+    # done
 
     ast-parser find-redeclared --delete "$REST_MODELS" # for duplicates in rest. depends on oapi-codegen output
     codegen implement-server                           # depends on oapi-codegen output
@@ -1232,24 +1246,24 @@ x.test.backend() {
   xsetup.backup.cleanup
 }
 
-# Test frontend.
+# Test frontend. Accepts `vitest` parameters.
 # Args: [...]
 x.test.frontend() {
   # TODO accept vitest args
   config_template_setup frontend
 
   cd frontend
-  pnpm run test:no-watch
+  pnpm run test:no-watch "$@"
   # pnpm run test-types:no-watch
 }
 
-# Test frontend on file changes.
+# Test frontend on file changes. Accepts `vitest` parameters.
 # Args: [...]
 x.test.frontend.watch() {
   config_template_setup frontend
 
   cd frontend
-  pnpm run test
+  pnpm run test "$@"
 }
 
 # Run custom xo generation script tests. Accepts `go test` parameters.

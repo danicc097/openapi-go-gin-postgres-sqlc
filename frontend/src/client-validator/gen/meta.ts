@@ -33,8 +33,6 @@ import {
   DbWorkItemTag,
   DbWorkItemTagCreateParams,
   DbWorkItemType,
-  DemoTwoWorkItems,
-  DemoWorkItems,
   Notification,
   PaginatedNotificationsResponse,
   PaginatedUsersResponse,
@@ -68,6 +66,7 @@ import {
   UpdateUserAuthRequest,
   ValidationError,
   UuidUUID,
+  WorkItem,
   CreateWorkItemRequest,
   Project,
   DbActivityCreateParams,
@@ -87,6 +86,9 @@ import {
   CreateTimeEntryRequest,
   TimeEntry,
   UpdateTimeEntryRequest,
+  DemoTwoWorkItem,
+  DemoWorkItem,
+  WorkItemBase,
 } from './models'
 
 export const schemaDefinitions = {
@@ -149,8 +151,6 @@ export const schemaDefinitions = {
     '#/definitions/DbWorkItemTagCreateParams',
   ),
   DbWorkItemType: info<DbWorkItemType>('DbWorkItemType', '#/definitions/DbWorkItemType'),
-  DemoTwoWorkItems: info<DemoTwoWorkItems>('DemoTwoWorkItems', '#/definitions/DemoTwoWorkItems'),
-  DemoWorkItems: info<DemoWorkItems>('DemoWorkItems', '#/definitions/DemoWorkItems'),
   Notification: info<Notification>('Notification', '#/definitions/Notification'),
   PaginatedNotificationsResponse: info<PaginatedNotificationsResponse>(
     'PaginatedNotificationsResponse',
@@ -199,6 +199,7 @@ export const schemaDefinitions = {
   UpdateUserAuthRequest: info<UpdateUserAuthRequest>('UpdateUserAuthRequest', '#/definitions/UpdateUserAuthRequest'),
   ValidationError: info<ValidationError>('ValidationError', '#/definitions/ValidationError'),
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
+  WorkItem: info<WorkItem>('WorkItem', '#/definitions/WorkItem'),
   CreateWorkItemRequest: info<CreateWorkItemRequest>('CreateWorkItemRequest', '#/definitions/CreateWorkItemRequest'),
   Project: info<Project>('Project', '#/definitions/Project'),
   DbActivityCreateParams: info<DbActivityCreateParams>(
@@ -230,6 +231,9 @@ export const schemaDefinitions = {
     'UpdateTimeEntryRequest',
     '#/definitions/UpdateTimeEntryRequest',
   ),
+  DemoTwoWorkItem: info<DemoTwoWorkItem>('DemoTwoWorkItem', '#/definitions/DemoTwoWorkItem'),
+  DemoWorkItem: info<DemoWorkItem>('DemoWorkItem', '#/definitions/DemoWorkItem'),
+  WorkItemBase: info<WorkItemBase>('WorkItemBase', '#/definitions/WorkItemBase'),
 }
 
 export interface SchemaInfo<T> {

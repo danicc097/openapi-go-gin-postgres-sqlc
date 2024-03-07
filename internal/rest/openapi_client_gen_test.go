@@ -4041,9 +4041,7 @@ func (r CreateWorkItemTypeResponse) StatusCode() int {
 type GetProjectWorkitemsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		union json.RawMessage
-	}
+	JSON200      *WorkItem
 }
 
 // Status returns HTTPResponse.Status
@@ -4470,9 +4468,7 @@ func (r UpdateWorkItemTypeResponse) StatusCode() int {
 type CreateWorkitemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *struct {
-		union json.RawMessage
-	}
+	JSON201      *WorkItem
 }
 
 // Status returns HTTPResponse.Status
@@ -4515,9 +4511,7 @@ func (r DeleteWorkitemResponse) StatusCode() int {
 type GetWorkItemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		union json.RawMessage
-	}
+	JSON200      *WorkItem
 }
 
 // Status returns HTTPResponse.Status
@@ -4539,9 +4533,7 @@ func (r GetWorkItemResponse) StatusCode() int {
 type UpdateWorkitemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		union json.RawMessage
-	}
+	JSON200      *WorkItem
 }
 
 // Status returns HTTPResponse.Status
@@ -5702,9 +5694,7 @@ func ParseGetProjectWorkitemsResponse(rsp *http.Response) (*GetProjectWorkitemsR
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			union json.RawMessage
-		}
+		var dest WorkItem
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6250,9 +6240,7 @@ func ParseCreateWorkitemResponse(rsp *http.Response) (*CreateWorkitemResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest struct {
-			union json.RawMessage
-		}
+		var dest WorkItem
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6293,9 +6281,7 @@ func ParseGetWorkItemResponse(rsp *http.Response) (*GetWorkItemResponse, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			union json.RawMessage
-		}
+		var dest WorkItem
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6320,9 +6306,7 @@ func ParseUpdateWorkitemResponse(rsp *http.Response) (*UpdateWorkitemResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			union json.RawMessage
-		}
+		var dest WorkItem
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

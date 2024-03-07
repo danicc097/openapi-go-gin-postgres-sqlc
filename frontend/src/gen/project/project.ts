@@ -28,9 +28,6 @@ import type {
   DbProject
 } from '../model/dbProject'
 import type {
-  GetProjectWorkitems200
-} from '../model/getProjectWorkitems200'
-import type {
   GetProjectWorkitemsParams
 } from '../model/getProjectWorkitemsParams'
 import type {
@@ -39,6 +36,9 @@ import type {
 import type {
   ProjectConfig
 } from '../model/projectConfig'
+import type {
+  WorkItem
+} from '../model/workItem'
 import { customInstance } from '../../api/mutator';
 import type { ErrorType } from '../../api/mutator';
 
@@ -483,7 +483,7 @@ export const getProjectWorkitems = (
 ) => {
       
       
-      return customInstance<GetProjectWorkitems200>(
+      return customInstance<WorkItem>(
       {url: `/project/${projectName}/workitems`, method: 'GET',
         params, signal
     },

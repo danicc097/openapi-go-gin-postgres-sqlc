@@ -42,7 +42,7 @@ func TestGetPaginatedNotificationsRoute(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, nres.StatusCode())
 
-		// we already validating structure via response validator. now we should just focus on
+		// we are already validating structure via response validator. now we should just focus on
 		// testing elements intrinsic to rest layer in handlers, such as status codes, pagination next cursor returned...
 		body := nres.JSON200
 		assert.Equal(t, fmt.Sprint(notification.UserNotificationID), body.Page.NextCursor)

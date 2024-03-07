@@ -390,60 +390,6 @@ export interface components {
       projectID: number;
       workItemTypeID: number;
     };
-    DemoTwoWorkItems: {
-      /** Format: date-time */
-      closedAt?: string | null;
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      deletedAt?: string | null;
-      demoTwoWorkItem: components["schemas"]["DbDemoTwoWorkItem"];
-      description: string;
-      kanbanStepID: number;
-      members?: components["schemas"]["DbWorkItemM2MAssigneeWIA"][] | null;
-      metadata: {
-        [key: string]: unknown;
-      };
-      /** Format: date-time */
-      targetDate: string;
-      teamID: number | null;
-      timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
-      title: string;
-      /** Format: date-time */
-      updatedAt: string;
-      workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
-      workItemID: number;
-      workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
-      workItemType?: components["schemas"]["DbWorkItemType"];
-      workItemTypeID: number;
-    };
-    DemoWorkItems: {
-      /** Format: date-time */
-      closedAt?: string | null;
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      deletedAt?: string | null;
-      demoWorkItem: components["schemas"]["DbDemoWorkItem"];
-      description: string;
-      kanbanStepID: number;
-      members?: components["schemas"]["DbWorkItemM2MAssigneeWIA"][] | null;
-      metadata: {
-        [key: string]: unknown;
-      };
-      /** Format: date-time */
-      targetDate: string;
-      teamID: number | null;
-      timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
-      title: string;
-      /** Format: date-time */
-      updatedAt: string;
-      workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
-      workItemID: number;
-      workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
-      workItemType?: components["schemas"]["DbWorkItemType"];
-      workItemTypeID: number;
-    };
     Notification: {
       notification: components["schemas"]["DbNotification"];
       notificationID: number;
@@ -683,6 +629,7 @@ export interface components {
       ctx?: Record<string, never>;
     };
     UuidUUID: string;
+    WorkItem: components["schemas"]["DemoWorkItem"] | components["schemas"]["DemoTwoWorkItem"];
     CreateWorkItemRequest: components["schemas"]["CreateDemoWorkItemRequest"] | components["schemas"]["CreateDemoTwoWorkItemRequest"];
     /**
      * @description is generated from projects table.
@@ -769,6 +716,89 @@ export interface components {
       teamID?: number | null;
       userID?: components["schemas"]["DbUserID"];
       workItemID?: number | null;
+    };
+    DemoTwoWorkItem: {
+      /** Format: date-time */
+      closedAt?: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      demoTwoWorkItem: components["schemas"]["DbDemoTwoWorkItem"];
+      description: string;
+      kanbanStepID: number;
+      members?: components["schemas"]["DbWorkItemM2MAssigneeWIA"][] | null;
+      metadata: {
+        [key: string]: unknown;
+      };
+      projectName: components["schemas"]["Project"];
+      /** Format: date-time */
+      targetDate: string;
+      teamID: number | null;
+      timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
+      title: string;
+      /** Format: date-time */
+      updatedAt: string;
+      workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
+      workItemID: number;
+      workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
+      workItemType?: components["schemas"]["DbWorkItemType"];
+      workItemTypeID: number;
+    };
+    DemoWorkItem: {
+      /** Format: date-time */
+      closedAt?: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      demoWorkItem: components["schemas"]["DbDemoWorkItem"];
+      description: string;
+      kanbanStepID: number;
+      members?: components["schemas"]["DbWorkItemM2MAssigneeWIA"][] | null;
+      metadata: {
+        [key: string]: unknown;
+      };
+      projectName: components["schemas"]["Project"];
+      /** Format: date-time */
+      targetDate: string;
+      teamID: number | null;
+      timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
+      title: string;
+      /** Format: date-time */
+      updatedAt: string;
+      workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
+      workItemID: number;
+      workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
+      workItemType?: components["schemas"]["DbWorkItemType"];
+      workItemTypeID: number;
+    };
+    WorkItemBase: {
+      /** Format: date-time */
+      closedAt?: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      description: string;
+      kanbanStepID: number;
+      members?: components["schemas"]["DbWorkItemM2MAssigneeWIA"][] | null;
+      metadata: {
+        [key: string]: unknown;
+      };
+      projectName: components["schemas"]["Project"];
+      /** Format: date-time */
+      targetDate: string;
+      teamID: number | null;
+      timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
+      title: string;
+      /** Format: date-time */
+      updatedAt: string;
+      workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
+      workItemID: number;
+      workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
+      workItemType?: components["schemas"]["DbWorkItemType"];
+      workItemTypeID: number;
     };
   };
   responses: never;
@@ -1731,7 +1761,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["DemoWorkItems"] | components["schemas"]["DemoTwoWorkItems"];
+          "application/json": components["schemas"]["WorkItem"];
         };
       };
     };
@@ -1747,7 +1777,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["DbWorkItem"];
+          "application/json": components["schemas"]["WorkItem"];
         };
       };
     };
@@ -1767,7 +1797,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["DbWorkItem"];
+          "application/json": components["schemas"]["WorkItem"];
         };
       };
     };
@@ -1803,7 +1833,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["DbWorkItem"];
+          "application/json": components["schemas"]["WorkItem"];
         };
       };
     };

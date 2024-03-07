@@ -13,6 +13,11 @@ import (
 	"go.uber.org/zap"
 )
 
+type WorkItemCreateParams struct {
+	TagIDs  []db.WorkItemTagID `json:"tagIDs"  nullable:"false" required:"true"`
+	Members []Member           `json:"members" nullable:"false" required:"true"`
+}
+
 type WorkItem struct {
 	logger *zap.SugaredLogger
 	repos  *repos.Repos
@@ -170,4 +175,24 @@ func (w *WorkItem) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db
 	}
 
 	return wi, nil
+}
+
+func (w *WorkItem) validateCreateParams(d db.DBTX, caller CtxUser, params *db.WorkItemCreateParams) error {
+	if err := w.validateBaseParams(validateModeCreate, d, caller, params); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (w *WorkItem) validateUpdateParams(d db.DBTX, caller CtxUser, params *db.WorkItemUpdateParams) error {
+	if err := w.validateBaseParams(validateModeUpdate, d, caller, params); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (w *WorkItem) validateBaseParams(mode validateMode, d db.DBTX, caller CtxUser, params db.WorkItemParams) error {
+	return nil
 }

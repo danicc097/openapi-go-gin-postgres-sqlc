@@ -584,55 +584,61 @@ type DemoKanbanSteps string
 // DemoTwoKanbanSteps is generated from kanban_steps table.
 type DemoTwoKanbanSteps string
 
+// DemoTwoWorkItem defines the model for DemoTwoWorkItem.
+type DemoTwoWorkItem struct {
+	ClosedAt        *time.Time                  `json:"closedAt"`
+	CreatedAt       time.Time                   `json:"createdAt"`
+	DeletedAt       *time.Time                  `json:"deletedAt"`
+	DemoTwoWorkItem DbDemoTwoWorkItem           `json:"demoTwoWorkItem"`
+	Description     string                      `json:"description"`
+	KanbanStepID    int                         `json:"kanbanStepID"`
+	Members         *[]DbWorkItemM2MAssigneeWIA `json:"members"`
+	Metadata        map[string]interface{}      `json:"metadata"`
+
+	// ProjectName is generated from projects table.
+	ProjectName      Project              `json:"projectName"`
+	TargetDate       time.Time            `json:"targetDate"`
+	TeamID           *int                 `json:"teamID"`
+	TimeEntries      *[]DbTimeEntry       `json:"timeEntries"`
+	Title            string               `json:"title"`
+	UpdatedAt        time.Time            `json:"updatedAt"`
+	WorkItemComments *[]DbWorkItemComment `json:"workItemComments"`
+	WorkItemID       int                  `json:"workItemID"`
+	WorkItemTags     *[]DbWorkItemTag     `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType      `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                  `json:"workItemTypeID"`
+}
+
 // DemoTwoWorkItemTypes is generated from work_item_types table.
 type DemoTwoWorkItemTypes string
 
-// DemoTwoWorkItems defines the model for DemoTwoWorkItems.
-type DemoTwoWorkItems struct {
-	ClosedAt         *time.Time                  `json:"closedAt"`
-	CreatedAt        time.Time                   `json:"createdAt"`
-	DeletedAt        *time.Time                  `json:"deletedAt"`
-	DemoTwoWorkItem  DbDemoTwoWorkItem           `json:"demoTwoWorkItem"`
-	Description      string                      `json:"description"`
-	KanbanStepID     int                         `json:"kanbanStepID"`
-	Members          *[]DbWorkItemM2MAssigneeWIA `json:"members"`
-	Metadata         map[string]interface{}      `json:"metadata"`
-	TargetDate       time.Time                   `json:"targetDate"`
-	TeamID           *int                        `json:"teamID"`
-	TimeEntries      *[]DbTimeEntry              `json:"timeEntries"`
-	Title            string                      `json:"title"`
-	UpdatedAt        time.Time                   `json:"updatedAt"`
-	WorkItemComments *[]DbWorkItemComment        `json:"workItemComments"`
-	WorkItemID       int                         `json:"workItemID"`
-	WorkItemTags     *[]DbWorkItemTag            `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType             `json:"workItemType,omitempty"`
-	WorkItemTypeID   int                         `json:"workItemTypeID"`
+// DemoWorkItem defines the model for DemoWorkItem.
+type DemoWorkItem struct {
+	ClosedAt     *time.Time                  `json:"closedAt"`
+	CreatedAt    time.Time                   `json:"createdAt"`
+	DeletedAt    *time.Time                  `json:"deletedAt"`
+	DemoWorkItem DbDemoWorkItem              `json:"demoWorkItem"`
+	Description  string                      `json:"description"`
+	KanbanStepID int                         `json:"kanbanStepID"`
+	Members      *[]DbWorkItemM2MAssigneeWIA `json:"members"`
+	Metadata     map[string]interface{}      `json:"metadata"`
+
+	// ProjectName is generated from projects table.
+	ProjectName      Project              `json:"projectName"`
+	TargetDate       time.Time            `json:"targetDate"`
+	TeamID           *int                 `json:"teamID"`
+	TimeEntries      *[]DbTimeEntry       `json:"timeEntries"`
+	Title            string               `json:"title"`
+	UpdatedAt        time.Time            `json:"updatedAt"`
+	WorkItemComments *[]DbWorkItemComment `json:"workItemComments"`
+	WorkItemID       int                  `json:"workItemID"`
+	WorkItemTags     *[]DbWorkItemTag     `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType      `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                  `json:"workItemTypeID"`
 }
 
 // DemoWorkItemTypes is generated from work_item_types table.
 type DemoWorkItemTypes string
-
-// DemoWorkItems defines the model for DemoWorkItems.
-type DemoWorkItems struct {
-	ClosedAt         *time.Time                  `json:"closedAt"`
-	CreatedAt        time.Time                   `json:"createdAt"`
-	DeletedAt        *time.Time                  `json:"deletedAt"`
-	DemoWorkItem     DbDemoWorkItem              `json:"demoWorkItem"`
-	Description      string                      `json:"description"`
-	KanbanStepID     int                         `json:"kanbanStepID"`
-	Members          *[]DbWorkItemM2MAssigneeWIA `json:"members"`
-	Metadata         map[string]interface{}      `json:"metadata"`
-	TargetDate       time.Time                   `json:"targetDate"`
-	TeamID           *int                        `json:"teamID"`
-	TimeEntries      *[]DbTimeEntry              `json:"timeEntries"`
-	Title            string                      `json:"title"`
-	UpdatedAt        time.Time                   `json:"updatedAt"`
-	WorkItemComments *[]DbWorkItemComment        `json:"workItemComments"`
-	WorkItemID       int                         `json:"workItemID"`
-	WorkItemTags     *[]DbWorkItemTag            `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType             `json:"workItemType,omitempty"`
-	WorkItemTypeID   int                         `json:"workItemTypeID"`
-}
 
 // Direction defines the model for Direction.
 type Direction string
@@ -874,6 +880,35 @@ type ValidationError struct {
 	Msg string `json:"msg"`
 }
 
+// WorkItem defines the model for WorkItem.
+type WorkItem struct {
+	union json.RawMessage
+}
+
+// WorkItemBase defines the model for WorkItemBase.
+type WorkItemBase struct {
+	ClosedAt     *time.Time                  `json:"closedAt"`
+	CreatedAt    time.Time                   `json:"createdAt"`
+	DeletedAt    *time.Time                  `json:"deletedAt"`
+	Description  string                      `json:"description"`
+	KanbanStepID int                         `json:"kanbanStepID"`
+	Members      *[]DbWorkItemM2MAssigneeWIA `json:"members"`
+	Metadata     map[string]interface{}      `json:"metadata"`
+
+	// ProjectName is generated from projects table.
+	ProjectName      Project              `json:"projectName"`
+	TargetDate       time.Time            `json:"targetDate"`
+	TeamID           *int                 `json:"teamID"`
+	TimeEntries      *[]DbTimeEntry       `json:"timeEntries"`
+	Title            string               `json:"title"`
+	UpdatedAt        time.Time            `json:"updatedAt"`
+	WorkItemComments *[]DbWorkItemComment `json:"workItemComments"`
+	WorkItemID       int                  `json:"workItemID"`
+	WorkItemTags     *[]DbWorkItemTag     `json:"workItemTags"`
+	WorkItemType     *DbWorkItemType      `json:"workItemType,omitempty"`
+	WorkItemTypeID   int                  `json:"workItemTypeID"`
+}
+
 // WorkItemComment defines the model for WorkItemComment.
 type WorkItemComment struct {
 	CreatedAt         time.Time `json:"createdAt"`
@@ -1074,6 +1109,53 @@ func (t CreateWorkItemRequest) MarshalJSON() ([]byte, error) {
 }
 
 func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsDemoWorkItem returns the union data inside the WorkItem as a DemoWorkItem
+func (t WorkItem) AsDemoWorkItem() (DemoWorkItem, error) {
+	var body DemoWorkItem
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// AsDemoTwoWorkItem returns the union data inside the WorkItem as a DemoTwoWorkItem
+func (t WorkItem) AsDemoTwoWorkItem() (DemoTwoWorkItem, error) {
+	var body DemoTwoWorkItem
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t WorkItem) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"projectName"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t WorkItem) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "demo":
+		return t.AsDemoWorkItem()
+	case "demo_two":
+		return t.AsDemoTwoWorkItem()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t WorkItem) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *WorkItem) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

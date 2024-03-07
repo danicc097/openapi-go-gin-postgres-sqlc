@@ -28,7 +28,7 @@ func WrapErrorf(orig error, code models.ErrorCode, format string, a ...any) erro
 	}
 }
 
-// WrapErrorWithLocf appends a given `path` to loc.
+// WrapErrorWithLocf accumulates a given path in loc.
 func WrapErrorWithLocf(orig error, code models.ErrorCode, loc []string, format string, a ...interface{}) error {
 	var previousCode models.ErrorCode
 	var previousLoc []string

@@ -612,12 +612,9 @@ type DemoKanbanSteps string
 // DemoTwoKanbanSteps is generated from kanban_steps table.
 type DemoTwoKanbanSteps string
 
-// DemoTwoWorkItemTypes is generated from work_item_types table.
-type DemoTwoWorkItemTypes string
-
 /* Ignoring existing rest struct
-// DemoTwoWorkItems defines the model for DemoTwoWorkItems.
-type DemoTwoWorkItems  struct {
+// DemoTwoWorkItem defines the model for DemoTwoWorkItem.
+type DemoTwoWorkItem  struct {
     ClosedAt *time.Time`json:"closedAt"`
     CreatedAt time.Time`json:"createdAt"`
     DeletedAt *time.Time`json:"deletedAt"`
@@ -626,6 +623,39 @@ type DemoTwoWorkItems  struct {
     KanbanStepID int`json:"kanbanStepID"`
     Members *[]externalRef0.DbWorkItemM2MAssigneeWIA`json:"members"`
     Metadata map[string]interface{}`json:"metadata"`
+
+// ProjectName is generated from projects table.
+    ProjectName externalRef0.Project`json:"projectName"`
+    TargetDate time.Time`json:"targetDate"`
+    TeamID *int`json:"teamID"`
+    TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
+    Title string`json:"title"`
+    UpdatedAt time.Time`json:"updatedAt"`
+    WorkItemComments *[]externalRef0.DbWorkItemComment`json:"workItemComments"`
+    WorkItemID int`json:"workItemID"`
+    WorkItemTags *[]externalRef0.DbWorkItemTag`json:"workItemTags"`
+    WorkItemType *externalRef0.DbWorkItemType`json:"workItemType,omitempty"`
+    WorkItemTypeID int`json:"workItemTypeID"`
+}
+*/
+
+// DemoTwoWorkItemTypes is generated from work_item_types table.
+type DemoTwoWorkItemTypes string
+
+/* Ignoring existing rest struct
+// DemoWorkItem defines the model for DemoWorkItem.
+type DemoWorkItem  struct {
+    ClosedAt *time.Time`json:"closedAt"`
+    CreatedAt time.Time`json:"createdAt"`
+    DeletedAt *time.Time`json:"deletedAt"`
+    DemoWorkItem externalRef0.DbDemoWorkItem`json:"demoWorkItem"`
+    Description string`json:"description"`
+    KanbanStepID int`json:"kanbanStepID"`
+    Members *[]externalRef0.DbWorkItemM2MAssigneeWIA`json:"members"`
+    Metadata map[string]interface{}`json:"metadata"`
+
+// ProjectName is generated from projects table.
+    ProjectName externalRef0.Project`json:"projectName"`
     TargetDate time.Time`json:"targetDate"`
     TeamID *int`json:"teamID"`
     TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
@@ -641,30 +671,6 @@ type DemoTwoWorkItems  struct {
 
 // DemoWorkItemTypes is generated from work_item_types table.
 type DemoWorkItemTypes string
-
-/* Ignoring existing rest struct
-// DemoWorkItems defines the model for DemoWorkItems.
-type DemoWorkItems  struct {
-    ClosedAt *time.Time`json:"closedAt"`
-    CreatedAt time.Time`json:"createdAt"`
-    DeletedAt *time.Time`json:"deletedAt"`
-    DemoWorkItem externalRef0.DbDemoWorkItem`json:"demoWorkItem"`
-    Description string`json:"description"`
-    KanbanStepID int`json:"kanbanStepID"`
-    Members *[]externalRef0.DbWorkItemM2MAssigneeWIA`json:"members"`
-    Metadata map[string]interface{}`json:"metadata"`
-    TargetDate time.Time`json:"targetDate"`
-    TeamID *int`json:"teamID"`
-    TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
-    Title string`json:"title"`
-    UpdatedAt time.Time`json:"updatedAt"`
-    WorkItemComments *[]externalRef0.DbWorkItemComment`json:"workItemComments"`
-    WorkItemID int`json:"workItemID"`
-    WorkItemTags *[]externalRef0.DbWorkItemTag`json:"workItemTags"`
-    WorkItemType *externalRef0.DbWorkItemType`json:"workItemType,omitempty"`
-    WorkItemTypeID int`json:"workItemTypeID"`
-}
-*/
 
 // Direction defines the model for Direction.
 type Direction string
@@ -936,6 +942,37 @@ type ValidationError struct {
 	Msg string `json:"msg"`
 }
 
+// WorkItem defines the model for WorkItem.
+type WorkItem struct {
+	union json.RawMessage
+}
+
+/* Ignoring existing rest struct
+// WorkItemBase defines the model for WorkItemBase.
+type WorkItemBase  struct {
+    ClosedAt *time.Time`json:"closedAt"`
+    CreatedAt time.Time`json:"createdAt"`
+    DeletedAt *time.Time`json:"deletedAt"`
+    Description string`json:"description"`
+    KanbanStepID int`json:"kanbanStepID"`
+    Members *[]externalRef0.DbWorkItemM2MAssigneeWIA`json:"members"`
+    Metadata map[string]interface{}`json:"metadata"`
+
+// ProjectName is generated from projects table.
+    ProjectName externalRef0.Project`json:"projectName"`
+    TargetDate time.Time`json:"targetDate"`
+    TeamID *int`json:"teamID"`
+    TimeEntries *[]externalRef0.DbTimeEntry`json:"timeEntries"`
+    Title string`json:"title"`
+    UpdatedAt time.Time`json:"updatedAt"`
+    WorkItemComments *[]externalRef0.DbWorkItemComment`json:"workItemComments"`
+    WorkItemID int`json:"workItemID"`
+    WorkItemTags *[]externalRef0.DbWorkItemTag`json:"workItemTags"`
+    WorkItemType *externalRef0.DbWorkItemType`json:"workItemType,omitempty"`
+    WorkItemTypeID int`json:"workItemTypeID"`
+}
+*/
+
 /* Ignoring existing rest struct
 // WorkItemComment defines the model for WorkItemComment.
 type WorkItemComment  struct {
@@ -1142,6 +1179,53 @@ func (t CreateWorkItemRequest) MarshalJSON() ([]byte, error) {
 }
 
 func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsDemoWorkItem returns the union data inside the WorkItem as a DemoWorkItem
+func (t WorkItem) AsDemoWorkItem() (DemoWorkItem, error) {
+	var body DemoWorkItem
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// AsDemoTwoWorkItem returns the union data inside the WorkItem as a DemoTwoWorkItem
+func (t WorkItem) AsDemoTwoWorkItem() (DemoTwoWorkItem, error) {
+	var body DemoTwoWorkItem
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t WorkItem) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"projectName"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t WorkItem) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "DemoTwoWorkItem":
+		return t.AsDemoTwoWorkItem()
+	case "DemoWorkItem":
+		return t.AsDemoWorkItem()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t WorkItem) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *WorkItem) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -3144,9 +3228,7 @@ type GetProjectWorkitemsResponseObject interface {
 	VisitGetProjectWorkitemsResponse(w http.ResponseWriter) error
 }
 
-type GetProjectWorkitems200JSONResponse struct {
-	union json.RawMessage
-}
+type GetProjectWorkitems200JSONResponse WorkItem
 
 func (response GetProjectWorkitems200JSONResponse) VisitGetProjectWorkitemsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3851,9 +3933,7 @@ type CreateWorkitemResponseObject interface {
 	VisitCreateWorkitemResponse(w http.ResponseWriter) error
 }
 
-type CreateWorkitem201JSONResponse struct {
-	union json.RawMessage
-}
+type CreateWorkitem201JSONResponse WorkItem
 
 func (response CreateWorkitem201JSONResponse) VisitCreateWorkitemResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3885,9 +3965,7 @@ type GetWorkItemResponseObject interface {
 	VisitGetWorkItemResponse(w http.ResponseWriter) error
 }
 
-type GetWorkItem200JSONResponse struct {
-	union json.RawMessage
-}
+type GetWorkItem200JSONResponse WorkItem
 
 func (response GetWorkItem200JSONResponse) VisitGetWorkItemResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -3904,9 +3982,7 @@ type UpdateWorkitemResponseObject interface {
 	VisitUpdateWorkitemResponse(w http.ResponseWriter) error
 }
 
-type UpdateWorkitem200JSONResponse struct {
-	union json.RawMessage
-}
+type UpdateWorkitem200JSONResponse WorkItem
 
 func (response UpdateWorkitem200JSONResponse) VisitUpdateWorkitemResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
