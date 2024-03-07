@@ -60,7 +60,7 @@ func TestHandlers_DeleteWorkItemComment(t *testing.T) {
 			teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
 			workItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.TeamID})
 
-			workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: requiredProject, UserID: ufixture.UserID, WorkItemID: workItemf.WorkItemID})
+			workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{UserID: ufixture.UserID, WorkItemID: workItemf.WorkItemID})
 
 			id := workItemCommentf.WorkItemCommentID
 			res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), workItemf.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
@@ -141,7 +141,7 @@ func TestHandlers_GetWorkItemComment(t *testing.T) {
 		requiredProject := models.ProjectDemo
 		teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
 		workItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.TeamID})
-		workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: requiredProject, UserID: ufixture.UserID, WorkItemID: workItemf.WorkItemID})
+		workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{UserID: ufixture.UserID, WorkItemID: workItemf.WorkItemID})
 
 		id := workItemCommentf.WorkItemCommentID
 		res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), workItemf.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
@@ -228,7 +228,7 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 			requiredProject := models.ProjectDemo
 			teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
 			workItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.TeamID})
-			workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: requiredProject, UserID: *tc.body.UserID, WorkItemID: *tc.body.WorkItemID})
+			workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{UserID: *tc.body.UserID, WorkItemID: *tc.body.WorkItemID})
 
 			id := workItemCommentf.WorkItemCommentID
 			updateRes, err := srv.client.UpdateWorkItemCommentWithResponse(context.Background(), workItemf.WorkItemID, id, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))

@@ -25,9 +25,11 @@ import { useTour } from '@reactour/tour'
 import { useCreateWorkItemTag } from 'src/gen/work-item-tag/work-item-tag'
 import { IconCheck, IconCross, IconX } from '@tabler/icons'
 import { notifications } from '@mantine/notifications'
+import { useUISlice } from 'src/slices/ui'
 
 export default function Project() {
   const formSlice = useFormSlice()
+  const uiSlice = useUISlice()
 
   const createWorkItemTagRequestSchema = JSON_SCHEMA.definitions.CreateWorkItemTagRequest
   const createWorkItemTagForm = useForm<CreateWorkItemTagRequest>({
@@ -72,7 +74,7 @@ export default function Project() {
               (data) => {
                 console.log({ data })
                 createWorkItemTag.mutate(
-                  { data, projectName: 'demo' },
+                  { data, projectName: uiSlice.project },
                   {
                     onSuccess(data, variables, context) {
                       formSlice.setCalloutErrors(formName, [])
