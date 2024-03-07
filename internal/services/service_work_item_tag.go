@@ -53,21 +53,8 @@ func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, proj
 func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller CtxUser, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	// TODO: user set from authmiddleware should be typed user with predefined useful joins like teams and projects.
-	// then pass over ass context. we could replace `caller CtxUser` with just its userID and fetch it every single time with its proper joins,
-	// but why would we... caller is something used all over the place for every service method.
-	// userInProject := false
-	// for _, team := range caller.MemberTeamsJoin {
-	// 	if team.ProjectID == params.ProjectID {
-	// 		userInProject = true
-	// 	}
-	// }
-	userProjects := make([]db.ProjectID, len(caller.Projects))
-	for i, p := range caller.Projects {
-		userProjects[i] = p.ProjectID
-	}
-	if !slices.Contains(userProjects, params.ProjectID) {
-		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "user is not a member of project %q", internal.ProjectNameByID[params.ProjectID])
+	if err := wit.validateCreateParams(d, caller, params); err != nil {
+		return nil, err
 	}
 
 	witObj, err := wit.repos.WorkItemTag.Create(ctx, d, params)
@@ -82,20 +69,11 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller CtxUser, p
 func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller CtxUser, id db.WorkItemTagID, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	witObj, err := wit.repos.WorkItemTag.ByID(ctx, d, id)
-	if err != nil {
-		return nil, fmt.Errorf("work item tag not found: %w", err)
+	if err := wit.validateUpdateParams(d, caller, id, params); err != nil {
+		return nil, err
 	}
 
-	userProjects := make([]db.ProjectID, len(caller.Projects))
-	for i, p := range caller.Projects {
-		userProjects[i] = p.ProjectID
-	}
-	if !slices.Contains(userProjects, witObj.ProjectID) {
-		return nil, internal.NewErrorf(models.ErrorCodeUnauthorized, "user is not a member of project %q", internal.ProjectNameByID[witObj.ProjectID])
-	}
-
-	witObj, err = wit.repos.WorkItemTag.Update(ctx, d, id, params)
+	witObj, err := wit.repos.WorkItemTag.Update(ctx, d, id, params)
 	if err != nil {
 		return nil, fmt.Errorf("repos.WorkItemTag.Update: %w", err)
 	}
@@ -113,4 +91,47 @@ func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, caller CtxUser, i
 	}
 
 	return witObj, nil
+}
+
+func (wit *WorkItemTag) validateCreateParams(d db.DBTX, caller CtxUser, params *db.WorkItemTagCreateParams) error {
+	if err := wit.validateBaseParams(validateModeCreate, d, caller, nil, params); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (wit *WorkItemTag) validateUpdateParams(d db.DBTX, caller CtxUser, id db.WorkItemTagID, params *db.WorkItemTagUpdateParams) error {
+	if err := wit.validateBaseParams(validateModeUpdate, d, caller, &id, params); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (wit *WorkItemTag) validateBaseParams(mode validateMode, d db.DBTX, caller CtxUser, id *db.WorkItemTagID, params db.WorkItemTagParams) error {
+	var projectID db.ProjectID
+
+	switch {
+	case params.GetProjectID() != nil:
+		projectID = *params.GetProjectID()
+	case id != nil: // update may change a tags project, so default to current tag's project last
+		witObj, err := wit.repos.WorkItemTag.ByID(context.Background(), d, *id)
+		if err != nil {
+			return fmt.Errorf("work item tag not found: %w", err)
+		}
+		projectID = witObj.ProjectID
+	default:
+		return internal.NewErrorf(models.ErrorCodeInvalidArgument, "missing project parameter")
+	}
+
+	userProjects := make([]db.ProjectID, len(caller.Projects))
+	for i, p := range caller.Projects {
+		userProjects[i] = p.ProjectID
+	}
+	if !slices.Contains(userProjects, projectID) {
+		return internal.NewErrorf(models.ErrorCodeUnauthorized, "user is not a member of project %q", internal.ProjectNameByID[projectID])
+	}
+
+	return nil
 }
