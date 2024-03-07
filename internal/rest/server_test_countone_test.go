@@ -42,11 +42,11 @@ func TestTracing(t *testing.T) {
 
 	requiredProject := models.ProjectDemo
 	teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
-	workItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.Team.TeamID})
-	workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: requiredProject, UserID: ufixture.User.UserID, WorkItemID: workItemf.WorkItem.WorkItemID})
+	workItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.TeamID})
+	workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: requiredProject, UserID: ufixture.UserID, WorkItemID: workItemf.WorkItemID})
 
-	id := workItemCommentf.WorkItemComment.WorkItemCommentID
-	res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), workItemf.WorkItem.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
+	id := workItemCommentf.WorkItemCommentID
+	res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), workItemf.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNoContent, res.StatusCode(), string(res.Body))
 

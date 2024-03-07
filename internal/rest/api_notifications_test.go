@@ -35,7 +35,7 @@ func TestGetPaginatedNotificationsRoute(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		notification := ff.CreatePersonalNotification(context.Background(), servicetestutil.CreateNotificationParams{Receiver: &ufixture.User.UserID})
+		notification := ff.CreatePersonalNotification(context.Background(), servicetestutil.CreateNotificationParams{Receiver: &ufixture.UserID})
 
 		p := &rest.GetPaginatedNotificationsParams{Limit: 5, Direction: models.DirectionAsc, Cursor: "0"}
 		nres, err := srv.client.GetPaginatedNotificationsWithResponse(context.Background(), p, ReqWithAPIKey(ufixture.APIKey.APIKey))
@@ -48,6 +48,6 @@ func TestGetPaginatedNotificationsRoute(t *testing.T) {
 		assert.Equal(t, fmt.Sprint(notification.UserNotificationID), body.Page.NextCursor)
 		// this would actually be a duplicated test
 		assert.Len(t, body.Items, 1)
-		assert.True(t, body.Items[0].UserID == ufixture.User.UserID)
+		assert.True(t, body.Items[0].UserID == ufixture.UserID)
 	})
 }

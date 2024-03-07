@@ -21,7 +21,7 @@ type CreateUserParams struct {
 }
 
 type CreateUserFixture struct {
-	User   *db.User
+	*db.User
 	APIKey *db.UserAPIKey
 	Token  string
 }

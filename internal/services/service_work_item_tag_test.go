@@ -35,7 +35,7 @@ func TestWorkItemTag_Update(t *testing.T) {
 		WithAPIKey: true,
 	})
 
-	tagCreator.User, err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, teamf.Team.TeamID)
+	tagCreator.User, err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.UserID, teamf.TeamID)
 	require.NoError(t, err)
 
 	witCreateParams := postgresqlrandom.WorkItemTagCreateParams(internal.ProjectIDByName[requiredProject])
@@ -108,7 +108,7 @@ func TestWorkItemTag_Update(t *testing.T) {
 			})
 
 			if tc.args.withUserInProject {
-				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, teamf.Team.TeamID)
+				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.UserID, teamf.TeamID)
 				require.NoError(t, err)
 			}
 

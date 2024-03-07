@@ -52,7 +52,7 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 				Role:       tc.role,
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
-				TeamIDs:    []db.TeamID{teamf.Team.TeamID},
+				TeamIDs:    []db.TeamID{teamf.TeamID},
 			})
 			require.NoError(t, err)
 

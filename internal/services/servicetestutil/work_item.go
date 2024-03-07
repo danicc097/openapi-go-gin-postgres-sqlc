@@ -17,7 +17,7 @@ type CreateWorkItemParams struct {
 }
 
 type CreateWorkItemFixture struct {
-	WorkItem *db.WorkItem
+	*db.WorkItem
 }
 
 // CreateWorkItem creates a new random work item comment with the given configuration.

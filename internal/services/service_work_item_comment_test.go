@@ -37,7 +37,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 	demoWorkItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: models.ProjectDemo, TeamID: team.TeamID})
 	require.NoError(t, err)
 
-	workItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(creator.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
+	workItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(creator.UserID, demoWorkItemf.WorkItemID)
 	workitemcomment, err := svc.WorkItemComment.Create(context.Background(), testPool, workItemCommentCreateParams)
 	require.NoError(t, err)
 
@@ -47,7 +47,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 		withUserInProject bool
 	}
 
-	wantParams := postgresqlrandom.WorkItemCommentCreateParams(creator.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
+	wantParams := postgresqlrandom.WorkItemCommentCreateParams(creator.UserID, demoWorkItemf.WorkItemID)
 
 	tests := []struct {
 		name          string
@@ -94,7 +94,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 			})
 
 			if tc.args.withUserInProject {
-				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)
+				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.UserID, team.TeamID)
 				require.NoError(t, err)
 			}
 

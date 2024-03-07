@@ -39,7 +39,7 @@ func Test${pascal_name}_Update(t *testing.T) {
 		WithAPIKey: true,
 	})
 
-	creator.User, err = svc.User.AssignTeam(context.Background(), testPool, creator.User.UserID, team.TeamID)
+	creator.User, err = svc.User.AssignTeam(context.Background(), testPool, creator.UserID, team.TeamID)
 	require.NoError(t, err)
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
@@ -101,7 +101,7 @@ done)
 			})
 
 			if tc.args.withUserInProject {
-				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)
+				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.UserID, team.TeamID)
 				require.NoError(t, err)
 			}
 
