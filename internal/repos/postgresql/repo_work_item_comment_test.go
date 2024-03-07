@@ -66,7 +66,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 
 					return
 				}
-				assert.ErrorContains(t, err, tc.errContains)
+				require.ErrorContains(t, err, tc.errContains)
 
 				return
 			}

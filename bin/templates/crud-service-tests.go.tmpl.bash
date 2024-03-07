@@ -114,13 +114,12 @@ done)
 
 			if len(tc.errorContains) > 0 {
 				for _, ve := range tc.errorContains {
-					assert.ErrorContains(t, err, ve)
+					require.ErrorContains(t, err, ve)
 				}
 
 				return
 			}
 
-			// loop all fields like in above
 			// assert.Equal(t, *tc.want.<Field>, got.<Field>)
 			$(for f in ${db_update_params_struct_fields[@]}; do
   echo "		assert.Equal(t, *tc.want.$f, got.$f)"

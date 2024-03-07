@@ -76,7 +76,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 
 					return
 				}
-				assert.ErrorContains(t, err, tc.errContains)
+				require.ErrorContains(t, err, tc.errContains)
 
 				return
 			}
@@ -214,7 +214,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 		_, err := ${camel_name}Repo.Create(context.Background(), testPool, &args.params)
 		require.Error(t, err)
 
-		assert.ErrorContains(t, err, errViolatesCheckConstraint)
+		require.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 }
 EOF

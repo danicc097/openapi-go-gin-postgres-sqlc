@@ -10,6 +10,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestTimeEntry_ByIndexedQueries(t *testing.T) {
@@ -45,6 +46,6 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 		ucp := postgresqlrandom.TimeEntryCreateParams(activity.ActivityID, user.UserID, nil, nil)
 
 		_, err := timeEntryRepo.Create(context.Background(), testPool, ucp)
-		assert.ErrorContains(t, err, errViolatesCheckConstraint)
+		require.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 }

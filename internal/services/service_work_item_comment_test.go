@@ -104,13 +104,12 @@ func TestWorkItemComment_Update(t *testing.T) {
 
 			if len(tc.errorContains) > 0 {
 				for _, ve := range tc.errorContains {
-					assert.ErrorContains(t, err, ve)
+					require.ErrorContains(t, err, ve)
 				}
 
 				return
 			}
 
-			// loop all fields like in above
 			// assert.Equal(t, *tc.want.<Field>, got.<Field>)
 			assert.Equal(t, *tc.want.Message, got.Message)
 			assert.Equal(t, *tc.want.UserID, got.UserID)

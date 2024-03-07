@@ -54,12 +54,12 @@ func TestUserFriendlyPgErrors(t *testing.T) {
 		_, err = witRepo.Create(context.Background(), testPool, &args.params)
 		require.Error(t, err)
 
-		assert.ErrorContains(t, err, fmt.Sprintf("combination of name=%s and projectID=%d already exists", want.Name, want.ProjectID))
+		require.ErrorContains(t, err, fmt.Sprintf("combination of name=%s and projectID=%d already exists", want.Name, want.ProjectID))
 
 		args.params.ProjectID = -999
 		_, err = witRepo.Create(context.Background(), testPool, &args.params)
 		require.Error(t, err)
 
-		assert.ErrorContains(t, err, fmt.Sprintf("projectID \"%d\" is invalid", args.params.ProjectID))
+		require.ErrorContains(t, err, fmt.Sprintf("projectID \"%d\" is invalid", args.params.ProjectID))
 	})
 }
