@@ -10,12 +10,12 @@ import (
 func (h *StrictHandlers) CreateWorkItemTag(c *gin.Context, request CreateWorkItemTagRequestObject) (CreateWorkItemTagResponseObject, error) {
 	ctx := c.Request.Context()
 	tx := GetTxFromCtx(c)
-	u, _ := getUserCallerFromCtx(c)
+	caller, _ := getUserCallerFromCtx(c)
 
 	body := request.Body
 	body.WorkItemTagCreateParams.ProjectID = internal.ProjectIDByName[request.ProjectName]
 
-	wit, err := h.svc.WorkItemTag.Create(ctx, tx, u, &body.WorkItemTagCreateParams)
+	wit, err := h.svc.WorkItemTag.Create(ctx, tx, caller, &body.WorkItemTagCreateParams)
 	if err != nil {
 		renderErrorResponse(c, "Could not create work item tag", err)
 

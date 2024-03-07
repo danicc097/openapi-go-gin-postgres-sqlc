@@ -13,15 +13,19 @@ import (
 )
 
 type WorkItemTag struct {
-	logger *zap.SugaredLogger
-	repos  *repos.Repos
+	logger   *zap.SugaredLogger
+	repos    *repos.Repos
+	authzsvc *Authorization
 }
 
 // NewWorkItemTag returns a new WorkItemTag service.
 func NewWorkItemTag(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItemTag {
+	authzsvc := NewAuthorization(logger)
+
 	return &WorkItemTag{
-		logger: logger,
-		repos:  repos,
+		logger:   logger,
+		repos:    repos,
+		authzsvc: authzsvc,
 	}
 }
 
