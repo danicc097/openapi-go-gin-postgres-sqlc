@@ -21,6 +21,8 @@ import (
 func TestWorkItemTag_Update(t *testing.T) {
 	t.Parallel()
 
+	var err error
+
 	logger := testutil.NewLogger(t)
 
 	requiredProject := models.ProjectDemo
@@ -28,13 +30,12 @@ func TestWorkItemTag_Update(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	team, err := svc.Team.Create(context.Background(), testPool, postgresqlrandom.TeamCreateParams(internal.ProjectIDByName[requiredProject]))
-	require.NoError(t, err)
+	teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
 	tagCreator := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		WithAPIKey: true,
 	})
 
-	tagCreator.User, err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, team.TeamID)
+	tagCreator.User, err = svc.User.AssignTeam(context.Background(), testPool, tagCreator.User.UserID, teamf.Team.TeamID)
 	require.NoError(t, err)
 
 	witCreateParams := postgresqlrandom.WorkItemTagCreateParams(internal.ProjectIDByName[requiredProject])
@@ -78,6 +79,15 @@ func TestWorkItemTag_Update(t *testing.T) {
 			},
 			errorContains: "user is not a member of project",
 		},
+		{
+			name: "tag not found",
+			args: args{
+				params:            &db.WorkItemTagUpdateParams{},
+				withUserInProject: true,
+				id:                db.WorkItemTagID(-1),
+			},
+			errorContains: "Work item tag not found",
+		},
 	}
 
 	for _, tc := range tests {
@@ -98,7 +108,7 @@ func TestWorkItemTag_Update(t *testing.T) {
 			})
 
 			if tc.args.withUserInProject {
-				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)
+				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, teamf.Team.TeamID)
 				require.NoError(t, err)
 			}
 
