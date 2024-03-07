@@ -19,7 +19,6 @@ export const useCalloutErrors = (formName: string) => {
   const hasClickedSubmit = !!formSlice.form[formName]?.hasClickedSubmit
   const setHasClickedSubmit = (v: boolean) => formSlice.setHasClickedSubmit(formName, v)
 
-
   const extractCalloutErrors = () => {
     const errors: string[] = []
 

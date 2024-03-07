@@ -77,9 +77,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedNotifications>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedNotifications>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetPaginatedNotificationsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getPaginatedNotifications>>>
@@ -119,9 +117,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPaginatedNotifications>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPaginatedNotifications>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetPaginatedNotificationsQueryResult = NonNullable<Awaited<ReturnType<typeof getPaginatedNotifications>>>

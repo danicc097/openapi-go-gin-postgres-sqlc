@@ -138,9 +138,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(workItemID && workItemCommentID),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItemComment>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(workItemID && workItemCommentID),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItemComment>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetWorkItemCommentInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItemComment>>>
@@ -182,9 +180,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(workItemID && workItemCommentID),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWorkItemComment>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(workItemID && workItemCommentID),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWorkItemComment>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetWorkItemCommentQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItemComment>>>

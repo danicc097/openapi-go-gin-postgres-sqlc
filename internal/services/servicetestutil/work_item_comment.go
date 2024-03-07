@@ -3,7 +3,6 @@ package servicetestutil
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/stretchr/testify/require"
@@ -11,7 +10,6 @@ import (
 
 type CreateWorkItemCommentParams struct {
 	UserID     db.UserID
-	Project    models.Project
 	WorkItemID db.WorkItemID
 }
 

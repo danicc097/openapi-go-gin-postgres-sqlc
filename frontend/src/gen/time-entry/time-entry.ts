@@ -134,9 +134,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(timeEntryID),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTimeEntry>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(timeEntryID),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getTimeEntry>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetTimeEntryInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getTimeEntry>>>
@@ -176,9 +174,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(timeEntryID),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTimeEntry>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(timeEntryID),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getTimeEntry>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetTimeEntryQueryResult = NonNullable<Awaited<ReturnType<typeof getTimeEntry>>>
