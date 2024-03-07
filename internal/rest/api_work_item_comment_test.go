@@ -58,7 +58,7 @@ func TestHandlers_DeleteWorkItemComment(t *testing.T) {
 			})
 			requiredProject := models.ProjectDemo
 			teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
-			workItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.TeamID})
+			workItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(ufixture.User), teamf.TeamID)
 
 			workItemCommentf := ff.CreateWorkItemComment(context.Background(), ufixture.UserID, workItemf.WorkItemID)
 
@@ -97,7 +97,7 @@ func TestHandlers_CreateWorkItemComment(t *testing.T) {
 			Scopes:     scopes,
 			TeamIDs:    []db.TeamID{teamf.TeamID},
 		})
-		demoWorkItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.TeamID})
+		demoWorkItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(ufixture.User), teamf.TeamID)
 		require.NoError(t, err)
 
 		randomWorkItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(ufixture.UserID, demoWorkItemf.WorkItemID)
@@ -140,7 +140,7 @@ func TestHandlers_GetWorkItemComment(t *testing.T) {
 		})
 		requiredProject := models.ProjectDemo
 		teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
-		workItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.TeamID})
+		workItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(ufixture.User), teamf.TeamID)
 		workItemCommentf := ff.CreateWorkItemComment(context.Background(), ufixture.UserID, workItemf.WorkItemID)
 
 		id := workItemCommentf.WorkItemCommentID
@@ -171,14 +171,14 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	requiredProject := models.ProjectDemo
-	teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
-	demoWorkItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.TeamID})
-	require.NoError(t, err)
 
+	teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
 	ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		WithAPIKey: true,
 		Scopes:     []models.Scope{models.ScopeWorkItemCommentEdit}, // TODO: most crud should be via roles, else cumbersome testing
 	})
+	demoWorkItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(ufixture.User), teamf.TeamID)
+	require.NoError(t, err)
 
 	ufixture.User, err = svc.User.AssignTeam(context.Background(), testPool, ufixture.UserID, demoWorkItemf.TeamID)
 	require.NoError(t, err)
@@ -220,7 +220,7 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 
 			requiredProject := models.ProjectDemo
 			teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
-			workItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.TeamID})
+			workItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(ufixture.User), teamf.TeamID)
 			workItemCommentf := ff.CreateWorkItemComment(context.Background(), *tc.body.UserID, *tc.body.WorkItemID)
 
 			id := workItemCommentf.WorkItemCommentID

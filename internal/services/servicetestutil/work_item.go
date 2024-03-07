@@ -10,39 +10,35 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type CreateWorkItemParams struct {
-	Project models.Project
-	Caller  services.CtxUser
-	TeamID  db.TeamID
-}
+type CreateWorkItemParams struct{}
 
 type CreateWorkItemFixture struct {
 	*db.WorkItem
 }
 
 // CreateWorkItem creates a new random work item comment with the given configuration.
-func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, params CreateWorkItemParams) *CreateWorkItemFixture {
+func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, project models.Project, caller services.CtxUser, teamID db.TeamID) *CreateWorkItemFixture {
 	var workItem *db.WorkItem
 	var err error
 
-	switch params.Project {
+	switch project {
 	case models.ProjectDemo:
 		p := postgresqlrandom.DemoWorkItemCreateParams(
-			postgresqlrandom.KanbanStepID(params.Project),
-			postgresqlrandom.WorkItemTypeID(params.Project),
-			params.TeamID,
+			postgresqlrandom.KanbanStepID(project),
+			postgresqlrandom.WorkItemTypeID(project),
+			teamID,
 		)
-		workItem, err = ff.svc.DemoWorkItem.Create(ctx, ff.d, params.Caller, services.DemoWorkItemCreateParams{
+		workItem, err = ff.svc.DemoWorkItem.Create(ctx, ff.d, caller, services.DemoWorkItemCreateParams{
 			DemoWorkItemCreateParams: p,
 		})
 		require.NoError(ff.t, err)
 	case models.ProjectDemoTwo:
 		p := postgresqlrandom.DemoTwoWorkItemCreateParams(
-			postgresqlrandom.KanbanStepID(params.Project),
-			postgresqlrandom.WorkItemTypeID(params.Project),
-			params.TeamID,
+			postgresqlrandom.KanbanStepID(project),
+			postgresqlrandom.WorkItemTypeID(project),
+			teamID,
 		)
-		workItem, err = ff.svc.DemoTwoWorkItem.Create(ctx, ff.d, params.Caller, services.DemoTwoWorkItemCreateParams{
+		workItem, err = ff.svc.DemoTwoWorkItem.Create(ctx, ff.d, caller, services.DemoTwoWorkItemCreateParams{
 			DemoTwoWorkItemCreateParams: p,
 		})
 		require.NoError(ff.t, err)

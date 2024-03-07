@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
@@ -27,15 +26,13 @@ func TestWorkItemComment_Update(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	team, err := svc.Team.Create(context.Background(), testPool, postgresqlrandom.TeamCreateParams(internal.ProjectIDByName[requiredProject]))
-	require.NoError(t, err)
+	teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
 	creator := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		WithAPIKey: true,
-		TeamIDs:    []db.TeamID{team.TeamID},
+		TeamIDs:    []db.TeamID{teamf.TeamID},
 	})
 
-	demoWorkItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: models.ProjectDemo, TeamID: team.TeamID})
-	require.NoError(t, err)
+	demoWorkItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(creator.User), teamf.TeamID)
 
 	workItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(creator.UserID, demoWorkItemf.WorkItemID)
 	workitemcomment, err := svc.WorkItemComment.Create(context.Background(), testPool, workItemCommentCreateParams)
@@ -94,7 +91,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 			})
 
 			if tc.args.withUserInProject {
-				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.UserID, team.TeamID)
+				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.UserID, teamf.TeamID)
 				require.NoError(t, err)
 			}
 
