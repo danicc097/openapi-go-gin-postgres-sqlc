@@ -18,8 +18,8 @@ type CreateWorkItemCommentFixture struct {
 }
 
 // CreateWorkItemComment creates a new random work item comment with the given configuration.
-func (ff *FixtureFactory) CreateWorkItemComment(ctx context.Context, params CreateWorkItemCommentParams) *CreateWorkItemCommentFixture {
-	randomRepoCreateParams := postgresqlrandom.WorkItemCommentCreateParams(params.UserID, params.WorkItemID)
+func (ff *FixtureFactory) CreateWorkItemComment(ctx context.Context, userID db.UserID, workItemID db.WorkItemID) *CreateWorkItemCommentFixture {
+	randomRepoCreateParams := postgresqlrandom.WorkItemCommentCreateParams(userID, workItemID)
 	// don't use repos for test fixtures, use service logic
 	workItemComment, err := ff.svc.WorkItemComment.Create(ctx, ff.d, randomRepoCreateParams)
 	require.NoError(ff.t, err)
