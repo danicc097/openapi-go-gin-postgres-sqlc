@@ -13,6 +13,7 @@ import (
 type CreateWorkItemParams struct {
 	Project models.Project
 	Caller  services.CtxUser
+	TeamID  db.TeamID
 }
 
 type CreateWorkItemFixture struct {
@@ -21,8 +22,6 @@ type CreateWorkItemFixture struct {
 
 // CreateWorkItem creates a new random work item comment with the given configuration.
 func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, params CreateWorkItemParams) *CreateWorkItemFixture {
-	teamf := ff.CreateTeam(ctx, CreateTeamParams{Project: params.Project})
-
 	var workItem *db.WorkItem
 	var err error
 
@@ -31,7 +30,7 @@ func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, params CreateWorkI
 		p := postgresqlrandom.DemoWorkItemCreateParams(
 			postgresqlrandom.KanbanStepID(params.Project),
 			postgresqlrandom.WorkItemTypeID(params.Project),
-			teamf.Team.TeamID,
+			params.TeamID,
 		)
 		workItem, err = ff.svc.DemoWorkItem.Create(ctx, ff.d, params.Caller, services.DemoWorkItemCreateParams{
 			DemoWorkItemCreateParams: p,
@@ -41,7 +40,7 @@ func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, params CreateWorkI
 		p := postgresqlrandom.DemoTwoWorkItemCreateParams(
 			postgresqlrandom.KanbanStepID(params.Project),
 			postgresqlrandom.WorkItemTypeID(params.Project),
-			teamf.Team.TeamID,
+			params.TeamID,
 		)
 		workItem, err = ff.svc.DemoTwoWorkItem.Create(ctx, ff.d, params.Caller, services.DemoTwoWorkItemCreateParams{
 			DemoTwoWorkItemCreateParams: p,

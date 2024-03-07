@@ -17,6 +17,7 @@ type CreateUserParams struct {
 	Scopes     models.Scopes
 	WithToken  bool // if true, an access token is created and returned
 	WithAPIKey bool // if true, an api key is created and returned
+	TeamIDs    []db.TeamID
 }
 
 type CreateUserFixture struct {
@@ -61,6 +62,11 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 
 	user, err = ff.svc.User.ByID(ctx, ff.d, user.UserID)
 	require.NoError(ff.t, err)
+
+	for _, tid := range params.TeamIDs {
+		_, err = ff.svc.User.AssignTeam(context.Background(), ff.d, user.UserID, tid)
+		require.NoError(ff.t, err)
+	}
 
 	return &CreateUserFixture{
 		User:   user,

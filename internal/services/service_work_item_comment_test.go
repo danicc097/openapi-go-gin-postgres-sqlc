@@ -31,12 +31,10 @@ func TestWorkItemComment_Update(t *testing.T) {
 	require.NoError(t, err)
 	creator := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 		WithAPIKey: true,
+		TeamIDs:    []db.TeamID{team.TeamID},
 	})
 
-	demoWorkItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: models.ProjectDemo})
-	require.NoError(t, err)
-
-	creator.User, err = svc.User.AssignTeam(context.Background(), testPool, creator.User.UserID, demoWorkItemf.WorkItem.TeamID)
+	demoWorkItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: models.ProjectDemo, TeamID: team.TeamID})
 	require.NoError(t, err)
 
 	workItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(creator.User.UserID, demoWorkItemf.WorkItem.WorkItemID)

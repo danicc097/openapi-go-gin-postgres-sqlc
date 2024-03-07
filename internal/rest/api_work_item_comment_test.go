@@ -56,11 +56,14 @@ func TestHandlers_DeleteWorkItemComment(t *testing.T) {
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
 			})
+			requiredProject := models.ProjectDemo
+			teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
+			workItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.Team.TeamID})
 
-			workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
+			workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: requiredProject, UserID: ufixture.User.UserID, WorkItemID: workItemf.WorkItem.WorkItemID})
 
 			id := workItemCommentf.WorkItemComment.WorkItemCommentID
-			res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), workItemCommentf.WorkItem.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
+			res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), workItemf.WorkItem.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 			require.NoError(t, err)
 			require.Equal(t, tc.status, res.StatusCode(), string(res.Body))
 		})
@@ -82,18 +85,19 @@ func TestHandlers_CreateWorkItemComment(t *testing.T) {
 	t.Run("authenticated_user", func(t *testing.T) {
 		t.Parallel()
 
+		requiredProject := models.ProjectDemo
+
 		role := models.RoleUser
 		scopes := models.Scopes{models.ScopeWorkItemCommentCreate}
 
+		teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
 		ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       role,
 			WithAPIKey: true,
 			Scopes:     scopes,
+			TeamIDs:    []db.TeamID{teamf.Team.TeamID},
 		})
-		demoWorkItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: models.ProjectDemo})
-		require.NoError(t, err)
-
-		ufixture.User, err = svc.User.AssignTeam(context.Background(), testPool, ufixture.User.UserID, demoWorkItemf.WorkItem.TeamID)
+		demoWorkItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.Team.TeamID})
 		require.NoError(t, err)
 
 		randomWorkItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(ufixture.User.UserID, demoWorkItemf.WorkItem.WorkItemID)
@@ -134,11 +138,13 @@ func TestHandlers_GetWorkItemComment(t *testing.T) {
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-
-		workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
+		requiredProject := models.ProjectDemo
+		teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
+		workItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.Team.TeamID})
+		workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: requiredProject, UserID: ufixture.User.UserID, WorkItemID: workItemf.WorkItem.WorkItemID})
 
 		id := workItemCommentf.WorkItemComment.WorkItemCommentID
-		res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), workItemCommentf.WorkItem.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
+		res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), workItemf.WorkItem.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body))
@@ -164,7 +170,9 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	demoWorkItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: models.ProjectDemo})
+	requiredProject := models.ProjectDemo
+	teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
+	demoWorkItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.Team.TeamID})
 	require.NoError(t, err)
 
 	ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
@@ -217,10 +225,13 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 				Scopes:     []models.Scope{models.ScopeWorkItemCommentEdit},
 			})
 
-			workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: *tc.body.UserID})
+			requiredProject := models.ProjectDemo
+			teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
+			workItemf := ff.CreateWorkItem(context.Background(), servicetestutil.CreateWorkItemParams{Project: requiredProject, TeamID: teamf.Team.TeamID})
+			workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: requiredProject, UserID: *tc.body.UserID, WorkItemID: *tc.body.WorkItemID})
 
 			id := workItemCommentf.WorkItemComment.WorkItemCommentID
-			updateRes, err := srv.client.UpdateWorkItemCommentWithResponse(context.Background(), workItemCommentf.WorkItem.WorkItemID, id, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
+			updateRes, err := srv.client.UpdateWorkItemCommentWithResponse(context.Background(), workItemf.WorkItem.WorkItemID, id, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			require.EqualValues(t, tc.status, updateRes.StatusCode(), string(updateRes.Body))
@@ -235,7 +246,7 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 
 			assert.EqualValues(t, id, updateRes.JSON200.WorkItemCommentID)
 
-			res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), workItemCommentf.WorkItem.WorkItemID, id, ReqWithAPIKey(normalUser.APIKey.APIKey))
+			res, err := srv.client.GetWorkItemCommentWithResponse(context.Background(), workItemf.WorkItem.WorkItemID, id, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			assert.EqualValues(t, *tc.body.Message, res.JSON200.Message)
