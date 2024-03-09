@@ -1550,14 +1550,14 @@ export interface operations {
         cursor: string;
         filter?: {
           post?: string[];
-          author?: string[];
+          bools?: boolean[];
+          ints?: number[];
         };
         nested?: {
           obj?: {
             nestedObj?: string;
           };
         };
-        arrayFilter?: (string | boolean)[];
       };
     };
     responses: {

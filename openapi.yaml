@@ -870,23 +870,28 @@ paths:
         - in: query
           name: filter
           style: deepObject
+          explode: true
           allowReserved: true
           schema:
             type: object
             properties:
               post:
-                type: array # breaks kin-openapi: https://github.com/getkin/kin-openapi/issues/294
-                # https://github.com/getkin/kin-openapi/pull/664/files fixes it but only for arrays, not objects
-                items:
-                  type: string
-              author:
                 type: array
                 items:
                   type: string
+              bools:
+                type: array
+                items:
+                  type: boolean
+              ints:
+                type: array
+                items:
+                  type: integer
         - in: query
           name: nested
           style: deepObject
           allowReserved: true
+          explode: true
           schema:
             type: object
             properties:
@@ -895,15 +900,15 @@ paths:
                 properties:
                   nestedObj:
                     type: string
-        - in: query
-          name: arrayFilter
-          explode: false
-          schema:
-            type: array
-            items:
-              anyOf:
-                - type: string # will properly escape if string contains ","
-                - type: boolean
+                    # - in: query
+                    #   name: arrayFilterAnyOf
+                    #   explode: false
+                    #   schema:
+                    #     type: array
+                    #     items:
+                    #       anyOf:
+                    #         - type: string # will properly escape if string contains ","
+                    #         - type: boolean
       tags:
         - user
       responses:

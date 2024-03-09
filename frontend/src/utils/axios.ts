@@ -1,5 +1,5 @@
 import { AxiosInstance } from 'axios'
-
+import qs from 'qs'
 /**
  * Axios utility class for adding token and Date handling to all request/responses.
  * Based on https://github.com/anymaniax/orval/issues/805
@@ -17,6 +17,13 @@ export default class AxiosInterceptors {
    */
   static setupAxiosInstance = (instance: AxiosInstance, token: string) => {
     const appKey = instance.defaults.baseURL!
+
+    instance.defaults.paramsSerializer = {
+      // FIXME: ignored by axios, yields array indexes
+      // serialize: (params) => {
+      //   return qs.stringify(params, { arrayFormat: 'repeat', encode: false })
+      // }, // kin-openapi and oapi-codegen runtime
+    }
 
     const tokenRequestInterceptor = instance.interceptors.request.use(
       (config) => {

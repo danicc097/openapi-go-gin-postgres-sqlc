@@ -146,11 +146,16 @@ export default function DemoMantineReactTable() {
     isFetching,
     isError,
     isLoading,
-  } = useGetPaginatedUsers({ direction: 'desc', cursor, limit: 5 })
+  } = useGetPaginatedUsers({
+    direction: 'desc',
+    cursor,
+    limit: 5,
+    // deepmap needs to be updated for kin-openapi new Type struct
+    // filter: { post: ['fesefesf', '1'], bools: [true, false] },
+  })
 
   // useStopInfiniteRenders(60)
 
-  //this will depend on your API response shape
   const fetchedUsers = usersData?.items ?? []
   const totalRowCount = Infinity
 

@@ -1,22 +1,8 @@
 import { DefaultOptions, QueryClient } from '@tanstack/react-query'
 import { AxiosError } from 'axios'
 import { ApiError } from 'src/api/mutator'
-
-// used by orval as defaults
-export const reactQueryDefaultAppOptions: DefaultOptions = {
-  queries: {
-    cacheTime: 1000 * 60 * 5,
-    // cacheTime: 0,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    retryOnMount: false,
-    staleTime: Infinity,
-    keepPreviousData: true,
-  },
-  mutations: {
-    cacheTime: 1000 * 60 * 5,
-  },
-}
+import { reactQueryDefaultAppOptions } from 'src/react-query.default'
+import HttpStatus from 'src/utils/httpStatus'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,7 +10,7 @@ export const queryClient = new QueryClient({
       ...reactQueryDefaultAppOptions.queries,
       retry: function (failureCount, error: AxiosError | ApiError) {
         const status = error.response?.status
-        if (status && status >= 400 && status < 500) {
+        if (status && status >= 401 && status < 500 && status !== HttpStatus.UNAUTHORIZED_401) {
           return false
         }
         return failureCount < 3

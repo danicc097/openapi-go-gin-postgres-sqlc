@@ -7,18 +7,17 @@
  */
 import type { Direction } from './direction'
 import type { GetPaginatedUsersNestedObj } from './getPaginatedUsersNestedObj'
-import type { GetPaginatedUsersArrayFilterItem } from './getPaginatedUsersArrayFilterItem'
 
 export type GetPaginatedUsersParams = {
   limit: number
   direction: Direction
   cursor: string
   filter?: {
-    author?: string[]
+    bools?: boolean[]
+    ints?: number[]
     post?: string[]
   }
   nested?: {
     obj?: GetPaginatedUsersNestedObj
   }
-  arrayFilter?: GetPaginatedUsersArrayFilterItem[]
 }
