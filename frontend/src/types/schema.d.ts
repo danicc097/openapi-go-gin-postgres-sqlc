@@ -1552,6 +1552,9 @@ export interface operations {
           post?: string[];
           bools?: boolean[];
           ints?: number[];
+          objects?: {
+              nestedObj?: string;
+            }[];
         };
         nested?: {
           obj?: {

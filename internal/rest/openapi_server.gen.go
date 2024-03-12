@@ -1046,9 +1046,12 @@ type GetPaginatedUsersParams struct {
 	Direction externalRef0.Direction `form:"direction" json:"direction"`
 	Cursor    string                 `form:"cursor" json:"cursor"`
 	Filter    *struct {
-		Bools *[]bool   `json:"bools,omitempty"`
-		Ints  *[]int    `json:"ints,omitempty"`
-		Post  *[]string `json:"post,omitempty"`
+		Bools   *[]bool `json:"bools,omitempty"`
+		Ints    *[]int  `json:"ints,omitempty"`
+		Objects *[]struct {
+			NestedObj *string `json:"nestedObj,omitempty"`
+		} `json:"objects,omitempty"`
+		Post *[]string `json:"post,omitempty"`
 	} `json:"filter,omitempty"`
 	Nested *struct {
 		Obj *struct {

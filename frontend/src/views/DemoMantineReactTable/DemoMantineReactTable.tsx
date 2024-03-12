@@ -151,7 +151,8 @@ export default function DemoMantineReactTable() {
     cursor,
     limit: 5,
     // deepmap needs to be updated for kin-openapi new Type struct
-    // filter: { post: ['fesefesf', '1'], bools: [true, false] },
+    filter: { post: ['fesefesf', '1'], bools: [true, false], objects: [{ nestedObj: 'something' }] },
+    nested: { obj: { nestedObj: '1212' } },
   })
 
   // useStopInfiniteRenders(60)

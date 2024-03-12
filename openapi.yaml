@@ -887,6 +887,13 @@ paths:
                 type: array
                 items:
                   type: integer
+              objects:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nestedObj:
+                      type: string
         - in: query
           name: nested
           style: deepObject

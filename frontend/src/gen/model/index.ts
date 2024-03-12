@@ -66,6 +66,7 @@ export * from './direction';
 export * from './errorCode';
 export * from './eventsParams';
 export * from './getPaginatedNotificationsParams';
+export * from './getPaginatedUsersFilterObjectsItem';
 export * from './getPaginatedUsersNestedObj';
 export * from './getPaginatedUsersParams';
 export * from './getProjectWorkitemsParams';
