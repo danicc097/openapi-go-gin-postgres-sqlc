@@ -659,7 +659,12 @@ clean_yq_array() {
 }
 
 go_test() {
-  APP_ENV="$X_ENV" go test ${go_test_flags[@]} $@
+  local cache_opt="-count=1"
+  cache_all "$GEN_CACHE/go-test.md5" .env.$X_ENV db/ >/dev/null && cache_opt=""
+
+  set -x
+  APP_ENV="$X_ENV" go test ${go_test_flags[@]} $cache_opt $@
+  set +x
 }
 
 # Run post-generation scripts in the internal package.
@@ -1234,14 +1239,8 @@ x.test.backend() {
     # done per test suite database automatically
     # yes y 2>/dev/null | POSTGRES_DB=$POSTGRES_TEST_DB x.migrate down || true # nochange exits
 
-    local cache_opt="-count=1"
-    # we must only invalidate cache if database schema changes
-    cache_all "$GEN_CACHE/go-test.md5" .env.$X_ENV db/ && cache_opt=""
-
-    set -x
-    go_test -tags 'skip_xo' $cache_opt "$@" ./...
+    go_test -tags 'skip_xo' "$@" ./...
     # go_test -tags 'skip_xo,!skip_countone' "$@" -count=1 ./...
-    set +x
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
@@ -1344,7 +1343,7 @@ test_backend_watch() {
       --format='%T %f' \
       --timefmt='%s' \
       . && clear &&
-      go_test -count=1 -tags $tags "$@" &&
+      go_test -tags $tags "$@" &&
       echo "${GREEN}✓ All tests passing${OFF}"
   done
 }
