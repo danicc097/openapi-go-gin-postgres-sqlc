@@ -2358,8 +2358,10 @@ components:
         # - AdminNotifications
         # will use personalSubs channel per userID since it depends on
         # members per specific workitem
-        # - WorkItemMoved
-        # - WorkItemClosed
+        # When a work item or related entities are updated, ie calling AssignUser, AssignTags...
+        # subscribers will receive a rest WorkItem with appropiate joins.
+        # we can notifications when workitem where member is current user is updated
+        - WorkItemUpdated
         - GlobalAlerts
     Scope: # Generated from scopes.json keys. DO NOT EDIT.
       type: string

@@ -10,13 +10,14 @@ import (
 	"sync"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-contrib/sse"
 	"github.com/gin-gonic/gin"
 )
 
 // It keeps a list of clients those are currently attached
 // and broadcasting events to those clients.
-type Event struct {
+type EventServer struct {
 	// Events are pushed to this channel by the main events-gathering routine
 	Message  chan string
 	Message2 chan string
@@ -29,8 +30,7 @@ type Event struct {
 	ClosedClients chan chan string
 
 	// Total client connections
-	ClientsForMessage1 map[chan string]struct{}
-	ClientsForMessage2 map[chan string]struct{}
+	Message1Subscribers subs
 }
 
 type subs map[chan string]struct{}
@@ -46,11 +46,11 @@ type PubSub struct {
 	// this info needs to be sent when calling /events in a query param
 
 	subs map[models.Topics]subs
-	// e.g. event card moved notifies all card members' userID - attempt to send if clients are connected (i.e. key exists in personalSub)
+	// e.g. event card moved, assigned, etc. notifies card members by userID if clients are connected (i.e. key exists in connectedUsers)
 	// TODO close and delete entries when client is gone:
 	// edit defer func in serveHTTP to get user from context
-	personalSub map[string]chan string
-	closed      bool
+	connectedUsers map[db.UserID]chan string
+	closed         bool
 }
 
 // in reality most messages wont run endlessly in a goroutine, we will e.g.
@@ -63,7 +63,7 @@ type PubSub struct {
 func NewPubSub() *PubSub {
 	ps := &PubSub{}
 	ps.subs = make(map[models.Topics]subs)
-	ps.personalSub = make(map[string]chan string)
+	ps.connectedUsers = make(map[db.UserID]chan string)
 
 	for _, t := range models.AllTopicsValues() {
 		ps.subs[t] = make(subs)
@@ -72,7 +72,7 @@ func NewPubSub() *PubSub {
 	return ps
 }
 
-func (ps *PubSub) Subscribe(topic models.Topics, userID string) <-chan string {
+func (ps *PubSub) Subscribe(topic models.Topics, userID db.UserID) <-chan string {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
 
@@ -80,9 +80,9 @@ func (ps *PubSub) Subscribe(topic models.Topics, userID string) <-chan string {
 	ps.subs[topic][sub] = struct{}{}
 
 	// create personal sub chan if it doesn't exist already
-	if _, ok := ps.personalSub[userID]; !ok {
+	if _, ok := ps.connectedUsers[userID]; !ok {
 		c := make(chan string, 1)
-		ps.personalSub[userID] = c
+		ps.connectedUsers[userID] = c
 	}
 
 	return sub
@@ -101,8 +101,8 @@ func (ps *PubSub) Publish(topic models.Topics, msg string) {
 	}
 }
 
-// PublishTo sends a direct message to the specified user IDs.
-func (ps *PubSub) PublishTo(userIDs []string, msg string) {
+// PushNotification sends the given message to the specified user IDs.
+func (ps *PubSub) PushNotification(userIDs []db.UserID, msg string) {
 	ps.mu.RLock() // only reading subs
 	defer ps.mu.RUnlock()
 
@@ -111,7 +111,7 @@ func (ps *PubSub) PublishTo(userIDs []string, msg string) {
 	}
 
 	for _, id := range userIDs {
-		if ch, ok := ps.personalSub[id]; ok {
+		if ch, ok := ps.connectedUsers[id]; ok {
 			ch <- msg
 		}
 	}
@@ -129,9 +129,9 @@ func (ps *PubSub) Close() {
 				delete(subs, sub)
 			}
 		}
-		for uid, sub := range ps.personalSub {
+		for uid, sub := range ps.connectedUsers {
 			close(sub)
-			delete(ps.personalSub, uid)
+			delete(ps.connectedUsers, uid)
 		}
 	}
 }
@@ -167,15 +167,14 @@ channel use cases,etc:
 */
 
 // newSSEServer initializes events and starts processing requests.
-func newSSEServer() *Event {
-	event := &Event{
-		Message:            make(chan string),
-		Message2:           make(chan string),
-		NewClients:         make(chan chan string),
-		NewClients2:        make(chan chan string),
-		ClosedClients:      make(chan chan string),
-		ClientsForMessage1: make(map[chan string]struct{}),
-		ClientsForMessage2: make(map[chan string]struct{}),
+func newSSEServer() *EventServer {
+	event := &EventServer{
+		Message:             make(chan string),
+		Message2:            make(chan string),
+		NewClients:          make(chan chan string),
+		NewClients2:         make(chan chan string),
+		ClosedClients:       make(chan chan string),
+		Message1Subscribers: make(map[chan string]struct{}),
 	}
 
 	go event.listen()
@@ -185,44 +184,31 @@ func newSSEServer() *Event {
 
 // It Listens all incoming requests from clients.
 // Handles addition and removal of clients and broadcast messages to clients.
-func (stream *Event) listen() {
+func (es *EventServer) listen() {
 	for {
 		select {
 		// Add new available client
-		case client := <-stream.NewClients:
-			stream.ClientsForMessage1[client] = struct{}{}
-			log.Printf("Client for message type 1 added. %d registered clients", len(stream.ClientsForMessage1))
-		case client := <-stream.NewClients2:
-			stream.ClientsForMessage2[client] = struct{}{}
-			log.Printf("Client for message type 2 added. %d registered clients", len(stream.ClientsForMessage2))
+		case client := <-es.NewClients:
+			es.Message1Subscribers[client] = struct{}{}
+			log.Printf("Client for message type 1 added. %d registered clients", len(es.Message1Subscribers))
 
 		// Remove closed client
-		case client := <-stream.ClosedClients:
-			delete(stream.ClientsForMessage1, client)
-			delete(stream.ClientsForMessage2, client)
+		case client := <-es.ClosedClients:
+			delete(es.Message1Subscribers, client)
 			close(client)
-			log.Printf("Removed client. %d registered clients", len(stream.ClientsForMessage1))
+			log.Printf("Removed client. %d registered clients", len(es.Message1Subscribers))
 
 		// Broadcast message to client
-		case eventMsg := <-stream.Message:
+		case eventMsg := <-es.Message:
 			// fmt.Printf("eventMsg: %v\n", eventMsg)
-			for clientMessageChan := range stream.ClientsForMessage1 {
-				clientMessageChan <- eventMsg
-			}
-
-		// Broadcast message 2to client
-		case eventMsg := <-stream.Message2:
-			// fmt.Printf("eventMsg (2): %v\n", eventMsg)
-			for clientMessageChan := range stream.ClientsForMessage2 {
+			for clientMessageChan := range es.Message1Subscribers {
 				clientMessageChan <- eventMsg
 			}
 		}
 	}
 }
 
-// TODO see if can reproduce https://github.com/gin-gonic/gin/issues/3142
-// some bugs were fixed in sse example committed 4 months later, so...
-func (stream *Event) serveHTTP() gin.HandlerFunc {
+func (stream *EventServer) serveHTTP() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fmt.Println("stream events - Initialize client channel")
 		clientChan := make(ClientChan, 1)

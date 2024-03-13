@@ -25,7 +25,7 @@ type StrictHandlers struct {
 	moviesvcclient v1.MovieGenreClient
 	specPath       string
 	authmw         *authMiddleware
-	event          *Event
+	event          *EventServer
 	provider       rp.RelyingParty
 }
 

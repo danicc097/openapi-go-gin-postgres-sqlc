@@ -3212,6 +3212,7 @@
       "description": "string identifiers for SSE event listeners.",
       "type": "string",
       "enum": [
+        "WorkItemUpdated",
         "GlobalAlerts"
       ]
     },
@@ -9515,6 +9516,7 @@
       "description": "string identifiers for SSE event listeners.",
       "type": "string",
       "enum": [
+        "WorkItemUpdated",
         "GlobalAlerts"
       ]
     },
