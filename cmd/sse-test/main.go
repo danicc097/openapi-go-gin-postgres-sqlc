@@ -15,33 +15,41 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-/**
- *
- *
- * From gin examples:
- *
- */
+type Topics string
 
-// It keeps a list of clients those are currently attached
-// and broadcasting events to those clients.
-type EventServer struct {
-	// Events are pushed to this channel by the main events-gathering routine
-	Message ClientChan
+const (
+	TopicsTopic1       Topics = "Topic1"
+	TopicsAnotherTopic Topics = "AnotherTopic"
+)
 
-	// New client connections
-	NewClients chan ClientChan
-
-	// Closed client connections
-	ClosedClients chan ClientChan
-
-	// Total client connections
-	TotalClients map[ClientChan]bool
+func AllTopicsValues() []Topics {
+	return []Topics{
+		TopicsTopic1,
+		TopicsAnotherTopic,
+	}
 }
 
-type ClientChan chan string
+type EventServer struct {
+	// Events are pushed to this channel by the main events-gathering routine
+	Messages      chan ClientMessage
+	NewClients    chan ClientChan
+	ClosedClients chan ClientChan
+	TotalClients  map[chan string]struct{}
+}
 
-// go run cmd/sse-test/main.go
-// curl -X 'GET' -N  'http://localhost:8085/stream'
+type ClientChan struct {
+	Chan chan string
+	// we can share a single channel for multiple topics and use the same sse conn
+	// but ideally each topic and user should be a dedicated channel.
+	// that way struct is comparable too
+	Topics []Topics
+}
+
+type ClientMessage struct {
+	Message string
+	Topic   Topics
+}
+
 func main() {
 	router := gin.Default()
 
@@ -49,10 +57,10 @@ func main() {
 
 	go func() {
 		for {
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Second * 1)
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
-			handlers.event.Message <- currentTime
+			handlers.event.Messages <- ClientMessage{Message: currentTime, Topic: TopicsTopic1}
 		}
 	}()
 
@@ -67,8 +75,8 @@ func main() {
 		}
 		c.Stream(func(w io.Writer) bool {
 			// Stream message to client from message channel
-			if msg, ok := <-clientChan; ok {
-				c.SSEvent("message", msg)
+			if msg, ok := <-clientChan.Chan; ok {
+				c.SSEvent(string(clientChan.Topics[0]), msg)
 				return true
 			}
 			c.SSEvent("message", "STOPPED")
@@ -99,16 +107,10 @@ func NewHandlers() *Handlers {
 }
 
 func Run(router *gin.Engine) (<-chan error, error) {
-	// var err error
-
 	addr := ":8085"
 	httpsrv := &http.Server{
 		Handler: router,
 		Addr:    addr,
-		// ReadTimeout:       1 * time.Second,
-		ReadHeaderTimeout: 1 * time.Second,
-		// WriteTimeout:      1 * time.Second,
-		// IdleTimeout: 1 * time.Second,
 	}
 
 	errC := make(chan error, 1)
@@ -125,7 +127,6 @@ func Run(router *gin.Engine) (<-chan error, error) {
 
 		ctxTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
-		// any action on shutdown must be deferred here and not in the main block
 		defer func() {
 			stop()
 			cancel()
@@ -134,7 +135,7 @@ func Run(router *gin.Engine) (<-chan error, error) {
 
 		httpsrv.SetKeepAlivesEnabled(false)
 
-		if err := httpsrv.Shutdown(ctxTimeout); err != nil { //nolint: contextcheck
+		if err := httpsrv.Shutdown(ctxTimeout); err != nil {
 			errC <- err
 		}
 
@@ -144,8 +145,6 @@ func Run(router *gin.Engine) (<-chan error, error) {
 	go func() {
 		log.Printf("Listening and serving on http://localhost" + addr)
 
-		// "ListenAndServe always returns a non-nil error. After Shutdown or Close, the returned error is
-		// ErrServerClosed."
 		var err error
 
 		err = httpsrv.ListenAndServe()
@@ -160,10 +159,10 @@ func Run(router *gin.Engine) (<-chan error, error) {
 
 func newSSEServer() *EventServer {
 	es := &EventServer{
-		Message:       make(ClientChan),
+		Messages:      make(chan ClientMessage),
 		NewClients:    make(chan ClientChan),
 		ClosedClients: make(chan ClientChan),
-		TotalClients:  make(map[ClientChan]bool),
+		TotalClients:  make(map[chan string]struct{}),
 	}
 
 	go es.listen()
@@ -175,17 +174,21 @@ func (server *EventServer) listen() {
 	for {
 		select {
 		case client := <-server.NewClients:
-			server.TotalClients[client] = true
+			server.TotalClients[client.Chan] = struct{}{}
 			log.Printf("Client added. %d registered clients", len(server.TotalClients))
 
 		case client := <-server.ClosedClients:
-			delete(server.TotalClients, client)
-			close(client)
+			delete(server.TotalClients, client.Chan)
+			close(client.Chan)
 			log.Printf("Removed client. %d registered clients", len(server.TotalClients))
 
-		case eventMsg := <-server.Message:
-			for clientMessageChan := range server.TotalClients {
-				clientMessageChan <- eventMsg
+		case eventMsg := <-server.Messages:
+			for client := range server.TotalClients {
+				// TODO: only send if subsccribed to topic
+				subscriberToTopic := true
+				if subscriberToTopic {
+					client <- eventMsg.Message
+				}
 			}
 		}
 	}
@@ -193,7 +196,16 @@ func (server *EventServer) listen() {
 
 func (server *EventServer) serveHTTP() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		clientChan := make(ClientChan)
+		topics := c.QueryArray("topics")
+		if len(topics) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "topics query parameter is required"})
+			return
+		}
+
+		clientChan := ClientChan{Chan: make(chan string), Topics: make([]Topics, len(topics))}
+		for i, topic := range topics {
+			clientChan.Topics[i] = Topics(topic)
+		}
 
 		server.NewClients <- clientChan
 		defer func() {
@@ -204,6 +216,15 @@ func (server *EventServer) serveHTTP() gin.HandlerFunc {
 
 		c.Next()
 	}
+}
+
+func containsTopic(topics []Topics, topic Topics) bool {
+	for _, t := range topics {
+		if t == topic {
+			return true
+		}
+	}
+	return false
 }
 
 func HeadersMiddleware() gin.HandlerFunc {

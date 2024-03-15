@@ -25,6 +25,17 @@
       ]
     },
     {
+      "name": "Launch SSE test Server",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "cwd": ".",
+      "program": "cmd/sse-test/main.go",
+      "args": [
+        "-env=.env.dev"
+      ]
+    },
+    {
       "name": "Launch Gin Server",
       "type": "go",
       "request": "launch",
