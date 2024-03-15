@@ -24,21 +24,20 @@ import (
 
 // It keeps a list of clients those are currently attached
 // and broadcasting events to those clients.
-type Event struct {
+type EventServer struct {
 	// Events are pushed to this channel by the main events-gathering routine
-	Message chan string
+	Message ClientChan
 
 	// New client connections
-	NewClients chan chan string
+	NewClients chan ClientChan
 
 	// Closed client connections
-	ClosedClients chan chan string
+	ClosedClients chan ClientChan
 
 	// Total client connections
-	TotalClients map[chan string]bool
+	TotalClients map[ClientChan]bool
 }
 
-// New event messages are broadcast to all registered client connection channels.
 type ClientChan chan string
 
 // go run cmd/sse-test/main.go
@@ -48,11 +47,8 @@ func main() {
 
 	handlers := NewHandlers()
 
-	// We are streaming current time to clients in the interval 10 seconds
-
 	go func() {
 		for {
-			// We are streaming current time to clients in the interval 10 seconds
 			time.Sleep(time.Second * 2)
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
@@ -61,10 +57,6 @@ func main() {
 	}()
 
 	router.GET("/stream", HeadersMiddleware(), handlers.event.serveHTTP(), func(c *gin.Context) {
-		// FIXME does not work when called like this. change to explicit call in .GET and all is good
-		// for _, mw := range handlers.middlewares() {
-		// 	mw(c)
-		// }
 		v, ok := c.Get("clientChan")
 		if !ok {
 			return
@@ -95,31 +87,24 @@ func main() {
 }
 
 type Handlers struct {
-	event *Event
+	event *EventServer
 }
 
 func NewHandlers() *Handlers {
 	event := newSSEServer()
-
-	go event.listen()
-
-	fmt.Printf("event.Message address: %v\n", &event.Message)
 
 	return &Handlers{
 		event: event,
 	}
 }
 
-func (h *Handlers) middlewares() []gin.HandlerFunc {
-	return []gin.HandlerFunc{HeadersMiddleware(), h.event.serveHTTP()}
-}
-
 func Run(router *gin.Engine) (<-chan error, error) {
 	// var err error
 
+	addr := ":8085"
 	httpsrv := &http.Server{
 		Handler: router,
-		Addr:    ":8085",
+		Addr:    addr,
 		// ReadTimeout:       1 * time.Second,
 		ReadHeaderTimeout: 1 * time.Second,
 		// WriteTimeout:      1 * time.Second,
@@ -157,7 +142,7 @@ func Run(router *gin.Engine) (<-chan error, error) {
 	}()
 
 	go func() {
-		log.Printf("Listening and serving")
+		log.Printf("Listening and serving on http://localhost" + addr)
 
 		// "ListenAndServe always returns a non-nil error. After Shutdown or Close, the returned error is
 		// ErrServerClosed."
@@ -173,56 +158,46 @@ func Run(router *gin.Engine) (<-chan error, error) {
 	return errC, nil
 }
 
-// Initialize event and Start procnteessing requests.
-func newSSEServer() (event *Event) {
-	event = &Event{
-		Message:       make(chan string),
-		NewClients:    make(chan chan string),
-		ClosedClients: make(chan chan string),
-		TotalClients:  make(map[chan string]bool),
+func newSSEServer() *EventServer {
+	es := &EventServer{
+		Message:       make(ClientChan),
+		NewClients:    make(chan ClientChan),
+		ClosedClients: make(chan ClientChan),
+		TotalClients:  make(map[ClientChan]bool),
 	}
 
-	go event.listen()
+	go es.listen()
 
-	return
+	return es
 }
 
-// It Listens all incoming requests from clients.
-// Handles addition and removal of clients and broadcast messages to clients.
-func (stream *Event) listen() {
+func (server *EventServer) listen() {
 	for {
 		select {
-		// Add new available client
-		case client := <-stream.NewClients:
-			stream.TotalClients[client] = true
-			log.Printf("Client added. %d registered clients", len(stream.TotalClients))
+		case client := <-server.NewClients:
+			server.TotalClients[client] = true
+			log.Printf("Client added. %d registered clients", len(server.TotalClients))
 
-		// Remove closed client
-		case client := <-stream.ClosedClients:
-			delete(stream.TotalClients, client)
+		case client := <-server.ClosedClients:
+			delete(server.TotalClients, client)
 			close(client)
-			log.Printf("Removed client. %d registered clients", len(stream.TotalClients))
+			log.Printf("Removed client. %d registered clients", len(server.TotalClients))
 
-		// Broadcast message to client
-		case eventMsg := <-stream.Message:
-			for clientMessageChan := range stream.TotalClients {
+		case eventMsg := <-server.Message:
+			for clientMessageChan := range server.TotalClients {
 				clientMessageChan <- eventMsg
 			}
 		}
 	}
 }
 
-func (stream *Event) serveHTTP() gin.HandlerFunc {
+func (server *EventServer) serveHTTP() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Initialize client channel
 		clientChan := make(ClientChan)
 
-		// Send new connection to event server
-		stream.NewClients <- clientChan
-
+		server.NewClients <- clientChan
 		defer func() {
-			// Send closed connection to event server
-			stream.ClosedClients <- clientChan
+			server.ClosedClients <- clientChan
 		}()
 
 		c.Set("clientChan", clientChan)

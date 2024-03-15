@@ -10,7 +10,7 @@ import { IconCircle, IconTag } from '@tabler/icons'
 import { fullFormats } from 'ajv-formats/dist/formats'
 import WorkItemRoleBadge from 'src/components/Badges/WorkItemRoleBadge'
 import { WORK_ITEM_ROLES } from 'src/services/authorization'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useCalloutErrors } from 'src/components/Callout/useCalloutErrors'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { colorSwatchComponentInputOption } from 'src/components/formGeneration/components'
@@ -206,6 +206,21 @@ export default function DemoGeneratedForm() {
   const { user } = useAuthenticatedUser()
 
   const [cursor, setCursor] = useState(new Date().toISOString())
+
+  useEffect(() => {
+    const sse = new EventSource('https://localhost:8090/v2/events?projectName=demo', { withCredentials: true })
+    function getRealtimeData(data) {
+      console.log({ dataSSE: data })
+    }
+    sse.onmessage = (e) => getRealtimeData(JSON.parse(e.data))
+    sse.onerror = (e) => {
+      console.log({ errorSSE: e })
+      sse.close()
+    }
+    return () => {
+      sse.close()
+    }
+  }, [])
 
   // useStopInfiniteRenders(20)
 

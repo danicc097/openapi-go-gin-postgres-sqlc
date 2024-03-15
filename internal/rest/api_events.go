@@ -17,23 +17,24 @@ import (
 
 // It keeps a list of clients those are currently attached
 // and broadcasting events to those clients.
+// debug via curl -X 'GET' -N 'https://localhost:8090/v2/events?projectName=demo'
 type EventServer struct {
 	// Events are pushed to this channel by the main events-gathering routine
 	Message  chan string
 	Message2 chan string
 
 	// New client connections
-	NewClients  chan chan string
-	NewClients2 chan chan string
+	NewClients  chan ClientChan
+	NewClients2 chan ClientChan
 
 	// Closed client connections
-	ClosedClients chan chan string
+	ClosedClients chan ClientChan
 
 	// Total client connections
 	Message1Subscribers subs
 }
 
-type subs map[chan string]struct{}
+type subs map[ClientChan]struct{}
 
 type PubSub struct {
 	mu sync.RWMutex // preferable if mostly read
@@ -49,7 +50,7 @@ type PubSub struct {
 	// e.g. event card moved, assigned, etc. notifies card members by userID if clients are connected (i.e. key exists in connectedUsers)
 	// TODO close and delete entries when client is gone:
 	// edit defer func in serveHTTP to get user from context
-	connectedUsers map[db.UserID]chan string
+	connectedUsers map[db.UserID]ClientChan
 	closed         bool
 }
 
@@ -63,7 +64,7 @@ type PubSub struct {
 func NewPubSub() *PubSub {
 	ps := &PubSub{}
 	ps.subs = make(map[models.Topics]subs)
-	ps.connectedUsers = make(map[db.UserID]chan string)
+	ps.connectedUsers = make(map[db.UserID]ClientChan)
 
 	for _, t := range models.AllTopicsValues() {
 		ps.subs[t] = make(subs)
@@ -139,7 +140,7 @@ func (ps *PubSub) Close() {
 // New event messages are broadcasted to all registered client connection channels.
 type ClientChan chan string
 
-type UserNotificationsChan chan string
+type UserNotificationsChan ClientChan
 
 type timeEvent struct {
 	Foo string `json:"foo"`
@@ -149,13 +150,13 @@ type timeEvent struct {
 /**
  *
  *
-let evtSource = new EventSource('/v2/events');
+let evtSource = new EventSource('https://localhost:8090/v2/events?projectName=demo');
 
 evtSource.onmessage = (e) => {
-  console.log(e)
-}
+  console.log(e);
+};
 evtSource.addEventListener(<Event name>, (e) => {
-  console.log(e)
+  console.log(e);
 });
 
 
@@ -171,10 +172,10 @@ func newSSEServer() *EventServer {
 	event := &EventServer{
 		Message:             make(chan string),
 		Message2:            make(chan string),
-		NewClients:          make(chan chan string),
-		NewClients2:         make(chan chan string),
-		ClosedClients:       make(chan chan string),
-		Message1Subscribers: make(map[chan string]struct{}),
+		NewClients:          make(chan ClientChan),
+		NewClients2:         make(chan ClientChan),
+		ClosedClients:       make(chan ClientChan),
+		Message1Subscribers: make(map[ClientChan]struct{}),
 	}
 
 	go event.listen()
@@ -200,7 +201,7 @@ func (es *EventServer) listen() {
 
 		// Broadcast message to client
 		case eventMsg := <-es.Message:
-			// fmt.Printf("eventMsg: %v\n", eventMsg)
+			fmt.Printf("eventMsg: %v\n", eventMsg)
 			for clientMessageChan := range es.Message1Subscribers {
 				clientMessageChan <- eventMsg
 			}
@@ -210,18 +211,21 @@ func (es *EventServer) listen() {
 
 func (stream *EventServer) serveHTTP() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		/* TODO:
+		- sse withCredentials includes cookie with auth token. not authenticated? return (test with x-api-key)
+		*/
 		fmt.Println("stream events - Initialize client channel")
 		clientChan := make(ClientChan, 1)
 		userNotificationsChan := make(UserNotificationsChan, 1)
 
 		// Send new connection to event server
 		stream.NewClients <- clientChan
-		stream.NewClients2 <- userNotificationsChan
+		stream.NewClients2 <- ClientChan(userNotificationsChan)
 
 		defer func() {
 			// Send closed connection to event server
 			stream.ClosedClients <- clientChan
-			stream.ClosedClients <- userNotificationsChan
+			stream.ClosedClients <- ClientChan(userNotificationsChan)
 		}()
 
 		c.Set("clientChan", clientChan)
