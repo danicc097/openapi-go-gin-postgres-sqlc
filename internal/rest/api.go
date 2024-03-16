@@ -90,10 +90,10 @@ func NewStrictHandlers(
 
 // middlewares to be applied after authMiddlewares, based on operation IDs.
 func (h *StrictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
-	defaultMws := []gin.HandlerFunc{}
-
 	dbMw := newDBMiddleware(h.logger, h.pool)
 	tracingMw := newTracingMiddleware()
+
+	defaultMws := []gin.HandlerFunc{tracingMw.RequestIDMiddleware("my-app")}
 
 	ignoredOperationID := opID == MyProviderLogin
 

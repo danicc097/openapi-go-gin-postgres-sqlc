@@ -26,7 +26,13 @@ const (
 	transactionCtxKey           = ctxKeyPrefix + "transaction"
 	spanCtxKey                  = ctxKeyPrefix + "span"
 	errorCtxKey                 = ctxKeyPrefix + "error"
+	requestIDCtxKey             = ctxKeyPrefix + "request-id"
 )
+
+func GetRequestIDFromCtx(c context.Context) string {
+	requestID, _ := c.Value(requestIDCtxKey).(string)
+	return requestID
+}
 
 func GetSkipRequestValidationFromCtx(c *gin.Context) bool {
 	skip, ok := c.Value(skipRequestValidationCtxKey).(bool)

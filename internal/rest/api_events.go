@@ -201,7 +201,6 @@ func (es *EventServer) listen() {
 
 		// Broadcast message to client
 		case eventMsg := <-es.Message:
-			fmt.Printf("eventMsg: %v\n", eventMsg)
 			for clientMessageChan := range es.Message1Subscribers {
 				clientMessageChan <- eventMsg
 			}
