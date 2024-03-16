@@ -26,11 +26,13 @@ const (
 	transactionCtxKey           = ctxKeyPrefix + "transaction"
 	spanCtxKey                  = ctxKeyPrefix + "span"
 	errorCtxKey                 = ctxKeyPrefix + "error"
-	requestIDCtxKey             = ctxKeyPrefix + "request-id"
 )
 
+type requestIDCtxKey struct{}
+
+// NOTE: request ID is set on Request context since it may be used by services.
 func GetRequestIDFromCtx(c context.Context) string {
-	requestID, _ := c.Value(requestIDCtxKey).(string)
+	requestID, _ := c.Value(requestIDCtxKey{}).(string)
 	return requestID
 }
 

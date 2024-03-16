@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -34,7 +35,8 @@ func (m *tracingMiddleware) RequestIDMiddleware(prefix string) gin.HandlerFunc {
 
 		c.Writer.Header().Set("X-Request-ID", requestID)
 
-		c.Set(requestIDCtxKey, requestID)
+		ctx := context.WithValue(c.Request.Context(), requestIDCtxKey{}, requestID)
+		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()
 	}

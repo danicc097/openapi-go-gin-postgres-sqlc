@@ -53,6 +53,11 @@ type EventServer struct {
 }
 
 func (es *EventServer) Publish(message string, topic Topic) {
+	/**
+	 * TODO: instead of using Publish, add events to queue via Queue(message, topic) and dispatch later based on x-request-id (not user id since some events may
+	 *  not have authenticated user, e.g. upon registering the first time we may require manual verification, etc.)
+	 * the Queue method (and all other public ones) will accept c.Request.Context, where req id is set
+	 */
 	es.messages <- ClientMessage{Message: message, Topic: topic}
 }
 

@@ -215,6 +215,7 @@ func (stream *EventServer) serveHTTP() gin.HandlerFunc {
 		   - sse withCredentials includes cookie with auth token. not authenticated? return (test with x-api-key)
 		*/
 		fmt.Println("stream events - Initialize client channel")
+
 		clientChan := make(ClientChan, 1)
 		userNotificationsChan := make(UserNotificationsChan, 1)
 
