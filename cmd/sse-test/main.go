@@ -1,3 +1,10 @@
+/**
+* entr -r bash -c 'clear; go run cmd/sse-test/main.go' <<< cmd/sse-test/main.go
+*
+  curl -X 'GET' -N 'http://localhost:8085/stream?topics=AnotherTopic&topics=Time'
+*
+*/
+
 package main
 
 import (
@@ -104,10 +111,10 @@ func main() {
 				if !ok {
 					return false // channel closed
 				}
-				c.SSEvent(string(msg.Topic), msg.Message) // Use the correct topic from the message
+				c.SSEvent(string(msg.Topic), msg.Message)
 				return true
 			case <-ticker.C:
-				// ensure handler can return and clean up when client disconnects and no messages have been sent to clientChan
+				// ensure handler can return and clean up when client disconnects and no messages have been sent
 				return true
 			}
 		})
@@ -135,7 +142,6 @@ func NewHandlers() *Handlers {
 	}
 }
 
-// curl -X 'GET' -N 'http://localhost:8085/stream?topics=AnotherTopic&topics=Time'
 func Run(router *gin.Engine) (<-chan error, error) {
 	addr := ":8085"
 	httpsrv := &http.Server{
