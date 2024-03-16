@@ -77,6 +77,8 @@ func (s *testServer) setupCleanup(t *testing.T) {
 // We will require different middlewares depending on the test case, so a shared global instance
 // is not possible.
 func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.HandlerFunc) (*testServer, error) {
+	gin.SetMode(gin.TestMode)
+
 	t.Helper()
 
 	ctx := context.Background()

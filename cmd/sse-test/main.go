@@ -41,12 +41,30 @@ func AllTopicsValues() []Topic {
 	}
 }
 
+type Clients map[chan ClientMessage]struct{}
+
 type EventServer struct {
 	// Events are pushed to this channel by the main events-gathering routine
 	Messages      chan ClientMessage
 	NewClients    chan Client
 	ClosedClients chan chan ClientMessage
-	Subscriptions map[chan ClientMessage]map[Topic]struct{}
+	Subscriptions map[Topic]Clients
+	// Clients represents all connected clients
+	Clients Clients
+}
+
+func newSSEServer() *EventServer {
+	es := &EventServer{
+		Messages:      make(chan ClientMessage),
+		NewClients:    make(chan Client),
+		ClosedClients: make(chan chan ClientMessage),
+		Subscriptions: make(map[Topic]Clients),
+		Clients:       make(Clients),
+	}
+
+	go es.listen()
+
+	return es
 }
 
 type Client struct {
@@ -104,7 +122,7 @@ func main() {
 		if !ok {
 			return
 		}
-		ticker := time.NewTicker(5 * time.Second)
+		ticker := time.NewTicker(1 * time.Second)
 		c.Stream(func(w io.Writer) bool {
 			select {
 			case msg, ok := <-clientChan.Chan:
@@ -193,44 +211,30 @@ func Run(router *gin.Engine) (<-chan error, error) {
 	return errC, nil
 }
 
-func newSSEServer() *EventServer {
-	es := &EventServer{
-		Messages:      make(chan ClientMessage),
-		NewClients:    make(chan Client),
-		ClosedClients: make(chan chan ClientMessage),
-		Subscriptions: make(map[chan ClientMessage]map[Topic]struct{}),
-	}
-
-	go es.listen()
-
-	return es
-}
-
 func (server *EventServer) listen() {
 	for {
 		select {
 		case client := <-server.NewClients:
-			server.Subscriptions[client.Chan] = make(map[Topic]struct{})
+			server.Clients[client.Chan] = struct{}{}
 			for _, topic := range client.Topics {
-				server.Subscriptions[client.Chan][topic] = struct{}{}
+				if _, ok := server.Subscriptions[topic]; !ok {
+					server.Subscriptions[topic] = make(Clients)
+				}
+				server.Subscriptions[topic][client.Chan] = struct{}{}
 			}
-			log.Printf("Client added. %d registered clients", len(server.Subscriptions))
+			log.Printf("Client added. %d registered clients", len(server.Clients))
 
 		case client := <-server.ClosedClients:
-			if _, ok := server.Subscriptions[client]; ok {
-				delete(server.Subscriptions, client)
-				close(client)
-				log.Printf("Removed client. %d registered clients", len(server.Subscriptions))
-			} else {
-				log.Printf("Client already removed. %d registered clients", len(server.Subscriptions))
+			for _, subscriptions := range server.Subscriptions {
+				delete(subscriptions, client)
 			}
+			delete(server.Clients, client)
+			close(client)
+			log.Printf("Removed client. %d registered clients", len(server.Clients))
 
 		case eventMsg := <-server.Messages:
-			for client, topics := range server.Subscriptions {
-				if _, ok := topics[eventMsg.Topic]; ok {
-					// Only send if subscribed to topic
-					client <- eventMsg
-				}
+			for ch := range server.Subscriptions[eventMsg.Topic] {
+				ch <- eventMsg
 			}
 		}
 	}

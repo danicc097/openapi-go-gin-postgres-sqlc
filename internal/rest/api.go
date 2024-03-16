@@ -57,7 +57,6 @@ func NewStrictHandlers(
 
 			event.Message <- currentTime
 			time.Sleep(time.Second * 2)
-			fmt.Printf("currentTime: %v\n", currentTime)
 		}
 	}()
 
@@ -74,7 +73,6 @@ func NewStrictHandlers(
 
 			event.Message2 <- currentTime
 			time.Sleep(time.Second * 2)
-			fmt.Printf("currentTime: %v\n", currentTime)
 		}
 	}()
 
