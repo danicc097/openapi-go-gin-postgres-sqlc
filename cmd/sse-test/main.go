@@ -44,22 +44,25 @@ func AllTopicsValues() []Topic {
 type Clients map[chan ClientMessage]struct{}
 
 type EventServer struct {
-	// Events are pushed to this channel by the main events-gathering routine
-	Messages      chan ClientMessage
-	NewClients    chan Client
-	ClosedClients chan chan ClientMessage
-	Subscriptions map[Topic]Clients
-	// Clients represents all connected clients
-	Clients Clients
+	messages      chan ClientMessage
+	newClients    chan Client
+	closedClients chan chan ClientMessage
+	subscriptions map[Topic]Clients
+	// clients represents all connected clients
+	clients Clients
+}
+
+func (server *EventServer) Publish(message string, topic Topic) {
+	server.messages <- ClientMessage{Message: message, Topic: topic}
 }
 
 func newSSEServer() *EventServer {
 	es := &EventServer{
-		Messages:      make(chan ClientMessage),
-		NewClients:    make(chan Client),
-		ClosedClients: make(chan chan ClientMessage),
-		Subscriptions: make(map[Topic]Clients),
-		Clients:       make(Clients),
+		messages:      make(chan ClientMessage),
+		newClients:    make(chan Client),
+		closedClients: make(chan chan ClientMessage),
+		subscriptions: make(map[Topic]Clients),
+		clients:       make(Clients),
 	}
 
 	go es.listen()
@@ -87,7 +90,8 @@ func main() {
 			time.Sleep(time.Second * 1)
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
-			handlers.event.Messages <- ClientMessage{Message: currentTime, Topic: TopicsTime}
+			handlers.event.Publish(currentTime, TopicsTime)
+
 		}
 	}()
 
@@ -107,7 +111,7 @@ func main() {
 				continue
 			}
 
-			handlers.event.Messages <- ClientMessage{Message: string(msgData), Topic: TopicsJSONData}
+			handlers.event.Publish(string(msgData), TopicsJSONData)
 
 			time.Sleep(time.Second * 1)
 		}
@@ -214,26 +218,26 @@ func Run(router *gin.Engine) (<-chan error, error) {
 func (server *EventServer) listen() {
 	for {
 		select {
-		case client := <-server.NewClients:
-			server.Clients[client.Chan] = struct{}{}
+		case client := <-server.newClients:
+			server.clients[client.Chan] = struct{}{}
 			for _, topic := range client.Topics {
-				if _, ok := server.Subscriptions[topic]; !ok {
-					server.Subscriptions[topic] = make(Clients)
+				if _, ok := server.subscriptions[topic]; !ok {
+					server.subscriptions[topic] = make(Clients)
 				}
-				server.Subscriptions[topic][client.Chan] = struct{}{}
+				server.subscriptions[topic][client.Chan] = struct{}{}
 			}
-			log.Printf("Client added. %d registered clients", len(server.Clients))
+			log.Printf("Client added. %d registered clients", len(server.clients))
 
-		case client := <-server.ClosedClients:
-			for _, subscriptions := range server.Subscriptions {
+		case client := <-server.closedClients:
+			for _, subscriptions := range server.subscriptions {
 				delete(subscriptions, client)
 			}
-			delete(server.Clients, client)
+			delete(server.clients, client)
 			close(client)
-			log.Printf("Removed client. %d registered clients", len(server.Clients))
+			log.Printf("Removed client. %d registered clients", len(server.clients))
 
-		case eventMsg := <-server.Messages:
-			for ch := range server.Subscriptions[eventMsg.Topic] {
+		case eventMsg := <-server.messages:
+			for ch := range server.subscriptions[eventMsg.Topic] {
 				ch <- eventMsg
 			}
 		}
@@ -256,9 +260,9 @@ func (server *EventServer) serveHTTP() gin.HandlerFunc {
 			clientChan.Topics[i] = Topic(topic)
 		}
 
-		server.NewClients <- clientChan
+		server.newClients <- clientChan
 		defer func() {
-			server.ClosedClients <- clientChan.Chan
+			server.closedClients <- clientChan.Chan
 		}()
 
 		c.Set("clientChan", clientChan)
