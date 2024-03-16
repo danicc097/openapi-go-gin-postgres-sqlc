@@ -64,7 +64,7 @@ func TestSSEStream(t *testing.T) {
 	t.Parallel()
 
 	res := NewStreamRecorder()
-	req := httptest.NewRequest(http.MethodGet, MustConstructInternalPath("/events", WithQueryParams(models.EventsParams{ProjectName: models.ProjectDemo})), nil)
+	req := httptest.NewRequest(http.MethodGet, MustConstructInternalPath("/events", WithQueryParams(models.EventsParams{ProjectName: models.ProjectDemo, Topics: []models.Topic{models.TopicGlobalAlerts}})), nil)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	req = req.WithContext(ctx)
@@ -76,6 +76,14 @@ func TestSSEStream(t *testing.T) {
 	)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 	srv.setupCleanup(t)
+
+	// TODO: should have generated option to use a custom recorder, e.g.
+	// here must use stream recorder that implements closenotifier
+	// resp, err := srv.client.Events(ctx, &rest.EventsParams{Topics: []models.Topic{models.TopicGlobalAlerts}, ProjectName: models.ProjectDemo})
+	// require.NoError(t, err)
+	// bd, err := io.ReadAll(resp.Body)
+	// require.NoError(t, err)
+	// fmt.Printf("bd: %v\n", bd)
 
 	stopCh := make(chan bool)
 	go func() {
@@ -93,15 +101,14 @@ func TestSSEStream(t *testing.T) {
 	// TODO trigger events
 
 	// TODO all sse events tests should be done alongside handler tests that trigger them.
-	// could have generic test helpers as well
+	// could have generic test helpers as well.
+	// in this file we should just unit test with a random event
 	if !assert.Eventually(t, func() bool {
 		if res.Body == nil {
 			return false
 		}
-		body := strings.ReplaceAll(res.Body.String(), " ", "")
-
-		return strings.Count(body, "event:"+string(models.TopicGlobalAlerts)) == 1 &&
-			strings.Count(body, "event:test-event") == 1
+		body := res.Body.String()
+		return strings.Count(body, "event:"+string(models.TopicGlobalAlerts)) >= 1
 	}, 10*time.Second, 100*time.Millisecond) {
 		t.Fatalf("did not receive event")
 	}

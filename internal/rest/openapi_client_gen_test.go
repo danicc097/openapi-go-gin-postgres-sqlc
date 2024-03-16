@@ -53,7 +53,7 @@ type Client struct {
 }
 
 // ClientOption allows setting custom parameters during construction
-type ClientOption func(*SSEClient) error
+type ClientOption func(*Client) error
 
 // NewTestClient creates a new ClientWithResponses for testing.
 func NewTestClient(server string, testHandler http.Handler, opts ...ClientOption) (*ClientWithResponses, error) {
@@ -64,9 +64,9 @@ func NewTestClient(server string, testHandler http.Handler, opts ...ClientOption
 	return &ClientWithResponses{client}, nil
 }
 
-func newClient(server string, testHandler http.Handler, opts ...ClientOption) (*SSEClient, error) {
+func newClient(server string, testHandler http.Handler, opts ...ClientOption) (*Client, error) {
 	// create a client with sane default values
-	client := SSEClient{
+	client := Client{
 		Server:      server,
 		testHandler: testHandler,
 	}
@@ -90,7 +90,7 @@ func newClient(server string, testHandler http.Handler, opts ...ClientOption) (*
 // WithHTTPClient allows overriding the default Doer, which is
 // automatically created using http.Client. This is useful for tests.
 func WithHTTPClient(doer HttpRequestDoer) ClientOption {
-	return func(c *SSEClient) error {
+	return func(c *Client) error {
 		c.Client = doer
 		return nil
 	}
@@ -99,7 +99,7 @@ func WithHTTPClient(doer HttpRequestDoer) ClientOption {
 // WithRequestEditorFn allows setting up a callback function, which will be
 // called right before sending the request. This can be used to mutate the request.
 func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
-	return func(c *SSEClient) error {
+	return func(c *Client) error {
 		c.RequestEditors = append(c.RequestEditors, fn)
 		return nil
 	}
@@ -280,7 +280,7 @@ type ClientInterface interface {
 	UpdateWorkItemComment(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *SSEClient) DeleteActivity(ctx context.Context, activityID db.ActivityID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteActivity(ctx context.Context, activityID db.ActivityID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteActivityRequest(c.Server, activityID)
 	if err != nil {
 		return nil, err
@@ -299,7 +299,7 @@ func (c *SSEClient) DeleteActivity(ctx context.Context, activityID db.ActivityID
 	}
 }
 
-func (c *SSEClient) GetActivity(ctx context.Context, activityID db.ActivityID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetActivity(ctx context.Context, activityID db.ActivityID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetActivityRequest(c.Server, activityID)
 	if err != nil {
 		return nil, err
@@ -318,7 +318,7 @@ func (c *SSEClient) GetActivity(ctx context.Context, activityID db.ActivityID, r
 	}
 }
 
-func (c *SSEClient) UpdateActivityWithBody(ctx context.Context, activityID db.ActivityID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateActivityWithBody(ctx context.Context, activityID db.ActivityID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateActivityRequestWithBody(c.Server, activityID, contentType, body)
 	if err != nil {
 		return nil, err
@@ -337,7 +337,7 @@ func (c *SSEClient) UpdateActivityWithBody(ctx context.Context, activityID db.Ac
 	}
 }
 
-func (c *SSEClient) UpdateActivity(ctx context.Context, activityID db.ActivityID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateActivity(ctx context.Context, activityID db.ActivityID, body UpdateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateActivityRequest(c.Server, activityID, body)
 	if err != nil {
 		return nil, err
@@ -356,7 +356,7 @@ func (c *SSEClient) UpdateActivity(ctx context.Context, activityID db.ActivityID
 	}
 }
 
-func (c *SSEClient) AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) AdminPing(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewAdminPingRequest(c.Server)
 	if err != nil {
 		return nil, err
@@ -375,7 +375,7 @@ func (c *SSEClient) AdminPing(ctx context.Context, reqEditors ...RequestEditorFn
 	}
 }
 
-func (c *SSEClient) MyProviderCallback(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) MyProviderCallback(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMyProviderCallbackRequest(c.Server)
 	if err != nil {
 		return nil, err
@@ -394,7 +394,7 @@ func (c *SSEClient) MyProviderCallback(ctx context.Context, reqEditors ...Reques
 	}
 }
 
-func (c *SSEClient) MyProviderLogin(ctx context.Context, params *MyProviderLoginParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) MyProviderLogin(ctx context.Context, params *MyProviderLoginParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewMyProviderLoginRequest(c.Server, params)
 	if err != nil {
 		return nil, err
@@ -413,7 +413,7 @@ func (c *SSEClient) MyProviderLogin(ctx context.Context, params *MyProviderLogin
 	}
 }
 
-func (c *SSEClient) Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewEventsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
@@ -432,7 +432,7 @@ func (c *SSEClient) Events(ctx context.Context, params *EventsParams, reqEditors
 	}
 }
 
-func (c *SSEClient) GetPaginatedNotifications(ctx context.Context, params *GetPaginatedNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetPaginatedNotifications(ctx context.Context, params *GetPaginatedNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetPaginatedNotificationsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
@@ -451,7 +451,7 @@ func (c *SSEClient) GetPaginatedNotifications(ctx context.Context, params *GetPa
 	}
 }
 
-func (c *SSEClient) OpenapiYamlGet(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) OpenapiYamlGet(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewOpenapiYamlGetRequest(c.Server)
 	if err != nil {
 		return nil, err
@@ -470,7 +470,7 @@ func (c *SSEClient) OpenapiYamlGet(ctx context.Context, reqEditors ...RequestEdi
 	}
 }
 
-func (c *SSEClient) Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPingRequest(c.Server)
 	if err != nil {
 		return nil, err
@@ -489,7 +489,7 @@ func (c *SSEClient) Ping(ctx context.Context, reqEditors ...RequestEditorFn) (*h
 	}
 }
 
-func (c *SSEClient) GetProject(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetProject(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetProjectRequest(c.Server, projectName)
 	if err != nil {
 		return nil, err
@@ -508,7 +508,7 @@ func (c *SSEClient) GetProject(ctx context.Context, projectName ProjectName, req
 	}
 }
 
-func (c *SSEClient) CreateActivityWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateActivityWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateActivityRequestWithBody(c.Server, projectName, contentType, body)
 	if err != nil {
 		return nil, err
@@ -527,7 +527,7 @@ func (c *SSEClient) CreateActivityWithBody(ctx context.Context, projectName Proj
 	}
 }
 
-func (c *SSEClient) CreateActivity(ctx context.Context, projectName ProjectName, body CreateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateActivity(ctx context.Context, projectName ProjectName, body CreateActivityJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateActivityRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
@@ -546,7 +546,7 @@ func (c *SSEClient) CreateActivity(ctx context.Context, projectName ProjectName,
 	}
 }
 
-func (c *SSEClient) GetProjectBoard(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetProjectBoard(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetProjectBoardRequest(c.Server, projectName)
 	if err != nil {
 		return nil, err
@@ -565,7 +565,7 @@ func (c *SSEClient) GetProjectBoard(ctx context.Context, projectName ProjectName
 	}
 }
 
-func (c *SSEClient) GetProjectConfig(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetProjectConfig(ctx context.Context, projectName ProjectName, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetProjectConfigRequest(c.Server, projectName)
 	if err != nil {
 		return nil, err
@@ -584,7 +584,7 @@ func (c *SSEClient) GetProjectConfig(ctx context.Context, projectName ProjectNam
 	}
 }
 
-func (c *SSEClient) UpdateProjectConfigWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateProjectConfigWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateProjectConfigRequestWithBody(c.Server, projectName, contentType, body)
 	if err != nil {
 		return nil, err
@@ -603,7 +603,7 @@ func (c *SSEClient) UpdateProjectConfigWithBody(ctx context.Context, projectName
 	}
 }
 
-func (c *SSEClient) UpdateProjectConfig(ctx context.Context, projectName ProjectName, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateProjectConfig(ctx context.Context, projectName ProjectName, body UpdateProjectConfigJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateProjectConfigRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
@@ -622,7 +622,7 @@ func (c *SSEClient) UpdateProjectConfig(ctx context.Context, projectName Project
 	}
 }
 
-func (c *SSEClient) InitializeProjectWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) InitializeProjectWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewInitializeProjectRequestWithBody(c.Server, projectName, contentType, body)
 	if err != nil {
 		return nil, err
@@ -641,7 +641,7 @@ func (c *SSEClient) InitializeProjectWithBody(ctx context.Context, projectName P
 	}
 }
 
-func (c *SSEClient) InitializeProject(ctx context.Context, projectName ProjectName, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) InitializeProject(ctx context.Context, projectName ProjectName, body InitializeProjectJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewInitializeProjectRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
@@ -660,7 +660,7 @@ func (c *SSEClient) InitializeProject(ctx context.Context, projectName ProjectNa
 	}
 }
 
-func (c *SSEClient) CreateTeamWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateTeamWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateTeamRequestWithBody(c.Server, projectName, contentType, body)
 	if err != nil {
 		return nil, err
@@ -679,7 +679,7 @@ func (c *SSEClient) CreateTeamWithBody(ctx context.Context, projectName ProjectN
 	}
 }
 
-func (c *SSEClient) CreateTeam(ctx context.Context, projectName ProjectName, body CreateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateTeam(ctx context.Context, projectName ProjectName, body CreateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateTeamRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
@@ -698,7 +698,7 @@ func (c *SSEClient) CreateTeam(ctx context.Context, projectName ProjectName, bod
 	}
 }
 
-func (c *SSEClient) CreateWorkItemTagWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateWorkItemTagWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateWorkItemTagRequestWithBody(c.Server, projectName, contentType, body)
 	if err != nil {
 		return nil, err
@@ -717,7 +717,7 @@ func (c *SSEClient) CreateWorkItemTagWithBody(ctx context.Context, projectName P
 	}
 }
 
-func (c *SSEClient) CreateWorkItemTag(ctx context.Context, projectName ProjectName, body CreateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateWorkItemTag(ctx context.Context, projectName ProjectName, body CreateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateWorkItemTagRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
@@ -736,7 +736,7 @@ func (c *SSEClient) CreateWorkItemTag(ctx context.Context, projectName ProjectNa
 	}
 }
 
-func (c *SSEClient) CreateWorkItemTypeWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateWorkItemTypeWithBody(ctx context.Context, projectName ProjectName, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateWorkItemTypeRequestWithBody(c.Server, projectName, contentType, body)
 	if err != nil {
 		return nil, err
@@ -755,7 +755,7 @@ func (c *SSEClient) CreateWorkItemTypeWithBody(ctx context.Context, projectName 
 	}
 }
 
-func (c *SSEClient) CreateWorkItemType(ctx context.Context, projectName ProjectName, body CreateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateWorkItemType(ctx context.Context, projectName ProjectName, body CreateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateWorkItemTypeRequest(c.Server, projectName, body)
 	if err != nil {
 		return nil, err
@@ -774,7 +774,7 @@ func (c *SSEClient) CreateWorkItemType(ctx context.Context, projectName ProjectN
 	}
 }
 
-func (c *SSEClient) GetProjectWorkitems(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetProjectWorkitems(ctx context.Context, projectName ProjectName, params *GetProjectWorkitemsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetProjectWorkitemsRequest(c.Server, projectName, params)
 	if err != nil {
 		return nil, err
@@ -793,7 +793,7 @@ func (c *SSEClient) GetProjectWorkitems(ctx context.Context, projectName Project
 	}
 }
 
-func (c *SSEClient) DeleteTeam(ctx context.Context, teamID db.TeamID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteTeam(ctx context.Context, teamID db.TeamID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteTeamRequest(c.Server, teamID)
 	if err != nil {
 		return nil, err
@@ -812,7 +812,7 @@ func (c *SSEClient) DeleteTeam(ctx context.Context, teamID db.TeamID, reqEditors
 	}
 }
 
-func (c *SSEClient) GetTeam(ctx context.Context, teamID db.TeamID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetTeam(ctx context.Context, teamID db.TeamID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetTeamRequest(c.Server, teamID)
 	if err != nil {
 		return nil, err
@@ -831,7 +831,7 @@ func (c *SSEClient) GetTeam(ctx context.Context, teamID db.TeamID, reqEditors ..
 	}
 }
 
-func (c *SSEClient) UpdateTeamWithBody(ctx context.Context, teamID db.TeamID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateTeamWithBody(ctx context.Context, teamID db.TeamID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateTeamRequestWithBody(c.Server, teamID, contentType, body)
 	if err != nil {
 		return nil, err
@@ -850,7 +850,7 @@ func (c *SSEClient) UpdateTeamWithBody(ctx context.Context, teamID db.TeamID, co
 	}
 }
 
-func (c *SSEClient) UpdateTeam(ctx context.Context, teamID db.TeamID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateTeam(ctx context.Context, teamID db.TeamID, body UpdateTeamJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateTeamRequest(c.Server, teamID, body)
 	if err != nil {
 		return nil, err
@@ -869,7 +869,7 @@ func (c *SSEClient) UpdateTeam(ctx context.Context, teamID db.TeamID, body Updat
 	}
 }
 
-func (c *SSEClient) CreateTimeEntryWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateTimeEntryWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateTimeEntryRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
@@ -888,7 +888,7 @@ func (c *SSEClient) CreateTimeEntryWithBody(ctx context.Context, contentType str
 	}
 }
 
-func (c *SSEClient) CreateTimeEntry(ctx context.Context, body CreateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateTimeEntry(ctx context.Context, body CreateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateTimeEntryRequest(c.Server, body)
 	if err != nil {
 		return nil, err
@@ -907,7 +907,7 @@ func (c *SSEClient) CreateTimeEntry(ctx context.Context, body CreateTimeEntryJSO
 	}
 }
 
-func (c *SSEClient) DeleteTimeEntry(ctx context.Context, timeEntryID db.TimeEntryID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteTimeEntry(ctx context.Context, timeEntryID db.TimeEntryID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteTimeEntryRequest(c.Server, timeEntryID)
 	if err != nil {
 		return nil, err
@@ -926,7 +926,7 @@ func (c *SSEClient) DeleteTimeEntry(ctx context.Context, timeEntryID db.TimeEntr
 	}
 }
 
-func (c *SSEClient) GetTimeEntry(ctx context.Context, timeEntryID db.TimeEntryID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetTimeEntry(ctx context.Context, timeEntryID db.TimeEntryID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetTimeEntryRequest(c.Server, timeEntryID)
 	if err != nil {
 		return nil, err
@@ -945,7 +945,7 @@ func (c *SSEClient) GetTimeEntry(ctx context.Context, timeEntryID db.TimeEntryID
 	}
 }
 
-func (c *SSEClient) UpdateTimeEntryWithBody(ctx context.Context, timeEntryID db.TimeEntryID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateTimeEntryWithBody(ctx context.Context, timeEntryID db.TimeEntryID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateTimeEntryRequestWithBody(c.Server, timeEntryID, contentType, body)
 	if err != nil {
 		return nil, err
@@ -964,7 +964,7 @@ func (c *SSEClient) UpdateTimeEntryWithBody(ctx context.Context, timeEntryID db.
 	}
 }
 
-func (c *SSEClient) UpdateTimeEntry(ctx context.Context, timeEntryID db.TimeEntryID, body UpdateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateTimeEntry(ctx context.Context, timeEntryID db.TimeEntryID, body UpdateTimeEntryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateTimeEntryRequest(c.Server, timeEntryID, body)
 	if err != nil {
 		return nil, err
@@ -983,7 +983,7 @@ func (c *SSEClient) UpdateTimeEntry(ctx context.Context, timeEntryID db.TimeEntr
 	}
 }
 
-func (c *SSEClient) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetCurrentUser(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetCurrentUserRequest(c.Server)
 	if err != nil {
 		return nil, err
@@ -1002,7 +1002,7 @@ func (c *SSEClient) GetCurrentUser(ctx context.Context, reqEditors ...RequestEdi
 	}
 }
 
-func (c *SSEClient) GetPaginatedUsers(ctx context.Context, params *GetPaginatedUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetPaginatedUsers(ctx context.Context, params *GetPaginatedUsersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetPaginatedUsersRequest(c.Server, params)
 	if err != nil {
 		return nil, err
@@ -1021,7 +1021,7 @@ func (c *SSEClient) GetPaginatedUsers(ctx context.Context, params *GetPaginatedU
 	}
 }
 
-func (c *SSEClient) DeleteUser(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteUser(ctx context.Context, id uuid.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteUserRequest(c.Server, id)
 	if err != nil {
 		return nil, err
@@ -1040,7 +1040,7 @@ func (c *SSEClient) DeleteUser(ctx context.Context, id uuid.UUID, reqEditors ...
 	}
 }
 
-func (c *SSEClient) UpdateUserWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1059,7 +1059,7 @@ func (c *SSEClient) UpdateUserWithBody(ctx context.Context, id uuid.UUID, conten
 	}
 }
 
-func (c *SSEClient) UpdateUser(ctx context.Context, id uuid.UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUser(ctx context.Context, id uuid.UUID, body UpdateUserJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
@@ -1078,7 +1078,7 @@ func (c *SSEClient) UpdateUser(ctx context.Context, id uuid.UUID, body UpdateUse
 	}
 }
 
-func (c *SSEClient) UpdateUserAuthorizationWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserAuthorizationWithBody(ctx context.Context, id uuid.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserAuthorizationRequestWithBody(c.Server, id, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1097,7 +1097,7 @@ func (c *SSEClient) UpdateUserAuthorizationWithBody(ctx context.Context, id uuid
 	}
 }
 
-func (c *SSEClient) UpdateUserAuthorization(ctx context.Context, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateUserAuthorization(ctx context.Context, id uuid.UUID, body UpdateUserAuthorizationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateUserAuthorizationRequest(c.Server, id, body)
 	if err != nil {
 		return nil, err
@@ -1116,7 +1116,7 @@ func (c *SSEClient) UpdateUserAuthorization(ctx context.Context, id uuid.UUID, b
 	}
 }
 
-func (c *SSEClient) DeleteWorkItemTag(ctx context.Context, workItemTagID db.WorkItemTagID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteWorkItemTag(ctx context.Context, workItemTagID db.WorkItemTagID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteWorkItemTagRequest(c.Server, workItemTagID)
 	if err != nil {
 		return nil, err
@@ -1135,7 +1135,7 @@ func (c *SSEClient) DeleteWorkItemTag(ctx context.Context, workItemTagID db.Work
 	}
 }
 
-func (c *SSEClient) GetWorkItemTag(ctx context.Context, workItemTagID db.WorkItemTagID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetWorkItemTag(ctx context.Context, workItemTagID db.WorkItemTagID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetWorkItemTagRequest(c.Server, workItemTagID)
 	if err != nil {
 		return nil, err
@@ -1154,7 +1154,7 @@ func (c *SSEClient) GetWorkItemTag(ctx context.Context, workItemTagID db.WorkIte
 	}
 }
 
-func (c *SSEClient) UpdateWorkItemTagWithBody(ctx context.Context, workItemTagID db.WorkItemTagID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateWorkItemTagWithBody(ctx context.Context, workItemTagID db.WorkItemTagID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWorkItemTagRequestWithBody(c.Server, workItemTagID, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1173,7 +1173,7 @@ func (c *SSEClient) UpdateWorkItemTagWithBody(ctx context.Context, workItemTagID
 	}
 }
 
-func (c *SSEClient) UpdateWorkItemTag(ctx context.Context, workItemTagID db.WorkItemTagID, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateWorkItemTag(ctx context.Context, workItemTagID db.WorkItemTagID, body UpdateWorkItemTagJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWorkItemTagRequest(c.Server, workItemTagID, body)
 	if err != nil {
 		return nil, err
@@ -1192,7 +1192,7 @@ func (c *SSEClient) UpdateWorkItemTag(ctx context.Context, workItemTagID db.Work
 	}
 }
 
-func (c *SSEClient) DeleteWorkItemType(ctx context.Context, workItemTypeID db.WorkItemTypeID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteWorkItemType(ctx context.Context, workItemTypeID db.WorkItemTypeID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteWorkItemTypeRequest(c.Server, workItemTypeID)
 	if err != nil {
 		return nil, err
@@ -1211,7 +1211,7 @@ func (c *SSEClient) DeleteWorkItemType(ctx context.Context, workItemTypeID db.Wo
 	}
 }
 
-func (c *SSEClient) GetWorkItemType(ctx context.Context, workItemTypeID db.WorkItemTypeID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetWorkItemType(ctx context.Context, workItemTypeID db.WorkItemTypeID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetWorkItemTypeRequest(c.Server, workItemTypeID)
 	if err != nil {
 		return nil, err
@@ -1230,7 +1230,7 @@ func (c *SSEClient) GetWorkItemType(ctx context.Context, workItemTypeID db.WorkI
 	}
 }
 
-func (c *SSEClient) UpdateWorkItemTypeWithBody(ctx context.Context, workItemTypeID db.WorkItemTypeID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateWorkItemTypeWithBody(ctx context.Context, workItemTypeID db.WorkItemTypeID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWorkItemTypeRequestWithBody(c.Server, workItemTypeID, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1249,7 +1249,7 @@ func (c *SSEClient) UpdateWorkItemTypeWithBody(ctx context.Context, workItemType
 	}
 }
 
-func (c *SSEClient) UpdateWorkItemType(ctx context.Context, workItemTypeID db.WorkItemTypeID, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateWorkItemType(ctx context.Context, workItemTypeID db.WorkItemTypeID, body UpdateWorkItemTypeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWorkItemTypeRequest(c.Server, workItemTypeID, body)
 	if err != nil {
 		return nil, err
@@ -1268,7 +1268,7 @@ func (c *SSEClient) UpdateWorkItemType(ctx context.Context, workItemTypeID db.Wo
 	}
 }
 
-func (c *SSEClient) CreateWorkitemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateWorkitemWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateWorkitemRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1287,7 +1287,7 @@ func (c *SSEClient) CreateWorkitemWithBody(ctx context.Context, contentType stri
 	}
 }
 
-func (c *SSEClient) CreateWorkitem(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateWorkitem(ctx context.Context, body CreateWorkitemJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateWorkitemRequest(c.Server, body)
 	if err != nil {
 		return nil, err
@@ -1306,7 +1306,7 @@ func (c *SSEClient) CreateWorkitem(ctx context.Context, body CreateWorkitemJSONR
 	}
 }
 
-func (c *SSEClient) DeleteWorkitem(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteWorkitem(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteWorkitemRequest(c.Server, workItemID)
 	if err != nil {
 		return nil, err
@@ -1325,7 +1325,7 @@ func (c *SSEClient) DeleteWorkitem(ctx context.Context, workItemID db.WorkItemID
 	}
 }
 
-func (c *SSEClient) GetWorkItem(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetWorkItem(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetWorkItemRequest(c.Server, workItemID)
 	if err != nil {
 		return nil, err
@@ -1344,7 +1344,7 @@ func (c *SSEClient) GetWorkItem(ctx context.Context, workItemID db.WorkItemID, r
 	}
 }
 
-func (c *SSEClient) UpdateWorkitem(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateWorkitem(ctx context.Context, workItemID db.WorkItemID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWorkitemRequest(c.Server, workItemID)
 	if err != nil {
 		return nil, err
@@ -1363,7 +1363,7 @@ func (c *SSEClient) UpdateWorkitem(ctx context.Context, workItemID db.WorkItemID
 	}
 }
 
-func (c *SSEClient) CreateWorkItemCommentWithBody(ctx context.Context, workItemID int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateWorkItemCommentWithBody(ctx context.Context, workItemID int, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateWorkItemCommentRequestWithBody(c.Server, workItemID, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1382,7 +1382,7 @@ func (c *SSEClient) CreateWorkItemCommentWithBody(ctx context.Context, workItemI
 	}
 }
 
-func (c *SSEClient) CreateWorkItemComment(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) CreateWorkItemComment(ctx context.Context, workItemID int, body CreateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewCreateWorkItemCommentRequest(c.Server, workItemID, body)
 	if err != nil {
 		return nil, err
@@ -1401,7 +1401,7 @@ func (c *SSEClient) CreateWorkItemComment(ctx context.Context, workItemID int, b
 	}
 }
 
-func (c *SSEClient) DeleteWorkItemComment(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) DeleteWorkItemComment(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewDeleteWorkItemCommentRequest(c.Server, workItemID, workItemCommentID)
 	if err != nil {
 		return nil, err
@@ -1420,7 +1420,7 @@ func (c *SSEClient) DeleteWorkItemComment(ctx context.Context, workItemID db.Wor
 	}
 }
 
-func (c *SSEClient) GetWorkItemComment(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) GetWorkItemComment(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetWorkItemCommentRequest(c.Server, workItemID, workItemCommentID)
 	if err != nil {
 		return nil, err
@@ -1439,7 +1439,7 @@ func (c *SSEClient) GetWorkItemComment(ctx context.Context, workItemID db.WorkIt
 	}
 }
 
-func (c *SSEClient) UpdateWorkItemCommentWithBody(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateWorkItemCommentWithBody(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWorkItemCommentRequestWithBody(c.Server, workItemID, workItemCommentID, contentType, body)
 	if err != nil {
 		return nil, err
@@ -1458,7 +1458,7 @@ func (c *SSEClient) UpdateWorkItemCommentWithBody(ctx context.Context, workItemI
 	}
 }
 
-func (c *SSEClient) UpdateWorkItemComment(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) UpdateWorkItemComment(ctx context.Context, workItemID db.WorkItemID, workItemCommentID db.WorkItemCommentID, body UpdateWorkItemCommentJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWorkItemCommentRequest(c.Server, workItemID, workItemCommentID, body)
 	if err != nil {
 		return nil, err
@@ -3400,7 +3400,7 @@ func NewUpdateWorkItemCommentRequestWithBody(server string, workItemID db.WorkIt
 	return req, nil
 }
 
-func (c *SSEClient) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
+func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
 			return err
@@ -3431,7 +3431,7 @@ func NewClientWithResponses(server string, opts ...ClientOption) (*ClientWithRes
 
 // WithBaseURL overrides the baseURL.
 func WithBaseURL(baseURL string) ClientOption {
-	return func(c *SSEClient) error {
+	return func(c *Client) error {
 		newBaseURL, err := url.Parse(baseURL)
 		if err != nil {
 			return err
