@@ -211,8 +211,9 @@ func (es *EventServer) listen() {
 
 func (stream *EventServer) serveHTTP() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		/* TODO:
-		- sse withCredentials includes cookie with auth token. not authenticated? return (test with x-api-key)
+		/* TODO: see cmd/sse-test/main.go working example
+
+		   - sse withCredentials includes cookie with auth token. not authenticated? return (test with x-api-key)
 		*/
 		fmt.Println("stream events - Initialize client channel")
 		clientChan := make(ClientChan, 1)

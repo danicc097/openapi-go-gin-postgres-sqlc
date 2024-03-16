@@ -18,6 +18,7 @@ import (
 type Topic string
 
 const (
+	TopicsTime         Topic = "Time"
 	TopicsTopic1       Topic = "Topic1"
 	TopicsAnotherTopic Topic = "AnotherTopic"
 )
@@ -26,6 +27,7 @@ func AllTopicsValues() []Topic {
 	return []Topic{
 		TopicsTopic1,
 		TopicsAnotherTopic,
+		TopicsTime,
 	}
 }
 
@@ -33,12 +35,12 @@ type EventServer struct {
 	// Events are pushed to this channel by the main events-gathering routine
 	Messages      chan ClientMessage
 	NewClients    chan ClientChan
-	ClosedClients chan chan string
-	Subscriptions map[chan string]map[Topic]struct{} // Map of client channel to subscribed topics
+	ClosedClients chan chan ClientMessage
+	Subscriptions map[chan ClientMessage]map[Topic]struct{}
 }
 
 type ClientChan struct {
-	Chan   chan string
+	Chan   chan ClientMessage
 	Topics []Topic
 }
 
@@ -57,7 +59,7 @@ func main() {
 			time.Sleep(time.Second * 1)
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
-			handlers.event.Messages <- ClientMessage{Message: currentTime, Topic: TopicsTopic1}
+			handlers.event.Messages <- ClientMessage{Message: currentTime, Topic: TopicsTime}
 		}
 	}()
 
@@ -76,7 +78,7 @@ func main() {
 				if !ok {
 					return false // channel closed
 				}
-				c.SSEvent(string(clientChan.Topics[0]), msg)
+				c.SSEvent(string(msg.Topic), msg.Message) // Use the correct topic from the message
 				return true
 			default:
 				// no messages, return so that middleware cleanup can run
@@ -162,8 +164,8 @@ func newSSEServer() *EventServer {
 	es := &EventServer{
 		Messages:      make(chan ClientMessage),
 		NewClients:    make(chan ClientChan),
-		ClosedClients: make(chan chan string),
-		Subscriptions: make(map[chan string]map[Topic]struct{}),
+		ClosedClients: make(chan chan ClientMessage),
+		Subscriptions: make(map[chan ClientMessage]map[Topic]struct{}),
 	}
 
 	go es.listen()
@@ -194,7 +196,7 @@ func (server *EventServer) listen() {
 			for client, topics := range server.Subscriptions {
 				// Only send if subscribed to topic
 				if _, ok := topics[eventMsg.Topic]; ok {
-					client <- eventMsg.Message
+					client <- eventMsg
 				}
 			}
 		}
@@ -209,20 +211,11 @@ func (server *EventServer) serveHTTP() gin.HandlerFunc {
 			return
 		}
 
-		clientChan := ClientChan{Chan: make(chan string, 1), Topics: make([]Topic, len(topics))}
+		clientChan := ClientChan{
+			Chan:   make(chan ClientMessage, 1),
+			Topics: make([]Topic, len(topics)),
+		}
 		for i, topic := range topics {
-			// Check if the topic exists
-			validTopic := false
-			for _, t := range AllTopicsValues() {
-				if Topic(topic) == t {
-					validTopic = true
-					break
-				}
-			}
-			if !validTopic {
-				c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid topic: %s", topic)})
-				return
-			}
 			clientChan.Topics[i] = Topic(topic)
 		}
 
