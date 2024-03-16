@@ -23,22 +23,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func getClientChannelFromCtx(c *gin.Context) (Client, bool) {
-	v, ok := c.Get("clientChan")
-	if !ok {
-		return Client{}, false
-	}
-	clientChan, ok := v.(Client)
-	if !ok {
-		return Client{}, false
-	}
-	return clientChan, true
-}
-
-func ctxWithClientChannel(c *gin.Context, clientChan Client) {
-	c.Set("clientChan", clientChan)
-}
-
 type Topic string
 
 const (
@@ -106,7 +90,7 @@ func main() {
 			time.Sleep(time.Second * 1)
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
-			handlers.event.Publish(currentTime, TopicsTime)
+			handlers.events.Publish(currentTime, TopicsTime)
 
 		}
 	}()
@@ -127,17 +111,37 @@ func main() {
 				continue
 			}
 
-			handlers.event.Publish(string(msgData), TopicsJSONData)
+			handlers.events.Publish(string(msgData), TopicsJSONData)
 
 			time.Sleep(time.Second * 1)
 		}
 	}()
 
-	router.GET("/stream", HeadersMiddleware(), handlers.event.serveHTTP(), func(c *gin.Context) {
-		clientChan, ok := getClientChannelFromCtx(c)
-		if !ok {
+	router.GET("/stream", func(c *gin.Context) {
+		c.Writer.Header().Set("Content-Type", "text/event-stream")
+		c.Writer.Header().Set("Cache-Control", "no-cache")
+		c.Writer.Header().Set("Connection", "keep-alive")
+		c.Writer.Header().Set("Transfer-Encoding", "chunked")
+
+		topics := c.QueryArray("topics")
+		if len(topics) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "topics query parameter is required"})
 			return
 		}
+
+		clientChan := Client{
+			Chan:   make(chan ClientMessage, 1),
+			Topics: make([]Topic, len(topics)),
+		}
+		for i, topic := range topics {
+			clientChan.Topics[i] = Topic(topic)
+		}
+
+		handlers.events.newClients <- clientChan
+		defer func() {
+			handlers.events.closedClients <- clientChan.Chan
+		}()
+
 		ticker := time.NewTicker(1 * time.Second)
 		c.Stream(func(w io.Writer) bool {
 			select {
@@ -165,14 +169,12 @@ func main() {
 }
 
 type Handlers struct {
-	event *EventServer
+	events *EventServer
 }
 
 func NewHandlers() *Handlers {
-	event := newSSEServer()
-
 	return &Handlers{
-		event: event,
+		events: newSSEServer(),
 	}
 }
 
@@ -253,42 +255,5 @@ func (server *EventServer) listen() {
 				ch <- eventMsg
 			}
 		}
-	}
-}
-
-func (server *EventServer) serveHTTP() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		topics := c.QueryArray("topics")
-		if len(topics) == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "topics query parameter is required"})
-			return
-		}
-
-		clientChan := Client{
-			Chan:   make(chan ClientMessage, 1),
-			Topics: make([]Topic, len(topics)),
-		}
-		for i, topic := range topics {
-			clientChan.Topics[i] = Topic(topic)
-		}
-
-		server.newClients <- clientChan
-		defer func() {
-			server.closedClients <- clientChan.Chan
-		}()
-
-		ctxWithClientChannel(c, clientChan)
-
-		c.Next()
-	}
-}
-
-func HeadersMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Content-Type", "text/event-stream")
-		c.Writer.Header().Set("Cache-Control", "no-cache")
-		c.Writer.Header().Set("Connection", "keep-alive")
-		c.Writer.Header().Set("Transfer-Encoding", "chunked")
-		c.Next()
 	}
 }
