@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -18,6 +19,7 @@ import (
 type Topic string
 
 const (
+	TopicsJSONData     Topic = "JSONData"
 	TopicsTime         Topic = "Time"
 	TopicsTopic1       Topic = "Topic1"
 	TopicsAnotherTopic Topic = "AnotherTopic"
@@ -28,6 +30,7 @@ func AllTopicsValues() []Topic {
 		TopicsTopic1,
 		TopicsAnotherTopic,
 		TopicsTime,
+		TopicsJSONData,
 	}
 }
 
@@ -60,6 +63,28 @@ func main() {
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
 			handlers.event.Messages <- ClientMessage{Message: currentTime, Topic: TopicsTime}
+		}
+	}()
+
+	go func() {
+		for {
+			data := struct {
+				Field1 string `json:"field1"`
+				Field2 int    `json:"field2"`
+			}{
+				Field1: "value1",
+				Field2: 42,
+			}
+
+			msgData, err := json.Marshal(data)
+			if err != nil {
+				log.Printf("Error marshaling JSON: %v", err)
+				continue
+			}
+
+			handlers.event.Messages <- ClientMessage{Message: string(msgData), Topic: TopicsJSONData}
+
+			time.Sleep(time.Second * 1)
 		}
 	}()
 
@@ -109,6 +134,8 @@ func NewHandlers() *Handlers {
 	}
 }
 
+// entr bash -c 'clear; go run cmd/sse-test/main.go' <<< cmd/sse-test/main.go
+// curl -X 'GET' -N 'http://localhost:8085/stream?topics=AnotherTopic&topics=Time'
 func Run(router *gin.Engine) (<-chan error, error) {
 	addr := ":8085"
 	httpsrv := &http.Server{
