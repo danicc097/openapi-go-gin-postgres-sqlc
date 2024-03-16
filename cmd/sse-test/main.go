@@ -23,6 +23,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func getClientChannelFromCtx(c *gin.Context) (Client, bool) {
+	v, ok := c.Get("clientChan")
+	if !ok {
+		return Client{}, false
+	}
+	clientChan, ok := v.(Client)
+	if !ok {
+		return Client{}, false
+	}
+	return clientChan, true
+}
+
+func ctxWithClientChannel(c *gin.Context, clientChan Client) {
+	c.Set("clientChan", clientChan)
+}
+
 type Topic string
 
 const (
@@ -118,11 +134,7 @@ func main() {
 	}()
 
 	router.GET("/stream", HeadersMiddleware(), handlers.event.serveHTTP(), func(c *gin.Context) {
-		v, ok := c.Get("clientChan")
-		if !ok {
-			return
-		}
-		clientChan, ok := v.(Client)
+		clientChan, ok := getClientChannelFromCtx(c)
 		if !ok {
 			return
 		}
@@ -265,7 +277,7 @@ func (server *EventServer) serveHTTP() gin.HandlerFunc {
 			server.closedClients <- clientChan.Chan
 		}()
 
-		c.Set("clientChan", clientChan)
+		ctxWithClientChannel(c, clientChan)
 
 		c.Next()
 	}
