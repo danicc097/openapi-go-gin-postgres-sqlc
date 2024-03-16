@@ -95,7 +95,7 @@ func main() {
 			time.Sleep(time.Second * 1)
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
-			handlers.events.Publish(currentTime, TopicsTime)
+			handlers.event.Publish(currentTime, TopicsTime)
 
 		}
 	}()
@@ -116,7 +116,7 @@ func main() {
 				continue
 			}
 
-			handlers.events.Publish(string(msgData), TopicsJSONData)
+			handlers.event.Publish(string(msgData), TopicsJSONData)
 
 			time.Sleep(time.Second * 1)
 		}
@@ -134,7 +134,7 @@ func main() {
 			return
 		}
 
-		clientChan, unsubscribe := handlers.events.Subscribe(topics)
+		clientChan, unsubscribe := handlers.event.Subscribe(topics)
 		defer unsubscribe()
 
 		ticker := time.NewTicker(1 * time.Second)
@@ -180,12 +180,12 @@ func (es *EventServer) Subscribe(topics []string) (client Client, unsubscribe fu
 }
 
 type Handlers struct {
-	events *EventServer
+	event *EventServer
 }
 
 func NewHandlers() *Handlers {
 	return &Handlers{
-		events: newSSEServer(),
+		event: newSSEServer(),
 	}
 }
 

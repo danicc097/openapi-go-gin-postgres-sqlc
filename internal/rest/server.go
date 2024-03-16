@@ -111,9 +111,6 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		o(srv)
 	}
 
-	pubsub := NewPubSub()
-	_ = pubsub
-
 	router := gin.Default()
 	// Add a ginzap middleware, which:
 	// - Logs all requests, like a combined access and error log.

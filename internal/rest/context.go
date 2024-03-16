@@ -17,15 +17,15 @@ import (
 const ctxKeyPrefix = "rest-"
 
 const (
-	userCtxKey                  = ctxKeyPrefix + "user"
-	userInfoCtxKey              = ctxKeyPrefix + "user-info"
-	ginContextCtxKey            = ctxKeyPrefix + "middleware.openapi/gin-context"
-	userDataCtxKey              = ctxKeyPrefix + "middleware.openapi/user-data"
-	validateResponseCtxKey      = ctxKeyPrefix + "skip-response-validation"
-	skipRequestValidationCtxKey = ctxKeyPrefix + "skip-request-validation"
-	transactionCtxKey           = ctxKeyPrefix + "transaction"
-	spanCtxKey                  = ctxKeyPrefix + "span"
-	errorCtxKey                 = ctxKeyPrefix + "error"
+	userCtxKey                   = ctxKeyPrefix + "user"
+	userInfoCtxKey               = ctxKeyPrefix + "user-info"
+	ginContextCtxKey             = ctxKeyPrefix + "middleware.openapi/gin-context"
+	userDataCtxKey               = ctxKeyPrefix + "middleware.openapi/user-data"
+	skipResponseValidationCtxKey = ctxKeyPrefix + "skip-response-validation"
+	skipRequestValidationCtxKey  = ctxKeyPrefix + "skip-request-validation"
+	transactionCtxKey            = ctxKeyPrefix + "transaction"
+	spanCtxKey                   = ctxKeyPrefix + "span"
+	errorCtxKey                  = ctxKeyPrefix + "error"
 )
 
 type requestIDCtxKey struct{}
@@ -46,7 +46,7 @@ func GetSkipRequestValidationFromCtx(c *gin.Context) bool {
 }
 
 func GetValidateResponseFromCtx(c *gin.Context) bool {
-	skip, ok := c.Value(validateResponseCtxKey).(bool)
+	skip, ok := c.Value(skipResponseValidationCtxKey).(bool)
 	if !ok {
 		return false
 	}
