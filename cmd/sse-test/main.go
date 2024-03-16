@@ -37,12 +37,12 @@ func AllTopicsValues() []Topic {
 type EventServer struct {
 	// Events are pushed to this channel by the main events-gathering routine
 	Messages      chan ClientMessage
-	NewClients    chan ClientChan
+	NewClients    chan Client
 	ClosedClients chan chan ClientMessage
 	Subscriptions map[chan ClientMessage]map[Topic]struct{}
 }
 
-type ClientChan struct {
+type Client struct {
 	Chan   chan ClientMessage
 	Topics []Topic
 }
@@ -93,10 +93,11 @@ func main() {
 		if !ok {
 			return
 		}
-		clientChan, ok := v.(ClientChan)
+		clientChan, ok := v.(Client)
 		if !ok {
 			return
 		}
+		ticker := time.NewTicker(5 * time.Second)
 		c.Stream(func(w io.Writer) bool {
 			select {
 			case msg, ok := <-clientChan.Chan:
@@ -105,8 +106,8 @@ func main() {
 				}
 				c.SSEvent(string(msg.Topic), msg.Message) // Use the correct topic from the message
 				return true
-			default:
-				// no messages, return so that middleware cleanup can run
+			case <-ticker.C:
+				// ensure handler can return and clean up when client disconnects and no messages have been sent to clientChan
 				return true
 			}
 		})
@@ -134,7 +135,6 @@ func NewHandlers() *Handlers {
 	}
 }
 
-// entr bash -c 'clear; go run cmd/sse-test/main.go' <<< cmd/sse-test/main.go
 // curl -X 'GET' -N 'http://localhost:8085/stream?topics=AnotherTopic&topics=Time'
 func Run(router *gin.Engine) (<-chan error, error) {
 	addr := ":8085"
@@ -190,7 +190,7 @@ func Run(router *gin.Engine) (<-chan error, error) {
 func newSSEServer() *EventServer {
 	es := &EventServer{
 		Messages:      make(chan ClientMessage),
-		NewClients:    make(chan ClientChan),
+		NewClients:    make(chan Client),
 		ClosedClients: make(chan chan ClientMessage),
 		Subscriptions: make(map[chan ClientMessage]map[Topic]struct{}),
 	}
@@ -221,8 +221,8 @@ func (server *EventServer) listen() {
 
 		case eventMsg := <-server.Messages:
 			for client, topics := range server.Subscriptions {
-				// Only send if subscribed to topic
 				if _, ok := topics[eventMsg.Topic]; ok {
+					// Only send if subscribed to topic
 					client <- eventMsg
 				}
 			}
@@ -238,7 +238,7 @@ func (server *EventServer) serveHTTP() gin.HandlerFunc {
 			return
 		}
 
-		clientChan := ClientChan{
+		clientChan := Client{
 			Chan:   make(chan ClientMessage, 1),
 			Topics: make([]Topic, len(topics)),
 		}
