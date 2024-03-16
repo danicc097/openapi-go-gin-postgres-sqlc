@@ -28,7 +28,7 @@ func (m *tracingMiddleware) WithSpan() gin.HandlerFunc {
 	}
 }
 
-// RequestIDMiddleware sets a unique X-Request-ID header
+// RequestIDMiddleware sets a unique X-Request-ID header.
 func (m *tracingMiddleware) RequestIDMiddleware(prefix string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		requestID := fmt.Sprintf("%s-%s", prefix, uuid.New())

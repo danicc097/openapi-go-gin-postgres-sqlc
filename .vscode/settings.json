@@ -5,7 +5,7 @@
     "--config=${workspaceFolder}/.golangci.yml",
     "--issues-exit-code=0",
     "--fix",
-    // "--fast" // breaks some linters like errcheck, if its too slow then enable back
+    "--fast" // breaks some linters like errcheck, if its too slow then enable back
   ],
   "go.lintOnSave": "package",
   "go.testFlags": [

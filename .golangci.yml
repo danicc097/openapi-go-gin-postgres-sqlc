@@ -4,7 +4,7 @@ linters:
   enable-all: true
   disable:
     - ireturn # oapi-codegen strict handlers
-    - interfacebloat
+    # - interfacebloat
     - thelper
     - testpackage
     - depguard
