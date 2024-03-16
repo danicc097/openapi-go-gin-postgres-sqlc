@@ -203,7 +203,7 @@ func Run(router *gin.Engine) (<-chan error, error) {
 
 		log.Print("Shutdown signal received")
 
-		ctxTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctxTimeout, cancel := context.WithTimeout(context.Background(), 1*time.Second) // don't care for testing out
 
 		defer func() {
 			stop()
