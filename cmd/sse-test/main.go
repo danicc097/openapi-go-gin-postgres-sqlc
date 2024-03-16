@@ -52,8 +52,8 @@ type EventServer struct {
 	clients Clients
 }
 
-func (server *EventServer) Publish(message string, topic Topic) {
-	server.messages <- ClientMessage{Message: message, Topic: topic}
+func (es *EventServer) Publish(message string, topic Topic) {
+	es.messages <- ClientMessage{Message: message, Topic: topic}
 }
 
 func newSSEServer() *EventServer {
@@ -129,18 +129,8 @@ func main() {
 			return
 		}
 
-		clientChan := Client{
-			Chan:   make(chan ClientMessage, 1),
-			Topics: make([]Topic, len(topics)),
-		}
-		for i, topic := range topics {
-			clientChan.Topics[i] = Topic(topic)
-		}
-
-		handlers.events.newClients <- clientChan
-		defer func() {
-			handlers.events.closedClients <- clientChan.Chan
-		}()
+		clientChan, unsubscribe := handlers.events.Subscribe(topics)
+		defer unsubscribe()
 
 		ticker := time.NewTicker(1 * time.Second)
 		c.Stream(func(w io.Writer) bool {
@@ -165,6 +155,22 @@ func main() {
 
 	if err := <-errC; err != nil {
 		log.Fatalf("Error while running: %s", err)
+	}
+}
+
+func (es *EventServer) Subscribe(topics []string) (client Client, unsubscribe func()) {
+	client = Client{
+		Chan:   make(chan ClientMessage, 1),
+		Topics: make([]Topic, len(topics)),
+	}
+	for i, topic := range topics {
+		client.Topics[i] = Topic(topic)
+	}
+
+	es.newClients <- client
+
+	return client, func() {
+		es.closedClients <- client.Chan
 	}
 }
 
@@ -229,29 +235,29 @@ func Run(router *gin.Engine) (<-chan error, error) {
 	return errC, nil
 }
 
-func (server *EventServer) listen() {
+func (es *EventServer) listen() {
 	for {
 		select {
-		case client := <-server.newClients:
-			server.clients[client.Chan] = struct{}{}
+		case client := <-es.newClients:
+			es.clients[client.Chan] = struct{}{}
 			for _, topic := range client.Topics {
-				if _, ok := server.subscriptions[topic]; !ok {
-					server.subscriptions[topic] = make(Clients)
+				if _, ok := es.subscriptions[topic]; !ok {
+					es.subscriptions[topic] = make(Clients)
 				}
-				server.subscriptions[topic][client.Chan] = struct{}{}
+				es.subscriptions[topic][client.Chan] = struct{}{}
 			}
-			log.Printf("Client added. %d registered clients", len(server.clients))
+			log.Printf("Client added. %d registered clients", len(es.clients))
 
-		case client := <-server.closedClients:
-			for _, subscriptions := range server.subscriptions {
+		case client := <-es.closedClients:
+			for _, subscriptions := range es.subscriptions {
 				delete(subscriptions, client)
 			}
-			delete(server.clients, client)
+			delete(es.clients, client)
 			close(client)
-			log.Printf("Removed client. %d registered clients", len(server.clients))
+			log.Printf("Removed client. %d registered clients", len(es.clients))
 
-		case eventMsg := <-server.messages:
-			for ch := range server.subscriptions[eventMsg.Topic] {
+		case eventMsg := <-es.messages:
+			for ch := range es.subscriptions[eventMsg.Topic] {
 				ch <- eventMsg
 			}
 		}
