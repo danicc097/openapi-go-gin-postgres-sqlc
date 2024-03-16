@@ -96,7 +96,6 @@ func main() {
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
 			handlers.event.Publish(currentTime, TopicsTime)
-
 		}
 	}()
 

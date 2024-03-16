@@ -1123,7 +1123,7 @@ x.lint.go() {
     -name "*.go")
   goimports -w $files || err "Linting failed"
   gofumpt -w $files || err "Linting failed"
-  golangci-lint run --config=.golangci.yml --allow-parallel-runners --fix &>/dev/null || true
+  golangci-lint run --config=.golangci.yml --allow-parallel-runners --fast --fix &>/dev/null || true
 }
 
 exhaustruct_lint() {
