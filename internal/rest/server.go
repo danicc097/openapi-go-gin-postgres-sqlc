@@ -87,6 +87,7 @@ func (c *Config) validate() error {
 type Server struct {
 	Httpsrv     *http.Server
 	middlewares []gin.HandlerFunc
+	Event       *EventServer
 }
 
 type ServerOption func(*Server)
@@ -201,9 +202,11 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	authmw := NewAuthMiddleware(conf.Logger, conf.Pool, svcs)
 	_ = authmw
 	_ = provider
+	event := newSSEServer()
 	handlers := NewStrictHandlers(
 		conf.Logger,
 		conf.Pool,
+		event,
 		conf.MovieSvcClient,
 		conf.SpecPath,
 		svcs,
@@ -222,6 +225,8 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		// WriteTimeout:      10 * time.Second,
 		// IdleTimeout:       10 * time.Second,
 	}
+	srv.Event = event
+
 	return srv, nil
 }
 

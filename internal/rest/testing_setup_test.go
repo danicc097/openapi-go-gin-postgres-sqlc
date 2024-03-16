@@ -64,6 +64,7 @@ type testServer struct {
 	client       *ClientWithResponses
 	tp           *sdktrace.TracerProvider
 	spanRecorder *tracetest.SpanRecorder
+	event        *rest.EventServer
 }
 
 func (s *testServer) setupCleanup(t *testing.T) {
@@ -124,6 +125,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 
 	return &testServer{
 		server:       srv.Httpsrv,
+		event:        srv.Event,
 		client:       client,
 		tp:           tp,
 		spanRecorder: spanRecorder,

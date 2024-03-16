@@ -44,14 +44,13 @@ var _ StrictServerInterface = (*StrictHandlers)(nil)
 // NewStrictHandlers returns a server implementation of an openapi specification.
 func NewStrictHandlers(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,
+	event *EventServer,
 	moviesvcclient v1.MovieGenreClient,
 	specPath string,
 	svcs *services.Services,
 	authmw *authMiddleware, // middleware needed here since it's generated code
 	provider rp.RelyingParty,
 ) StrictServerInterface {
-	event := newSSEServer()
-
 	go func() {
 		for {
 			time.Sleep(time.Second * 1)

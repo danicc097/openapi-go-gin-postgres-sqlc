@@ -85,6 +85,14 @@ func TestSSEStream(t *testing.T) {
 	// require.NoError(t, err)
 	// fmt.Printf("bd: %v\n", bd)
 
+	msg := "test-message-123"
+	go func() {
+		for {
+			srv.event.Publish(msg, models.TopicGlobalAlerts)
+			time.Sleep(time.Millisecond * 200)
+		}
+	}()
+
 	stopCh := make(chan bool)
 	go func() {
 		for {
@@ -92,7 +100,6 @@ func TestSSEStream(t *testing.T) {
 			case <-stopCh:
 				return
 			default:
-				time.Sleep(1 * time.Second) // TODO remove when actually testing something
 				srv.server.Handler.ServeHTTP(res, req)
 			}
 		}
@@ -108,7 +115,7 @@ func TestSSEStream(t *testing.T) {
 			return false
 		}
 		body := res.Body.String()
-		return strings.Count(body, "event:"+string(models.TopicGlobalAlerts)) >= 1
+		return strings.Count(body, "event:"+string(models.TopicGlobalAlerts)) >= 1 && strings.Count(body, "data:"+msg) >= 1
 	}, 10*time.Second, 100*time.Millisecond) {
 		t.Fatalf("did not receive event")
 	}
