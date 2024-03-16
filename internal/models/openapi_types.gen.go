@@ -220,17 +220,17 @@ func AllScopeValues() []Scope {
 	}
 }
 
-// Topics string identifiers for SSE event listeners.
+// Topic string identifiers for SSE event listeners.
 const (
-	TopicsGlobalAlerts    Topics = "GlobalAlerts"
-	TopicsWorkItemUpdated Topics = "WorkItemUpdated"
+	TopicGlobalAlerts    Topic = "GlobalAlerts"
+	TopicWorkItemUpdated Topic = "WorkItemUpdated"
 )
 
-// AllTopicsValues returns all possible values for Topics.
-func AllTopicsValues() []Topics {
-	return []Topics{
-		TopicsGlobalAlerts,
-		TopicsWorkItemUpdated,
+// AllTopicValues returns all possible values for Topic.
+func AllTopicValues() []Topic {
+	return []Topic{
+		TopicGlobalAlerts,
+		TopicWorkItemUpdated,
 	}
 }
 
@@ -777,8 +777,11 @@ type TimeEntry struct {
 	WorkItemID      *int      `json:"workItemID"`
 }
 
-// Topics string identifiers for SSE event listeners.
-type Topics string
+// Topic string identifiers for SSE event listeners.
+type Topic string
+
+// Topics defines the model for Topics.
+type Topics = []Topic
 
 // UpdateActivityRequest defines the model for UpdateActivityRequest.
 type UpdateActivityRequest struct {
@@ -957,6 +960,7 @@ type MyProviderLoginParams struct {
 // EventsParams defines parameters for Events.
 type EventsParams struct {
 	ProjectName Project `form:"projectName" json:"projectName"`
+	Topics      Topics  `form:"topics" json:"topics"`
 }
 
 // GetPaginatedNotificationsParams defines parameters for GetPaginatedNotifications.

@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/http"
 	"strings"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,14 +35,14 @@ type Clients map[chan ClientMessage]struct{}
 
 type EventServer struct {
 	messages      chan ClientMessage
-	newClients    chan Client
+	newClients    chan SSEClient
 	closedClients chan chan ClientMessage
-	subscriptions map[Topics]Clients
+	subscriptions map[models.Topic]Clients
 	// clients represents all connected clients
 	clients Clients
 }
 
-func (es *EventServer) Publish(message string, topic Topics) {
+func (es *EventServer) Publish(message string, topic models.Topic) {
 	/**
 	 * TODO: instead of using Publish, add events to queue via Queue(message, topic) and dispatch later based on x-request-id (not user id since some events may
 	 *  not have authenticated user, e.g. upon registering the first time we may require manual verification, etc.)
@@ -80,13 +80,13 @@ func (es *EventServer) listen() {
 	}
 }
 
-func (es *EventServer) Subscribe(topics []string) (client Client, unsubscribe func()) {
-	client = Client{
+func (es *EventServer) Subscribe(topics models.Topics) (client SSEClient, unsubscribe func()) {
+	client = SSEClient{
 		Chan:   make(chan ClientMessage, 1),
-		Topics: make([]Topics, len(topics)),
+		Topics: make(Topics, len(topics)),
 	}
 	for i, topic := range topics {
-		client.Topics[i] = Topics(topic)
+		client.Topics[i] = models.Topic(topic)
 	}
 
 	es.newClients <- client
@@ -99,9 +99,9 @@ func (es *EventServer) Subscribe(topics []string) (client Client, unsubscribe fu
 func newSSEServer() *EventServer {
 	es := &EventServer{
 		messages:      make(chan ClientMessage),
-		newClients:    make(chan Client),
+		newClients:    make(chan SSEClient),
 		closedClients: make(chan chan ClientMessage),
-		subscriptions: make(map[Topics]Clients),
+		subscriptions: make(map[models.Topic]Clients),
 		clients:       make(Clients),
 	}
 
@@ -110,14 +110,14 @@ func newSSEServer() *EventServer {
 	return es
 }
 
-type Client struct {
+type SSEClient struct {
 	Chan   chan ClientMessage
-	Topics []Topics
+	Topics Topics
 }
 
 type ClientMessage struct {
 	Message string
-	Topic   Topics
+	Topic   models.Topic
 }
 
 var r = Events200TexteventStreamResponse{Body: strings.NewReader("")}
@@ -129,13 +129,9 @@ func (h *StrictHandlers) Events(c *gin.Context, request EventsRequestObject) (Ev
 	c.Writer.Header().Set("Connection", "keep-alive")
 	c.Writer.Header().Set("Transfer-Encoding", "chunked")
 
-	topics := c.QueryArray("topics")
-	if len(topics) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "topics query parameter is required"})
-		return r, nil
-	}
+	// TODO: request.Params.ProjectName
 
-	clientChan, unsubscribe := h.event.Subscribe(topics)
+	clientChan, unsubscribe := h.event.Subscribe(request.Params.Topics)
 	defer unsubscribe()
 
 	ticker := time.NewTicker(1 * time.Second)

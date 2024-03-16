@@ -228,17 +228,17 @@ func AllScopeValues() []Scope {
 	}
 }
 
-// Topics string identifiers for SSE event listeners.
+// Topic string identifiers for SSE event listeners.
 const (
-	TopicsGlobalAlerts    Topics = "GlobalAlerts"
-	TopicsWorkItemUpdated Topics = "WorkItemUpdated"
+	TopicGlobalAlerts    Topic = "GlobalAlerts"
+	TopicWorkItemUpdated Topic = "WorkItemUpdated"
 )
 
-// AllTopicsValues returns all possible values for Topics.
-func AllTopicsValues() []Topics {
-	return []Topics{
-		TopicsGlobalAlerts,
-		TopicsWorkItemUpdated,
+// AllTopicValues returns all possible values for Topic.
+func AllTopicValues() []Topic {
+	return []Topic{
+		TopicGlobalAlerts,
+		TopicWorkItemUpdated,
 	}
 }
 
@@ -825,8 +825,11 @@ type TimeEntry  struct {
 }
 */
 
-// Topics string identifiers for SSE event listeners.
-type Topics string
+// Topic string identifiers for SSE event listeners.
+type Topic string
+
+// Topics defines the model for Topics.
+type Topics = []externalRef0.Topic
 
 /* Ignoring existing rest struct
 // UpdateActivityRequest defines the model for UpdateActivityRequest.
@@ -1027,6 +1030,7 @@ type MyProviderLoginParams struct {
 // EventsParams defines parameters for Events.
 type EventsParams struct {
 	ProjectName externalRef0.Project `form:"projectName" json:"projectName"`
+	Topics      externalRef0.Topics  `form:"topics" json:"topics"`
 }
 
 // GetPaginatedNotificationsParams defines parameters for GetPaginatedNotifications.
@@ -1492,6 +1496,20 @@ func (siw *ServerInterfaceWrapper) Events(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, true, "projectName", c.Request.URL.Query(), &params.ProjectName)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter projectName: %s", err)})
+		return
+	}
+
+	// ------------- Required query parameter "topics" -------------
+
+	if paramValue := c.Query("topics"); paramValue != "" {
+	} else {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": "Query argument topics is required, but not found"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "topics", c.Request.URL.Query(), &params.Topics)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter topics: %s", err)})
 		return
 	}
 

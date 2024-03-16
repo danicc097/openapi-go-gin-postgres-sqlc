@@ -62,6 +62,7 @@ import {
   ErrorCode,
   HTTPError,
   Topics,
+  Topic,
   Scope,
   Scopes,
   Role,
@@ -747,6 +748,18 @@ export const TopicsDecoder: Decoder<Topics> = {
       throw new Error(`Schema ${TopicsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, TopicsDecoder.definitionName)
+  },
+}
+export const TopicDecoder: Decoder<Topic> = {
+  definitionName: 'Topic',
+  schemaRef: '#/definitions/Topic',
+
+  decode(json: unknown): Topic {
+    const schema = ajv.getSchema(TopicDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${TopicDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, TopicDecoder.definitionName)
   },
 }
 export const ScopeDecoder: Decoder<Scope> = {

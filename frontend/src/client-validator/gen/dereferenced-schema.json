@@ -3209,6 +3209,18 @@
       ]
     },
     "Topics": {
+      "type": "array",
+      "items": {
+        "description": "string identifiers for SSE event listeners.",
+        "type": "string",
+        "enum": [
+          "WorkItemUpdated",
+          "GlobalAlerts"
+        ]
+      },
+      "x-use-server-type": true
+    },
+    "Topic": {
       "description": "string identifiers for SSE event listeners.",
       "type": "string",
       "enum": [
@@ -9513,6 +9525,18 @@
       ]
     },
     "Topics": {
+      "type": "array",
+      "items": {
+        "description": "string identifiers for SSE event listeners.",
+        "type": "string",
+        "enum": [
+          "WorkItemUpdated",
+          "GlobalAlerts"
+        ]
+      },
+      "x-use-server-type": true
+    },
+    "Topic": {
       "description": "string identifiers for SSE event listeners.",
       "type": "string",
       "enum": [

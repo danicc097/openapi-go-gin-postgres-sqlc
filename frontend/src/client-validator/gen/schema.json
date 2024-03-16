@@ -1612,6 +1612,13 @@
       ]
     },
     "Topics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Topic"
+      },
+      "x-use-server-type": true
+    },
+    "Topic": {
       "description": "string identifiers for SSE event listeners.",
       "type": "string",
       "enum": [
@@ -2583,6 +2590,9 @@
     },
     "Topics": {
       "$ref": "#/definitions/Topics"
+    },
+    "Topic": {
+      "$ref": "#/definitions/Topic"
     },
     "Scope": {
       "$ref": "#/definitions/Scope"

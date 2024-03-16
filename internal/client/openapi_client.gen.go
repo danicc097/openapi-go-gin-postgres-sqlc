@@ -1725,6 +1725,18 @@ func NewEventsRequest(server string, params *EventsParams) (*http.Request, error
 			}
 		}
 
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "topics", runtime.ParamLocationQuery, params.Topics); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
 		queryURL.RawQuery = queryValues.Encode()
 	}
 

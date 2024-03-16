@@ -841,6 +841,7 @@ x.gen.client-server() {
     mapfile -t all_types < <(ast-parser find-types --exclude-generics --public-only "$REST_MODELS")
     types_list=$(join_by "," ${all_types[*]})
 
+    # TODO should work for references that are not used in, e.g. Topics
     mapfile -t server_types < <(yq e '.components.schemas[] | select(.x-use-server-type == true) | key' $SPEC_PATH)
     server_types_list=$(join_by "," ${server_types[*]})
 

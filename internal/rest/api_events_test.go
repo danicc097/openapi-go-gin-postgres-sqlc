@@ -92,15 +92,15 @@ func TestSSEStream(t *testing.T) {
 
 	// TODO trigger events
 
-	// TODO also test 2 clients concurrently receive, and when one leaves, the other still receives.
-	// ff
+	// TODO all sse events tests should be done alongside handler tests that trigger them.
+	// could have generic test helpers as well
 	if !assert.Eventually(t, func() bool {
 		if res.Body == nil {
 			return false
 		}
 		body := strings.ReplaceAll(res.Body.String(), " ", "")
 
-		return strings.Count(body, "event:"+string(models.TopicsGlobalAlerts)) == 1 &&
+		return strings.Count(body, "event:"+string(models.TopicGlobalAlerts)) == 1 &&
 			strings.Count(body, "event:test-event") == 1
 	}, 10*time.Second, 100*time.Millisecond) {
 		t.Fatalf("did not receive event")

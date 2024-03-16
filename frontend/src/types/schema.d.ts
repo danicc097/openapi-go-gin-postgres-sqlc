@@ -557,11 +557,12 @@ export interface components {
       type: components["schemas"]["ErrorCode"];
       validationError?: components["schemas"]["HTTPValidationError"];
     };
+    Topics: components["schemas"]["Topic"][];
     /**
      * @description string identifiers for SSE event listeners.
      * @enum {string}
      */
-    Topics: "WorkItemUpdated" | "GlobalAlerts";
+    Topic: "WorkItemUpdated" | "GlobalAlerts";
     /**
      * @description is generated from scopes.json keys.
      * @enum {string}
@@ -844,6 +845,7 @@ export interface operations {
     parameters: {
       query: {
         projectName: components["schemas"]["Project"];
+        topics: components["schemas"]["Topics"];
       };
     };
     responses: {

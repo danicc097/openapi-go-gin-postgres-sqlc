@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
@@ -56,7 +57,7 @@ func NewStrictHandlers(
 			time.Sleep(time.Second * 1)
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
-			event.Publish(currentTime, TopicsGlobalAlerts)
+			event.Publish(currentTime, models.TopicGlobalAlerts)
 
 		}
 	}()
@@ -77,7 +78,7 @@ func NewStrictHandlers(
 				continue
 			}
 
-			event.Publish(string(msgData), TopicsGlobalAlerts)
+			event.Publish(string(msgData), models.TopicGlobalAlerts)
 
 			time.Sleep(time.Second * 1)
 		}
@@ -118,7 +119,7 @@ func (h *StrictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
 		// if renderErrorResponse was not called, ie !CtxHasErrorResponse()
 		return append(
 			defaultMws,
-			skipRequestValidationMw,
+			// skipRequestValidationMw,
 		)
 	case MyProviderCallback:
 		return append(
