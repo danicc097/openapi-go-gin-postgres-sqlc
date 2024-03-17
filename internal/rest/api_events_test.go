@@ -85,7 +85,7 @@ func TestSSEStream(t *testing.T) {
 	// require.NoError(t, err)
 	// fmt.Printf("bd: %v\n", bd)
 
-	msg := "test-message-123"
+	publishMsg := "test-message-123"
 	stopCh := make(chan bool)
 
 	go func() {
@@ -97,7 +97,7 @@ func TestSSEStream(t *testing.T) {
 			case <-stopCh:
 				return
 			default:
-				srv.event.Publish(msg, models.TopicGlobalAlerts)
+				srv.event.Publish(publishMsg, models.TopicGlobalAlerts)
 				time.Sleep(time.Millisecond * 200)
 			}
 		}
@@ -114,17 +114,15 @@ func TestSSEStream(t *testing.T) {
 		}
 	}()
 
-	// TODO trigger events
-
-	// TODO all sse events tests should be done alongside handler tests that trigger them.
+	// TODO all internal sse events tests should be done alongside handler tests that trigger them.
 	// could have generic test helpers as well.
-	// in this file we should just unit test with a random event
+	// in this file we should just unit test with a random event, adhoc handlers...
 	if !assert.Eventually(t, func() bool {
 		if res.Body == nil {
 			return false
 		}
 		body := res.Body.String()
-		return strings.Count(body, "event:"+string(models.TopicGlobalAlerts)) >= 1 && strings.Count(body, "data:"+msg) >= 1
+		return strings.Count(body, "event:"+string(models.TopicGlobalAlerts)) >= 1 && strings.Count(body, "data:"+publishMsg) >= 1
 	}, 10*time.Second, 100*time.Millisecond) {
 		t.Fatalf("did not receive event")
 	}

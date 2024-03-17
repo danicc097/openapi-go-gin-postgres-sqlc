@@ -127,6 +127,8 @@ func (es *EventServer) EventDispatcher() gin.HandlerFunc {
 		c.Next()
 
 		rid := GetRequestIDFromCtx(c.Request.Context())
+		defer func() { delete(es.queuedMessages, rid) }()
+
 		qm := es.queuedMessages[rid]
 
 		if CtxRequestHasError(c) {
