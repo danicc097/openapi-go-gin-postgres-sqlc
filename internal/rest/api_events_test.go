@@ -4,6 +4,7 @@ package rest_test
 
 import (
 	"context"
+	"io"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -68,7 +69,7 @@ func TestSSEStream(t *testing.T) {
 				return
 			default:
 				srv.event.Publish(publishMsg, models.TopicGlobalAlerts)
-				time.Sleep(time.Millisecond * 200)
+				time.Sleep(time.Millisecond * 50)
 			}
 		}
 	}()
@@ -79,8 +80,11 @@ func TestSSEStream(t *testing.T) {
 			case <-stopCh:
 				return
 			default:
-				_, err := srv.client.Events(ctx, res, &rest.EventsParams{Topics: []models.Topic{models.TopicGlobalAlerts}, ProjectName: models.ProjectDemo})
+				res, err := srv.client.Events(ctx, res, &rest.EventsParams{Topics: []models.Topic{models.TopicGlobalAlerts}, ProjectName: models.ProjectDemo})
 				require.NoError(t, err)
+				resb, err := io.ReadAll(res.Body)
+				require.NoError(t, err)
+				t.Logf("response body: %v\n", string(resb))
 			}
 		}
 	}()
@@ -94,7 +98,7 @@ func TestSSEStream(t *testing.T) {
 		}
 		body := res.Body.String()
 		return strings.Count(body, "event:"+string(models.TopicGlobalAlerts)) >= 1 && strings.Count(body, "data:"+publishMsg) >= 1
-	}, 5*time.Second, 100*time.Millisecond) {
+	}, 5*time.Second, 200*time.Millisecond) {
 		t.Fatalf("did not receive event")
 	}
 
