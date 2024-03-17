@@ -29,7 +29,7 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 
 	span := GetSpanFromCtx(c)
 
-	// caller , _ := getUserFromCtx(c)
+	caller, _ := getUserCallerFromCtx(c)
 	tx := GetTxFromCtx(c)
 
 	jsonBody, err := io.ReadAll(c.Request.Body)
@@ -56,30 +56,28 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 
 	switch body := b.(type) {
 	case CreateDemoWorkItemRequest:
-		workItem, err := h.svc.DemoWorkItem.Create(ctx, tx, body.DemoWorkItemCreateParams)
+		workItem, err := h.svc.DemoWorkItem.Create(ctx, tx, caller, body.DemoWorkItemCreateParams)
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
 
 			return nil, nil
 		}
 
-		res = DemoWorkItems{
-			WorkItem:            *workItem,
-			SharedWorkItemJoins: fillSharedWorkItemJoins(workItem),
-			DemoWorkItem:        *workItem.DemoWorkItemJoin,
+		res = DemoWorkItem{
+			WorkItemBase: fillBaseWorkItemResponse(workItem),
+			DemoWorkItem: *workItem.DemoWorkItemJoin,
 		}
 	case CreateDemoTwoWorkItemRequest:
-		workItem, err := h.svc.DemoTwoWorkItem.Create(ctx, tx, body.DemoTwoWorkItemCreateParams)
+		workItem, err := h.svc.DemoTwoWorkItem.Create(ctx, tx, caller, body.DemoTwoWorkItemCreateParams)
 		if err != nil {
 			renderErrorResponse(c, "Could not create work item", err)
 
 			return nil, nil
 		}
 
-		res = DemoTwoWorkItems{
-			WorkItem:            *workItem,
-			SharedWorkItemJoins: fillSharedWorkItemJoins(workItem),
-			DemoTwoWorkItem:     *workItem.DemoTwoWorkItemJoin,
+		res = DemoTwoWorkItem{
+			WorkItemBase:    fillBaseWorkItemResponse(workItem),
+			DemoTwoWorkItem: *workItem.DemoTwoWorkItemJoin,
 		}
 	default:
 		renderErrorResponse(c, "Unknown body", internal.NewErrorf(models.ErrorCodeUnknown, "%+v", b))
@@ -96,14 +94,15 @@ func (h *StrictHandlers) GetWorkItem(c *gin.Context, request GetWorkItemRequestO
 	return nil, nil
 }
 
-func fillSharedWorkItemJoins(workItem *db.WorkItem) SharedWorkItemJoins {
-	x := SharedWorkItemJoins{
-		Members:          workItem.AssigneesJoin,
-		WorkItemTags:     workItem.WorkItemTagsJoin,
-		TimeEntries:      workItem.TimeEntriesJoin,
-		WorkItemComments: workItem.WorkItemCommentsJoin,
-		WorkItemType:     workItem.WorkItemTypeJoin,
+func fillBaseWorkItemResponse(workItem *db.WorkItem) WorkItemBase {
+	return WorkItemBase{
+		WorkItem: *workItem,
+		SharedWorkItemJoins: SharedWorkItemJoins{
+			Members:          workItem.AssigneesJoin,
+			WorkItemTags:     workItem.WorkItemTagsJoin,
+			TimeEntries:      workItem.TimeEntriesJoin,
+			WorkItemComments: workItem.WorkItemCommentsJoin,
+			WorkItemType:     workItem.WorkItemTypeJoin,
+		},
 	}
-
-	return x
 }

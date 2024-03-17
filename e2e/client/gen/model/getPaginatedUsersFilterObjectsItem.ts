@@ -6,4 +6,6 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export type DemoWorkItemsMetadata = { [key: string]: unknown }
+export type GetPaginatedUsersFilterObjectsItem = {
+  nestedObj?: string
+}

@@ -13,6 +13,11 @@ import (
 	"go.uber.org/zap"
 )
 
+type WorkItemCreateParams struct {
+	TagIDs  []db.WorkItemTagID `json:"tagIDs"  nullable:"false" required:"true"`
+	Members []Member           `json:"members" nullable:"false" required:"true"`
+}
+
 type WorkItem struct {
 	logger *zap.SugaredLogger
 	repos  *repos.Repos
@@ -148,6 +153,20 @@ func (w *WorkItem) RemoveTags(ctx context.Context, d db.DBTX, workItemID db.Work
 	return nil
 }
 
+// postCreate applies changes to a workitem common to all projects after entity creation.
+// NOTE: returned error should not be wrapped in calling function.
+func (w *WorkItem) postCreate(ctx context.Context, d db.DBTX, workItemID db.WorkItemID, params WorkItemCreateParams) error {
+	if err := w.AssignTags(ctx, d, workItemID, params.TagIDs); err != nil {
+		return internal.WrapErrorWithLocf(err, "", []string{"tagIDs"}, "could not assign tags")
+	}
+
+	if err := w.AssignUsers(ctx, d, workItemID, params.Members); err != nil {
+		return internal.WrapErrorWithLocf(err, "", []string{"members"}, "could not assign members")
+	}
+
+	return nil
+}
+
 // Restore restores a work item marked as deleted by ID.
 func (w *WorkItem) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
@@ -170,4 +189,24 @@ func (w *WorkItem) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (*db
 	}
 
 	return wi, nil
+}
+
+func (w *WorkItem) validateCreateParams(d db.DBTX, caller CtxUser, params *db.WorkItemCreateParams) error {
+	if err := w.validateBaseParams(validateModeCreate, d, caller, params); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (w *WorkItem) validateUpdateParams(d db.DBTX, caller CtxUser, params *db.WorkItemUpdateParams) error {
+	if err := w.validateBaseParams(validateModeUpdate, d, caller, params); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (w *WorkItem) validateBaseParams(mode validateMode, d db.DBTX, caller CtxUser, params db.WorkItemParams) error {
+	return nil
 }

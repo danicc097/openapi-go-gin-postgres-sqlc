@@ -1,7 +1,15 @@
+/**
+* entr -r bash -c 'clear; go run cmd/sse-test/main.go' <<< cmd/sse-test/main.go
+*
+  curl -X 'GET' -N 'http://localhost:8085/stream?topics=AnotherTopic&topics=Time'
+*
+*/
+
 package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -15,72 +23,132 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-/**
- *
- *
- * From gin examples:
- *
- */
+type Topic string
 
-// It keeps a list of clients those are currently attached
-// and broadcasting events to those clients.
-type Event struct {
-	// Events are pushed to this channel by the main events-gathering routine
-	Message chan string
+const (
+	TopicsJSONData     Topic = "JSONData"
+	TopicsTime         Topic = "Time"
+	TopicsTopic1       Topic = "Topic1"
+	TopicsAnotherTopic Topic = "AnotherTopic"
+)
 
-	// New client connections
-	NewClients chan chan string
-
-	// Closed client connections
-	ClosedClients chan chan string
-
-	// Total client connections
-	TotalClients map[chan string]bool
+func AllTopicsValues() []Topic {
+	return []Topic{
+		TopicsTopic1,
+		TopicsAnotherTopic,
+		TopicsTime,
+		TopicsJSONData,
+	}
 }
 
-// New event messages are broadcast to all registered client connection channels.
-type ClientChan chan string
+type Clients map[chan ClientMessage]struct{}
 
-// go run cmd/sse-test/main.go
-// curl -X 'GET' -N  'http://localhost:8085/stream'
+type EventServer struct {
+	messages      chan ClientMessage
+	newClients    chan Client
+	closedClients chan chan ClientMessage
+	subscriptions map[Topic]Clients
+	// clients represents all connected clients
+	clients Clients
+}
+
+func (es *EventServer) Publish(message string, topic Topic) {
+	/**
+	 * TODO: instead of using Publish, add events to queue via Queue(message, topic) and dispatch later based on x-request-id (not user id since some events may
+	 *  not have authenticated user, e.g. upon registering the first time we may require manual verification, etc.)
+	 * the Queue method (and all other public ones) will accept c.Request.Context, where req id is set
+	 */
+	es.messages <- ClientMessage{Message: message, Topic: topic}
+}
+
+func newSSEServer() *EventServer {
+	es := &EventServer{
+		messages:      make(chan ClientMessage),
+		newClients:    make(chan Client),
+		closedClients: make(chan chan ClientMessage),
+		subscriptions: make(map[Topic]Clients),
+		clients:       make(Clients),
+	}
+
+	go es.listen()
+
+	return es
+}
+
+type Client struct {
+	Chan   chan ClientMessage
+	Topics []Topic
+}
+
+type ClientMessage struct {
+	Message string
+	Topic   Topic
+}
+
 func main() {
 	router := gin.Default()
 
 	handlers := NewHandlers()
 
-	// We are streaming current time to clients in the interval 10 seconds
-
 	go func() {
 		for {
-			// We are streaming current time to clients in the interval 10 seconds
-			time.Sleep(time.Second * 2)
+			time.Sleep(time.Second * 1)
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
-			handlers.event.Message <- currentTime
+			handlers.event.Publish(currentTime, TopicsTime)
 		}
 	}()
 
-	router.GET("/stream", HeadersMiddleware(), handlers.event.serveHTTP(), func(c *gin.Context) {
-		// FIXME does not work when called like this. change to explicit call in .GET and all is good
-		// for _, mw := range handlers.middlewares() {
-		// 	mw(c)
-		// }
-		v, ok := c.Get("clientChan")
-		if !ok {
+	go func() {
+		for {
+			data := struct {
+				Field1 string `json:"field1"`
+				Field2 int    `json:"field2"`
+			}{
+				Field1: "value1",
+				Field2: 42,
+			}
+
+			msgData, err := json.Marshal(data)
+			if err != nil {
+				log.Printf("Error marshaling JSON: %v", err)
+				continue
+			}
+
+			handlers.event.Publish(string(msgData), TopicsJSONData)
+
+			time.Sleep(time.Second * 1)
+		}
+	}()
+
+	router.GET("/stream", func(c *gin.Context) {
+		c.Writer.Header().Set("Content-Type", "text/event-stream")
+		c.Writer.Header().Set("Cache-Control", "no-cache")
+		c.Writer.Header().Set("Connection", "keep-alive")
+		c.Writer.Header().Set("Transfer-Encoding", "chunked")
+
+		topics := c.QueryArray("topics")
+		if len(topics) == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "topics query parameter is required"})
 			return
 		}
-		clientChan, ok := v.(ClientChan)
-		if !ok {
-			return
-		}
+
+		clientChan, unsubscribe := handlers.event.Subscribe(topics)
+		defer unsubscribe()
+
+		ticker := time.NewTicker(1 * time.Second)
 		c.Stream(func(w io.Writer) bool {
-			// Stream message to client from message channel
-			if msg, ok := <-clientChan; ok {
-				c.SSEvent("message", msg)
+			select {
+			case msg, ok := <-clientChan.Chan:
+				if !ok {
+					return false // channel closed
+				}
+				c.SSEvent(string(msg.Topic), msg.Message)
+				return true
+			case <-ticker.C:
+				// ensure handler can return and clean up when client disconnects and no messages have been sent
 				return true
 			}
-			c.SSEvent("message", "STOPPED")
-			return false
 		})
 	})
 
@@ -94,36 +162,37 @@ func main() {
 	}
 }
 
-type Handlers struct {
-	event *Event
-}
+func (es *EventServer) Subscribe(topics []string) (client Client, unsubscribe func()) {
+	client = Client{
+		Chan:   make(chan ClientMessage, 1),
+		Topics: make([]Topic, len(topics)),
+	}
+	for i, topic := range topics {
+		client.Topics[i] = Topic(topic)
+	}
 
-func NewHandlers() *Handlers {
-	event := newSSEServer()
+	es.newClients <- client
 
-	go event.listen()
-
-	fmt.Printf("event.Message address: %v\n", &event.Message)
-
-	return &Handlers{
-		event: event,
+	return client, func() {
+		es.closedClients <- client.Chan
 	}
 }
 
-func (h *Handlers) middlewares() []gin.HandlerFunc {
-	return []gin.HandlerFunc{HeadersMiddleware(), h.event.serveHTTP()}
+type Handlers struct {
+	event *EventServer
+}
+
+func NewHandlers() *Handlers {
+	return &Handlers{
+		event: newSSEServer(),
+	}
 }
 
 func Run(router *gin.Engine) (<-chan error, error) {
-	// var err error
-
+	addr := ":8085"
 	httpsrv := &http.Server{
 		Handler: router,
-		Addr:    ":8085",
-		// ReadTimeout:       1 * time.Second,
-		ReadHeaderTimeout: 1 * time.Second,
-		// WriteTimeout:      1 * time.Second,
-		// IdleTimeout: 1 * time.Second,
+		Addr:    addr,
 	}
 
 	errC := make(chan error, 1)
@@ -138,9 +207,8 @@ func Run(router *gin.Engine) (<-chan error, error) {
 
 		log.Print("Shutdown signal received")
 
-		ctxTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctxTimeout, cancel := context.WithTimeout(context.Background(), 1*time.Second) // don't care for testing out
 
-		// any action on shutdown must be deferred here and not in the main block
 		defer func() {
 			stop()
 			cancel()
@@ -149,7 +217,7 @@ func Run(router *gin.Engine) (<-chan error, error) {
 
 		httpsrv.SetKeepAlivesEnabled(false)
 
-		if err := httpsrv.Shutdown(ctxTimeout); err != nil { //nolint: contextcheck
+		if err := httpsrv.Shutdown(ctxTimeout); err != nil {
 			errC <- err
 		}
 
@@ -157,10 +225,8 @@ func Run(router *gin.Engine) (<-chan error, error) {
 	}()
 
 	go func() {
-		log.Printf("Listening and serving")
+		log.Printf("Listening and serving on http://localhost" + addr)
 
-		// "ListenAndServe always returns a non-nil error. After Shutdown or Close, the returned error is
-		// ErrServerClosed."
 		var err error
 
 		err = httpsrv.ListenAndServe()
@@ -173,70 +239,31 @@ func Run(router *gin.Engine) (<-chan error, error) {
 	return errC, nil
 }
 
-// Initialize event and Start procnteessing requests.
-func newSSEServer() (event *Event) {
-	event = &Event{
-		Message:       make(chan string),
-		NewClients:    make(chan chan string),
-		ClosedClients: make(chan chan string),
-		TotalClients:  make(map[chan string]bool),
-	}
-
-	go event.listen()
-
-	return
-}
-
-// It Listens all incoming requests from clients.
-// Handles addition and removal of clients and broadcast messages to clients.
-func (stream *Event) listen() {
+func (es *EventServer) listen() {
 	for {
 		select {
-		// Add new available client
-		case client := <-stream.NewClients:
-			stream.TotalClients[client] = true
-			log.Printf("Client added. %d registered clients", len(stream.TotalClients))
+		case client := <-es.newClients:
+			es.clients[client.Chan] = struct{}{}
+			for _, topic := range client.Topics {
+				if _, ok := es.subscriptions[topic]; !ok {
+					es.subscriptions[topic] = make(Clients)
+				}
+				es.subscriptions[topic][client.Chan] = struct{}{}
+			}
+			log.Printf("Client added. %d registered clients", len(es.clients))
 
-		// Remove closed client
-		case client := <-stream.ClosedClients:
-			delete(stream.TotalClients, client)
+		case client := <-es.closedClients:
+			for _, subscriptions := range es.subscriptions {
+				delete(subscriptions, client)
+			}
+			delete(es.clients, client)
 			close(client)
-			log.Printf("Removed client. %d registered clients", len(stream.TotalClients))
+			log.Printf("Removed client. %d registered clients", len(es.clients))
 
-		// Broadcast message to client
-		case eventMsg := <-stream.Message:
-			for clientMessageChan := range stream.TotalClients {
-				clientMessageChan <- eventMsg
+		case eventMsg := <-es.messages:
+			for ch := range es.subscriptions[eventMsg.Topic] {
+				ch <- eventMsg
 			}
 		}
-	}
-}
-
-func (stream *Event) serveHTTP() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		// Initialize client channel
-		clientChan := make(ClientChan)
-
-		// Send new connection to event server
-		stream.NewClients <- clientChan
-
-		defer func() {
-			// Send closed connection to event server
-			stream.ClosedClients <- clientChan
-		}()
-
-		c.Set("clientChan", clientChan)
-
-		c.Next()
-	}
-}
-
-func HeadersMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Content-Type", "text/event-stream")
-		c.Writer.Header().Set("Cache-Control", "no-cache")
-		c.Writer.Header().Set("Connection", "keep-alive")
-		c.Writer.Header().Set("Transfer-Encoding", "chunked")
-		c.Next()
 	}
 }

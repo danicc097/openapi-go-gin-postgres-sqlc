@@ -1,9 +1,12 @@
 package rest
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
@@ -25,7 +28,7 @@ type StrictHandlers struct {
 	moviesvcclient v1.MovieGenreClient
 	specPath       string
 	authmw         *authMiddleware
-	event          *Event
+	event          *EventServer
 	provider       rp.RelyingParty
 }
 
@@ -41,38 +44,41 @@ var _ StrictServerInterface = (*StrictHandlers)(nil)
 // NewStrictHandlers returns a server implementation of an openapi specification.
 func NewStrictHandlers(
 	logger *zap.SugaredLogger, pool *pgxpool.Pool,
+	event *EventServer,
 	moviesvcclient v1.MovieGenreClient,
 	specPath string,
 	svcs *services.Services,
 	authmw *authMiddleware, // middleware needed here since it's generated code
 	provider rp.RelyingParty,
 ) StrictServerInterface {
-	event := newSSEServer()
-
-	// we can have as many of these but need to delay call
 	go func() {
 		for {
+			time.Sleep(time.Second * 1)
 			now := time.Now().Format("2006-01-02 15:04:05")
 			currentTime := fmt.Sprintf("The Current Time Is %v", now)
-
-			event.Message <- currentTime
-			time.Sleep(time.Second * 2)
+			event.Publish(currentTime, models.TopicGlobalAlerts)
 		}
 	}()
 
-	// we can have as many of these but need to delay call
-	// we probably won't have an infinite running goroutine like this,
-	// will send messages to channels on specific events.
-	// but will be useful if we need to check something external
-	// every X timeframe (e.g. wiki documents alert, new documents loaded for an active workitem, etc.)
-
 	go func() {
 		for {
-			now := time.Now().Format("2006-01-02 15:04:05")
-			currentTime := fmt.Sprintf("user notifications - The Current Time Is %v", now)
+			data := struct {
+				Field1 string `json:"field1"`
+				Field2 int    `json:"field2"`
+			}{
+				Field1: "value1",
+				Field2: 42,
+			}
 
-			event.Message2 <- currentTime
-			time.Sleep(time.Second * 2)
+			msgData, err := json.Marshal(data)
+			if err != nil {
+				log.Printf("Error marshaling JSON: %v", err)
+				continue
+			}
+
+			event.Publish(string(msgData), models.TopicGlobalAlerts)
+
+			time.Sleep(time.Second * 1)
 		}
 	}()
 
@@ -88,26 +94,25 @@ func NewStrictHandlers(
 	}
 }
 
+func skipRequestValidationMw(c *gin.Context) { c.Set(skipRequestValidationCtxKey, true) }
+
+func skipResponseValidationMw(c *gin.Context) { c.Set(skipResponseValidationCtxKey, true) }
+
 // middlewares to be applied after authMiddlewares, based on operation IDs.
 func (h *StrictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
-	defaultMws := []gin.HandlerFunc{}
-
 	dbMw := newDBMiddleware(h.logger, h.pool)
 	tracingMw := newTracingMiddleware()
 
-	ignoredOperationID := opID == MyProviderLogin
+	// event cleanup will be the last to run
+	defaultMws := []gin.HandlerFunc{h.event.EventDispatcher(), tracingMw.RequestIDMiddleware("my-app")}
+
+	ignoredOperationID := opID == MyProviderLogin || opID == Events
 
 	if !ignoredOperationID {
 		defaultMws = append(defaultMws, tracingMw.WithSpan(), dbMw.BeginTransaction())
 	}
 
 	switch opID {
-	case Events:
-		return append(
-			defaultMws,
-			SSEHeadersMiddleware(),
-			h.event.serveHTTP(),
-		)
 	case MyProviderCallback:
 		return append(
 			defaultMws,
@@ -116,7 +121,4 @@ func (h *StrictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	default:
 		return defaultMws
 	}
-
-	// TODO: last mw should be event dispatcher middleware, that will dispatch pending ones
-	// if renderErrorResponse was not called, ie !CtxHasErrorResponse()
 }

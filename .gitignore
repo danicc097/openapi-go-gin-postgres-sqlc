@@ -1,3 +1,4 @@
+**/.vite
 .direnv
 db/schema.sql
 openapi.exploded.yaml

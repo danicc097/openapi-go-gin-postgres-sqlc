@@ -16,32 +16,7 @@ import { BatchSpanProcessor, ConsoleSpanExporter, SimpleSpanProcessor } from '@o
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
 import { CompositePropagator, W3CBaggagePropagator, W3CTraceContextPropagator } from '@opentelemetry/core'
 import { getWebAutoInstrumentations } from '@opentelemetry/auto-instrumentations-web'
-import opentelemetry from '@opentelemetry/api'
-import { v4 as uuidv4 } from 'uuid'
-
-// let ContextManager
-
-// if (import.meta.env.TESTING) {
-//   ContextManager = ZoneContextManagerPeerDep
-// } else {
-//   ContextManager = ZoneContextManager
-// }
-
-export const sessionID = uuidv4()
-
-export enum AttributeKeys {
-  SessionID = 'browser-session-id',
-}
-
-export function newFrontendSpan(name: string) {
-  try {
-    const span = tracer.startSpan(name)
-    span.setAttribute(AttributeKeys.SessionID, sessionID)
-    return span
-  } catch (error) {
-    console.log(`could not send span: ${error}`)
-  }
-}
+import { AttributeKeys, sessionID } from './traceProvider'
 
 type TraceProviderProps = {
   children?: React.ReactNode
@@ -116,5 +91,3 @@ export default function TraceProvider({ children }: TraceProviderProps) {
 
   return <>{children}</>
 }
-
-export const tracer = opentelemetry.trace.getTracer('frontend')

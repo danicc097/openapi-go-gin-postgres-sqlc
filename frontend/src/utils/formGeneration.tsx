@@ -96,8 +96,8 @@ import { nameInitials, sentenceCase } from 'src/utils/strings'
 import { useFormSlice } from 'src/slices/form'
 import RandExp, { randexp } from 'randexp'
 import type { FormField, SchemaKey } from 'src/utils/form'
-import { useCalloutErrors } from 'src/components/Callout/useCalloutErrors'
 import { inputBuilder, selectOptionsBuilder, useDynamicFormContext } from 'src/utils/formGeneration.context'
+import { useCalloutErrors } from 'src/components/Callout/useCalloutErrors'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
 
@@ -250,9 +250,8 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
 }: DynamicFormProps<Form, IgnoredFormKeys>) {
   const theme = useMantineTheme()
   const form = useFormContext()
-  const formSlice = useFormSlice()
-  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
-  console.log({ formboolis: form.getValues('demoProject.reopened') })
+  const { setHasClickedSubmit } = useCalloutErrors(formName)
+
   let _schemaFields: DynamicFormContextValue['schemaFields'] = schemaFields
   if (options.renderOrderPriority) {
     const _schemaKeys: SchemaKey[] = []
@@ -279,7 +278,10 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
         <FormData />
         <DynamicFormErrorCallout />
         <form
-          onSubmit={onSubmit}
+          onSubmit={(e) => {
+            setHasClickedSubmit(true)
+            onSubmit(e)
+          }}
           css={css`
             min-width: 100%;
           `}
@@ -651,7 +653,6 @@ const convertValueByType = (type: SchemaField['type'] | undefined, value) => {
 const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputProps) => {
   const form = useFormContext()
   const theme = useMantineTheme()
-  // useWatch({ control: form.control, name: formField }) // completely unnecessary, it's registered...
   const { formName, options, schemaFields } = useDynamicFormContext()
 
   const [isSelectVisible, setIsSelectVisible] = useState(false)
@@ -662,7 +663,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
   // registerOnChange's type refers to onChange event's type
   const { onChange: registerOnChange, ...registerProps } = form.register(formField, {
-    // IMPORTANT: this is the type set in registerOnChange!
     ...(type === 'date' || type === 'date-time'
       ? // TODO: use convertValueByType
         { valueAsDate: true, setValueAs: (v) => (v === '' ? undefined : new Date(v)) }
@@ -670,13 +670,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
       ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseInt(v, 10)) }
       : type === 'number'
       ? { valueAsNumber: true, setValueAs: (v) => (v === '' ? undefined : parseFloat(v)) }
-      : type === 'boolean'
-      ? {
-          setValueAs: (v) => {
-            console.log({ settingValueBoolean: v })
-            return v === '' ? false : v === 'true'
-          },
-        }
       : null),
   })
 
@@ -991,7 +984,6 @@ function CustomMultiselect({
   })
 
   const handleValueRemove = (val: string) => {
-    console.log({ val, formValues, a: formValues.filter((v) => v !== val) })
     formSlice.setCustomError(formName, formField, null) // index position changed, misleading message
     form.unregister(formField) // needs to be called before setValue
     form.setValue(
@@ -1151,7 +1143,6 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
   const formSlice = useFormSlice()
 
   const selectOptions = options.selectOptions![schemaKey]!
-  const formValues = (form.getValues(formField) as any[]) || []
 
   const [search, setSearch] = useState('')
 
@@ -1167,9 +1158,22 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
     },
   })
 
+  const formValue = form.getValues(formField)
   const selectedOption = selectOptions.values.find((option) => {
-    return selectOptions.formValueTransformer(option) === form.getValues(formField)
+    return selectOptions.formValueTransformer(option) === formValue
   })
+
+  // TODO: test.
+  if (formValue !== null && formValue !== undefined && selectedOption === undefined) {
+    const message = `${itemName} "${formValue}" does not exist`
+    // else inf loop. we could unregister - direct form changes work - but state updates are lost (e.g. api call updates possible values) so its a no go
+    if (formSlice.form[formName]?.customWarnings[formField] !== message) {
+      formSlice.setCustomWarning(formName, formField, message)
+    }
+  } else {
+    // once we receive api calls with correct data, etc. invalidate old warnings
+    formSlice.setCustomWarning(formName, formField, null)
+  }
 
   const comboboxOptions = selectOptions.values
     .filter((item: any) =>
@@ -1197,7 +1201,6 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
         </Combobox.Option>
       )
     })
-  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
 
   const parentSchemaKey = schemaKey.split('.').slice(0, -1).join('.') as SchemaKey
 
@@ -1283,7 +1286,6 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
 
 function CustomPill({ value, schemaKey, handleValueRemove, formField, ...props }: CustomPillProps): JSX.Element | null {
   const { formName, options, schemaFields } = useDynamicFormContext()
-  const { extractCalloutErrors, setCalloutErrors, calloutErrors, extractCalloutTitle } = useCalloutErrors(formName)
   const selectOptions = options.selectOptions![schemaKey]!
   const itemName = singularize(options.labels[schemaKey] || '')
 
@@ -1293,12 +1295,12 @@ function CustomPill({ value, schemaKey, handleValueRemove, formField, ...props }
   if (!option) {
     console.log(`${value} is not a valid ${singularize(lowerCase(itemName))}`)
 
-    // explicitly set wrong values so that error positions make sense and the user knows there is a wrong form value beforehand
+    // for multiselects, explicitly set wrong values so that error positions make sense and the user knows there is a wrong form value beforehand
     // instead of us deleting it implicitly
     invalidValue = value
   }
 
-  let color = '#bbbbbb' // for invalid values
+  let color = '#bbbbbb'
   if (selectOptions?.labelColor && !invalidValue) {
     color = selectOptions?.labelColor(option)
   }

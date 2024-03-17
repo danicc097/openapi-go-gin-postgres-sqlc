@@ -40,6 +40,7 @@ import type {
   User
 } from '../model/user'
 import { customInstance } from '../../api/mutator';
+import type { ErrorType } from '../../api/mutator';
 
 
 // eslint-disable-next-line
@@ -73,7 +74,7 @@ export const getGetPaginatedUsersQueryKey = (params: GetPaginatedUsersParams,) =
     }
 
     
-export const getGetPaginatedUsersInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getPaginatedUsers>>, TError = void | HTTPError>(params: GetPaginatedUsersParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetPaginatedUsersInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getPaginatedUsers>>, TError = ErrorType<void | HTTPError>>(params: GetPaginatedUsersParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -88,18 +89,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetPaginatedUsersInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getPaginatedUsers>>>
-export type GetPaginatedUsersInfiniteQueryError = void | HTTPError
+export type GetPaginatedUsersInfiniteQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary Get paginated users
  */
-export const useGetPaginatedUsersInfinite = <TData = Awaited<ReturnType<typeof getPaginatedUsers>>, TError = void | HTTPError>(
+export const useGetPaginatedUsersInfinite = <TData = Awaited<ReturnType<typeof getPaginatedUsers>>, TError = ErrorType<void | HTTPError>>(
  params: GetPaginatedUsersParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -115,7 +114,7 @@ export const useGetPaginatedUsersInfinite = <TData = Awaited<ReturnType<typeof g
 
 
 
-export const getGetPaginatedUsersQueryOptions = <TData = Awaited<ReturnType<typeof getPaginatedUsers>>, TError = void | HTTPError>(params: GetPaginatedUsersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetPaginatedUsersQueryOptions = <TData = Awaited<ReturnType<typeof getPaginatedUsers>>, TError = ErrorType<void | HTTPError>>(params: GetPaginatedUsersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -130,18 +129,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetPaginatedUsersQueryResult = NonNullable<Awaited<ReturnType<typeof getPaginatedUsers>>>
-export type GetPaginatedUsersQueryError = void | HTTPError
+export type GetPaginatedUsersQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary Get paginated users
  */
-export const useGetPaginatedUsers = <TData = Awaited<ReturnType<typeof getPaginatedUsers>>, TError = void | HTTPError>(
+export const useGetPaginatedUsers = <TData = Awaited<ReturnType<typeof getPaginatedUsers>>, TError = ErrorType<void | HTTPError>>(
  params: GetPaginatedUsersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPaginatedUsers>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -178,7 +175,7 @@ export const getGetCurrentUserQueryKey = () => {
     }
 
     
-export const getGetCurrentUserInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = unknown>( options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetCurrentUserInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = ErrorType<unknown>>( options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -193,18 +190,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetCurrentUserInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
-export type GetCurrentUserInfiniteQueryError = unknown
+export type GetCurrentUserInfiniteQueryError = ErrorType<unknown>
 
 /**
  * @summary returns the logged in user
  */
-export const useGetCurrentUserInfinite = <TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = unknown>(
+export const useGetCurrentUserInfinite = <TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = ErrorType<unknown>>(
   options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -220,7 +215,7 @@ export const useGetCurrentUserInfinite = <TData = Awaited<ReturnType<typeof getC
 
 
 
-export const getGetCurrentUserQueryOptions = <TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = unknown>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetCurrentUserQueryOptions = <TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -235,18 +230,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetCurrentUserQueryResult = NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>
-export type GetCurrentUserQueryError = unknown
+export type GetCurrentUserQueryError = ErrorType<unknown>
 
 /**
  * @summary returns the logged in user
  */
-export const useGetCurrentUser = <TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = unknown>(
+export const useGetCurrentUser = <TData = Awaited<ReturnType<typeof getCurrentUser>>, TError = ErrorType<unknown>>(
   options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCurrentUser>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -281,7 +274,7 @@ export const updateUserAuthorization = (
   
 
 
-export const getUpdateUserAuthorizationMutationOptions = <TError = unknown,
+export const getUpdateUserAuthorizationMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserAuthorization>>, TError,{id: string;data: UpdateUserAuthRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateUserAuthorization>>, TError,{id: string;data: UpdateUserAuthRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -302,12 +295,12 @@ export const getUpdateUserAuthorizationMutationOptions = <TError = unknown,
 
     export type UpdateUserAuthorizationMutationResult = NonNullable<Awaited<ReturnType<typeof updateUserAuthorization>>>
     export type UpdateUserAuthorizationMutationBody = UpdateUserAuthRequest
-    export type UpdateUserAuthorizationMutationError = unknown
+    export type UpdateUserAuthorizationMutationError = ErrorType<unknown>
 
     /**
  * @summary updates user role and scopes by id
  */
-export const useUpdateUserAuthorization = <TError = unknown,
+export const useUpdateUserAuthorization = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUserAuthorization>>, TError,{id: string;data: UpdateUserAuthRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -331,7 +324,7 @@ export const deleteUser = (
   
 
 
-export const getDeleteUserMutationOptions = <TError = HTTPError,
+export const getDeleteUserMutationOptions = <TError = ErrorType<HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError,{id: string}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -352,12 +345,12 @@ export const getDeleteUserMutationOptions = <TError = HTTPError,
 
     export type DeleteUserMutationResult = NonNullable<Awaited<ReturnType<typeof deleteUser>>>
     
-    export type DeleteUserMutationError = HTTPError
+    export type DeleteUserMutationError = ErrorType<HTTPError>
 
     /**
  * @summary deletes the user by id
  */
-export const useDeleteUser = <TError = HTTPError,
+export const useDeleteUser = <TError = ErrorType<HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteUser>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -384,7 +377,7 @@ export const updateUser = (
   
 
 
-export const getUpdateUserMutationOptions = <TError = unknown,
+export const getUpdateUserMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUser>>, TError,{id: string;data: UpdateUserRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateUser>>, TError,{id: string;data: UpdateUserRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -405,12 +398,12 @@ export const getUpdateUserMutationOptions = <TError = unknown,
 
     export type UpdateUserMutationResult = NonNullable<Awaited<ReturnType<typeof updateUser>>>
     export type UpdateUserMutationBody = UpdateUserRequest
-    export type UpdateUserMutationError = unknown
+    export type UpdateUserMutationError = ErrorType<unknown>
 
     /**
  * @summary updates the user by id
  */
-export const useUpdateUser = <TError = unknown,
+export const useUpdateUser = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUser>>, TError,{id: string;data: UpdateUserRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 

@@ -43,11 +43,13 @@ func (m *dbMiddleware) BeginTransaction() gin.HandlerFunc {
 		c.Next()
 
 		if err := tx.Commit(ctx); err != nil {
+			ctxWithRequestError(c)
 			msg := "could not commit transaction"
 			if err := tx.Rollback(ctx); err != nil {
 				msg += fmt.Sprintf(" (rollback error: %s)", err)
 			}
-			renderErrorResponse(c, "Database error", internal.WrapErrorf(err, models.ErrorCodePrivate, msg))
+			// should not render this response at all
+			m.logger.Infof("tx.Commit: %v: %v", msg, err)
 
 			return
 		}

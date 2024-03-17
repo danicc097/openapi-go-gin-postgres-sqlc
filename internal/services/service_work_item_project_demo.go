@@ -25,8 +25,7 @@ type Member struct {
 
 type DemoWorkItemCreateParams struct {
 	repos.DemoWorkItemCreateParams
-	TagIDs  []db.WorkItemTagID `json:"tagIDs"  nullable:"false" required:"true"`
-	Members []Member           `json:"members" nullable:"false" required:"true"`
+	WorkItemCreateParams
 }
 
 // NewDemoWorkItem returns a new DemoWorkItem service.
@@ -53,8 +52,12 @@ func (w *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID) (*
 }
 
 // Create creates a new work item.
-func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkItemCreateParams) (*db.WorkItem, error) {
+func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, caller CtxUser, params DemoWorkItemCreateParams) (*db.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
+
+	if err := w.wiSvc.validateCreateParams(d, caller, &params.Base); err != nil {
+		return nil, err
+	}
 
 	switch internal.DemoKanbanStepsNameByID[params.Base.KanbanStepID] {
 	case models.DemoKanbanStepsDisabled:
@@ -71,14 +74,8 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 		return nil, fmt.Errorf("repos.DemoWorkItem.Create: %w", err)
 	}
 
-	err = w.wiSvc.AssignTags(ctx, d, demoWi.WorkItemID, params.TagIDs)
-	if err != nil {
-		return nil, internal.WrapErrorWithLocf(err, "", []string{"tagIDs"}, "could not assign tags")
-	}
-
-	err = w.wiSvc.AssignUsers(ctx, d, demoWi.WorkItemID, params.Members)
-	if err != nil {
-		return nil, internal.WrapErrorWithLocf(err, "", []string{"members"}, "could not assign members")
+	if err := w.wiSvc.postCreate(ctx, d, demoWi.WorkItemID, params.WorkItemCreateParams); err != nil {
+		return nil, err
 	}
 
 	opts := append(w.wiSvc.getSharedDBOpts(), db.WithWorkItemJoin(db.WorkItemJoins{DemoWorkItem: true}))
@@ -91,8 +88,12 @@ func (w *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params DemoWorkIte
 }
 
 // Update updates an existing work item.
-func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
+func (w *DemoWorkItem) Update(ctx context.Context, d db.DBTX, caller CtxUser, id db.WorkItemID, params repos.DemoWorkItemUpdateParams) (*db.WorkItem, error) {
 	defer newOTelSpan().Build(ctx).End()
+
+	if err := w.wiSvc.validateUpdateParams(d, caller, params.Base); err != nil {
+		return nil, err
+	}
 
 	wi, err := w.repos.DemoWorkItem.Update(ctx, d, id, params)
 	if err != nil {

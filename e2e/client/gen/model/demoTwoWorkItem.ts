@@ -7,13 +7,14 @@
  */
 import type { DbDemoTwoWorkItem } from './dbDemoTwoWorkItem'
 import type { DbWorkItemM2MAssigneeWIA } from './dbWorkItemM2MAssigneeWIA'
-import type { DemoTwoWorkItemsMetadata } from './demoTwoWorkItemsMetadata'
+import type { DemoTwoWorkItemMetadata } from './demoTwoWorkItemMetadata'
+import type { DemoTwoWorkItemProjectName } from './demoTwoWorkItemProjectName'
 import type { DbTimeEntry } from './dbTimeEntry'
 import type { DbWorkItemComment } from './dbWorkItemComment'
 import type { DbWorkItemTag } from './dbWorkItemTag'
 import type { DbWorkItemType } from './dbWorkItemType'
 
-export interface DemoTwoWorkItems {
+export interface DemoTwoWorkItem {
   closedAt?: Date | null
   createdAt: Date
   deletedAt?: Date | null
@@ -21,7 +22,8 @@ export interface DemoTwoWorkItems {
   description: string
   kanbanStepID: number
   members?: DbWorkItemM2MAssigneeWIA[] | null
-  metadata: DemoTwoWorkItemsMetadata
+  metadata: DemoTwoWorkItemMetadata
+  projectName: DemoTwoWorkItemProjectName
   targetDate: Date
   teamID: number | null
   timeEntries?: DbTimeEntry[] | null

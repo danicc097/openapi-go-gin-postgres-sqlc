@@ -5,7 +5,17 @@ repos:
     hooks:
       - id: lint
         name: lint
-        entry: bin/project lint.sql
+        entry: bin/project lint
+        language: script
+        types: [text]
+        pass_filenames: false
+        always_run: true
+        verbose: true
+        files: ''
+
+      - id: vet
+        name: vet
+        entry: go vet ./...
         language: script
         types: [text]
         pass_filenames: false
@@ -22,16 +32,6 @@ repos:
         always_run: true
         verbose: true
         files: ''
-
-      # - id: test-rename
-      #   name: test rename
-      #   entry: go-test-renamer
-      #   language: script
-      #   types: [text]
-      #   pass_filenames: false
-      #   always_run: true
-      #   verbose: true
-      #   files: ''
 
       # don't want this at all.
       # - id: gen

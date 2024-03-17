@@ -34,6 +34,7 @@ import type {
   UpdateActivityRequest
 } from '../model/updateActivityRequest'
 import { customInstance } from '../../api/mutator';
+import type { ErrorType } from '../../api/mutator';
 
 
 // eslint-disable-next-line
@@ -64,7 +65,7 @@ export const createActivity = (
   
 
 
-export const getCreateActivityMutationOptions = <TError = void | HTTPError,
+export const getCreateActivityMutationOptions = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createActivity>>, TError,{projectName: 'demo' | 'demo_two';data: CreateActivityRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof createActivity>>, TError,{projectName: 'demo' | 'demo_two';data: CreateActivityRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -85,12 +86,12 @@ export const getCreateActivityMutationOptions = <TError = void | HTTPError,
 
     export type CreateActivityMutationResult = NonNullable<Awaited<ReturnType<typeof createActivity>>>
     export type CreateActivityMutationBody = CreateActivityRequest
-    export type CreateActivityMutationError = void | HTTPError
+    export type CreateActivityMutationError = ErrorType<void | HTTPError>
 
     /**
  * @summary create activity.
  */
-export const useCreateActivity = <TError = void | HTTPError,
+export const useCreateActivity = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createActivity>>, TError,{projectName: 'demo' | 'demo_two';data: CreateActivityRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -119,7 +120,7 @@ export const getGetActivityQueryKey = (activityID: EntityIDs.ActivityID,) => {
     }
 
     
-export const getGetActivityInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getActivity>>, TError = void | HTTPError>(activityID: EntityIDs.ActivityID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getActivity>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetActivityInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getActivity>>, TError = ErrorType<void | HTTPError>>(activityID: EntityIDs.ActivityID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getActivity>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -134,18 +135,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(activityID),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getActivity>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(activityID),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getActivity>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetActivityInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getActivity>>>
-export type GetActivityInfiniteQueryError = void | HTTPError
+export type GetActivityInfiniteQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary get activity.
  */
-export const useGetActivityInfinite = <TData = Awaited<ReturnType<typeof getActivity>>, TError = void | HTTPError>(
+export const useGetActivityInfinite = <TData = Awaited<ReturnType<typeof getActivity>>, TError = ErrorType<void | HTTPError>>(
  activityID: EntityIDs.ActivityID, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getActivity>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -161,7 +160,7 @@ export const useGetActivityInfinite = <TData = Awaited<ReturnType<typeof getActi
 
 
 
-export const getGetActivityQueryOptions = <TData = Awaited<ReturnType<typeof getActivity>>, TError = void | HTTPError>(activityID: EntityIDs.ActivityID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getActivity>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetActivityQueryOptions = <TData = Awaited<ReturnType<typeof getActivity>>, TError = ErrorType<void | HTTPError>>(activityID: EntityIDs.ActivityID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getActivity>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -176,18 +175,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(activityID),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getActivity>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(activityID),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getActivity>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetActivityQueryResult = NonNullable<Awaited<ReturnType<typeof getActivity>>>
-export type GetActivityQueryError = void | HTTPError
+export type GetActivityQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary get activity.
  */
-export const useGetActivity = <TData = Awaited<ReturnType<typeof getActivity>>, TError = void | HTTPError>(
+export const useGetActivity = <TData = Awaited<ReturnType<typeof getActivity>>, TError = ErrorType<void | HTTPError>>(
  activityID: EntityIDs.ActivityID, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getActivity>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -222,7 +219,7 @@ export const updateActivity = (
   
 
 
-export const getUpdateActivityMutationOptions = <TError = void | HTTPError,
+export const getUpdateActivityMutationOptions = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateActivity>>, TError,{activityID: EntityIDs.ActivityID;data: UpdateActivityRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateActivity>>, TError,{activityID: EntityIDs.ActivityID;data: UpdateActivityRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -243,12 +240,12 @@ export const getUpdateActivityMutationOptions = <TError = void | HTTPError,
 
     export type UpdateActivityMutationResult = NonNullable<Awaited<ReturnType<typeof updateActivity>>>
     export type UpdateActivityMutationBody = UpdateActivityRequest
-    export type UpdateActivityMutationError = void | HTTPError
+    export type UpdateActivityMutationError = ErrorType<void | HTTPError>
 
     /**
  * @summary update activity.
  */
-export const useUpdateActivity = <TError = void | HTTPError,
+export const useUpdateActivity = <TError = ErrorType<void | HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateActivity>>, TError,{activityID: EntityIDs.ActivityID;data: UpdateActivityRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -272,7 +269,7 @@ export const deleteActivity = (
   
 
 
-export const getDeleteActivityMutationOptions = <TError = HTTPError,
+export const getDeleteActivityMutationOptions = <TError = ErrorType<HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteActivity>>, TError,{activityID: EntityIDs.ActivityID}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof deleteActivity>>, TError,{activityID: EntityIDs.ActivityID}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -293,12 +290,12 @@ export const getDeleteActivityMutationOptions = <TError = HTTPError,
 
     export type DeleteActivityMutationResult = NonNullable<Awaited<ReturnType<typeof deleteActivity>>>
     
-    export type DeleteActivityMutationError = HTTPError
+    export type DeleteActivityMutationError = ErrorType<HTTPError>
 
     /**
  * @summary delete activity.
  */
-export const useDeleteActivity = <TError = HTTPError,
+export const useDeleteActivity = <TError = ErrorType<HTTPError>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteActivity>>, TError,{activityID: EntityIDs.ActivityID}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 

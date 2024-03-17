@@ -6,11 +6,18 @@ import { type CalloutError, useFormSlice } from 'src/slices/form'
 import type { AppError } from 'src/types/ui'
 import { entries } from 'src/utils/object'
 
+const unknownError = 'An unknown error ocurred'
+
 export const useCalloutErrors = (formName: string) => {
   const formSlice = useFormSlice()
-  const calloutErrors = formSlice.form[formName]?.calloutErrors
-  const customErrors = formSlice.form[formName]?.customErrors
+  const form = formSlice.form[formName]
+  const calloutErrors = form?.calloutErrors
+  const customErrors = form?.customErrors
+  const calloutWarnings = form?.customWarnings
   const setCalloutErrors = (errors: CalloutError[]) => formSlice.setCalloutErrors(formName, errors)
+
+  const hasClickedSubmit = !!formSlice.form[formName]?.hasClickedSubmit
+  const setHasClickedSubmit = (v: boolean) => formSlice.setHasClickedSubmit(formName, v)
 
   const extractCalloutErrors = () => {
     const errors: string[] = []
@@ -22,7 +29,7 @@ export const useCalloutErrors = (formName: string) => {
       // or a regular error with message, title, detail, status...
       // and construct appropriately
       if (calloutError instanceof ApiError) {
-        errors.push(calloutError.message)
+        errors.push(calloutError.response?.data.detail ?? calloutError.message)
         continue
       }
 
@@ -50,10 +57,9 @@ export const useCalloutErrors = (formName: string) => {
   }
 
   const extractCalloutTitle = () => {
-    if (formSlice.form[formName]?.customErrors) {
+    if (Object.keys(form?.customErrors ?? {}).length > 0) {
       return 'Validation error'
     }
-    const unknownError = 'An unknown error ocurred'
 
     if (!calloutErrors) {
       return unknownError
@@ -74,12 +80,12 @@ export const useCalloutErrors = (formName: string) => {
             return 'Unauthorized'
           case 'Unknown':
           default:
-            return unknownError
+            return calloutError.message
         }
       }
 
       // external call error
-      if (calloutErrors instanceof AxiosError) return unknownError
+      if (calloutErrors instanceof AxiosError) return calloutError
     }
 
     // errors unrelated to api calls and validation
@@ -92,5 +98,8 @@ export const useCalloutErrors = (formName: string) => {
     extractCalloutErrors,
     setCalloutErrors,
     extractCalloutTitle,
+    calloutWarnings,
+    setHasClickedSubmit,
+    hasClickedSubmit,
   }
 }

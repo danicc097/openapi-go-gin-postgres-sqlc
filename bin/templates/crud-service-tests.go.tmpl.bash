@@ -39,7 +39,7 @@ func Test${pascal_name}_Update(t *testing.T) {
 		WithAPIKey: true,
 	})
 
-	creator.User, err = svc.User.AssignTeam(context.Background(), testPool, creator.User.UserID, team.TeamID)
+	creator.User, err = svc.User.AssignTeam(context.Background(), testPool, creator.UserID, team.TeamID)
 	require.NoError(t, err)
 
 $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
@@ -101,7 +101,7 @@ done)
 			})
 
 			if tc.args.withUserInProject {
-				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.User.UserID, team.TeamID)
+				user.User, err = svc.User.AssignTeam(context.Background(), testPool, user.UserID, team.TeamID)
 				require.NoError(t, err)
 			}
 
@@ -114,13 +114,12 @@ done)
 
 			if len(tc.errorContains) > 0 {
 				for _, ve := range tc.errorContains {
-					assert.ErrorContains(t, err, ve)
+					require.ErrorContains(t, err, ve)
 				}
 
 				return
 			}
 
-			// loop all fields like in above
 			// assert.Equal(t, *tc.want.<Field>, got.<Field>)
 			$(for f in ${db_update_params_struct_fields[@]}; do
   echo "		assert.Equal(t, *tc.want.$f, got.$f)"

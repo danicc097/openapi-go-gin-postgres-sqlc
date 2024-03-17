@@ -6,14 +6,6 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { Topic } from './topic';
 
-/**
- * string identifiers for SSE event listeners.
- */
-export type Topics = typeof Topics[keyof typeof Topics];
-
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export const Topics = {
-  GlobalAlerts: 'GlobalAlerts',
-} as const;
+export type Topics = Topic[];

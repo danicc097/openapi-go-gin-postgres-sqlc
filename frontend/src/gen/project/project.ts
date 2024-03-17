@@ -28,9 +28,6 @@ import type {
   DbProject
 } from '../model/dbProject'
 import type {
-  GetProjectWorkitems200
-} from '../model/getProjectWorkitems200'
-import type {
   GetProjectWorkitemsParams
 } from '../model/getProjectWorkitemsParams'
 import type {
@@ -39,7 +36,11 @@ import type {
 import type {
   ProjectConfig
 } from '../model/projectConfig'
+import type {
+  WorkItem
+} from '../model/workItem'
 import { customInstance } from '../../api/mutator';
+import type { ErrorType } from '../../api/mutator';
 
 
 // eslint-disable-next-line
@@ -70,7 +71,7 @@ export const initializeProject = (
   
 
 
-export const getInitializeProjectMutationOptions = <TError = unknown,
+export const getInitializeProjectMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initializeProject>>, TError,{projectName: 'demo' | 'demo_two';data: CreateProjectBoardRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof initializeProject>>, TError,{projectName: 'demo' | 'demo_two';data: CreateProjectBoardRequest}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -91,12 +92,12 @@ export const getInitializeProjectMutationOptions = <TError = unknown,
 
     export type InitializeProjectMutationResult = NonNullable<Awaited<ReturnType<typeof initializeProject>>>
     export type InitializeProjectMutationBody = CreateProjectBoardRequest
-    export type InitializeProjectMutationError = unknown
+    export type InitializeProjectMutationError = ErrorType<unknown>
 
     /**
  * @summary creates initial data (teams, tags...) for a new project
  */
-export const useInitializeProject = <TError = unknown,
+export const useInitializeProject = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof initializeProject>>, TError,{projectName: 'demo' | 'demo_two';data: CreateProjectBoardRequest}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -125,7 +126,7 @@ export const getGetProjectQueryKey = (projectName: 'demo' | 'demo_two',) => {
     }
 
     
-export const getGetProjectInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getProject>>, TError = unknown>(projectName: 'demo' | 'demo_two', options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetProjectInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getProject>>, TError = ErrorType<unknown>>(projectName: 'demo' | 'demo_two', options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -140,18 +141,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProject>>>
-export type GetProjectInfiniteQueryError = unknown
+export type GetProjectInfiniteQueryError = ErrorType<unknown>
 
 /**
  * @summary returns board data for a project
  */
-export const useGetProjectInfinite = <TData = Awaited<ReturnType<typeof getProject>>, TError = unknown>(
+export const useGetProjectInfinite = <TData = Awaited<ReturnType<typeof getProject>>, TError = ErrorType<unknown>>(
  projectName: 'demo' | 'demo_two', options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -167,7 +166,7 @@ export const useGetProjectInfinite = <TData = Awaited<ReturnType<typeof getProje
 
 
 
-export const getGetProjectQueryOptions = <TData = Awaited<ReturnType<typeof getProject>>, TError = unknown>(projectName: 'demo' | 'demo_two', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetProjectQueryOptions = <TData = Awaited<ReturnType<typeof getProject>>, TError = ErrorType<unknown>>(projectName: 'demo' | 'demo_two', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -182,18 +181,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectQueryResult = NonNullable<Awaited<ReturnType<typeof getProject>>>
-export type GetProjectQueryError = unknown
+export type GetProjectQueryError = ErrorType<unknown>
 
 /**
  * @summary returns board data for a project
  */
-export const useGetProject = <TData = Awaited<ReturnType<typeof getProject>>, TError = unknown>(
+export const useGetProject = <TData = Awaited<ReturnType<typeof getProject>>, TError = ErrorType<unknown>>(
  projectName: 'demo' | 'demo_two', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProject>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -230,7 +227,7 @@ export const getGetProjectConfigQueryKey = (projectName: 'demo' | 'demo_two',) =
     }
 
     
-export const getGetProjectConfigInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getProjectConfig>>, TError = unknown>(projectName: 'demo' | 'demo_two', options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetProjectConfigInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getProjectConfig>>, TError = ErrorType<unknown>>(projectName: 'demo' | 'demo_two', options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -245,18 +242,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectConfigInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectConfig>>>
-export type GetProjectConfigInfiniteQueryError = unknown
+export type GetProjectConfigInfiniteQueryError = ErrorType<unknown>
 
 /**
  * @summary returns the project configuration
  */
-export const useGetProjectConfigInfinite = <TData = Awaited<ReturnType<typeof getProjectConfig>>, TError = unknown>(
+export const useGetProjectConfigInfinite = <TData = Awaited<ReturnType<typeof getProjectConfig>>, TError = ErrorType<unknown>>(
  projectName: 'demo' | 'demo_two', options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -272,7 +267,7 @@ export const useGetProjectConfigInfinite = <TData = Awaited<ReturnType<typeof ge
 
 
 
-export const getGetProjectConfigQueryOptions = <TData = Awaited<ReturnType<typeof getProjectConfig>>, TError = unknown>(projectName: 'demo' | 'demo_two', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetProjectConfigQueryOptions = <TData = Awaited<ReturnType<typeof getProjectConfig>>, TError = ErrorType<unknown>>(projectName: 'demo' | 'demo_two', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -287,18 +282,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectConfigQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectConfig>>>
-export type GetProjectConfigQueryError = unknown
+export type GetProjectConfigQueryError = ErrorType<unknown>
 
 /**
  * @summary returns the project configuration
  */
-export const useGetProjectConfig = <TData = Awaited<ReturnType<typeof getProjectConfig>>, TError = unknown>(
+export const useGetProjectConfig = <TData = Awaited<ReturnType<typeof getProjectConfig>>, TError = ErrorType<unknown>>(
  projectName: 'demo' | 'demo_two', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProjectConfig>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -333,7 +326,7 @@ export const updateProjectConfig = (
   
 
 
-export const getUpdateProjectConfigMutationOptions = <TError = unknown,
+export const getUpdateProjectConfigMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProjectConfig>>, TError,{projectName: 'demo' | 'demo_two';data: ProjectConfig}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof updateProjectConfig>>, TError,{projectName: 'demo' | 'demo_two';data: ProjectConfig}, TContext> => {
  const {mutation: mutationOptions, request: requestOptions} = options ?? {};
@@ -354,12 +347,12 @@ export const getUpdateProjectConfigMutationOptions = <TError = unknown,
 
     export type UpdateProjectConfigMutationResult = NonNullable<Awaited<ReturnType<typeof updateProjectConfig>>>
     export type UpdateProjectConfigMutationBody = ProjectConfig
-    export type UpdateProjectConfigMutationError = unknown
+    export type UpdateProjectConfigMutationError = ErrorType<unknown>
 
     /**
  * @summary updates the project configuration
  */
-export const useUpdateProjectConfig = <TError = unknown,
+export const useUpdateProjectConfig = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProjectConfig>>, TError,{projectName: 'demo' | 'demo_two';data: ProjectConfig}, TContext>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -388,7 +381,7 @@ export const getGetProjectBoardQueryKey = (projectName: 'demo' | 'demo_two',) =>
     }
 
     
-export const getGetProjectBoardInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getProjectBoard>>, TError = unknown>(projectName: 'demo' | 'demo_two', options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetProjectBoardInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getProjectBoard>>, TError = ErrorType<unknown>>(projectName: 'demo' | 'demo_two', options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -403,18 +396,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectBoardInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectBoard>>>
-export type GetProjectBoardInfiniteQueryError = unknown
+export type GetProjectBoardInfiniteQueryError = ErrorType<unknown>
 
 /**
  * @summary returns board data for a project
  */
-export const useGetProjectBoardInfinite = <TData = Awaited<ReturnType<typeof getProjectBoard>>, TError = unknown>(
+export const useGetProjectBoardInfinite = <TData = Awaited<ReturnType<typeof getProjectBoard>>, TError = ErrorType<unknown>>(
  projectName: 'demo' | 'demo_two', options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -430,7 +421,7 @@ export const useGetProjectBoardInfinite = <TData = Awaited<ReturnType<typeof get
 
 
 
-export const getGetProjectBoardQueryOptions = <TData = Awaited<ReturnType<typeof getProjectBoard>>, TError = unknown>(projectName: 'demo' | 'demo_two', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getGetProjectBoardQueryOptions = <TData = Awaited<ReturnType<typeof getProjectBoard>>, TError = ErrorType<unknown>>(projectName: 'demo' | 'demo_two', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -445,18 +436,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectBoardQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectBoard>>>
-export type GetProjectBoardQueryError = unknown
+export type GetProjectBoardQueryError = ErrorType<unknown>
 
 /**
  * @summary returns board data for a project
  */
-export const useGetProjectBoard = <TData = Awaited<ReturnType<typeof getProjectBoard>>, TError = unknown>(
+export const useGetProjectBoard = <TData = Awaited<ReturnType<typeof getProjectBoard>>, TError = ErrorType<unknown>>(
  projectName: 'demo' | 'demo_two', options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProjectBoard>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -482,7 +471,7 @@ export const getProjectWorkitems = (
 ) => {
       
       
-      return customInstance<GetProjectWorkitems200>(
+      return customInstance<WorkItem>(
       {url: `/project/${projectName}/workitems`, method: 'GET',
         params, signal
     },
@@ -496,7 +485,7 @@ export const getGetProjectWorkitemsQueryKey = (projectName: 'demo' | 'demo_two',
     }
 
     
-export const getGetProjectWorkitemsInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getProjectWorkitems>>, TError = unknown>(projectName: 'demo' | 'demo_two',
+export const getGetProjectWorkitemsInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getProjectWorkitems>>, TError = ErrorType<unknown>>(projectName: 'demo' | 'demo_two',
     params?: GetProjectWorkitemsParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -512,18 +501,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectWorkitemsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectWorkitems>>>
-export type GetProjectWorkitemsInfiniteQueryError = unknown
+export type GetProjectWorkitemsInfiniteQueryError = ErrorType<unknown>
 
 /**
  * @summary returns workitems for a project
  */
-export const useGetProjectWorkitemsInfinite = <TData = Awaited<ReturnType<typeof getProjectWorkitems>>, TError = unknown>(
+export const useGetProjectWorkitemsInfinite = <TData = Awaited<ReturnType<typeof getProjectWorkitems>>, TError = ErrorType<unknown>>(
  projectName: 'demo' | 'demo_two',
     params?: GetProjectWorkitemsParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
@@ -540,7 +527,7 @@ export const useGetProjectWorkitemsInfinite = <TData = Awaited<ReturnType<typeof
 
 
 
-export const getGetProjectWorkitemsQueryOptions = <TData = Awaited<ReturnType<typeof getProjectWorkitems>>, TError = unknown>(projectName: 'demo' | 'demo_two',
+export const getGetProjectWorkitemsQueryOptions = <TData = Awaited<ReturnType<typeof getProjectWorkitems>>, TError = ErrorType<unknown>>(projectName: 'demo' | 'demo_two',
     params?: GetProjectWorkitemsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
@@ -556,18 +543,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(projectName),  cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetProjectWorkitemsQueryResult = NonNullable<Awaited<ReturnType<typeof getProjectWorkitems>>>
-export type GetProjectWorkitemsQueryError = unknown
+export type GetProjectWorkitemsQueryError = ErrorType<unknown>
 
 /**
  * @summary returns workitems for a project
  */
-export const useGetProjectWorkitems = <TData = Awaited<ReturnType<typeof getProjectWorkitems>>, TError = unknown>(
+export const useGetProjectWorkitems = <TData = Awaited<ReturnType<typeof getProjectWorkitems>>, TError = ErrorType<unknown>>(
  projectName: 'demo' | 'demo_two',
     params?: GetProjectWorkitemsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getProjectWorkitems>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 

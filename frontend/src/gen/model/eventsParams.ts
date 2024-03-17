@@ -7,7 +7,9 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * OpenAPI spec version: 2.0.0
  */
 import type { Project } from './project';
+import type { Topics } from './topics';
 
 export type EventsParams = {
 projectName: Project;
+topics: Topics;
 };

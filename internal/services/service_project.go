@@ -7,13 +7,11 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
 	"go.uber.org/zap"
 )
@@ -77,9 +75,9 @@ func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectName 
 	// explicitly initialize what we want to allow an admin to edit in project config ui
 	switch projectName {
 	case models.ProjectDemo:
-		workItem = &models.DemoWorkItems{DemoWorkItem: models.DbDemoWorkItem{}, ClosedAt: pointers.New(time.Now())}
+		// workItem = &models.DemoWorkItems{DemoWorkItem: models.DbDemoWorkItem{}, ClosedAt: pointers.New(time.Now())}
 		// workItem = structs.InitializeFields(reflect.ValueOf(workItem), 1).Interface() // we want very specific fields to be editable in config so it doesn't clutter it
-		fmt.Printf("workItem: %+v\n", workItem)
+		// fmt.Printf("workItem: %+v\n", workItem)
 	case models.ProjectDemoTwo:
 		fallthrough
 	default:

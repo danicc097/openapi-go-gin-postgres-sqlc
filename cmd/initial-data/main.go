@@ -261,7 +261,7 @@ func main() {
 		go func(i int) {
 			defer wg.Done()
 
-			demowi, err := svc.DemoWorkItem.Create(ctx, pool, services.DemoWorkItemCreateParams{
+			demowi, err := svc.DemoWorkItem.Create(ctx, pool, superAdminCaller, services.DemoWorkItemCreateParams{
 				DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
 					Base: db.WorkItemCreateParams{
 						TeamID:         teamDemo.TeamID,
@@ -278,10 +278,12 @@ func main() {
 						LastMessageAt: time.Now().Add(time.Duration(-i) * day),
 					},
 				},
-				TagIDs: []db.WorkItemTagID{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
-				Members: []services.Member{
-					{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
-					{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
+				WorkItemCreateParams: services.WorkItemCreateParams{
+					TagIDs: []db.WorkItemTagID{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
+					Members: []services.Member{
+						{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
+						{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
+					},
 				},
 			})
 			handleError(err)
@@ -293,7 +295,7 @@ func main() {
 
 	wg.Wait()
 
-	svc.DemoWorkItem.Update(ctx, pool, demoWorkItems[0].WorkItemID, repos.DemoWorkItemUpdateParams{
+	svc.DemoWorkItem.Update(ctx, pool, superAdminCaller, demoWorkItems[0].WorkItemID, repos.DemoWorkItemUpdateParams{
 		Base: &db.WorkItemUpdateParams{
 			KanbanStepID: pointers.New(internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsUnderReview]),
 		},
@@ -312,7 +314,7 @@ func main() {
 		go func(i int) {
 			defer wg.Done()
 
-			demoTwowi, err := svc.DemoTwoWorkItem.Create(ctx, pool, services.DemoTwoWorkItemCreateParams{
+			demoTwowi, err := svc.DemoTwoWorkItem.Create(ctx, pool, superAdminCaller, services.DemoTwoWorkItemCreateParams{
 				DemoTwoWorkItemCreateParams: repos.DemoTwoWorkItemCreateParams{
 					Base: db.WorkItemCreateParams{
 						TeamID:         teamDemo.TeamID,
@@ -329,10 +331,12 @@ func main() {
 						CustomDateForProject2: pointers.New(time.Now().Add(time.Duration(i) * day)),
 					},
 				},
-				TagIDs: []db.WorkItemTagID{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
-				Members: []services.Member{
-					{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
-					{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
+				WorkItemCreateParams: services.WorkItemCreateParams{
+					TagIDs: []db.WorkItemTagID{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
+					Members: []services.Member{
+						{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
+						{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
+					},
 				},
 			})
 			handleError(err)

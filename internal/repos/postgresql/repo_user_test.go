@@ -70,7 +70,7 @@ func TestUser_Update(t *testing.T) {
 
 					return
 				}
-				assert.ErrorContains(t, err, tc.errContains)
+				require.ErrorContains(t, err, tc.errContains)
 
 				return
 			}
@@ -130,11 +130,11 @@ func TestUser_SoftDelete(t *testing.T) {
 
 					return
 				}
-				assert.ErrorContains(t, err, tc.errContains)
+				require.ErrorContains(t, err, tc.errContains)
 
 				return
 			}
-			assert.ErrorContains(t, err, tc.errContains)
+			require.ErrorContains(t, err, tc.errContains)
 		})
 	}
 }
@@ -258,7 +258,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		_, err := userRepo.CreateAPIKey(context.Background(), testPool, &db.User{UserID: db.NewUserID(uuid.New())})
 
-		assert.ErrorContains(t, err, errContains)
+		require.ErrorContains(t, err, errContains)
 	})
 
 	t.Run("can_get_user_by_api_key", func(t *testing.T) {
@@ -282,7 +282,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		errContains := errNoRows
 
 		_, err := userRepo.ByAPIKey(context.Background(), testPool, "missing")
-		assert.ErrorContains(t, err, errContains)
+		require.ErrorContains(t, err, errContains)
 	})
 
 	t.Run("can_delete_an_api_key", func(t *testing.T) {
@@ -298,7 +298,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 		assert.Equal(t, deletedUak.APIKey, uak.APIKey)
 
 		_, err = userRepo.ByAPIKey(context.Background(), testPool, uak.APIKey)
-		assert.ErrorContains(t, err, errNoRows)
+		require.ErrorContains(t, err, errNoRows)
 	})
 }
 
@@ -357,6 +357,6 @@ func TestUser_Create(t *testing.T) {
 		_, err := userRepo.Create(context.Background(), testPool, &args.params)
 		require.Error(t, err)
 
-		assert.ErrorContains(t, err, errViolatesCheckConstraint)
+		require.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 }

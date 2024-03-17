@@ -1,7 +1,10 @@
 package rest
 
 import (
+	"fmt"
+
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/gin-gonic/gin"
 )
@@ -19,6 +22,8 @@ func (h *StrictHandlers) CreateTeam(c *gin.Context, request CreateTeamRequestObj
 
 		return nil, nil
 	}
+
+	h.event.Queue(ctx, fmt.Sprintf("team created: %v", team.TeamID), models.TopicTeamCreated)
 
 	return CreateTeam201JSONResponse{Team: *team}, nil
 }

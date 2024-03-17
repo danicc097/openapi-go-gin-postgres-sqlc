@@ -13,6 +13,8 @@ import (
 func SetupSwaggerUI(url string, specPath, swaggerUIDir string) error {
 	buf := &bytes.Buffer{}
 
+	// TODO: use indexes in array via plugin: https://github.com/swagger-api/swagger-ui/issues/6790#issuecomment-756513818
+
 	t, err := template.New("").Parse(`
 window.onload = function () {
 	//<editor-fold desc="Changeable Configuration Block">

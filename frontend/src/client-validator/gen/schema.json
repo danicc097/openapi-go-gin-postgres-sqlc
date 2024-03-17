@@ -952,244 +952,6 @@
       "x-gen-struct": "DbWorkItemType",
       "x-is-generated": true
     },
-    "DemoTwoWorkItems": {
-      "properties": {
-        "closedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "demoTwoWorkItem": {
-          "$ref": "#/definitions/DbDemoTwoWorkItem"
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "kanbanStepID": {
-          "type": "integer"
-        },
-        "members": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "metadata": {
-          "additionalProperties": {},
-          "type": "object"
-        },
-        "targetDate": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "teamID": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
-        "timeEntries": {
-          "items": {
-            "$ref": "#/definitions/DbTimeEntry"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "title": {
-          "type": "string",
-          "minLength": 1
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "workItemComments": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemComment"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemID": {
-          "type": "integer"
-        },
-        "workItemTags": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemTag"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemType": {
-          "$ref": "#/definitions/DbWorkItemType"
-        },
-        "workItemTypeID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemID",
-        "title",
-        "description",
-        "workItemTypeID",
-        "metadata",
-        "teamID",
-        "kanbanStepID",
-        "targetDate",
-        "createdAt",
-        "updatedAt",
-        "demoTwoWorkItem"
-      ],
-      "type": "object",
-      "x-gen-struct": "DemoTwoWorkItems",
-      "x-is-generated": true
-    },
-    "DemoWorkItems": {
-      "properties": {
-        "closedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "demoWorkItem": {
-          "$ref": "#/definitions/DbDemoWorkItem"
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "kanbanStepID": {
-          "type": "integer"
-        },
-        "members": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "metadata": {
-          "additionalProperties": {},
-          "type": "object"
-        },
-        "targetDate": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "teamID": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
-        "timeEntries": {
-          "items": {
-            "$ref": "#/definitions/DbTimeEntry"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "title": {
-          "type": "string",
-          "minLength": 1
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "workItemComments": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemComment"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemID": {
-          "type": "integer"
-        },
-        "workItemTags": {
-          "items": {
-            "$ref": "#/definitions/DbWorkItemTag"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "workItemType": {
-          "$ref": "#/definitions/DbWorkItemType"
-        },
-        "workItemTypeID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemID",
-        "title",
-        "description",
-        "workItemTypeID",
-        "metadata",
-        "teamID",
-        "kanbanStepID",
-        "targetDate",
-        "createdAt",
-        "updatedAt",
-        "demoWorkItem"
-      ],
-      "type": "object",
-      "x-gen-struct": "DemoWorkItems",
-      "x-is-generated": true
-    },
     "Notification": {
       "properties": {
         "notification": {
@@ -1850,9 +1612,18 @@
       ]
     },
     "Topics": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Topic"
+      },
+      "x-use-server-type": true
+    },
+    "Topic": {
       "description": "string identifiers for SSE event listeners.",
       "type": "string",
       "enum": [
+        "WorkItemUpdated",
+        "TeamCreated",
         "GlobalAlerts"
       ]
     },
@@ -1993,6 +1764,17 @@
         "name": "uuid",
         "path": "github.com/google/uuid"
       }
+    },
+    "WorkItem": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/DemoWorkItem"
+        },
+        {
+          "$ref": "#/definitions/DemoTwoWorkItem"
+        }
+      ],
+      "x-use-server-type": true
     },
     "CreateWorkItemRequest": {
       "oneOf": [
@@ -2280,6 +2062,371 @@
       "type": "object",
       "x-gen-struct": "UpdateTimeEntryRequest",
       "x-is-generated": true
+    },
+    "DemoTwoWorkItem": {
+      "properties": {
+        "closedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "demoTwoWorkItem": {
+          "$ref": "#/definitions/DbDemoTwoWorkItem"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "metadata": {
+          "additionalProperties": {},
+          "type": "object"
+        },
+        "projectName": {
+          "$ref": "#/definitions/Project"
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeEntries": {
+          "items": {
+            "$ref": "#/definitions/DbTimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemComments": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemComment"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTag"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemType": {
+          "$ref": "#/definitions/DbWorkItemType"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "projectName",
+        "demoTwoWorkItem"
+      ],
+      "type": "object",
+      "x-gen-struct": "DemoTwoWorkItem",
+      "x-is-generated": true
+    },
+    "DemoWorkItem": {
+      "properties": {
+        "closedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "demoWorkItem": {
+          "$ref": "#/definitions/DbDemoWorkItem"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "metadata": {
+          "additionalProperties": {},
+          "type": "object"
+        },
+        "projectName": {
+          "$ref": "#/definitions/Project"
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeEntries": {
+          "items": {
+            "$ref": "#/definitions/DbTimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemComments": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemComment"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTag"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemType": {
+          "$ref": "#/definitions/DbWorkItemType"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "projectName",
+        "demoWorkItem"
+      ],
+      "type": "object",
+      "x-gen-struct": "DemoWorkItem",
+      "x-is-generated": true
+    },
+    "WorkItemBase": {
+      "properties": {
+        "closedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "members": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "metadata": {
+          "additionalProperties": {},
+          "type": "object"
+        },
+        "projectName": {
+          "$ref": "#/definitions/Project"
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeEntries": {
+          "items": {
+            "$ref": "#/definitions/DbTimeEntry"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemComments": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemComment"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTags": {
+          "items": {
+            "$ref": "#/definitions/DbWorkItemTag"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "workItemType": {
+          "$ref": "#/definitions/DbWorkItemType"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "targetDate",
+        "createdAt",
+        "updatedAt",
+        "projectName"
+      ],
+      "type": "object",
+      "x-gen-struct": "WorkItemBase",
+      "x-is-generated": true
     }
   },
   "properties": {
@@ -2370,12 +2517,6 @@
     "DbWorkItemType": {
       "$ref": "#/definitions/DbWorkItemType"
     },
-    "DemoTwoWorkItems": {
-      "$ref": "#/definitions/DemoTwoWorkItems"
-    },
-    "DemoWorkItems": {
-      "$ref": "#/definitions/DemoWorkItems"
-    },
     "Notification": {
       "$ref": "#/definitions/Notification"
     },
@@ -2451,6 +2592,9 @@
     "Topics": {
       "$ref": "#/definitions/Topics"
     },
+    "Topic": {
+      "$ref": "#/definitions/Topic"
+    },
     "Scope": {
       "$ref": "#/definitions/Scope"
     },
@@ -2474,6 +2618,9 @@
     },
     "UuidUUID": {
       "$ref": "#/definitions/UuidUUID"
+    },
+    "WorkItem": {
+      "$ref": "#/definitions/WorkItem"
     },
     "CreateWorkItemRequest": {
       "$ref": "#/definitions/CreateWorkItemRequest"
@@ -2531,6 +2678,15 @@
     },
     "UpdateTimeEntryRequest": {
       "$ref": "#/definitions/UpdateTimeEntryRequest"
+    },
+    "DemoTwoWorkItem": {
+      "$ref": "#/definitions/DemoTwoWorkItem"
+    },
+    "DemoWorkItem": {
+      "$ref": "#/definitions/DemoWorkItem"
+    },
+    "WorkItemBase": {
+      "$ref": "#/definitions/WorkItemBase"
     }
   }
 }

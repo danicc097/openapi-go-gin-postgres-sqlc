@@ -61,7 +61,7 @@ func TestHandlers_DeleteUser(t *testing.T) {
 				Scopes:     tc.scopes,
 			})
 
-			res, err := srv.client.DeleteUserWithResponse(context.Background(), ufixture.User.UserID.UUID, ReqWithAPIKey(ufixture.APIKey.APIKey))
+			res, err := srv.client.DeleteUserWithResponse(context.Background(), ufixture.UserID.UUID, ReqWithAPIKey(ufixture.APIKey.APIKey))
 			fmt.Printf("res.Body: %v\n", string(res.Body))
 			require.NoError(t, err)
 			require.Equal(t, tc.status, res.StatusCode(), string(res.Body))
@@ -151,7 +151,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			updateAuthParams := rest.UpdateUserAuthRequest{
 				Role: pointers.New(models.RoleManager),
 			}
-			ures, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
+			ures, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
 			require.Equal(t, http.StatusNoContent, ures.StatusCode(), string(ures.Body))
@@ -173,7 +173,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			updateAuthParams := rest.UpdateUserAuthRequest{
 				Role: pointers.New(models.RoleManager),
 			}
-			badres, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(managerWithoutScopes.APIKey.APIKey))
+			badres, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(managerWithoutScopes.APIKey.APIKey))
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusForbidden, badres.StatusCode())
 		})
@@ -183,7 +183,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			updateAuthParams := rest.UpdateUserAuthRequest{
 				Role: pointers.New(models.Role("bad")),
 			}
-			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
+			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusBadRequest, res.StatusCode(), string(res.Body))
@@ -194,7 +194,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 			updateAuthParams := rest.UpdateUserAuthRequest{
 				Scopes: &[]models.Scope{models.Scope("bad")},
 			}
-			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.User.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
+			res, err := srv.client.UpdateUserAuthorizationWithResponse(context.Background(), normalUser.UserID.UUID, updateAuthParams, ReqWithAPIKey(manager.APIKey.APIKey))
 
 			require.NoError(t, err)
 			assert.Equal(t, http.StatusBadRequest, res.StatusCode(), string(res.Body))
@@ -235,7 +235,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 				WithAPIKey: true,
 			})
 
-			ures, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.User.UserID.UUID, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
+			ures, err := srv.client.UpdateUserWithResponse(context.Background(), normalUser.UserID.UUID, tc.body, ReqWithAPIKey(normalUser.APIKey.APIKey))
 
 			require.NoError(t, err)
 			require.EqualValues(t, tc.status, ures.StatusCode(), string(ures.Body))
@@ -248,7 +248,7 @@ func TestHandlers_UpdateUser(t *testing.T) {
 				return
 			}
 
-			assert.EqualValues(t, normalUser.User.UserID, ures.JSON200.UserID)
+			assert.EqualValues(t, normalUser.UserID, ures.JSON200.UserID)
 
 			res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(normalUser.APIKey.APIKey))
 

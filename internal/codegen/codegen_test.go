@@ -64,7 +64,7 @@ func TestAnalyzeSpec(t *testing.T) {
 
 			err := og.analyzeSpec()
 			if tc.errContains != "" {
-				assert.ErrorContains(t, err, tc.errContains)
+				require.ErrorContains(t, err, tc.errContains)
 			} else if err != nil {
 				t.Fatalf("err: %s\nstderr: %s\n", err, &stderr)
 			}

@@ -331,7 +331,7 @@ func TestCRUD_UniqueIndex(t *testing.T) {
 
 	_, err = db.XoTestsUserByName(ctx, testPool, u1.Name)
 	fmt.Printf("err: %v\n", err)
-	assert.ErrorContains(t, err, errNoRows)
+	require.ErrorContains(t, err, errNoRows)
 
 	// test soft delete and restore
 	err = u2.SoftDelete(ctx, testPool)
@@ -339,7 +339,7 @@ func TestCRUD_UniqueIndex(t *testing.T) {
 	assert.NotNil(t, u2.DeletedAt)
 
 	_, err = db.XoTestsUserByName(ctx, testPool, u2.Name) // default deleted_at null
-	assert.ErrorContains(t, err, errNoRows)
+	require.ErrorContains(t, err, errNoRows)
 
 	deletedUser, err := db.XoTestsUserByName(ctx, testPool, u2.Name, db.WithDeletedXoTestsUserOnly())
 	require.NoError(t, err)

@@ -22,6 +22,7 @@ import type {
   HTTPError
 } from '../model/hTTPError'
 import { customInstance } from '../../api/mutator';
+import type { ErrorType } from '../../api/mutator';
 
 
 // eslint-disable-next-line
@@ -54,7 +55,7 @@ export const getAdminPingQueryKey = () => {
     }
 
     
-export const getAdminPingInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof adminPing>>, TError = void | HTTPError>( options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getAdminPingInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof adminPing>>, TError = ErrorType<void | HTTPError>>( options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -69,18 +70,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type AdminPingInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof adminPing>>>
-export type AdminPingInfiniteQueryError = void | HTTPError
+export type AdminPingInfiniteQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary Ping pongs
  */
-export const useAdminPingInfinite = <TData = Awaited<ReturnType<typeof adminPing>>, TError = void | HTTPError>(
+export const useAdminPingInfinite = <TData = Awaited<ReturnType<typeof adminPing>>, TError = ErrorType<void | HTTPError>>(
   options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -96,7 +95,7 @@ export const useAdminPingInfinite = <TData = Awaited<ReturnType<typeof adminPing
 
 
 
-export const getAdminPingQueryOptions = <TData = Awaited<ReturnType<typeof adminPing>>, TError = void | HTTPError>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getAdminPingQueryOptions = <TData = Awaited<ReturnType<typeof adminPing>>, TError = ErrorType<void | HTTPError>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -111,18 +110,16 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type AdminPingQueryResult = NonNullable<Awaited<ReturnType<typeof adminPing>>>
-export type AdminPingQueryError = void | HTTPError
+export type AdminPingQueryError = ErrorType<void | HTTPError>
 
 /**
  * @summary Ping pongs
  */
-export const useAdminPing = <TData = Awaited<ReturnType<typeof adminPing>>, TError = void | HTTPError>(
+export const useAdminPing = <TData = Awaited<ReturnType<typeof adminPing>>, TError = ErrorType<void | HTTPError>>(
   options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminPing>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {

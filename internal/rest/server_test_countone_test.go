@@ -40,10 +40,13 @@ func TestTracing(t *testing.T) {
 		Scopes:     []models.Scope{models.ScopeWorkItemCommentDelete},
 	})
 
-	workItemCommentf := ff.CreateWorkItemComment(context.Background(), servicetestutil.CreateWorkItemCommentParams{Project: models.ProjectDemo, UserID: ufixture.User.UserID})
+	requiredProject := models.ProjectDemo
+	teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
+	workItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(ufixture.User), teamf.TeamID)
+	workItemCommentf := ff.CreateWorkItemComment(context.Background(), ufixture.UserID, workItemf.WorkItemID)
 
-	id := workItemCommentf.WorkItemComment.WorkItemCommentID
-	res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), workItemCommentf.WorkItem.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
+	id := workItemCommentf.WorkItemCommentID
+	res, err := srv.client.DeleteWorkItemCommentWithResponse(context.Background(), workItemf.WorkItemID, id, ReqWithAPIKey(ufixture.APIKey.APIKey))
 	require.NoError(t, err)
 	require.Equal(t, http.StatusNoContent, res.StatusCode(), string(res.Body))
 

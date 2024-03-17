@@ -7,4 +7,4 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * OpenAPI spec version: 2.0.0
  */
 
-export type GetPaginatedUsersArrayFilterItem = string | boolean;
+export type WorkItemBaseMetadata = {[key: string]: unknown};

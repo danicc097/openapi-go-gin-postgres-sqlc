@@ -92,7 +92,7 @@ func TestNotification_Create(t *testing.T) {
 		ncp := postgresqlrandom.NotificationCreateParams(nil, sender.UserID, nil, db.NotificationTypePersonal)
 
 		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
-		assert.ErrorContains(t, err, errViolatesCheckConstraint)
+		require.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 
 	t.Run("error_with_no_rank_with_global_notification", func(t *testing.T) {
@@ -101,6 +101,6 @@ func TestNotification_Create(t *testing.T) {
 		ncp := postgresqlrandom.NotificationCreateParams(nil, sender.UserID, nil, db.NotificationTypeGlobal)
 
 		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
-		assert.ErrorContains(t, err, errViolatesCheckConstraint)
+		require.ErrorContains(t, err, errViolatesCheckConstraint)
 	})
 }

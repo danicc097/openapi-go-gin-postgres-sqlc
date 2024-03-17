@@ -6,7 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { CreateWorkItemRequest } from '../model/createWorkItemRequest'
-import type { DbWorkItem } from '../model/dbWorkItem'
+import type { WorkItem } from '../model/workItem'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -19,7 +19,7 @@ export const createWorkitem = (
   createWorkItemRequest: CreateWorkItemRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<DbWorkItem>(
+  return customInstance<WorkItem>(
     {
       url: `/work-item/`,
       method: 'POST',
@@ -33,13 +33,13 @@ export const createWorkitem = (
  * @summary get workitem
  */
 export const getWorkItem = (workItemID: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<DbWorkItem>({ url: `/work-item/${workItemID}/`, method: 'GET' }, options)
+  return customInstance<WorkItem>({ url: `/work-item/${workItemID}/`, method: 'GET' }, options)
 }
 /**
  * @summary update workitem
  */
 export const updateWorkitem = (workItemID: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<DbWorkItem>({ url: `/work-item/${workItemID}/`, method: 'PATCH' }, options)
+  return customInstance<WorkItem>({ url: `/work-item/${workItemID}/`, method: 'PATCH' }, options)
 }
 /**
  * @summary delete workitem

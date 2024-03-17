@@ -1,14 +1,7 @@
 import { JSONSchemaType } from 'ajv'
+import { JSONSchema4, JSONSchema4Array, JSONSchema4Object, JSONSchema4Type } from 'json-schema'
 import { JSONSchema } from 'json-schema-to-ts'
 import type { Primitive, RecursiveKeyOf } from 'src/types/utils'
-
-export interface JsonSchemaField {
-  type?: Type | Type[]
-  format?: Format
-  items?: JsonSchemaField
-  properties?: { [key: string]: JsonSchemaField }
-  required?: string[]
-}
 
 export type SchemaField = {
   type: Type | Format
@@ -19,20 +12,23 @@ export type SchemaField = {
 export type Format = 'date-time' | 'date'
 export type Type = 'boolean' | 'integer' | 'object' | 'string' | 'array' | 'null' | 'number'
 
-export function parseSchemaFields(schema: JsonSchemaField): Record<Primitive, SchemaField> {
+export function parseSchemaFields(schema: JSONSchema4): Record<Primitive, SchemaField> {
   const schemaFields = {}
 
-  function traverseSchema(obj: JsonSchemaField, path: string[] = [], parent: JsonSchemaField | null = null) {
-    const isArrayOfObj = extractType(obj) === 'object' && !!obj.type?.includes('array') && obj.items?.properties
+  function traverseSchema(obj: JSONSchema4, path: string[] = [], parent: JSONSchema4 | null = null) {
+    const isArrayOfObj =
+      extractType(obj) === 'object' && !!obj.type?.includes('array') && (obj.items as JSONSchema4)?.properties
     const isObj = obj.properties && extractType(obj) === 'object'
 
     if (isArrayOfObj) {
-      extract(obj?.items?.properties)
+      extract((obj.items as JSONSchema4)?.properties)
     } else if (isObj) {
       extract(obj.properties)
     }
 
-    function extract(properties: JsonSchemaField['properties']) {
+    function extract(properties: JSONSchema4Object | JSONSchema4Array | undefined) {
+      if (!properties) return
+
       for (const key in properties) {
         const newPath = [...path, key]
         const property = properties[key]
@@ -55,12 +51,12 @@ export function parseSchemaFields(schema: JsonSchemaField): Record<Primitive, Sc
   return schemaFields as Record<Primitive, SchemaField>
 }
 
-function extractIsRequired(obj: JsonSchemaField, parent: JsonSchemaField | null, key: string): boolean {
+function extractIsRequired(obj: JSONSchema4, parent: JSONSchema4 | null, key: string): boolean {
   if (!parent) {
     return (
-      !!obj.required?.includes(key) &&
+      (obj.required === true || !!(obj.required as string[])?.includes(key)) &&
       !obj.properties?.[key]?.type?.includes('null') &&
-      !obj?.items?.type?.includes('null')
+      !(obj?.items as JSONSchema4)?.type?.includes('null')
     )
   }
 
@@ -69,28 +65,31 @@ function extractIsRequired(obj: JsonSchemaField, parent: JsonSchemaField | null,
   }
 
   return (
-    !!parent.required?.includes(key) &&
+    (parent.required === true || !!(parent.required as string[])?.includes(key)) &&
     !obj.properties?.[key]?.type?.includes('null') &&
-    !obj.items?.type?.includes('null') &&
-    (obj.type?.includes('array') && obj.items?.properties?.[key]?.type?.includes('array')
+    !(obj.items as JSONSchema4)?.type?.includes('null') &&
+    (obj.type?.includes('array') && (obj.items as JSONSchema4)?.properties?.[key]?.type?.includes('array')
       ? !obj?.type?.includes('null')
       : true)
   )
 }
 
-function extractType(obj: JsonSchemaField): Type | Format {
-  const type = _type(obj.type)
+export type JsonSchemaType = Type | Type[]
+
+function _type(x: JsonSchemaType) {
+  return (Array.isArray(x) ? x.filter((t) => t !== 'null')[0] : x) as Type
+}
+
+function extractType(obj: JSONSchema4Object): Type | Format {
+  const type = _type(obj.type as JsonSchemaType)
   if (type === 'array') {
-    if (obj?.items?.type === 'object') {
+    const items = obj.items as JSONSchema4Object
+    if (items?.type === 'object') {
       return 'object'
     } else {
-      return _type(obj?.items?.type)
+      return _type(items?.type as JsonSchemaType)
     }
   }
 
-  return obj.format ?? type
-
-  function _type(x: JsonSchemaField['type']) {
-    return (Array.isArray(x) ? x.filter((t) => t !== 'null')[0] : x) as Type
-  }
+  return (obj.format ?? type) as Type | Format
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -51,10 +52,8 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 				Role:       tc.role,
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
+				TeamIDs:    []db.TeamID{teamf.TeamID},
 			})
-			require.NoError(t, err)
-
-			_, err = svc.User.AssignTeam(context.Background(), testPool, userf.User.UserID, teamf.Team.TeamID)
 			require.NoError(t, err)
 
 			witCreateParams := postgresqlrandom.WorkItemTagCreateParams(internal.ProjectIDByName[requiredProject])

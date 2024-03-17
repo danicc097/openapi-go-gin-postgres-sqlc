@@ -22,6 +22,7 @@ import {
   useMantineColorScheme,
   useMantineTheme,
   Container,
+  Select,
 } from '@mantine/core'
 import classes from './Layout.module.css'
 import {
@@ -49,6 +50,9 @@ import { useDisclosure } from '@mantine/hooks'
 import { ThemeSwitcher } from 'src/components/ThemeSwitcher'
 import TestMantineV7 from 'src/components/Layout/TestMantineV7'
 import { CONFIG } from 'src/config'
+import { Project } from 'src/gen/model'
+import { PROJECTS_LABEL } from 'src/services/project'
+import { entries } from 'src/utils/object'
 
 type LayoutProps = {
   children: React.ReactElement
@@ -102,9 +106,9 @@ export default function Layout({ children }: LayoutProps) {
 
     return user ? (
       <UnstyledButton className={cx(classes.user, { [classes.userActive as string]: userMenuOpened })}>
-        <Group gap={'md'} m={4}>
-          <Avatar alt={user.username} radius="xl" size={35} mt={6} mb={6} />
-          <Text className={classes.displayName} fw={500}>
+        <Group gap={'xs'} m={4} align="center">
+          <Avatar alt={user.username} radius="xl" size={28} />
+          <Text className={classes.displayName} fw={500} size="sm">
             {user.username}
           </Text>
           <IconChevronDown size={12} stroke={1.5} />
@@ -146,6 +150,30 @@ export default function Layout({ children }: LayoutProps) {
                 `}
               ></img>
             </a>
+            <Group>
+              <Select
+                size="xs"
+                maw={150}
+                placeholder="Select project"
+                data={entries(PROJECTS_LABEL).map(([k, v]) => ({ value: k, label: v }))}
+                onOptionSubmit={(v: Project) => {
+                  ui.setProject(v)
+                  ui.setTeam(null)
+                }}
+                value={ui.project}
+              />
+              {/* TODO: dynamic options based on selected project.*/}
+              <Select
+                size="xs"
+                maw={150}
+                placeholder="Select team"
+                data={['Team 1', 'Team 2']}
+                onOptionSubmit={(v: string) => {
+                  ui.setTeam(v)
+                }}
+                value={ui.team}
+              />
+            </Group>
             <Menu
               width={220}
               position="bottom-end"
@@ -160,11 +188,12 @@ export default function Layout({ children }: LayoutProps) {
                 css={css`
                   p {
                     margin: 0px;
+                    font-size: var(--mantine-font-size-sm);
                   }
                 `}
               >
                 <Menu.Item onClick={() => setNotify(true)} leftSection={<IconHeart size={20} />}>
-                  <Text fz="s">Test notification</Text>
+                  <Text fz="s">Test desktop notification</Text>
                 </Menu.Item>
                 <Menu.Divider />
                 <Menu.Item

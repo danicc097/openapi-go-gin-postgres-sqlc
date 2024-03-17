@@ -1725,6 +1725,18 @@ func NewEventsRequest(server string, params *EventsParams) (*http.Request, error
 			}
 		}
 
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "topics", runtime.ParamLocationQuery, params.Topics); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
+				}
+			}
+		}
+
 		queryURL.RawQuery = queryValues.Encode()
 	}
 
@@ -2689,22 +2701,6 @@ func NewGetPaginatedUsersRequest(server string, params *GetPaginatedUsersParams)
 		if params.Nested != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("deepObject", true, "nested", runtime.ParamLocationQuery, *params.Nested); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.ArrayFilter != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", false, "arrayFilter", runtime.ParamLocationQuery, *params.ArrayFilter); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -4051,9 +4047,7 @@ func (r CreateWorkItemTypeResponse) StatusCode() int {
 type GetProjectWorkitemsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		union json.RawMessage
-	}
+	JSON200      *WorkItem
 }
 
 // Status returns HTTPResponse.Status
@@ -4480,9 +4474,7 @@ func (r UpdateWorkItemTypeResponse) StatusCode() int {
 type CreateWorkitemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *struct {
-		union json.RawMessage
-	}
+	JSON201      *WorkItem
 }
 
 // Status returns HTTPResponse.Status
@@ -4525,9 +4517,7 @@ func (r DeleteWorkitemResponse) StatusCode() int {
 type GetWorkItemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		union json.RawMessage
-	}
+	JSON200      *WorkItem
 }
 
 // Status returns HTTPResponse.Status
@@ -4549,9 +4539,7 @@ func (r GetWorkItemResponse) StatusCode() int {
 type UpdateWorkitemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		union json.RawMessage
-	}
+	JSON200      *WorkItem
 }
 
 // Status returns HTTPResponse.Status
@@ -5719,9 +5707,7 @@ func ParseGetProjectWorkitemsResponse(rsp *http.Response) (*GetProjectWorkitemsR
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			union json.RawMessage
-		}
+		var dest WorkItem
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6275,9 +6261,7 @@ func ParseCreateWorkitemResponse(rsp *http.Response) (*CreateWorkitemResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest struct {
-			union json.RawMessage
-		}
+		var dest WorkItem
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6319,9 +6303,7 @@ func ParseGetWorkItemResponse(rsp *http.Response) (*GetWorkItemResponse, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			union json.RawMessage
-		}
+		var dest WorkItem
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6347,9 +6329,7 @@ func ParseUpdateWorkitemResponse(rsp *http.Response) (*UpdateWorkitemResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			union json.RawMessage
-		}
+		var dest WorkItem
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

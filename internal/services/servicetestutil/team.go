@@ -15,7 +15,7 @@ type CreateTeamParams struct {
 }
 
 type CreateTeamFixture struct {
-	Team *db.Team
+	*db.Team
 }
 
 // CreateTeam creates a new random work item comment with the given configuration.

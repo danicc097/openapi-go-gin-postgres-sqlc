@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -32,10 +33,11 @@ var templates embed.FS
 
 func main() {
 	log.SetFlags(0)
-	var cfgPath, modelsPkg, typesStr string
+	var cfgPath, modelsPkg, typesStr, serverTypesStr string
 	flag.StringVar(&cfgPath, "config", "", "path to config file")
 	flag.StringVar(&modelsPkg, "models-pkg", "models", "package containing models")
-	flag.StringVar(&typesStr, "types", "types", "list of type names to use in place of generated oapi-codegen ones")
+	flag.StringVar(&typesStr, "types", "", "list of type names to use in place of generated oapi-codegen ones")
+	flag.StringVar(&serverTypesStr, "server-types", "", "list of types to use in server generation instead of generated types package")
 	flag.Parse()
 	if cfgPath == "" {
 		log.Fatal("--config is required")
@@ -44,6 +46,7 @@ func main() {
 		log.Fatal("Please specify a path to an OpenAPI 3.0 spec file")
 	}
 	types := strings.Split(typesStr, ",")
+	serverTypes := strings.Split(serverTypesStr, ",")
 
 	// loading specification
 	input := flag.Arg(0)
@@ -70,7 +73,7 @@ func main() {
 	}
 
 	// generating output
-	output, err := generate(spec, cfg, templates, modelsPkg, types)
+	output, err := generate(spec, cfg, templates, modelsPkg, types, serverTypes)
 	if err != nil {
 		log.Fatalf("error generating code: %v", err)
 	}
@@ -87,7 +90,7 @@ func main() {
 	outFile.Close()
 }
 
-func generate(spec *openapi3.T, config configuration, templates embed.FS, modelsPkg string, types []string) (string, error) {
+func generate(spec *openapi3.T, config configuration, templates embed.FS, modelsPkg string, types, serverTypes []string) (string, error) {
 	var err error
 	config, err = addTemplateOverrides(config, templates)
 	if err != nil {
@@ -101,9 +104,23 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 		"models_pkg": func() string {
 			return modelsPkg + "."
 		},
-		"is_rest_type": func(t string) bool {
+		"should_exclude_type": func(t string) bool {
+			stName := strings.TrimPrefix(t, "externalRef0.")
+			if slices.Contains(serverTypes, stName) {
+				return false
+			}
 			for _, typ := range types {
-				if stName := strings.TrimPrefix(t, "externalRef0."); stName == typ {
+				if stName == typ {
+					return true
+				}
+			}
+
+			return false
+		},
+		"is_rest_type": func(t string) bool {
+			stName := strings.TrimPrefix(t, "externalRef0.")
+			for _, typ := range append(types, serverTypes...) {
+				if stName == typ {
 					return true
 				}
 			}

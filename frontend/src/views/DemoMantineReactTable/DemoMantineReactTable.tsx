@@ -49,6 +49,16 @@ const A = ({ columnFilterFns, columnFilters, globalFilter, sorting, pagination }
   })
 }
 
+// TODO: GetPaginatedUsers table
+// also see excalidraw
+// will be used on generated filterable mantine datatable table as in
+// https://v2.mantine-react-table.com/docs/examples/react-query
+// https://v2.mantine-react-table.com/docs/guides/column-filtering#manual-server-side-column-filtering
+// (note v2 in alpha but is the only one supporting v7)
+// lots of filter variants already:
+// https://v2.mantine-react-table.com/docs/guides/column-filtering#filter-variants
+// will try adapt to internal format so filters object it can be sent as query params to pagination queries
+// and easily parsed in backend with minimal adapters.
 export default function DemoMantineReactTable() {
   const columns = useMemo<MRT_ColumnDef<User>[]>(
     () => [
@@ -136,11 +146,17 @@ export default function DemoMantineReactTable() {
     isFetching,
     isError,
     isLoading,
-  } = useGetPaginatedUsers({ direction: 'desc', cursor, limit: 5 })
+  } = useGetPaginatedUsers({
+    direction: 'desc',
+    cursor,
+    limit: 5,
+    // deepmap needs to be updated for kin-openapi new Type struct
+    filter: { post: ['fesefesf', '1'], bools: [true, false], objects: [{ nestedObj: 'something' }] },
+    nested: { obj: { nestedObj: '1212' } },
+  })
 
   // useStopInfiniteRenders(60)
 
-  //this will depend on your API response shape
   const fetchedUsers = usersData?.items ?? []
   const totalRowCount = Infinity
 

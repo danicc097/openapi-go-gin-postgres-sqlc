@@ -87,8 +87,16 @@ func ConstructInternalPath(subpath string, options ...ConstructURLOption) (strin
 			fieldName = formTag
 		}
 
-		fieldValue := fmt.Sprintf("%v", value.Interface())
-		query.Add(fieldName, fieldValue)
+		if value.Kind() == reflect.Slice {
+			for j := 0; j < value.Len(); j++ {
+				elemValue := value.Index(j)
+				fieldValue := fmt.Sprintf("%v", elemValue.Interface())
+				query.Add(fieldName, fieldValue)
+			}
+		} else {
+			fieldValue := fmt.Sprintf("%v", value.Interface())
+			query.Add(fieldName, fieldValue)
+		}
 	}
 
 	u.RawQuery = query.Encode()

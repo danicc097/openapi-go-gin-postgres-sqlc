@@ -22,6 +22,7 @@ import type {
   EventsParams
 } from '../model/eventsParams'
 import { customInstance } from '../../api/mutator';
+import type { ErrorType } from '../../api/mutator';
 
 
 // eslint-disable-next-line
@@ -52,7 +53,7 @@ export const getEventsQueryKey = (params: EventsParams,) => {
     }
 
     
-export const getEventsInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof events>>, TError = unknown>(params: EventsParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getEventsInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof events>>, TError = ErrorType<unknown>>(params: EventsParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -67,15 +68,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type EventsInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof events>>>
-export type EventsInfiniteQueryError = unknown
+export type EventsInfiniteQueryError = ErrorType<unknown>
 
-export const useEventsInfinite = <TData = Awaited<ReturnType<typeof events>>, TError = unknown>(
+export const useEventsInfinite = <TData = Awaited<ReturnType<typeof events>>, TError = ErrorType<unknown>>(
  params: EventsParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
@@ -91,7 +90,7 @@ export const useEventsInfinite = <TData = Awaited<ReturnType<typeof events>>, TE
 
 
 
-export const getEventsQueryOptions = <TData = Awaited<ReturnType<typeof events>>, TError = unknown>(params: EventsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+export const getEventsQueryOptions = <TData = Awaited<ReturnType<typeof events>>, TError = ErrorType<unknown>>(params: EventsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -106,15 +105,13 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true, retry: function(failureCount, error) {
-      return failureCount < 3;
-    },  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn,   cacheTime: 300000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type EventsQueryResult = NonNullable<Awaited<ReturnType<typeof events>>>
-export type EventsQueryError = unknown
+export type EventsQueryError = ErrorType<unknown>
 
-export const useEvents = <TData = Awaited<ReturnType<typeof events>>, TError = unknown>(
+export const useEvents = <TData = Awaited<ReturnType<typeof events>>, TError = ErrorType<unknown>>(
  params: EventsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof events>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
 
   ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {

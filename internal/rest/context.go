@@ -17,16 +17,24 @@ import (
 const ctxKeyPrefix = "rest-"
 
 const (
-	userCtxKey                  = ctxKeyPrefix + "user"
-	userInfoCtxKey              = ctxKeyPrefix + "user-info"
-	ginContextCtxKey            = ctxKeyPrefix + "middleware.openapi/gin-context"
-	userDataCtxKey              = ctxKeyPrefix + "middleware.openapi/user-data"
-	validateResponseCtxKey      = ctxKeyPrefix + "skip-response-validation"
-	skipRequestValidationCtxKey = ctxKeyPrefix + "skip-request-validation"
-	transactionCtxKey           = ctxKeyPrefix + "transaction"
-	spanCtxKey                  = ctxKeyPrefix + "span"
-	errorCtxKey                 = ctxKeyPrefix + "error"
+	userCtxKey                   = ctxKeyPrefix + "user"
+	userInfoCtxKey               = ctxKeyPrefix + "user-info"
+	ginContextCtxKey             = ctxKeyPrefix + "middleware.openapi/gin-context"
+	userDataCtxKey               = ctxKeyPrefix + "middleware.openapi/user-data"
+	skipResponseValidationCtxKey = ctxKeyPrefix + "skip-response-validation"
+	skipRequestValidationCtxKey  = ctxKeyPrefix + "skip-request-validation"
+	transactionCtxKey            = ctxKeyPrefix + "transaction"
+	spanCtxKey                   = ctxKeyPrefix + "span"
+	errorCtxKey                  = ctxKeyPrefix + "error"
 )
+
+type requestIDCtxKey struct{}
+
+// NOTE: request ID is set on Request context since it may be used by services.
+func GetRequestIDFromCtx(ctx context.Context) string {
+	requestID, _ := ctx.Value(requestIDCtxKey{}).(string)
+	return requestID
+}
 
 func GetSkipRequestValidationFromCtx(c *gin.Context) bool {
 	skip, ok := c.Value(skipRequestValidationCtxKey).(bool)
@@ -38,7 +46,7 @@ func GetSkipRequestValidationFromCtx(c *gin.Context) bool {
 }
 
 func GetValidateResponseFromCtx(c *gin.Context) bool {
-	skip, ok := c.Value(validateResponseCtxKey).(bool)
+	skip, ok := c.Value(skipResponseValidationCtxKey).(bool)
 	if !ok {
 		return false
 	}
@@ -126,13 +134,14 @@ func GetUserDataFromCtx(c context.Context) any {
 	return c.Value(userDataCtxKey)
 }
 
-func CtxHasErrorResponse(c *gin.Context) bool {
+// CtxRequestHasError returns whether the current request has an error.
+func CtxRequestHasError(c *gin.Context) bool {
 	_, ok := c.Value(errorCtxKey).(struct{})
 
 	return ok
 }
 
-// ctxWithErrorResponse signals current request will receive an error.
-func ctxWithErrorResponse(c *gin.Context) {
+// ctxWithRequestError signals that the current request has an error.
+func ctxWithRequestError(c *gin.Context) {
 	c.Set(errorCtxKey, struct{}{})
 }

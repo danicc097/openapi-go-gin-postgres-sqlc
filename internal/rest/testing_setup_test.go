@@ -42,6 +42,8 @@ func TestMain(m *testing.M) {
 }
 
 func testMain(m *testing.M) int {
+	gin.SetMode(gin.TestMode)
+
 	testutil.Setup()
 	// call flag.Parse() here if TestMain uses flags
 	var err error
@@ -64,6 +66,7 @@ type testServer struct {
 	client       *ClientWithResponses
 	tp           *sdktrace.TracerProvider
 	spanRecorder *tracetest.SpanRecorder
+	event        *rest.EventServer
 }
 
 func (s *testServer) setupCleanup(t *testing.T) {
@@ -122,6 +125,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 
 	return &testServer{
 		server:       srv.Httpsrv,
+		event:        srv.Event,
 		client:       client,
 		tp:           tp,
 		spanRecorder: spanRecorder,
