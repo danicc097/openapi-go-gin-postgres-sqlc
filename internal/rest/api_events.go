@@ -3,7 +3,6 @@ package rest
 import (
 	"context"
 	"io"
-	"log"
 	"strings"
 	"sync"
 
@@ -88,7 +87,7 @@ func (es *EventServer) listen() {
 				}
 				es.subscriptions[topic][client.Chan] = struct{}{}
 			}
-			log.Printf("Client added. %d registered clients", len(es.clients))
+			es.logger.Infof("Client added. %d registered clients", len(es.clients))
 
 		case client := <-es.closedClients:
 			for _, subscriptions := range es.subscriptions {
@@ -96,7 +95,7 @@ func (es *EventServer) listen() {
 			}
 			delete(es.clients, client)
 			close(client)
-			log.Printf("Removed client. %d registered clients", len(es.clients))
+			es.logger.Infof("Removed client. %d registered clients", len(es.clients))
 
 		case eventMsg := <-es.messages:
 			for ch := range es.subscriptions[eventMsg.Topic] {
