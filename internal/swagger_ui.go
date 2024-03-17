@@ -14,6 +14,8 @@ func SetupSwaggerUI(url string, specPath, swaggerUIDir string) error {
 	buf := &bytes.Buffer{}
 
 	// TODO: use indexes in array via plugin: https://github.com/swagger-api/swagger-ui/issues/6790#issuecomment-756513818
+	// NOTE: cannot make plugins for responses in swagger ui, see https://github.com/swagger-api/swagger-ui/issues/5200
+	// ie no SSE eventsource that accumulates messages instead of a useless endpoint
 
 	t, err := template.New("").Parse(`
 window.onload = function () {

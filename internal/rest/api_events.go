@@ -32,7 +32,8 @@ channel use cases,etc:
 type Clients map[chan ClientMessage]struct{}
 
 type EventServer struct {
-	mu sync.RWMutex
+	queueMu sync.RWMutex
+	subsMu  sync.RWMutex
 
 	logger *zap.SugaredLogger
 	// queuedMessages are pending messages for a given X-Request-ID.
@@ -62,17 +63,19 @@ func NewEventServer(logger *zap.SugaredLogger) *EventServer {
 	return es
 }
 
+// Queue saves an event for later publishing.
 func (es *EventServer) Queue(ctx context.Context, message string, topic models.Topic) {
-	es.mu.Lock()
-	defer es.mu.Unlock()
+	es.queueMu.Lock()
+	defer es.queueMu.Unlock()
 
 	rid := GetRequestIDFromCtx(ctx)
 
 	es.queuedMessages[rid] = append(es.queuedMessages[rid], ClientMessage{Message: message, Topic: topic})
 }
 
+// Publish publishes an event immediately.
 func (es *EventServer) Publish(message string, topic models.Topic) {
-	es.logger.Debugf("topic %s: sending event %v", topic, message)
+	// es.logger.Debugf("topic %s: sending event %v", topic, message)
 	es.messages <- ClientMessage{Message: message, Topic: topic}
 }
 
@@ -81,25 +84,37 @@ func (es *EventServer) listen() {
 		select {
 		case client := <-es.newClients:
 			es.clients[client.Chan] = struct{}{}
+			es.subsMu.Lock()
 			for _, topic := range client.Topics {
 				if _, ok := es.subscriptions[topic]; !ok {
 					es.subscriptions[topic] = make(Clients)
 				}
 				es.subscriptions[topic][client.Chan] = struct{}{}
 			}
+			es.subsMu.Unlock()
 			es.logger.Infof("Client added. %d registered clients", len(es.clients))
 
 		case client := <-es.closedClients:
+			es.subsMu.Lock()
 			for _, subscriptions := range es.subscriptions {
 				delete(subscriptions, client)
 			}
+			es.subsMu.Unlock()
 			delete(es.clients, client)
 			close(client)
 			es.logger.Infof("Removed client. %d registered clients", len(es.clients))
 
 		case eventMsg := <-es.messages:
 			for ch := range es.subscriptions[eventMsg.Topic] {
-				ch <- eventMsg
+				select {
+				case ch <- eventMsg:
+					// message sent successfully
+				default:
+					// channel closed and still not removed for some reason
+					es.subsMu.Lock()
+					delete(es.subscriptions[eventMsg.Topic], ch)
+					es.subsMu.Unlock()
+				}
 			}
 		}
 	}
@@ -126,7 +141,11 @@ func (es *EventServer) EventDispatcher() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
+		es.queueMu.Lock()
+		defer es.queueMu.Unlock()
+
 		rid := GetRequestIDFromCtx(c.Request.Context())
+		defer func() { delete(es.queuedMessages, rid) }()
 		qm := es.queuedMessages[rid]
 
 		if CtxRequestHasError(c) {

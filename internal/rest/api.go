@@ -76,6 +76,11 @@ func (h *StrictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	}
 
 	switch opID {
+	case Events:
+		return append(
+			defaultMws,
+			skipResponseValidationMw, // stream not supported
+		)
 	case MyProviderCallback:
 		return append(
 			defaultMws,

@@ -45,7 +45,7 @@ func GetSkipRequestValidationFromCtx(c *gin.Context) bool {
 	return skip
 }
 
-func GetValidateResponseFromCtx(c *gin.Context) bool {
+func GetSkipResponseValidationFromCtx(c *gin.Context) bool {
 	skip, ok := c.Value(skipResponseValidationCtxKey).(bool)
 	if !ok {
 		return false

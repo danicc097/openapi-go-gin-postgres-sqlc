@@ -4,37 +4,18 @@ package rest_test
 
 import (
 	"context"
-	"net/http"
+	"io"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-// TODO see e.g. https://dev.lucaskatayama.com/posts/go/2020/08/sse-with-gin/
-// also see sse test: https://github.com/prysmaticlabs/prysm/blob/f7cecf9f8a6dca95e021bab2fc30dd7c6d6ce760/beacon-chain/rpc/apimiddleware/custom_handlers_test.go#LL250C10-L250C10
-// complete implementation and tests: https://github.com/MarinX/go/blob/06804256ef814c8381e3f54b1c89a8c95cabb300/services/horizon/internal/render/sse/main.go
-func TestHandlers_Events(t *testing.T) {
-	// res := httptest.NewRecorder()
-	// _, engine := gin.CreateTestContext(res)
-
-	// req, _ := http.NewRequest(http.MethodGet, "/", nil)
-
-	// engine.Use(SSEHeadersMiddleware(), SSEServerMiddleware())
-
-	// engine.GET("/", func(c *gin.Context) {
-	// 	c.String(http.StatusOK, "ok")
-	// })
-	// engine.ServeHTTP(res, req)
-
-	// assert.Equal(t, tc.status, res.Code)
-	// assert.Contains(t, res.Body.String(), tc.body)
-}
 
 type StreamRecorder struct {
 	*httptest.ResponseRecorder
@@ -64,10 +45,8 @@ func TestSSEStream(t *testing.T) {
 	t.Parallel()
 
 	res := NewStreamRecorder()
-	req := httptest.NewRequest(http.MethodGet, MustConstructInternalPath("/events", WithQueryParams(models.EventsParams{ProjectName: models.ProjectDemo, Topics: []models.Topic{models.TopicGlobalAlerts}})), nil)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	req = req.WithContext(ctx)
 
 	srv, err := runTestServer(t, testPool,
 		func(c *gin.Context) {
@@ -77,15 +56,7 @@ func TestSSEStream(t *testing.T) {
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 	srv.setupCleanup(t)
 
-	// TODO: should have generated option to use a custom recorder, e.g.
-	// here must use stream recorder that implements closenotifier
-	// resp, err := srv.client.Events(ctx, &rest.EventsParams{Topics: []models.Topic{models.TopicGlobalAlerts}, ProjectName: models.ProjectDemo})
-	// require.NoError(t, err)
-	// bd, err := io.ReadAll(resp.Body)
-	// require.NoError(t, err)
-	// fmt.Printf("bd: %v\n", bd)
-
-	msg := "test-message-123"
+	publishMsg := "test-message-123"
 	stopCh := make(chan bool)
 
 	go func() {
@@ -97,8 +68,8 @@ func TestSSEStream(t *testing.T) {
 			case <-stopCh:
 				return
 			default:
-				srv.event.Publish(msg, models.TopicGlobalAlerts)
-				time.Sleep(time.Millisecond * 200)
+				srv.event.Publish(publishMsg, models.TopicGlobalAlerts)
+				time.Sleep(time.Millisecond * 50)
 			}
 		}
 	}()
@@ -109,23 +80,25 @@ func TestSSEStream(t *testing.T) {
 			case <-stopCh:
 				return
 			default:
-				srv.server.Handler.ServeHTTP(res, req)
+				res, err := srv.client.Events(ctx, res, &rest.EventsParams{Topics: []models.Topic{models.TopicGlobalAlerts}, ProjectName: models.ProjectDemo})
+				require.NoError(t, err)
+				resb, err := io.ReadAll(res.Body)
+				require.NoError(t, err)
+				t.Logf("response body: %v\n", string(resb))
 			}
 		}
 	}()
 
-	// TODO trigger events
-
-	// TODO all sse events tests should be done alongside handler tests that trigger them.
+	// TODO all internal sse events tests should be done alongside handler tests that trigger them.
 	// could have generic test helpers as well.
-	// in this file we should just unit test with a random event
+	// in this file we should just unit test with a random event, adhoc handlers...
 	if !assert.Eventually(t, func() bool {
 		if res.Body == nil {
 			return false
 		}
 		body := res.Body.String()
-		return strings.Count(body, "event:"+string(models.TopicGlobalAlerts)) >= 1 && strings.Count(body, "data:"+msg) >= 1
-	}, 10*time.Second, 100*time.Millisecond) {
+		return strings.Count(body, "event:"+string(models.TopicGlobalAlerts)) >= 1 && strings.Count(body, "data:"+publishMsg) >= 1
+	}, 5*time.Second, 200*time.Millisecond) {
 		t.Fatalf("did not receive event")
 	}
 
