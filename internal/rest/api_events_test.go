@@ -86,14 +86,23 @@ func TestSSEStream(t *testing.T) {
 	// fmt.Printf("bd: %v\n", bd)
 
 	msg := "test-message-123"
+	stopCh := make(chan bool)
+
 	go func() {
+		defer func() {
+			stopCh <- true
+		}()
 		for {
-			srv.event.Publish(msg, models.TopicGlobalAlerts)
-			time.Sleep(time.Millisecond * 200)
+			select {
+			case <-stopCh:
+				return
+			default:
+				srv.event.Publish(msg, models.TopicGlobalAlerts)
+				time.Sleep(time.Millisecond * 200)
+			}
 		}
 	}()
 
-	stopCh := make(chan bool)
 	go func() {
 		for {
 			select {

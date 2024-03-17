@@ -7,4 +7,4 @@ export_alias pr_status "gh pr status --repo danicc097/openapi-go-gin-postgres-sq
 export_alias branches.latest "git for-each-ref --sort=-authordate | grep 'refs/remotes/origin/' -m 10 | awk '{ gsub(\"refs/remotes/origin/\", \"\"); print \$3 }'"
 export_alias branches.active "git branch -r --sort=-committerdate | head -15"
 
-export_alias dependabot.rebase_all 'gh pr list --repo danicc097/openapi-go-gin-postgres-sqlc --author "dependabot[bot]" --state open --label dependencies --json "url" --jq ".[] | .url" | xargs -n 1 -I{} gh pr comment -b "@dependabot rebase" {}'
+export_alias dependabot.rebase_all 'gh pr list --repo danicc097/openapi-go-gin-postgres-sqlc --author "dependabot[bot]" --state open --label dependencies --json "id,url" --jq ".[] | .id + \" \" + .url" |  xargs -n2 sh -c '\'' gh pr comment $2 -b "@dependabot rebase" && sleep 1 && gh api graphql -f query="mutation{ updateSubscription(input: { state: UNSUBSCRIBED, subscribableId: \"$1\" }) { subscribable { viewerSubscription } } }" '\'' sh'

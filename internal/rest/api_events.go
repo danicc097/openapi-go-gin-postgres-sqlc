@@ -2,12 +2,9 @@ package rest
 
 import (
 	"context"
-	"fmt"
 	"io"
-	"log"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
@@ -75,6 +72,7 @@ func (es *EventServer) Queue(ctx context.Context, message string, topic models.T
 }
 
 func (es *EventServer) Publish(message string, topic models.Topic) {
+	es.logger.Debugf("topic %s: sending event %v", topic, message)
 	es.messages <- ClientMessage{Message: message, Topic: topic}
 }
 
@@ -89,7 +87,7 @@ func (es *EventServer) listen() {
 				}
 				es.subscriptions[topic][client.Chan] = struct{}{}
 			}
-			log.Printf("Client added. %d registered clients", len(es.clients))
+			es.logger.Infof("Client added. %d registered clients", len(es.clients))
 
 		case client := <-es.closedClients:
 			for _, subscriptions := range es.subscriptions {
@@ -97,7 +95,7 @@ func (es *EventServer) listen() {
 			}
 			delete(es.clients, client)
 			close(client)
-			log.Printf("Removed client. %d registered clients", len(es.clients))
+			es.logger.Infof("Removed client. %d registered clients", len(es.clients))
 
 		case eventMsg := <-es.messages:
 			for ch := range es.subscriptions[eventMsg.Topic] {
@@ -129,15 +127,23 @@ func (es *EventServer) EventDispatcher() gin.HandlerFunc {
 		c.Next()
 
 		rid := GetRequestIDFromCtx(c.Request.Context())
+		qm := es.queuedMessages[rid]
 
 		if CtxRequestHasError(c) {
-			es.logger.Infof("%s: skipping event dispatching due to request error", rid)
+			es.logger.Infof("request %s marked as failed", rid)
+			for _, m := range qm {
+				if m.SendOnFailedRequest {
+					es.Publish(m.Message, m.Topic)
+				}
+			}
 			c.Next()
 
 			return
 		}
 
-		es.logger.Infof("%s: would have dispatched queued events: %v\n", rid, es.queuedMessages[rid])
+		for _, m := range qm {
+			es.Publish(m.Message, m.Topic)
+		}
 
 		c.Next()
 	}
@@ -151,6 +157,9 @@ type SSEClient struct {
 type ClientMessage struct {
 	Message string
 	Topic   models.Topic
+	// SendOnFailedRequest defines whether the event should be dispatched
+	// even on failed requests.
+	SendOnFailedRequest bool
 }
 
 var r = Events200TexteventStreamResponse{Body: strings.NewReader("")}
@@ -167,7 +176,6 @@ func (h *StrictHandlers) Events(c *gin.Context, request EventsRequestObject) (Ev
 	clientChan, unsubscribe := h.event.Subscribe(request.Params.Topics)
 	defer unsubscribe()
 
-	ticker := time.NewTicker(1 * time.Second)
 	c.Stream(func(w io.Writer) bool {
 		select {
 		case msg, ok := <-clientChan.Chan:
@@ -176,12 +184,9 @@ func (h *StrictHandlers) Events(c *gin.Context, request EventsRequestObject) (Ev
 			}
 			c.SSEvent(string(msg.Topic), msg.Message)
 			return true
-		case <-ticker.C:
-			// ensure handler can return and clean up when client disconnects and no messages have been sent
-			return true
 		case <-c.Request.Context().Done():
-			fmt.Printf("Client gone. Context cancelled: %v\n", c.Request.Context().Err())
-			c.SSEvent("message", "channel closed")
+			// ensure handler can return and clean up when client disconnects and no messages have been sent
+			h.logger.Debugf("Client gone: %v\n", c.Request.Context().Err())
 
 			return false
 		}
