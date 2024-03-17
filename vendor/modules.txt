@@ -119,8 +119,8 @@ github.com/gin-gonic/gin/binding
 github.com/gin-gonic/gin/internal/bytesconv
 github.com/gin-gonic/gin/internal/json
 github.com/gin-gonic/gin/render
-# github.com/go-jet/jet/v2 v2.10.1
-## explicit; go 1.11
+# github.com/go-jet/jet/v2 v2.11.0
+## explicit; go 1.18
 github.com/go-jet/jet/v2/generator/metadata
 github.com/go-jet/jet/v2/generator/postgres
 github.com/go-jet/jet/v2/generator/template
@@ -263,6 +263,9 @@ github.com/jackc/pgproto3/v2
 # github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a
 ## explicit; go 1.14
 github.com/jackc/pgservicefile
+# github.com/jackc/pgtype v1.14.0
+## explicit; go 1.13
+github.com/jackc/pgtype
 # github.com/jackc/pgx-zap v0.0.0-20221202020421-94b1cb2f889f
 ## explicit; go 1.17
 github.com/jackc/pgx-zap
