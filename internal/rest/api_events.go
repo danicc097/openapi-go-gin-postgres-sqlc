@@ -129,15 +129,23 @@ func (es *EventServer) EventDispatcher() gin.HandlerFunc {
 		c.Next()
 
 		rid := GetRequestIDFromCtx(c.Request.Context())
+		qm := es.queuedMessages[rid]
 
 		if CtxRequestHasError(c) {
-			es.logger.Infof("%s: skipping event dispatching due to request error", rid)
+			es.logger.Infof("request %s marked as failed", rid)
+			for _, m := range qm {
+				if m.SendOnFailedRequest {
+					es.logger.Infof("topic %s: sending event %v", m.Topic, m.Message)
+				}
+			}
 			c.Next()
 
 			return
 		}
 
-		es.logger.Infof("%s: would have dispatched queued events: %v\n", rid, es.queuedMessages[rid])
+		for _, m := range qm {
+			es.logger.Infof("topic %s: sending event %v", m.Topic, m.Message)
+		}
 
 		c.Next()
 	}
@@ -151,6 +159,9 @@ type SSEClient struct {
 type ClientMessage struct {
 	Message string
 	Topic   models.Topic
+	// SendOnFailedRequest defines whether the event should be dispatched
+	// even on failed requests.
+	SendOnFailedRequest bool
 }
 
 var r = Events200TexteventStreamResponse{Body: strings.NewReader("")}
