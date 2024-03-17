@@ -42,6 +42,8 @@ func TestMain(m *testing.M) {
 }
 
 func testMain(m *testing.M) int {
+	gin.SetMode(gin.TestMode)
+
 	testutil.Setup()
 	// call flag.Parse() here if TestMain uses flags
 	var err error
@@ -78,8 +80,6 @@ func (s *testServer) setupCleanup(t *testing.T) {
 // We will require different middlewares depending on the test case, so a shared global instance
 // is not possible.
 func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.HandlerFunc) (*testServer, error) {
-	gin.SetMode(gin.TestMode)
-
 	t.Helper()
 
 	ctx := context.Background()
