@@ -562,7 +562,7 @@ export interface components {
      * @description string identifiers for SSE event listeners.
      * @enum {string}
      */
-    Topic: "WorkItemUpdated" | "GlobalAlerts";
+    Topic: "WorkItemUpdated" | "TeamCreated" | "GlobalAlerts";
     /**
      * @description is generated from scopes.json keys.
      * @enum {string}

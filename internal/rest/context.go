@@ -31,8 +31,8 @@ const (
 type requestIDCtxKey struct{}
 
 // NOTE: request ID is set on Request context since it may be used by services.
-func GetRequestIDFromCtx(c context.Context) string {
-	requestID, _ := c.Value(requestIDCtxKey{}).(string)
+func GetRequestIDFromCtx(ctx context.Context) string {
+	requestID, _ := ctx.Value(requestIDCtxKey{}).(string)
 	return requestID
 }
 

@@ -1,10 +1,12 @@
 package rest
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -35,11 +37,15 @@ channel use cases,etc:
 type Clients map[chan ClientMessage]struct{}
 
 type EventServer struct {
-	logger        *zap.SugaredLogger
-	messages      chan ClientMessage
-	newClients    chan SSEClient
-	closedClients chan chan ClientMessage
-	subscriptions map[models.Topic]Clients
+	mu sync.RWMutex
+
+	logger *zap.SugaredLogger
+	// queuedMessages are pending messages for a given X-Request-ID.
+	queuedMessages map[string][]ClientMessage
+	messages       chan ClientMessage
+	newClients     chan SSEClient
+	closedClients  chan chan ClientMessage
+	subscriptions  map[models.Topic]Clients
 	// clients represents all connected clients
 	clients Clients
 }
@@ -47,12 +53,13 @@ type EventServer struct {
 // NewEventServer returns an SSE server and starts listening for messages.
 func NewEventServer(logger *zap.SugaredLogger) *EventServer {
 	es := &EventServer{
-		logger:        logger,
-		messages:      make(chan ClientMessage),
-		newClients:    make(chan SSEClient),
-		closedClients: make(chan chan ClientMessage),
-		subscriptions: make(map[models.Topic]Clients),
-		clients:       make(Clients),
+		logger:         logger,
+		messages:       make(chan ClientMessage),
+		queuedMessages: map[string][]ClientMessage{},
+		newClients:     make(chan SSEClient),
+		closedClients:  make(chan chan ClientMessage),
+		subscriptions:  make(map[models.Topic]Clients),
+		clients:        make(Clients),
 	}
 
 	go es.listen()
@@ -60,12 +67,16 @@ func NewEventServer(logger *zap.SugaredLogger) *EventServer {
 	return es
 }
 
+func (es *EventServer) Queue(ctx context.Context, message string, topic models.Topic) {
+	es.mu.Lock()
+	defer es.mu.Unlock()
+
+	rid := GetRequestIDFromCtx(ctx)
+
+	es.queuedMessages[rid] = append(es.queuedMessages[rid], ClientMessage{Message: message, Topic: topic})
+}
+
 func (es *EventServer) Publish(message string, topic models.Topic) {
-	/**
-	 * TODO: instead of using Publish, add events to queue via Queue(message, topic) and dispatch later based on x-request-id (not user id since some events may
-	 *  not have authenticated user, e.g. upon registering the first time we may require manual verification, etc.)
-	 * the Queue method (and all other public ones) will accept c.Request.Context, where req id is set
-	 */
 	es.messages <- ClientMessage{Message: message, Topic: topic}
 }
 
@@ -122,13 +133,13 @@ func (es *EventServer) EventDispatcher() gin.HandlerFunc {
 		rid := GetRequestIDFromCtx(c.Request.Context())
 
 		if CtxRequestHasError(c) {
-			es.logger.Infof("%s: skipping event dispatching events due to request error", rid)
+			es.logger.Infof("%s: skipping event dispatching due to request error", rid)
 			c.Next()
 
 			return
 		}
 
-		es.logger.Infof("%s: would have dispatched queued events\n", rid)
+		es.logger.Infof("%s: would have dispatched queued events: %v\n", rid, es.queuedMessages[rid])
 
 		c.Next()
 	}

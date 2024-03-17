@@ -3215,6 +3215,7 @@
         "type": "string",
         "enum": [
           "WorkItemUpdated",
+          "TeamCreated",
           "GlobalAlerts"
         ]
       },
@@ -3225,6 +3226,7 @@
       "type": "string",
       "enum": [
         "WorkItemUpdated",
+        "TeamCreated",
         "GlobalAlerts"
       ]
     },
@@ -9531,6 +9533,7 @@
         "type": "string",
         "enum": [
           "WorkItemUpdated",
+          "TeamCreated",
           "GlobalAlerts"
         ]
       },
@@ -9541,6 +9544,7 @@
       "type": "string",
       "enum": [
         "WorkItemUpdated",
+        "TeamCreated",
         "GlobalAlerts"
       ]
     },

@@ -223,6 +223,7 @@ func AllScopeValues() []Scope {
 // Topic string identifiers for SSE event listeners.
 const (
 	TopicGlobalAlerts    Topic = "GlobalAlerts"
+	TopicTeamCreated     Topic = "TeamCreated"
 	TopicWorkItemUpdated Topic = "WorkItemUpdated"
 )
 
@@ -230,6 +231,7 @@ const (
 func AllTopicValues() []Topic {
 	return []Topic{
 		TopicGlobalAlerts,
+		TopicTeamCreated,
 		TopicWorkItemUpdated,
 	}
 }

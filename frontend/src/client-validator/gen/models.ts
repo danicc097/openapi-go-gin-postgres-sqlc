@@ -89,7 +89,7 @@ export type Location1 = string[]
 /**
  * string identifiers for SSE event listeners.
  */
-export type Topic = 'WorkItemUpdated' | 'GlobalAlerts'
+export type Topic = 'WorkItemUpdated' | 'TeamCreated' | 'GlobalAlerts'
 export type Topics = Topic[]
 export type UuidUUID = string
 export type WorkItem = DemoWorkItem | DemoTwoWorkItem
