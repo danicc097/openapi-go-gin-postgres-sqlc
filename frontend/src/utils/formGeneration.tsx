@@ -98,6 +98,7 @@ import RandExp, { randexp } from 'randexp'
 import type { FormField, SchemaKey } from 'src/utils/form'
 import { inputBuilder, selectOptionsBuilder, useDynamicFormContext } from 'src/utils/formGeneration.context'
 import { useCalloutErrors } from 'src/components/Callout/useCalloutErrors'
+import { IconAlertCircle } from '@tabler/icons-react'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
 
@@ -709,6 +710,8 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   const selectOptions = options.selectOptions?.[schemaKey]
   const selectRef = useRef<HTMLInputElement | null>(null)
   const [customElMinHeight, setCustomElMinHeight] = useState(34.5)
+  const formSlice = useFormSlice()
+  const warning = formSlice.form[formName]?.customWarnings[formField]
 
   const { ref: focusRef, focused: selectFocused } = useFocusWithin()
 
@@ -771,6 +774,13 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         formFieldComponent = (
           <TextInput
             onChange={(e) => registerOnChange({ target: { name: formField, value: e.target.value } })}
+            rightSection={
+              warning && (
+                <Tooltip withinPortal label={warning} position="top-end" withArrow>
+                  <IconAlertCircle size={'18'} color="yellow" />
+                </Tooltip>
+              )
+            }
             {..._props}
           />
         )
@@ -1204,6 +1214,8 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
 
   const parentSchemaKey = schemaKey.split('.').slice(0, -1).join('.') as SchemaKey
 
+  const warning = formSlice.form[formName]?.customWarnings[formField]
+
   return (
     <Box w={'100%'}>
       <Combobox
@@ -1249,7 +1261,16 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
             {selectedOption ? (
               comboboxOptionTemplate(selectOptions.optionTransformer, selectedOption)
             ) : (
-              <Input.Placeholder>{`Pick ${singularize(lowerFirst(itemName))}`}</Input.Placeholder>
+              <Input.Placeholder>
+                <Flex direction="row" justify="space-between" align="center">
+                  <Text size="sm">{`Pick ${singularize(lowerFirst(itemName))}`}</Text>
+                  {warning && (
+                    <Tooltip withinPortal label={warning} position="top-end" withArrow>
+                      <IconAlertCircle size={'18'} color="yellow" />
+                    </Tooltip>
+                  )}
+                </Flex>
+              </Input.Placeholder>
             )}
           </InputBase>
         </Combobox.Target>

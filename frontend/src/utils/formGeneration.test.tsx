@@ -133,7 +133,10 @@ const formInitialValues = {
     // therefore its element input id does not exist
     { userID: 'a446259c-1083-4212-98fe-bd080c41e7d7' },
     // userid does not exist in selectOptions users -> will show empty input directly instead
-    // TODO: should show warning on top of form
+    // and a warning on top of form. TODO: mantine input element should have a warning mode, exactly as current errors but just in yellow.
+    // it should just be a rightSection alert icon with popover saying the same as the
+    // callout box. no need for css and setting classlists on helptext, borders, etc.
+
     { role: 'reviewer', userID: 'b446259c-1083-4212-98fe-bd080c41e7d7' },
   ],
 } as TestTypes.DemoWorkItemCreateRequest
