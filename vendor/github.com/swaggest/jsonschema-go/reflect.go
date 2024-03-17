@@ -129,24 +129,13 @@ func checkSchemaSetup(params InterceptSchemaParams) (bool, error) {
 	v := params.Value
 	s := params.Schema
 
-	vi := v.Interface()
-	if v.Kind() == reflect.Ptr && v.IsNil() {
-		vi = reflect.New(v.Type().Elem()).Interface()
-	}
-
-	vpi := reflect.New(v.Type()).Interface()
-
-	reflectEnum(s, "", vi)
+	reflectEnum(s, "", v.Interface())
 
 	var e Exposer
 
-	if exposer, ok := vi.(Exposer); ok {
+	if exposer, ok := safeInterface(v).(Exposer); ok {
 		e = exposer
-	}
-
-	if exposer, ok := vi.(Exposer); ok {
-		e = exposer
-	} else if exposer, ok := vpi.(Exposer); ok {
+	} else if exposer, ok := ptrTo(v).(Exposer); ok {
 		e = exposer
 	}
 
@@ -164,9 +153,9 @@ func checkSchemaSetup(params InterceptSchemaParams) (bool, error) {
 	var re RawExposer
 
 	// Checking if RawExposer is defined on a current value.
-	if exposer, ok := vi.(RawExposer); ok {
+	if exposer, ok := safeInterface(v).(RawExposer); ok {
 		re = exposer
-	} else if exposer, ok := vpi.(RawExposer); ok { // Checking if RawExposer is defined on a pointer to current value.
+	} else if exposer, ok := ptrTo(v).(RawExposer); ok { // Checking if RawExposer is defined on a pointer to current value.
 		re = exposer
 	}
 
@@ -176,10 +165,14 @@ func checkSchemaSetup(params InterceptSchemaParams) (bool, error) {
 			return true, err
 		}
 
-		err = json.Unmarshal(schemaBytes, s)
+		var rs Schema
+
+		err = json.Unmarshal(schemaBytes, &rs)
 		if err != nil {
 			return true, err
 		}
+
+		*s = rs
 
 		return true, nil
 	}
@@ -387,7 +380,9 @@ func (r *Reflector) reflectDefer(defName string, typeString refl.TypeString, rc 
 }
 
 func (r *Reflector) checkTitle(v reflect.Value, s *Struct, schema *Schema) {
-	if vd, ok := v.Interface().(Described); ok {
+	if vd, ok := safeInterface(v).(Described); ok {
+		schema.WithDescription(vd.Description())
+	} else if vd, ok := ptrTo(v).(Described); ok {
 		schema.WithDescription(vd.Description())
 	}
 
@@ -395,7 +390,9 @@ func (r *Reflector) checkTitle(v reflect.Value, s *Struct, schema *Schema) {
 		schema.WithDescription(*s.Description)
 	}
 
-	if vt, ok := v.Interface().(Titled); ok {
+	if vt, ok := safeInterface(v).(Titled); ok {
+		schema.WithTitle(vt.Title())
+	} else if vt, ok := ptrTo(v).(Titled); ok {
 		schema.WithTitle(vt.Title())
 	}
 
@@ -532,7 +529,11 @@ func (r *Reflector) reflect(i interface{}, rc *ReflectContext, keepType bool, pa
 		}
 	}
 
-	if preparer, ok := v.Interface().(Preparer); ok {
+	if preparer, ok := safeInterface(v).(Preparer); ok {
+		err := preparer.PrepareJSONSchema(sp)
+
+		return schema, err
+	} else if preparer, ok := ptrTo(v).(Preparer); ok {
 		err := preparer.PrepareJSONSchema(sp)
 
 		return schema, err
@@ -555,18 +556,49 @@ func checkTextMarshaler(t reflect.Type, schema *Schema) bool {
 	return false
 }
 
-func (r *Reflector) applySubSchemas(v reflect.Value, rc *ReflectContext, schema *Schema) error {
-	vi := v.Interface()
+func safeInterface(v reflect.Value) interface{} {
+	if !v.IsValid() {
+		return nil
+	}
 
+	if v.Kind() == reflect.Ptr && !v.Elem().IsValid() {
+		v = reflect.New(v.Type().Elem())
+	}
+
+	return v.Interface()
+}
+
+func ptrTo(v reflect.Value) interface{} {
+	if !v.IsValid() {
+		return nil
+	}
+
+	rd := reflect.New(v.Type())
+	rd.Elem().Set(v)
+
+	return rd.Interface()
+}
+
+func (r *Reflector) applySubSchemas(v reflect.Value, rc *ReflectContext, schema *Schema) error {
+	vi := safeInterface(v)
+	vp := ptrTo(v)
+
+	var oe OneOfExposer
 	if e, ok := vi.(OneOfExposer); ok {
+		oe = e
+	} else if e, ok := vp.(OneOfExposer); ok {
+		oe = e
+	}
+
+	if oe != nil {
 		var schemas []SchemaOrBool
 
-		for _, item := range e.JSONSchemaOneOf() {
+		for _, item := range oe.JSONSchemaOneOf() {
 			rc.Path = append(rc.Path, "oneOf")
 
 			s, err := r.reflect(item, rc, false, schema)
 			if err != nil {
-				return fmt.Errorf("failed to reflect 'oneOf' values of %T: %w", vi, err)
+				return fmt.Errorf("failed to reflect 'oneOf' values of %T: %w", oe, err)
 			}
 
 			schemas = append(schemas, s.ToSchemaOrBool())
@@ -575,15 +607,22 @@ func (r *Reflector) applySubSchemas(v reflect.Value, rc *ReflectContext, schema 
 		schema.OneOf = schemas
 	}
 
+	var ane AnyOfExposer
 	if e, ok := vi.(AnyOfExposer); ok {
+		ane = e
+	} else if e, ok := vp.(AnyOfExposer); ok {
+		ane = e
+	}
+
+	if ane != nil {
 		var schemas []SchemaOrBool
 
-		for _, item := range e.JSONSchemaAnyOf() {
+		for _, item := range ane.JSONSchemaAnyOf() {
 			rc.Path = append(rc.Path, "anyOf")
 
 			s, err := r.reflect(item, rc, false, schema)
 			if err != nil {
-				return fmt.Errorf("failed to reflect 'anyOf' values of %T: %w", vi, err)
+				return fmt.Errorf("failed to reflect 'anyOf' values of %T: %w", ane, err)
 			}
 
 			schemas = append(schemas, s.ToSchemaOrBool())
@@ -592,15 +631,22 @@ func (r *Reflector) applySubSchemas(v reflect.Value, rc *ReflectContext, schema 
 		schema.AnyOf = schemas
 	}
 
+	var ale AllOfExposer
 	if e, ok := vi.(AllOfExposer); ok {
+		ale = e
+	} else if e, ok := vp.(AllOfExposer); ok {
+		ale = e
+	}
+
+	if ale != nil {
 		var schemas []SchemaOrBool
 
-		for _, item := range e.JSONSchemaAllOf() {
+		for _, item := range ale.JSONSchemaAllOf() {
 			rc.Path = append(rc.Path, "allOf")
 
 			s, err := r.reflect(item, rc, false, schema)
 			if err != nil {
-				return fmt.Errorf("failed to reflect 'allOf' values of %T: %w", vi, err)
+				return fmt.Errorf("failed to reflect 'allOf' values of %T: %w", ale, err)
 			}
 
 			schemas = append(schemas, s.ToSchemaOrBool())
@@ -609,45 +655,73 @@ func (r *Reflector) applySubSchemas(v reflect.Value, rc *ReflectContext, schema 
 		schema.AllOf = schemas
 	}
 
+	var ne NotExposer
 	if e, ok := vi.(NotExposer); ok {
+		ne = e
+	} else if e, ok := vp.(NotExposer); ok {
+		ne = e
+	}
+
+	if ne != nil {
 		rc.Path = append(rc.Path, "not")
 
-		s, err := r.reflect(e.JSONSchemaNot(), rc, false, schema)
+		s, err := r.reflect(ne.JSONSchemaNot(), rc, false, schema)
 		if err != nil {
-			return fmt.Errorf("failed to reflect 'not' value of %T: %w", vi, err)
+			return fmt.Errorf("failed to reflect 'not' value of %T: %w", ne, err)
 		}
 
 		schema.WithNot(s.ToSchemaOrBool())
 	}
 
+	var ie IfExposer
 	if e, ok := vi.(IfExposer); ok {
+		ie = e
+	} else if e, ok := vp.(IfExposer); ok {
+		ie = e
+	}
+
+	if ie != nil {
 		rc.Path = append(rc.Path, "if")
 
-		s, err := r.reflect(e.JSONSchemaIf(), rc, false, schema)
+		s, err := r.reflect(ie.JSONSchemaIf(), rc, false, schema)
 		if err != nil {
-			return fmt.Errorf("failed to reflect 'if' value of %T: %w", vi, err)
+			return fmt.Errorf("failed to reflect 'if' value of %T: %w", ie, err)
 		}
 
 		schema.WithIf(s.ToSchemaOrBool())
 	}
 
+	var te ThenExposer
 	if e, ok := vi.(ThenExposer); ok {
+		te = e
+	} else if e, ok := vp.(ThenExposer); ok {
+		te = e
+	}
+
+	if te != nil {
 		rc.Path = append(rc.Path, "if")
 
-		s, err := r.reflect(e.JSONSchemaThen(), rc, false, schema)
+		s, err := r.reflect(te.JSONSchemaThen(), rc, false, schema)
 		if err != nil {
-			return fmt.Errorf("failed to reflect 'then' value of %T: %w", vi, err)
+			return fmt.Errorf("failed to reflect 'then' value of %T: %w", te, err)
 		}
 
 		schema.WithThen(s.ToSchemaOrBool())
 	}
 
+	var ee ElseExposer
 	if e, ok := vi.(ElseExposer); ok {
+		ee = e
+	} else if e, ok := vp.(ElseExposer); ok {
+		ee = e
+	}
+
+	if ee != nil {
 		rc.Path = append(rc.Path, "if")
 
-		s, err := r.reflect(e.JSONSchemaElse(), rc, false, schema)
+		s, err := r.reflect(ee.JSONSchemaElse(), rc, false, schema)
 		if err != nil {
-			return fmt.Errorf("failed to reflect 'else' value of %T: %w", vi, err)
+			return fmt.Errorf("failed to reflect 'else' value of %T: %w", ee, err)
 		}
 
 		schema.WithElse(s.ToSchemaOrBool())
@@ -682,6 +756,10 @@ func (r *Reflector) defName(rc *ReflectContext, t reflect.Type) string {
 	}
 
 	if t.Implements(typeOfSchemaInliner) {
+		return ""
+	}
+
+	if t.Kind() == reflect.Func {
 		return ""
 	}
 
@@ -972,6 +1050,12 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 				parent.AdditionalProperties = &SchemaOrBool{TypeBoolean: additionalProperties}
 			}
 
+			if !rc.SkipNonConstraints {
+				if err := reflectExamples(rc, parent, field); err != nil {
+					return err
+				}
+			}
+
 			continue
 		}
 
@@ -1066,7 +1150,7 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 		}
 
 		if !rc.SkipNonConstraints {
-			if err := reflectExamples(&propertySchema, field); err != nil {
+			if err := reflectExamples(rc, &propertySchema, field); err != nil {
 				return err
 			}
 		}
@@ -1109,57 +1193,36 @@ func (r *Reflector) walkProperties(v reflect.Value, parent *Schema, rc *ReflectC
 }
 
 func checkInlineValue(propertySchema *Schema, field reflect.StructField, tag string, setter func(interface{}) *Schema) error {
-	var val interface{}
+	var (
+		val interface{}
+		t   SimpleType
 
-	var t SimpleType
+		i *int64
+		f *float64
+		s *string
+		b *bool
+	)
+
 	if propertySchema.Type != nil && propertySchema.Type.SimpleTypes != nil {
 		t = *propertySchema.Type.SimpleTypes
 	}
 
-	switch t { //nolint:exhaustive // Covered by default case.
-	case Integer:
-		var v *int64
+	_ = refl.ReadIntPtrTag(field.Tag, tag, &i)   //nolint:errcheck
+	_ = refl.ReadFloatPtrTag(field.Tag, tag, &f) //nolint:errcheck
+	_ = refl.ReadBoolPtrTag(field.Tag, tag, &b)  //nolint:errcheck
+	refl.ReadStringPtrTag(field.Tag, tag, &s)
 
-		if err := refl.ReadIntPtrTag(field.Tag, tag, &v); err != nil {
-			return fmt.Errorf("parsing %s for %s: %w", tag, t, err)
-		}
-
-		if v != nil {
-			val = *v
-		}
-	case Number:
-		var v *float64
-
-		if err := refl.ReadFloatPtrTag(field.Tag, tag, &v); err != nil {
-			return fmt.Errorf("parsing %s for %s: %w", tag, t, err)
-		}
-
-		if v != nil {
-			val = *v
-		}
-
-	case String:
-		var v *string
-
-		refl.ReadStringPtrTag(field.Tag, tag, &v)
-
-		if v != nil {
-			val = *v
-		}
-
-	case Boolean:
-		var v *bool
-
-		if err := refl.ReadBoolPtrTag(field.Tag, tag, &v); err != nil {
-			return fmt.Errorf("parsing %s for %s: %w", tag, t, err)
-		}
-
-		if v != nil {
-			val = *v
-		}
-	case Null:
+	switch {
+	case propertySchema.HasType(Number) && f != nil:
+		val = *f
+	case propertySchema.HasType(Integer) && i != nil:
+		val = *i
+	case propertySchema.HasType(Boolean) && b != nil:
+		val = *b
+	case propertySchema.HasType(String) && s != nil:
+		val = *s
+	case t == Null:
 		// No default for type null.
-
 	default:
 		var v string
 
@@ -1268,8 +1331,8 @@ func checkNullability(propertySchema *Schema, rc *ReflectContext, ft reflect.Typ
 	}
 }
 
-func reflectExamples(propertySchema *Schema, field reflect.StructField) error {
-	if err := reflectExample(propertySchema, field); err != nil {
+func reflectExamples(rc *ReflectContext, propertySchema *Schema, field reflect.StructField) error {
+	if err := reflectExample(rc, propertySchema, field); err != nil {
 		return err
 	}
 
@@ -1288,57 +1351,12 @@ func reflectExamples(propertySchema *Schema, field reflect.StructField) error {
 	return nil
 }
 
-func reflectExample(propertySchema *Schema, field reflect.StructField) error {
-	var val interface{}
-
-	switch {
-	case propertySchema.HasType(String):
-		var example *string
-
-		refl.ReadStringPtrTag(field.Tag, "example", &example)
-
-		if example != nil {
-			val = *example
-		}
-	case propertySchema.HasType(Number) && val == nil:
-		var example *float64
-
-		if err := refl.ReadFloatPtrTag(field.Tag, "example", &example); err != nil {
-			return err
-		}
-
-		if example != nil {
-			val = *example
-		}
-	case propertySchema.HasType(Integer) && val == nil:
-		var example *int64
-
-		if err := refl.ReadIntPtrTag(field.Tag, "example", &example); err != nil {
-			return err
-		}
-
-		if example != nil {
-			val = *example
-		}
-	case propertySchema.HasType(Boolean) && val == nil:
-		var example *bool
-
-		if err := refl.ReadBoolPtrTag(field.Tag, "example", &example); err != nil {
-			return err
-		}
-
-		if example != nil {
-			val = *example
-		}
-	case propertySchema.HasType(Array) && val == nil && propertySchema.Items != nil &&
-		propertySchema.Items.SchemaOrBool != nil && propertySchema.Items.SchemaOrBool.TypeObject != nil:
-		return reflectExample(propertySchema.Items.SchemaOrBool.TypeObject, field)
-	default:
-		return nil
-	}
-
-	if val != nil {
-		propertySchema.Examples = append(propertySchema.Examples, val)
+func reflectExample(rc *ReflectContext, propertySchema *Schema, field reflect.StructField) error {
+	err := checkInlineValue(propertySchema, field, "example", func(i interface{}) *Schema {
+		return propertySchema.WithExamples(i)
+	})
+	if err != nil {
+		return fmt.Errorf("%s: %w", strings.Join(append(rc.Path[1:], field.Name), "."), err)
 	}
 
 	return nil
@@ -1368,11 +1386,17 @@ type enum struct {
 
 // loadFromField loads enum from field tag: json array or comma-separated string.
 func (enum *enum) loadFromField(fieldTag reflect.StructTag, fieldVal interface{}) {
-	if e, isEnumer := fieldVal.(NamedEnum); isEnumer {
+	fv := reflect.ValueOf(fieldVal)
+
+	if e, isEnumer := safeInterface(fv).(NamedEnum); isEnumer {
+		enum.items, enum.names = e.NamedEnum()
+	} else if e, isEnumer := ptrTo(fv).(NamedEnum); isEnumer {
 		enum.items, enum.names = e.NamedEnum()
 	}
 
-	if e, isEnumer := fieldVal.(Enum); isEnumer {
+	if e, isEnumer := safeInterface(fv).(Enum); isEnumer {
+		enum.items = e.Enum()
+	} else if e, isEnumer := ptrTo(fv).(Enum); isEnumer {
 		enum.items = e.Enum()
 	}
 
