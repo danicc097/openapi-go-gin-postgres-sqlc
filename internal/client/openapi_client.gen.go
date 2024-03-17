@@ -33,6 +33,13 @@ type HttpRequestDoer interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
+// ResponseRecorder records HTTP requests.
+// It is implemented by httptest.ResponseRecorder.
+type ResponseRecorder interface {
+	http.ResponseWriter
+	Result() *http.Response
+}
+
 // Client which conforms to the OpenAPI3 specification for this service.
 type Client struct {
 	// The endpoint of the server conforming to this interface, with scheme,

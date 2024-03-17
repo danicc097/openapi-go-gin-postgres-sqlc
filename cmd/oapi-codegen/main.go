@@ -26,6 +26,8 @@ type configuration struct {
 	// OutputFile is the filename to output.
 	OutputFile       string `yaml:"output,omitempty"`
 	ExcludeRestTypes bool   `yaml:"exclude-rest-types,omitempty"`
+	// TestClient defines whether the generated code is a client for testing purposes.
+	TestClient bool `yaml:"test-client,omitempty"`
 }
 
 //go:embed oapi-templates
@@ -98,6 +100,9 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 	}
 	// include other template functions, if any
 	templateFunctions := template.FuncMap{
+		"is_test_client": func() bool {
+			return config.TestClient
+		},
 		"exclude_rest_types": func() bool {
 			return config.ExcludeRestTypes
 		},
