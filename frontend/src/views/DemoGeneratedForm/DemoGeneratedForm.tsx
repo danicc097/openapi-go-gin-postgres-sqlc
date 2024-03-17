@@ -1,6 +1,6 @@
 import { Title, Button, Text, Flex, Group, Container } from '@mantine/core'
 import DynamicForm from 'src/utils/formGeneration'
-import type { CreateWorkItemTagRequest, DbWorkItemTag } from 'src/gen/model'
+import { Topic, type CreateWorkItemTagRequest, type DbWorkItemTag } from 'src/gen/model'
 import { FormProvider, useForm } from 'react-hook-form'
 import { ajvResolver } from '@hookform/resolvers/ajv'
 import dayjs from 'dayjs'
@@ -21,6 +21,8 @@ import { WorkItemTagID, ProjectID } from 'src/gen/entity-ids'
 import { selectOptionsBuilder } from 'src/utils/formGeneration.context'
 import { parseSchemaFields } from 'src/utils/jsonSchema'
 import { JSONSchema4 } from 'json-schema'
+import { apiPath } from 'src/services/apiPaths'
+import qs from 'qs'
 
 const schema: JSONSchema4 = {
   properties: {
@@ -208,7 +210,15 @@ export default function DemoGeneratedForm() {
   const [cursor, setCursor] = useState(new Date().toISOString())
 
   useEffect(() => {
-    const sse = new EventSource('https://localhost:8090/v2/events?projectName=demo', { withCredentials: true })
+    const sse = new EventSource(
+      `${apiPath('/events')}?${qs.stringify(
+        { projectName: 'demo', topics: [Topic.GlobalAlerts, Topic.TeamCreated, Topic.AppDebug] },
+        { arrayFormat: 'repeat' },
+      )}`,
+      {
+        withCredentials: true,
+      },
+    )
     function getRealtimeData(data) {
       console.log({ dataSSE: data })
     }

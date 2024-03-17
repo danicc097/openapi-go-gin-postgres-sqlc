@@ -2373,6 +2373,7 @@ components:
         # When a work item or related entities are updated, ie calling AssignUser, AssignTags...
         # subscribers will receive a rest WorkItem with appropiate joins.
         # we can notifications when workitem where member is current user is updated
+        - AppDebug
         - WorkItemUpdated
         - TeamCreated
         - GlobalAlerts
