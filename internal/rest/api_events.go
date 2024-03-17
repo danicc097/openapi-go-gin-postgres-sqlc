@@ -27,8 +27,6 @@ evtSource.addEventListener(<Event name>, (e) => {
 });
 
 
-TODO for actual implementation see: https://eli.thegreenplace.net/2020/pubsub-using-channels-in-go/
-
 channel use cases,etc:
  - https://go101.org/article/channel-use-cases.html
  - https://go101.org/article/channel.html
