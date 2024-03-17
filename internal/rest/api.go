@@ -103,7 +103,8 @@ func (h *StrictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	dbMw := newDBMiddleware(h.logger, h.pool)
 	tracingMw := newTracingMiddleware()
 
-	defaultMws := []gin.HandlerFunc{tracingMw.RequestIDMiddleware("my-app")}
+	// event cleanup will be the last to run
+	defaultMws := []gin.HandlerFunc{h.event.EventDispatcher(), tracingMw.RequestIDMiddleware("my-app")}
 
 	ignoredOperationID := opID == MyProviderLogin || opID == Events
 
@@ -112,13 +113,6 @@ func (h *StrictHandlers) middlewares(opID OperationID) []gin.HandlerFunc {
 	}
 
 	switch opID {
-	case Events:
-		// TODO: last mw should be event dispatcher middleware, that will dispatch pending ones
-		// if renderErrorResponse was not called, ie !CtxHasErrorResponse()
-		return append(
-			defaultMws,
-			// skipRequestValidationMw,
-		)
 	case MyProviderCallback:
 		return append(
 			defaultMws,

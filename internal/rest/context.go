@@ -134,13 +134,14 @@ func GetUserDataFromCtx(c context.Context) any {
 	return c.Value(userDataCtxKey)
 }
 
-func CtxHasErrorResponse(c *gin.Context) bool {
+// CtxRequestHasError returns whether the current request has an error.
+func CtxRequestHasError(c *gin.Context) bool {
 	_, ok := c.Value(errorCtxKey).(struct{})
 
 	return ok
 }
 
-// ctxWithErrorResponse signals current request will receive an error.
-func ctxWithErrorResponse(c *gin.Context) {
+// ctxWithRequestError signals that the current request has an error.
+func ctxWithRequestError(c *gin.Context) {
 	c.Set(errorCtxKey, struct{}{})
 }

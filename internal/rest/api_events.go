@@ -9,6 +9,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 /**
@@ -34,12 +35,29 @@ channel use cases,etc:
 type Clients map[chan ClientMessage]struct{}
 
 type EventServer struct {
+	logger        *zap.SugaredLogger
 	messages      chan ClientMessage
 	newClients    chan SSEClient
 	closedClients chan chan ClientMessage
 	subscriptions map[models.Topic]Clients
 	// clients represents all connected clients
 	clients Clients
+}
+
+// NewEventServer returns an SSE server and starts listening for messages.
+func NewEventServer(logger *zap.SugaredLogger) *EventServer {
+	es := &EventServer{
+		logger:        logger,
+		messages:      make(chan ClientMessage),
+		newClients:    make(chan SSEClient),
+		closedClients: make(chan chan ClientMessage),
+		subscriptions: make(map[models.Topic]Clients),
+		clients:       make(Clients),
+	}
+
+	go es.listen()
+
+	return es
 }
 
 func (es *EventServer) Publish(message string, topic models.Topic) {
@@ -96,18 +114,24 @@ func (es *EventServer) Subscribe(topics models.Topics) (client SSEClient, unsubs
 	}
 }
 
-func newSSEServer() *EventServer {
-	es := &EventServer{
-		messages:      make(chan ClientMessage),
-		newClients:    make(chan SSEClient),
-		closedClients: make(chan chan ClientMessage),
-		subscriptions: make(map[models.Topic]Clients),
-		clients:       make(Clients),
+// EventDispatcher represents middleware whose cleanup fires pending events for a request.
+func (es *EventServer) EventDispatcher() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+
+		rid := GetRequestIDFromCtx(c.Request.Context())
+
+		if CtxRequestHasError(c) {
+			es.logger.Infof("%s: skipping event dispatching events due to request error", rid)
+			c.Next()
+
+			return
+		}
+
+		es.logger.Infof("%s: would have dispatched queued events\n", rid)
+
+		c.Next()
 	}
-
-	go es.listen()
-
-	return es
 }
 
 type SSEClient struct {

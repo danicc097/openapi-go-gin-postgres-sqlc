@@ -202,7 +202,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	authmw := NewAuthMiddleware(conf.Logger, conf.Pool, svcs)
 	_ = authmw
 	_ = provider
-	event := newSSEServer()
+	event := NewEventServer(conf.Logger)
 	handlers := NewStrictHandlers(
 		conf.Logger,
 		conf.Pool,
