@@ -63,6 +63,7 @@ func NewEventServer(logger *zap.SugaredLogger) *EventServer {
 	return es
 }
 
+// Queue saves an event for later publishing.
 func (es *EventServer) Queue(ctx context.Context, message string, topic models.Topic) {
 	es.queueMu.Lock()
 	defer es.queueMu.Unlock()
@@ -72,6 +73,7 @@ func (es *EventServer) Queue(ctx context.Context, message string, topic models.T
 	es.queuedMessages[rid] = append(es.queuedMessages[rid], ClientMessage{Message: message, Topic: topic})
 }
 
+// Publish publishes an event immediately.
 func (es *EventServer) Publish(message string, topic models.Topic) {
 	// es.logger.Debugf("topic %s: sending event %v", topic, message)
 	es.messages <- ClientMessage{Message: message, Topic: topic}
@@ -139,11 +141,12 @@ func (es *EventServer) EventDispatcher() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
+		es.queueMu.Lock()
+		defer es.queueMu.Unlock()
+
 		rid := GetRequestIDFromCtx(c.Request.Context())
 		defer func() { delete(es.queuedMessages, rid) }()
-		es.queueMu.RLock()
 		qm := es.queuedMessages[rid]
-		es.queueMu.RUnlock()
 
 		if CtxRequestHasError(c) {
 			es.logger.Infof("request %s marked as failed", rid)
