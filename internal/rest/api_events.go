@@ -73,6 +73,7 @@ func (es *EventServer) Queue(ctx context.Context, message string, topic models.T
 }
 
 func (es *EventServer) Publish(message string, topic models.Topic) {
+	es.logger.Debugf("topic %s: sending event %v", topic, message)
 	es.messages <- ClientMessage{Message: message, Topic: topic}
 }
 
@@ -133,7 +134,7 @@ func (es *EventServer) EventDispatcher() gin.HandlerFunc {
 			es.logger.Infof("request %s marked as failed", rid)
 			for _, m := range qm {
 				if m.SendOnFailedRequest {
-					es.logger.Infof("topic %s: sending event %v", m.Topic, m.Message)
+					es.Publish(m.Message, m.Topic)
 				}
 			}
 			c.Next()
@@ -142,7 +143,7 @@ func (es *EventServer) EventDispatcher() gin.HandlerFunc {
 		}
 
 		for _, m := range qm {
-			es.logger.Infof("topic %s: sending event %v", m.Topic, m.Message)
+			es.Publish(m.Message, m.Topic)
 		}
 
 		c.Next()
