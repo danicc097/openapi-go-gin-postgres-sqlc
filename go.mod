@@ -36,7 +36,7 @@ require (
 	github.com/prometheus/client_golang v1.19.0
 	github.com/smartystreets/assertions v1.13.1
 	github.com/smartystreets/gunit v1.4.5
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 	github.com/swaggest/jsonschema-go v0.3.70
 	github.com/swaggest/openapi-go v0.2.49
 	github.com/zitadel/oidc/v2 v2.12.0
