@@ -135,7 +135,7 @@ type ClientInterface interface {
 	MyProviderLogin(ctx context.Context, params *MyProviderLoginParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// Events request
-	Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	Events(ctx context.Context, recorder ResponseRecorder, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetPaginatedNotifications request
 	GetPaginatedNotifications(ctx context.Context, params *GetPaginatedNotificationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -420,7 +420,7 @@ func (c *Client) MyProviderLogin(ctx context.Context, params *MyProviderLoginPar
 	}
 }
 
-func (c *Client) Events(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+func (c *Client) Events(ctx context.Context, recorder ResponseRecorder, params *EventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewEventsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
@@ -430,7 +430,7 @@ func (c *Client) Events(ctx context.Context, params *EventsParams, reqEditors ..
 		return nil, err
 	}
 	if c.testHandler != nil {
-		resp := httptest.NewRecorder()
+		resp := recorder
 		c.testHandler.ServeHTTP(resp, req)
 
 		return resp.Result(), nil
@@ -4711,8 +4711,8 @@ func (c *ClientWithResponses) MyProviderLoginWithResponse(ctx context.Context, p
 }
 
 // EventsWithResponse request returning *EventsResponse
-func (c *ClientWithResponses) EventsWithResponse(ctx context.Context, params *EventsParams, reqEditors ...RequestEditorFn) (*EventsResponse, error) {
-	rsp, err := c.Events(ctx, params, reqEditors...)
+func (c *ClientWithResponses) EventsWithResponse(ctx context.Context, recorder ResponseRecorder, params *EventsParams, reqEditors ...RequestEditorFn) (*EventsResponse, error) {
+	rsp, err := c.Events(ctx, recorder, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}

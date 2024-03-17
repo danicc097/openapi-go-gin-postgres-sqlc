@@ -100,6 +100,25 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 	}
 	// include other template functions, if any
 	templateFunctions := template.FuncMap{
+		"is_sse_endpoint": func(opID string) bool {
+			if !config.TestClient {
+				return false // for prod client use a dedicated sse client
+			}
+			for _, p := range spec.Paths.Map() {
+				for _, op := range p.Operations() {
+					if op.OperationID == opID {
+						for _, res := range op.Responses.Map() {
+							// as per spec
+							if c := res.Value.Content.Get("text/event-stream"); c != nil {
+								return true
+							}
+						}
+					}
+				}
+			}
+
+			return false
+		},
 		"is_test_client": func() bool {
 			return config.TestClient
 		},

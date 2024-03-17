@@ -4,13 +4,13 @@ package rest_test
 
 import (
 	"context"
-	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -44,10 +44,8 @@ func TestSSEStream(t *testing.T) {
 	t.Parallel()
 
 	res := NewStreamRecorder()
-	req := httptest.NewRequest(http.MethodGet, MustConstructInternalPath("/events", WithQueryParams(models.EventsParams{ProjectName: models.ProjectDemo, Topics: []models.Topic{models.TopicGlobalAlerts}})), nil)
 
 	ctx, cancel := context.WithCancel(context.Background())
-	req = req.WithContext(ctx)
 
 	srv, err := runTestServer(t, testPool,
 		func(c *gin.Context) {
@@ -56,14 +54,6 @@ func TestSSEStream(t *testing.T) {
 	)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 	srv.setupCleanup(t)
-
-	// TODO: should have generated option to use a custom recorder, e.g.
-	// here must use stream recorder that implements closenotifier
-	// resp, err := srv.client.Events(ctx, &rest.EventsParams{Topics: []models.Topic{models.TopicGlobalAlerts}, ProjectName: models.ProjectDemo})
-	// require.NoError(t, err)
-	// bd, err := io.ReadAll(resp.Body)
-	// require.NoError(t, err)
-	// fmt.Printf("bd: %v\n", bd)
 
 	publishMsg := "test-message-123"
 	stopCh := make(chan bool)
@@ -89,7 +79,8 @@ func TestSSEStream(t *testing.T) {
 			case <-stopCh:
 				return
 			default:
-				srv.server.Handler.ServeHTTP(res, req)
+				_, err := srv.client.Events(ctx, res, &rest.EventsParams{Topics: []models.Topic{models.TopicGlobalAlerts}, ProjectName: models.ProjectDemo})
+				require.NoError(t, err)
 			}
 		}
 	}()
@@ -103,7 +94,7 @@ func TestSSEStream(t *testing.T) {
 		}
 		body := res.Body.String()
 		return strings.Count(body, "event:"+string(models.TopicGlobalAlerts)) >= 1 && strings.Count(body, "data:"+publishMsg) >= 1
-	}, 10*time.Second, 100*time.Millisecond) {
+	}, 5*time.Second, 100*time.Millisecond) {
 		t.Fatalf("did not receive event")
 	}
 
