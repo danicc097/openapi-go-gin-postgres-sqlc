@@ -1,6 +1,11 @@
 package rest
 
 import (
+	"encoding/json"
+	"log"
+	"time"
+
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
@@ -45,6 +50,28 @@ func NewStrictHandlers(
 	authmw *authMiddleware, // middleware needed here since it's generated code
 	provider rp.RelyingParty,
 ) StrictServerInterface {
+	go func() {
+		for {
+			data := struct {
+				Field1 string `json:"field1"`
+				Field2 int    `json:"field2"`
+			}{
+				Field1: "value1",
+				Field2: 42,
+			}
+
+			msgData, err := json.Marshal(data)
+			if err != nil {
+				log.Printf("Error marshaling JSON: %v", err)
+				continue
+			}
+
+			event.Publish(string(msgData), models.TopicGlobalAlerts)
+
+			time.Sleep(time.Second * 1)
+		}
+	}()
+
 	return &StrictHandlers{
 		logger:         logger,
 		pool:           pool,

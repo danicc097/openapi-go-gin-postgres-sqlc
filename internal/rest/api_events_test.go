@@ -16,26 +16,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// TODO see e.g. https://dev.lucaskatayama.com/posts/go/2020/08/sse-with-gin/
-// also see sse test: https://github.com/prysmaticlabs/prysm/blob/f7cecf9f8a6dca95e021bab2fc30dd7c6d6ce760/beacon-chain/rpc/apimiddleware/custom_handlers_test.go#LL250C10-L250C10
-// complete implementation and tests: https://github.com/MarinX/go/blob/06804256ef814c8381e3f54b1c89a8c95cabb300/services/horizon/internal/render/sse/main.go
-func TestHandlers_Events(t *testing.T) {
-	// res := httptest.NewRecorder()
-	// _, engine := gin.CreateTestContext(res)
-
-	// req, _ := http.NewRequest(http.MethodGet, "/", nil)
-
-	// engine.Use(SSEHeadersMiddleware(), SSEServerMiddleware())
-
-	// engine.GET("/", func(c *gin.Context) {
-	// 	c.String(http.StatusOK, "ok")
-	// })
-	// engine.ServeHTTP(res, req)
-
-	// assert.Equal(t, tc.status, res.Code)
-	// assert.Contains(t, res.Body.String(), tc.body)
-}
-
 type StreamRecorder struct {
 	*httptest.ResponseRecorder
 	closeNotify chan bool
