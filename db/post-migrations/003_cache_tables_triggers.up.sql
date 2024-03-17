@@ -126,7 +126,7 @@ end;
 $$
 language plpgsql;
 
-create or replace function create_work_item_cache_table (project_name text)
+create or replace function create_or_update_work_item_cache_table (project_name text)
   returns VOID
   as $$
 declare
@@ -223,7 +223,7 @@ begin
   from
     projects loop
       perform
-        create_work_item_cache_table (project_name);
+        create_or_update_work_item_cache_table (project_name);
 
       idx_name := FORMAT('cache__%I_gin_index' , project_name);
 
