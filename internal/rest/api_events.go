@@ -2,12 +2,10 @@ package rest
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/gin-gonic/gin"
@@ -178,7 +176,6 @@ func (h *StrictHandlers) Events(c *gin.Context, request EventsRequestObject) (Ev
 	clientChan, unsubscribe := h.event.Subscribe(request.Params.Topics)
 	defer unsubscribe()
 
-	ticker := time.NewTicker(1 * time.Second)
 	c.Stream(func(w io.Writer) bool {
 		select {
 		case msg, ok := <-clientChan.Chan:
@@ -187,12 +184,9 @@ func (h *StrictHandlers) Events(c *gin.Context, request EventsRequestObject) (Ev
 			}
 			c.SSEvent(string(msg.Topic), msg.Message)
 			return true
-		case <-ticker.C:
-			// ensure handler can return and clean up when client disconnects and no messages have been sent
-			return true
 		case <-c.Request.Context().Done():
-			fmt.Printf("Client gone. Context cancelled: %v\n", c.Request.Context().Err())
-			c.SSEvent("message", "channel closed")
+			// ensure handler can return and clean up when client disconnects and no messages have been sent
+			h.logger.Debugf("Client gone: %v\n", c.Request.Context().Err())
 
 			return false
 		}
