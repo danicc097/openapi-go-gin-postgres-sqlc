@@ -12,7 +12,7 @@ import (
 func (h *StrictHandlers) UpdateUser(c *gin.Context, request UpdateUserRequestObject) (UpdateUserResponseObject, error) {
 	// span attribute not inheritable:
 	// see https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/14026
-	caller, _ := getUserCallerFromCtx(c)
+	caller, _ := GetUserCallerFromCtx(c)
 
 	span := GetSpanFromCtx(c)
 	span.AddEvent("update-user") // filterable with event="update-user"
@@ -52,7 +52,7 @@ func (h *StrictHandlers) DeleteUser(c *gin.Context, request DeleteUserRequestObj
 }
 
 func (h *StrictHandlers) GetCurrentUser(c *gin.Context, request GetCurrentUserRequestObject) (GetCurrentUserResponseObject, error) {
-	caller, _ := getUserCallerFromCtx(c)
+	caller, _ := GetUserCallerFromCtx(c)
 
 	role, ok := h.svc.Authorization.RoleByRank(caller.RoleRank)
 	if !ok {
@@ -74,7 +74,7 @@ func (h *StrictHandlers) GetCurrentUser(c *gin.Context, request GetCurrentUserRe
 }
 
 func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateUserAuthorizationRequestObject) (UpdateUserAuthorizationResponseObject, error) {
-	caller, _ := getUserCallerFromCtx(c)
+	caller, _ := GetUserCallerFromCtx(c)
 
 	span := GetSpanFromCtx(c)
 	span.AddEvent("update-user") // filterable with event="update-user"

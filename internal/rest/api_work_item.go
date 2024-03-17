@@ -29,7 +29,7 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 
 	span := GetSpanFromCtx(c)
 
-	caller, _ := getUserCallerFromCtx(c)
+	caller, _ := GetUserCallerFromCtx(c)
 	tx := GetTxFromCtx(c)
 
 	jsonBody, err := io.ReadAll(c.Request.Body)

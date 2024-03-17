@@ -148,7 +148,7 @@ func (es *EventServer) EventDispatcher() gin.HandlerFunc {
 		defer func() { delete(es.queuedMessages, rid) }()
 		qm := es.queuedMessages[rid]
 
-		if CtxRequestHasError(c) {
+		if GetRequestHasErrorFromCtx(c) {
 			es.logger.Infof("request %s marked as failed", rid)
 			for _, m := range qm {
 				if m.SendOnFailedRequest {

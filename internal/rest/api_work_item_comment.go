@@ -45,7 +45,7 @@ func (h *StrictHandlers) GetWorkItemComment(c *gin.Context, request GetWorkItemC
 
 func (h *StrictHandlers) UpdateWorkItemComment(c *gin.Context, request UpdateWorkItemCommentRequestObject) (UpdateWorkItemCommentResponseObject, error) {
 	tx := GetTxFromCtx(c)
-	caller, _ := getUserCallerFromCtx(c)
+	caller, _ := GetUserCallerFromCtx(c)
 
 	params := request.Body.WorkItemCommentUpdateParams
 
@@ -66,7 +66,7 @@ func (h *StrictHandlers) UpdateWorkItemComment(c *gin.Context, request UpdateWor
 
 func (h *StrictHandlers) DeleteWorkItemComment(c *gin.Context, request DeleteWorkItemCommentRequestObject) (DeleteWorkItemCommentResponseObject, error) {
 	tx := GetTxFromCtx(c)
-	caller, _ := getUserCallerFromCtx(c)
+	caller, _ := GetUserCallerFromCtx(c)
 
 	_, err := h.svc.WorkItemComment.Delete(c, tx, caller, db.WorkItemCommentID(request.WorkItemCommentID))
 	if err != nil {
