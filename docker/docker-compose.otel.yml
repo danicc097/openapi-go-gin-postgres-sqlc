@@ -75,7 +75,10 @@ services:
   #   ports:
   #     - 9093:9093/tcp
 
-  # see https://github.com/timescale/promscale/tree/master/docker-compose
+  # see https://github.com/timescale/promscale/tree/master/docker-compose~
+  # IMPORTANT: should get rid of it, discontinued
+  # https://www.timescale.com/blog/important-news-about-promscale/
+  # may use e.g. mimir
   promscale:
     image: timescale/promscale:latest
     ports:

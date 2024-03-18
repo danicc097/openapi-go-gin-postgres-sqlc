@@ -54,7 +54,8 @@ change to it is validated and cascades down to:
 
 Additionally, it features OpenTelemetry in both browser (automatic and
 manual instrumentation) and backend services (manual instrumentation) via
-Jaeger, TimescaleDB and Promscale (certified storage backend).
+Jaeger, TimescaleDB and ~~Promscale~~ (discontinued, should look at options like
+`mimir`).
 
 ## Makefile alternative
 
