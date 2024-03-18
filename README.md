@@ -157,9 +157,4 @@ Simplified:
 
 - System design docs/diagrams.
 
-- [Oauth2 as openapi
-  spec](https://github.com/ybelenko/oauth2_as_oas3_components/tree/master/dist/components)
-  with endpoints clearly documented based on RFCs
-  Can generate a mock with e.g.
-  [openapi-mock](https://github.com/muonsoft/openapi-mock).
 
