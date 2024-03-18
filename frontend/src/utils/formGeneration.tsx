@@ -520,11 +520,7 @@ type ArrayOfObjectsChildrenProps = {
   schemaKey: SchemaKey
 }
 
-function ArrayOfObjectsChildren({
-  formField,
-
-  schemaKey,
-}: ArrayOfObjectsChildrenProps) {
+function ArrayOfObjectsChildren({ formField, schemaKey }: ArrayOfObjectsChildrenProps) {
   const { formName, options, schemaFields } = useDynamicFormContext()
   const form = useFormContext()
   // form.watch(formField, fieldArray.fields) // inf rerendering
@@ -533,6 +529,23 @@ function ArrayOfObjectsChildren({
   const itemName = singularize(options.labels[schemaKey] || '')
 
   useWatch({ name: `${formField}`, control: form.control }) // needed
+
+  const fieldWarnings = useFormSlice((state) => state.form[formName]?.customWarnings[formField])
+  const warningFn = options.fieldOptions?.[schemaKey]?.warningFn
+  const formFieldWatch = form.watch(formField)
+  const formSlice = useFormSlice()
+  console.log({ fieldWarnings })
+  // TODO: warningFn is meant to be called for each children if set on schemaKey that is array
+  // i.e. need to extract the mapping below to its own component
+  // useEffect(() => {
+  //   if (warningFn) {
+  //     const warnings = joinWithAnd(warningFn(formFieldWatch))
+  //     console.log({ warnings, fieldWarnings, formFieldWatch })
+
+  //     formSlice.setCustomWarning(formName, formField, warnings.length > 0 ? warnings : null)
+  //     form.trigger(formField)
+  //   }
+  // }, [formFieldWatch, fieldWarnings])
 
   const children = (form.getValues(formField) || []).map((item, k: number) => {
     // input focus loss on rerender when defining component inside another function scope
@@ -545,7 +558,9 @@ function ArrayOfObjectsChildren({
         `}
       >
         <Card mt={12} mb={12} withBorder radius={cardRadius} className={classes.childCard}>
-          <Flex justify={'end'} mb={10}>
+          <Flex justify={'space-between'} mb={10}>
+            {/* {renderWarningIcon([fieldWarnings ?? ''])} */}
+
             <RemoveButton formField={formField} index={k} itemName={itemName} icon={<IconTrash size="1rem" />} />
           </Flex>
           <Group gap={10}>

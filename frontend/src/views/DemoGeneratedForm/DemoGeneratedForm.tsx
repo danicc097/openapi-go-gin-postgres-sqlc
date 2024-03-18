@@ -399,6 +399,14 @@ export default function DemoGeneratedForm() {
                   return dayjs(el) > dayjs('01-01-2023') ? ['Date is higher than 01-01-2023'] : []
                 },
               },
+              'base.items': {
+                warningFn(el) {
+                  console.log({ el })
+                  if (el.name !== 'item-1') return ['item name is not item-1']
+
+                  return []
+                },
+              },
             },
             selectOptions: {
               'members.userID': userIdSelectOption,
