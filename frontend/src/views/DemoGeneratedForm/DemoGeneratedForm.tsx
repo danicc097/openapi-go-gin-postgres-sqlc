@@ -401,10 +401,12 @@ export default function DemoGeneratedForm() {
               },
               'base.items': {
                 warningFn(el) {
-                  console.log({ el })
-                  if (el.name !== 'item-1') return ['item name is not item-1']
+                  const warnings: string[] = []
+                  if (el.name !== 'item-1') warnings.push('Item name is not "item-1"')
 
-                  return []
+                  if (el.items.includes('0001')) warnings.push('Nested items include "0001"')
+
+                  return warnings
                 },
               },
             },

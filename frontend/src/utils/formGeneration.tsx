@@ -137,7 +137,8 @@ export type SelectOptions<Return, E = unknown> = {
 
 export type FieldOptions<Return, E = unknown> = {
   /**
-   * Returns custom warnings based on the current form value
+   * Returns custom warnings based on the current form value. For arrays, warning function
+   * is executed for each element in form.
    */
   warningFn?: (el: Return extends unknown[] ? Return[number] : Return) => string[]
 }
@@ -530,51 +531,58 @@ function ArrayOfObjectsChildren({ formField, schemaKey }: ArrayOfObjectsChildren
 
   useWatch({ name: `${formField}`, control: form.control }) // needed
 
-  const fieldWarnings = useFormSlice((state) => state.form[formName]?.customWarnings[formField])
-  const warningFn = options.fieldOptions?.[schemaKey]?.warningFn
-  const formFieldWatch = form.watch(formField)
-  const formSlice = useFormSlice()
-  console.log({ fieldWarnings })
-  // TODO: warningFn is meant to be called for each children if set on schemaKey that is array
-  // i.e. need to extract the mapping below to its own component
-  // useEffect(() => {
-  //   if (warningFn) {
-  //     const warnings = joinWithAnd(warningFn(formFieldWatch))
-  //     console.log({ warnings, fieldWarnings, formFieldWatch })
-
-  //     formSlice.setCustomWarning(formName, formField, warnings.length > 0 ? warnings : null)
-  //     form.trigger(formField)
-  //   }
-  // }, [formFieldWatch, fieldWarnings])
-
-  const children = (form.getValues(formField) || []).map((item, k: number) => {
-    // input focus loss on rerender when defining component inside another function scope
-    return (
-      <div
-        // reodering: https://codesandbox.io/s/watch-usewatch-calc-forked-5vrcsk?file=/src/fieldArray.js
-        key={k}
-        css={css`
-          min-width: 100%;
-        `}
-      >
-        <Card mt={12} mb={12} withBorder radius={cardRadius} className={classes.childCard}>
-          <Flex justify={'space-between'} mb={10}>
-            {/* {renderWarningIcon([fieldWarnings ?? ''])} */}
-
-            <RemoveButton formField={formField} index={k} itemName={itemName} icon={<IconTrash size="1rem" />} />
-          </Flex>
-          <Group gap={10}>
-            <GeneratedInputs parentSchemaKey={schemaKey} parentFormField={`${formField}.${k}` as FormField} />
-          </Group>
-        </Card>
-      </div>
-    )
-  })
-
   return (
     <Flex gap={6} align="center" direction="column">
-      {children}
+      {(form.getValues(formField) || []).map((item, index) => (
+        <ArrayOfObjectsChild
+          key={index}
+          index={index}
+          formField={formField}
+          itemName={itemName}
+          schemaKey={schemaKey}
+        />
+      ))}
     </Flex>
+  )
+}
+
+const ArrayOfObjectsChild = ({ index, formField, itemName, schemaKey }) => {
+  const { formName, options, schemaFields } = useDynamicFormContext()
+  const form = useFormContext()
+
+  const fieldWarnings = useFormSlice((state) => state.form[formName]?.customWarnings[`${formField}.${index}`])
+  const warningFn = options.fieldOptions?.[schemaKey]?.warningFn
+  const formFieldWatch = form.watch(`${formField}.${index}`)
+  const formSlice = useFormSlice()
+  console.log({ fieldWarnings, formField, warningFormField: `${formField}.${index}` })
+
+  useEffect(() => {
+    if (warningFn) {
+      const warnings = joinWithAnd(warningFn(formFieldWatch))
+      console.log({ warnings, fieldWarnings, formFieldWatch })
+
+      formSlice.setCustomWarning(formName, `${formField}.${index}`, warnings.length > 0 ? warnings : null)
+      form.trigger(`${formField}.${index}`)
+    }
+  }, [formFieldWatch, fieldWarnings])
+
+  return (
+    <div
+      key={index}
+      css={css`
+        min-width: 100%;
+      `}
+    >
+      <Card mt={12} mb={12} withBorder radius={cardRadius} className={classes.childCard}>
+        <Flex justify={'space-between'} direction={'row-reverse'} mb={10}>
+          <RemoveButton formField={formField} index={index} itemName={itemName} icon={<IconTrash size="1rem" />} />
+          {renderWarningIcon(fieldWarnings)}
+        </Flex>
+        <Group gap={10}>
+          <GeneratedInputs parentSchemaKey={schemaKey} parentFormField={`${formField}.${index}` as FormField} />
+        </Group>
+      </Card>
+    </div>
   )
 }
 
@@ -1385,15 +1393,17 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
   )
 }
 
-function renderWarningIcon(warnings?: string[]): React.ReactNode {
+function renderWarningIcon(warnings?: string[] | string | null): React.ReactNode {
+  const _warnings = (!isArray(warnings) ? [warnings] : warnings).filter((v) => !!v)
+
   return (
-    warnings &&
-    warnings?.length > 0 && (
+    _warnings &&
+    _warnings?.length > 0 && (
       <Tooltip
         withinPortal
         label={
           <>
-            {warnings?.map((w, i) => (
+            {_warnings?.map((w, i) => (
               <Text key={i} size="sm">
                 {w}
               </Text>
@@ -1403,7 +1413,7 @@ function renderWarningIcon(warnings?: string[]): React.ReactNode {
         position="top-end"
         withArrow
       >
-        <IconAlertCircle size={'18'} color="orange" />
+        <IconAlertCircle size={20} color="orange" />
       </Tooltip>
     )
   )
