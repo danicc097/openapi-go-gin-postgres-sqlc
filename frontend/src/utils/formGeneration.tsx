@@ -198,7 +198,7 @@ export type DynamicFormOptions<
   /**
    * Returns custom warnings based on the current form value
    */
-  fieldOptions: Partial<{
+  fieldOptions?: Partial<{
     [key in Exclude<U, IgnoredFormKeys>]: ReturnType<
       typeof fieldOptionsBuilder<
         PathType<
@@ -550,19 +550,19 @@ const ArrayOfObjectsChild = ({ index, formField, itemName, schemaKey }) => {
   const { formName, options, schemaFields } = useDynamicFormContext()
   const form = useFormContext()
 
-  const fieldWarnings = useFormSlice((state) => state.form[formName]?.customWarnings[`${formField}.${index}`])
+  const itemFormField = `${formField}.${index}` as FormField
+  const fieldWarnings = useFormSlice((state) => state.form[formName]?.customWarnings[itemFormField])
   const warningFn = options.fieldOptions?.[schemaKey]?.warningFn
-  const formFieldWatch = form.watch(`${formField}.${index}`)
+  const formFieldWatch = form.watch(itemFormField)
   const formSlice = useFormSlice()
-  console.log({ fieldWarnings, formField, warningFormField: `${formField}.${index}` })
 
   useEffect(() => {
     if (warningFn) {
       const warnings = joinWithAnd(warningFn(formFieldWatch))
       console.log({ warnings, fieldWarnings, formFieldWatch })
 
-      formSlice.setCustomWarning(formName, `${formField}.${index}`, warnings.length > 0 ? warnings : null)
-      form.trigger(`${formField}.${index}`)
+      formSlice.setCustomWarning(formName, itemFormField, warnings.length > 0 ? warnings : null)
+      form.trigger(itemFormField)
     }
   }, [formFieldWatch, fieldWarnings])
 
@@ -579,7 +579,7 @@ const ArrayOfObjectsChild = ({ index, formField, itemName, schemaKey }) => {
           {renderWarningIcon(fieldWarnings)}
         </Flex>
         <Group gap={10}>
-          <GeneratedInputs parentSchemaKey={schemaKey} parentFormField={`${formField}.${index}` as FormField} />
+          <GeneratedInputs parentSchemaKey={schemaKey} parentFormField={itemFormField} />
         </Group>
       </Card>
     </div>
@@ -648,7 +648,7 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
     )
   })
 
-  if (children.length === 0) return null
+  if (children.length === 0) return <Text size="xs" w={'100%'}>{`No ${lowerFirst(pluralize(itemName))} defined`}</Text>
 
   return (
     <Flex
@@ -737,9 +737,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
   const fieldState = form.getFieldState(formField)
 
-  const formFieldKeys = formField.split('.')
-  // remove last index
-  const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 1).join('.') as FormField
+  const parentFormField = getParentFormField(formField)
 
   const formValue = form.getValues(formField)
   const formSlice = useFormSlice()
@@ -926,18 +924,14 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     <Flex align="center" gap={6} justify={'center'} {...props?.container}>
       {formFieldComponent}
       {index !== undefined && (
-        <RemoveButton
-          formField={formFieldArrayPath}
-          index={index}
-          itemName={itemName}
-          icon={<IconMinus size="1rem" />}
-        />
+        <RemoveButton formField={parentFormField} index={index} itemName={itemName} icon={<IconMinus size="1rem" />} />
       )}
     </Flex>
   )
 }
 
 type RemoveButtonProps = {
+  // formField without item index
   formField: FormField
   index: number
   itemName: string
@@ -1046,6 +1040,15 @@ type CustomMultiselectProps = {
 } & InputBaseProps
 
 type Warnings = Record<string, string>
+
+/**
+ * Removes the last index from the form field.
+ */
+function getParentFormField(formField: FormField) {
+  const formFieldKeys = formField.split('.')
+  const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 1).join('.') as FormField
+  return formFieldArrayPath
+}
 
 function CustomMultiselect({
   formField,
