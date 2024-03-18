@@ -1,6 +1,12 @@
 import { useContext } from 'react'
 import { AllKeysMandatory } from 'src/types/utils'
-import { DynamicFormContext, DynamicFormContextValue, InputOptions, SelectOptions } from 'src/utils/formGeneration'
+import {
+  DynamicFormContext,
+  DynamicFormContextValue,
+  FieldOptions as FieldOptionsBuilder,
+  InputOptions as InputBuilder,
+  SelectOptions as SelectOptionsBuilder,
+} from 'src/utils/formGeneration'
 
 export const useDynamicFormContext = (): DynamicFormContextValue => {
   const context = useContext(DynamicFormContext)
@@ -22,18 +28,25 @@ export const selectOptionsBuilder = <Return, V, ReturnElement = Return extends u
   optionTransformer,
   pillTransformer,
   labelColor,
-}: SelectOptions<ReturnElement, V>): AllKeysMandatory<SelectOptions<ReturnElement, V>> => ({
+}: SelectOptionsBuilder<ReturnElement, V>): AllKeysMandatory<SelectOptionsBuilder<ReturnElement, V>> => ({
   type,
   values,
   optionTransformer,
   formValueTransformer,
-  // workaround to never forget adding new fields to selectOptionsBuilder
+  // workaround to never forget adding new fields
   pillTransformer: pillTransformer!,
   ariaLabelTransformer: ariaLabelTransformer!,
   searchValueTransformer: searchValueTransformer!,
   labelColor: labelColor!,
 })
 
-export const inputBuilder = <Return, V>({ component }: InputOptions<Return, V>): InputOptions<Return, V> => ({
+export const fieldOptionsBuilder = <Return, V, ReturnElement = Return extends unknown[] ? Return[number] : Return>({
+  warningFn,
+}: FieldOptionsBuilder<ReturnElement, V>): AllKeysMandatory<FieldOptionsBuilder<ReturnElement, V>> => ({
+  // workaround to never forget adding new fields
+  warningFn: warningFn!,
+})
+
+export const inputBuilder = <Return, V>({ component }: InputBuilder<Return, V>): InputBuilder<Return, V> => ({
   component,
 })

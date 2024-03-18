@@ -34,6 +34,9 @@ import {
   Pill,
   ScrollArea,
   CheckIcon,
+  ComboboxProps,
+  InputBaseProps,
+  List,
 } from '@mantine/core'
 import classes from './form.module.css'
 import { DateInput, DateTimePicker } from '@mantine/dates'
@@ -96,9 +99,16 @@ import { nameInitials, sentenceCase } from 'src/utils/strings'
 import { useFormSlice } from 'src/slices/form'
 import RandExp, { randexp } from 'randexp'
 import type { FormField, SchemaKey } from 'src/utils/form'
-import { inputBuilder, selectOptionsBuilder, useDynamicFormContext } from 'src/utils/formGeneration.context'
+import {
+  fieldOptionsBuilder,
+  inputBuilder,
+  selectOptionsBuilder,
+  useDynamicFormContext,
+} from 'src/utils/formGeneration.context'
 import { useCalloutErrors } from 'src/components/Callout/useCalloutErrors'
 import { IconAlertCircle } from '@tabler/icons-react'
+import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
+import { joinWithAnd } from 'src/utils/format'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
 
@@ -123,6 +133,13 @@ export type SelectOptions<Return, E = unknown> = {
    * Overrides default combobox item label color.
    */
   labelColor?: <V extends E>(el: V & E) => string
+}
+
+export type FieldOptions<Return, E = unknown> = {
+  /**
+   * Returns custom warnings based on the current form value
+   */
+  warningFn?: (el: Return extends unknown[] ? Return[number] : Return) => string[]
 }
 
 export interface InputOptions<Return, E = unknown> {
@@ -161,9 +178,28 @@ export type DynamicFormOptions<
       >
     >
   }>
+  /**
+   * Builds the given form fields as select or multiselect.
+   */
   selectOptions?: Partial<{
     [key in Exclude<U, IgnoredFormKeys>]: ReturnType<
       typeof selectOptionsBuilder<
+        PathType<
+          T,
+          //@ts-ignore
+          key
+        >,
+        unknown
+      >
+    >
+  }>
+
+  /**
+   * Returns custom warnings based on the current form value
+   */
+  fieldOptions: Partial<{
+    [key in Exclude<U, IgnoredFormKeys>]: ReturnType<
+      typeof fieldOptionsBuilder<
         PathType<
           T,
           //@ts-ignore
@@ -272,6 +308,8 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
       return acc
     }, {})
   }
+
+  // useStopInfiniteRenders(20)
 
   return (
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
@@ -681,6 +719,22 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 1).join('.') as FormField
 
   const formValue = form.getValues(formField)
+  const formSlice = useFormSlice()
+  const fieldWarnings = useFormSlice((state) => state.form[formName]?.customWarnings[formField])
+  // const warning = formSlice.form[formName]?.customWarnings[formField]
+  const formFieldWatch = form.watch(formField)
+  const warningFn = options.fieldOptions?.[schemaKey]?.warningFn
+
+  useEffect(() => {
+    if (warningFn) {
+      const warnings = joinWithAnd(warningFn(formFieldWatch))
+
+      // FIXME: we are doing eerie warning and customerror checks all over the place to prevent inf rerender
+      // but should use form field watch properly like right here and then trigger validation
+      formSlice.setCustomWarning(formName, formField, warnings.length > 0 ? warnings : null)
+      form.trigger(formField)
+    }
+  }, [formFieldWatch, fieldWarnings])
 
   if (formValue === null || formValue === undefined) {
     const defaultValue = options.defaultValues?.[schemaKey]
@@ -696,6 +750,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     ...(fieldState.error && { error: sentenceCase(fieldState.error?.message) }),
     required: schemaFields[schemaKey]?.required && type !== 'boolean',
     placeholder: `Enter ${lowerFirst(singularize(options.labels[schemaKey] || ''))}`,
+    ...(fieldWarnings && { rightSection: renderWarningIcon([fieldWarnings]) }),
   }
 
   const _props = {
@@ -710,8 +765,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
   const selectOptions = options.selectOptions?.[schemaKey]
   const selectRef = useRef<HTMLInputElement | null>(null)
   const [customElMinHeight, setCustomElMinHeight] = useState(34.5)
-  const formSlice = useFormSlice()
-  const warning = formSlice.form[formName]?.customWarnings[formField]
 
   const { ref: focusRef, focused: selectFocused } = useFocusWithin()
 
@@ -774,13 +827,6 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
         formFieldComponent = (
           <TextInput
             onChange={(e) => registerOnChange({ target: { name: formField, value: e.target.value } })}
-            rightSection={
-              warning && (
-                <Tooltip withinPortal label={warning} position="top-end" withArrow>
-                  <IconAlertCircle size={'18'} color="yellow" />
-                </Tooltip>
-              )
-            }
             {..._props}
           />
         )
@@ -960,10 +1006,13 @@ const initialValueByType = (type?: SchemaField['type']) => {
 
 type CustomPillProps = {
   value: any
+  index: number
   formField: FormField
   schemaKey: SchemaKey
   handleValueRemove: (val: string) => void
   props?: React.HTMLProps<HTMLDivElement>
+  warnings: Warnings
+  setWarnings: React.Dispatch<React.SetStateAction<Warnings>>
 }
 
 type CustomMultiselectProps = {
@@ -971,7 +1020,9 @@ type CustomMultiselectProps = {
   registerOnChange: ChangeHandler
   schemaKey: SchemaKey
   itemName: string
-}
+} & InputBaseProps
+
+type Warnings = Record<string, string>
 
 function CustomMultiselect({
   formField,
@@ -993,14 +1044,17 @@ function CustomMultiselect({
     onDropdownOpen: () => combobox.updateSelectedOptionIndex('active'),
   })
 
-  const handleValueRemove = (val: string) => {
-    formSlice.setCustomError(formName, formField, null) // index position changed, misleading message
+  const handleValueRemove = async (val: string) => {
+    // index position changed, misleading message. must manually trigger validation for the field via trigger
+    formSlice.setCustomError(formName, formField, null)
     form.unregister(formField) // needs to be called before setValue
     form.setValue(
       formField,
       formValues.filter((v) => v !== val),
     )
+    await form.trigger(formField, { shouldFocus: true })
   }
+
   const comboboxOptions = selectOptions.values
     .filter((item: any) => {
       const inSearch = JSON.stringify(
@@ -1050,6 +1104,17 @@ function CustomMultiselect({
     }
   }, [formState])
 
+  const { rightSection, ...props } = inputProps
+
+  const [warnings, setWarnings] = useState<Warnings>({})
+
+  useEffect(() => {
+    const msg = Object.values(warnings).join(',')
+    if (formSlice.form[formName]?.customWarnings[formField] !== msg) {
+      formSlice.setCustomWarning(formName, formField, msg)
+    }
+  }, [warnings])
+
   return (
     <Box w={'100%'}>
       <Combobox
@@ -1080,26 +1145,30 @@ function CustomMultiselect({
             }}
             label={pluralize(upperFirst(itemName))}
             onClick={() => combobox.openDropdown()}
-            {...inputProps}
+            {...props}
             // must override input props error
             error={multiselectFirstError}
+            rightSection={renderWarningIcon(Object.values(warnings))}
           >
             <Pill.Group>
               {formValues.length > 0 &&
                 formValues.map((formValue, i) => (
                   <CustomPill
+                    index={i}
                     formField={formField}
                     key={`${formName}-${formField}-${i}-pill`}
                     value={formValue}
                     handleValueRemove={handleValueRemove}
                     schemaKey={schemaKey}
+                    warnings={warnings}
+                    setWarnings={setWarnings}
                   />
                 ))}
 
               <Combobox.EventsTarget>
                 <PillsInput.Field
                   placeholder={`Search ${pluralize(lowerFirst(itemName))}`}
-                  onChange={(event) => {
+                  onChange={async (event) => {
                     combobox.updateSelectedOptionIndex()
                     setSearch(event.currentTarget.value)
                   }}
@@ -1107,7 +1176,7 @@ function CustomMultiselect({
                   value={search}
                   onFocus={() => combobox.openDropdown()}
                   onBlur={() => combobox.closeDropdown()}
-                  onKeyDown={(event) => {
+                  onKeyDown={async (event) => {
                     if (event.key === 'Backspace' && search.length === 0) {
                       event.preventDefault()
                       formSlice.setCustomError(formName, formField, null)
@@ -1145,7 +1214,7 @@ type CustomSelectProps = {
   registerOnChange: ChangeHandler
   schemaKey: SchemaKey
   itemName: string
-}
+} & InputBaseProps
 
 function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inputProps }: CustomSelectProps) {
   const form = useFormContext()
@@ -1214,7 +1283,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
 
   const parentSchemaKey = schemaKey.split('.').slice(0, -1).join('.') as SchemaKey
 
-  const warning = formSlice.form[formName]?.customWarnings[formField]
+  const { rightSection, ...props } = inputProps
 
   return (
     <Box w={'100%'}>
@@ -1256,7 +1325,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
             multiline
             name={formField}
             role="combobox"
-            {...inputProps}
+            {...props}
           >
             {selectedOption ? (
               comboboxOptionTemplate(selectOptions.optionTransformer, selectedOption)
@@ -1264,11 +1333,7 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
               <Input.Placeholder>
                 <Flex direction="row" justify="space-between" align="center">
                   <Text size="sm">{`Pick ${singularize(lowerFirst(itemName))}`}</Text>
-                  {warning && (
-                    <Tooltip withinPortal label={warning} position="top-end" withArrow>
-                      <IconAlertCircle size={'18'} color="yellow" />
-                    </Tooltip>
-                  )}
+                  {rightSection}
                 </Flex>
               </Input.Placeholder>
             )}
@@ -1305,20 +1370,62 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
   )
 }
 
-function CustomPill({ value, schemaKey, handleValueRemove, formField, ...props }: CustomPillProps): JSX.Element | null {
+function renderWarningIcon(warnings?: string[]): React.ReactNode {
+  return (
+    warnings &&
+    warnings?.length > 0 && (
+      <Tooltip
+        withinPortal
+        label={
+          <>
+            {warnings?.map((w, i) => (
+              <Text key={i} size="sm">
+                {w}
+              </Text>
+            ))}
+          </>
+        }
+        position="top-end"
+        withArrow
+      >
+        <IconAlertCircle size={'18'} color="orange" />
+      </Tooltip>
+    )
+  )
+}
+
+function CustomPill({
+  value,
+  schemaKey,
+  handleValueRemove,
+  formField,
+  warnings,
+  setWarnings,
+  index,
+  ...props
+}: CustomPillProps): JSX.Element | null {
   const { formName, options, schemaFields } = useDynamicFormContext()
   const selectOptions = options.selectOptions![schemaKey]!
   const itemName = singularize(options.labels[schemaKey] || '')
+  // const formSlice = useFormSlice()
+  // const warning = formSlice.form[formName]?.customWarnings[formField]
 
   let invalidValue = null
 
   const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
   if (!option) {
-    console.log(`${value} is not a valid ${singularize(lowerCase(itemName))}`)
-
     // for multiselects, explicitly set wrong values so that error positions make sense and the user knows there is a wrong form value beforehand
     // instead of us deleting it implicitly
+    // TODO: should have multiselect and select option to allow creating values on the fly.
+    // if no option found in search, a button option to `Create ${itemName}` shows a modal
+    // with the form that creates that entity, e.g. tag, and once created we refetch selectOptions.values
+    // see https://mantine.dev/combobox/?e=SelectCreatable
     invalidValue = value
+    if (invalidValue !== null && invalidValue !== undefined) {
+      if (!warnings[index]) {
+        setWarnings((v) => ({ ...v, [index]: `${itemName} "${value}" does not exist` }))
+      }
+    }
   }
 
   let color = '#bbbbbb'
@@ -1341,7 +1448,13 @@ function CustomPill({ value, schemaKey, handleValueRemove, formField, ...props }
     >
       <Box className={classes.valueComponentInnerBox}>{invalidValue || transformer(option)}</Box>
       <CloseButton
-        onMouseDown={() => handleValueRemove(value)}
+        onMouseDown={() => {
+          if (invalidValue !== null) {
+            setWarnings({})
+            // formSlice.setCustomWarning(formName, formField, null)
+          }
+          handleValueRemove(value)
+        }}
         variant="transparent"
         size={22}
         iconSize={14}

@@ -56,7 +56,7 @@ export const useCalloutErrors = (formName: string) => {
     return errors
   }
 
-  const extractCalloutTitle = () => {
+  const extractCalloutTitle = (): string => {
     if (Object.keys(form?.customErrors ?? {}).length > 0) {
       return 'Validation error'
     }
@@ -79,13 +79,14 @@ export const useCalloutErrors = (formName: string) => {
           case 'Unauthorized':
             return 'Unauthorized'
           case 'Unknown':
+            return unknownError
           default:
             return calloutError.message
         }
       }
 
       // external call error
-      if (calloutErrors instanceof AxiosError) return calloutError
+      if (calloutError instanceof AxiosError) return calloutError.message
     }
 
     // errors unrelated to api calls and validation

@@ -171,7 +171,7 @@ export default function DemoGeneratedForm() {
         },
         { items: ['0011', '0012'], userId: ['baduserid'], name: 'item-2' },
       ],
-      // closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
+      closed: dayjs('2023-03-24T20:42:00.000Z').toDate(),
       targetDate: dayjs('2023-02-22').toDate(),
       description: 'some text',
       kanbanStepID: 1,
@@ -179,7 +179,6 @@ export default function DemoGeneratedForm() {
       metadata: {},
       // title: {},
       workItemTypeID: 1,
-      closed: null,
     },
     // TODO: formGeneration must not assume options do exist, else all fails catastrophically.
     // it's not just checking types...
@@ -189,7 +188,12 @@ export default function DemoGeneratedForm() {
     // it should update the form but show callout error saying ignoring bad type in `formField`, in this case `tagIDs.1`
     // 2. (sol 2 which wont work) leave form as is and validate on first render will not catch errors for options not found, if type is right...
     tagIDs: null,
-    tagIDsMultiselect: [1, 2, 'badid' as any /** FIXME: show warning callout, it should not create it at all */],
+    tagIDsMultiselect: [
+      1,
+      2,
+      'badid' as any,
+      'badid2' as any /** FIXME: show warning callout, it should not create it at all */,
+    ],
     // tagIDs: [0, 5, 8],
     demoProject: {
       line: '',
@@ -381,9 +385,20 @@ export default function DemoGeneratedForm() {
                 title: formAccordionTitle('Items'),
               },
             },
+            // TODO: should have `warnings` options funcs that receive the element
+            // and returns a string[] of warnings.
+            // can be used for adhoc warnings, e.g. this value may be too high, or
+            // this user hasn't logged in >n months, this date is before today's date, etc.
             defaultValues: {
               'demoProject.ref': '11112222',
               'members.role': 'preparer',
+            },
+            fieldOptions: {
+              'base.closed': {
+                warningFn(el) {
+                  return dayjs(el) > dayjs('01-01-2023') ? ['Date is higher than 01-01-2023'] : []
+                },
+              },
             },
             selectOptions: {
               'members.userID': userIdSelectOption,

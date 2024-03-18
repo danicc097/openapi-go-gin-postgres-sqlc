@@ -42,11 +42,10 @@ export default function DynamicFormErrorCallout() {
   const warnings = calloutWarnings ? entries(calloutWarnings).map(([schemaKey, warning], idx) => warning) : []
   const errors = concat(
     extractCalloutErrors(),
-    entries(rhfErrors).map(([schemaKey, error], idx) => {
+    entries(rhfErrors).map(([schemaKey, error], _) => {
       let message = lowerFirst(error.message) // lowerCase breaks regexes
       schemaKey = schemaKey.replace(/\.\d+$/, '') as SchemaKey // TODO: in flattener instead
 
-      console.log({ schemaKey, error })
       const itemName = options.labels[schemaKey] || ''
 
       if (error.index) {
@@ -57,8 +56,6 @@ export default function DynamicFormErrorCallout() {
       if (match) {
         message = `${message} (example: ${randexp(match[1] || '')})`
       }
-
-      console.log({ message })
 
       return `${itemName}: ${message}`
     }),

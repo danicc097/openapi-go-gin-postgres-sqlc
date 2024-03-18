@@ -38,8 +38,10 @@ export function flattenRHFError({
     if (ignoredKeys.includes(key)) return acc
 
     let pre = prefix.length ? `${prefix}.` : ''
+
     if (mode == 'schemaKey') {
       pre = pre.replace(/\d+\.$/, '')
+      key = key.replace(/\.\d+$/, '')
     }
 
     const val = obj[key]
@@ -49,28 +51,25 @@ export function flattenRHFError({
       val !== null
     ) {
       if (Array.isArray(val)) {
+        // IMPORTANT: atm we only keep the last error in an array so it's just an error at a time.
         for (const [idx, v] of val.entries()) {
           // nested array of objects
-          if (isObject(v)) {
+          if (isObject(v) && index === idx) {
             Object.assign(acc, flattenRHFError({ obj: val, prefix: pre + key, ignoredKeys, mode, index: idx }))
 
             return acc
           }
-          // rhf error array
-          // extract any error (just one per schemakey in callout)
+          // rhf error array - extract any error (just one per schemakey in callout)
           if (v) {
-            acc[pre + key] = { message: v.message, index: idx } // keep last index always
+            acc[pre + key] = { message: v.message, index: idx }
           }
         }
 
         return acc
       }
 
-      // must be rhf error
-      if (val.hasOwnProperty('type') && val.hasOwnProperty('ref') && val.hasOwnProperty('message')) {
-        if (mode == 'schemaKey') {
-          key = key.replace(/\.\d+$/, '')
-        }
+      const isRHFError = val.hasOwnProperty('type') && val.hasOwnProperty('ref') && val.hasOwnProperty('message')
+      if (isRHFError) {
         acc[pre + key] = { message: val.message, index }
 
         return acc
