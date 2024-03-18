@@ -120,7 +120,7 @@ func renderErrorResponse(c *gin.Context, title string, err error) {
 		span.RecordError(err, opts...)
 	}
 
-	ctxWithRequestError(c)
+	CtxWithRequestError(c)
 
 	renderResponse(c, resp, resp.Status)
 }

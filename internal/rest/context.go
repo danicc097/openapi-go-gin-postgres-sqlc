@@ -30,7 +30,7 @@ const (
 
 type requestIDCtxKey struct{}
 
-// NOTE: request ID is set on Request context since it may be used by services.
+// NOTE: request ID is set on Request's context since it may be used by services.
 func GetRequestIDFromCtx(ctx context.Context) string {
 	requestID, _ := ctx.Value(requestIDCtxKey{}).(string)
 	return requestID
@@ -54,8 +54,8 @@ func GetSkipResponseValidationFromCtx(c *gin.Context) bool {
 	return skip
 }
 
-// getUserCallerFromCtx returns basic information from the current user.
-func getUserCallerFromCtx(c *gin.Context) (services.CtxUser, error) {
+// GetUserCallerFromCtx returns basic information from the current user.
+func GetUserCallerFromCtx(c *gin.Context) (services.CtxUser, error) {
 	user, ok := c.Value(userCtxKey).(services.CtxUser)
 	if !ok {
 		return services.CtxUser{}, errors.New("user not found in ctx")
@@ -102,7 +102,7 @@ func GetTxFromCtx(c *gin.Context) pgx.Tx {
 	return tx
 }
 
-func ctxWithTx(c *gin.Context, tx pgx.Tx) {
+func CtxWithTx(c *gin.Context, tx pgx.Tx) {
 	c.Set(transactionCtxKey, tx)
 }
 
@@ -115,7 +115,7 @@ func GetSpanFromCtx(c *gin.Context) trace.Span {
 	return span
 }
 
-func ctxWithSpan(c *gin.Context, span trace.Span) {
+func CtxWithSpan(c *gin.Context, span trace.Span) {
 	c.Set(spanCtxKey, span)
 }
 
@@ -134,14 +134,14 @@ func GetUserDataFromCtx(c context.Context) any {
 	return c.Value(userDataCtxKey)
 }
 
-// CtxRequestHasError returns whether the current request has an error.
-func CtxRequestHasError(c *gin.Context) bool {
+// GetRequestHasErrorFromCtx returns whether the current request has an error.
+func GetRequestHasErrorFromCtx(c *gin.Context) bool {
 	_, ok := c.Value(errorCtxKey).(struct{})
 
 	return ok
 }
 
-// ctxWithRequestError signals that the current request has an error.
-func ctxWithRequestError(c *gin.Context) {
+// CtxWithRequestError signals that the current request has an error.
+func CtxWithRequestError(c *gin.Context) {
 	c.Set(errorCtxKey, struct{}{})
 }

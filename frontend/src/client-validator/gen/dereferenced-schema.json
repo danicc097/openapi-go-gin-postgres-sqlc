@@ -3214,6 +3214,7 @@
         "description": "string identifiers for SSE event listeners.",
         "type": "string",
         "enum": [
+          "AppDebug",
           "WorkItemUpdated",
           "TeamCreated",
           "GlobalAlerts"
@@ -3225,6 +3226,7 @@
       "description": "string identifiers for SSE event listeners.",
       "type": "string",
       "enum": [
+        "AppDebug",
         "WorkItemUpdated",
         "TeamCreated",
         "GlobalAlerts"
@@ -9532,6 +9534,7 @@
         "description": "string identifiers for SSE event listeners.",
         "type": "string",
         "enum": [
+          "AppDebug",
           "WorkItemUpdated",
           "TeamCreated",
           "GlobalAlerts"
@@ -9543,6 +9546,7 @@
       "description": "string identifiers for SSE event listeners.",
       "type": "string",
       "enum": [
+        "AppDebug",
         "WorkItemUpdated",
         "TeamCreated",
         "GlobalAlerts"

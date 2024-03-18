@@ -124,7 +124,8 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	}))
 	router.Use(ginzap.RecoveryWithZap(conf.Logger.Desugar(), true))
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
+		// should be appConfig env struct
+		AllowOrigins:     []string{"https://localhost:3020"},
 		AllowMethods:     []string{"*"},
 		AllowHeaders:     []string{"*"},
 		ExposeHeaders:    []string{"*"},

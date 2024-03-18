@@ -15,6 +15,7 @@ export type Topic = typeof Topic[keyof typeof Topic];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const Topic = {
+  AppDebug: 'AppDebug',
   WorkItemUpdated: 'WorkItemUpdated',
   TeamCreated: 'TeamCreated',
   GlobalAlerts: 'GlobalAlerts',

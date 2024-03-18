@@ -22,7 +22,7 @@ func (m *tracingMiddleware) WithSpan() gin.HandlerFunc {
 
 		span.SetAttributes(userIDAttribute(c)) // if we are authenticated, it sets user-id
 
-		ctxWithSpan(c, span)
+		CtxWithSpan(c, span)
 
 		c.Next()
 	}

@@ -89,7 +89,7 @@ func (m *authMiddleware) EnsureAuthorized(config AuthRestriction) gin.HandlerFun
 	return func(c *gin.Context) {
 		errorMsg := ""
 		errs := []string{}
-		user, err := getUserCallerFromCtx(c)
+		user, err := GetUserCallerFromCtx(c)
 		if err != nil {
 			renderErrorResponse(c, "Could not get current user.", nil)
 			c.Abort()

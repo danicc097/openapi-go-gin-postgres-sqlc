@@ -34,6 +34,9 @@ import {
   Pill,
   ScrollArea,
   CheckIcon,
+  ComboboxProps,
+  InputBaseProps,
+  List,
 } from '@mantine/core'
 import classes from './form.module.css'
 import { DateInput, DateTimePicker } from '@mantine/dates'
@@ -96,8 +99,16 @@ import { nameInitials, sentenceCase } from 'src/utils/strings'
 import { useFormSlice } from 'src/slices/form'
 import RandExp, { randexp } from 'randexp'
 import type { FormField, SchemaKey } from 'src/utils/form'
-import { inputBuilder, selectOptionsBuilder, useDynamicFormContext } from 'src/utils/formGeneration.context'
+import {
+  fieldOptionsBuilder,
+  inputBuilder,
+  selectOptionsBuilder,
+  useDynamicFormContext,
+} from 'src/utils/formGeneration.context'
 import { useCalloutErrors } from 'src/components/Callout/useCalloutErrors'
+import { IconAlertCircle } from '@tabler/icons-react'
+import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
+import { joinWithAnd } from 'src/utils/format'
 
 export type SelectOptionsTypes = 'select' | 'multiselect'
 
@@ -122,6 +133,14 @@ export type SelectOptions<Return, E = unknown> = {
    * Overrides default combobox item label color.
    */
   labelColor?: <V extends E>(el: V & E) => string
+}
+
+export type FieldOptions<Return, E = unknown> = {
+  /**
+   * Returns custom warnings based on the current form value. For arrays, warning function
+   * is executed for each element in form.
+   */
+  warningFn?: (el: Return extends unknown[] ? Return[number] : Return) => string[]
 }
 
 export interface InputOptions<Return, E = unknown> {
@@ -160,9 +179,28 @@ export type DynamicFormOptions<
       >
     >
   }>
+  /**
+   * Builds the given form fields as select or multiselect.
+   */
   selectOptions?: Partial<{
     [key in Exclude<U, IgnoredFormKeys>]: ReturnType<
       typeof selectOptionsBuilder<
+        PathType<
+          T,
+          //@ts-ignore
+          key
+        >,
+        unknown
+      >
+    >
+  }>
+
+  /**
+   * Returns custom warnings based on the current form value
+   */
+  fieldOptions?: Partial<{
+    [key in Exclude<U, IgnoredFormKeys>]: ReturnType<
+      typeof fieldOptionsBuilder<
         PathType<
           T,
           //@ts-ignore
@@ -271,6 +309,8 @@ export default function DynamicForm<Form extends object, IgnoredFormKeys extends
       return acc
     }, {})
   }
+
+  // useStopInfiniteRenders(20)
 
   return (
     <DynamicFormProvider value={{ formName, options, schemaFields: _schemaFields }}>
@@ -481,11 +521,7 @@ type ArrayOfObjectsChildrenProps = {
   schemaKey: SchemaKey
 }
 
-function ArrayOfObjectsChildren({
-  formField,
-
-  schemaKey,
-}: ArrayOfObjectsChildrenProps) {
+function ArrayOfObjectsChildren({ formField, schemaKey }: ArrayOfObjectsChildrenProps) {
   const { formName, options, schemaFields } = useDynamicFormContext()
   const form = useFormContext()
   // form.watch(formField, fieldArray.fields) // inf rerendering
@@ -495,32 +531,58 @@ function ArrayOfObjectsChildren({
 
   useWatch({ name: `${formField}`, control: form.control }) // needed
 
-  const children = (form.getValues(formField) || []).map((item, k: number) => {
-    // input focus loss on rerender when defining component inside another function scope
-    return (
-      <div
-        // reodering: https://codesandbox.io/s/watch-usewatch-calc-forked-5vrcsk?file=/src/fieldArray.js
-        key={k}
-        css={css`
-          min-width: 100%;
-        `}
-      >
-        <Card mt={12} mb={12} withBorder radius={cardRadius} className={classes.childCard}>
-          <Flex justify={'end'} mb={10}>
-            <RemoveButton formField={formField} index={k} itemName={itemName} icon={<IconTrash size="1rem" />} />
-          </Flex>
-          <Group gap={10}>
-            <GeneratedInputs parentSchemaKey={schemaKey} parentFormField={`${formField}.${k}` as FormField} />
-          </Group>
-        </Card>
-      </div>
-    )
-  })
-
   return (
     <Flex gap={6} align="center" direction="column">
-      {children}
+      {(form.getValues(formField) || []).map((item, index) => (
+        <ArrayOfObjectsChild
+          key={index}
+          index={index}
+          formField={formField}
+          itemName={itemName}
+          schemaKey={schemaKey}
+        />
+      ))}
     </Flex>
+  )
+}
+
+const ArrayOfObjectsChild = ({ index, formField, itemName, schemaKey }) => {
+  const { formName, options, schemaFields } = useDynamicFormContext()
+  const form = useFormContext()
+
+  const itemFormField = `${formField}.${index}` as FormField
+  const fieldWarnings = useFormSlice((state) => state.form[formName]?.customWarnings[itemFormField])
+  const warningFn = options.fieldOptions?.[schemaKey]?.warningFn
+  const formFieldWatch = form.watch(itemFormField)
+  const formSlice = useFormSlice()
+
+  useEffect(() => {
+    if (warningFn) {
+      const warnings = joinWithAnd(warningFn(formFieldWatch))
+      console.log({ warnings, fieldWarnings, formFieldWatch })
+
+      formSlice.setCustomWarning(formName, itemFormField, warnings.length > 0 ? warnings : null)
+      form.trigger(itemFormField)
+    }
+  }, [formFieldWatch, fieldWarnings])
+
+  return (
+    <div
+      key={index}
+      css={css`
+        min-width: 100%;
+      `}
+    >
+      <Card mt={12} mb={12} withBorder radius={cardRadius} className={classes.childCard}>
+        <Flex justify={'space-between'} direction={'row-reverse'} mb={10}>
+          <RemoveButton formField={formField} index={index} itemName={itemName} icon={<IconTrash size="1rem" />} />
+          {renderWarningIcon(fieldWarnings)}
+        </Flex>
+        <Group gap={10}>
+          <GeneratedInputs parentSchemaKey={schemaKey} parentFormField={itemFormField} />
+        </Group>
+      </Card>
+    </div>
   )
 }
 
@@ -586,7 +648,7 @@ function ArrayChildren({ formField, schemaKey, inputProps }: ArrayChildrenProps)
     )
   })
 
-  if (children.length === 0) return null
+  if (children.length === 0) return <Text size="xs" w={'100%'}>{`No ${lowerFirst(pluralize(itemName))} defined`}</Text>
 
   return (
     <Flex
@@ -675,11 +737,25 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
 
   const fieldState = form.getFieldState(formField)
 
-  const formFieldKeys = formField.split('.')
-  // remove last index
-  const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 1).join('.') as FormField
+  const parentFormField = getParentFormField(formField)
 
   const formValue = form.getValues(formField)
+  const formSlice = useFormSlice()
+  const fieldWarnings = useFormSlice((state) => state.form[formName]?.customWarnings[formField])
+  // const warning = formSlice.form[formName]?.customWarnings[formField]
+  const formFieldWatch = form.watch(formField)
+  const warningFn = options.fieldOptions?.[schemaKey]?.warningFn
+
+  useEffect(() => {
+    if (warningFn) {
+      const warnings = joinWithAnd(warningFn(formFieldWatch))
+
+      // FIXME: we are doing eerie warning and customerror checks all over the place to prevent inf rerender
+      // but should use form field watch properly like right here and then trigger validation
+      formSlice.setCustomWarning(formName, formField, warnings.length > 0 ? warnings : null)
+      form.trigger(formField)
+    }
+  }, [formFieldWatch, fieldWarnings])
 
   if (formValue === null || formValue === undefined) {
     const defaultValue = options.defaultValues?.[schemaKey]
@@ -695,6 +771,7 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     ...(fieldState.error && { error: sentenceCase(fieldState.error?.message) }),
     required: schemaFields[schemaKey]?.required && type !== 'boolean',
     placeholder: `Enter ${lowerFirst(singularize(options.labels[schemaKey] || ''))}`,
+    ...(fieldWarnings && { rightSection: renderWarningIcon([fieldWarnings]) }),
   }
 
   const _props = {
@@ -847,18 +924,14 @@ const GeneratedInput = ({ schemaKey, props, formField, index }: GeneratedInputPr
     <Flex align="center" gap={6} justify={'center'} {...props?.container}>
       {formFieldComponent}
       {index !== undefined && (
-        <RemoveButton
-          formField={formFieldArrayPath}
-          index={index}
-          itemName={itemName}
-          icon={<IconMinus size="1rem" />}
-        />
+        <RemoveButton formField={parentFormField} index={index} itemName={itemName} icon={<IconMinus size="1rem" />} />
       )}
     </Flex>
   )
 }
 
 type RemoveButtonProps = {
+  // formField without item index
   formField: FormField
   index: number
   itemName: string
@@ -950,10 +1023,13 @@ const initialValueByType = (type?: SchemaField['type']) => {
 
 type CustomPillProps = {
   value: any
+  index: number
   formField: FormField
   schemaKey: SchemaKey
   handleValueRemove: (val: string) => void
   props?: React.HTMLProps<HTMLDivElement>
+  warnings: Warnings
+  setWarnings: React.Dispatch<React.SetStateAction<Warnings>>
 }
 
 type CustomMultiselectProps = {
@@ -961,6 +1037,17 @@ type CustomMultiselectProps = {
   registerOnChange: ChangeHandler
   schemaKey: SchemaKey
   itemName: string
+} & InputBaseProps
+
+type Warnings = Record<string, string>
+
+/**
+ * Removes the last index from the form field.
+ */
+function getParentFormField(formField: FormField) {
+  const formFieldKeys = formField.split('.')
+  const formFieldArrayPath = formFieldKeys.slice(0, formFieldKeys.length - 1).join('.') as FormField
+  return formFieldArrayPath
 }
 
 function CustomMultiselect({
@@ -983,14 +1070,17 @@ function CustomMultiselect({
     onDropdownOpen: () => combobox.updateSelectedOptionIndex('active'),
   })
 
-  const handleValueRemove = (val: string) => {
-    formSlice.setCustomError(formName, formField, null) // index position changed, misleading message
+  const handleValueRemove = async (val: string) => {
+    // index position changed, misleading message. must manually trigger validation for the field via trigger
+    formSlice.setCustomError(formName, formField, null)
     form.unregister(formField) // needs to be called before setValue
     form.setValue(
       formField,
       formValues.filter((v) => v !== val),
     )
+    await form.trigger(formField, { shouldFocus: true })
   }
+
   const comboboxOptions = selectOptions.values
     .filter((item: any) => {
       const inSearch = JSON.stringify(
@@ -1040,6 +1130,17 @@ function CustomMultiselect({
     }
   }, [formState])
 
+  const { rightSection, ...props } = inputProps
+
+  const [warnings, setWarnings] = useState<Warnings>({})
+
+  useEffect(() => {
+    const msg = Object.values(warnings).join(',')
+    if (formSlice.form[formName]?.customWarnings[formField] !== msg) {
+      formSlice.setCustomWarning(formName, formField, msg)
+    }
+  }, [warnings])
+
   return (
     <Box w={'100%'}>
       <Combobox
@@ -1070,26 +1171,30 @@ function CustomMultiselect({
             }}
             label={pluralize(upperFirst(itemName))}
             onClick={() => combobox.openDropdown()}
-            {...inputProps}
+            {...props}
             // must override input props error
             error={multiselectFirstError}
+            rightSection={renderWarningIcon(Object.values(warnings))}
           >
             <Pill.Group>
               {formValues.length > 0 &&
                 formValues.map((formValue, i) => (
                   <CustomPill
+                    index={i}
                     formField={formField}
                     key={`${formName}-${formField}-${i}-pill`}
                     value={formValue}
                     handleValueRemove={handleValueRemove}
                     schemaKey={schemaKey}
+                    warnings={warnings}
+                    setWarnings={setWarnings}
                   />
                 ))}
 
               <Combobox.EventsTarget>
                 <PillsInput.Field
                   placeholder={`Search ${pluralize(lowerFirst(itemName))}`}
-                  onChange={(event) => {
+                  onChange={async (event) => {
                     combobox.updateSelectedOptionIndex()
                     setSearch(event.currentTarget.value)
                   }}
@@ -1097,7 +1202,7 @@ function CustomMultiselect({
                   value={search}
                   onFocus={() => combobox.openDropdown()}
                   onBlur={() => combobox.closeDropdown()}
-                  onKeyDown={(event) => {
+                  onKeyDown={async (event) => {
                     if (event.key === 'Backspace' && search.length === 0) {
                       event.preventDefault()
                       formSlice.setCustomError(formName, formField, null)
@@ -1135,7 +1240,7 @@ type CustomSelectProps = {
   registerOnChange: ChangeHandler
   schemaKey: SchemaKey
   itemName: string
-}
+} & InputBaseProps
 
 function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inputProps }: CustomSelectProps) {
   const form = useFormContext()
@@ -1204,6 +1309,8 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
 
   const parentSchemaKey = schemaKey.split('.').slice(0, -1).join('.') as SchemaKey
 
+  const { rightSection, ...props } = inputProps
+
   return (
     <Box w={'100%'}>
       <Combobox
@@ -1244,12 +1351,17 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
             multiline
             name={formField}
             role="combobox"
-            {...inputProps}
+            {...props}
           >
             {selectedOption ? (
               comboboxOptionTemplate(selectOptions.optionTransformer, selectedOption)
             ) : (
-              <Input.Placeholder>{`Pick ${singularize(lowerFirst(itemName))}`}</Input.Placeholder>
+              <Input.Placeholder>
+                <Flex direction="row" justify="space-between" align="center">
+                  <Text size="sm">{`Pick ${singularize(lowerFirst(itemName))}`}</Text>
+                  {rightSection}
+                </Flex>
+              </Input.Placeholder>
             )}
           </InputBase>
         </Combobox.Target>
@@ -1284,20 +1396,64 @@ function CustomSelect({ formField, registerOnChange, schemaKey, itemName, ...inp
   )
 }
 
-function CustomPill({ value, schemaKey, handleValueRemove, formField, ...props }: CustomPillProps): JSX.Element | null {
+function renderWarningIcon(warnings?: string[] | string | null): React.ReactNode {
+  const _warnings = (!isArray(warnings) ? [warnings] : warnings).filter((v) => !!v)
+
+  return (
+    _warnings &&
+    _warnings?.length > 0 && (
+      <Tooltip
+        withinPortal
+        label={
+          <>
+            {_warnings?.map((w, i) => (
+              <Text key={i} size="sm">
+                {w}
+              </Text>
+            ))}
+          </>
+        }
+        position="top-end"
+        withArrow
+      >
+        <IconAlertCircle size={20} color="orange" />
+      </Tooltip>
+    )
+  )
+}
+
+function CustomPill({
+  value,
+  schemaKey,
+  handleValueRemove,
+  formField,
+  warnings,
+  setWarnings,
+  index,
+  ...props
+}: CustomPillProps): JSX.Element | null {
   const { formName, options, schemaFields } = useDynamicFormContext()
   const selectOptions = options.selectOptions![schemaKey]!
   const itemName = singularize(options.labels[schemaKey] || '')
+  // const formSlice = useFormSlice()
+  // const warning = formSlice.form[formName]?.customWarnings[formField]
 
   let invalidValue = null
 
   const option = selectOptions.values.find((option) => selectOptions.formValueTransformer(option) === value)
   if (!option) {
-    console.log(`${value} is not a valid ${singularize(lowerCase(itemName))}`)
-
     // for multiselects, explicitly set wrong values so that error positions make sense and the user knows there is a wrong form value beforehand
     // instead of us deleting it implicitly
+    // TODO: should have multiselect and select option to allow creating values on the fly.
+    // if no option found in search, a button option to `Create ${itemName}` shows a modal
+    // with the form that creates that entity, e.g. tag, and once created we refetch selectOptions.values
+    // see https://mantine.dev/combobox/?e=SelectCreatable
     invalidValue = value
+    if (invalidValue !== null && invalidValue !== undefined) {
+      if (!warnings[index]) {
+        setWarnings((v) => ({ ...v, [index]: `${itemName} "${value}" does not exist` }))
+      }
+    }
   }
 
   let color = '#bbbbbb'
@@ -1320,7 +1476,13 @@ function CustomPill({ value, schemaKey, handleValueRemove, formField, ...props }
     >
       <Box className={classes.valueComponentInnerBox}>{invalidValue || transformer(option)}</Box>
       <CloseButton
-        onMouseDown={() => handleValueRemove(value)}
+        onMouseDown={() => {
+          if (invalidValue !== null) {
+            setWarnings({})
+            // formSlice.setCustomWarning(formName, formField, null)
+          }
+          handleValueRemove(value)
+        }}
         variant="transparent"
         size={22}
         iconSize={14}

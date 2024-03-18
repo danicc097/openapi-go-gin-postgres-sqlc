@@ -38,12 +38,12 @@ func (m *dbMiddleware) BeginTransaction() gin.HandlerFunc {
 			return
 		}
 
-		ctxWithTx(c, tx)
+		CtxWithTx(c, tx)
 
 		c.Next()
 
 		if err := tx.Commit(ctx); err != nil {
-			ctxWithRequestError(c)
+			CtxWithRequestError(c)
 			msg := "could not commit transaction"
 			if err := tx.Rollback(ctx); err != nil {
 				msg += fmt.Sprintf(" (rollback error: %s)", err)

@@ -126,7 +126,7 @@ end;
 $$
 language plpgsql;
 
-create or replace function create_work_item_cache_table (project_name text)
+create or replace function create_or_update_work_item_cache_table (project_name text)
   returns VOID
   as $$
 declare
@@ -223,7 +223,7 @@ begin
   from
     projects loop
       perform
-        create_work_item_cache_table (project_name);
+        create_or_update_work_item_cache_table (project_name);
 
       idx_name := FORMAT('cache__%I_gin_index' , project_name);
 
@@ -239,7 +239,7 @@ begin
         title extensions.gin_trgm_ops
         )';
       else
-        idx_def := ''; raise notice 'No index definitions for cache__%' , project_name;
+        idx_def := ''; raise exception 'No index definition found for cache__%' , project_name;
       end case;
 
       if idx_def <> '' and not same_index_definition (idx_name , idx_def) then
