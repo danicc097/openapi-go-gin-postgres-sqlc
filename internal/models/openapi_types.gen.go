@@ -720,8 +720,8 @@ type ProjectBoard struct {
 
 // ProjectConfig defines the model for ProjectConfig.
 type ProjectConfig struct {
-	Fields        []ProjectConfigField    `json:"fields"`
-	Header        []string                `json:"header"`
+	Fields        *[]ProjectConfigField   `json:"fields"`
+	Header        *[]string               `json:"header"`
 	Visualization *map[string]interface{} `json:"visualization,omitempty"`
 }
 

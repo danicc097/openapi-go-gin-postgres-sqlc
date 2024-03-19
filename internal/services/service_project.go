@@ -3,8 +3,6 @@ package services
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"reflect"
 	"strings"
 
@@ -12,7 +10,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/structs"
 	"go.uber.org/zap"
 )
 
@@ -61,57 +58,57 @@ func (p *Project) ByName(ctx context.Context, d db.DBTX, name models.Project) (*
 // when _any_ field changes. we generate a new config the way it must be and merge with whatever was in db's board_config there at app startup.
 // the endpoint to update it will be validated by openapi libs as usual.
 // Deprecated: will use frontend config per user + admin config is stored raw in db.
-func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectName models.Project, update map[string]any) (*models.ProjectConfig, error) {
-	project, err := p.repos.Project.ByName(ctx, d, projectName)
-	if err != nil {
-		return nil, internal.NewErrorf(models.ErrorCodeNotFound, "project not found")
-	}
+// func (p *Project) MergeConfigFields(ctx context.Context, d db.DBTX, projectName models.Project, update map[string]any) (*models.ProjectConfig, error) {
+// 	project, err := p.repos.Project.ByName(ctx, d, projectName)
+// 	if err != nil {
+// 		return nil, internal.NewErrorf(models.ErrorCodeNotFound, "project not found")
+// 	}
 
-	fieldsMap := make(map[string]map[string]any)
+// 	fieldsMap := make(map[string]map[string]any)
 
-	fmt.Printf("project.BoardConfig: %v\n", project.BoardConfig)
+// 	fmt.Printf("project.BoardConfig: %v\n", project.BoardConfig)
 
-	var workItem any
-	// explicitly initialize what we want to allow an admin to edit in project config ui
-	switch projectName {
-	case models.ProjectDemo:
-		// workItem = &models.DemoWorkItems{DemoWorkItem: models.DbDemoWorkItem{}, ClosedAt: pointers.New(time.Now())}
-		// workItem = structs.InitializeFields(reflect.ValueOf(workItem), 1).Interface() // we want very specific fields to be editable in config so it doesn't clutter it
-		// fmt.Printf("workItem: %+v\n", workItem)
-	case models.ProjectDemoTwo:
-		fallthrough
-	default:
-		return nil, errors.New("not implemented")
-	}
-	pathKeys := structs.GetKeys("json", workItem, "")
+// 	var workItem any
+// 	// explicitly initialize what we want to allow an admin to edit in project config ui
+// 	switch projectName {
+// 	case models.ProjectDemo:
+// 		// workItem = &models.DemoWorkItems{DemoWorkItem: models.DbDemoWorkItem{}, ClosedAt: pointers.New(time.Now())}
+// 		// workItem = structs.InitializeFields(reflect.ValueOf(workItem), 1).Interface() // we want very specific fields to be editable in config so it doesn't clutter it
+// 		// fmt.Printf("workItem: %+v\n", workItem)
+// 	case models.ProjectDemoTwo:
+// 		fallthrough
+// 	default:
+// 		return nil, errors.New("not implemented")
+// 	}
+// 	pathKeys := structs.GetKeys("json", workItem, "")
 
-	// index ProjectConfig.Fields by path for simpler logic
-	for _, path := range pathKeys {
-		fieldsMap[path] = defaultConfigField(path)
-	}
+// 	// index ProjectConfig.Fields by path for simpler logic
+// 	for _, path := range pathKeys {
+// 		fieldsMap[path] = defaultConfigField(path)
+// 	}
 
-	var boardConfigMap map[string]any
-	fj, _ := json.Marshal(project.BoardConfig)
-	json.Unmarshal(fj, &boardConfigMap)
+// 	var boardConfigMap map[string]any
+// 	fj, _ := json.Marshal(project.BoardConfig)
+// 	json.Unmarshal(fj, &boardConfigMap)
 
-	// update default config with current db config and merge updated config on top
-	// merge with default config is necessary for project init,
-	//  but merge with existing db config isn't really necessary.
-	p.mergeFieldsMap(fieldsMap, boardConfigMap)
-	p.mergeFieldsMap(fieldsMap, update)
+// 	// update default config with current db config and merge updated config on top
+// 	// merge with default config is necessary for project init,
+// 	//  but merge with existing db config isn't really necessary.
+// 	p.mergeFieldsMap(fieldsMap, boardConfigMap)
+// 	p.mergeFieldsMap(fieldsMap, update)
 
-	project.BoardConfig.Fields = make([]models.ProjectConfigField, 0, len(fieldsMap))
-	for _, field := range fieldsMap {
-		var fieldStruct models.ProjectConfigField
+// 	project.BoardConfig.Fields = make([]models.ProjectConfigField, 0, len(fieldsMap))
+// 	for _, field := range fieldsMap {
+// 		var fieldStruct models.ProjectConfigField
 
-		fBlob, _ := json.Marshal(field)
-		_ = json.Unmarshal(fBlob, &fieldStruct)
+// 		fBlob, _ := json.Marshal(field)
+// 		_ = json.Unmarshal(fBlob, &fieldStruct)
 
-		project.BoardConfig.Fields = append(project.BoardConfig.Fields, fieldStruct)
-	}
+// 		project.BoardConfig.Fields = append(project.BoardConfig.Fields, fieldStruct)
+// 	}
 
-	return &project.BoardConfig, err
-}
+// 	return &project.BoardConfig, err
+// }
 
 // defaultConfigField returns a map version of the ProjectConfig.Fields field.
 func defaultConfigField(path string) map[string]any {

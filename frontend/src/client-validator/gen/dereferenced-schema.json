@@ -715,14 +715,19 @@
                 ],
                 "type": "object"
               },
-              "type": "array"
+              "type": [
+                "array",
+                "null"
+              ]
             },
             "header": {
               "items": {
                 "type": "string"
               },
-              "type": "array",
-              "minLength": 1
+              "type": [
+                "array",
+                "null"
+              ]
             },
             "visualization": {
               "type": "object"
@@ -1757,14 +1762,19 @@
                             ],
                             "type": "object"
                           },
-                          "type": "array"
+                          "type": [
+                            "array",
+                            "null"
+                          ]
                         },
                         "header": {
                           "items": {
                             "type": "string"
                           },
-                          "type": "array",
-                          "minLength": 1
+                          "type": [
+                            "array",
+                            "null"
+                          ]
                         },
                         "visualization": {
                           "type": "object"
@@ -2578,14 +2588,19 @@
                       ],
                       "type": "object"
                     },
-                    "type": "array"
+                    "type": [
+                      "array",
+                      "null"
+                    ]
                   },
                   "header": {
                     "items": {
                       "type": "string"
                     },
-                    "type": "array",
-                    "minLength": 1
+                    "type": [
+                      "array",
+                      "null"
+                    ]
                   },
                   "visualization": {
                     "type": "object"
@@ -2944,14 +2959,19 @@
             ],
             "type": "object"
           },
-          "type": "array"
+          "type": [
+            "array",
+            "null"
+          ]
         },
         "header": {
           "items": {
             "type": "string"
           },
-          "type": "array",
-          "minLength": 1
+          "type": [
+            "array",
+            "null"
+          ]
         },
         "visualization": {
           "type": "object"
@@ -7034,14 +7054,19 @@
                 ],
                 "type": "object"
               },
-              "type": "array"
+              "type": [
+                "array",
+                "null"
+              ]
             },
             "header": {
               "items": {
                 "type": "string"
               },
-              "type": "array",
-              "minLength": 1
+              "type": [
+                "array",
+                "null"
+              ]
             },
             "visualization": {
               "type": "object"
@@ -8076,14 +8101,19 @@
                             ],
                             "type": "object"
                           },
-                          "type": "array"
+                          "type": [
+                            "array",
+                            "null"
+                          ]
                         },
                         "header": {
                           "items": {
                             "type": "string"
                           },
-                          "type": "array",
-                          "minLength": 1
+                          "type": [
+                            "array",
+                            "null"
+                          ]
                         },
                         "visualization": {
                           "type": "object"
@@ -8897,14 +8927,19 @@
                       ],
                       "type": "object"
                     },
-                    "type": "array"
+                    "type": [
+                      "array",
+                      "null"
+                    ]
                   },
                   "header": {
                     "items": {
                       "type": "string"
                     },
-                    "type": "array",
-                    "minLength": 1
+                    "type": [
+                      "array",
+                      "null"
+                    ]
                   },
                   "visualization": {
                     "type": "object"
@@ -9263,14 +9298,19 @@
             ],
             "type": "object"
           },
-          "type": "array"
+          "type": [
+            "array",
+            "null"
+          ]
         },
         "header": {
           "items": {
             "type": "string"
           },
-          "type": "array",
-          "minLength": 1
+          "type": [
+            "array",
+            "null"
+          ]
         },
         "visualization": {
           "type": "object"

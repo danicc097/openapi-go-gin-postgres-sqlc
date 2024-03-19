@@ -2257,13 +2257,13 @@ components:
         fields:
           items:
             $ref: '#/components/schemas/ProjectConfigField'
-          nullable: false
           type: array
+          nullable: true
         header:
           items:
             type: string
-          nullable: false
           type: array
+          nullable: true
         visualization:
           type: object
       required:

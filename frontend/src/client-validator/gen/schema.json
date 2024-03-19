@@ -1476,14 +1476,19 @@
           "items": {
             "$ref": "#/definitions/ProjectConfigField"
           },
-          "type": "array"
+          "type": [
+            "array",
+            "null"
+          ]
         },
         "header": {
           "items": {
             "type": "string"
           },
-          "type": "array",
-          "minLength": 1
+          "type": [
+            "array",
+            "null"
+          ]
         },
         "visualization": {
           "type": "object"

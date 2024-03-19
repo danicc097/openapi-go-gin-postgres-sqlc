@@ -87,10 +87,14 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 		role := models.RoleAdvancedUser
 		scopes := models.Scopes{models.ScopeProjectSettingsWrite}
 
+		p := models.ProjectDemo
+		team1f := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: p})
+		team2f := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: p})
 		ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       role,
 			WithAPIKey: true,
 			Scopes:     scopes,
+			TeamIDs:    []db.TeamID{team1f.TeamID, team2f.TeamID},
 		})
 
 		res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(ufixture.APIKey.APIKey))
@@ -103,8 +107,8 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 		want, err := json.Marshal(&rest.User{
 			User:     ufixture.User,
 			Role:     rest.Role(role),
-			Teams:    &[]db.Team{},
-			Projects: &[]db.Project{},
+			Teams:    ufixture.MemberTeamsJoin,
+			Projects: ufixture.MemberProjectsJoin,
 		})
 		require.NoError(t, err)
 

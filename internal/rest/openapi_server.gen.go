@@ -411,9 +411,9 @@ type Project string
 
 // ProjectConfig defines the model for ProjectConfig.
 type ProjectConfig struct {
-	Fields        []externalRef0.ProjectConfigField `json:"fields"`
-	Header        []string                          `json:"header"`
-	Visualization *map[string]interface{}           `json:"visualization,omitempty"`
+	Fields        *[]externalRef0.ProjectConfigField `json:"fields"`
+	Header        *[]string                          `json:"header"`
+	Visualization *map[string]interface{}            `json:"visualization,omitempty"`
 }
 
 // ProjectConfigField defines the model for ProjectConfigField.
