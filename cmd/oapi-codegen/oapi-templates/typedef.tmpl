@@ -1,8 +1,9 @@
 {{range .Types}}
-{{/* IMPORTANT: changed */}}
-{{if and ((should_exclude_type .TypeName)) (exclude_rest_types)}}/* Ignoring existing rest struct{{end}}
+{{ if and ((should_exclude_type .TypeName)) (exclude_rest_types) -}}
+/* Ignoring existing struct (rest/models.go) {{.TypeName}} */
+{{ else -}}
 {{ if .Schema.Description }}{{ toGoComment .Schema.Description .TypeName  }}{{ else }}// {{.TypeName}} defines the model for {{.JsonName}}.{{ end }}
 type {{.TypeName}} {{if .IsAlias }}={{end}} {{.Schema.TypeDecl}}
-{{if and ((should_exclude_type .TypeName)) (exclude_rest_types)}}*/{{end}}
-{{end}}
+{{ end }}
+{{ end }}
 

@@ -27,7 +27,8 @@ type configuration struct {
 	OutputFile       string `yaml:"output,omitempty"`
 	ExcludeRestTypes bool   `yaml:"exclude-rest-types,omitempty"`
 	// TestClient defines whether the generated code is a client for testing purposes.
-	TestClient bool `yaml:"test-client,omitempty"`
+	TestClient             bool `yaml:"test-client,omitempty"`
+	SkipDiscriminatorUtils bool `yaml:"skip-discriminator-utils,omitempty"`
 }
 
 //go:embed oapi-templates
@@ -118,6 +119,9 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 			}
 
 			return false
+		},
+		"skip_discriminator_utils": func() bool {
+			return config.SkipDiscriminatorUtils
 		},
 		"is_test_client": func() bool {
 			return config.TestClient

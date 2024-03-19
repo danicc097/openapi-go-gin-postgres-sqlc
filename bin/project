@@ -340,7 +340,7 @@ x.gen.pregen() {
     # NOTE: swaggest won't generate for arrays of structs. use a struct with array fields instead.
     generate_structs_map # structs might have been removed in the meantime
 
-    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || touch "$failed_tool_build_marker" # xo gen may create/update models.
+    go build -o $BUILD_DIR/codegen cmd/codegen/main.go || mark_failed_tool_build # xo gen may create/update models.
 
     local rest_structs=() refs=() spec_schemas=()
     declare -A rest_schema_lookup spec_schema_lookup
@@ -849,11 +849,15 @@ x.gen.client-server() {
     sed "s/\$ref: '\#\//\$ref: '$SPEC_PATH\#\//g" $SPEC_PATH >"$paths_file"
 
     # yq e 'del(.components)' -i "$paths_file" # dont delete since recent oapi-codegen does some checks even if we are not generating types
-    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || touch "$failed_tool_build_marker" # templates are embedded, required rebuild
+    go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || mark_failed_tool_build # templates are embedded, required rebuild
 
     # Generated types in models pkg will be used in services, repos, db, but rest package must use original
     # models from rest/models.go (source of generated spec schemas)
     # and not the generated ones to avoid (a lot of) unnecessary conversions.
+    # TODO:
+    # - skip server gen of all structs that start with Db<uppercase letter>
+    # - sed [[:space:]]Db<uppercase letter> or externalRef0.Db<..> to db.* + goimports
+
     oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed types generation" &
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models --server-types "$server_types_list" --types "$types_list" "$paths_file" || err "Failed server generation" &
     oapi-codegen --config internal/rest/oapi-codegen-test-client.yaml "$SPEC_PATH" || err "Failed client generation" &
@@ -1048,7 +1052,7 @@ x.gen() {
     { retry 5 go generate ./...; } &
     { retry 5 x.gen.xo; } &
     { retry 5 x.gen.sqlc; } &
-    x.gen.jet &
+    x.gen.jet >/dev/null &
     generate_repo_constructor &
 
     wait_without_error || err Failed jobs
@@ -1087,11 +1091,11 @@ x.gen.build-tools() {
     mkdir -p $out_dir
     for cmd in jet oapi-codegen codegen ast-parser; do
       echo "Building $cmd..."
-      { go build -o $out_dir/$cmd cmd/$cmd/main.go || touch "$failed_tool_build_marker"; } &
+      { go build -o $out_dir/$cmd cmd/$cmd/main.go || mark_failed_tool_build; } &
     done
 
     wait_without_error --no-kill || {
-      touch "$failed_tool_build_marker"
+      mark_failed_tool_build
     }
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
 }
@@ -2250,6 +2254,10 @@ $formatted_string
 " "$SPEC_PATH"
 }
 
+mark_failed_tool_build() {
+  touch "$failed_tool_build_marker"
+}
+
 # generate db structs for use with swaggest/openapi-go.
 generate_structs_map() {
   # cached most of the time. building here since it must be called before tools build
@@ -2440,7 +2448,7 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
   # always compile and run since we need new PublicStructs that were just changed
   codegen gen-schema --struct-names $struct_names_arg --existing-structs $existing_structs_arg | yq '
     with_entries(select(.key == "components"))' \
-    >$gen_schema_spec_path || touch "$failed_tool_build_marker"
+    >$gen_schema_spec_path || mark_failed_tool_build
 
   local clashes=()
   for custom_schema in $(yq ".components.schemas[] | select((.x-is-generated == true) | not) | key" $SPEC_PATH); do

@@ -2359,7 +2359,6 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Topic'
-      x-use-server-type: true
     Topic:
       description: string identifiers for SSE event listeners.
       type: string

@@ -3219,8 +3219,7 @@
           "TeamCreated",
           "GlobalAlerts"
         ]
-      },
-      "x-use-server-type": true
+      }
     },
     "Topic": {
       "description": "string identifiers for SSE event listeners.",
@@ -9539,8 +9538,7 @@
           "TeamCreated",
           "GlobalAlerts"
         ]
-      },
-      "x-use-server-type": true
+      }
     },
     "Topic": {
       "description": "string identifiers for SSE event listeners.",

@@ -1615,8 +1615,7 @@
       "type": "array",
       "items": {
         "$ref": "#/definitions/Topic"
-      },
-      "x-use-server-type": true
+      }
     },
     "Topic": {
       "description": "string identifiers for SSE event listeners.",
