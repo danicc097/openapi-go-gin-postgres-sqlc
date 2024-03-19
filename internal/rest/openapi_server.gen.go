@@ -283,65 +283,65 @@ type CreateWorkItemRequest struct {
 
 /* Ignoring existing struct (rest/models.go) CreateWorkItemTypeRequest */
 
-/* Skipping definition of db struct DbActivity */
+/* Skipping definition of db struct db.Activity */
 
-/* Skipping definition of db struct DbActivityCreateParams */
+/* Skipping definition of db struct db.ActivityCreateParams */
 
-/* Skipping definition of db struct DbDemoTwoWorkItem */
+/* Skipping definition of db struct db.DemoTwoWorkItem */
 
-/* Skipping definition of db struct DbDemoTwoWorkItemCreateParams */
+/* Skipping definition of db struct db.DemoTwoWorkItemCreateParams */
 
-/* Skipping definition of db struct DbDemoWorkItem */
+/* Skipping definition of db struct db.DemoWorkItem */
 
-/* Skipping definition of db struct DbDemoWorkItemCreateParams */
+/* Skipping definition of db struct db.DemoWorkItemCreateParams */
 
-/* Skipping definition of db struct DbKanbanStep */
+/* Skipping definition of db struct db.KanbanStep */
 
-/* Skipping definition of db struct DbNotification */
+/* Skipping definition of db struct db.Notification */
 
-/* Skipping definition of db struct DbNotificationID */
+/* Skipping definition of db struct db.NotificationID */
 
-/* Skipping definition of db struct DbProject */
+/* Skipping definition of db struct db.Project */
 
-/* Skipping definition of db struct DbProjectID */
+/* Skipping definition of db struct db.ProjectID */
 
-/* Skipping definition of db struct DbTeam */
+/* Skipping definition of db struct db.Team */
 
-/* Skipping definition of db struct DbTeamCreateParams */
+/* Skipping definition of db struct db.TeamCreateParams */
 
-/* Skipping definition of db struct DbTimeEntry */
+/* Skipping definition of db struct db.TimeEntry */
 
-/* Skipping definition of db struct DbUser */
+/* Skipping definition of db struct db.User */
 
-/* Skipping definition of db struct DbUserAPIKey */
+/* Skipping definition of db struct db.UserAPIKey */
 
-/* Skipping definition of db struct DbUserID */
+/* Skipping definition of db struct db.UserID */
 
-/* Skipping definition of db struct DbUserNotification */
+/* Skipping definition of db struct db.UserNotification */
 
-/* Skipping definition of db struct DbUserWIAUWorkItem */
+/* Skipping definition of db struct db.UserWIAUWorkItem */
 
-/* Skipping definition of db struct DbUserWIAWorkItem */
+/* Skipping definition of db struct db.UserWIAWorkItem */
 
-/* Skipping definition of db struct DbWorkItem */
+/* Skipping definition of db struct db.WorkItem */
 
-/* Skipping definition of db struct DbWorkItemComment */
+/* Skipping definition of db struct db.WorkItemComment */
 
-/* Skipping definition of db struct DbWorkItemCreateParams */
+/* Skipping definition of db struct db.WorkItemCreateParams */
 
-/* Skipping definition of db struct DbWorkItemID */
+/* Skipping definition of db struct db.WorkItemID */
 
-/* Skipping definition of db struct DbWorkItemM2MAssigneeWIA */
+/* Skipping definition of db struct db.WorkItemM2MAssigneeWIA */
 
-/* Skipping definition of db struct DbWorkItemRole */
+/* Skipping definition of db struct db.WorkItemRole */
 
-/* Skipping definition of db struct DbWorkItemTag */
+/* Skipping definition of db struct db.WorkItemTag */
 
-/* Skipping definition of db struct DbWorkItemTagCreateParams */
+/* Skipping definition of db struct db.WorkItemTagCreateParams */
 
-/* Skipping definition of db struct DbWorkItemType */
+/* Skipping definition of db struct db.WorkItemType */
 
-/* Skipping definition of db struct DbWorkItemTypeID */
+/* Skipping definition of db struct db.WorkItemTypeID */
 
 // DemoKanbanSteps is generated from kanban_steps table.
 type DemoKanbanSteps string
@@ -438,7 +438,7 @@ type Scopes = []externalRef0.Scope
 type ServicesMember struct {
 	// Role is generated from database enum 'work_item_role'.
 	Role   externalRef0.WorkItemRole `json:"role"`
-	UserID externalRef0.DbUserID     `json:"userID"`
+	UserID db.UserID                 `json:"userID"`
 }
 
 /* Ignoring existing struct (rest/models.go) SharedWorkItemJoins */
@@ -570,71 +570,54 @@ type GetPaginatedUsersParams struct {
 }
 
 // UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
-
 type UpdateActivityJSONRequestBody = UpdateActivityRequest
 
 // CreateActivityJSONRequestBody defines body for CreateActivity for application/json ContentType.
-
 type CreateActivityJSONRequestBody = CreateActivityRequest
 
 // UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
-
 type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
-
 type InitializeProjectJSONRequestBody = CreateProjectBoardRequest
 
 // CreateTeamJSONRequestBody defines body for CreateTeam for application/json ContentType.
-
 type CreateTeamJSONRequestBody = CreateTeamRequest
 
 // CreateWorkItemTagJSONRequestBody defines body for CreateWorkItemTag for application/json ContentType.
-
 type CreateWorkItemTagJSONRequestBody = CreateWorkItemTagRequest
 
 // CreateWorkItemTypeJSONRequestBody defines body for CreateWorkItemType for application/json ContentType.
-
 type CreateWorkItemTypeJSONRequestBody = CreateWorkItemTypeRequest
 
 // UpdateTeamJSONRequestBody defines body for UpdateTeam for application/json ContentType.
-
 type UpdateTeamJSONRequestBody = UpdateTeamRequest
 
 // CreateTimeEntryJSONRequestBody defines body for CreateTimeEntry for application/json ContentType.
-
 type CreateTimeEntryJSONRequestBody = CreateTimeEntryRequest
 
 // UpdateTimeEntryJSONRequestBody defines body for UpdateTimeEntry for application/json ContentType.
-
 type UpdateTimeEntryJSONRequestBody = UpdateTimeEntryRequest
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
-
 type UpdateUserJSONRequestBody = UpdateUserRequest
 
 // UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
-
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
 // UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
-
 type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
 
 // UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
-
 type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
 
 // CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
-
 type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
 
 // CreateWorkItemCommentJSONRequestBody defines body for CreateWorkItemComment for application/json ContentType.
-
 type CreateWorkItemCommentJSONRequestBody = CreateWorkItemCommentRequest
 
 // UpdateWorkItemCommentJSONRequestBody defines body for UpdateWorkItemComment for application/json ContentType.
-
 type UpdateWorkItemCommentJSONRequestBody = UpdateWorkItemCommentRequest
 
 // AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
@@ -2429,7 +2412,7 @@ type GetProjectResponseObject interface {
 	VisitGetProjectResponse(w http.ResponseWriter) error
 }
 
-type GetProject200JSONResponse externalRef0.DbProject
+type GetProject200JSONResponse db.Project
 
 func (response GetProject200JSONResponse) VisitGetProjectResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")

@@ -851,19 +851,15 @@ x.gen.client-server() {
     # yq e 'del(.components)' -i "$paths_file" # dont delete since recent oapi-codegen does some checks even if we are not generating types
     go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || mark_failed_tool_build # templates are embedded, required rebuild
 
-    # Generated types in models pkg will be used in services, repos, db, but rest package must use original
-    # models from rest/models.go (source of generated spec schemas)
-    # and not the generated ones to avoid (a lot of) unnecessary conversions.
-    # TODO:
-    # - skip server gen of all structs that start with Db<uppercase letter>
-    # - sed [[:space:]]Db<uppercase letter> or externalRef0.Db<..> to db.* + goimports
-
     oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed types generation" &
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models --server-types "$server_types_list" --types "$types_list" "$paths_file" || err "Failed server generation" &
     oapi-codegen --config internal/rest/oapi-codegen-test-client.yaml "$SPEC_PATH" || err "Failed client generation" &
     oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation" &
 
     wait_without_error
+
+    sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_server.gen.go
+    sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_client_gen_test.go
 
     # local configs=(
     #   "internal/models/oapi-codegen-types.yaml"

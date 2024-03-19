@@ -1001,71 +1001,54 @@ type GetPaginatedUsersParams struct {
 }
 
 // UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
-
 type UpdateActivityJSONRequestBody = UpdateActivityRequest
 
 // CreateActivityJSONRequestBody defines body for CreateActivity for application/json ContentType.
-
 type CreateActivityJSONRequestBody = CreateActivityRequest
 
 // UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
-
 type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
 // InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
-
 type InitializeProjectJSONRequestBody = CreateProjectBoardRequest
 
 // CreateTeamJSONRequestBody defines body for CreateTeam for application/json ContentType.
-
 type CreateTeamJSONRequestBody = CreateTeamRequest
 
 // CreateWorkItemTagJSONRequestBody defines body for CreateWorkItemTag for application/json ContentType.
-
 type CreateWorkItemTagJSONRequestBody = CreateWorkItemTagRequest
 
 // CreateWorkItemTypeJSONRequestBody defines body for CreateWorkItemType for application/json ContentType.
-
 type CreateWorkItemTypeJSONRequestBody = CreateWorkItemTypeRequest
 
 // UpdateTeamJSONRequestBody defines body for UpdateTeam for application/json ContentType.
-
 type UpdateTeamJSONRequestBody = UpdateTeamRequest
 
 // CreateTimeEntryJSONRequestBody defines body for CreateTimeEntry for application/json ContentType.
-
 type CreateTimeEntryJSONRequestBody = CreateTimeEntryRequest
 
 // UpdateTimeEntryJSONRequestBody defines body for UpdateTimeEntry for application/json ContentType.
-
 type UpdateTimeEntryJSONRequestBody = UpdateTimeEntryRequest
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
-
 type UpdateUserJSONRequestBody = UpdateUserRequest
 
 // UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
-
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
 // UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
-
 type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
 
 // UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
-
 type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
 
 // CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
-
 type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
 
 // CreateWorkItemCommentJSONRequestBody defines body for CreateWorkItemComment for application/json ContentType.
-
 type CreateWorkItemCommentJSONRequestBody = CreateWorkItemCommentRequest
 
 // UpdateWorkItemCommentJSONRequestBody defines body for UpdateWorkItemComment for application/json ContentType.
-
 type UpdateWorkItemCommentJSONRequestBody = UpdateWorkItemCommentRequest
 
 // AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
