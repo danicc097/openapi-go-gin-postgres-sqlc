@@ -511,8 +511,8 @@ export interface components {
       projectID: number;
     };
     ProjectConfig: {
-      fields: components["schemas"]["ProjectConfigField"][] | null;
-      header: string[] | null;
+      fields?: components["schemas"]["ProjectConfigField"][];
+      header?: string[];
       visualization?: Record<string, never>;
     };
     ProjectConfigField: {

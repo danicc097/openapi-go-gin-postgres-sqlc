@@ -234,8 +234,8 @@ export interface DbProject {
   updatedAt: string
 }
 export interface ProjectConfig {
-  fields: ProjectConfigField[] | null
-  header: string[] | null
+  fields?: ProjectConfigField[]
+  header?: string[]
   visualization?: {}
 }
 export interface ProjectConfigField {

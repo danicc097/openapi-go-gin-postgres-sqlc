@@ -2258,17 +2258,12 @@ components:
           items:
             $ref: '#/components/schemas/ProjectConfigField'
           type: array
-          nullable: true
         header:
           items:
             type: string
           type: array
-          nullable: true
         visualization:
           type: object
-      required:
-        - header
-        - fields
       type: object
     ProjectConfigField:
       properties:
