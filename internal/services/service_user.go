@@ -280,7 +280,8 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 		return nil, fmt.Errorf("repos.User.ByAPIKey: %w", err)
 	}
 
-	user, err = u.repos.User.ByID(ctx, d, user.UserID, u.getSharedDBOpts()...)
+	opts := append(u.getSharedDBOpts(), db.WithUserJoin(db.UserJoins{UserAPIKey: true}))
+	user, err = u.repos.User.ByID(ctx, d, user.UserID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.User.ByID: %w", err)
 	}
