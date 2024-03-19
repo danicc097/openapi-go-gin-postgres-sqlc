@@ -12,6 +12,7 @@ import (
 	"slices"
 	"strings"
 	"text/template"
+	"unicode"
 
 	"github.com/deepmap/oapi-codegen/v2/pkg/codegen"
 	"github.com/deepmap/oapi-codegen/v2/pkg/util"
@@ -29,6 +30,7 @@ type configuration struct {
 	// TestClient defines whether the generated code is a client for testing purposes.
 	TestClient             bool `yaml:"test-client,omitempty"`
 	SkipDiscriminatorUtils bool `yaml:"skip-discriminator-utils,omitempty"`
+	IsRestServerGen        bool `yaml:"is-rest-server-gen,omitempty"`
 }
 
 //go:embed oapi-templates
@@ -120,6 +122,9 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 
 			return false
 		},
+		"is_rest_server_gen": func() bool {
+			return config.IsRestServerGen
+		},
 		"skip_discriminator_utils": func() bool {
 			return config.SkipDiscriminatorUtils
 		},
@@ -131,6 +136,9 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 		},
 		"models_pkg": func() string {
 			return modelsPkg + "."
+		},
+		"is_db_struct": func(t string) bool {
+			return strings.HasPrefix(t, "Db") && unicode.IsUpper([]rune(t)[2])
 		},
 		"should_exclude_type": func(t string) bool {
 			stName := strings.TrimPrefix(t, "externalRef0.")

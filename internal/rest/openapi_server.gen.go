@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	externalRef0 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
@@ -284,249 +283,65 @@ type CreateWorkItemRequest struct {
 
 /* Ignoring existing struct (rest/models.go) CreateWorkItemTypeRequest */
 
-// DbActivity defines the model for DbActivity.
-type DbActivity struct {
-	ActivityID   int    `json:"activityID"`
-	Description  string `json:"description"`
-	IsProductive bool   `json:"isProductive"`
-	Name         string `json:"name"`
-	ProjectID    int    `json:"projectID"`
-}
+/* Skipping definition of db struct DbActivity */
 
-// DbActivityCreateParams defines the model for DbActivityCreateParams.
-type DbActivityCreateParams struct {
-	Description  string `json:"description"`
-	IsProductive bool   `json:"isProductive"`
-	Name         string `json:"name"`
-	ProjectID    *int   `json:"projectID,omitempty"`
-}
+/* Skipping definition of db struct DbActivityCreateParams */
 
-// DbDemoTwoWorkItem defines the model for DbDemoTwoWorkItem.
-type DbDemoTwoWorkItem struct {
-	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
-	WorkItemID            int        `json:"workItemID"`
-}
+/* Skipping definition of db struct DbDemoTwoWorkItem */
 
-// DbDemoTwoWorkItemCreateParams defines the model for DbDemoTwoWorkItemCreateParams.
-type DbDemoTwoWorkItemCreateParams struct {
-	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
-}
+/* Skipping definition of db struct DbDemoTwoWorkItemCreateParams */
 
-// DbDemoWorkItem defines the model for DbDemoWorkItem.
-type DbDemoWorkItem struct {
-	LastMessageAt time.Time `json:"lastMessageAt"`
-	Line          string    `json:"line"`
-	Ref           string    `json:"ref"`
-	Reopened      bool      `json:"reopened"`
-	WorkItemID    int       `json:"workItemID"`
-}
+/* Skipping definition of db struct DbDemoWorkItem */
 
-// DbDemoWorkItemCreateParams defines the model for DbDemoWorkItemCreateParams.
-type DbDemoWorkItemCreateParams struct {
-	LastMessageAt time.Time `json:"lastMessageAt"`
-	Line          string    `json:"line"`
-	Ref           string    `json:"ref"`
-	Reopened      bool      `json:"reopened"`
-}
+/* Skipping definition of db struct DbDemoWorkItemCreateParams */
 
-// DbKanbanStep defines the model for DbKanbanStep.
-type DbKanbanStep struct {
-	Color         string `json:"color"`
-	Description   string `json:"description"`
-	KanbanStepID  int    `json:"kanbanStepID"`
-	Name          string `json:"name"`
-	ProjectID     int    `json:"projectID"`
-	StepOrder     int    `json:"stepOrder"`
-	TimeTrackable bool   `json:"timeTrackable"`
-}
+/* Skipping definition of db struct DbKanbanStep */
 
-// DbNotification defines the model for DbNotification.
-type DbNotification struct {
-	Body           string    `json:"body"`
-	CreatedAt      time.Time `json:"createdAt"`
-	Labels         []string  `json:"labels"`
-	Link           *string   `json:"link"`
-	NotificationID int       `json:"notificationID"`
+/* Skipping definition of db struct DbNotification */
 
-	// NotificationType is generated from database enum 'notification_type'.
-	NotificationType externalRef0.NotificationType `json:"notificationType"`
-	Receiver         *externalRef0.DbUserID        `json:"receiver,omitempty"`
-	Sender           externalRef0.DbUserID         `json:"sender"`
-	Title            string                        `json:"title"`
-}
+/* Skipping definition of db struct DbNotificationID */
 
-// DbNotificationID defines the model for DbNotificationID.
-type DbNotificationID = interface{}
+/* Skipping definition of db struct DbProject */
 
-// DbProject defines the model for DbProject.
-type DbProject struct {
-	BoardConfig externalRef0.ProjectConfig `json:"boardConfig"`
-	CreatedAt   time.Time                  `json:"createdAt"`
-	Description string                     `json:"description"`
+/* Skipping definition of db struct DbProjectID */
 
-	// Name is generated from projects table.
-	Name      externalRef0.Project `json:"name"`
-	ProjectID int                  `json:"projectID"`
-	UpdatedAt time.Time            `json:"updatedAt"`
-}
+/* Skipping definition of db struct DbTeam */
 
-// DbProjectID defines the model for DbProjectID.
-type DbProjectID = interface{}
+/* Skipping definition of db struct DbTeamCreateParams */
 
-// DbTeam defines the model for DbTeam.
-type DbTeam struct {
-	CreatedAt   time.Time `json:"createdAt"`
-	Description string    `json:"description"`
-	Name        string    `json:"name"`
-	ProjectID   int       `json:"projectID"`
-	TeamID      int       `json:"teamID"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-}
+/* Skipping definition of db struct DbTimeEntry */
 
-// DbTeamCreateParams defines the model for DbTeamCreateParams.
-type DbTeamCreateParams struct {
-	Description string `json:"description"`
-	Name        string `json:"name"`
-}
+/* Skipping definition of db struct DbUser */
 
-// DbTimeEntry defines the model for DbTimeEntry.
-type DbTimeEntry struct {
-	ActivityID      int                   `json:"activityID"`
-	Comment         string                `json:"comment"`
-	DurationMinutes *int                  `json:"durationMinutes"`
-	Start           time.Time             `json:"start"`
-	TeamID          *int                  `json:"teamID"`
-	TimeEntryID     int                   `json:"timeEntryID"`
-	UserID          externalRef0.DbUserID `json:"userID"`
-	WorkItemID      *int                  `json:"workItemID"`
-}
+/* Skipping definition of db struct DbUserAPIKey */
 
-// DbUser defines the model for DbUser.
-type DbUser struct {
-	CreatedAt                time.Time             `json:"createdAt"`
-	DeletedAt                *time.Time            `json:"deletedAt"`
-	Email                    string                `json:"email"`
-	FirstName                *string               `json:"firstName"`
-	FullName                 *string               `json:"fullName"`
-	HasGlobalNotifications   bool                  `json:"hasGlobalNotifications"`
-	HasPersonalNotifications bool                  `json:"hasPersonalNotifications"`
-	LastName                 *string               `json:"lastName"`
-	Scopes                   externalRef0.Scopes   `json:"scopes"`
-	UserID                   externalRef0.DbUserID `json:"userID"`
-	Username                 string                `json:"username"`
-}
+/* Skipping definition of db struct DbUserID */
 
-// DbUserAPIKey defines the model for DbUserAPIKey.
-type DbUserAPIKey struct {
-	ApiKey    string                `json:"apiKey"`
-	ExpiresOn time.Time             `json:"expiresOn"`
-	UserID    externalRef0.DbUserID `json:"userID"`
-}
+/* Skipping definition of db struct DbUserNotification */
 
-// DbUserID defines the model for DbUserID.
-type DbUserID = uuid.UUID
+/* Skipping definition of db struct DbUserWIAUWorkItem */
 
-// DbUserNotification defines the model for DbUserNotification.
-type DbUserNotification struct {
-	NotificationID     int                   `json:"notificationID"`
-	Read               bool                  `json:"read"`
-	UserID             externalRef0.DbUserID `json:"userID"`
-	UserNotificationID int                   `json:"userNotificationID"`
-}
+/* Skipping definition of db struct DbUserWIAWorkItem */
 
-// DbUserWIAUWorkItem defines the model for DbUserWIAUWorkItem.
-type DbUserWIAUWorkItem struct {
-	// Role is generated from database enum 'work_item_role'.
-	Role externalRef0.WorkItemRole `json:"role"`
-	User externalRef0.DbUser       `json:"user"`
-}
+/* Skipping definition of db struct DbWorkItem */
 
-// DbUserWIAWorkItem defines the model for DbUserWIAWorkItem.
-type DbUserWIAWorkItem struct {
-	// Role is generated from database enum 'work_item_role'.
-	Role externalRef0.WorkItemRole `json:"role"`
-	User externalRef0.DbUser       `json:"user"`
-}
+/* Skipping definition of db struct DbWorkItemComment */
 
-// DbWorkItem defines the model for DbWorkItem.
-type DbWorkItem struct {
-	ClosedAt       *time.Time             `json:"closedAt"`
-	CreatedAt      time.Time              `json:"createdAt"`
-	DeletedAt      *time.Time             `json:"deletedAt"`
-	Description    string                 `json:"description"`
-	KanbanStepID   int                    `json:"kanbanStepID"`
-	Metadata       map[string]interface{} `json:"metadata"`
-	TargetDate     time.Time              `json:"targetDate"`
-	TeamID         int                    `json:"teamID"`
-	Title          string                 `json:"title"`
-	UpdatedAt      time.Time              `json:"updatedAt"`
-	WorkItemID     int                    `json:"workItemID"`
-	WorkItemTypeID int                    `json:"workItemTypeID"`
-}
+/* Skipping definition of db struct DbWorkItemCreateParams */
 
-// DbWorkItemComment defines the model for DbWorkItemComment.
-type DbWorkItemComment struct {
-	CreatedAt         time.Time             `json:"createdAt"`
-	Message           string                `json:"message"`
-	UpdatedAt         time.Time             `json:"updatedAt"`
-	UserID            externalRef0.DbUserID `json:"userID"`
-	WorkItemCommentID int                   `json:"workItemCommentID"`
-	WorkItemID        int                   `json:"workItemID"`
-}
+/* Skipping definition of db struct DbWorkItemID */
 
-// DbWorkItemCreateParams defines the model for DbWorkItemCreateParams.
-type DbWorkItemCreateParams struct {
-	ClosedAt       *time.Time             `json:"closedAt"`
-	Description    string                 `json:"description"`
-	KanbanStepID   int                    `json:"kanbanStepID"`
-	Metadata       map[string]interface{} `json:"metadata"`
-	TargetDate     time.Time              `json:"targetDate"`
-	TeamID         int                    `json:"teamID"`
-	Title          string                 `json:"title"`
-	WorkItemTypeID int                    `json:"workItemTypeID"`
-}
+/* Skipping definition of db struct DbWorkItemM2MAssigneeWIA */
 
-// DbWorkItemID defines the model for DbWorkItemID.
-type DbWorkItemID = interface{}
+/* Skipping definition of db struct DbWorkItemRole */
 
-// DbWorkItemM2MAssigneeWIA defines the model for DbWorkItemM2MAssigneeWIA.
-type DbWorkItemM2MAssigneeWIA struct {
-	// Role is generated from database enum 'work_item_role'.
-	Role externalRef0.WorkItemRole `json:"role"`
-	User externalRef0.DbUser       `json:"user"`
-}
+/* Skipping definition of db struct DbWorkItemTag */
 
-// DbWorkItemRole defines the model for DbWorkItemRole.
-type DbWorkItemRole = string
+/* Skipping definition of db struct DbWorkItemTagCreateParams */
 
-// DbWorkItemTag defines the model for DbWorkItemTag.
-type DbWorkItemTag struct {
-	Color         string     `json:"color"`
-	DeletedAt     *time.Time `json:"deletedAt"`
-	Description   string     `json:"description"`
-	Name          string     `json:"name"`
-	ProjectID     int        `json:"projectID"`
-	WorkItemTagID int        `json:"workItemTagID"`
-}
+/* Skipping definition of db struct DbWorkItemType */
 
-// DbWorkItemTagCreateParams defines the model for DbWorkItemTagCreateParams.
-type DbWorkItemTagCreateParams struct {
-	Color       string `json:"color"`
-	Description string `json:"description"`
-	Name        string `json:"name"`
-}
-
-// DbWorkItemType defines the model for DbWorkItemType.
-type DbWorkItemType struct {
-	Color          string `json:"color"`
-	Description    string `json:"description"`
-	Name           string `json:"name"`
-	ProjectID      int    `json:"projectID"`
-	WorkItemTypeID int    `json:"workItemTypeID"`
-}
-
-// DbWorkItemTypeID defines the model for DbWorkItemTypeID.
-type DbWorkItemTypeID = interface{}
+/* Skipping definition of db struct DbWorkItemTypeID */
 
 // DemoKanbanSteps is generated from kanban_steps table.
 type DemoKanbanSteps string
