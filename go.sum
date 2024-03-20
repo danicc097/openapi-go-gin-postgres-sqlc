@@ -42,8 +42,14 @@ github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f/go.mod h1:F5haX7
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/creack/pty v1.1.7/go.mod h1:lj5s0c3V2DBrqTV7llrYr5NG6My20zk30Fl46Y7DoTY=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
+github.com/danicc097/kin-openapi v0.123.1-0.20240320222651-5a7e849603fb h1:SVh64ZpwEMBONccAb4Jw4wndjPG+iq0IfnxgQccN0GI=
+github.com/danicc097/kin-openapi v0.123.1-0.20240320222651-5a7e849603fb/go.mod h1:GZsxYZpdC71oFwQLnBSGHHoXpD+OGcvFszGwY7HIUkY=
+github.com/danicc097/oapi-codegen/v2 v2.0.0-20240320224529-0915d53d82d3 h1:8LVSfFMZd+IyQeQ9Tu7HGXt2JYi5cE/5y0TBfCbwp30=
+github.com/danicc097/oapi-codegen/v2 v2.0.0-20240320224529-0915d53d82d3/go.mod h1:3d1abx7SzBjACssuGmL9J9p9HdVcqcWTSNgJh0lnaz8=
 github.com/danicc097/oidc-server/v3 v3.5.0 h1:aqNuzC6+Q8NFmDX2lXJip2oWGJTP8Epy/uBtu8nuQwA=
 github.com/danicc097/oidc-server/v3 v3.5.0/go.mod h1:dRbodhLy7B2hVEjtD2dnF8ZXj5QHfAP8QE4LtIfGvNk=
+github.com/danicc097/runtime v0.0.0-20240320224358-a94ad612e00c h1:8VwmAKNoCAjSptKxYvXfTMa/wFfaAOrYdLWlSZ9qxhA=
+github.com/danicc097/runtime v0.0.0-20240320224358-a94ad612e00c/go.mod h1:62ciEUU4rGbj1Vad0r/FHwwV0K37thGfV3JHzPr05Ug=
 github.com/danicc097/xo/v5 v5.6.0 h1:ctBxldyVIndMO60Ygvx5e2SHFYy2cPVdVJC5RS9ZcOw=
 github.com/danicc097/xo/v5 v5.6.0/go.mod h1:oU6s/elNFlD8CvhR7s5/pTTKnHAd8VJNBfAqwoq9xrA=
 github.com/dave/dst v0.27.3 h1:P1HPoMza3cMEquVf9kKy8yXsFirry4zEnWOdYPOoIzY=
@@ -53,8 +59,6 @@ github.com/dave/jennifer v1.5.0/go.mod h1:4MnyiFIlZS3l5tSDn8VnzE6ffAhYBMB2SZntBs
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/deepmap/oapi-codegen/v2 v2.1.0 h1:I/NMVhJCtuvL9x+S2QzZKpSjGi33oDZwPRdemvOZWyQ=
-github.com/deepmap/oapi-codegen/v2 v2.1.0/go.mod h1:R1wL226vc5VmCNJUvMyYr3hJMm5reyv25j952zAVXZ8=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/rVNCu3HqELle0jiPLLBs70cWOduZpkS1E78=
 github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f/go.mod h1:cuUVRXasLTGF7a8hSLbxyZXjz+1KgoB3wDUb6vlszIc=
 github.com/dhui/dktest v0.4.0 h1:z05UmuXZHO/bgj/ds2bGMBu8FI4WA+Ag/m3ghL+om7M=
@@ -77,8 +81,6 @@ github.com/fsnotify/fsnotify v1.7.0 h1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nos
 github.com/fsnotify/fsnotify v1.7.0/go.mod h1:40Bi/Hjc2AVfZrqy+aj+yEI+/bRxZnMJyTJwOpGvigM=
 github.com/gabriel-vasile/mimetype v1.4.3 h1:in2uUcidCuFcDKtdcBxlR0rJ1+fsokWf+uqxgUFjbI0=
 github.com/gabriel-vasile/mimetype v1.4.3/go.mod h1:d8uq/6HKRL6CGdk+aubisF/M5GcPfT7nKyLpA0lbSSk=
-github.com/getkin/kin-openapi v0.123.0 h1:zIik0mRwFNLyvtXK274Q6ut+dPh6nlxBp0x7mNrPhs8=
-github.com/getkin/kin-openapi v0.123.0/go.mod h1:wb1aSZA/iWmorQP9KTAS/phLj/t17B5jT7+fS8ed9NM=
 github.com/gin-contrib/cors v1.5.0 h1:DgGKV7DDoOn36DFkNtbHrjoRiT5ExCe+PC9/xp7aKvk=
 github.com/gin-contrib/cors v1.5.0/go.mod h1:TvU7MAZ3EwrPLI2ztzTt3tqgvBCq+wn8WpZmfADjupI=
 github.com/gin-contrib/pprof v1.4.0 h1:XxiBSf5jWZ5i16lNOPbMTVdgHBdhfGRD5PZ1LWazzvg=
@@ -288,8 +290,6 @@ github.com/muhlemmer/httpforwarded v0.1.0 h1:x4DLrzXdliq8mprgUMR0olDvHGkou5BJsK/
 github.com/muhlemmer/httpforwarded v0.1.0/go.mod h1:yo9czKedo2pdZhoXe+yDkGVbU0TJ0q9oQ90BVoDEtw0=
 github.com/nxadm/tail v1.4.8 h1:nPr65rt6Y5JFSKQO7qToXr7pePgD6Gwiw05lkbyAQTE=
 github.com/nxadm/tail v1.4.8/go.mod h1:+ncqLTQzXmGhMZNUePPaPqPvBxHAIsmXswZKocGu+AU=
-github.com/oapi-codegen/runtime v1.1.1 h1:EXLHh0DXIJnWhdRPN2w4MXAzFyE4CskzhNLUmtpMYro=
-github.com/oapi-codegen/runtime v1.1.1/go.mod h1:SK9X900oXmPWilYR5/WKPzt3Kqxn/uS/+lbpREv+eCg=
 github.com/oapi-codegen/testutil v1.1.0 h1:EufqpNg43acR3qzr3ObhXmWg3Sl2kwtRnUN5GYY4d5g=
 github.com/oapi-codegen/testutil v1.1.0/go.mod h1:ttCaYbHvJtHuiyeBF0tPIX+4uhEPTeizXKx28okijLw=
 github.com/onsi/ginkgo v1.16.5 h1:8xi0RTUf59SOSfEtZMvwTvXYMzG4gV23XVHOZiXNtnE=

@@ -2,6 +2,15 @@ module github.com/danicc097/openapi-go-gin-postgres-sqlc
 
 go 1.21
 
+replace (
+	// can also use branches and will be replaced with the latest commit
+	// currently using `custom` branch for these 3
+	// only go.mod module name needs to change when using replace
+	github.com/deepmap/oapi-codegen/v2 => github.com/danicc097/oapi-codegen/v2 v2.0.0-20240320224529-0915d53d82d3
+	github.com/getkin/kin-openapi => github.com/danicc097/kin-openapi v0.123.1-0.20240320222651-5a7e849603fb
+	github.com/oapi-codegen/runtime => github.com/danicc097/runtime v0.0.0-20240320224358-a94ad612e00c
+)
+
 require (
 	github.com/danicc097/oidc-server/v3 v3.5.0
 	github.com/danicc097/xo/v5 v5.6.0
@@ -9,7 +18,7 @@ require (
 	github.com/deepmap/oapi-codegen/v2 v2.1.0
 	github.com/fatih/structs v1.1.0
 	github.com/fatih/structtag v1.2.0
-	github.com/getkin/kin-openapi v0.123.0
+	github.com/getkin/kin-openapi v0.123.1-0.20240305161826-7aa9f7ee3d53
 	github.com/gin-contrib/cors v1.5.0
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-contrib/zap v1.1.0
