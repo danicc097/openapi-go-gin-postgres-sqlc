@@ -11,7 +11,7 @@ import {
 import { Accordion, ActionIcon, Badge, Checkbox, Flex, Group, Pill, Text, Tooltip } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons-react'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
-import { useGetPaginatedUsers } from 'src/gen/user/user'
+import { useGetPaginatedUsers, useGetPaginatedUsersInfinite } from 'src/gen/user/user'
 import dayjs from 'dayjs'
 import { Scopes, User } from 'src/gen/model'
 import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
@@ -178,21 +178,31 @@ export default function DemoMantineReactTable() {
   const {
     data: usersData,
     refetch,
+    fetchNextPage,
     isFetching,
     isError,
     isLoading,
-  } = useGetPaginatedUsers({
+    // see https://v2.mantine-react-table.com/docs/examples/infinite-scrolling
+  } = useGetPaginatedUsersInfinite({
     direction: 'desc',
     cursor,
-    limit: 5,
+    limit: 15,
     // deepmap needs to be updated for kin-openapi new Type struct
-    // filter: { post: ['fesefesf', '1'], bools: [true, false], objects: [{ nestedObj: 'something' }] },
-    // nested: { obj: { nestedObj: '1212' } },
+    filter: { post: ['fesefesf', '1'], bools: [true, false], objects: [{ nestedObj: 'something' }] },
+    nested: { obj: { nestedObj: '1212' } },
+    // custom: {
+    //   // cursor: `${usersData?.page.nextCursor}`,
+    //   size: `${pagination.pageSize}`,
+    //   filters: columnFilters,
+    //   filterModes: columnFilterFns,
+    //   globalFilter: globalFilter ?? '',
+    //   sorting: sorting,
+    // },
   })
 
   // useStopInfiniteRenders(60)
 
-  const fetchedUsers = usersData?.items ?? []
+  const fetchedUsers = usersData?.pages[0]?.items ?? []
   const totalRowCount = Infinity
 
   const table = useMantineReactTable({
@@ -252,7 +262,7 @@ export default function DemoMantineReactTable() {
               lang="json"
               code={JSON.stringify(
                 {
-                  cursor: `${usersData?.page.nextCursor}`,
+                  cursor: `${usersData?.pages[0]?.page.nextCursor}`,
                   size: `${pagination.pageSize}`,
                   filters: columnFilters,
                   filterModes: columnFilterFns,
