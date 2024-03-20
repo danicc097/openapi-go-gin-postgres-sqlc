@@ -119,11 +119,11 @@ func WithXoTestsWorkItemLimit(limit int) XoTestsWorkItemSelectConfigOption {
 type XoTestsWorkItemOrderBy string
 
 type XoTestsWorkItemJoins struct {
-	DemoWorkItem     bool // O2O demo_work_items
-	TimeEntries      bool // M2O time_entries
-	Assignees        bool // M2M work_item_assignee
-	WorkItemComments bool // M2O work_item_comments
-	Team             bool // O2O teams
+	DemoWorkItem     bool `json:"demoWorkItem" required:"true" nullable:"false"`     // O2O demo_work_items
+	TimeEntries      bool `json:"timeEntries" required:"true" nullable:"false"`      // M2O time_entries
+	Assignees        bool `json:"assignees" required:"true" nullable:"false"`        // M2M work_item_assignee
+	WorkItemComments bool `json:"workItemComments" required:"true" nullable:"false"` // M2O work_item_comments
+	Team             bool `json:"team" required:"true" nullable:"false"`             // O2O teams
 }
 
 // WithXoTestsWorkItemJoin joins with the given tables.

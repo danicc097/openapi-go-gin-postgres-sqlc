@@ -21,13 +21,13 @@
     "description": "Can change project settings for all underlying teams."
   },
   "activity:create": {
-    "description": "Can create work item tags."
+    "description": "Can create activities."
   },
   "activity:edit": {
-    "description": "Can update work item tags."
+    "description": "Can update activities."
   },
   "activity:delete": {
-    "description": "Can delete work item tags."
+    "description": "Can delete activities."
   },
   "work-item-tag:create": {
     "description": "Can create work item tags."

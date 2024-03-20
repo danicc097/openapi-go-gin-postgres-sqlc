@@ -85,7 +85,7 @@ func WithXoTestsDemoWorkItemLimit(limit int) XoTestsDemoWorkItemSelectConfigOpti
 type XoTestsDemoWorkItemOrderBy string
 
 type XoTestsDemoWorkItemJoins struct {
-	WorkItem bool // O2O work_items
+	WorkItem bool `json:"workItem" required:"true" nullable:"false"` // O2O work_items
 }
 
 // WithXoTestsDemoWorkItemJoin joins with the given tables.

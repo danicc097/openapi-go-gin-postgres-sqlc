@@ -102,7 +102,9 @@ func (u *User) ByID(ctx context.Context, d db.DBTX, id db.UserID, dbOpts ...db.U
 	return user, nil
 }
 
-// Update updates a user.
+// Update updates a user. In this case request params are defined in the spec
+// and converted to db params for demo purposes.
+// The same can be achieved excluding fields from db update params via SQL column comments.
 func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, caller CtxUser, params *models.UpdateUserRequest) (*db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
@@ -278,7 +280,8 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 		return nil, fmt.Errorf("repos.User.ByAPIKey: %w", err)
 	}
 
-	user, err = u.repos.User.ByID(ctx, d, user.UserID, u.getSharedDBOpts()...)
+	opts := append(u.getSharedDBOpts(), db.WithUserJoin(db.UserJoins{UserAPIKey: true}))
+	user, err = u.repos.User.ByID(ctx, d, user.UserID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.User.ByID: %w", err)
 	}

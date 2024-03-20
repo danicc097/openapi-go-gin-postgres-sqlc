@@ -60,13 +60,13 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 		require.NoError(ff.t, err)
 	}
 
-	user, err = ff.svc.User.ByID(ctx, ff.d, user.UserID)
-	require.NoError(ff.t, err)
-
 	for _, tid := range params.TeamIDs {
 		_, err = ff.svc.User.AssignTeam(context.Background(), ff.d, user.UserID, tid)
 		require.NoError(ff.t, err)
 	}
+
+	user, err = ff.svc.User.ByID(ctx, ff.d, user.UserID) // get all joins
+	require.NoError(ff.t, err)
 
 	return &CreateUserFixture{
 		User:   user,

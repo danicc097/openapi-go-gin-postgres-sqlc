@@ -59,7 +59,18 @@ func (a *Authentication) GetUserFromAccessToken(ctx context.Context, token strin
 
 // GetUserFromAPIKey returns a user from an api key.
 func (a *Authentication) GetUserFromAPIKey(ctx context.Context, apiKey string) (*db.User, error) {
-	return a.usvc.ByAPIKey(ctx, a.pool, apiKey)
+	u, err := a.usvc.ByAPIKey(ctx, a.pool, apiKey)
+	if err != nil {
+		return nil, internal.WrapErrorf(err, models.ErrorCodeNotFound, "user from api key not found")
+	}
+
+	if u.UserAPIKeyJoin.ExpiresOn.Before(time.Now()) {
+		return nil, internal.WrapErrorf(err, models.ErrorCodeUnauthorized, "api key expired")
+	}
+
+	u.UserAPIKeyJoin = nil
+
+	return u, nil
 }
 
 // GetOrRegisterUserFromUserInfo returns a user from user info.

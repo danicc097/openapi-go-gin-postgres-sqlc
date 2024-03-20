@@ -133,7 +133,7 @@ func WithXoTestsUserAPIKeyOrderBy(rows ...XoTestsUserAPIKeyOrderBy) XoTestsUserA
 }
 
 type XoTestsUserAPIKeyJoins struct {
-	User bool // O2O users
+	User bool `json:"user" required:"true" nullable:"false"` // O2O users
 }
 
 // WithXoTestsUserAPIKeyJoin joins with the given tables.

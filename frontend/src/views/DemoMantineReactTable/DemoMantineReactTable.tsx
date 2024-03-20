@@ -8,7 +8,7 @@ import {
   type MRT_SortingState,
   type MRT_ColumnFilterFnsState,
 } from 'mantine-react-table'
-import { Accordion, ActionIcon, Badge, Checkbox, Group, Pill, Text, Tooltip } from '@mantine/core'
+import { Accordion, ActionIcon, Badge, Checkbox, Flex, Group, Pill, Text, Tooltip } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons-react'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { useGetPaginatedUsers } from 'src/gen/user/user'
@@ -18,6 +18,7 @@ import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
 import { colorBlindPalette, getContrastYIQ, scopeColor } from 'src/utils/colors'
 import _ from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
+import { css } from '@emotion/react'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -49,6 +50,11 @@ const A = ({ columnFilterFns, columnFilters, globalFilter, sorting, pagination }
   })
 }
 
+const rangeModes = ['between', 'betweenInclusive', 'inNumberRange']
+const emptyModes = ['empty', 'notEmpty']
+const arrModes = ['arrIncludesSome', 'arrIncludesAll', 'arrIncludes']
+const rangeVariants = ['range-slider', 'date-range', 'range']
+
 // TODO: GetPaginatedUsers table
 // also see excalidraw
 // will be used on generated filterable mantine datatable table as in
@@ -73,6 +79,29 @@ export default function DemoMantineReactTable() {
       {
         accessorKey: 'teams',
         header: 'Teams',
+        filterVariant: 'multi-select',
+        columnFilterModeOptions: arrModes, // broken
+        // filterFn: (e, s) => {
+        //   console.log({ e, s })
+        //   return true
+        // },
+        // Filter(props) {
+        //   return (
+        //     <Flex align="center" justify="center" direction="row">
+        //       <Badge>Custom filter</Badge>
+        //     </Flex>
+        //   )
+        // },
+        mantineFilterMultiSelectProps(props) {
+          return {
+            data: [
+              // mrt needs string value.
+              { label: 'A disabled team', value: 'disabled', disabled: true },
+              { label: 'Team 1', value: '1' },
+              { label: 'Team 2', value: '2' },
+            ],
+          }
+        },
         Cell({ row }) {
           return <p>{row.original.teams?.map((t) => t.name).join(',')}</p>
         },
@@ -114,6 +143,12 @@ export default function DemoMantineReactTable() {
       {
         accessorKey: 'hasGlobalNotifications',
         header: 'Global notifications',
+        mantineFilterCheckboxProps: {
+          size: 'sm',
+          label: 'Filter values',
+        },
+        enableColumnFilterModes: false,
+        filterVariant: 'checkbox',
         Cell({ row }) {
           return <Checkbox readOnly checked={row.original.hasGlobalNotifications}></Checkbox>
         },
@@ -151,8 +186,8 @@ export default function DemoMantineReactTable() {
     cursor,
     limit: 5,
     // deepmap needs to be updated for kin-openapi new Type struct
-    filter: { post: ['fesefesf', '1'], bools: [true, false], objects: [{ nestedObj: 'something' }] },
-    nested: { obj: { nestedObj: '1212' } },
+    // filter: { post: ['fesefesf', '1'], bools: [true, false], objects: [{ nestedObj: 'something' }] },
+    // nested: { obj: { nestedObj: '1212' } },
   })
 
   // useStopInfiniteRenders(60)
@@ -167,7 +202,7 @@ export default function DemoMantineReactTable() {
     data: fetchedUsers,
     enableColumnFilterModes: true,
     // shared filter modes
-    columnFilterModeOptions: ['contains', 'startsWith', 'endsWith'],
+    columnFilterModeOptions: null,
     initialState: { showColumnFilters: true },
     manualFiltering: true,
     manualPagination: true,
@@ -210,7 +245,27 @@ export default function DemoMantineReactTable() {
           content: { paddingRight: 0, paddingLeft: 0 },
         }}
       >
-        <Accordion.Item value={'ffff'}>
+        <Accordion.Item value={'a'}>
+          <Accordion.Control>Filters</Accordion.Control>
+          <Accordion.Panel>
+            <CodeHighlight
+              lang="json"
+              code={JSON.stringify(
+                {
+                  cursor: `${usersData?.page.nextCursor}`,
+                  size: `${pagination.pageSize}`,
+                  filters: columnFilters,
+                  filterModes: columnFilterFns,
+                  globalFilter: globalFilter ?? '',
+                  sorting: sorting,
+                },
+                null,
+                '  ',
+              )}
+            ></CodeHighlight>
+          </Accordion.Panel>
+        </Accordion.Item>
+        <Accordion.Item value={'b'}>
           <Accordion.Control>Data</Accordion.Control>
           <Accordion.Panel>
             <CodeHighlight lang="json" code={JSON.stringify({ usersData }, null, '  ')}></CodeHighlight>

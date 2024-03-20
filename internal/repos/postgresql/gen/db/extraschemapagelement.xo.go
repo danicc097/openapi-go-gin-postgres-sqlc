@@ -132,7 +132,7 @@ func WithExtraSchemaPagElementOrderBy(rows ...ExtraSchemaPagElementOrderBy) Extr
 }
 
 type ExtraSchemaPagElementJoins struct {
-	DummyJoin bool // O2O dummy_join
+	DummyJoin bool `json:"dummyJoin" required:"true" nullable:"false"` // O2O dummy_join
 }
 
 // WithExtraSchemaPagElementJoin joins with the given tables.

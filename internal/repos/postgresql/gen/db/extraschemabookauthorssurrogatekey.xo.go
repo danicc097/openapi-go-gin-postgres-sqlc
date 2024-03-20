@@ -114,8 +114,8 @@ type ExtraSchemaBookAuthorsSurrogateKeyOrderBy string
 const ()
 
 type ExtraSchemaBookAuthorsSurrogateKeyJoins struct {
-	Books   bool // M2M book_authors_surrogate_key
-	Authors bool // M2M book_authors_surrogate_key
+	Books   bool `json:"books" required:"true" nullable:"false"`   // M2M book_authors_surrogate_key
+	Authors bool `json:"authors" required:"true" nullable:"false"` // M2M book_authors_surrogate_key
 }
 
 // WithExtraSchemaBookAuthorsSurrogateKeyJoin joins with the given tables.

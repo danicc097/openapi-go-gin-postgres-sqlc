@@ -155,15 +155,15 @@ func WithXoTestsUserOrderBy(rows ...XoTestsUserOrderBy) XoTestsUserSelectConfigO
 }
 
 type XoTestsUserJoins struct {
-	AuthorBooks           bool // M2M book_authors
-	AuthorBooksBASK       bool // M2M book_authors_surrogate_key
-	BookReviews           bool // M2O book_reviews
-	SellerBooks           bool // M2M book_sellers
-	ReceiverNotifications bool // M2O notifications
-	SenderNotifications   bool // M2O notifications
-	UserAPIKey            bool // O2O user_api_keys
-	AssigneeWorkItems     bool // M2M work_item_assignee
-	WorkItemComments      bool // M2O work_item_comments
+	AuthorBooks           bool `json:"authorBooks" required:"true" nullable:"false"`           // M2M book_authors
+	AuthorBooksBASK       bool `json:"authorBooksBASK" required:"true" nullable:"false"`       // M2M book_authors_surrogate_key
+	BookReviews           bool `json:"bookReviews" required:"true" nullable:"false"`           // M2O book_reviews
+	SellerBooks           bool `json:"sellerBooks" required:"true" nullable:"false"`           // M2M book_sellers
+	ReceiverNotifications bool `json:"receiverNotifications" required:"true" nullable:"false"` // M2O notifications
+	SenderNotifications   bool `json:"senderNotifications" required:"true" nullable:"false"`   // M2O notifications
+	UserAPIKey            bool `json:"userAPIKey" required:"true" nullable:"false"`            // O2O user_api_keys
+	AssigneeWorkItems     bool `json:"assigneeWorkItems" required:"true" nullable:"false"`     // M2M work_item_assignee
+	WorkItemComments      bool `json:"workItemComments" required:"true" nullable:"false"`      // M2O work_item_comments
 }
 
 // WithXoTestsUserJoin joins with the given tables.

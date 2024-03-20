@@ -154,8 +154,8 @@ func WithActivityOrderBy(rows ...ActivityOrderBy) ActivitySelectConfigOption {
 }
 
 type ActivityJoins struct {
-	Project     bool // O2O projects
-	TimeEntries bool // M2O time_entries
+	Project     bool `json:"project" required:"true" nullable:"false"`     // O2O projects
+	TimeEntries bool `json:"timeEntries" required:"true" nullable:"false"` // M2O time_entries
 }
 
 // WithActivityJoin joins with the given tables.

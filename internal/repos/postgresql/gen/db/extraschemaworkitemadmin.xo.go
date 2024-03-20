@@ -93,8 +93,8 @@ type ExtraSchemaWorkItemAdminOrderBy string
 const ()
 
 type ExtraSchemaWorkItemAdminJoins struct {
-	WorkItems bool // M2M work_item_admin
-	Admins    bool // M2M work_item_admin
+	WorkItems bool `json:"workItems" required:"true" nullable:"false"` // M2M work_item_admin
+	Admins    bool `json:"admins" required:"true" nullable:"false"`    // M2M work_item_admin
 }
 
 // WithExtraSchemaWorkItemAdminJoin joins with the given tables.

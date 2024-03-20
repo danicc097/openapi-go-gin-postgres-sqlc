@@ -99,8 +99,8 @@ func WithXoTestsBookReviewLimit(limit int) XoTestsBookReviewSelectConfigOption {
 type XoTestsBookReviewOrderBy string
 
 type XoTestsBookReviewJoins struct {
-	Book bool // O2O books
-	User bool // O2O users
+	Book bool `json:"book" required:"true" nullable:"false"` // O2O books
+	User bool `json:"user" required:"true" nullable:"false"` // O2O users
 }
 
 // WithXoTestsBookReviewJoin joins with the given tables.

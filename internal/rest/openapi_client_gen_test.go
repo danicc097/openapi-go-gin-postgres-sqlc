@@ -3846,7 +3846,7 @@ func (r PingResponse) StatusCode() int {
 type GetProjectResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *DbProject
+	JSON200      *db.Project
 }
 
 // Status returns HTTPResponse.Status
@@ -5460,7 +5460,7 @@ func ParseGetProjectResponse(rsp *http.Response) (*GetProjectResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest DbProject
+		var dest db.Project
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

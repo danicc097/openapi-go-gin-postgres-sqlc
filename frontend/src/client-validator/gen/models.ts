@@ -111,6 +111,21 @@ export type DemoKanbanSteps = 'Disabled' | 'Received' | 'Under review' | 'Work i
  * is generated from kanban_steps table.
  */
 export type DemoTwoKanbanSteps = 'Received'
+export type PaginationFilterModes =
+  | 'between'
+  | 'betweenInclusive'
+  | 'contains'
+  | 'empty'
+  | 'endsWith'
+  | 'equals'
+  | 'fuzzy'
+  | 'greaterThan'
+  | 'greaterThanOrEqualTo'
+  | 'lessThan'
+  | 'lessThanOrEqualTo'
+  | 'notEmpty'
+  | 'notEquals'
+  | 'startsWith'
 
 export interface Activity {
   activityID: number
@@ -234,8 +249,8 @@ export interface DbProject {
   updatedAt: string
 }
 export interface ProjectConfig {
-  fields: ProjectConfigField[]
-  header: string[]
+  fields?: ProjectConfigField[]
+  header?: string[]
   visualization?: {}
 }
 export interface ProjectConfigField {
@@ -592,4 +607,33 @@ export interface WorkItemBase {
   workItemTags?: DbWorkItemTag[] | null
   workItemType?: DbWorkItemType
   workItemTypeID: number
+}
+export interface DbCacheDemoWorkItemJoins {
+  assignees: boolean
+  kanbanStep: boolean
+  team: boolean
+  timeEntries: boolean
+  workItemComments: boolean
+  workItemTags: boolean
+  workItemType: boolean
+}
+export interface DbUserJoins {
+  assigneeWorkItems: boolean
+  memberProjects: boolean
+  memberTeams: boolean
+  receiverNotifications: boolean
+  senderNotifications: boolean
+  timeEntries: boolean
+  userAPIKey: boolean
+  userNotifications: boolean
+  workItemComments: boolean
+}
+export interface GetCacheDemoWorkItemQueryParameters {
+  joins?: DbCacheDemoWorkItemJoins
+}
+export interface GetPaginatedUsersQueryParameters {
+  role: Role
+}
+export interface GetCurrentUserQueryParameters {
+  joins?: DbUserJoins
 }

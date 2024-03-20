@@ -123,7 +123,7 @@ type WorkItemTypeOrderBy string
 const ()
 
 type WorkItemTypeJoins struct {
-	Project bool // O2O projects
+	Project bool `json:"project" required:"true" nullable:"false"` // O2O projects
 }
 
 // WithWorkItemTypeJoin joins with the given tables.

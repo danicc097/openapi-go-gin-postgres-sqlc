@@ -110,8 +110,8 @@ func WithXoTestsBookAuthorLimit(limit int) XoTestsBookAuthorSelectConfigOption {
 type XoTestsBookAuthorOrderBy string
 
 type XoTestsBookAuthorJoins struct {
-	Books   bool // M2M book_authors
-	Authors bool // M2M book_authors
+	Books   bool `json:"books" required:"true" nullable:"false"`   // M2M book_authors
+	Authors bool `json:"authors" required:"true" nullable:"false"` // M2M book_authors
 }
 
 // WithXoTestsBookAuthorJoin joins with the given tables.

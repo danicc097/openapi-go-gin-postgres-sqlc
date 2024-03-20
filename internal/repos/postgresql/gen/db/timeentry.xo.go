@@ -188,10 +188,10 @@ func WithTimeEntryOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption 
 }
 
 type TimeEntryJoins struct {
-	Activity bool // O2O activities
-	Team     bool // O2O teams
-	User     bool // O2O users
-	WorkItem bool // O2O work_items
+	Activity bool `json:"activity" required:"true" nullable:"false"` // O2O activities
+	Team     bool `json:"team" required:"true" nullable:"false"`     // O2O teams
+	User     bool `json:"user" required:"true" nullable:"false"`     // O2O users
+	WorkItem bool `json:"workItem" required:"true" nullable:"false"` // O2O work_items
 }
 
 // WithTimeEntryJoin joins with the given tables.

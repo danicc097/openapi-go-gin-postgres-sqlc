@@ -131,7 +131,7 @@ func WithUserAPIKeyOrderBy(rows ...UserAPIKeyOrderBy) UserAPIKeySelectConfigOpti
 }
 
 type UserAPIKeyJoins struct {
-	User bool // O2O users
+	User bool `json:"user" required:"true" nullable:"false"` // O2O users
 }
 
 // WithUserAPIKeyJoin joins with the given tables.

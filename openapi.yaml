@@ -2257,18 +2257,13 @@ components:
         fields:
           items:
             $ref: '#/components/schemas/ProjectConfigField'
-          nullable: false
           type: array
         header:
           items:
             type: string
-          nullable: false
           type: array
         visualization:
           type: object
-      required:
-        - header
-        - fields
       type: object
     ProjectConfigField:
       properties:
@@ -2359,7 +2354,6 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Topic'
-      x-use-server-type: true
     Topic:
       description: string identifiers for SSE event listeners.
       type: string
@@ -2880,6 +2874,102 @@ components:
         - projectName
       type: object
       x-gen-struct: WorkItemBase
+      x-is-generated: true
+    PaginationFilterModes:
+      enum:
+        - between
+        - betweenInclusive
+        - contains
+        - empty
+        - endsWith
+        - equals
+        - fuzzy
+        - greaterThan
+        - greaterThanOrEqualTo
+        - lessThan
+        - lessThanOrEqualTo
+        - notEmpty
+        - notEquals
+        - startsWith
+      type: string
+    DbCacheDemoWorkItemJoins: # Generated schema. DO NOT EDIT.
+      properties:
+        assignees:
+          type: boolean
+        kanbanStep:
+          type: boolean
+        team:
+          type: boolean
+        timeEntries:
+          type: boolean
+        workItemComments:
+          type: boolean
+        workItemTags:
+          type: boolean
+        workItemType:
+          type: boolean
+      required:
+        - kanbanStep
+        - team
+        - workItemType
+        - timeEntries
+        - assignees
+        - workItemComments
+        - workItemTags
+      type: object
+    DbUserJoins: # Generated schema. DO NOT EDIT.
+      properties:
+        assigneeWorkItems:
+          type: boolean
+        memberProjects:
+          type: boolean
+        memberTeams:
+          type: boolean
+        receiverNotifications:
+          type: boolean
+        senderNotifications:
+          type: boolean
+        timeEntries:
+          type: boolean
+        userAPIKey:
+          type: boolean
+        userNotifications:
+          type: boolean
+        workItemComments:
+          type: boolean
+      required:
+        - receiverNotifications
+        - senderNotifications
+        - timeEntries
+        - userNotifications
+        - memberProjects
+        - memberTeams
+        - userAPIKey
+        - assigneeWorkItems
+        - workItemComments
+      type: object
+    GetCacheDemoWorkItemQueryParameters: # Generated schema. DO NOT EDIT.
+      properties:
+        joins:
+          $ref: '#/components/schemas/DbCacheDemoWorkItemJoins'
+      type: object
+      x-gen-struct: GetCacheDemoWorkItemQueryParameters
+      x-is-generated: true
+    GetPaginatedUsersQueryParameters: # Generated schema. DO NOT EDIT.
+      properties:
+        role:
+          $ref: '#/components/schemas/Role'
+      required:
+        - role
+      type: object
+      x-gen-struct: GetPaginatedUsersQueryParameters
+      x-is-generated: true
+    GetCurrentUserQueryParameters: # Generated schema. DO NOT EDIT.
+      properties:
+        joins:
+          $ref: '#/components/schemas/DbUserJoins'
+      type: object
+      x-gen-struct: GetCurrentUserQueryParameters
       x-is-generated: true
   examples: # Generated from internal structs. DO NOT EDIT.
     User:

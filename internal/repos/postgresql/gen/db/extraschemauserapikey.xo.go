@@ -131,7 +131,7 @@ func WithExtraSchemaUserAPIKeyOrderBy(rows ...ExtraSchemaUserAPIKeyOrderBy) Extr
 }
 
 type ExtraSchemaUserAPIKeyJoins struct {
-	User bool // O2O users
+	User bool `json:"user" required:"true" nullable:"false"` // O2O users
 }
 
 // WithExtraSchemaUserAPIKeyJoin joins with the given tables.

@@ -105,9 +105,9 @@ type ExtraSchemaWorkItemOrderBy string
 const ()
 
 type ExtraSchemaWorkItemJoins struct {
-	DemoWorkItem bool // O2O demo_work_items
-	Admins       bool // M2M work_item_admin
-	Assignees    bool // M2M work_item_assignee
+	DemoWorkItem bool `json:"demoWorkItem" required:"true" nullable:"false"` // O2O demo_work_items
+	Admins       bool `json:"admins" required:"true" nullable:"false"`       // M2M work_item_admin
+	Assignees    bool `json:"assignees" required:"true" nullable:"false"`    // M2M work_item_assignee
 }
 
 // WithExtraSchemaWorkItemJoin joins with the given tables.

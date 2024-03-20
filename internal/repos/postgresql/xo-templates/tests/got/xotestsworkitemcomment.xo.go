@@ -140,8 +140,8 @@ func WithXoTestsWorkItemCommentOrderBy(rows ...XoTestsWorkItemCommentOrderBy) Xo
 }
 
 type XoTestsWorkItemCommentJoins struct {
-	User     bool // O2O users
-	WorkItem bool // O2O work_items
+	User     bool `json:"user" required:"true" nullable:"false"`     // O2O users
+	WorkItem bool `json:"workItem" required:"true" nullable:"false"` // O2O work_items
 }
 
 // WithXoTestsWorkItemCommentJoin joins with the given tables.

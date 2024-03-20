@@ -511,8 +511,8 @@ export interface components {
       projectID: number;
     };
     ProjectConfig: {
-      fields: components["schemas"]["ProjectConfigField"][];
-      header: string[];
+      fields?: components["schemas"]["ProjectConfigField"][];
+      header?: string[];
       visualization?: Record<string, never>;
     };
     ProjectConfigField: {
@@ -800,6 +800,37 @@ export interface components {
       workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
       workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
+    };
+    /** @enum {string} */
+    PaginationFilterModes: "between" | "betweenInclusive" | "contains" | "empty" | "endsWith" | "equals" | "fuzzy" | "greaterThan" | "greaterThanOrEqualTo" | "lessThan" | "lessThanOrEqualTo" | "notEmpty" | "notEquals" | "startsWith";
+    DbCacheDemoWorkItemJoins: {
+      assignees: boolean;
+      kanbanStep: boolean;
+      team: boolean;
+      timeEntries: boolean;
+      workItemComments: boolean;
+      workItemTags: boolean;
+      workItemType: boolean;
+    };
+    DbUserJoins: {
+      assigneeWorkItems: boolean;
+      memberProjects: boolean;
+      memberTeams: boolean;
+      receiverNotifications: boolean;
+      senderNotifications: boolean;
+      timeEntries: boolean;
+      userAPIKey: boolean;
+      userNotifications: boolean;
+      workItemComments: boolean;
+    };
+    GetCacheDemoWorkItemQueryParameters: {
+      joins?: components["schemas"]["DbCacheDemoWorkItemJoins"];
+    };
+    GetPaginatedUsersQueryParameters: {
+      role: components["schemas"]["Role"];
+    };
+    GetCurrentUserQueryParameters: {
+      joins?: components["schemas"]["DbUserJoins"];
     };
   };
   responses: never;

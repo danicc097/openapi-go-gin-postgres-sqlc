@@ -109,7 +109,7 @@ func WithDemoTwoWorkItemOrderBy(rows ...DemoTwoWorkItemOrderBy) DemoTwoWorkItemS
 }
 
 type DemoTwoWorkItemJoins struct {
-	WorkItem bool // O2O work_items
+	WorkItem bool `json:"workItem" required:"true" nullable:"false"` // O2O work_items
 }
 
 // WithDemoTwoWorkItemJoin joins with the given tables.

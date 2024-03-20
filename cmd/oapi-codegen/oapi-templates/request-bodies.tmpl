@@ -4,9 +4,8 @@
 {{$contentType := .ContentType -}}
 {{with .TypeDef $opid}}
 
-// {{.TypeName}} defines body for {{$opid}} for {{$contentType}} ContentType.
 {{- /* cannot import rest in types gen package, circ. {{if is_rest_type .Schema.TypeDecl}}rest.{{end}} */}}
-
+// {{.TypeName}} defines body for {{$opid}} for {{$contentType}} ContentType.
 type {{.TypeName}} {{if .IsAlias}}={{end}}{{if (exclude_rest_types)}}{{rest_type .Schema.TypeDecl}}{{else}}{{.Schema.TypeDecl}}{{end}}
 {{end}}
 {{end}}

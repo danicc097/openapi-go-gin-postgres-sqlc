@@ -245,13 +245,13 @@ func WithCacheDemoTwoWorkItemOrderBy(rows ...CacheDemoTwoWorkItemOrderBy) CacheD
 }
 
 type CacheDemoTwoWorkItemJoins struct {
-	KanbanStep       bool // O2O kanban_steps
-	Team             bool // O2O teams
-	WorkItemType     bool // O2O work_item_types
-	TimeEntries      bool // M2O time_entries
-	Assignees        bool // M2M work_item_assignee
-	WorkItemComments bool // M2O work_item_comments
-	WorkItemTags     bool // M2M work_item_work_item_tag
+	KanbanStep       bool `json:"kanbanStep" required:"true" nullable:"false"`       // O2O kanban_steps
+	Team             bool `json:"team" required:"true" nullable:"false"`             // O2O teams
+	WorkItemType     bool `json:"workItemType" required:"true" nullable:"false"`     // O2O work_item_types
+	TimeEntries      bool `json:"timeEntries" required:"true" nullable:"false"`      // M2O time_entries
+	Assignees        bool `json:"assignees" required:"true" nullable:"false"`        // M2M work_item_assignee
+	WorkItemComments bool `json:"workItemComments" required:"true" nullable:"false"` // M2O work_item_comments
+	WorkItemTags     bool `json:"workItemTags" required:"true" nullable:"false"`     // M2M work_item_work_item_tag
 }
 
 // WithCacheDemoTwoWorkItemJoin joins with the given tables.

@@ -6,6 +6,8 @@ generate:
   models: true
 output: internal/rest/openapi_server.gen.go
 exclude-rest-types: true
+skip-discriminator-utils: true
+is-rest-server-gen: true
 import-mapping:
   "openapi.yaml": github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models
 # additional-imports:

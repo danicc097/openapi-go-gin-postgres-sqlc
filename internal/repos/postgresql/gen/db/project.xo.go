@@ -154,12 +154,12 @@ func WithProjectOrderBy(rows ...ProjectOrderBy) ProjectSelectConfigOption {
 }
 
 type ProjectJoins struct {
-	Activities    bool // M2O activities
-	KanbanSteps   bool // M2O kanban_steps
-	Teams         bool // M2O teams
-	Members       bool // M2M user_project
-	WorkItemTags  bool // M2O work_item_tags
-	WorkItemTypes bool // M2O work_item_types
+	Activities    bool `json:"activities" required:"true" nullable:"false"`    // M2O activities
+	KanbanSteps   bool `json:"kanbanSteps" required:"true" nullable:"false"`   // M2O kanban_steps
+	Teams         bool `json:"teams" required:"true" nullable:"false"`         // M2O teams
+	Members       bool `json:"members" required:"true" nullable:"false"`       // M2M user_project
+	WorkItemTags  bool `json:"workItemTags" required:"true" nullable:"false"`  // M2O work_item_tags
+	WorkItemTypes bool `json:"workItemTypes" required:"true" nullable:"false"` // M2O work_item_types
 }
 
 // WithProjectJoin joins with the given tables.

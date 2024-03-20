@@ -10,7 +10,7 @@ import type { ProjectConfigField } from './projectConfigField';
 import type { ProjectConfigVisualization } from './projectConfigVisualization';
 
 export interface ProjectConfig {
-  fields: ProjectConfigField[];
-  header: string[];
+  fields?: ProjectConfigField[];
+  header?: string[];
   visualization?: ProjectConfigVisualization;
 }

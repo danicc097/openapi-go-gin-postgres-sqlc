@@ -122,7 +122,7 @@ func WithXoTestsTimeEntryOrderBy(rows ...XoTestsTimeEntryOrderBy) XoTestsTimeEnt
 }
 
 type XoTestsTimeEntryJoins struct {
-	WorkItem bool // O2O work_items
+	WorkItem bool `json:"workItem" required:"true" nullable:"false"` // O2O work_items
 }
 
 // WithXoTestsTimeEntryJoin joins with the given tables.
