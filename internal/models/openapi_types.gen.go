@@ -140,6 +140,44 @@ func AllNotificationTypeValues() []NotificationType {
 	}
 }
 
+// Defines values for PaginationFilterModes.
+const (
+	PaginationFilterModesBetween              PaginationFilterModes = "between"
+	PaginationFilterModesBetweenInclusive     PaginationFilterModes = "betweenInclusive"
+	PaginationFilterModesContains             PaginationFilterModes = "contains"
+	PaginationFilterModesEmpty                PaginationFilterModes = "empty"
+	PaginationFilterModesEndsWith             PaginationFilterModes = "endsWith"
+	PaginationFilterModesEquals               PaginationFilterModes = "equals"
+	PaginationFilterModesFuzzy                PaginationFilterModes = "fuzzy"
+	PaginationFilterModesGreaterThan          PaginationFilterModes = "greaterThan"
+	PaginationFilterModesGreaterThanOrEqualTo PaginationFilterModes = "greaterThanOrEqualTo"
+	PaginationFilterModesLessThan             PaginationFilterModes = "lessThan"
+	PaginationFilterModesLessThanOrEqualTo    PaginationFilterModes = "lessThanOrEqualTo"
+	PaginationFilterModesNotEmpty             PaginationFilterModes = "notEmpty"
+	PaginationFilterModesNotEquals            PaginationFilterModes = "notEquals"
+	PaginationFilterModesStartsWith           PaginationFilterModes = "startsWith"
+)
+
+// AllPaginationFilterModesValues returns all possible values for PaginationFilterModes.
+func AllPaginationFilterModesValues() []PaginationFilterModes {
+	return []PaginationFilterModes{
+		PaginationFilterModesBetween,
+		PaginationFilterModesBetweenInclusive,
+		PaginationFilterModesContains,
+		PaginationFilterModesEmpty,
+		PaginationFilterModesEndsWith,
+		PaginationFilterModesEquals,
+		PaginationFilterModesFuzzy,
+		PaginationFilterModesGreaterThan,
+		PaginationFilterModesGreaterThanOrEqualTo,
+		PaginationFilterModesLessThan,
+		PaginationFilterModesLessThanOrEqualTo,
+		PaginationFilterModesNotEmpty,
+		PaginationFilterModesNotEquals,
+		PaginationFilterModesStartsWith,
+	}
+}
+
 // Project is generated from projects table.
 const (
 	ProjectDemo    Project = "demo"
@@ -357,6 +395,17 @@ type DbActivityCreateParams struct {
 	ProjectID    *int   `json:"projectID,omitempty"`
 }
 
+// DbCacheDemoWorkItemJoins defines the model for DbCacheDemoWorkItemJoins.
+type DbCacheDemoWorkItemJoins struct {
+	Assignees        bool `json:"assignees"`
+	KanbanStep       bool `json:"kanbanStep"`
+	Team             bool `json:"team"`
+	TimeEntries      bool `json:"timeEntries"`
+	WorkItemComments bool `json:"workItemComments"`
+	WorkItemTags     bool `json:"workItemTags"`
+	WorkItemType     bool `json:"workItemType"`
+}
+
 // DbDemoTwoWorkItem defines the model for DbDemoTwoWorkItem.
 type DbDemoTwoWorkItem struct {
 	CustomDateForProject2 *time.Time `json:"customDateForProject2"`
@@ -481,6 +530,19 @@ type DbUserAPIKey struct {
 
 // DbUserID defines the model for DbUserID.
 type DbUserID = uuid.UUID
+
+// DbUserJoins defines the model for DbUserJoins.
+type DbUserJoins struct {
+	AssigneeWorkItems     bool `json:"assigneeWorkItems"`
+	MemberProjects        bool `json:"memberProjects"`
+	MemberTeams           bool `json:"memberTeams"`
+	ReceiverNotifications bool `json:"receiverNotifications"`
+	SenderNotifications   bool `json:"senderNotifications"`
+	TimeEntries           bool `json:"timeEntries"`
+	UserAPIKey            bool `json:"userAPIKey"`
+	UserNotifications     bool `json:"userNotifications"`
+	WorkItemComments      bool `json:"workItemComments"`
+}
 
 // DbUserNotification defines the model for DbUserNotification.
 type DbUserNotification struct {
@@ -654,6 +716,22 @@ type Direction string
 // - 'Private' marks an error to be hidden in response.
 type ErrorCode string
 
+// GetCacheDemoWorkItemQueryParameters defines the model for GetCacheDemoWorkItemQueryParameters.
+type GetCacheDemoWorkItemQueryParameters struct {
+	Joins *DbCacheDemoWorkItemJoins `json:"joins,omitempty"`
+}
+
+// GetCurrentUserQueryParameters defines the model for GetCurrentUserQueryParameters.
+type GetCurrentUserQueryParameters struct {
+	Joins *DbUserJoins `json:"joins,omitempty"`
+}
+
+// GetPaginatedUsersQueryParameters defines the model for GetPaginatedUsersQueryParameters.
+type GetPaginatedUsersQueryParameters struct {
+	// Role is generated from roles.json keys.
+	Role Role `json:"role"`
+}
+
 // HTTPError represents an error message response.
 type HTTPError struct {
 	Detail string `json:"detail"`
@@ -703,6 +781,9 @@ type PaginatedUsersResponse struct {
 	Items *[]User        `json:"items"`
 	Page  PaginationPage `json:"page"`
 }
+
+// PaginationFilterModes defines the model for PaginationFilterModes.
+type PaginationFilterModes string
 
 // PaginationPage defines the model for PaginationPage.
 type PaginationPage struct {

@@ -110,8 +110,8 @@ type ExtraSchemaBookAuthorOrderBy string
 const ()
 
 type ExtraSchemaBookAuthorJoins struct {
-	Books   bool // M2M book_authors
-	Authors bool // M2M book_authors
+	Books   bool `json:"books" required:"true" nullable:"false"`   // M2M book_authors
+	Authors bool `json:"authors" required:"true" nullable:"false"` // M2M book_authors
 }
 
 // WithExtraSchemaBookAuthorJoin joins with the given tables.

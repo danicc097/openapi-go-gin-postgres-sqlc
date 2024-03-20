@@ -260,15 +260,15 @@ func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
 }
 
 type UserJoins struct {
-	ReceiverNotifications bool // M2O notifications
-	SenderNotifications   bool // M2O notifications
-	TimeEntries           bool // M2O time_entries
-	UserNotifications     bool // M2O user_notifications
-	MemberProjects        bool // M2M user_project
-	MemberTeams           bool // M2M user_team
-	UserAPIKey            bool // O2O user_api_keys
-	AssigneeWorkItems     bool // M2M work_item_assignee
-	WorkItemComments      bool // M2O work_item_comments
+	ReceiverNotifications bool `json:"receiverNotifications" required:"true" nullable:"false"` // M2O notifications
+	SenderNotifications   bool `json:"senderNotifications" required:"true" nullable:"false"`   // M2O notifications
+	TimeEntries           bool `json:"timeEntries" required:"true" nullable:"false"`           // M2O time_entries
+	UserNotifications     bool `json:"userNotifications" required:"true" nullable:"false"`     // M2O user_notifications
+	MemberProjects        bool `json:"memberProjects" required:"true" nullable:"false"`        // M2M user_project
+	MemberTeams           bool `json:"memberTeams" required:"true" nullable:"false"`           // M2M user_team
+	UserAPIKey            bool `json:"userAPIKey" required:"true" nullable:"false"`            // O2O user_api_keys
+	AssigneeWorkItems     bool `json:"assigneeWorkItems" required:"true" nullable:"false"`     // M2M work_item_assignee
+	WorkItemComments      bool `json:"workItemComments" required:"true" nullable:"false"`      // M2O work_item_comments
 }
 
 // WithUserJoin joins with the given tables.

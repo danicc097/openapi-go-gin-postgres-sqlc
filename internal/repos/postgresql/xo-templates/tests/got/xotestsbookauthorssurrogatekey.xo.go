@@ -114,8 +114,8 @@ func WithXoTestsBookAuthorsSurrogateKeyLimit(limit int) XoTestsBookAuthorsSurrog
 type XoTestsBookAuthorsSurrogateKeyOrderBy string
 
 type XoTestsBookAuthorsSurrogateKeyJoins struct {
-	Books   bool // M2M book_authors_surrogate_key
-	Authors bool // M2M book_authors_surrogate_key
+	Books   bool `json:"books" required:"true" nullable:"false"`   // M2M book_authors_surrogate_key
+	Authors bool `json:"authors" required:"true" nullable:"false"` // M2M book_authors_surrogate_key
 }
 
 // WithXoTestsBookAuthorsSurrogateKeyJoin joins with the given tables.

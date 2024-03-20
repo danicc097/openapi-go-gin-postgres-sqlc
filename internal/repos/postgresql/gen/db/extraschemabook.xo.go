@@ -90,10 +90,10 @@ type ExtraSchemaBookOrderBy string
 const ()
 
 type ExtraSchemaBookJoins struct {
-	Authors     bool // M2M book_authors
-	AuthorsBASK bool // M2M book_authors_surrogate_key
-	BookReviews bool // M2O book_reviews
-	Sellers     bool // M2M book_sellers
+	Authors     bool `json:"authors" required:"true" nullable:"false"`     // M2M book_authors
+	AuthorsBASK bool `json:"authorsBASK" required:"true" nullable:"false"` // M2M book_authors_surrogate_key
+	BookReviews bool `json:"bookReviews" required:"true" nullable:"false"` // M2O book_reviews
+	Sellers     bool `json:"sellers" required:"true" nullable:"false"`     // M2M book_sellers
 }
 
 // WithExtraSchemaBookJoin joins with the given tables.

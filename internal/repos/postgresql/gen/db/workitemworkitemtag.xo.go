@@ -94,8 +94,8 @@ type WorkItemWorkItemTagOrderBy string
 const ()
 
 type WorkItemWorkItemTagJoins struct {
-	WorkItemTags bool // M2M work_item_work_item_tag
-	WorkItems    bool // M2M work_item_work_item_tag
+	WorkItemTags bool `json:"workItemTags" required:"true" nullable:"false"` // M2M work_item_work_item_tag
+	WorkItems    bool `json:"workItems" required:"true" nullable:"false"`    // M2M work_item_work_item_tag
 }
 
 // WithWorkItemWorkItemTagJoin joins with the given tables.

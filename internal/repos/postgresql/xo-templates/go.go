@@ -2371,7 +2371,9 @@ type %s struct {
 		}
 		goNames = append(goNames, goName)
 		var tag string
-		// tag := fmt.Sprintf("`db:\"%s\"`", joinName)
+
+		// no need for adapter from db.*Joins to oapi-codegens' Db*Joins
+		tag = fmt.Sprintf("`json:\"%s\" required:\"true\" nullable:\"false\"`", camel(goName))
 		buf.WriteString(fmt.Sprintf("%s bool %s %s\n", goName, tag, notes))
 
 		joinClause, selectClause, groupby := f.createJoinStatement(tables, c, t, funcs)

@@ -90,6 +90,12 @@ import {
   DemoTwoWorkItem,
   DemoWorkItem,
   WorkItemBase,
+  PaginationFilterModes,
+  DbCacheDemoWorkItemJoins,
+  DbUserJoins,
+  GetCacheDemoWorkItemQueryParameters,
+  GetPaginatedUsersQueryParameters,
+  GetCurrentUserQueryParameters,
 } from './models'
 
 export const schemaDefinitions = {
@@ -236,6 +242,24 @@ export const schemaDefinitions = {
   DemoTwoWorkItem: info<DemoTwoWorkItem>('DemoTwoWorkItem', '#/definitions/DemoTwoWorkItem'),
   DemoWorkItem: info<DemoWorkItem>('DemoWorkItem', '#/definitions/DemoWorkItem'),
   WorkItemBase: info<WorkItemBase>('WorkItemBase', '#/definitions/WorkItemBase'),
+  PaginationFilterModes: info<PaginationFilterModes>('PaginationFilterModes', '#/definitions/PaginationFilterModes'),
+  DbCacheDemoWorkItemJoins: info<DbCacheDemoWorkItemJoins>(
+    'DbCacheDemoWorkItemJoins',
+    '#/definitions/DbCacheDemoWorkItemJoins',
+  ),
+  DbUserJoins: info<DbUserJoins>('DbUserJoins', '#/definitions/DbUserJoins'),
+  GetCacheDemoWorkItemQueryParameters: info<GetCacheDemoWorkItemQueryParameters>(
+    'GetCacheDemoWorkItemQueryParameters',
+    '#/definitions/GetCacheDemoWorkItemQueryParameters',
+  ),
+  GetPaginatedUsersQueryParameters: info<GetPaginatedUsersQueryParameters>(
+    'GetPaginatedUsersQueryParameters',
+    '#/definitions/GetPaginatedUsersQueryParameters',
+  ),
+  GetCurrentUserQueryParameters: info<GetCurrentUserQueryParameters>(
+    'GetCurrentUserQueryParameters',
+    '#/definitions/GetCurrentUserQueryParameters',
+  ),
 }
 
 export interface SchemaInfo<T> {

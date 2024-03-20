@@ -110,8 +110,8 @@ func WithXoTestsWorkItemAssigneeLimit(limit int) XoTestsWorkItemAssigneeSelectCo
 type XoTestsWorkItemAssigneeOrderBy string
 
 type XoTestsWorkItemAssigneeJoins struct {
-	WorkItems bool // M2M work_item_assignee
-	Assignees bool // M2M work_item_assignee
+	WorkItems bool `json:"workItems" required:"true" nullable:"false"` // M2M work_item_assignee
+	Assignees bool `json:"assignees" required:"true" nullable:"false"` // M2M work_item_assignee
 }
 
 // WithXoTestsWorkItemAssigneeJoin joins with the given tables.

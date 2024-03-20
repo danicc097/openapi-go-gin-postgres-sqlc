@@ -49,6 +49,39 @@ type User struct {
 	Projects *[]db.Project  `json:"projects"`
 }
 
+type GetCurrentUserQueryParameters struct {
+	// if need arises somehow, exclude some joins from json via a new SQL comment annotation.
+	// joins only accumulate with the ones previously set.
+	Joins db.UserJoins `json:"joins"`
+}
+
+type GetPaginatedUsersQueryParameters struct {
+	// proper are joins needed when filtering with having clause, however we will not generate
+	// code for these joins, so we will set them dynamically in repos based on filters
+	// Joins db.UserJoins `json:"joins"`
+	// custom filters:
+	Role Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
+	// generic user filters (via openapi we know the types -> generate xo + postgresql accordingly)
+	// NOTE: do not generate joins, just create filters with havingclause manually, its not trivial to generate.
+	// Teams ArrayFilter[db.TeamID] or anyof in spec
+	// frontend doesnt care,
+	// based on generated m2m, o2m or o2o,
+	// const userTableMemberProjectsSelectSQL = `COALESCE(
+	// 	ARRAY_AGG( DISTINCT (
+	// 	xo_join_user_project_projects.__projects
+	// 	)) filter (where xo_join_user_project_projects.__projects_project_id is not null), '{}') as user_project_projects`
+}
+
+type GetCacheDemoWorkItemQueryParameters struct {
+	// if need arises, exclude some joins from json via a new SQL comment annotation.
+	// joins only accumulate with the ones previously set.
+	Joins db.CacheDemoWorkItemJoins `json:"joins"`
+	// TODO: Filters. easier to generate a default Filter struct via xo
+	// since we know the types (see mantine-react-table filters json gen and define struct accordingly)
+	// then xo filters (where or having) get automatically built. see excalidraw
+	// e.g. for users filter on teams would need extra adhoc filter teamIDs
+}
+
 // type Users []User // cannot be handled by swaggest lib (only handles structs)
 // panic: reflect: NumField of non-struct type rest.Users
 // should use below workaround as in paginated queries (all would be paginated queries in a way...)

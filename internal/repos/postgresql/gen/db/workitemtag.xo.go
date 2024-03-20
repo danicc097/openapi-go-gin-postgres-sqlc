@@ -154,8 +154,8 @@ func WithWorkItemTagOrderBy(rows ...WorkItemTagOrderBy) WorkItemTagSelectConfigO
 }
 
 type WorkItemTagJoins struct {
-	Project   bool // O2O projects
-	WorkItems bool // M2M work_item_work_item_tag
+	Project   bool `json:"project" required:"true" nullable:"false"`   // O2O projects
+	WorkItems bool `json:"workItems" required:"true" nullable:"false"` // M2M work_item_work_item_tag
 }
 
 // WithWorkItemTagJoin joins with the given tables.

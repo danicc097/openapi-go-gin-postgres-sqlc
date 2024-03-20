@@ -93,8 +93,8 @@ type UserProjectOrderBy string
 const ()
 
 type UserProjectJoins struct {
-	Projects bool // M2M user_project
-	Members  bool // M2M user_project
+	Projects bool `json:"projects" required:"true" nullable:"false"` // M2M user_project
+	Members  bool `json:"members" required:"true" nullable:"false"`  // M2M user_project
 }
 
 // WithUserProjectJoin joins with the given tables.

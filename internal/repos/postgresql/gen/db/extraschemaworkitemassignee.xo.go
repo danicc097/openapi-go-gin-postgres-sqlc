@@ -110,8 +110,8 @@ type ExtraSchemaWorkItemAssigneeOrderBy string
 const ()
 
 type ExtraSchemaWorkItemAssigneeJoins struct {
-	WorkItems bool // M2M work_item_assignee
-	Assignees bool // M2M work_item_assignee
+	WorkItems bool `json:"workItems" required:"true" nullable:"false"` // M2M work_item_assignee
+	Assignees bool `json:"assignees" required:"true" nullable:"false"` // M2M work_item_assignee
 }
 
 // WithExtraSchemaWorkItemAssigneeJoin joins with the given tables.

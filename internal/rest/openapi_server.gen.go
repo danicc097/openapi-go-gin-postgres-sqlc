@@ -146,6 +146,44 @@ func AllNotificationTypeValues() []NotificationType {
 	}
 }
 
+// Defines values for PaginationFilterModes.
+const (
+	PaginationFilterModesBetween              PaginationFilterModes = "between"
+	PaginationFilterModesBetweenInclusive     PaginationFilterModes = "betweenInclusive"
+	PaginationFilterModesContains             PaginationFilterModes = "contains"
+	PaginationFilterModesEmpty                PaginationFilterModes = "empty"
+	PaginationFilterModesEndsWith             PaginationFilterModes = "endsWith"
+	PaginationFilterModesEquals               PaginationFilterModes = "equals"
+	PaginationFilterModesFuzzy                PaginationFilterModes = "fuzzy"
+	PaginationFilterModesGreaterThan          PaginationFilterModes = "greaterThan"
+	PaginationFilterModesGreaterThanOrEqualTo PaginationFilterModes = "greaterThanOrEqualTo"
+	PaginationFilterModesLessThan             PaginationFilterModes = "lessThan"
+	PaginationFilterModesLessThanOrEqualTo    PaginationFilterModes = "lessThanOrEqualTo"
+	PaginationFilterModesNotEmpty             PaginationFilterModes = "notEmpty"
+	PaginationFilterModesNotEquals            PaginationFilterModes = "notEquals"
+	PaginationFilterModesStartsWith           PaginationFilterModes = "startsWith"
+)
+
+// AllPaginationFilterModesValues returns all possible values for PaginationFilterModes.
+func AllPaginationFilterModesValues() []PaginationFilterModes {
+	return []PaginationFilterModes{
+		PaginationFilterModesBetween,
+		PaginationFilterModesBetweenInclusive,
+		PaginationFilterModesContains,
+		PaginationFilterModesEmpty,
+		PaginationFilterModesEndsWith,
+		PaginationFilterModesEquals,
+		PaginationFilterModesFuzzy,
+		PaginationFilterModesGreaterThan,
+		PaginationFilterModesGreaterThanOrEqualTo,
+		PaginationFilterModesLessThan,
+		PaginationFilterModesLessThanOrEqualTo,
+		PaginationFilterModesNotEmpty,
+		PaginationFilterModesNotEquals,
+		PaginationFilterModesStartsWith,
+	}
+}
+
 // Project is generated from projects table.
 const (
 	ProjectDemo    Project = "demo"
@@ -287,6 +325,8 @@ type CreateWorkItemRequest struct {
 
 /* Skipping definition of db struct db.ActivityCreateParams */
 
+/* Skipping definition of db struct db.CacheDemoWorkItemJoins */
+
 /* Skipping definition of db struct db.DemoTwoWorkItem */
 
 /* Skipping definition of db struct db.DemoTwoWorkItemCreateParams */
@@ -316,6 +356,8 @@ type CreateWorkItemRequest struct {
 /* Skipping definition of db struct db.UserAPIKey */
 
 /* Skipping definition of db struct db.UserID */
+
+/* Skipping definition of db struct db.UserJoins */
 
 /* Skipping definition of db struct db.UserNotification */
 
@@ -367,6 +409,12 @@ type Direction string
 // - 'Private' marks an error to be hidden in response.
 type ErrorCode string
 
+/* Ignoring existing struct (rest/models.go) GetCacheDemoWorkItemQueryParameters */
+
+/* Ignoring existing struct (rest/models.go) GetCurrentUserQueryParameters */
+
+/* Ignoring existing struct (rest/models.go) GetPaginatedUsersQueryParameters */
+
 // HTTPError represents an error message response.
 type HTTPError struct {
 	Detail string `json:"detail"`
@@ -401,6 +449,9 @@ type NotificationType string
 /* Ignoring existing struct (rest/models.go) PaginatedNotificationsResponse */
 
 /* Ignoring existing struct (rest/models.go) PaginatedUsersResponse */
+
+// PaginationFilterModes defines the model for PaginationFilterModes.
+type PaginationFilterModes string
 
 /* Ignoring existing struct (rest/models.go) PaginationPage */
 

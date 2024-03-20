@@ -100,8 +100,8 @@ type ExtraSchemaBookReviewOrderBy string
 const ()
 
 type ExtraSchemaBookReviewJoins struct {
-	Book bool // O2O books
-	User bool // O2O users
+	Book bool `json:"book" required:"true" nullable:"false"` // O2O books
+	User bool `json:"user" required:"true" nullable:"false"` // O2O users
 }
 
 // WithExtraSchemaBookReviewJoin joins with the given tables.

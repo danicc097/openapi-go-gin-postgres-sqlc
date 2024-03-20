@@ -133,7 +133,7 @@ func WithXoTestsPagElementOrderBy(rows ...XoTestsPagElementOrderBy) XoTestsPagEl
 }
 
 type XoTestsPagElementJoins struct {
-	DummyJoin bool // O2O dummy_join
+	DummyJoin bool `json:"dummyJoin" required:"true" nullable:"false"` // O2O dummy_join
 }
 
 // WithXoTestsPagElementJoin joins with the given tables.

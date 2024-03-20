@@ -126,8 +126,8 @@ type ExtraSchemaNotificationOrderBy string
 const ()
 
 type ExtraSchemaNotificationJoins struct {
-	UserReceiver bool // O2O users
-	UserSender   bool // O2O users
+	UserReceiver bool `json:"userReceiver" required:"true" nullable:"false"` // O2O users
+	UserSender   bool `json:"userSender" required:"true" nullable:"false"`   // O2O users
 }
 
 // WithExtraSchemaNotificationJoin joins with the given tables.

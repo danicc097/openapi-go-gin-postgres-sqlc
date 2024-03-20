@@ -94,6 +94,12 @@ import {
   DemoTwoWorkItem,
   DemoWorkItem,
   WorkItemBase,
+  PaginationFilterModes,
+  DbCacheDemoWorkItemJoins,
+  DbUserJoins,
+  GetCacheDemoWorkItemQueryParameters,
+  GetPaginatedUsersQueryParameters,
+  GetCurrentUserQueryParameters,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -1132,5 +1138,77 @@ export const WorkItemBaseDecoder: Decoder<WorkItemBase> = {
       throw new Error(`Schema ${WorkItemBaseDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, WorkItemBaseDecoder.definitionName)
+  },
+}
+export const PaginationFilterModesDecoder: Decoder<PaginationFilterModes> = {
+  definitionName: 'PaginationFilterModes',
+  schemaRef: '#/definitions/PaginationFilterModes',
+
+  decode(json: unknown): PaginationFilterModes {
+    const schema = ajv.getSchema(PaginationFilterModesDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${PaginationFilterModesDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, PaginationFilterModesDecoder.definitionName)
+  },
+}
+export const DbCacheDemoWorkItemJoinsDecoder: Decoder<DbCacheDemoWorkItemJoins> = {
+  definitionName: 'DbCacheDemoWorkItemJoins',
+  schemaRef: '#/definitions/DbCacheDemoWorkItemJoins',
+
+  decode(json: unknown): DbCacheDemoWorkItemJoins {
+    const schema = ajv.getSchema(DbCacheDemoWorkItemJoinsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbCacheDemoWorkItemJoinsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbCacheDemoWorkItemJoinsDecoder.definitionName)
+  },
+}
+export const DbUserJoinsDecoder: Decoder<DbUserJoins> = {
+  definitionName: 'DbUserJoins',
+  schemaRef: '#/definitions/DbUserJoins',
+
+  decode(json: unknown): DbUserJoins {
+    const schema = ajv.getSchema(DbUserJoinsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${DbUserJoinsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, DbUserJoinsDecoder.definitionName)
+  },
+}
+export const GetCacheDemoWorkItemQueryParametersDecoder: Decoder<GetCacheDemoWorkItemQueryParameters> = {
+  definitionName: 'GetCacheDemoWorkItemQueryParameters',
+  schemaRef: '#/definitions/GetCacheDemoWorkItemQueryParameters',
+
+  decode(json: unknown): GetCacheDemoWorkItemQueryParameters {
+    const schema = ajv.getSchema(GetCacheDemoWorkItemQueryParametersDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${GetCacheDemoWorkItemQueryParametersDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, GetCacheDemoWorkItemQueryParametersDecoder.definitionName)
+  },
+}
+export const GetPaginatedUsersQueryParametersDecoder: Decoder<GetPaginatedUsersQueryParameters> = {
+  definitionName: 'GetPaginatedUsersQueryParameters',
+  schemaRef: '#/definitions/GetPaginatedUsersQueryParameters',
+
+  decode(json: unknown): GetPaginatedUsersQueryParameters {
+    const schema = ajv.getSchema(GetPaginatedUsersQueryParametersDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${GetPaginatedUsersQueryParametersDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, GetPaginatedUsersQueryParametersDecoder.definitionName)
+  },
+}
+export const GetCurrentUserQueryParametersDecoder: Decoder<GetCurrentUserQueryParameters> = {
+  definitionName: 'GetCurrentUserQueryParameters',
+  schemaRef: '#/definitions/GetCurrentUserQueryParameters',
+
+  decode(json: unknown): GetCurrentUserQueryParameters {
+    const schema = ajv.getSchema(GetCurrentUserQueryParametersDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${GetCurrentUserQueryParametersDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, GetCurrentUserQueryParametersDecoder.definitionName)
   },
 }

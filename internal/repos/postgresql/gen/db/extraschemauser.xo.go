@@ -154,15 +154,15 @@ func WithExtraSchemaUserOrderBy(rows ...ExtraSchemaUserOrderBy) ExtraSchemaUserS
 }
 
 type ExtraSchemaUserJoins struct {
-	AuthorBooks           bool // M2M book_authors
-	AuthorBooksBASK       bool // M2M book_authors_surrogate_key
-	BookReviews           bool // M2O book_reviews
-	SellerBooks           bool // M2M book_sellers
-	ReceiverNotifications bool // M2O notifications
-	SenderNotifications   bool // M2O notifications
-	UserAPIKey            bool // O2O user_api_keys
-	AdminWorkItems        bool // M2M work_item_admin
-	AssigneeWorkItems     bool // M2M work_item_assignee
+	AuthorBooks           bool `json:"authorBooks" required:"true" nullable:"false"`           // M2M book_authors
+	AuthorBooksBASK       bool `json:"authorBooksBASK" required:"true" nullable:"false"`       // M2M book_authors_surrogate_key
+	BookReviews           bool `json:"bookReviews" required:"true" nullable:"false"`           // M2O book_reviews
+	SellerBooks           bool `json:"sellerBooks" required:"true" nullable:"false"`           // M2M book_sellers
+	ReceiverNotifications bool `json:"receiverNotifications" required:"true" nullable:"false"` // M2O notifications
+	SenderNotifications   bool `json:"senderNotifications" required:"true" nullable:"false"`   // M2O notifications
+	UserAPIKey            bool `json:"userAPIKey" required:"true" nullable:"false"`            // O2O user_api_keys
+	AdminWorkItems        bool `json:"adminWorkItems" required:"true" nullable:"false"`        // M2M work_item_admin
+	AssigneeWorkItems     bool `json:"assigneeWorkItems" required:"true" nullable:"false"`     // M2M work_item_assignee
 }
 
 // WithExtraSchemaUserJoin joins with the given tables.

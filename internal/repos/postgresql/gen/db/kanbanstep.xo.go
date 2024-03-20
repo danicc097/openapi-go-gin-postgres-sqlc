@@ -147,7 +147,7 @@ type KanbanStepOrderBy string
 const ()
 
 type KanbanStepJoins struct {
-	Project bool // O2O projects
+	Project bool `json:"project" required:"true" nullable:"false"` // O2O projects
 }
 
 // WithKanbanStepJoin joins with the given tables.

@@ -112,8 +112,8 @@ type UserNotificationOrderBy string
 const ()
 
 type UserNotificationJoins struct {
-	Notification bool // O2O notifications
-	User         bool // O2O users
+	Notification bool `json:"notification" required:"true" nullable:"false"` // O2O notifications
+	User         bool `json:"user" required:"true" nullable:"false"`         // O2O users
 }
 
 // WithUserNotificationJoin joins with the given tables.

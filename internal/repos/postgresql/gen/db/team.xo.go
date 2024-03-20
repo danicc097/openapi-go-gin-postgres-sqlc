@@ -139,9 +139,9 @@ func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
 }
 
 type TeamJoins struct {
-	Project     bool // O2O projects
-	TimeEntries bool // M2O time_entries
-	Members     bool // M2M user_team
+	Project     bool `json:"project" required:"true" nullable:"false"`     // O2O projects
+	TimeEntries bool `json:"timeEntries" required:"true" nullable:"false"` // M2O time_entries
+	Members     bool `json:"members" required:"true" nullable:"false"`     // M2M user_team
 }
 
 // WithTeamJoin joins with the given tables.

@@ -93,8 +93,8 @@ type UserTeamOrderBy string
 const ()
 
 type UserTeamJoins struct {
-	Teams   bool // M2M user_team
-	Members bool // M2M user_team
+	Teams   bool `json:"teams" required:"true" nullable:"false"`   // M2M user_team
+	Members bool `json:"members" required:"true" nullable:"false"` // M2M user_team
 }
 
 // WithUserTeamJoin joins with the given tables.

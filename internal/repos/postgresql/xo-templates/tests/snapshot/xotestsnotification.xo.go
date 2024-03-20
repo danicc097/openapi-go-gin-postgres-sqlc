@@ -114,8 +114,8 @@ func WithXoTestsNotificationLimit(limit int) XoTestsNotificationSelectConfigOpti
 type XoTestsNotificationOrderBy string
 
 type XoTestsNotificationJoins struct {
-	UserReceiver bool // O2O users
-	UserSender   bool // O2O users
+	UserReceiver bool `json:"userReceiver" required:"true" nullable:"false"` // O2O users
+	UserSender   bool `json:"userSender" required:"true" nullable:"false"`   // O2O users
 }
 
 // WithXoTestsNotificationJoin joins with the given tables.
