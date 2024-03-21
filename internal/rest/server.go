@@ -313,7 +313,7 @@ func Run(env, specPath string) (<-chan error, error) {
 
 		logger.Info("Shutdown signal received")
 
-		ctxTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctxTimeout, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 
 		// any action on shutdown must be deferred here and not in the main block
 		defer func() {

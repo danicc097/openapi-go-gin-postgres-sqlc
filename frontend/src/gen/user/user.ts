@@ -83,7 +83,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaginatedUsers>>> = ({ signal }) => getPaginatedUsers(params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaginatedUsers>>> = ({ signal, pageParam }) => getPaginatedUsers({...params, cursor: pageParam || params?.['cursor']}, requestOptions, signal);
 
       
 

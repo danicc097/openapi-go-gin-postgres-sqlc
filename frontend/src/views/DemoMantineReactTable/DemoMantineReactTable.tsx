@@ -17,7 +17,7 @@ import dayjs from 'dayjs'
 import { Scopes, User } from 'src/gen/model'
 import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
 import { colorBlindPalette, getContrastYIQ, scopeColor } from 'src/utils/colors'
-import _ from 'lodash'
+import _, { uniqueId } from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
 import { css } from '@emotion/react'
 
@@ -90,12 +90,20 @@ export default function DemoMantineReactTable() {
       {
         id: 'firstName',
         accessorKey: 'firstName',
-        header: 'First Name',
+        header: 'This should not be shown',
       },
       {
         id: 'firstName',
         accessorKey: 'firstName',
         header: 'First Name Overridden',
+      },
+      {
+        id: 'createdAt',
+        accessorKey: 'createdAt',
+        header: 'Created at',
+        Cell(props) {
+          return props.row.original.createdAt.toISOString()
+        },
       },
       // {
       //   accessorKey: 'lastName',
@@ -235,6 +243,7 @@ export default function DemoMantineReactTable() {
     refetch,
     fetchNextPage,
     isFetching,
+    isFetchingNextPage,
     isError,
     isLoading,
     // see https://v2.mantine-react-table.com/docs/examples/infinite-scrolling
@@ -255,27 +264,43 @@ export default function DemoMantineReactTable() {
       //   sorting: sorting,
       // },
     },
-    {},
+    {
+      query: {
+        getNextPageParam: (_lastGroup, groups) => {
+          const d = dayjs(_lastGroup.page.nextCursor)
+          if (d.isValid()) {
+            return d.toISOString()
+          }
+
+          return
+        },
+      },
+    },
   )
 
   // useStopInfiniteRenders(60)
 
-  const fetchedUsers = usersData?.pages?.[0]?.items ?? []
+  const fetchedUsers = useMemo(() => usersData?.pages.flatMap((page) => page.items ?? []) ?? [], [usersData])
+
   const totalRowCount = Infinity
   const totalFetched = fetchedUsers.length
+  const nextCursor = usersData?.pages.slice(-1)[0]?.page.nextCursor
 
   const fetchMoreOnBottomReached = useCallback(
     (containerRefElement?: HTMLDivElement | null) => {
       if (containerRefElement) {
         const { scrollHeight, scrollTop, clientHeight } = containerRefElement
         const hasMore = totalFetched >= pagination.pageSize
-        if (scrollHeight - scrollTop - clientHeight < 200 && !isFetching && hasMore) {
-          console.log({ refetching: true })
-          fetchNextPage()
+        if (scrollHeight - scrollTop - clientHeight < 200 && !isFetching && !isFetchingNextPage && hasMore) {
+          const nc = dayjs(nextCursor)
+          if (nc.isValid()) {
+            console.log('Fetching more...')
+            fetchNextPage()
+          }
         }
       }
     },
-    [fetchNextPage, isFetching, totalFetched],
+    [fetchNextPage, isFetching, totalFetched, nextCursor],
   )
 
   useEffect(() => {

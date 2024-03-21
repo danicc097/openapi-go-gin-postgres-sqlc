@@ -154,7 +154,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof myProviderLogin>>> = ({ signal }) => myProviderLogin(params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof myProviderLogin>>> = ({ signal, pageParam }) => myProviderLogin({...params, cursor: pageParam || params?.['cursor']}, requestOptions, signal);
 
       
 

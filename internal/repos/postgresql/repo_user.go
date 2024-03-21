@@ -43,7 +43,7 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParam
 func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPaginatedUsersParams) ([]db.User, error) {
 	createdAt, err := time.Parse(time.RFC3339, params.Cursor)
 	if err != nil {
-		return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid createdAt cursor for paginated notifications: %s", params.Cursor)
+		return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid createdAt cursor for paginated user: %s", params.Cursor)
 	}
 
 	opts := []db.UserSelectConfigOption{

@@ -35,6 +35,10 @@ function ErrorFallback({ error }: any) {
   )
 }
 
+import utc from 'dayjs/plugin/utc'
+import dayjs from 'dayjs'
+dayjs.extend(utc)
+
 const Layout = React.lazy(() => import('./components/Layout/Layout'))
 const LandingPage = React.lazy(() => import('./views/LandingPage/LandingPage'))
 const UserPermissionsPage = React.lazy(() => import('src/views/Settings/UserPermissionsPage/UserPermissionsPage'))

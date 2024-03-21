@@ -495,7 +495,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectWorkitems>>> = ({ signal }) => getProjectWorkitems(projectName,params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getProjectWorkitems>>> = ({ signal, pageParam }) => getProjectWorkitems(projectName,{...params, cursor: pageParam || params?.['cursor']}, requestOptions, signal);
 
       
 
