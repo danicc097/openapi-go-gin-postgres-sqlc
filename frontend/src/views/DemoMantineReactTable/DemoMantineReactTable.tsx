@@ -102,7 +102,7 @@ export default function DemoMantineReactTable() {
         accessorKey: 'createdAt',
         header: 'Created at',
         Cell(props) {
-          return props.row.original.createdAt.toISOString()
+          return <Text size="xs">{props.row.original.createdAt.toISOString()}</Text>
         },
       },
       // {
