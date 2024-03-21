@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
 	"os"
@@ -101,6 +102,31 @@ func WithMiddlewares(mws ...gin.HandlerFunc) ServerOption {
 
 var key = []byte("test1234test1234")
 
+type responseWriterLogger struct {
+	gin.ResponseWriter
+	out  io.Writer
+	body []byte
+}
+
+func (w *responseWriterLogger) Write(b []byte) (int, error) {
+	w.body = b
+	return w.ResponseWriter.Write(b)
+}
+
+func LogErrorResponseMiddleware(out io.Writer) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		writer := &responseWriterLogger{ResponseWriter: c.Writer}
+
+		c.Writer = writer
+
+		c.Next()
+
+		if GetRequestHasErrorFromCtx(c) {
+			fmt.Fprintf(out, "error response: %s\n", string(writer.body))
+		}
+	}
+}
+
 // NewServer returns a new http server.
 func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	if err := conf.validate(); err != nil {
@@ -113,6 +139,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	}
 
 	router := gin.Default()
+
 	// Add a ginzap middleware, which:
 	// - Logs all requests, like a combined access and error log.
 	// - Logs to stdout.
@@ -195,6 +222,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		if os.Getenv("IS_TESTING") == "" {
 			vg.Use(rlMw.Limit())
 		}
+		router.Use(LogErrorResponseMiddleware(os.Stdout))
 	}
 	repos := services.CreateRepos()
 
