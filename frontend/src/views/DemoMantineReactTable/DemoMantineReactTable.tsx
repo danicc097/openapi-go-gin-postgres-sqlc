@@ -24,6 +24,7 @@ import { css } from '@emotion/react'
 import { CONFIG, ENTITY_FILTERS, EntityFilter } from 'src/config'
 import { entries } from 'src/utils/object'
 import { sentenceCase } from 'src/utils/strings'
+import { columnPropsByType } from 'src/utils/mantine-react-table'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -82,20 +83,7 @@ export default function DemoMantineReactTable() {
         id: id,
         accessorKey: id,
         header: sentenceCase(id),
-        // TODO: should be propsByType to do it at once... we also
-        // need
-        // mantineFilterCheckboxProps: {
-        //   size: 'sm',
-        //   label: 'Filter values',
-        // },
-        // enableColumnFilterModes: false,
-        filterVariant: filterVariantByType(c),
-        Cell(props) {
-          const cellOverride = cellByType(id, c, props)
-          if (cellOverride) return cellOverride
-
-          return props.renderedCellValue
-        },
+        ...columnPropsByType<Column>(id, c),
       } as Column),
   )
   const _columns = useMemo<Column[]>(
@@ -422,24 +410,4 @@ export default function DemoMantineReactTable() {
       <MantineReactTable table={table} />
     </>
   )
-}
-
-function filterVariantByType(c: EntityFilter): MRT_ColumnDef<any>['filterVariant'] {
-  if (c.type === 'boolean') return 'checkbox'
-  if (c.type === 'number') return 'range'
-  if (c.type === 'integer') return 'range'
-  if (c.type === 'date-time') return 'date-range'
-
-  return 'text'
-}
-
-// TODO: types
-function cellByType<T>(id: string, c: EntityFilter, props: any): ReactElement | null {
-  const val = props.row.original?.[id]
-  if (c.type === 'boolean') return <Checkbox readOnly checked={val}></Checkbox>
-  if (c.type === 'number') return null
-  if (c.type === 'integer') return null
-  if (c.type === 'date-time') return <Text size="xs">{val?.toISOString()}</Text>
-
-  return null
 }
