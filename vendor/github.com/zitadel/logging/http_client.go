@@ -5,15 +5,13 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 type ClientLoggerOption func(*logRountTripper)
 
 // WithFallbackLogger uses the passed logger if none was
 // found in the context.
-//
-// EXPERIMENTAL: Will change to log/slog import after we drop support for Go 1.20
 func WithFallbackLogger(logger *slog.Logger) ClientLoggerOption {
 	return func(lrt *logRountTripper) {
 		lrt.fallback = logger

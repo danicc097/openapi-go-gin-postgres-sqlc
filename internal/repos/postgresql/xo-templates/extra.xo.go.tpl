@@ -22,5 +22,9 @@ func (err *XoError) Unwrap() error {
 
 {{/* entities $tables */}}
 
+{{/* TODO: initialize f.entityFilters via code for all tables. we already have $tables here... */}}
+{{/* else we dont get all entities */}}
+{{ generate_entity_filters $tables }}
+
 {{- end }}
 

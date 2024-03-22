@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 // StringValuer returns a Valuer that
@@ -12,8 +12,6 @@ import (
 // method, even in json ouput mode.
 // By wrapping the type we defer String
 // being called to the point we actually log.
-//
-// EXPERIMENTAL: Will change to log/slog import after we drop support for Go 1.20
 func StringerValuer(s fmt.Stringer) slog.LogValuer {
 	return stringerValuer{s}
 }
@@ -42,8 +40,6 @@ func responseToAttr(resp *http.Response) slog.Attr {
 
 // LoggedWriter stores information regarding the response.
 // This might be status code, amount of data written or header.
-//
-// EXPERIMENTAL: Will change to log/slog import after we drop support for Go 1.20
 type LoggedWriter interface {
 	http.ResponseWriter
 

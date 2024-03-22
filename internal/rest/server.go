@@ -38,6 +38,8 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format/colors"
 	ginzap "github.com/gin-contrib/zap"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -113,7 +115,7 @@ func (w *responseWriterLogger) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-func LogErrorResponseMiddleware(out io.Writer) gin.HandlerFunc {
+func LogResponseMiddleware(out io.Writer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		writer := &responseWriterLogger{ResponseWriter: c.Writer}
 
@@ -122,7 +124,9 @@ func LogErrorResponseMiddleware(out io.Writer) gin.HandlerFunc {
 		c.Next()
 
 		if GetRequestHasErrorFromCtx(c) {
-			fmt.Fprintf(out, "error response: %s\n", string(writer.body))
+			fmt.Fprintf(out, colors.Red+"error response: %s\n"+colors.Off, string(writer.body))
+		} else {
+			fmt.Fprintf(out, colors.Green+"response: %s...\n"+colors.Off, format.Truncate(string(writer.body), 200))
 		}
 	}
 }
@@ -222,7 +226,9 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		if os.Getenv("IS_TESTING") == "" {
 			vg.Use(rlMw.Limit())
 		}
-		router.Use(LogErrorResponseMiddleware(os.Stdout))
+		vg.Use(LogResponseMiddleware(os.Stdout))
+	default:
+		panic("unknown app env: " + cfg.AppEnv)
 	}
 	repos := services.CreateRepos()
 

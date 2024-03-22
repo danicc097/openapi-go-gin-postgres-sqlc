@@ -458,7 +458,6 @@ export default function DemoGeneratedForm() {
                 component: colorSwatchComponentInputOption,
               },
             },
-            // these should probably be all required later, to ensure formField is never used.
             propsOverride: {
               'base.workItemTypeID': {
                 description: 'This is some help text for a disabled field.',

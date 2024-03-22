@@ -24,7 +24,7 @@ export default defineConfig({
           useQuery: true,
           useInfinite: true, // https://tanstack.com/query/v4/docs/guides/infinite-queries
           options: reactQueryDefaultAppOptions.queries,
-          useInfiniteQueryParam: 'cursor',
+          useInfiniteQueryParam: 'cursor', // same param for all app paginated queries
         },
         mock: {
           format: {

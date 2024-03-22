@@ -226,6 +226,14 @@ func Generate(spec *openapi3.T, opts Configuration) (string, error) {
 		}
 	}
 
+	var stdHTTPServerOut string
+	if opts.Generate.StdHTTPServer {
+		stdHTTPServerOut, err = GenerateStdHTTPServer(t, ops)
+		if err != nil {
+			return "", fmt.Errorf("error generating Go handlers for Paths: %w", err)
+		}
+	}
+
 	var strictServerOut string
 	if opts.Generate.Strict {
 		var responses []ResponseDefinition
@@ -348,6 +356,13 @@ func Generate(spec *openapi3.T, opts Configuration) (string, error) {
 
 	if opts.Generate.GorillaServer {
 		_, err = w.WriteString(gorillaServerOut)
+		if err != nil {
+			return "", fmt.Errorf("error writing server path handlers: %w", err)
+		}
+	}
+
+	if opts.Generate.StdHTTPServer {
+		_, err = w.WriteString(stdHTTPServerOut)
 		if err != nil {
 			return "", fmt.Errorf("error writing server path handlers: %w", err)
 		}
@@ -1066,8 +1081,8 @@ func GoSchemaImports(schemas ...*openapi3.SchemaRef) (map[string]goImport, error
 		schemaVal := sref.Value
 
 		t := schemaVal.Type
-		switch t {
-		case "", "object":
+		switch {
+		case t.Is(openapi3.TypeObject) || t == nil:
 			for _, v := range schemaVal.Properties {
 				imprts, err := GoSchemaImports(v)
 				if err != nil {
@@ -1075,7 +1090,7 @@ func GoSchemaImports(schemas ...*openapi3.SchemaRef) (map[string]goImport, error
 				}
 				MergeImports(res, imprts)
 			}
-		case "array":
+		case t.Is(openapi3.TypeArray):
 			imprts, err := GoSchemaImports(schemaVal.Items)
 			if err != nil {
 				return nil, err

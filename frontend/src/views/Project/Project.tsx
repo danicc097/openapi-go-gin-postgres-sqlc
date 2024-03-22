@@ -119,6 +119,11 @@ export default function Project() {
               description: 'Description',
               name: 'Name',
             },
+            propsOverride: {
+              description: {
+                'data-tour': 'description-input',
+              },
+            },
             input: {
               description: {
                 component: <Textarea resize="vertical" styles={{ root: { width: '100%' } }} />,

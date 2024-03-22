@@ -1384,7 +1384,7 @@ x.test.backend.watch-for() {
 }
 # Run backend.
 x.run.backend() {
-  go run ./cmd/rest-server/ -env=.env.$X_ENV
+  go run ./cmd/rest-server/main.go -env=.env.$X_ENV
 }
 
 # Run backend with hot-reloading.
@@ -1400,7 +1400,7 @@ x.run.backend-hr() {
   air \
     --build.pre_cmd "$pre_build_cmd" \
     --build.cmd "" \
-    --build.bin "go run ./cmd/rest-server/ -env=.env.$X_ENV" \
+    --build.bin "go run ./cmd/rest-server/main.go -env=.env.$X_ENV" \
     --build.include_ext "go,work,mod" \
     --build.include_file "openapi.yaml" \
     --build.exclude_regex ".gen.go,_test.go" \

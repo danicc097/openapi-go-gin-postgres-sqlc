@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/gin-gonic/gin"
 )
 
@@ -99,7 +98,7 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 		return nil, nil
 	}
 
-	format.PrintJSON(request.Params)
+	// format.PrintJSON(request.Params)
 
 	nextCursor := ""
 	if len(users) > 0 {

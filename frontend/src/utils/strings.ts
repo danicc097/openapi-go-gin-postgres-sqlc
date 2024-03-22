@@ -1,3 +1,5 @@
+import _ from 'lodash'
+
 export function removePrefix(str: string, prefix: string) {
   if (!str) {
     return ''
@@ -12,7 +14,7 @@ export function sentenceCase(str) {
   if (!str) {
     return ''
   }
-  return str.charAt(0).toUpperCase() + str.substr(1).toLowerCase()
+  return _.upperFirst(_.lowerCase(str))
 }
 
 export function nameInitials(name: string) {
