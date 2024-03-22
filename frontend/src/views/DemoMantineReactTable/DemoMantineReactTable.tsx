@@ -61,6 +61,35 @@ const emptyModes = ['empty', 'notEmpty']
 const arrModes = ['arrIncludesSome', 'arrIncludesAll', 'arrIncludes']
 const rangeVariants = ['range-slider', 'date-range', 'range']
 
+type Column = MRT_ColumnDef<User>
+
+const defaultPaginatedUserColumns: Column[] = entries(ENTITY_FILTERS.user)
+  .filter(([id, c]) => id !== 'firstName' && id !== 'lastName')
+  .map(([id, c]) => {
+    let col = {
+      accessorKey: id,
+      header: sentenceCase(id),
+      enableSorting: id === 'createdAt', // only if indexed
+      ...columnPropsByType<Column>(id, c),
+    } as Column
+
+    // FIXME upstream: ignored extra modes in dates
+    if (c.nullable) {
+      col.columnFilterModeOptions?.concat('empty', 'notEmpty')
+    }
+    if (c.type === 'date-time') {
+      col.columnFilterModeOptions = ['empty', 'notEmpty']
+      col = {
+        ...col,
+        // props.internalFilterOptions is not updated
+        // renderColumnFilterModeMenuItems(props) {
+        //   return ['empty', 'notEmpty'].map((e, i) => <p key={i}>{e.label}</p>)
+        // },
+      }
+    }
+    return col
+  })
+
 // TODO: GetPaginatedUsers table
 // also see excalidraw
 // will be used on generated filterable mantine datatable table as in
@@ -72,19 +101,8 @@ const rangeVariants = ['range-slider', 'date-range', 'range']
 // will try adapt to internal format so filters object it can be sent as query params to pagination queries
 // and easily parsed in backend with minimal adapters.
 export default function DemoMantineReactTable() {
-  type Column = MRT_ColumnDef<User>
-
   const tableContainerRef = useRef<HTMLDivElement>(null)
   const rowVirtualizerInstanceRef = useRef<MRT_RowVirtualizer>(null) //we can get access to the underlying Virtualizer instance and call its scrollToIndex method
-
-  const defaultPaginatedUserColumns: Column[] = entries(ENTITY_FILTERS.user).map(([id, c]) => {
-    return {
-      accessorKey: id,
-      header: sentenceCase(id),
-      enableSorting: id === 'createdAt', // only if indexed
-      ...columnPropsByType<Column>(id, c),
-    } as Column
-  })
 
   const _columns = useMemo<Column[]>(
     () => [
