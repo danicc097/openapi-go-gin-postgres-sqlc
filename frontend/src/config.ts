@@ -14,7 +14,7 @@ import { JSONSchema4 } from 'json-schema'
 export const CONFIG = CONFIG_JSON
 
 export type EntityFilter = {
-  type: string
+  type: 'string' | 'number' | 'integer' | 'boolean' | 'date-time'
   db: string
   nullable: boolean
 }
