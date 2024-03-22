@@ -63,6 +63,7 @@ const rangeVariants = ['range-slider', 'date-range', 'range']
 
 type Column = MRT_ColumnDef<User>
 
+// FIXME: somehow in ci xo gen created empty entityFilters json so tests fail
 const defaultPaginatedUserColumns: Column[] = entries(ENTITY_FILTERS.user)
   .filter(([id, c]) => id !== 'firstName' && id !== 'lastName')
   .map(([id, c]) => {
