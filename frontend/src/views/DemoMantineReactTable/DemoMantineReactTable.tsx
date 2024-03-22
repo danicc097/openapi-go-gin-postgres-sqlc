@@ -77,10 +77,11 @@ const defaultPaginatedUserColumns: Column[] = entries(ENTITY_FILTERS.user)
     // workaround is to create manually.
     // however changing form empty or notempty to between breaks:
     // toISOString not a function (it probably attempts to parse the EMPTY or NOT EMPTY badge as a date)
+    // ^ same error as when we hot reloaded formGeneration date inputs... maybe vite related
     if (c.nullable) {
       col = {
         ...col,
-        renderColumnFilterModeMenuItems: ({ column, onSelectFilterMode }) => {
+        renderColumnFilterModeMenuItems: ({ column, onSelectFilterMode, table }) => {
           if (c.type === 'date-time') {
             return [
               <MenuItem key="empty" onClick={() => onSelectFilterMode('empty')}>
@@ -89,8 +90,6 @@ const defaultPaginatedUserColumns: Column[] = entries(ENTITY_FILTERS.user)
               <MenuItem key="notEmpty" onClick={() => onSelectFilterMode('notEmpty')}>
                 Not empty
               </MenuItem>,
-              // these should clear previous values set on filters onclick, else it attempts to
-              // parse badges as dates
               <MenuItem key="betweenInclusive" onClick={() => onSelectFilterMode('betweenInclusive')}>
                 Between inclusive
               </MenuItem>,
