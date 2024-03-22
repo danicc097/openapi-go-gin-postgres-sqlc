@@ -10,7 +10,7 @@ import {
   MRT_RowVirtualizer,
   MRT_RowData,
 } from 'mantine-react-table'
-import { Accordion, ActionIcon, Badge, Checkbox, Flex, Group, Pill, Text, Tooltip } from '@mantine/core'
+import { Accordion, ActionIcon, Badge, Checkbox, Flex, Group, MenuItem, Pill, Text, Tooltip } from '@mantine/core'
 import { IconRefresh } from '@tabler/icons-react'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { useGetPaginatedUsers, useGetPaginatedUsersInfinite } from 'src/gen/user/user'
@@ -73,9 +73,34 @@ const defaultPaginatedUserColumns: Column[] = entries(ENTITY_FILTERS.user)
       ...columnPropsByType<Column>(id, c),
     } as Column
 
-    // FIXME upstream: ignored extra modes in dates
+    // FIXME upstream: ignored extra modes in dates, etc.
+    // workaround is to create manually.
+    // however changing form empty or notempty to between breaks:
+    // toISOString not a function (it probably attempts to parse the EMPTY or NOT EMPTY badge as a date)
     if (c.nullable) {
-      col.columnFilterModeOptions?.concat('empty', 'notEmpty')
+      col = {
+        ...col,
+        renderColumnFilterModeMenuItems: ({ column, onSelectFilterMode }) => {
+          if (c.type === 'date-time') {
+            return [
+              <MenuItem key="empty" onClick={() => onSelectFilterMode('empty')}>
+                Empty
+              </MenuItem>,
+              <MenuItem key="notEmpty" onClick={() => onSelectFilterMode('notEmpty')}>
+                Not empty
+              </MenuItem>,
+              // these should clear previous values set on filters onclick, else it attempts to
+              // parse badges as dates
+              <MenuItem key="betweenInclusive" onClick={() => onSelectFilterMode('betweenInclusive')}>
+                Between inclusive
+              </MenuItem>,
+              <MenuItem key="between" onClick={() => onSelectFilterMode('between')}>
+                Between
+              </MenuItem>,
+            ]
+          }
+        },
+      }
     }
     if (c.type === 'date-time') {
       col.columnFilterModeOptions = ['empty', 'notEmpty']
