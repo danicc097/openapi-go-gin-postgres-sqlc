@@ -316,6 +316,8 @@ export default function DemoMantineReactTable() {
   }, [fetchMoreOnBottomReached])
 
   const table = useMantineReactTable({
+    enableBottomToolbar: false,
+    enableStickyHeader: true,
     columns,
     enableDensityToggle: true,
     mantineTableBodyCellProps: {},
