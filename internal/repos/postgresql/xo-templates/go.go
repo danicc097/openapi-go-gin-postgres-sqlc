@@ -2705,12 +2705,7 @@ func (f *Funcs) generate_entity_filters(tables Tables) string {
 			f.field(field, "EntityFilters", t)
 		}
 	}
-	// fmt.Sprintf("var entityFilters = %#v", f.entityFilters)
-	keys := make([]string, 0, len(f.entityFilters))
-	for k := range f.entityFilters {
-		keys = append(keys, k)
-	}
-	fmt.Fprintf(os.Stderr, "LAST keys: %v\n", keys)
+
 	content, err := json.MarshalIndent(f.entityFilters, "", "  ")
 	if err != nil {
 		panic("json.MarshalIndent: " + err.Error())

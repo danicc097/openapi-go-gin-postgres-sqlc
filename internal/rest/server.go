@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -105,6 +106,7 @@ func WithMiddlewares(mws ...gin.HandlerFunc) ServerOption {
 var key = []byte("test1234test1234")
 
 type responseWriterLogger struct {
+	mu sync.RWMutex
 	gin.ResponseWriter
 	out  io.Writer
 	body []byte
@@ -123,6 +125,8 @@ func LogResponseMiddleware(out io.Writer) gin.HandlerFunc {
 
 		c.Next()
 
+		writer.mu.RLock()
+		defer writer.mu.RUnlock()
 		if GetRequestHasErrorFromCtx(c) {
 			fmt.Fprintf(out, colors.Red+"error response: %s\n"+colors.Off, string(writer.body))
 		} else {
