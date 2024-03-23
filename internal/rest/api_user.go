@@ -3,9 +3,9 @@ package rest
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/gin-gonic/gin"
 )
 
@@ -98,11 +98,11 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 		return nil, nil
 	}
 
-	format.PrintJSON(request.Params)
+	// format.PrintJSON(request.Params)
 
 	nextCursor := ""
 	if len(users) > 0 {
-		nextCursor = fmt.Sprint(users[len(users)-1].CreatedAt)
+		nextCursor = users[len(users)-1].CreatedAt.Format(time.RFC3339)
 	}
 	items := make([]User, len(users))
 	for i, u := range users {

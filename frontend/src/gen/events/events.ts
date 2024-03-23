@@ -62,7 +62,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof events>>> = ({ signal }) => events(params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof events>>> = ({ signal, pageParam }) => events({...params, cursor: pageParam || params?.['cursor']}, requestOptions, signal);
 
       
 

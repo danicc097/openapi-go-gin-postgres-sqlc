@@ -130,7 +130,7 @@ export default function Layout({ children }: LayoutProps) {
         className={classes.appShell}
         header={{ height: 60 }}
         footer={{ height: 60 }}
-        navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+        navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened, desktop: !opened } }}
         // aside={{ width: 300, breakpoint: 'md', collapsed: { desktop: false, mobile: true } }}
       >
         <AppShell.Header>
@@ -234,6 +234,7 @@ export default function Layout({ children }: LayoutProps) {
             </Tabs>
           </Container>
         </AppShell.Header>
+        {/* See https://ui.mantine.dev/category/navbars/ for more interesting navbars */}
         <AppShell.Navbar p="md">
           Navbar
           {Array(15)

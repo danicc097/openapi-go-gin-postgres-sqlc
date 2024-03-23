@@ -1382,6 +1382,10 @@ x.test.backend.watch-for() {
 
   test_backend_watch -run "^($fns)$" "$GOMOD_PKG/$dir" "${gotest_args[@]}"
 }
+# Run backend.
+x.run.backend() {
+  go run ./cmd/rest-server/main.go -env=.env.$X_ENV
+}
 
 # Run backend with hot-reloading.
 x.run.backend-hr() {
@@ -1396,7 +1400,7 @@ x.run.backend-hr() {
   air \
     --build.pre_cmd "$pre_build_cmd" \
     --build.cmd "" \
-    --build.bin "go run ./cmd/rest-server/ -env=.env.$X_ENV" \
+    --build.bin "go run ./cmd/rest-server/main.go -env=.env.$X_ENV" \
     --build.include_ext "go,work,mod" \
     --build.include_file "openapi.yaml" \
     --build.exclude_regex ".gen.go,_test.go" \
@@ -1790,7 +1794,7 @@ x.test.create-crud-gen() {
     x.test.backend -count=1 "$@"
 
     if [[ $X_ENV != "ci" ]]; then # always restore branch if we're running locally
-      echo "${GREEN}✅ Tests passing. Forcing exit to restore previous branch.${OFF}"
+      echo "${GREEN}✅ Tests passing. Forcing exit 1 to restore previous branch.${OFF}"
       exit 1
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

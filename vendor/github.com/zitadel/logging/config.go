@@ -3,10 +3,10 @@ package logging
 import (
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 
 	"github.com/sirupsen/logrus"
-	"golang.org/x/exp/slog"
 )
 
 type Config struct {
@@ -107,8 +107,6 @@ func (c *Config) parseFormatter() error {
 }
 
 // Slog constructs a slog.Logger with the Formatter and Level from config.
-//
-// EXPERIMENTAL: Will change to log/slog import after we drop support for Go 1.20
 func (c *Config) Slog() *slog.Logger {
 	logger := slog.Default()
 

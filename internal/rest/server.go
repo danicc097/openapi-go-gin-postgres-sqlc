@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
 	"os"
@@ -37,6 +38,8 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format/colors"
 	ginzap "github.com/gin-contrib/zap"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
@@ -101,6 +104,33 @@ func WithMiddlewares(mws ...gin.HandlerFunc) ServerOption {
 
 var key = []byte("test1234test1234")
 
+type responseWriterLogger struct {
+	gin.ResponseWriter
+	out  io.Writer
+	body []byte
+}
+
+func (w *responseWriterLogger) Write(b []byte) (int, error) {
+	w.body = b
+	return w.ResponseWriter.Write(b)
+}
+
+func LogResponseMiddleware(out io.Writer) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		writer := &responseWriterLogger{ResponseWriter: c.Writer}
+
+		c.Writer = writer
+
+		c.Next()
+
+		if GetRequestHasErrorFromCtx(c) {
+			fmt.Fprintf(out, colors.Red+"error response: %s\n"+colors.Off, string(writer.body))
+		} else {
+			fmt.Fprintf(out, colors.Green+"response: %s...\n"+colors.Off, format.Truncate(string(writer.body), 200))
+		}
+	}
+}
+
 // NewServer returns a new http server.
 func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	if err := conf.validate(); err != nil {
@@ -113,6 +143,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	}
 
 	router := gin.Default()
+
 	// Add a ginzap middleware, which:
 	// - Logs all requests, like a combined access and error log.
 	// - Logs to stdout.
@@ -194,7 +225,10 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 		rlMw := newRateLimitMiddleware(conf.Logger, 15, 5)
 		if os.Getenv("IS_TESTING") == "" {
 			vg.Use(rlMw.Limit())
+			vg.Use(LogResponseMiddleware(os.Stdout))
 		}
+	default:
+		panic("unknown app env: " + cfg.AppEnv)
 	}
 	repos := services.CreateRepos()
 
@@ -313,7 +347,7 @@ func Run(env, specPath string) (<-chan error, error) {
 
 		logger.Info("Shutdown signal received")
 
-		ctxTimeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		ctxTimeout, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 
 		// any action on shutdown must be deferred here and not in the main block
 		defer func() {

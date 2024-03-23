@@ -1,7 +1,7 @@
 # github.com/alicebob/gopher-json v0.0.0-20230218143504-906a9b012302
 ## explicit
 github.com/alicebob/gopher-json
-# github.com/alicebob/miniredis/v2 v2.31.1
+# github.com/alicebob/miniredis/v2 v2.32.1
 ## explicit; go 1.14
 github.com/alicebob/miniredis/v2
 github.com/alicebob/miniredis/v2/fpconv
@@ -16,7 +16,7 @@ github.com/apapsch/go-jsonmerge/v2
 # github.com/beorn7/perks v1.0.1
 ## explicit; go 1.11
 github.com/beorn7/perks/quantile
-# github.com/bytedance/sonic v1.11.2
+# github.com/bytedance/sonic v1.11.3
 ## explicit; go 1.16
 github.com/bytedance/sonic
 github.com/bytedance/sonic/ast
@@ -31,6 +31,7 @@ github.com/bytedance/sonic/internal/jit
 github.com/bytedance/sonic/internal/native
 github.com/bytedance/sonic/internal/native/avx
 github.com/bytedance/sonic/internal/native/avx2
+github.com/bytedance/sonic/internal/native/neon
 github.com/bytedance/sonic/internal/native/sse
 github.com/bytedance/sonic/internal/native/types
 github.com/bytedance/sonic/internal/resolver
@@ -70,7 +71,7 @@ github.com/dave/dst/dstutil
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/deepmap/oapi-codegen/v2 v2.1.0
+# github.com/deepmap/oapi-codegen/v2 v2.1.0 => github.com/danicc097/oapi-codegen/v2 v2.0.10003
 ## explicit; go 1.20
 github.com/deepmap/oapi-codegen/v2/pkg/codegen
 github.com/deepmap/oapi-codegen/v2/pkg/util
@@ -92,7 +93,7 @@ github.com/gabriel-vasile/mimetype
 github.com/gabriel-vasile/mimetype/internal/charset
 github.com/gabriel-vasile/mimetype/internal/json
 github.com/gabriel-vasile/mimetype/internal/magic
-# github.com/getkin/kin-openapi v0.123.0
+# github.com/getkin/kin-openapi v0.123.1-0.20240305161826-7aa9f7ee3d53 => github.com/danicc097/kin-openapi v0.123.1-0.20240320222651-5a7e849603fb
 ## explicit; go 1.20
 github.com/getkin/kin-openapi/openapi3
 github.com/getkin/kin-openapi/openapi3filter
@@ -100,7 +101,7 @@ github.com/getkin/kin-openapi/routers
 github.com/getkin/kin-openapi/routers/gorillamux
 github.com/getkin/kin-openapi/routers/legacy
 github.com/getkin/kin-openapi/routers/legacy/pathpattern
-# github.com/gin-contrib/cors v1.5.0
+# github.com/gin-contrib/cors v1.7.0
 ## explicit; go 1.18
 github.com/gin-contrib/cors
 # github.com/gin-contrib/pprof v1.4.0
@@ -144,11 +145,11 @@ github.com/go-logr/logr/funcr
 # github.com/go-logr/stdr v1.2.2
 ## explicit; go 1.16
 github.com/go-logr/stdr
-# github.com/go-openapi/jsonpointer v0.20.2
-## explicit; go 1.19
+# github.com/go-openapi/jsonpointer v0.21.0
+## explicit; go 1.20
 github.com/go-openapi/jsonpointer
-# github.com/go-openapi/swag v0.22.8
-## explicit; go 1.19
+# github.com/go-openapi/swag v0.23.0
+## explicit; go 1.20
 github.com/go-openapi/swag
 # github.com/go-playground/locales v0.14.1
 ## explicit; go 1.17
@@ -204,8 +205,8 @@ github.com/golang-migrate/migrate/v4/internal/url
 github.com/golang-migrate/migrate/v4/source
 github.com/golang-migrate/migrate/v4/source/file
 github.com/golang-migrate/migrate/v4/source/iofs
-# github.com/golang/protobuf v1.5.3
-## explicit; go 1.9
+# github.com/golang/protobuf v1.5.4
+## explicit; go 1.17
 github.com/golang/protobuf/proto
 # github.com/google/go-cmp v0.6.0
 ## explicit; go 1.13
@@ -244,11 +245,11 @@ github.com/invopop/yaml
 # github.com/jackc/chunkreader/v2 v2.0.1
 ## explicit; go 1.12
 github.com/jackc/chunkreader/v2
-# github.com/jackc/pgconn v1.14.1
-## explicit; go 1.12
+# github.com/jackc/pgconn v1.14.3
+## explicit; go 1.17
 github.com/jackc/pgconn
 github.com/jackc/pgconn/internal/ctxwatch
-# github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
+# github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438
 ## explicit; go 1.12
 github.com/jackc/pgerrcode
 # github.com/jackc/pgio v1.0.0
@@ -257,13 +258,13 @@ github.com/jackc/pgio
 # github.com/jackc/pgpassfile v1.0.0
 ## explicit; go 1.12
 github.com/jackc/pgpassfile
-# github.com/jackc/pgproto3/v2 v2.3.2
+# github.com/jackc/pgproto3/v2 v2.3.3
 ## explicit; go 1.12
 github.com/jackc/pgproto3/v2
-# github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a
+# github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9
 ## explicit; go 1.14
 github.com/jackc/pgservicefile
-# github.com/jackc/pgtype v1.14.0
+# github.com/jackc/pgtype v1.14.2
 ## explicit; go 1.13
 github.com/jackc/pgtype
 # github.com/jackc/pgx-zap v0.0.0-20221202020421-94b1cb2f889f
@@ -339,7 +340,7 @@ github.com/muhlemmer/gu
 # github.com/muhlemmer/httpforwarded v0.1.0
 ## explicit; go 1.19
 github.com/muhlemmer/httpforwarded
-# github.com/oapi-codegen/runtime v1.1.1
+# github.com/oapi-codegen/runtime v1.1.1 => github.com/danicc097/runtime v0.0.0-20240320224358-a94ad612e00c
 ## explicit; go 1.20
 github.com/oapi-codegen/runtime
 github.com/oapi-codegen/runtime/strictmiddleware/gin
@@ -350,7 +351,7 @@ github.com/oapi-codegen/testutil
 # github.com/patrickmn/go-cache v2.1.0+incompatible
 ## explicit
 github.com/patrickmn/go-cache
-# github.com/pelletier/go-toml/v2 v2.1.1
+# github.com/pelletier/go-toml/v2 v2.2.0
 ## explicit; go 1.16
 github.com/pelletier/go-toml/v2
 github.com/pelletier/go-toml/v2/internal/characters
@@ -372,15 +373,15 @@ github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
 github.com/prometheus/client_golang/prometheus/promauto
 github.com/prometheus/client_golang/prometheus/promhttp
-# github.com/prometheus/client_model v0.5.0
+# github.com/prometheus/client_model v0.6.0
 ## explicit; go 1.19
 github.com/prometheus/client_model/go
-# github.com/prometheus/common v0.48.0
-## explicit; go 1.20
+# github.com/prometheus/common v0.51.0
+## explicit; go 1.21
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
 github.com/prometheus/common/model
-# github.com/prometheus/procfs v0.12.0
+# github.com/prometheus/procfs v0.13.0
 ## explicit; go 1.19
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
@@ -415,7 +416,7 @@ github.com/stretchr/testify/require
 # github.com/swaggest/jsonschema-go v0.3.70
 ## explicit; go 1.18
 github.com/swaggest/jsonschema-go
-# github.com/swaggest/openapi-go v0.2.49
+# github.com/swaggest/openapi-go v0.2.50
 ## explicit; go 1.18
 github.com/swaggest/openapi-go
 github.com/swaggest/openapi-go/internal
@@ -445,14 +446,14 @@ github.com/twitchyliquid64/golang-asm/unsafeheader
 # github.com/ugorji/go/codec v1.2.12
 ## explicit; go 1.11
 github.com/ugorji/go/codec
-# github.com/yuin/gopher-lua v1.1.0
+# github.com/yuin/gopher-lua v1.1.1
 ## explicit; go 1.17
 github.com/yuin/gopher-lua
 github.com/yuin/gopher-lua/ast
 github.com/yuin/gopher-lua/parse
 github.com/yuin/gopher-lua/pm
-# github.com/zitadel/logging v0.5.0
-## explicit; go 1.19
+# github.com/zitadel/logging v0.6.0
+## explicit; go 1.21
 github.com/zitadel/logging
 # github.com/zitadel/oidc/v2 v2.12.0
 ## explicit; go 1.19
@@ -549,14 +550,11 @@ golang.org/x/arch/x86/x86asm
 golang.org/x/crypto/ed25519
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/sha3
-# golang.org/x/exp v0.0.0-20240110193028-0dcbfd608b1e
+# golang.org/x/exp v0.0.0-20240318143956-a85f2c67cd81
 ## explicit; go 1.20
 golang.org/x/exp/constraints
 golang.org/x/exp/maps
 golang.org/x/exp/slices
-golang.org/x/exp/slog
-golang.org/x/exp/slog/internal
-golang.org/x/exp/slog/internal/buffer
 # golang.org/x/mod v0.16.0
 ## explicit; go 1.18
 golang.org/x/mod/internal/lazyregexp
@@ -573,7 +571,7 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.16.0
+# golang.org/x/oauth2 v0.18.0
 ## explicit; go 1.18
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
@@ -638,7 +636,7 @@ google.golang.org/appengine/internal/log
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20240318140521-94a12d6c2237
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.62.1
@@ -750,3 +748,6 @@ mvdan.cc/gofumpt/internal/govendor/go/doc/comment
 mvdan.cc/gofumpt/internal/govendor/go/format
 mvdan.cc/gofumpt/internal/govendor/go/printer
 mvdan.cc/gofumpt/internal/version
+# github.com/deepmap/oapi-codegen/v2 => github.com/danicc097/oapi-codegen/v2 v2.0.10003
+# github.com/getkin/kin-openapi => github.com/danicc097/kin-openapi v0.123.1-0.20240320222651-5a7e849603fb
+# github.com/oapi-codegen/runtime => github.com/danicc097/runtime v0.0.0-20240320224358-a94ad612e00c

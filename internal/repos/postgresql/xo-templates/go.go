@@ -1590,28 +1590,44 @@ func camelExport(names ...string) string {
 
 const ext = ".xo.go"
 
+type Filter struct {
+	// Typ is the field type. It is one of: string, number, integer, boolean, date-time
+	// Arrays and objects are ignored for default filter generation
+	Typ string `json:"type"`
+	// Db is the corresponding db column name
+	Db       string `json:"db"`
+	Nullable bool   `json:"nullable"`
+}
+
 // Funcs is a set of template funcs.
 type Funcs struct {
-	driver       string
-	schema       string
-	schemaPrefix string
-	nth          func(int) string
-	first        bool
-	pkg          string
-	tags         []string
-	imports      []string
+	driver          string
+	schema          string
+	schemaPrefix    string
+	currentDatabase string
+	nth             func(int) string
+	first           bool
+	pkg             string
+	tags            []string
+	imports         []string
 	// joinTableDbTags map[string]map[string]string
 	tableConstraints map[string][]Constraint
-	conflict         string
-	custom           string
-	escSchema        bool
-	escTable         bool
-	escColumn        bool
-	fieldtag         *template.Template
-	publicfieldtag   *template.Template
-	privatefieldtag  *template.Template
-	context          string
-	inject           string
+	// TODO: filters indexed by entity name and json field name.
+	// we will output the map itself in extra.xo.go.tmpl
+	// as well as marshaling to entityFilters.gen.json, from which we can generate default
+	// mantine-react-table columns for generic fields.
+	// via https://stackoverflow.com/questions/69140710/how-to-output-a-map-in-a-template-in-go-syntax
+	entityFilters   map[string]map[string]Filter
+	conflict        string
+	custom          string
+	escSchema       bool
+	escTable        bool
+	escColumn       bool
+	fieldtag        *template.Template
+	publicfieldtag  *template.Template
+	privatefieldtag *template.Template
+	context         string
+	inject          string
 	// knownTypes is the collection of known Go types.
 	knownTypes map[string]bool
 	// shorts is the collection of Go style short names for types, mainly
@@ -1644,8 +1660,12 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 		}
 		inject = string(buf)
 	}
-	driver, _, schema := xo.DriverDbSchema(ctx)
-
+	driver, sqldb, schema := xo.DriverDbSchema(ctx)
+	var currentDatabase string
+	err = sqldb.QueryRow("SELECT current_database()").Scan(&currentDatabase)
+	if err != nil {
+		panic(err)
+	}
 	var schemaPrefix string
 	if schema != "public" {
 		schemaPrefix = schema
@@ -1656,7 +1676,9 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 	}
 	funcs := &Funcs{
 		tableConstraints: make(map[string][]Constraint),
+		entityFilters:    make(map[string]map[string]Filter),
 		first:            first,
+		currentDatabase:  currentDatabase,
 		driver:           driver,
 		schema:           schema,
 		schemaPrefix:     schemaPrefix,
@@ -1711,24 +1733,25 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		// func opts
 		"initial_opts": f.initial_opts,
 		// func and query
-		"func_name_context":   f.func_name_context,
-		"has_deleted_at":      f.has_deleted_at,
-		"func_name":           f.func_name_none,
-		"func_context":        f.func_context,
-		"extratypes":          f.extratypes,
-		"func":                f.func_none,
-		"recv_context":        f.recv_context,
-		"recv":                f.recv_none,
-		"foreign_key_context": f.foreign_key_context,
-		"foreign_key":         f.foreign_key_none,
-		"db":                  f.db,
-		"db_prefix":           f.db_prefix,
-		"db_update":           f.db_update,
-		"db_named":            f.db_named,
-		"named":               f.named,
-		"logf":                f.logf,
-		"logf_pkeys":          f.logf_pkeys,
-		"logf_update":         f.logf_update,
+		"func_name_context":       f.func_name_context,
+		"has_deleted_at":          f.has_deleted_at,
+		"func_name":               f.func_name_none,
+		"func_context":            f.func_context,
+		"extratypes":              f.extratypes,
+		"func":                    f.func_none,
+		"recv_context":            f.recv_context,
+		"recv":                    f.recv_none,
+		"foreign_key_context":     f.foreign_key_context,
+		"foreign_key":             f.foreign_key_none,
+		"db":                      f.db,
+		"db_prefix":               f.db_prefix,
+		"db_update":               f.db_update,
+		"db_named":                f.db_named,
+		"named":                   f.named,
+		"generate_entity_filters": f.generate_entity_filters,
+		"logf":                    f.logf,
+		"logf_pkeys":              f.logf_pkeys,
+		"logf_update":             f.logf_update,
 		// type
 		"initialize_constraints": f.initialize_constraints,
 		"names":                  f.names,
@@ -2677,6 +2700,27 @@ func (f *Funcs) db_named(name string, v any) string {
 		return fmt.Sprintf("[[ UNSUPPORTED TYPE 10: %T ]]", v)
 	}
 	return f.db(name, strings.Join(p, ", "))
+}
+
+func (f *Funcs) generate_entity_filters(tables Tables) string {
+	if f.schemaPrefix != "" /* not public */ || f.currentDatabase != "gen_db" {
+		return ""
+	}
+	for _, t := range tables {
+		for _, field := range t.Fields {
+			f.field(field, "EntityFilters", t)
+		}
+	}
+
+	content, err := json.MarshalIndent(f.entityFilters, "", "  ")
+	if err != nil {
+		panic("json.MarshalIndent: " + err.Error())
+	}
+	if err := os.WriteFile("entityFilters.gen.json", content, 0o644); err != nil {
+		panic("os.WriteFile: " + err.Error())
+	}
+
+	return ""
 }
 
 func (f *Funcs) named(name, value string, out bool) string {
@@ -4131,6 +4175,22 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		return fmt.Sprintf("Get%[1]s() *%[2]s \n", goName, strings.TrimPrefix(fieldType, "*")), nil
 	}
 
+	// TODO: call initializer for all tables in extra.xo.go
+	if mode == "EntityFilters" && !ignoreJson {
+		// mantine react table EMPTY and NOT EMPTY special filterModes - ie, enabling those filters if nullable)
+		entityName := camel(table.GoName)
+		if _, ok := f.entityFilters[entityName]; !ok {
+			f.entityFilters[entityName] = make(map[string]Filter)
+		}
+		if typ, err := goTypeToSimpleType(field.UnderlyingType); err == nil {
+			f.entityFilters[entityName][camel(field.GoName)] = Filter{
+				Typ:      typ,
+				Db:       field.SQLName,
+				Nullable: nullable,
+			}
+		}
+	}
+
 	if mode == "ParamsGetter" {
 		if skipField || af.PKisFK != nil {
 			return "", nil
@@ -4164,6 +4224,24 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	// to prevent duplicating logic above.
 
 	return fmt.Sprintf("\t%s %s%s // %s\n", goName, fieldType, tag, field.SQLName), nil
+}
+
+func goTypeToSimpleType(goType string) (string, error) {
+	t := strings.TrimPrefix(goType, "*")
+	switch {
+	case t == "time.Time":
+		return "date-time", nil
+	case strings.HasPrefix(t, "int"):
+		return "integer", nil
+	case strings.HasPrefix(t, "float"):
+		return "number", nil
+	case t == "string":
+		return "string", nil
+	case t == "bool":
+		return "boolean", nil
+	default:
+		return "", fmt.Errorf("unsupported simple type: %v", t)
+	}
 }
 
 func (f *Funcs) sort_fields(fields []Field) []Field {

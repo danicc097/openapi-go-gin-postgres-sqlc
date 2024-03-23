@@ -4,15 +4,13 @@ import (
 	"net/http"
 	"time"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 type MiddlewareOption func(*middleware)
 
 // WitLogger sets the passed logger with request attributes
 // into the Request's context.
-//
-// EXPERIMENTAL: Will change to log/slog import after we drop support for Go 1.20
 func WithLogger(logger *slog.Logger) MiddlewareOption {
 	return func(m *middleware) {
 		m.logger = logger

@@ -71,7 +71,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
   
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaginatedNotifications>>> = ({ signal }) => getPaginatedNotifications(params, requestOptions, signal);
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaginatedNotifications>>> = ({ signal, pageParam }) => getPaginatedNotifications({...params, cursor: pageParam || params?.['cursor']}, requestOptions, signal);
 
       
 

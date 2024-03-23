@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { css } from '@emotion/react'
-import type { EmotionJSX } from '@emotion/react/types/jsx-namespace'
+import type { EmotionJSX, ReactJSXElement } from '@emotion/react/types/jsx-namespace'
 import {
   Group,
   TextInput,
@@ -61,6 +61,7 @@ import React, {
   useRef,
   useEffect,
   ReactNode,
+  ReactElement,
 } from 'react'
 import {
   useFormContext,
@@ -152,6 +153,10 @@ const comboboxOptionTemplate = (transformer: (...args: any[]) => JSX.Element, op
   return <Box m={2}>{transformer(option)}</Box>
 }
 
+interface Props extends React.HTMLProps<HTMLInputElement> {
+  [key: string]: any
+}
+
 export type DynamicFormOptions<
   T extends object,
   IgnoredFormKeys extends U | null,
@@ -226,10 +231,7 @@ export type DynamicFormOptions<
     >
   }>
   propsOverride?: Partial<{
-    [key in Exclude<U, IgnoredFormKeys>]: {
-      description?: string
-      disabled?: boolean
-    }
+    [key in Exclude<U, IgnoredFormKeys>]: Props
   }>
   accordion?: Partial<{
     [key in Exclude<U, IgnoredFormKeys>]: {

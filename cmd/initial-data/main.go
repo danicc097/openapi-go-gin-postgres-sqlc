@@ -116,7 +116,7 @@ func main() {
 	handleError(err)
 
 	logger.Info("Creating users...")
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 50; i++ {
 		u, err := svc.User.Register(ctx, pool, services.UserRegisterParams{
 			Username:   "user_" + strconv.Itoa(i),
 			FirstName:  pointers.New(testutil.RandomFirstName()),

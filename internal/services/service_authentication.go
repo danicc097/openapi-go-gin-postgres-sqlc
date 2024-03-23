@@ -202,7 +202,7 @@ func (a *Authentication) ParseToken(ctx context.Context, token string) (*AppClai
 
 	claims, ok := jwtToken.Claims.(*AppClaims)
 	if ok && jwtToken.Valid {
-		fmt.Printf("%v %v", claims.Email, claims.Username)
+		a.logger.Debugf("Token valid for user %v", claims.Email)
 	} else {
 		return nil, fmt.Errorf("could not parse token string: %w", err)
 	}

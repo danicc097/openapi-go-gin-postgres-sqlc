@@ -23,8 +23,8 @@ export default defineConfig({
           signal: true, // generation of abort signal
           useQuery: true,
           useInfinite: true, // https://tanstack.com/query/v4/docs/guides/infinite-queries
-          // useInfiniteQueryParam: 'nextId',
           options: reactQueryDefaultAppOptions.queries,
+          useInfiniteQueryParam: 'cursor', // same param for all app paginated queries
         },
         mock: {
           format: {
