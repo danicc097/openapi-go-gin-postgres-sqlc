@@ -30,9 +30,32 @@ jobs:
           # go mod download # it will access network/cache, which is not necessary with -mod=vendor
           go mod verify
 
+
+          echo --1---
+          cat entityFilters.gen.json
+          echo --1---
+          cat frontend/entityFilters.gen.json
+          echo --1---
+          readlink frontend/entityFilters.gen.json
+          echo --1---
+          ls -l frontend/entityFilters.gen.json
+          echo --1---
+          strace cat frontend/entityFilters.gen.json
+
           project test.backend.setup
 
           project lint
+
+          echo --2---
+          cat entityFilters.gen.json
+          echo --2---
+          cat frontend/entityFilters.gen.json
+          echo --2---
+          readlink frontend/entityFilters.gen.json
+          echo --2---
+          ls -l frontend/entityFilters.gen.json
+          echo --2---
+          strace cat frontend/entityFilters.gen.json
 
       - name: Diff check
         run: |
@@ -80,6 +103,17 @@ jobs:
       - name: Test frontend
         run: |
           source .envrc
+
+          echo ---3--
+          cat entityFilters.gen.json
+          echo ---3--
+          cat frontend/entityFilters.gen.json
+          echo ---3--
+          readlink frontend/entityFilters.gen.json
+          echo ---3--
+          ls -l frontend/entityFilters.gen.json
+          echo ---3--
+          strace cat frontend/entityFilters.gen.json
 
           project test.frontend
 

@@ -2710,7 +2710,6 @@ func (f *Funcs) generate_entity_filters(tables Tables) string {
 	if err != nil {
 		panic("json.MarshalIndent: " + err.Error())
 	}
-
 	if err := os.WriteFile("entityFilters.gen.json", content, 0o644); err != nil {
 		panic("os.WriteFile: " + err.Error())
 	}
