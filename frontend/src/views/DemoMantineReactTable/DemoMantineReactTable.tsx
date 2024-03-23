@@ -348,7 +348,7 @@ export default function DemoMantineReactTable() {
         const { scrollHeight, scrollTop, clientHeight } = containerRefElement
         const hasMore = totalFetched >= pagination.pageSize
         if (scrollHeight - scrollTop - clientHeight < 200 && !isFetching && !isFetchingNextPage && hasMore) {
-          const nc = dayjs(nextCursor)
+          const nc = dayjs(nextCursor) // keep cursor date format
           if (nc.isValid()) {
             console.log('Fetching more...')
             fetchNextPage()
