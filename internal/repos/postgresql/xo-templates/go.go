@@ -1612,11 +1612,7 @@ type Funcs struct {
 	imports         []string
 	// joinTableDbTags map[string]map[string]string
 	tableConstraints map[string][]Constraint
-	// TODO: filters indexed by entity name and json field name.
-	// we will output the map itself in extra.xo.go.tmpl
-	// as well as marshaling to entityFilters.gen.json, from which we can generate default
-	// mantine-react-table columns for generic fields.
-	// via https://stackoverflow.com/questions/69140710/how-to-output-a-map-in-a-template-in-go-syntax
+	// filters indexed by entity name and json field name.
 	entityFilters   map[string]map[string]Filter
 	conflict        string
 	custom          string
@@ -1784,30 +1780,6 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"add":                add,
 		"table_is_updatable": table_is_updatable,
 	}
-}
-
-func (f *Funcs) entities(tables Tables) string {
-	var b strings.Builder
-
-	ee := make([]string, len(tables))
-	i := 0
-	for _, t := range tables {
-		ee[i] = t.GoName
-		i++
-	}
-
-	sort.Slice(ee, func(i, j int) bool {
-		return ee[i] < ee[j]
-	})
-
-	b.WriteString("type Entity string\n")
-	b.WriteString("const (\n")
-	for _, e := range ee {
-		b.WriteString(fmt.Sprintf("%[1]sEntity Entity = %[1]q \n", e))
-	}
-	b.WriteString(")")
-
-	return b.String()
 }
 
 // last_nth returns the last hardcoded nth param for sqlstr
@@ -2702,6 +2674,30 @@ func (f *Funcs) db_named(name string, v any) string {
 	return f.db(name, strings.Join(p, ", "))
 }
 
+func (f *Funcs) entities(tables Tables) string {
+	var b strings.Builder
+
+	ee := make([]string, len(tables))
+	i := 0
+	for _, t := range tables {
+		ee[i] = t.GoName
+		i++
+	}
+
+	sort.Slice(ee, func(i, j int) bool {
+		return ee[i] < ee[j]
+	})
+
+	b.WriteString("type TableEntity string\n")
+	b.WriteString("const (\n")
+	for _, e := range ee {
+		b.WriteString(fmt.Sprintf("TableEntity%s TableEntity = %q \n", camelExport(e), camel(e)))
+	}
+	b.WriteString(")")
+
+	return b.String()
+}
+
 func (f *Funcs) generate_entity_filters(tables Tables) string {
 	if f.schemaPrefix != "" /* not public */ || f.currentDatabase != "gen_db" {
 		return ""
@@ -2720,7 +2716,23 @@ func (f *Funcs) generate_entity_filters(tables Tables) string {
 		panic("os.WriteFile: " + err.Error())
 	}
 
-	return ""
+	return fmt.Sprintf(formatEntityFilters(f.entityFilters))
+}
+
+func formatEntityFilters(entityFilters map[string]map[string]Filter) string {
+	var output string
+
+	output += "var EntityFilters = map[TableEntity]map[string]Filter {\n"
+	for entityType, fields := range entityFilters {
+		output += fmt.Sprintf("\tTableEntity%s: {\n", camelExport(entityType))
+		for fieldName, field := range fields {
+			output += fmt.Sprintf("\t\t\"%s\": Filter{Typ: \"%s\", Db: \"%s\", Nullable: %t},\n",
+				fieldName, field.Typ, field.Db, field.Nullable)
+		}
+		output += "\t},\n"
+	}
+	output += "}\n"
+	return output
 }
 
 func (f *Funcs) named(name, value string, out bool) string {
