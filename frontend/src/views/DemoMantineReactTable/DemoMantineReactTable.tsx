@@ -69,7 +69,7 @@ const defaultExcludedColumns: Array<DefaultFilters> = ['firstName', 'lastName']
 // just btrees, or extension indexes if applicable https://www.postgresql.org/docs/16/indexes-ordering.html
 const defaultSortableColumns: Array<DefaultFilters> = ['createdAt', 'deletedAt', 'updatedAt']
 const defaultPaginatedUserColumns: Column[] = entries(ENTITY_FILTERS.user)
-  .filter(([id, c]) => defaultExcludedColumns.includes(id))
+  .filter(([id, c]) => !defaultExcludedColumns.includes(id))
   .map(([id, c]) => {
     let col = {
       accessorKey: id,
@@ -89,16 +89,40 @@ const defaultPaginatedUserColumns: Column[] = entries(ENTITY_FILTERS.user)
         renderColumnFilterModeMenuItems: ({ column, onSelectFilterMode, table }) => {
           if (c.type === 'date-time') {
             return [
-              <MenuItem key="empty" onClick={() => onSelectFilterMode('empty')}>
+              <MenuItem
+                key="empty"
+                onClick={() => {
+                  column.setFilterValue(null)
+                  onSelectFilterMode('empty')
+                }}
+              >
                 Empty
               </MenuItem>,
-              <MenuItem key="notEmpty" onClick={() => onSelectFilterMode('notEmpty')}>
+              <MenuItem
+                key="notEmpty"
+                onClick={() => {
+                  column.setFilterValue(null)
+                  onSelectFilterMode('notEmpty')
+                }}
+              >
                 Not empty
               </MenuItem>,
-              <MenuItem key="betweenInclusive" onClick={() => onSelectFilterMode('betweenInclusive')}>
+              <MenuItem
+                key="betweenInclusive"
+                onClick={() => {
+                  column.setFilterValue(null)
+                  onSelectFilterMode('betweenInclusive')
+                }}
+              >
                 Between inclusive
               </MenuItem>,
-              <MenuItem key="between" onClick={() => onSelectFilterMode('between')}>
+              <MenuItem
+                key="between"
+                onClick={() => {
+                  column.setFilterValue(null)
+                  onSelectFilterMode('between')
+                }}
+              >
                 Between
               </MenuItem>,
             ]
