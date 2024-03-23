@@ -80,10 +80,6 @@ jobs:
       - name: Test frontend
         run: |
           source .envrc
-          echo frontend/operationAuth.gen.json:
-          cat frontend/operationAuth.gen.json
-          echo frontend/roles.json:
-          cat frontend/roles.json
 
           project test.frontend
 

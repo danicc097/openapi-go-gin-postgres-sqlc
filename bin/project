@@ -1794,7 +1794,7 @@ x.test.create-crud-gen() {
     x.test.backend -count=1 "$@"
 
     if [[ $X_ENV != "ci" ]]; then # always restore branch if we're running locally
-      echo "${GREEN}✅ Tests passing. Forcing exit to restore previous branch.${OFF}"
+      echo "${GREEN}✅ Tests passing. Forcing exit 1 to restore previous branch.${OFF}"
       exit 1
     fi
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1

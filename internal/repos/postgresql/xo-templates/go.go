@@ -1601,14 +1601,15 @@ type Filter struct {
 
 // Funcs is a set of template funcs.
 type Funcs struct {
-	driver       string
-	schema       string
-	schemaPrefix string
-	nth          func(int) string
-	first        bool
-	pkg          string
-	tags         []string
-	imports      []string
+	driver          string
+	schema          string
+	schemaPrefix    string
+	currentDatabase string
+	nth             func(int) string
+	first           bool
+	pkg             string
+	tags            []string
+	imports         []string
 	// joinTableDbTags map[string]map[string]string
 	tableConstraints map[string][]Constraint
 	// TODO: filters indexed by entity name and json field name.
@@ -1659,8 +1660,12 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 		}
 		inject = string(buf)
 	}
-	driver, _, schema := xo.DriverDbSchema(ctx)
-
+	driver, sqldb, schema := xo.DriverDbSchema(ctx)
+	var currentDatabase string
+	err = sqldb.QueryRow("SELECT current_database()").Scan(&currentDatabase)
+	if err != nil {
+		panic(err)
+	}
 	var schemaPrefix string
 	if schema != "public" {
 		schemaPrefix = schema
@@ -1673,6 +1678,7 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 		tableConstraints: make(map[string][]Constraint),
 		entityFilters:    make(map[string]map[string]Filter),
 		first:            first,
+		currentDatabase:  currentDatabase,
 		driver:           driver,
 		schema:           schema,
 		schemaPrefix:     schemaPrefix,
@@ -2697,7 +2703,7 @@ func (f *Funcs) db_named(name string, v any) string {
 }
 
 func (f *Funcs) generate_entity_filters(tables Tables) string {
-	if f.schemaPrefix != "" { // not public
+	if f.schemaPrefix != "" /* not public */ || f.currentDatabase != "gen_db" {
 		return ""
 	}
 	for _, t := range tables {
@@ -2710,6 +2716,7 @@ func (f *Funcs) generate_entity_filters(tables Tables) string {
 	if err != nil {
 		panic("json.MarshalIndent: " + err.Error())
 	}
+	fmt.Printf("entityFilters.gen.json: %v\n", string(content))
 	if err := os.WriteFile("entityFilters.gen.json", content, 0o644); err != nil {
 		panic("os.WriteFile: " + err.Error())
 	}
