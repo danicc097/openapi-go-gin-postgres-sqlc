@@ -93,6 +93,7 @@ const defaultPaginatedUserColumns: Column[] = entries(ENTITY_FILTERS.user)
                 key="empty"
                 onClick={() => {
                   column.setFilterValue(null)
+                  // TODO: way to render custom filter component with a custom filterMode
                   onSelectFilterMode('empty')
                 }}
               >
@@ -292,7 +293,7 @@ export default function DemoMantineReactTable() {
     pageSize: 10,
   })
 
-  const [cursor, setCursor] = useState(new Date().toISOString())
+  const [cursor, setCursor] = useState(dayjs().toRFC3339NANO())
   const {
     data: usersData,
     refetch,

@@ -102,7 +102,7 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 
 	nextCursor := ""
 	if len(users) > 0 {
-		nextCursor = users[len(users)-1].CreatedAt.Format(time.RFC3339)
+		nextCursor = users[len(users)-1].CreatedAt.Format(time.RFC3339Nano)
 	}
 	items := make([]User, len(users))
 	for i, u := range users {
