@@ -517,6 +517,7 @@ type DbUser struct {
 	HasPersonalNotifications bool       `json:"hasPersonalNotifications"`
 	LastName                 *string    `json:"lastName"`
 	Scopes                   Scopes     `json:"scopes"`
+	UpdatedAt                time.Time  `json:"updatedAt"`
 	UserID                   DbUserID   `json:"userID"`
 	Username                 string     `json:"username"`
 }
@@ -943,11 +944,12 @@ type User struct {
 	Projects                 *[]DbProject  `json:"projects"`
 
 	// Role is generated from roles.json keys.
-	Role     Role      `json:"role"`
-	Scopes   Scopes    `json:"scopes"`
-	Teams    *[]DbTeam `json:"teams"`
-	UserID   DbUserID  `json:"userID"`
-	Username string    `json:"username"`
+	Role      Role      `json:"role"`
+	Scopes    Scopes    `json:"scopes"`
+	Teams     *[]DbTeam `json:"teams"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	UserID    DbUserID  `json:"userID"`
+	Username  string    `json:"username"`
 }
 
 // UuidUUID defines the model for UuidUUID.

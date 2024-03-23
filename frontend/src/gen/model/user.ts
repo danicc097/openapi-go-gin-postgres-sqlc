@@ -27,6 +27,7 @@ export interface User {
   role: Role;
   scopes: Scopes;
   teams?: DbTeam[] | null;
+  updatedAt: Date;
   userID: EntityIDs.UserID;
   username: string;
 }

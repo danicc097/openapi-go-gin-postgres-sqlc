@@ -63,14 +63,18 @@ const rangeVariants = ['range-slider', 'date-range', 'range']
 
 type Column = MRT_ColumnDef<User>
 
-// FIXME: somehow in ci xo gen created empty entityFilters json so tests fail
+type DefaultFilters = keyof typeof ENTITY_FILTERS.user
+
+const defaultExcludedColumns: Array<DefaultFilters> = ['firstName', 'lastName']
+// just btrees, or extension indexes if applicable https://www.postgresql.org/docs/16/indexes-ordering.html
+const defaultSortableColumns: Array<DefaultFilters> = ['createdAt', 'deletedAt', 'updatedAt']
 const defaultPaginatedUserColumns: Column[] = entries(ENTITY_FILTERS.user)
-  .filter(([id, c]) => id !== 'firstName' && id !== 'lastName')
+  .filter(([id, c]) => defaultExcludedColumns.includes(id))
   .map(([id, c]) => {
     let col = {
       accessorKey: id,
       header: sentenceCase(id),
-      enableSorting: id === 'createdAt', // only if indexed
+      enableSorting: defaultSortableColumns.includes(id),
       ...columnPropsByType<Column>(id, c),
     } as Column
 

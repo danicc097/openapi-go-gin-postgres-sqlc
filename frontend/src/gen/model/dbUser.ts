@@ -19,6 +19,7 @@ export interface DbUser {
   hasPersonalNotifications: boolean;
   lastName?: string | null;
   scopes: Scopes;
+  updatedAt: Date;
   userID: EntityIDs.UserID;
   username: string;
 }

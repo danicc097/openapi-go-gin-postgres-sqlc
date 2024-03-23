@@ -309,6 +309,8 @@ export interface components {
       hasPersonalNotifications: boolean;
       lastName?: string | null;
       scopes: components["schemas"]["Scopes"];
+      /** Format: date-time */
+      updatedAt: string;
       userID: components["schemas"]["DbUserID"];
       username: string;
     };
@@ -472,6 +474,8 @@ export interface components {
       role: components["schemas"]["Role"];
       scopes: components["schemas"]["Scopes"];
       teams?: components["schemas"]["DbTeam"][] | null;
+      /** Format: date-time */
+      updatedAt: string;
       userID: components["schemas"]["DbUserID"];
       username: string;
     };

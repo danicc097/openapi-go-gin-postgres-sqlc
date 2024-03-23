@@ -122,8 +122,6 @@ comment on column users.role_rank is '"properties":private';
 
 comment on column users.scopes is '"type":models.Scopes';
 
-comment on column users.updated_at is '"properties":private';
-
 alter table user_api_keys
   add column user_id uuid not null unique;
 
