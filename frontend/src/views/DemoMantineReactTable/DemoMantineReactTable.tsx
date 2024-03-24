@@ -1,4 +1,4 @@
-import { ReactElement, UIEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ReactElement, UIEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   MantineReactTable,
   useMantineReactTable,
@@ -10,8 +10,20 @@ import {
   MRT_RowVirtualizer,
   MRT_RowData,
 } from 'mantine-react-table'
-import { Accordion, ActionIcon, Badge, Checkbox, Flex, Group, MenuItem, Pill, Text, Tooltip } from '@mantine/core'
-import { IconRefresh } from '@tabler/icons-react'
+import {
+  Accordion,
+  ActionIcon,
+  Badge,
+  Checkbox,
+  Flex,
+  Group,
+  MenuItem,
+  Pill,
+  Text,
+  TextInput,
+  Tooltip,
+} from '@mantine/core'
+import { IconRefresh, IconX } from '@tabler/icons-react'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { useGetPaginatedUsers, useGetPaginatedUsersInfinite } from 'src/gen/user/user'
 import dayjs from 'dayjs'
@@ -25,6 +37,7 @@ import { CONFIG, ENTITY_FILTERS, EntityFilter } from 'src/config'
 import { entries } from 'src/utils/object'
 import { sentenceCase } from 'src/utils/strings'
 import { columnPropsByType } from 'src/utils/mantine-react-table'
+import { DateInput } from '@mantine/dates'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -143,6 +156,77 @@ const defaultPaginatedUserColumns: Column[] = entries(ENTITY_FILTERS.user)
     }
     return col
   })
+import classes from './MRT.module.css'
+import { useDebouncedValue } from '@mantine/hooks'
+
+// would basically need to reimplement: https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L148
+function FloatingTextInput({ column }) {
+  const [filterValue, setFilterValue] = useState<any>(() => (column.getFilterValue() as string) ?? '')
+  const [debouncedFilterValue] = useDebouncedValue(filterValue, 400)
+
+  const isMounted = useRef(false)
+
+  useEffect(() => {
+    if (!isMounted.current) return
+    column.setFilterValue(debouncedFilterValue ?? undefined)
+  }, [debouncedFilterValue])
+
+  const [focused, setFocused] = useState(false)
+  const floating = focused || filterValue?.length > 0 || undefined
+
+  //receive table filter value and set it to local state
+  useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true
+      return
+    }
+    const tableFilterValue = column.getFilterValue()
+    if (tableFilterValue === undefined) {
+      handleClear()
+    } else {
+      setFilterValue(tableFilterValue ?? '')
+    }
+  }, [column.getFilterValue()])
+
+  const handleClear = () => {
+    setFilterValue('')
+    column.setFilterValue(undefined)
+  }
+
+  console.log({ filterValue, debouncedFilterValue })
+
+  return (
+    <TextInput
+      value={filterValue}
+      onChange={(event) => column.setFilterValue(event.currentTarget.value)}
+      label="Filter by role"
+      rightSection={
+        filterValue ? (
+          <ActionIcon
+            aria-label={'Clear search'}
+            color="gray"
+            disabled={!filterValue?.length}
+            onClick={handleClear}
+            size="sm"
+            variant="transparent"
+          >
+            <Tooltip label={'Clear search'} withinPortal>
+              <IconX />
+            </Tooltip>
+          </ActionIcon>
+        ) : null
+      }
+      labelProps={{ 'data-floating': floating }}
+      classNames={{
+        root: classes.root,
+        input: classes.input,
+        label: classes.label,
+      }}
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+    />
+  )
+}
 
 // TODO: GetPaginatedUsers table
 // also see excalidraw
@@ -179,8 +263,16 @@ export default function DemoMantineReactTable() {
       {
         accessorKey: 'role',
         header: 'Role',
+        filterFn: (row, id, filterValue) => {
+          console.log({ filterValue })
+          return row.original.role === filterValue
+        },
         // TODO: repo will convert to role_rank filter, same as teams filter will internally
         // use xo join on teams teamID. frontend shouldnt care about these conversions
+        Filter(props) {
+          // TODO: custom text input does not setFilterValue on change
+          return <FloatingTextInput column={props.column} />
+        },
       },
       {
         accessorKey: 'teams',
@@ -414,7 +506,7 @@ export default function DemoMantineReactTable() {
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
     state: {
-      columnOrder: ['email'],
+      columnOrder: ['email', 'role'],
       density: 'xs',
       columnFilterFns,
       columnFilters,
