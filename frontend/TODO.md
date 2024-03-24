@@ -1,0 +1,1 @@
+- Remove client-validator. Will use rhf and ajv for everything
