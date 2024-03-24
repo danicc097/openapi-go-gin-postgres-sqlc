@@ -1,0 +1,27 @@
+.input {
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom-width: rem(2px);
+  border-radius: 0;
+  padding-left: 0;
+  background-color: var(--mantine-color-body);
+  margin-top: rem(-10px);
+}
+
+.label {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  /* top: rem(7px); */
+  color: var(--mantine-color-placeholder);
+  /* font-weight: 400; */
+  font-size: var(--mantine-font-size-sm);
+  transition: color 100ms ease, transform 100ms ease, font-size 100ms ease;
+
+  &[data-floating] {
+    transform: translateY(rem(-20px));
+    font-size: var(--mantine-font-size-xs);
+    color: light-dark(var(--mantine-color-blue-9), var(--mantine-color-blue-5));
+  }
+}
