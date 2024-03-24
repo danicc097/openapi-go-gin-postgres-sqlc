@@ -16,7 +16,7 @@ export function columnPropsByType<T extends MRT_RowData>(id: string, c: EntityFi
     filterVariant: filterVariantByType(c),
     Cell(props) {
       const val = props.row.original?.[id]
-      if (c.type === 'boolean') return <Checkbox readOnly checked={val}></Checkbox>
+      if (c.type === 'boolean') return <Checkbox size="xs" readOnly checked={val}></Checkbox>
       if (c.type === 'date-time') return <Text size="xs">{val?.toISOString()}</Text>
 
       return props.renderedCellValue

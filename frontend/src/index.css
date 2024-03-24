@@ -22,12 +22,14 @@ body {
 }
 
 .input-focused {
-  /* TODO: border down blue */
-  /* margin-top: 10px; */
   border-bottom-color: var(--mantine-color-blue-5);
   border-width: 1px;
 }
 
-.input-not-empty {
-  visibility: hidden;
+.mrt-table thead tr th {
+  border-bottom: 1px solid light-dark(var(--mantine-primary-color-5), var(--mantine-primary-color-5));
+  border-width: rem(3px) !important;
+}
+.mrt-table tbody tr:nth-of-type(odd) {
+  background-color: light-dark(var(--mantine-color-blue-0), var(--mantine-color-dark-8));
 }

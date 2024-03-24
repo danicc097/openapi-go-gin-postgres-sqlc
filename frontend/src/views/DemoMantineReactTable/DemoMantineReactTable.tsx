@@ -22,6 +22,7 @@ import {
   Text,
   TextInput,
   Tooltip,
+  useMantineColorScheme,
 } from '@mantine/core'
 import { IconRefresh, IconX } from '@tabler/icons-react'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
@@ -157,7 +158,7 @@ const defaultPaginatedUserColumns: Column[] = entries(ENTITY_FILTERS.user)
     return col
   })
 import classes from './MRT.module.css'
-import { useDebouncedValue } from '@mantine/hooks'
+import { useColorScheme, useDebouncedValue } from '@mantine/hooks'
 
 // would basically need to reimplement: https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L148
 function FloatingTextInput({ column }) {
@@ -254,13 +255,13 @@ export default function DemoMantineReactTable() {
               const labelClassList = e.target.parentElement?.parentElement?.querySelector('label')?.classList
               labelClassList?.add('label-focused')
               e.target.classList.add('input-focused')
-              !!props.column.getFilterValue() && labelClassList?.add('input-not-empty')
+              // !!props.column.getFilterValue() && labelClassList?.add('input-not-empty')
             },
             onBlur: (e) => {
               const labelClassList = e.target.parentElement?.parentElement?.querySelector('label')?.classList
               labelClassList?.remove('label-focused')
               e.target.classList.remove('input-focused')
-              !!props.column.getFilterValue() && labelClassList?.add('input-not-empty')
+              // !!props.column.getFilterValue() && labelClassList?.add('input-not-empty')
             },
             placeholder: '',
             label: 'Filter by full name',
@@ -376,7 +377,7 @@ export default function DemoMantineReactTable() {
         enableColumnFilterModes: false,
         filterVariant: 'checkbox',
         Cell({ row }) {
-          return <Checkbox readOnly checked={row.original.hasGlobalNotifications}></Checkbox>
+          return <Checkbox readOnly size="xs" checked={row.original.hasGlobalNotifications}></Checkbox>
         },
       },
     ],
@@ -474,12 +475,17 @@ export default function DemoMantineReactTable() {
     fetchMoreOnBottomReached(tableContainerRef.current)
   }, [fetchMoreOnBottomReached])
 
+  const { colorScheme } = useMantineColorScheme()
+
   const table = useMantineReactTable({
-    mantineTableHeadProps(props) {
-      // not doing anything
+    mantineTableHeadCellProps(props) {
       return {
-        ...props,
-        color: 'red',
+        style: {
+          // border: '10px 10px',
+          // // borderWidth: '10px',
+          // borderColor: 'red !important',
+          // backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-8)' : 'var(--mantine-primary-color-0)',
+        },
       }
     },
     enableBottomToolbar: false,
