@@ -13,3 +13,21 @@
 body {
   background-color: black; /** no flashes, thank you very much. will remove at first render */
 }
+
+/* TODO: hide if empty input */
+.label-focused {
+  transform: translateY(rem(-25px));
+  font-size: calc(0.65rem * var(--mantine-scale));
+  color: light-dark(var(--mantine-color-blue-9), var(--mantine-color-blue-5));
+}
+
+.input-focused {
+  /* TODO: border down blue */
+  /* margin-top: 10px; */
+  border-bottom-color: var(--mantine-color-blue-5);
+  border-width: 1px;
+}
+
+.input-not-empty {
+  visibility: hidden;
+}

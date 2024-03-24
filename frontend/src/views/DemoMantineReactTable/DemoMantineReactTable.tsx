@@ -246,12 +246,31 @@ export default function DemoMantineReactTable() {
     () => [
       ...defaultPaginatedUserColumns,
       {
-        accessorKey: 'firstName',
-        header: 'This should not be shown',
-      },
-      {
-        accessorKey: 'firstName',
-        header: 'First Name Overridden',
+        accessorKey: 'fullName',
+        header: 'Full Name',
+        mantineFilterTextInputProps(props) {
+          return {
+            onFocus: (e) => {
+              const labelClassList = e.target.parentElement?.parentElement?.querySelector('label')?.classList
+              labelClassList?.add('label-focused')
+              e.target.classList.add('input-focused')
+              !!props.column.getFilterValue() && labelClassList?.add('input-not-empty')
+            },
+            onBlur: (e) => {
+              const labelClassList = e.target.parentElement?.parentElement?.querySelector('label')?.classList
+              labelClassList?.remove('label-focused')
+              e.target.classList.remove('input-focused')
+              !!props.column.getFilterValue() && labelClassList?.add('input-not-empty')
+            },
+            placeholder: '',
+            label: 'Filter by full name',
+            classNames: {
+              root: classes.root,
+              input: classes.input,
+              label: classes.label,
+            },
+          }
+        },
       },
       {
         accessorKey: 'projects',
@@ -506,7 +525,7 @@ export default function DemoMantineReactTable() {
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
     state: {
-      columnOrder: ['email', 'role'],
+      columnOrder: ['fullName', 'email', 'role'],
       density: 'xs',
       columnFilterFns,
       columnFilters,
