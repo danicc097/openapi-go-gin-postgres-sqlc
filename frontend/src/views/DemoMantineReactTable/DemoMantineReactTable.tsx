@@ -23,11 +23,13 @@ import {
   Combobox,
   Flex,
   Group,
+  List,
   MenuItem,
   Pill,
   Space,
   Text,
   TextInput,
+  Title,
   Tooltip,
   useMantineColorScheme,
 } from '@mantine/core'
@@ -286,13 +288,18 @@ export default function DemoMantineReactTable() {
         accessorKey: 'role',
         header: 'Role',
         mantineFilterSelectProps(props) {
-          const roleOptions = entries(ROLES).map(([role, v]) => (
-            <Combobox.Option key={role} value={role}>
-              <RoleBadge role={role} />
-            </Combobox.Option>
-          ))
+          const roleOptions = entries(ROLES).map(([role, v]) => ({ value: role, label: sentenceCase(role) }))
 
-          return <Combobox.Options>{roleOptions}</Combobox.Options>
+          // TODO: MRT should allow custom combobox options to be passed instead:
+          // const roleOptions = entries(ROLES).map(([role, v]) => (
+          //   <Combobox.Option key={role} value={role}>
+          //     <RoleBadge role={role} />
+          //   </Combobox.Option>
+          // ))
+
+          // return <Combobox.Options>{roleOptions}</Combobox.Options>
+
+          return { data: roleOptions }
         },
         filterVariant: 'select',
 
@@ -420,6 +427,7 @@ export default function DemoMantineReactTable() {
     isFetching,
     isFetchingNextPage,
     isError,
+    error,
     isLoading,
     // see https://v2.mantine-react-table.com/docs/examples/infinite-scrolling
   } = useGetPaginatedUsersInfinite(
@@ -486,17 +494,9 @@ export default function DemoMantineReactTable() {
 
   const [columnOrder, setColumnOrder] = useState(['fullName', 'email', 'role'])
 
+  const validationError = error?.response?.data.validationError
+
   const table = useMantineReactTable({
-    mantineTableHeadCellProps(props) {
-      return {
-        style: {
-          // border: '10px 10px',
-          // // borderWidth: '10px',
-          // borderColor: 'red !important',
-          // backgroundColor: colorScheme === 'dark' ? 'var(--mantine-color-dark-8)' : 'var(--mantine-primary-color-0)',
-        },
-      }
-    },
     enableBottomToolbar: false,
     enableStickyHeader: true,
     columns,
@@ -504,9 +504,6 @@ export default function DemoMantineReactTable() {
     mantineTableBodyCellProps: {},
     data: fetchedUsers,
     enableColumnFilterModes: true,
-    // shared filter modes
-    // EMPTY and NOT EMPTY special filterModes - ie, enabling those filters if field.nullable
-    // columnFilterModeOptions: ['contains', 'startsWith', 'endsWith'],
     initialState: { showColumnFilters: true },
     manualFiltering: true,
     manualPagination: true,
@@ -514,7 +511,18 @@ export default function DemoMantineReactTable() {
     mantineToolbarAlertBannerProps: isError
       ? {
           color: 'red',
-          children: 'Error loading data',
+          children: (
+            <>
+              <Title size={'xs'}>Error loading data: {error.response?.data.detail}</Title>
+              {validationError && (
+                <List>
+                  {validationError.messages.map((m, i) => (
+                    <List.Item key={i}>{m}</List.Item>
+                  ))}
+                </List>
+              )}
+            </>
+          ),
         }
       : undefined,
     onColumnFilterFnsChange: setColumnFilterFns,
