@@ -9,16 +9,22 @@ import {
   type MRT_ColumnFilterFnsState,
   MRT_RowVirtualizer,
   MRT_RowData,
+  mrtFilterOptions,
+  MRT_Column,
 } from 'mantine-react-table'
 import {
   Accordion,
   ActionIcon,
   Badge,
+  Box,
+  Card,
+  CheckIcon,
   Checkbox,
   Flex,
   Group,
   MenuItem,
   Pill,
+  Space,
   Text,
   TextInput,
   Tooltip,
@@ -31,14 +37,18 @@ import dayjs from 'dayjs'
 import { Scopes, User } from 'src/gen/model'
 import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
 import { colorBlindPalette, getContrastYIQ, scopeColor } from 'src/utils/colors'
-import _, { uniqueId } from 'lodash'
+import _, { lowerCase, lowerFirst, uniqueId } from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
 import { css } from '@emotion/react'
 import { CONFIG, ENTITY_FILTERS, EntityFilter } from 'src/config'
 import { entries } from 'src/utils/object'
 import { sentenceCase } from 'src/utils/strings'
-import { columnPropsByType } from 'src/utils/mantine-react-table'
+import { arrModes, columnPropsByType } from 'src/utils/mantine-react-table'
 import { DateInput } from '@mantine/dates'
+import classes from './MRT.module.css'
+import { useColorScheme, useDebouncedValue } from '@mantine/hooks'
+import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
+import { IconCheck } from '@tabler/icons'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -70,11 +80,6 @@ const A = ({ columnFilterFns, columnFilters, globalFilter, sorting, pagination }
   })
 }
 
-const rangeModes = ['between', 'betweenInclusive', 'inNumberRange']
-const emptyModes = ['empty', 'notEmpty']
-const arrModes = ['arrIncludesSome', 'arrIncludesAll', 'arrIncludes']
-const rangeVariants = ['range-slider', 'date-range', 'range']
-
 type Column = MRT_ColumnDef<User>
 
 type DefaultFilters = keyof typeof ENTITY_FILTERS.user
@@ -82,86 +87,16 @@ type DefaultFilters = keyof typeof ENTITY_FILTERS.user
 const defaultExcludedColumns: Array<DefaultFilters> = ['firstName', 'lastName']
 // just btrees, or extension indexes if applicable https://www.postgresql.org/docs/16/indexes-ordering.html
 const defaultSortableColumns: Array<DefaultFilters> = ['createdAt', 'deletedAt', 'updatedAt']
-const defaultPaginatedUserColumns: Column[] = entries(ENTITY_FILTERS.user)
-  .filter(([id, c]) => !defaultExcludedColumns.includes(id))
-  .map(([id, c]) => {
-    let col = {
-      accessorKey: id,
-      header: sentenceCase(id),
-      enableSorting: defaultSortableColumns.includes(id),
-      ...columnPropsByType<Column>(id, c),
-    } as Column
 
-    // FIXME upstream: ignored extra modes in dates, etc.
-    // workaround is to create manually.
-    // however changing form empty or notempty to between breaks:
-    // toISOString not a function (it probably attempts to parse the EMPTY or NOT EMPTY badge as a date)
-    // ^ same error as when we hot reloaded formGeneration date inputs... maybe vite related
-    if (c.nullable) {
-      col = {
-        ...col,
-        renderColumnFilterModeMenuItems: ({ column, onSelectFilterMode, table }) => {
-          if (c.type === 'date-time') {
-            return [
-              <MenuItem
-                key="empty"
-                onClick={() => {
-                  column.setFilterValue(null)
-                  // TODO: way to render custom filter component with a custom filterMode
-                  onSelectFilterMode('empty')
-                }}
-              >
-                Empty
-              </MenuItem>,
-              <MenuItem
-                key="notEmpty"
-                onClick={() => {
-                  column.setFilterValue(null)
-                  onSelectFilterMode('notEmpty')
-                }}
-              >
-                Not empty
-              </MenuItem>,
-              <MenuItem
-                key="betweenInclusive"
-                onClick={() => {
-                  column.setFilterValue(null)
-                  onSelectFilterMode('betweenInclusive')
-                }}
-              >
-                Between inclusive
-              </MenuItem>,
-              <MenuItem
-                key="between"
-                onClick={() => {
-                  column.setFilterValue(null)
-                  onSelectFilterMode('between')
-                }}
-              >
-                Between
-              </MenuItem>,
-            ]
-          }
-        },
-      }
-    }
-    if (c.type === 'date-time') {
-      col.columnFilterModeOptions = ['empty', 'notEmpty']
-      col = {
-        ...col,
-        // props.internalFilterOptions is not updated
-        // renderColumnFilterModeMenuItems(props) {
-        //   return ['empty', 'notEmpty'].map((e, i) => <p key={i}>{e.label}</p>)
-        // },
-      }
-    }
-    return col
-  })
-import classes from './MRT.module.css'
-import { useColorScheme, useDebouncedValue } from '@mantine/hooks'
+const FILTER_OPTIONS = mrtFilterOptions(MRT_Localization_EN)
+
+const FloatingTextInput = memo(
+  _FloatingTextInput,
+  (prevProps, nextProps) => prevProps.column.getFilterValue() === nextProps.column.getFilterValue(),
+)
 
 // would basically need to reimplement: https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L148
-function FloatingTextInput({ column }) {
+function _FloatingTextInput({ column }: { column: MRT_Column<any> }) {
   const [filterValue, setFilterValue] = useState<any>(() => (column.getFilterValue() as string) ?? '')
   const [debouncedFilterValue] = useDebouncedValue(filterValue, 400)
 
@@ -194,13 +129,11 @@ function FloatingTextInput({ column }) {
     column.setFilterValue(undefined)
   }
 
-  console.log({ filterValue, debouncedFilterValue })
-
   return (
     <TextInput
       value={filterValue}
-      onChange={(event) => column.setFilterValue(event.currentTarget.value)}
-      label="Filter by role"
+      size="xs"
+      onChange={(event) => setFilterValue(event.currentTarget.value)}
       rightSection={
         filterValue ? (
           <ActionIcon
@@ -208,7 +141,7 @@ function FloatingTextInput({ column }) {
             color="gray"
             disabled={!filterValue?.length}
             onClick={handleClear}
-            size="sm"
+            size="xs"
             variant="transparent"
           >
             <Tooltip label={'Clear search'} withinPortal>
@@ -217,7 +150,8 @@ function FloatingTextInput({ column }) {
           </ActionIcon>
         ) : null
       }
-      labelProps={{ 'data-floating': floating }}
+      placeholder={`Filter by ${lowerCase(column.id)}`}
+      // labelProps={{ 'data-floating': floating }}
       classNames={{
         root: classes.root,
         input: classes.input,
@@ -242,6 +176,91 @@ function FloatingTextInput({ column }) {
 export default function DemoMantineReactTable() {
   const tableContainerRef = useRef<HTMLDivElement>(null)
   const rowVirtualizerInstanceRef = useRef<MRT_RowVirtualizer>(null) //we can get access to the underlying Virtualizer instance and call its scrollToIndex method
+  const [filterModes, setFilterModes] = useState<Record<string, string>>({})
+
+  const defaultPaginatedUserColumns = useMemo<Column[]>(
+    () =>
+      entries(ENTITY_FILTERS.user)
+        .filter(([id, c]) => !defaultExcludedColumns.includes(id))
+        .map(([id, c]) => {
+          let col = {
+            accessorKey: id,
+            header: sentenceCase(id),
+            enableSorting: defaultSortableColumns.includes(id),
+            ...columnPropsByType<Column>(id, c),
+          } as Column
+
+          col = {
+            ...col,
+            Filter(props) {
+              // TODO: upstream Filter should expose original Filter component somewhere so we can return the original...
+              switch (filterModes[props.column.id]) {
+                case 'empty':
+                  return <Text>Empty</Text>
+                case 'notEmpty':
+                  return <Text>Not empty</Text>
+                default:
+                  return <FloatingTextInput column={props.column} />
+              }
+            },
+            renderColumnFilterModeMenuItems: ({
+              column,
+              onSelectFilterMode,
+              table,
+              // internalFilterOptions /* does not contain new modes */,
+            }) => {
+              // TODO: `Filter` and `filterFn` will use our own state too via filterModes
+              // and render values accordingly
+              return col.columnFilterModeOptions?.map((option) => {
+                const fopt = FILTER_OPTIONS.find((v) => v.option === option)
+                if (!fopt) return
+
+                return (
+                  <MenuItem
+                    key={fopt.option}
+                    onClick={() => {
+                      column.setFilterValue(null)
+                      setFilterModes((state) => ({ ...state, [column.id]: fopt.option }))
+                    }}
+                  >
+                    <Flex
+                      gap={10}
+                      justify="flex-start"
+                      style={{
+                        color: filterModes[col.id ?? ''] === fopt.option ? 'var(--mantine-primary-color-5)' : 'inherit',
+                      }}
+                    >
+                      <Box miw={20} style={{ alignSelf: 'center', textAlign: 'center' }}>
+                        {fopt.symbol}
+                      </Box>
+                      <Text size="sm">{sentenceCase(fopt.label)}</Text>
+                    </Flex>
+                  </MenuItem>
+                )
+              })
+            },
+          }
+
+          // FIXME upstream: ignored extra modes in dates, etc.
+          // workaround is to create manually.
+          // however changing form empty or notempty to between breaks:
+          // toISOString not a function (it probably attempts to parse the EMPTY or NOT EMPTY badge as a date)
+          // ^ same error as when we hot reloaded formGeneration date inputs... maybe vite related
+          if (c.nullable) {
+            col = {
+              ...col,
+              // we can only have a single filterFn. therefore renderColumnFilterModeMenuItems
+              // should update the current custom filter mode via custom state
+              // and filterFn acts accordingly (hopefully).
+              // test it first for dates like below
+              // filterFn: (row, columnId, filterValue, addMeta) => {},
+            }
+          }
+
+          return col
+        }),
+    [filterModes],
+  )
 
   const _columns = useMemo<Column[]>(
     () => [
@@ -381,7 +400,7 @@ export default function DemoMantineReactTable() {
         },
       },
     ],
-    [],
+    [filterModes],
   )
 
   // allow overriding default columns for an entity
@@ -477,6 +496,8 @@ export default function DemoMantineReactTable() {
 
   const { colorScheme } = useMantineColorScheme()
 
+  const [columnOrder, setColumnOrder] = useState(['fullName', 'email', 'role'])
+
   const table = useMantineReactTable({
     mantineTableHeadCellProps(props) {
       return {
@@ -520,6 +541,8 @@ export default function DemoMantineReactTable() {
         </ActionIcon>
       </Tooltip>
     ),
+    enableColumnOrdering: true,
+    onColumnOrderChange: setColumnOrder,
     mantineTableContainerProps: {
       ref: tableContainerRef, //get access to the table container element
       style: { maxHeight: '600px' }, //give the table a max height
@@ -531,7 +554,7 @@ export default function DemoMantineReactTable() {
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
     state: {
-      columnOrder: ['fullName', 'email', 'role'],
+      columnOrder,
       density: 'xs',
       columnFilterFns,
       columnFilters,
@@ -544,10 +567,12 @@ export default function DemoMantineReactTable() {
     },
     rowVirtualizerInstanceRef, //get access to the virtualizer instance
     rowVirtualizerOptions: { overscan: 10 },
+    localization: MRT_Localization_EN,
   })
 
   return (
     <>
+      <CodeHighlight lang="json" code={JSON.stringify(filterModes, null, '  ')}></CodeHighlight>
       <Accordion
         styles={{
           content: { paddingRight: 0, paddingLeft: 0 },
@@ -562,8 +587,8 @@ export default function DemoMantineReactTable() {
                 {
                   cursor: `${usersData?.pages[0]?.page.nextCursor}`,
                   size: `${pagination.pageSize}`,
-                  filters: columnFilters,
-                  filterModes: columnFilterFns,
+                  columnFilters,
+                  columnFilterFns,
                   globalFilter: globalFilter ?? '',
                   sorting: sorting,
                 },
@@ -581,7 +606,9 @@ export default function DemoMantineReactTable() {
         </Accordion.Item>
       </Accordion>
       {/* when using hook, set all props there */}
-      <MantineReactTable table={table} />
+      <Card p={8} radius={0}>
+        <MantineReactTable table={table} />
+      </Card>
     </>
   )
 }

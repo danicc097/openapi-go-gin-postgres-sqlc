@@ -28,8 +28,17 @@ body {
 
 .mrt-table thead tr th {
   border-bottom: 1px solid light-dark(var(--mantine-primary-color-5), var(--mantine-primary-color-5));
-  border-width: rem(3px) !important;
+  padding-bottom: rem(10px);
+  border-width: rem(2px) !important;
 }
+
 .mrt-table tbody tr:nth-of-type(odd) {
   background-color: light-dark(var(--mantine-color-blue-0), var(--mantine-color-dark-8));
+}
+
+.mrt-table {
+  .mrt-filter-text-input:focus-within {
+    border-bottom: 1px solid light-dark(var(--mantine-primary-color-5), var(--mantine-primary-color-5));
+    border-width: rem(2px) !important;
+  }
 }
