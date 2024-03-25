@@ -2720,19 +2720,35 @@ func (f *Funcs) generate_entity_filters(tables Tables) string {
 }
 
 func formatEntityFilters(entityFilters map[string]map[string]Filter) string {
-	var output string
+	var buf bytes.Buffer
 
-	output += "var EntityFilters = map[TableEntity]map[string]Filter {\n"
-	for entityType, fields := range entityFilters {
-		output += fmt.Sprintf("\tTableEntity%s: {\n", camelExport(entityType))
-		for fieldName, field := range fields {
-			output += fmt.Sprintf("\t\t\"%s\": Filter{Type: \"%s\", Db: \"%s\", Nullable: %t},\n",
-				fieldName, field.Type, field.Db, field.Nullable)
-		}
-		output += "\t},\n"
+	var entityTypes []string
+	for entityType := range entityFilters {
+		entityTypes = append(entityTypes, entityType)
 	}
-	output += "}\n"
-	return output
+	sort.Strings(entityTypes)
+
+	buf.WriteString("var EntityFilters = map[TableEntity]map[string]Filter {\n")
+	for _, entityType := range entityTypes {
+		fields := entityFilters[entityType]
+
+		var fieldNames []string
+		for fieldName := range fields {
+			fieldNames = append(fieldNames, fieldName)
+		}
+		sort.Strings(fieldNames)
+
+		buf.WriteString(fmt.Sprintf("\tTableEntity%s: {\n", camelExport(entityType)))
+		for _, fieldName := range fieldNames {
+			field := fields[fieldName]
+			buf.WriteString(fmt.Sprintf("\t\t\"%s\": Filter{Type: \"%s\", Db: \"%s\", Nullable: %t},\n",
+				fieldName, field.Type, field.Db, field.Nullable))
+		}
+		buf.WriteString("\t},\n")
+	}
+	buf.WriteString("}\n")
+
+	return buf.String()
 }
 
 func (f *Funcs) named(name, value string, out bool) string {
