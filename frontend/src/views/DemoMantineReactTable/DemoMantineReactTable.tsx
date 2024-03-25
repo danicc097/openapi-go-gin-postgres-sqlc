@@ -23,6 +23,7 @@ import {
   Combobox,
   Flex,
   Group,
+  InputProps,
   List,
   MenuItem,
   Pill,
@@ -95,7 +96,7 @@ const defaultSortableColumns: Array<DefaultFilters> = ['createdAt', 'deletedAt',
 const FILTER_OPTIONS = mrtFilterOptions(MRT_Localization_EN)
 
 // would basically need to reimplement: https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L148
-function MRTTextInput({ column }: { column: MRT_Column<any> }) {
+function MRTTextInput({ column, ...props }: { column: MRT_Column<any> }) {
   const columnFilterValue = (column.getFilterValue() as string) ?? ''
   const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
   const [debouncedFilterValue] = useDebouncedValue(filterValue, 400)
@@ -200,23 +201,17 @@ export default function DemoMantineReactTable() {
                 // https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L203
                 // however it does not change the filter for dates...
                 const filterMode = filterModes[props.column.id] ?? ''
+                if (emptyModes.includes(filterMode)) {
+                  return <Text>{sentenceCase(filterMode)}</Text>
+                }
                 if (c.type === 'date-time') {
-                  if (c.type === 'date-time' && emptyModes.includes(filterMode)) {
-                    return <Text>{sentenceCase(filterMode)}</Text>
-                  }
                   // TODO: see https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L314
                   // will need to use rangeFilterIndex
                   return <Text>DATE</Text>
                 }
 
-                switch (filterMode) {
-                  case 'empty':
-                    return <Text>Empty</Text>
-                  case 'notEmpty':
-                    return <Text>Not empty</Text>
-                  default:
-                    return <MRTTextInput column={props.column} />
-                }
+                // TODO: set filterMode in description and remove default from mrt since we wont use its filter modes
+                return <MRTTextInput column={props.column} />
               },
             renderColumnFilterModeMenuItems: ({
               column,

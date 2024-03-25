@@ -50,7 +50,7 @@ export default function useAuthenticatedUser() {
     return () => {
       AxiosInterceptors.teardownAxiosInstance(AXIOS_INSTANCE)
     }
-  }, [currentUser.data, isFirstRender, isAuthenticated, ui.accessToken])
+  }, [currentUser.data, isFirstRender, isAuthenticated, ui.accessToken, isAuthenticating])
 
   const user = currentUser.data
 

@@ -145,6 +145,8 @@ func verifyAuthentication(c context.Context, input *openapi3filter.Authenticatio
 		_, found := input.RequestValidationInput.Request.Header[http.CanonicalHeaderKey(input.SecurityScheme.Name)]
 
 		if !found {
+			// FIXME: misleading 400 with x-api-key not found only, instead
+			//  of multierror
 			return fmt.Errorf("%v not found in header", input.SecurityScheme.Name)
 		}
 	case "http":
