@@ -199,24 +199,26 @@ export default function DemoMantineReactTable() {
             ...col,
             Filter:
               // FIXME: for dates, filter mode options are changed by mrt - removing emptyModes by itself
-              c.type === 'date-time' && emptyModes.includes(filterModes[col.id ?? ''] ?? '')
-                ? (props) => <Text>(non)Empty date</Text>
-                : (props) => {
-                    // https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L203
-                    // however it does not change the filter for dates...
-                    if (c.type === 'date-time') {
-                      return <Text>DATE</Text>
-                    }
+              (props) => {
+                // https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L203
+                // however it does not change the filter for dates...
+                const filterMode = filterModes[props.column.id] ?? ''
+                if (c.type === 'date-time') {
+                  if (c.type === 'date-time' && emptyModes.includes(filterMode)) {
+                    return <Text>{sentenceCase(filterMode)}</Text>
+                  }
+                  return <Text>DATE</Text>
+                }
 
-                    switch (filterModes[props.column.id]) {
-                      case 'empty':
-                        return <Text>Empty</Text>
-                      case 'notEmpty':
-                        return <Text>Not empty</Text>
-                      default:
-                        return <FloatingTextInput column={props.column} />
-                    }
-                  },
+                switch (filterMode) {
+                  case 'empty':
+                    return <Text>Empty</Text>
+                  case 'notEmpty':
+                    return <Text>Not empty</Text>
+                  default:
+                    return <FloatingTextInput column={props.column} />
+                }
+              },
             renderColumnFilterModeMenuItems: ({
               column,
               onSelectFilterMode,
@@ -289,7 +291,11 @@ export default function DemoMantineReactTable() {
 
           // return <Combobox.Options>{roleOptions}</Combobox.Options>
 
-          return { data: roleOptions }
+          return {
+            data: roleOptions,
+            size: 'xs',
+            fw: 800,
+          }
         },
         filterVariant: 'select',
 
