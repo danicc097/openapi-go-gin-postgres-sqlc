@@ -17,7 +17,7 @@ require (
 	github.com/fatih/structs v1.1.0
 	github.com/fatih/structtag v1.2.0
 	github.com/getkin/kin-openapi v0.123.1-0.20240305161826-7aa9f7ee3d53
-	github.com/gin-contrib/cors v1.7.0
+	github.com/gin-contrib/cors v1.7.1
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-contrib/zap v1.1.0
 	github.com/gin-gonic/gin v1.9.1
