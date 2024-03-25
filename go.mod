@@ -19,7 +19,7 @@ require (
 	github.com/getkin/kin-openapi v0.123.1-0.20240305161826-7aa9f7ee3d53
 	github.com/gin-contrib/cors v1.7.0
 	github.com/gin-contrib/pprof v1.4.0
-	github.com/gin-contrib/zap v1.1.0
+	github.com/gin-contrib/zap v1.1.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-jet/jet/v2 v2.11.0
 	github.com/go-playground/validator/v10 v10.19.0
