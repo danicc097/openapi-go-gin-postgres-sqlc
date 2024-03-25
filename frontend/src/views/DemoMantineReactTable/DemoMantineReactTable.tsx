@@ -198,11 +198,16 @@ export default function DemoMantineReactTable() {
           col = {
             ...col,
             Filter:
-              c.type === 'date-time' && !emptyModes.includes(filterModes[col.id ?? ''] ?? '')
-                ? undefined
+              // FIXME: for dates, filter mode options are changed by mrt - removing emptyModes by itself
+              c.type === 'date-time' && emptyModes.includes(filterModes[col.id ?? ''] ?? '')
+                ? (props) => <Text>(non)Empty date</Text>
                 : (props) => {
                     // https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L203
-                    // however it does not...
+                    // however it does not change the filter for dates...
+                    if (c.type === 'date-time') {
+                      return <Text>DATE</Text>
+                    }
+
                     switch (filterModes[props.column.id]) {
                       case 'empty':
                         return <Text>Empty</Text>
@@ -219,7 +224,8 @@ export default function DemoMantineReactTable() {
               // internalFilterOptions /* does not contain new modes */,
             }) => {
               // TODO: `Filter` and `filterFn` will use our own state too via filterModes
-              // and render values accordingly
+              // and render values accordingly.
+              // filterModes is ignored in table headers when using dates
               return col.columnFilterModeOptions?.map((option) => {
                 const fopt = FILTER_OPTIONS.find((v) => v.option === option)
                 if (!fopt) return
@@ -248,22 +254,6 @@ export default function DemoMantineReactTable() {
                 )
               })
             },
-          }
-
-          // FIXME upstream: ignored extra modes in dates, etc.
-          // workaround is to create manually.
-          // however changing form empty or notempty to between breaks:
-          // toISOString not a function (it probably attempts to parse the EMPTY or NOT EMPTY badge as a date)
-          // ^ same error as when we hot reloaded formGeneration date inputs... maybe vite related
-          if (c.nullable) {
-            col = {
-              ...col,
-              // we can only have a single filterFn. therefore renderColumnFilterModeMenuItems
-              // should update the current custom filter mode via custom state
-              // and filterFn acts accordingly (hopefully).
-              // test it first for dates like below
-              // filterFn: (row, columnId, filterValue, addMeta) => {},
-            }
           }
 
           return col
