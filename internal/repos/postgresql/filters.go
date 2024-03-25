@@ -22,7 +22,7 @@ func GenerateFilters(entity db.TableEntity, queryParams map[string][]string) (ma
 		}
 
 		for _, value := range values {
-			switch filter.Typ {
+			switch filter.Type {
 			case "string":
 				switch models.PaginationFilterModes(value) {
 				case models.PaginationFilterModesEquals:

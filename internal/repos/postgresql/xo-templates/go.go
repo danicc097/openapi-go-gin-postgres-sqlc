@@ -1591,7 +1591,7 @@ func camelExport(names ...string) string {
 const ext = ".xo.go"
 
 type Filter struct {
-	// Typ is the field type. It is one of: string, number, integer, boolean, date-time
+	// Type is one of: string, number, integer, boolean, date-time
 	// Arrays and objects are ignored for default filter generation
 	Typ string `json:"type"`
 	// Db is the corresponding db column name
