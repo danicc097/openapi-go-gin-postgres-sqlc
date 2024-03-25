@@ -30,7 +30,7 @@ type TableEntity string
 type Filter struct {
 	// Type is one of: string, number, integer, boolean, date-time
 	// Arrays and objects are ignored for default filter generation
-	Typ string `json:"type"`
+	Type string `json:"type"`
 	// Db is the corresponding db column name
 	Db       string `json:"db"`
 	Nullable bool   `json:"nullable"`

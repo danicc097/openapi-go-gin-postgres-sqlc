@@ -1593,7 +1593,7 @@ const ext = ".xo.go"
 type Filter struct {
 	// Type is one of: string, number, integer, boolean, date-time
 	// Arrays and objects are ignored for default filter generation
-	Typ string `json:"type"`
+	Type string `json:"type"`
 	// Db is the corresponding db column name
 	Db       string `json:"db"`
 	Nullable bool   `json:"nullable"`
@@ -2726,8 +2726,8 @@ func formatEntityFilters(entityFilters map[string]map[string]Filter) string {
 	for entityType, fields := range entityFilters {
 		output += fmt.Sprintf("\tTableEntity%s: {\n", camelExport(entityType))
 		for fieldName, field := range fields {
-			output += fmt.Sprintf("\t\t\"%s\": Filter{Typ: \"%s\", Db: \"%s\", Nullable: %t},\n",
-				fieldName, field.Typ, field.Db, field.Nullable)
+			output += fmt.Sprintf("\t\t\"%s\": Filter{Type: \"%s\", Db: \"%s\", Nullable: %t},\n",
+				fieldName, field.Type, field.Db, field.Nullable)
 		}
 		output += "\t},\n"
 	}
@@ -4196,7 +4196,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		}
 		if typ, err := goTypeToSimpleType(field.UnderlyingType); err == nil {
 			f.entityFilters[entityName][camel(field.GoName)] = Filter{
-				Typ:      typ,
+				Type:     typ,
 				Db:       field.SQLName,
 				Nullable: nullable,
 			}

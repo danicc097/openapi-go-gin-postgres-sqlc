@@ -43,7 +43,7 @@ import { css } from '@emotion/react'
 import { CONFIG, ENTITY_FILTERS, EntityFilter } from 'src/config'
 import { entries } from 'src/utils/object'
 import { sentenceCase } from 'src/utils/strings'
-import { arrModes, columnPropsByType } from 'src/utils/mantine-react-table'
+import { arrModes, columnPropsByType, emptyModes } from 'src/utils/mantine-react-table'
 import { DateInput } from '@mantine/dates'
 import classes from './MRT.module.css'
 import { useColorScheme, useDebouncedValue } from '@mantine/hooks'
@@ -97,7 +97,8 @@ const FloatingTextInput = memo(
 
 // would basically need to reimplement: https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L148
 function _FloatingTextInput({ column }: { column: MRT_Column<any> }) {
-  const [filterValue, setFilterValue] = useState<any>(() => (column.getFilterValue() as string) ?? '')
+  const columnFilterValue = (column.getFilterValue() as string) ?? ''
+  const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
   const [debouncedFilterValue] = useDebouncedValue(filterValue, 400)
 
   const isMounted = useRef(false)
@@ -105,10 +106,15 @@ function _FloatingTextInput({ column }: { column: MRT_Column<any> }) {
   useEffect(() => {
     if (!isMounted.current) return
     column.setFilterValue(debouncedFilterValue ?? undefined)
-  }, [debouncedFilterValue])
+  }, [debouncedFilterValue, column])
 
   const [focused, setFocused] = useState(false)
   const floating = focused || filterValue?.length > 0 || undefined
+
+  const handleClear = useCallback(() => {
+    setFilterValue('')
+    column.setFilterValue(undefined)
+  }, [column])
 
   //receive table filter value and set it to local state
   useEffect(() => {
@@ -122,12 +128,7 @@ function _FloatingTextInput({ column }: { column: MRT_Column<any> }) {
     } else {
       setFilterValue(tableFilterValue ?? '')
     }
-  }, [column.getFilterValue()])
-
-  const handleClear = () => {
-    setFilterValue('')
-    column.setFilterValue(undefined)
-  }
+  }, [columnFilterValue, column, handleClear])
 
   return (
     <TextInput
@@ -192,17 +193,21 @@ export default function DemoMantineReactTable() {
 
           col = {
             ...col,
-            Filter(props) {
-              // TODO: upstream Filter should expose original Filter component somewhere so we can return the original...
-              switch (filterModes[props.column.id]) {
-                case 'empty':
-                  return <Text>Empty</Text>
-                case 'notEmpty':
-                  return <Text>Not empty</Text>
-                default:
-                  return <FloatingTextInput column={props.column} />
-              }
-            },
+            Filter:
+              c.type === 'date-time' && !emptyModes.includes(filterModes[col.id ?? ''] ?? '')
+                ? undefined
+                : (props) => {
+                    // https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L203
+                    // however it does not...
+                    switch (filterModes[props.column.id]) {
+                      case 'empty':
+                        return <Text>Empty</Text>
+                      case 'notEmpty':
+                        return <Text>Not empty</Text>
+                      default:
+                        return <FloatingTextInput column={props.column} />
+                    }
+                  },
             renderColumnFilterModeMenuItems: ({
               column,
               onSelectFilterMode,
@@ -400,12 +405,12 @@ export default function DemoMantineReactTable() {
         },
       },
     ],
-    [filterModes],
+    [defaultPaginatedUserColumns],
   )
 
   // allow overriding default columns for an entity
-  const hiddenColumns: string[] = []
   const columns = useMemo<Column[]>(() => {
+    const hiddenColumns: string[] = []
     const uniqueColumns = new Map<string, Column>()
     _columns.forEach((column) => {
       if (column.id && hiddenColumns.includes(column.id)) return
@@ -487,7 +492,7 @@ export default function DemoMantineReactTable() {
         }
       }
     },
-    [fetchNextPage, isFetching, totalFetched, nextCursor],
+    [fetchNextPage, isFetching, totalFetched, nextCursor, isFetchingNextPage, pagination.pageSize],
   )
 
   useEffect(() => {
