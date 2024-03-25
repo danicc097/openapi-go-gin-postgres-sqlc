@@ -10,8 +10,9 @@
   -webkit-text-size-adjust: 100%;
 }
 
+/** no flashes when theme is dark in LS */
 body {
-  background-color: black; /** no flashes, thank you very much. will remove at first render */
+  background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
 }
 
 /* TODO: hide if empty input */

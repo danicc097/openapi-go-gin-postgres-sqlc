@@ -68,10 +68,6 @@ const routes = Object.freeze({
 })
 
 export default function App() {
-  useEffect(() => {
-    document.body.style.background = 'none !important' // body was preventing flashes
-  }, [])
-
   const { verifyNotificationPermission } = useNotificationAPI()
   const [notificationWarningSent, setNotificationWarningSent] = useState(false)
 

@@ -20,6 +20,7 @@ import {
   Card,
   CheckIcon,
   Checkbox,
+  Combobox,
   Flex,
   Group,
   MenuItem,
@@ -37,10 +38,10 @@ import dayjs from 'dayjs'
 import { Scopes, User } from 'src/gen/model'
 import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
 import { colorBlindPalette, getContrastYIQ, scopeColor } from 'src/utils/colors'
-import _, { lowerCase, lowerFirst, uniqueId } from 'lodash'
+import _, { lowerCase, lowerFirst, uniqueId, upperCase } from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
 import { css } from '@emotion/react'
-import { CONFIG, ENTITY_FILTERS, EntityFilter } from 'src/config'
+import { CONFIG, ENTITY_FILTERS, EntityFilter, ROLES } from 'src/config'
 import { entries } from 'src/utils/object'
 import { sentenceCase } from 'src/utils/strings'
 import { arrModes, columnPropsByType, emptyModes } from 'src/utils/mantine-react-table'
@@ -49,6 +50,7 @@ import classes from './MRT.module.css'
 import { useColorScheme, useDebouncedValue } from '@mantine/hooks'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
 import { IconCheck } from '@tabler/icons'
+import RoleBadge from 'src/components/Badges/RoleBadge'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -271,33 +273,6 @@ export default function DemoMantineReactTable() {
     () => [
       ...defaultPaginatedUserColumns,
       {
-        accessorKey: 'fullName',
-        header: 'Full Name',
-        mantineFilterTextInputProps(props) {
-          return {
-            onFocus: (e) => {
-              const labelClassList = e.target.parentElement?.parentElement?.querySelector('label')?.classList
-              labelClassList?.add('label-focused')
-              e.target.classList.add('input-focused')
-              // !!props.column.getFilterValue() && labelClassList?.add('input-not-empty')
-            },
-            onBlur: (e) => {
-              const labelClassList = e.target.parentElement?.parentElement?.querySelector('label')?.classList
-              labelClassList?.remove('label-focused')
-              e.target.classList.remove('input-focused')
-              // !!props.column.getFilterValue() && labelClassList?.add('input-not-empty')
-            },
-            placeholder: '',
-            label: 'Filter by full name',
-            classNames: {
-              root: classes.root,
-              input: classes.input,
-              label: classes.label,
-            },
-          }
-        },
-      },
-      {
         accessorKey: 'projects',
         header: 'Projects',
         Cell({ row }) {
@@ -305,18 +280,26 @@ export default function DemoMantineReactTable() {
         },
       },
       {
+        // not a part of table entity so we define manually
+        // repo will convert to role_rank filter, same as teams filter will internally
+        // use xo join on teams teamID. frontend shouldnt care about these conversions
         accessorKey: 'role',
         header: 'Role',
-        filterFn: (row, id, filterValue) => {
-          console.log({ filterValue })
-          return row.original.role === filterValue
+        mantineFilterSelectProps(props) {
+          const roleOptions = entries(ROLES).map(([role, v]) => (
+            <Combobox.Option key={role} value={role}>
+              <RoleBadge role={role} />
+            </Combobox.Option>
+          ))
+
+          return <Combobox.Options>{roleOptions}</Combobox.Options>
         },
-        // TODO: repo will convert to role_rank filter, same as teams filter will internally
-        // use xo join on teams teamID. frontend shouldnt care about these conversions
-        Filter(props) {
-          // TODO: custom text input does not setFilterValue on change
-          return <FloatingTextInput column={props.column} />
-        },
+        filterVariant: 'select',
+
+        // Filter(props) {
+        //   // TODO: combobox with <RoleBadge role={role} />
+        //   return <FloatingTextInput column={props.column} />
+        // },
       },
       {
         accessorKey: 'teams',
