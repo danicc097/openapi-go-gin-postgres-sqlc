@@ -62,7 +62,8 @@ export function columnPropsByType<T extends MRT_RowData>(id: string, c: EntityFi
 
       return props.renderedCellValue
     },
-    ...(c.type === 'date-time' && { minSize: 120 }),
+    ...(c.type === 'date-time' && { size: 200 }),
+    ...(c.type === 'boolean' && { size: 160 }),
     ...(c.type === 'boolean' && {
       mantineFilterCheckboxProps: {
         size: 'sm',

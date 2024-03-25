@@ -351,9 +351,14 @@ export default function DemoMantineReactTable() {
           const maxItems = 2
 
           return (
-            <Group p={'xs'} m={'xs'}>
+            <Group m={0} gap={4}>
               {row.original.scopes?.map((el, idx) => {
-                if (idx === maxItems) return <Text>...</Text>
+                if (idx === maxItems)
+                  return (
+                    <Badge key={el} size="xs" bg={'none'}>
+                      {`+${row.original.scopes.length - maxItems}`}
+                    </Badge>
+                  )
                 if (idx > maxItems) return null
 
                 const [scopeName, scopePermission] = el.split(':')
@@ -375,19 +380,6 @@ export default function DemoMantineReactTable() {
               })}
             </Group>
           )
-        },
-      },
-      {
-        accessorKey: 'hasGlobalNotifications',
-        header: 'Global notifications',
-        mantineFilterCheckboxProps: {
-          size: 'sm',
-          label: 'Filter values',
-        },
-        enableColumnFilterModes: false,
-        filterVariant: 'checkbox',
-        Cell({ row }) {
-          return <Checkbox readOnly size="xs" checked={row.original.hasGlobalNotifications}></Checkbox>
         },
       },
     ],
