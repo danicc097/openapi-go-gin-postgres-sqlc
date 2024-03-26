@@ -36,7 +36,7 @@ import { User } from 'src/gen/model'
 import { getContrastYIQ, scopeColor } from 'src/utils/colors'
 import _, { lowerCase } from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
-import { ENTITY_FILTERS, ROLES } from 'src/config'
+import { ENTITY_FILTERS, OPERATION_AUTH, ROLES } from 'src/config'
 import { entries } from 'src/utils/object'
 import { sentenceCase } from 'src/utils/strings'
 import { arrModes, columnPropsByType, emptyModes } from 'src/utils/mantine-react-table'
@@ -46,6 +46,7 @@ import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mj
 import classes from 'src/utils/mantine-react-table.module.css'
 import { useMantineReactTableFilters } from 'src/hooks/ui/useMantineReactTableFilters'
 import { IconStar } from '@tabler/icons'
+import { RowActionsMenu } from 'src/utils/mantine-react-table.components'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -566,56 +567,23 @@ export default function DemoMantineReactTable() {
           }}
           size="xs"
         >
-          Create New User
+          Create user
         </Button>
       </Group>
     ),
     enableRowActions: true,
     renderRowActions: ({ row, table }) => (
-      // TODO: menu instead, no need to clutter
-      <Flex justify="space-between" gap={10}>
-        <Tooltip label="Edit">
-          <ActionIcon
-            onClick={() => {
-              // modal
-            }}
-          >
-            <IconEdit />
-          </ActionIcon>
-        </Tooltip>
-        <Tooltip label="Delete">
-          <ActionIcon
-            color="red"
-            onClick={() => {
-              // modal
-            }}
-          >
-            <IconTrash />
-          </ActionIcon>
-        </Tooltip>
-        <Tooltip label="Extra">
-          <ActionIcon
-            color="yellow"
-            onClick={() => {
-              // modal
-            }}
-          >
-            <IconStar />
-          </ActionIcon>
-        </Tooltip>
-        {/* has deleted at */}
-        {row.original.deletedAt && (
-          <Tooltip label="Restore">
-            <ActionIcon
-              color="yellow"
-              onClick={() => {
-                // modal
-              }}
-            >
-              <IconTrash />
-            </ActionIcon>
-          </Tooltip>
-        )}
+      <Flex justify="center" align="center" gap={10}>
+        <RowActionsMenu
+          canRestore={
+            !!row.original.deletedAt
+            // TODO: && hasOperationAuthz(OPERATION_AUTH.RestoreUser)
+          }
+          // onEdit={}
+          // onRestore={}
+          // onDelete={}
+          // extraActions={}
+        />
       </Flex>
     ),
     rowVirtualizerInstanceRef, //get access to the virtualizer instance
