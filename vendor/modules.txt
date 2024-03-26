@@ -101,7 +101,7 @@ github.com/getkin/kin-openapi/routers
 github.com/getkin/kin-openapi/routers/gorillamux
 github.com/getkin/kin-openapi/routers/legacy
 github.com/getkin/kin-openapi/routers/legacy/pathpattern
-# github.com/gin-contrib/cors v1.7.0
+# github.com/gin-contrib/cors v1.7.1
 ## explicit; go 1.18
 github.com/gin-contrib/cors
 # github.com/gin-contrib/pprof v1.4.0
