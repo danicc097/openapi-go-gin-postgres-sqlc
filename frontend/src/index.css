@@ -53,3 +53,22 @@ body {
 .mrt-filter-range-fields:has(.date-filter-badge) {
   align-self: center;
 }
+
+/*
+workaround - maybe worth it to have opt upstream since showChangeModeButton
+is tied to both filter button and label
+https://github.com/KevinVandy/mantine-react-table/blob/v2/packages/mantine-react-table/src/components/head/MRT_TableHeadCellFilterContainer.tsx
+*/
+[class*='filter-mode-label'] {
+  display: none;
+}
+
+.mrt-table .mantine-ActionIcon-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.mrt-table-head-cell-labels,
+.mrt-table-head-cell-content .mantine-ActionIcon-icon {
+  color: light-dark(var(--mantine-primary-color-9), var(--mantine-primary-color-6));
+}

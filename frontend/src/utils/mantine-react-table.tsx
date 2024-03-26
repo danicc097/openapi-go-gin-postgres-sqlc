@@ -1,6 +1,7 @@
 import { Checkbox, Text } from '@mantine/core'
 import { LiteralUnion, MRT_ColumnDef, MRT_FilterOption, MRT_RowData } from 'mantine-react-table'
 import { EntityFilter } from 'src/config'
+import classes from './mantine-react-table.module.css'
 
 export const rangeModes: FilterModeOptions = ['between', 'betweenInclusive', 'inNumberRange']
 export const emptyModes: FilterModeOptions = ['empty', 'notEmpty']
@@ -66,8 +67,11 @@ export function columnPropsByType<T extends MRT_RowData>(id: string, c: EntityFi
     ...(c.type === 'boolean' && { size: 160 }),
     ...(c.type === 'boolean' && {
       mantineFilterCheckboxProps: {
-        size: 'sm',
+        size: 'xs',
         label: 'Filter values',
+        classNames: {
+          label: classes.checkboxLabel,
+        },
       },
       enableColumnFilterModes: false,
     }),

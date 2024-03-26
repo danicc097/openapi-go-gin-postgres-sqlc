@@ -1,4 +1,4 @@
-import { ReactElement, UIEvent, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ComponentProps, UIEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   MantineReactTable,
   useMantineReactTable,
@@ -8,7 +8,6 @@ import {
   type MRT_SortingState,
   type MRT_ColumnFilterFnsState,
   MRT_RowVirtualizer,
-  MRT_RowData,
   mrtFilterOptions,
   MRT_Column,
 } from 'mantine-react-table'
@@ -18,16 +17,10 @@ import {
   Badge,
   Box,
   Card,
-  CheckIcon,
-  Checkbox,
-  Combobox,
   Flex,
   Group,
-  InputProps,
   List,
   MenuItem,
-  Pill,
-  Space,
   Text,
   TextInput,
   Title,
@@ -35,26 +28,21 @@ import {
   useMantineColorScheme,
 } from '@mantine/core'
 import { IconRefresh, IconX } from '@tabler/icons-react'
-import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
-import { useGetPaginatedUsers, useGetPaginatedUsersInfinite } from 'src/gen/user/user'
+import { useQuery } from '@tanstack/react-query'
+import { useGetPaginatedUsersInfinite } from 'src/gen/user/user'
 import dayjs from 'dayjs'
-import { Scopes, User } from 'src/gen/model'
-import useStopInfiniteRenders from 'src/hooks/utils/useStopInfiniteRenders'
-import { colorBlindPalette, getContrastYIQ, scopeColor } from 'src/utils/colors'
-import _, { lowerCase, lowerFirst, uniqueId, upperCase } from 'lodash'
+import { User } from 'src/gen/model'
+import { getContrastYIQ, scopeColor } from 'src/utils/colors'
+import _, { lowerCase } from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
-import { css } from '@emotion/react'
-import { CONFIG, ENTITY_FILTERS, EntityFilter, ROLES } from 'src/config'
+import { ENTITY_FILTERS, ROLES } from 'src/config'
 import { entries } from 'src/utils/object'
 import { sentenceCase } from 'src/utils/strings'
 import { arrModes, columnPropsByType, emptyModes } from 'src/utils/mantine-react-table'
 import { DateInput } from '@mantine/dates'
-import classes from './MRT.module.css'
-import { useColorScheme, useDebouncedValue } from '@mantine/hooks'
+import { useDebouncedValue } from '@mantine/hooks'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
-import { IconCheck } from '@tabler/icons'
-import RoleBadge from 'src/components/Badges/RoleBadge'
-import clsx from 'clsx'
+import classes from 'src/utils/mantine-react-table.module.css'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -96,7 +84,7 @@ const defaultSortableColumns: Array<DefaultFilters> = ['createdAt', 'deletedAt',
 
 const FILTER_OPTIONS = mrtFilterOptions(MRT_Localization_EN)
 
-function MRTTextInput({ column, ...props }: { column: MRT_Column<any> }) {
+function MRTTextInput({ column, ...props }: { column: MRT_Column<any>; props?: ComponentProps<typeof TextInput> }) {
   const columnFilterValue = (column.getFilterValue() as string) ?? ''
   const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
   const [debouncedFilterValue] = useDebouncedValue(filterValue, 400)
@@ -134,6 +122,7 @@ function MRTTextInput({ column, ...props }: { column: MRT_Column<any> }) {
 
   return (
     <TextInput
+      {...props}
       value={filterValue}
       size="xs"
       onChange={(event) => setFilterValue(event.currentTarget.value)}
@@ -220,6 +209,7 @@ export default function DemoMantineReactTable() {
 
                   return (
                     <DateInput
+                      placeholder={`${props.rangeFilterIndex === 0 ? 'Start' : 'End'} date`}
                       size="xs"
                       valueFormat="DD/MM/YYYY"
                       classNames={{
@@ -232,7 +222,7 @@ export default function DemoMantineReactTable() {
                 }
 
                 // TODO: set filterMode in description and remove default from mrt since we wont use its filter modes
-                return <MRTTextInput column={props.column} />
+                return <MRTTextInput column={props.column} props={{ error: 'aaaa' }} />
               },
             renderColumnFilterModeMenuItems: ({
               column,
