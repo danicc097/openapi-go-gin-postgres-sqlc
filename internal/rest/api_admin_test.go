@@ -45,7 +45,7 @@ func TestAdminPingRoute(t *testing.T) {
 		res, err := srv.client.AdminPingWithResponse(context.Background())
 		require.NoError(t, err)
 
-		assert.Equal(t, http.StatusBadRequest, res.StatusCode(), string(res.Body))
-		assert.EqualValues(t, models.ErrorCodeRequestValidation, res.JSON4XX.Type)
+		assert.Equal(t, http.StatusUnauthorized, res.StatusCode(), string(res.Body))
+		assert.EqualValues(t, models.ErrorCodeUnauthenticated, res.JSON4XX.Type)
 	})
 }

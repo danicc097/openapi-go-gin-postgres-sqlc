@@ -43,6 +43,7 @@ import { DateInput } from '@mantine/dates'
 import { useDebouncedValue } from '@mantine/hooks'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
 import classes from 'src/utils/mantine-react-table.module.css'
+import { useMantineReactTableFilters } from 'src/hooks/ui/useMantineReactTableFilters'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -80,6 +81,8 @@ type DefaultFilters = keyof typeof ENTITY_FILTERS.user
 
 const defaultExcludedColumns: Array<DefaultFilters> = ['firstName', 'lastName']
 // just btrees, or extension indexes if applicable https://www.postgresql.org/docs/16/indexes-ordering.html
+// TODO: deletedAt != null -> restore buttons.
+// also see CRUD: https://v2.mantine-react-table.com/docs/examples/editing-crud
 const defaultSortableColumns: Array<DefaultFilters> = ['createdAt', 'deletedAt', 'updatedAt']
 
 const FILTER_OPTIONS = mrtFilterOptions(MRT_Localization_EN)
@@ -88,6 +91,7 @@ function MRTTextInput({ column, ...props }: { column: MRT_Column<any>; props?: C
   const columnFilterValue = (column.getFilterValue() as string) ?? ''
   const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
   const [debouncedFilterValue] = useDebouncedValue(filterValue, 400)
+  const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
 
   const isMounted = useRef(false)
 
@@ -102,6 +106,7 @@ function MRTTextInput({ column, ...props }: { column: MRT_Column<any>; props?: C
 
   const handleClear = () => {
     setFilterValue('')
+    removeFilterMode(column.id)
     column.setFilterValue(undefined)
   }
 
@@ -120,22 +125,20 @@ function MRTTextInput({ column, ...props }: { column: MRT_Column<any>; props?: C
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [columnFilterValue])
 
+  const filterMode = dynamicConfig?.filterModes[column.id]
+
   return (
     <TextInput
       {...props}
       value={filterValue}
       size="xs"
-      onChange={(event) => setFilterValue(event.currentTarget.value)}
+      onChange={(event) => {
+        setFilterValue(event.currentTarget.value)
+        if (!filterMode) setFilterMode(column.id, 'contains')
+      }}
       rightSection={
-        filterValue ? (
-          <ActionIcon
-            aria-label={'Clear search'}
-            color="gray"
-            disabled={!filterValue?.length}
-            onClick={handleClear}
-            size="xs"
-            variant="transparent"
-          >
+        filterMode ? (
+          <ActionIcon aria-label={'Clear search'} color="gray" onClick={handleClear} size="xs" variant="transparent">
             <Tooltip label={'Clear search'} withinPortal>
               <IconX />
             </Tooltip>
@@ -168,7 +171,9 @@ function MRTTextInput({ column, ...props }: { column: MRT_Column<any>; props?: C
 export default function DemoMantineReactTable() {
   const tableContainerRef = useRef<HTMLDivElement>(null)
   const rowVirtualizerInstanceRef = useRef<MRT_RowVirtualizer>(null) //we can get access to the underlying Virtualizer instance and call its scrollToIndex method
-  const [filterModes, setFilterModes] = useState<Record<string, string>>({})
+  const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
+
+  // TODO: hooks
 
   const defaultPaginatedUserColumns = useMemo<Column[]>(
     () =>
@@ -191,7 +196,7 @@ export default function DemoMantineReactTable() {
               (props) => {
                 // https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L203
                 // however it does not change the filter for dates...
-                const filterMode = filterModes[props.column.id] ?? ''
+                const filterMode = dynamicConfig?.filterModes[props.column.id] ?? ''
                 if (emptyModes.includes(filterMode)) {
                   if (props.rangeFilterIndex === 1) {
                     return null
@@ -203,10 +208,6 @@ export default function DemoMantineReactTable() {
                   )
                 }
                 if (c.type === 'date-time') {
-                  // TODO: see https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L314
-                  // will need to use rangeFilterIndex
-                  console.log({ propsrangefilter: props.rangeFilterIndex })
-
                   return (
                     <DateInput
                       placeholder={`${props.rangeFilterIndex === 0 ? 'Start' : 'End'} date`}
@@ -230,9 +231,6 @@ export default function DemoMantineReactTable() {
               table,
               // internalFilterOptions /* does not contain new modes */,
             }) => {
-              // TODO: `Filter` and `filterFn` will use our own state too via filterModes
-              // and render values accordingly.
-              // filterModes is ignored in table headers when using dates
               return col.columnFilterModeOptions?.map((option) => {
                 const fopt = FILTER_OPTIONS.find((v) => v.option === option)
                 if (!fopt) return
@@ -242,14 +240,17 @@ export default function DemoMantineReactTable() {
                     key={fopt.option}
                     onClick={() => {
                       column.setFilterValue(null)
-                      setFilterModes((state) => ({ ...state, [column.id]: fopt.option }))
+                      setFilterMode(column.id, fopt.option)
                     }}
                   >
                     <Flex
                       gap={10}
                       justify="flex-start"
                       style={{
-                        color: filterModes[col.id ?? ''] === fopt.option ? 'var(--mantine-primary-color-5)' : 'inherit',
+                        color:
+                          dynamicConfig?.filterModes[col.id ?? ''] === fopt.option
+                            ? 'var(--mantine-primary-color-5)'
+                            : 'inherit',
                       }}
                     >
                       <Box miw={20} style={{ alignSelf: 'center', textAlign: 'center' }}>
@@ -265,7 +266,7 @@ export default function DemoMantineReactTable() {
 
           return col
         }),
-    [filterModes],
+    [dynamicConfig?.filterModes],
   )
 
   const _columns = useMemo<Column[]>(
@@ -284,6 +285,7 @@ export default function DemoMantineReactTable() {
         // use xo join on teams teamID. frontend shouldnt care about these conversions
         accessorKey: 'role',
         header: 'Role',
+        // TODO: must use custom props for non default rows so we can use our own filters, badges...
         mantineFilterSelectProps(props) {
           const roleOptions = entries(ROLES).map(([role, v]) => ({ value: role, label: sentenceCase(role) }))
 
@@ -561,7 +563,7 @@ export default function DemoMantineReactTable() {
 
   return (
     <>
-      <CodeHighlight lang="json" code={JSON.stringify(filterModes, null, '  ')}></CodeHighlight>
+      <CodeHighlight lang="json" code={JSON.stringify(dynamicConfig?.filterModes ?? {}, null, '  ')}></CodeHighlight>
       <Accordion
         styles={{
           content: { paddingRight: 0, paddingLeft: 0 },

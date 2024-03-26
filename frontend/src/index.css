@@ -49,7 +49,9 @@ body {
   width: 100%;
 }
 
-/* needs its own declaration when using has */
+/* needs its own declaration when using has
+TODO: must align other inputs as well, not just range
+*/
 .mrt-filter-range-fields:has(.date-filter-badge) {
   align-self: center;
 }

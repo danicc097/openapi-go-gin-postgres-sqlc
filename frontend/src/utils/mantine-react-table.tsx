@@ -1,7 +1,8 @@
-import { Checkbox, Text } from '@mantine/core'
+import { Checkbox, Popover, Text } from '@mantine/core'
 import { LiteralUnion, MRT_ColumnDef, MRT_FilterOption, MRT_RowData } from 'mantine-react-table'
 import { EntityFilter } from 'src/config'
 import classes from './mantine-react-table.module.css'
+import dayjs from 'dayjs'
 
 export const rangeModes: FilterModeOptions = ['between', 'betweenInclusive', 'inNumberRange']
 export const emptyModes: FilterModeOptions = ['empty', 'notEmpty']
@@ -59,7 +60,17 @@ export function columnPropsByType<T extends MRT_RowData>(id: string, c: EntityFi
     Cell(props) {
       const val = props.row.original?.[id]
       if (c.type === 'boolean') return <Checkbox size="xs" readOnly checked={val}></Checkbox>
-      if (c.type === 'date-time') return <Text size="xs">{val?.toISOString()}</Text>
+      if (c.type === 'date-time')
+        return (
+          <Popover withArrow>
+            <Popover.Target>
+              <Text size="xs">{val?.toISOString()}</Text>
+            </Popover.Target>
+            <Popover.Dropdown>
+              <Text size="xs">{dayjs().to(dayjs(val))}</Text>
+            </Popover.Dropdown>
+          </Popover>
+        )
 
       return props.renderedCellValue
     },
