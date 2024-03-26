@@ -49,7 +49,7 @@ import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import ErrorCallout from 'src/components/Callout/ErrorCallout'
 import { ApiError } from 'src/api/mutator'
 import { AxiosError } from 'axios'
-import { isAuthorized } from 'src/services/authorization'
+import { checkAuthorization } from 'src/services/authorization'
 import { asConst } from 'json-schema-to-ts'
 import type { components, schemas } from 'src/types/schema'
 import { FormProvider, useForm, useFormContext, useWatch } from 'react-hook-form'
@@ -96,7 +96,7 @@ export default function UserPermissionsPage() {
   )
 
   const roleOptions = entries(ROLES)
-    .filter(([role, v]) => isAuthorized({ user, requiredRole: role }))
+    .filter(([role, v]) => checkAuthorization({ user, requiredRole: role }))
     .map(([role, v]) => ({
       label: upperCase(role),
       value: role,
@@ -341,7 +341,7 @@ export default function UserPermissionsPage() {
                   Update role
                 </Title>
               }
-              disabled={!isAuthorized({ user, requiredRole: selectedUser.role })}
+              disabled={!checkAuthorization({ user, requiredRole: selectedUser.role })}
               // itemComponent={SelectRoleItem} // TODO: COMBOBOX
               data-test-subj="updateUserAuthForm__selectable_Role"
               defaultValue={selectedUser.role}
@@ -443,13 +443,13 @@ const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProp
   }
 
   const scopeChangeAllowed = (scope: Scope) => {
-    if (isAuthorized({ user, requiredRole: 'admin' })) {
+    if (checkAuthorization({ user, requiredRole: 'admin' })) {
       return { allowed: true }
     }
-    if (!isAuthorized({ user, requiredRole: userSelection?.role })) {
+    if (!checkAuthorization({ user, requiredRole: userSelection?.role })) {
       return { allowed: false, message: 'You are not allowed to change scopes for this user' }
     }
-    if (!isAuthorized({ user, requiredScopes: [scope] })) {
+    if (!checkAuthorization({ user, requiredScopes: [scope] })) {
       return { allowed: false, message: 'You do not have this scope' }
     }
 

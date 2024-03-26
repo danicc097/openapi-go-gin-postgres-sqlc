@@ -577,7 +577,7 @@ export default function DemoMantineReactTable() {
         <RowActionsMenu
           canRestore={
             !!row.original.deletedAt
-            // TODO: && hasOperationAuthz(OPERATION_AUTH.RestoreUser)
+            // TODO: && useIsAuthorizedForOp(OPERATION_AUTH.RestoreUser)
           }
           // onEdit={}
           // onRestore={}
