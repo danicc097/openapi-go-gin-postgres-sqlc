@@ -157,8 +157,8 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 		Email:    user.Email,
 		Username: user.Username,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // mandatory
-			Issuer:    cfg.OIDC.Issuer,                                    // mandatory
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)), // mandatory
+			Issuer:    cfg.OIDC.Issuer,                                        // mandatory
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			Subject:   user.ExternalID,

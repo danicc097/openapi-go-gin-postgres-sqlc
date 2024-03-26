@@ -1,3 +1,5 @@
+import { notifications, showNotification } from '@mantine/notifications'
+import { IconForbid, IconX } from '@tabler/icons'
 import { QueryClient, useQueryClient } from '@tanstack/react-query'
 import axios from 'axios'
 import Cookies from 'js-cookie'
@@ -9,6 +11,7 @@ import useRenders from 'src/hooks/utils/useRenders'
 import { persister } from 'src/idb'
 import { LOGIN_COOKIE_KEY, UI_SLICE_PERSIST_KEY, useUISlice } from 'src/slices/ui'
 import AxiosInterceptors from 'src/utils/axios'
+import { ToastId } from 'src/utils/toasts'
 import { useIsFirstRender } from 'usehooks-ts'
 
 export default function useAuthenticatedUser() {
@@ -17,10 +20,9 @@ export default function useAuthenticatedUser() {
   const [failedAuthentication, setFailedAuthentication] = useState(false)
   const currentUser = useGetCurrentUser({
     query: {
-      retryDelay: 500,
       retry(failureCount, error) {
         console.log(`retry on useAuthenticatedUser: ${failureCount}`)
-        const shouldRetry = ui.accessToken !== '' && failureCount < 2 && !failedAuthentication
+        const shouldRetry = failureCount < 2 && !failedAuthentication
         if (!shouldRetry) setFailedAuthentication(true)
 
         return shouldRetry
@@ -31,7 +33,7 @@ export default function useAuthenticatedUser() {
   const isFirstRender = useIsFirstRender()
   const ui = useUISlice()
   const isAuthenticated = !!currentUser.data?.userID
-  const isAuthenticating = currentUser.isFetching && ui.accessToken !== ''
+  const isAuthenticating = (currentUser.isFetching || currentUser.isRefetching) && ui.accessToken !== ''
   // console.log({ isFirstRender })
 
   useEffect(() => {
@@ -45,12 +47,23 @@ export default function useAuthenticatedUser() {
       currentUser.refetch()
     }
 
+    if (failedAuthentication) {
+      notifications.show({
+        id: ToastId.AuthnError,
+        title: `Login error`,
+        color: 'red',
+        icon: <IconX size="1.2rem" />,
+        autoClose: 15000,
+        message: `We're having trouble login you in from your previous session. Please log in again`,
+      })
+    }
+
     AxiosInterceptors.setupAxiosInstance(AXIOS_INSTANCE, ui.accessToken)
 
     return () => {
       AxiosInterceptors.teardownAxiosInstance(AXIOS_INSTANCE)
     }
-  }, [currentUser.data, isFirstRender, isAuthenticated, ui.accessToken])
+  }, [currentUser.data, isFirstRender, isAuthenticated, ui.accessToken, isAuthenticating, failedAuthentication])
 
   const user = currentUser.data
 

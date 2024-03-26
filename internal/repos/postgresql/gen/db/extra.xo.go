@@ -24,3 +24,215 @@ func (e *XoError) Error() string {
 func (err *XoError) Unwrap() error {
 	return err.Err
 }
+
+type TableEntity string
+
+const (
+	TableEntityActivity             TableEntity = "activity"
+	TableEntityCacheDemoTwoWorkItem TableEntity = "cacheDemoTwoWorkItem"
+	TableEntityCacheDemoWorkItem    TableEntity = "cacheDemoWorkItem"
+	TableEntityDemoTwoWorkItem      TableEntity = "demoTwoWorkItem"
+	TableEntityDemoWorkItem         TableEntity = "demoWorkItem"
+	TableEntityEntityNotification   TableEntity = "entityNotification"
+	TableEntityKanbanStep           TableEntity = "kanbanStep"
+	TableEntityMovie                TableEntity = "movie"
+	TableEntityNotification         TableEntity = "notification"
+	TableEntityProject              TableEntity = "project"
+	TableEntityTeam                 TableEntity = "team"
+	TableEntityTimeEntry            TableEntity = "timeEntry"
+	TableEntityUser                 TableEntity = "user"
+	TableEntityUserAPIKey           TableEntity = "userAPIKey"
+	TableEntityUserNotification     TableEntity = "userNotification"
+	TableEntityUserProject          TableEntity = "userProject"
+	TableEntityUserTeam             TableEntity = "userTeam"
+	TableEntityWorkItem             TableEntity = "workItem"
+	TableEntityWorkItemAssignee     TableEntity = "workItemAssignee"
+	TableEntityWorkItemComment      TableEntity = "workItemComment"
+	TableEntityWorkItemTag          TableEntity = "workItemTag"
+	TableEntityWorkItemType         TableEntity = "workItemType"
+	TableEntityWorkItemWorkItemTag  TableEntity = "workItemWorkItemTag"
+)
+
+type Filter struct {
+	// Type is one of: string, number, integer, boolean, date-time
+	// Arrays and objects are ignored for default filter generation
+	Type string `json:"type"`
+	// Db is the corresponding db column name
+	Db       string `json:"db"`
+	Nullable bool   `json:"nullable"`
+}
+
+var EntityFilters = map[TableEntity]map[string]Filter{
+	TableEntityActivity: {
+		"activityID":   Filter{Type: "integer", Db: "activity_id", Nullable: false},
+		"deletedAt":    Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
+		"description":  Filter{Type: "string", Db: "description", Nullable: false},
+		"isProductive": Filter{Type: "boolean", Db: "is_productive", Nullable: false},
+		"name":         Filter{Type: "string", Db: "name", Nullable: false},
+		"projectID":    Filter{Type: "integer", Db: "project_id", Nullable: false},
+	},
+	TableEntityCacheDemoTwoWorkItem: {
+		"closedAt":              Filter{Type: "date-time", Db: "closed_at", Nullable: true},
+		"createdAt":             Filter{Type: "date-time", Db: "created_at", Nullable: false},
+		"customDateForProject2": Filter{Type: "date-time", Db: "custom_date_for_project_2", Nullable: true},
+		"deletedAt":             Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
+		"description":           Filter{Type: "string", Db: "description", Nullable: false},
+		"kanbanStepID":          Filter{Type: "integer", Db: "kanban_step_id", Nullable: false},
+		"targetDate":            Filter{Type: "date-time", Db: "target_date", Nullable: false},
+		"teamID":                Filter{Type: "integer", Db: "team_id", Nullable: false},
+		"title":                 Filter{Type: "string", Db: "title", Nullable: false},
+		"updatedAt":             Filter{Type: "date-time", Db: "updated_at", Nullable: false},
+		"workItemID":            Filter{Type: "integer", Db: "work_item_id", Nullable: false},
+		"workItemTypeID":        Filter{Type: "integer", Db: "work_item_type_id", Nullable: false},
+	},
+	TableEntityCacheDemoWorkItem: {
+		"closedAt":       Filter{Type: "date-time", Db: "closed_at", Nullable: true},
+		"createdAt":      Filter{Type: "date-time", Db: "created_at", Nullable: false},
+		"deletedAt":      Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
+		"description":    Filter{Type: "string", Db: "description", Nullable: false},
+		"kanbanStepID":   Filter{Type: "integer", Db: "kanban_step_id", Nullable: false},
+		"lastMessageAt":  Filter{Type: "date-time", Db: "last_message_at", Nullable: false},
+		"line":           Filter{Type: "string", Db: "line", Nullable: false},
+		"ref":            Filter{Type: "string", Db: "ref", Nullable: false},
+		"reopened":       Filter{Type: "boolean", Db: "reopened", Nullable: false},
+		"targetDate":     Filter{Type: "date-time", Db: "target_date", Nullable: false},
+		"teamID":         Filter{Type: "integer", Db: "team_id", Nullable: false},
+		"title":          Filter{Type: "string", Db: "title", Nullable: false},
+		"updatedAt":      Filter{Type: "date-time", Db: "updated_at", Nullable: false},
+		"workItemID":     Filter{Type: "integer", Db: "work_item_id", Nullable: false},
+		"workItemTypeID": Filter{Type: "integer", Db: "work_item_type_id", Nullable: false},
+	},
+	TableEntityDemoTwoWorkItem: {
+		"customDateForProject2": Filter{Type: "date-time", Db: "custom_date_for_project_2", Nullable: true},
+		"workItemID":            Filter{Type: "integer", Db: "work_item_id", Nullable: false},
+	},
+	TableEntityDemoWorkItem: {
+		"lastMessageAt": Filter{Type: "date-time", Db: "last_message_at", Nullable: false},
+		"line":          Filter{Type: "string", Db: "line", Nullable: false},
+		"ref":           Filter{Type: "string", Db: "ref", Nullable: false},
+		"reopened":      Filter{Type: "boolean", Db: "reopened", Nullable: false},
+		"workItemID":    Filter{Type: "integer", Db: "work_item_id", Nullable: false},
+	},
+	TableEntityEntityNotification: {
+		"createdAt":            Filter{Type: "date-time", Db: "created_at", Nullable: false},
+		"entityNotificationID": Filter{Type: "integer", Db: "entity_notification_id", Nullable: false},
+		"id":                   Filter{Type: "string", Db: "id", Nullable: false},
+		"message":              Filter{Type: "string", Db: "message", Nullable: false},
+		"topic":                Filter{Type: "string", Db: "topic", Nullable: false},
+	},
+	TableEntityKanbanStep: {
+		"color":         Filter{Type: "string", Db: "color", Nullable: false},
+		"description":   Filter{Type: "string", Db: "description", Nullable: false},
+		"kanbanStepID":  Filter{Type: "integer", Db: "kanban_step_id", Nullable: false},
+		"name":          Filter{Type: "string", Db: "name", Nullable: false},
+		"projectID":     Filter{Type: "integer", Db: "project_id", Nullable: false},
+		"stepOrder":     Filter{Type: "integer", Db: "step_order", Nullable: false},
+		"timeTrackable": Filter{Type: "boolean", Db: "time_trackable", Nullable: false},
+	},
+	TableEntityMovie: {
+		"movieID":  Filter{Type: "integer", Db: "movie_id", Nullable: false},
+		"synopsis": Filter{Type: "string", Db: "synopsis", Nullable: false},
+		"title":    Filter{Type: "string", Db: "title", Nullable: false},
+		"year":     Filter{Type: "integer", Db: "year", Nullable: false},
+	},
+	TableEntityNotification: {
+		"body":           Filter{Type: "string", Db: "body", Nullable: false},
+		"createdAt":      Filter{Type: "date-time", Db: "created_at", Nullable: false},
+		"link":           Filter{Type: "string", Db: "link", Nullable: true},
+		"notificationID": Filter{Type: "integer", Db: "notification_id", Nullable: false},
+		"title":          Filter{Type: "string", Db: "title", Nullable: false},
+	},
+	TableEntityProject: {
+		"createdAt":   Filter{Type: "date-time", Db: "created_at", Nullable: false},
+		"description": Filter{Type: "string", Db: "description", Nullable: false},
+		"name":        Filter{Type: "string", Db: "name", Nullable: false},
+		"projectID":   Filter{Type: "integer", Db: "project_id", Nullable: false},
+		"updatedAt":   Filter{Type: "date-time", Db: "updated_at", Nullable: false},
+	},
+	TableEntityTeam: {
+		"createdAt":   Filter{Type: "date-time", Db: "created_at", Nullable: false},
+		"description": Filter{Type: "string", Db: "description", Nullable: false},
+		"name":        Filter{Type: "string", Db: "name", Nullable: false},
+		"projectID":   Filter{Type: "integer", Db: "project_id", Nullable: false},
+		"teamID":      Filter{Type: "integer", Db: "team_id", Nullable: false},
+		"updatedAt":   Filter{Type: "date-time", Db: "updated_at", Nullable: false},
+	},
+	TableEntityTimeEntry: {
+		"activityID":      Filter{Type: "integer", Db: "activity_id", Nullable: false},
+		"comment":         Filter{Type: "string", Db: "comment", Nullable: false},
+		"durationMinutes": Filter{Type: "integer", Db: "duration_minutes", Nullable: true},
+		"start":           Filter{Type: "date-time", Db: "start", Nullable: false},
+		"teamID":          Filter{Type: "integer", Db: "team_id", Nullable: true},
+		"timeEntryID":     Filter{Type: "integer", Db: "time_entry_id", Nullable: false},
+		"workItemID":      Filter{Type: "integer", Db: "work_item_id", Nullable: true},
+	},
+	TableEntityUser: {
+		"createdAt":                Filter{Type: "date-time", Db: "created_at", Nullable: false},
+		"deletedAt":                Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
+		"email":                    Filter{Type: "string", Db: "email", Nullable: false},
+		"firstName":                Filter{Type: "string", Db: "first_name", Nullable: true},
+		"fullName":                 Filter{Type: "string", Db: "full_name", Nullable: true},
+		"hasGlobalNotifications":   Filter{Type: "boolean", Db: "has_global_notifications", Nullable: false},
+		"hasPersonalNotifications": Filter{Type: "boolean", Db: "has_personal_notifications", Nullable: false},
+		"lastName":                 Filter{Type: "string", Db: "last_name", Nullable: true},
+		"updatedAt":                Filter{Type: "date-time", Db: "updated_at", Nullable: false},
+		"username":                 Filter{Type: "string", Db: "username", Nullable: false},
+	},
+	TableEntityUserAPIKey: {
+		"apiKey":    Filter{Type: "string", Db: "api_key", Nullable: false},
+		"expiresOn": Filter{Type: "date-time", Db: "expires_on", Nullable: false},
+	},
+	TableEntityUserNotification: {
+		"notificationID":     Filter{Type: "integer", Db: "notification_id", Nullable: false},
+		"read":               Filter{Type: "boolean", Db: "read", Nullable: false},
+		"userNotificationID": Filter{Type: "integer", Db: "user_notification_id", Nullable: false},
+	},
+	TableEntityUserProject: {
+		"projectID": Filter{Type: "integer", Db: "project_id", Nullable: false},
+	},
+	TableEntityUserTeam: {
+		"teamID": Filter{Type: "integer", Db: "team_id", Nullable: false},
+	},
+	TableEntityWorkItem: {
+		"closedAt":       Filter{Type: "date-time", Db: "closed_at", Nullable: true},
+		"createdAt":      Filter{Type: "date-time", Db: "created_at", Nullable: false},
+		"deletedAt":      Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
+		"description":    Filter{Type: "string", Db: "description", Nullable: false},
+		"kanbanStepID":   Filter{Type: "integer", Db: "kanban_step_id", Nullable: false},
+		"targetDate":     Filter{Type: "date-time", Db: "target_date", Nullable: false},
+		"teamID":         Filter{Type: "integer", Db: "team_id", Nullable: false},
+		"title":          Filter{Type: "string", Db: "title", Nullable: false},
+		"updatedAt":      Filter{Type: "date-time", Db: "updated_at", Nullable: false},
+		"workItemID":     Filter{Type: "integer", Db: "work_item_id", Nullable: false},
+		"workItemTypeID": Filter{Type: "integer", Db: "work_item_type_id", Nullable: false},
+	},
+	TableEntityWorkItemAssignee: {
+		"workItemID": Filter{Type: "integer", Db: "work_item_id", Nullable: false},
+	},
+	TableEntityWorkItemComment: {
+		"createdAt":         Filter{Type: "date-time", Db: "created_at", Nullable: false},
+		"message":           Filter{Type: "string", Db: "message", Nullable: false},
+		"updatedAt":         Filter{Type: "date-time", Db: "updated_at", Nullable: false},
+		"workItemCommentID": Filter{Type: "integer", Db: "work_item_comment_id", Nullable: false},
+		"workItemID":        Filter{Type: "integer", Db: "work_item_id", Nullable: false},
+	},
+	TableEntityWorkItemTag: {
+		"color":         Filter{Type: "string", Db: "color", Nullable: false},
+		"deletedAt":     Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
+		"description":   Filter{Type: "string", Db: "description", Nullable: false},
+		"name":          Filter{Type: "string", Db: "name", Nullable: false},
+		"projectID":     Filter{Type: "integer", Db: "project_id", Nullable: false},
+		"workItemTagID": Filter{Type: "integer", Db: "work_item_tag_id", Nullable: false},
+	},
+	TableEntityWorkItemType: {
+		"color":          Filter{Type: "string", Db: "color", Nullable: false},
+		"description":    Filter{Type: "string", Db: "description", Nullable: false},
+		"name":           Filter{Type: "string", Db: "name", Nullable: false},
+		"projectID":      Filter{Type: "integer", Db: "project_id", Nullable: false},
+		"workItemTypeID": Filter{Type: "integer", Db: "work_item_type_id", Nullable: false},
+	},
+	TableEntityWorkItemWorkItemTag: {
+		"workItemID":    Filter{Type: "integer", Db: "work_item_id", Nullable: false},
+		"workItemTagID": Filter{Type: "integer", Db: "work_item_tag_id", Nullable: false},
+	},
+}

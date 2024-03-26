@@ -138,8 +138,12 @@ export type SelectOptions<Return, E = unknown> = {
 
 export type FieldOptions<Return, E = unknown> = {
   /**
-   * Returns custom warnings based on the current form value. For arrays, warning function
+   * Returns custom warnings based on the current form value. For arrays, the warning function
    * is executed for each element in form.
+   * IMPORTANT: If the warning is called on a parent object whose children
+   * may be arrays, initial child values are currently not initialized, ie
+   * array entries will be undefined which may lead to runtime errors if
+   * the entry is not nullable
    */
   warningFn?: (el: Return extends unknown[] ? Return[number] : Return) => string[]
 }
@@ -1009,6 +1013,10 @@ const NestedHeader = ({ formField, schemaKey, itemName }: NestedHeaderProps) => 
 const initialValueByType = (type?: SchemaField['type']) => {
   switch (type) {
     case 'object':
+      // TODO: should initialize keys which are of type array to []
+      //  (just first level, it will update itself recursively if somehow its nested)
+      // else runtime operations on unset array throw and cant be catched.
+      // see demoWorkItemCreateForm-base.items-add-button
       return {}
     case 'array':
       return []

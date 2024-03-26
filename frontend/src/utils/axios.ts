@@ -27,7 +27,6 @@ export default class AxiosInterceptors {
 
     const tokenRequestInterceptor = instance.interceptors.request.use(
       (config) => {
-        console.log({ tokenRequestInterceptor: { token } })
         if (token) {
           const headers = config.headers || {}
           headers.Authorization = `Bearer ${token}`

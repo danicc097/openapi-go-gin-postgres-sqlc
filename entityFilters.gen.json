@@ -459,6 +459,11 @@
       "db": "last_name",
       "nullable": true
     },
+    "updatedAt": {
+      "type": "date-time",
+      "db": "updated_at",
+      "nullable": false
+    },
     "username": {
       "type": "string",
       "db": "username",

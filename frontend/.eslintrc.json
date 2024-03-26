@@ -7,8 +7,7 @@
   "extends": [
     "plugin:react/recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:prettier/recommended",
-    "plugin:react-hooks/recommended"
+    "plugin:prettier/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -23,9 +22,12 @@
     "react",
     "@typescript-eslint",
     "jest-dom",
+    "react-hooks",
     "react-refresh"
   ],
   "rules": {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn",
     "prettier/prettier": "error",
     "react/no-unknown-property": [
       "error",
@@ -51,7 +53,6 @@
     "prefer-template": "error",
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off",
-    "react-hooks/exhaustive-deps": "off",
     "react/prop-types": "off"
   },
   "ignorePatterns": [

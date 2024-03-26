@@ -20,7 +20,17 @@ func (err *XoError) Unwrap() error {
 	return err.Err
 }
 
-{{/* entities $tables */}}
+{{entities $tables}}
+
+type Filter struct {
+  // Type is one of: string, number, integer, boolean, date-time
+  // Arrays and objects are ignored for default filter generation
+  Type string `json:"type"`
+  // Db is the corresponding db column name
+  Db       string `json:"db"`
+  Nullable bool   `json:"nullable"`
+}
+
 
 {{/* TODO: initialize f.entityFilters via code for all tables. we already have $tables here... */}}
 {{/* else we dont get all entities */}}

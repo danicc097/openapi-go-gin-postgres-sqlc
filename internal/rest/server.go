@@ -408,7 +408,8 @@ func CreateOpenAPIValidatorOptions() OAValidatorOptions {
 		ExcludeResponseBody:   false,
 		IncludeResponseStatus: false,
 		MultiError:            true,
-		AuthenticationFunc:    verifyAuthentication,
+		AuthenticationFunc:    openapi3filter.NoopAuthenticationFunc,
+		// AuthenticationFunc:    verifyAuthentication,
 	}
 
 	oafilterOpts.WithCustomSchemaErrorFunc(CustomSchemaErrorFunc)

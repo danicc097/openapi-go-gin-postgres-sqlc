@@ -10,10 +10,10 @@ const unknownError = 'An unknown error ocurred'
 
 export const useCalloutErrors = (formName: string) => {
   const formSlice = useFormSlice()
-  const form = formSlice.form[formName]
-  const calloutErrors = form?.calloutErrors
-  const customErrors = form?.customErrors
-  const calloutWarnings = form?.customWarnings
+  const form = useFormSlice((state) => state.form[formName])
+  const calloutErrors = useFormSlice((state) => state.form[formName]?.calloutErrors)
+  const customErrors = useFormSlice((state) => state.form[formName]?.customErrors)
+  const calloutWarnings = useFormSlice((state) => state.form[formName]?.customWarnings)
   const setCalloutErrors = (errors: CalloutError[]) => formSlice.setCalloutErrors(formName, errors)
 
   const hasClickedSubmit = !!formSlice.form[formName]?.hasClickedSubmit

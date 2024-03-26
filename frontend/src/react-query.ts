@@ -10,7 +10,7 @@ export const queryClient = new QueryClient({
       ...reactQueryDefaultAppOptions.queries,
       retry: function (failureCount, error: AxiosError | ApiError) {
         const status = error.response?.status
-        if (status && status >= 401 && status < 500 && status !== HttpStatus.UNAUTHORIZED_401) {
+        if (status && status >= 400 && status < 500 && status !== HttpStatus.UNAUTHORIZED_401) {
           return false
         }
         return failureCount < 3

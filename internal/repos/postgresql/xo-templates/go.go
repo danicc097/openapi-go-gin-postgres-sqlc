@@ -1591,9 +1591,9 @@ func camelExport(names ...string) string {
 const ext = ".xo.go"
 
 type Filter struct {
-	// Typ is the field type. It is one of: string, number, integer, boolean, date-time
+	// Type is one of: string, number, integer, boolean, date-time
 	// Arrays and objects are ignored for default filter generation
-	Typ string `json:"type"`
+	Type string `json:"type"`
 	// Db is the corresponding db column name
 	Db       string `json:"db"`
 	Nullable bool   `json:"nullable"`
@@ -1612,11 +1612,7 @@ type Funcs struct {
 	imports         []string
 	// joinTableDbTags map[string]map[string]string
 	tableConstraints map[string][]Constraint
-	// TODO: filters indexed by entity name and json field name.
-	// we will output the map itself in extra.xo.go.tmpl
-	// as well as marshaling to entityFilters.gen.json, from which we can generate default
-	// mantine-react-table columns for generic fields.
-	// via https://stackoverflow.com/questions/69140710/how-to-output-a-map-in-a-template-in-go-syntax
+	// filters indexed by entity name and json field name.
 	entityFilters   map[string]map[string]Filter
 	conflict        string
 	custom          string
@@ -1784,30 +1780,6 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"add":                add,
 		"table_is_updatable": table_is_updatable,
 	}
-}
-
-func (f *Funcs) entities(tables Tables) string {
-	var b strings.Builder
-
-	ee := make([]string, len(tables))
-	i := 0
-	for _, t := range tables {
-		ee[i] = t.GoName
-		i++
-	}
-
-	sort.Slice(ee, func(i, j int) bool {
-		return ee[i] < ee[j]
-	})
-
-	b.WriteString("type Entity string\n")
-	b.WriteString("const (\n")
-	for _, e := range ee {
-		b.WriteString(fmt.Sprintf("%[1]sEntity Entity = %[1]q \n", e))
-	}
-	b.WriteString(")")
-
-	return b.String()
 }
 
 // last_nth returns the last hardcoded nth param for sqlstr
@@ -2702,6 +2674,30 @@ func (f *Funcs) db_named(name string, v any) string {
 	return f.db(name, strings.Join(p, ", "))
 }
 
+func (f *Funcs) entities(tables Tables) string {
+	var b strings.Builder
+
+	ee := make([]string, len(tables))
+	i := 0
+	for _, t := range tables {
+		ee[i] = t.GoName
+		i++
+	}
+
+	sort.Slice(ee, func(i, j int) bool {
+		return ee[i] < ee[j]
+	})
+
+	b.WriteString("type TableEntity string\n")
+	b.WriteString("const (\n")
+	for _, e := range ee {
+		b.WriteString(fmt.Sprintf("TableEntity%s TableEntity = %q \n", camelExport(e), camel(e)))
+	}
+	b.WriteString(")")
+
+	return b.String()
+}
+
 func (f *Funcs) generate_entity_filters(tables Tables) string {
 	if f.schemaPrefix != "" /* not public */ || f.currentDatabase != "gen_db" {
 		return ""
@@ -2720,7 +2716,39 @@ func (f *Funcs) generate_entity_filters(tables Tables) string {
 		panic("os.WriteFile: " + err.Error())
 	}
 
-	return ""
+	return fmt.Sprintf(formatEntityFilters(f.entityFilters))
+}
+
+func formatEntityFilters(entityFilters map[string]map[string]Filter) string {
+	var buf bytes.Buffer
+
+	var entityTypes []string
+	for entityType := range entityFilters {
+		entityTypes = append(entityTypes, entityType)
+	}
+	sort.Strings(entityTypes)
+
+	buf.WriteString("var EntityFilters = map[TableEntity]map[string]Filter {\n")
+	for _, entityType := range entityTypes {
+		fields := entityFilters[entityType]
+
+		var fieldNames []string
+		for fieldName := range fields {
+			fieldNames = append(fieldNames, fieldName)
+		}
+		sort.Strings(fieldNames)
+
+		buf.WriteString(fmt.Sprintf("\tTableEntity%s: {\n", camelExport(entityType)))
+		for _, fieldName := range fieldNames {
+			field := fields[fieldName]
+			buf.WriteString(fmt.Sprintf("\t\t\"%s\": Filter{Type: \"%s\", Db: \"%s\", Nullable: %t},\n",
+				fieldName, field.Type, field.Db, field.Nullable))
+		}
+		buf.WriteString("\t},\n")
+	}
+	buf.WriteString("}\n")
+
+	return buf.String()
 }
 
 func (f *Funcs) named(name, value string, out bool) string {
@@ -4184,7 +4212,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		}
 		if typ, err := goTypeToSimpleType(field.UnderlyingType); err == nil {
 			f.entityFilters[entityName][camel(field.GoName)] = Filter{
-				Typ:      typ,
+				Type:     typ,
 				Db:       field.SQLName,
 				Nullable: nullable,
 			}

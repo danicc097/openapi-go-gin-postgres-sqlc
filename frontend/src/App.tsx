@@ -26,6 +26,8 @@ import { AppTourProvider } from 'src/tours/AppTourProvider'
 import DemoGeneratedForm from 'src/views/DemoGeneratedForm/DemoGeneratedForm'
 import DemoMantineReactTable from 'src/views/DemoMantineReactTable/DemoMantineReactTable'
 
+import 'src/utils/dayjs'
+
 function ErrorFallback({ error }: any) {
   return (
     <div role="alert">
@@ -34,12 +36,6 @@ function ErrorFallback({ error }: any) {
     </div>
   )
 }
-
-import utc from 'dayjs/plugin/utc'
-import relativeTime from 'dayjs/plugin/relativeTime'
-import dayjs from 'dayjs'
-dayjs.extend(utc)
-dayjs.extend(relativeTime)
 
 const Layout = React.lazy(() => import('./components/Layout/Layout'))
 const LandingPage = React.lazy(() => import('./views/LandingPage/LandingPage'))
@@ -72,10 +68,6 @@ const routes = Object.freeze({
 })
 
 export default function App() {
-  useEffect(() => {
-    document.body.style.background = 'none !important' // body was preventing flashes
-  }, [])
-
   const { verifyNotificationPermission } = useNotificationAPI()
   const [notificationWarningSent, setNotificationWarningSent] = useState(false)
 

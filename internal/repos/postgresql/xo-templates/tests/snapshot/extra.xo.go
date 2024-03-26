@@ -24,3 +24,14 @@ func (e *XoError) Error() string {
 func (err *XoError) Unwrap() error {
 	return err.Err
 }
+
+type TableEntity string
+
+type Filter struct {
+	// Type is one of: string, number, integer, boolean, date-time
+	// Arrays and objects are ignored for default filter generation
+	Type string `json:"type"`
+	// Db is the corresponding db column name
+	Db       string `json:"db"`
+	Nullable bool   `json:"nullable"`
+}

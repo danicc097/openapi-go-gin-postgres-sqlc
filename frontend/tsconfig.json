@@ -1,4 +1,9 @@
 {
+  "include": [
+    "src/**/*",
+    "types/**/*",
+    "**/*.d.ts"
+  ],
   "compilerOptions": {
     "types": [
       "@emotion/react/types/css-prop"

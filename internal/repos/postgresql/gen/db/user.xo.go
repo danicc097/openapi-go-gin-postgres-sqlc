@@ -44,7 +44,7 @@ type User struct {
 	HasPersonalNotifications bool          `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true" nullable:"false"` // has_personal_notifications
 	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true" nullable:"false"`     // has_global_notifications
 	CreatedAt                time.Time     `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                // created_at
-	UpdatedAt                time.Time     `json:"-" db:"updated_at" nullable:"false"`                                                        // updated_at
+	UpdatedAt                time.Time     `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                                // updated_at
 	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at"`                                                                 // deleted_at
 
 	ReceiverNotificationsJoin *[]Notification       `json:"-" db:"notifications_receiver" openapi-go:"ignore"`        // M2O users

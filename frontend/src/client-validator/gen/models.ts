@@ -288,6 +288,7 @@ export interface DbUser {
   hasPersonalNotifications: boolean
   lastName?: string | null
   scopes: Scopes
+  updatedAt: string
   userID: DbUserID
   username: string
 }
@@ -369,6 +370,7 @@ export interface User {
   role: Role
   scopes: Scopes
   teams?: DbTeam[] | null
+  updatedAt: string
   userID: DbUserID
   username: string
 }

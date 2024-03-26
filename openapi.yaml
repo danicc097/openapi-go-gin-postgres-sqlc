@@ -1696,6 +1696,9 @@ components:
           type: string
         scopes:
           $ref: '#/components/schemas/Scopes'
+        updatedAt:
+          format: date-time
+          type: string
         userID:
           $ref: '#/components/schemas/DbUserID'
         username:
@@ -1708,6 +1711,7 @@ components:
         - hasPersonalNotifications
         - hasGlobalNotifications
         - createdAt
+        - updatedAt
       type: object
       x-gen-struct: DbUser
       x-is-generated: true
@@ -2138,6 +2142,9 @@ components:
             $ref: '#/components/schemas/DbTeam'
           nullable: true
           type: array
+        updatedAt:
+          format: date-time
+          type: string
         userID:
           $ref: '#/components/schemas/DbUserID'
         username:
@@ -2150,6 +2157,7 @@ components:
         - hasPersonalNotifications
         - hasGlobalNotifications
         - createdAt
+        - updatedAt
         - role
       type: object
       x-gen-struct: User

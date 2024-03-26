@@ -404,7 +404,10 @@ export default function DemoGeneratedForm() {
                   const warnings: string[] = []
                   if (el.name !== 'item-1') warnings.push('Item name is not "item-1"')
 
-                  if (el.items.includes('0001')) warnings.push('Nested items include "0001"')
+                  // FIXME: must initialize when adding new items via
+                  // demoWorkItemCreateForm-base.items-add-button
+                  // for array of objects in which the object has an array key
+                  if (el.items?.includes('0001')) warnings.push('Nested items include "0001"')
 
                   return warnings
                 },

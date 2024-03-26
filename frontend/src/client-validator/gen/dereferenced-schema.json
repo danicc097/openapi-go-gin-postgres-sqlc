@@ -953,6 +953,12 @@
             "description": "is generated from scopes.json keys."
           }
         },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
@@ -975,7 +981,8 @@
         "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
-        "createdAt"
+        "createdAt",
+        "updatedAt"
       ],
       "type": "object",
       "x-gen-struct": "DbUser",
@@ -1104,6 +1111,12 @@
                 "description": "is generated from scopes.json keys."
               }
             },
+            "updatedAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
@@ -1126,7 +1139,8 @@
             "scopes",
             "hasPersonalNotifications",
             "hasGlobalNotifications",
-            "createdAt"
+            "createdAt",
+            "updatedAt"
           ],
           "type": "object",
           "x-gen-struct": "DbUser",
@@ -1897,6 +1911,12 @@
                   "null"
                 ]
               },
+              "updatedAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
@@ -1920,6 +1940,7 @@
               "hasPersonalNotifications",
               "hasGlobalNotifications",
               "createdAt",
+              "updatedAt",
               "role"
             ],
             "type": "object",
@@ -2092,6 +2113,12 @@
                       "description": "is generated from scopes.json keys."
                     }
                   },
+                  "updatedAt": {
+                    "format": "date-time",
+                    "type": [
+                      "object"
+                    ]
+                  },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
@@ -2114,7 +2141,8 @@
                   "scopes",
                   "hasPersonalNotifications",
                   "hasGlobalNotifications",
-                  "createdAt"
+                  "createdAt",
+                  "updatedAt"
                 ],
                 "type": "object",
                 "x-gen-struct": "DbUser",
@@ -2713,6 +2741,12 @@
             "null"
           ]
         },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
@@ -2736,6 +2770,7 @@
         "hasPersonalNotifications",
         "hasGlobalNotifications",
         "createdAt",
+        "updatedAt",
         "role"
       ],
       "type": "object",
@@ -3550,6 +3585,12 @@
                           "description": "is generated from scopes.json keys."
                         }
                       },
+                      "updatedAt": {
+                        "format": "date-time",
+                        "type": [
+                          "object"
+                        ]
+                      },
                       "userID": {
                         "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                         "type": "string",
@@ -3572,7 +3613,8 @@
                       "scopes",
                       "hasPersonalNotifications",
                       "hasGlobalNotifications",
-                      "createdAt"
+                      "createdAt",
+                      "updatedAt"
                     ],
                     "type": "object",
                     "x-gen-struct": "DbUser",
@@ -3971,6 +4013,12 @@
                           "description": "is generated from scopes.json keys."
                         }
                       },
+                      "updatedAt": {
+                        "format": "date-time",
+                        "type": [
+                          "object"
+                        ]
+                      },
                       "userID": {
                         "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                         "type": "string",
@@ -3993,7 +4041,8 @@
                       "scopes",
                       "hasPersonalNotifications",
                       "hasGlobalNotifications",
-                      "createdAt"
+                      "createdAt",
+                      "updatedAt"
                     ],
                     "type": "object",
                     "x-gen-struct": "DbUser",
@@ -4726,6 +4775,12 @@
                 "description": "is generated from scopes.json keys."
               }
             },
+            "updatedAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
@@ -4748,7 +4803,8 @@
             "scopes",
             "hasPersonalNotifications",
             "hasGlobalNotifications",
-            "createdAt"
+            "createdAt",
+            "updatedAt"
           ],
           "type": "object",
           "x-gen-struct": "DbUser",
@@ -4842,6 +4898,12 @@
                 "description": "is generated from scopes.json keys."
               }
             },
+            "updatedAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
@@ -4864,7 +4926,8 @@
             "scopes",
             "hasPersonalNotifications",
             "hasGlobalNotifications",
-            "createdAt"
+            "createdAt",
+            "updatedAt"
           ],
           "type": "object",
           "x-gen-struct": "DbUser",
@@ -5162,6 +5225,12 @@
                       "description": "is generated from scopes.json keys."
                     }
                   },
+                  "updatedAt": {
+                    "format": "date-time",
+                    "type": [
+                      "object"
+                    ]
+                  },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
@@ -5184,7 +5253,8 @@
                   "scopes",
                   "hasPersonalNotifications",
                   "hasGlobalNotifications",
-                  "createdAt"
+                  "createdAt",
+                  "updatedAt"
                 ],
                 "type": "object",
                 "x-gen-struct": "DbUser",
@@ -5601,6 +5671,12 @@
                       "description": "is generated from scopes.json keys."
                     }
                   },
+                  "updatedAt": {
+                    "format": "date-time",
+                    "type": [
+                      "object"
+                    ]
+                  },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
@@ -5623,7 +5699,8 @@
                   "scopes",
                   "hasPersonalNotifications",
                   "hasGlobalNotifications",
-                  "createdAt"
+                  "createdAt",
+                  "updatedAt"
                 ],
                 "type": "object",
                 "x-gen-struct": "DbUser",
@@ -6005,6 +6082,12 @@
                       "description": "is generated from scopes.json keys."
                     }
                   },
+                  "updatedAt": {
+                    "format": "date-time",
+                    "type": [
+                      "object"
+                    ]
+                  },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
@@ -6027,7 +6110,8 @@
                   "scopes",
                   "hasPersonalNotifications",
                   "hasGlobalNotifications",
-                  "createdAt"
+                  "createdAt",
+                  "updatedAt"
                 ],
                 "type": "object",
                 "x-gen-struct": "DbUser",
@@ -7464,6 +7548,12 @@
             "description": "is generated from scopes.json keys."
           }
         },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
@@ -7486,7 +7576,8 @@
         "scopes",
         "hasPersonalNotifications",
         "hasGlobalNotifications",
-        "createdAt"
+        "createdAt",
+        "updatedAt"
       ],
       "type": "object",
       "x-gen-struct": "DbUser",
@@ -7615,6 +7706,12 @@
                 "description": "is generated from scopes.json keys."
               }
             },
+            "updatedAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
@@ -7637,7 +7734,8 @@
             "scopes",
             "hasPersonalNotifications",
             "hasGlobalNotifications",
-            "createdAt"
+            "createdAt",
+            "updatedAt"
           ],
           "type": "object",
           "x-gen-struct": "DbUser",
@@ -8408,6 +8506,12 @@
                   "null"
                 ]
               },
+              "updatedAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
@@ -8431,6 +8535,7 @@
               "hasPersonalNotifications",
               "hasGlobalNotifications",
               "createdAt",
+              "updatedAt",
               "role"
             ],
             "type": "object",
@@ -8603,6 +8708,12 @@
                       "description": "is generated from scopes.json keys."
                     }
                   },
+                  "updatedAt": {
+                    "format": "date-time",
+                    "type": [
+                      "object"
+                    ]
+                  },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
@@ -8625,7 +8736,8 @@
                   "scopes",
                   "hasPersonalNotifications",
                   "hasGlobalNotifications",
-                  "createdAt"
+                  "createdAt",
+                  "updatedAt"
                 ],
                 "type": "object",
                 "x-gen-struct": "DbUser",
@@ -9224,6 +9336,12 @@
             "null"
           ]
         },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
@@ -9247,6 +9365,7 @@
         "hasPersonalNotifications",
         "hasGlobalNotifications",
         "createdAt",
+        "updatedAt",
         "role"
       ],
       "type": "object",
@@ -10061,6 +10180,12 @@
                           "description": "is generated from scopes.json keys."
                         }
                       },
+                      "updatedAt": {
+                        "format": "date-time",
+                        "type": [
+                          "object"
+                        ]
+                      },
                       "userID": {
                         "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                         "type": "string",
@@ -10083,7 +10208,8 @@
                       "scopes",
                       "hasPersonalNotifications",
                       "hasGlobalNotifications",
-                      "createdAt"
+                      "createdAt",
+                      "updatedAt"
                     ],
                     "type": "object",
                     "x-gen-struct": "DbUser",
@@ -10482,6 +10608,12 @@
                           "description": "is generated from scopes.json keys."
                         }
                       },
+                      "updatedAt": {
+                        "format": "date-time",
+                        "type": [
+                          "object"
+                        ]
+                      },
                       "userID": {
                         "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                         "type": "string",
@@ -10504,7 +10636,8 @@
                       "scopes",
                       "hasPersonalNotifications",
                       "hasGlobalNotifications",
-                      "createdAt"
+                      "createdAt",
+                      "updatedAt"
                     ],
                     "type": "object",
                     "x-gen-struct": "DbUser",
@@ -11237,6 +11370,12 @@
                 "description": "is generated from scopes.json keys."
               }
             },
+            "updatedAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
@@ -11259,7 +11398,8 @@
             "scopes",
             "hasPersonalNotifications",
             "hasGlobalNotifications",
-            "createdAt"
+            "createdAt",
+            "updatedAt"
           ],
           "type": "object",
           "x-gen-struct": "DbUser",
@@ -11353,6 +11493,12 @@
                 "description": "is generated from scopes.json keys."
               }
             },
+            "updatedAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
@@ -11375,7 +11521,8 @@
             "scopes",
             "hasPersonalNotifications",
             "hasGlobalNotifications",
-            "createdAt"
+            "createdAt",
+            "updatedAt"
           ],
           "type": "object",
           "x-gen-struct": "DbUser",
@@ -11673,6 +11820,12 @@
                       "description": "is generated from scopes.json keys."
                     }
                   },
+                  "updatedAt": {
+                    "format": "date-time",
+                    "type": [
+                      "object"
+                    ]
+                  },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
@@ -11695,7 +11848,8 @@
                   "scopes",
                   "hasPersonalNotifications",
                   "hasGlobalNotifications",
-                  "createdAt"
+                  "createdAt",
+                  "updatedAt"
                 ],
                 "type": "object",
                 "x-gen-struct": "DbUser",
@@ -12112,6 +12266,12 @@
                       "description": "is generated from scopes.json keys."
                     }
                   },
+                  "updatedAt": {
+                    "format": "date-time",
+                    "type": [
+                      "object"
+                    ]
+                  },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
@@ -12134,7 +12294,8 @@
                   "scopes",
                   "hasPersonalNotifications",
                   "hasGlobalNotifications",
-                  "createdAt"
+                  "createdAt",
+                  "updatedAt"
                 ],
                 "type": "object",
                 "x-gen-struct": "DbUser",
@@ -12516,6 +12677,12 @@
                       "description": "is generated from scopes.json keys."
                     }
                   },
+                  "updatedAt": {
+                    "format": "date-time",
+                    "type": [
+                      "object"
+                    ]
+                  },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
@@ -12538,7 +12705,8 @@
                   "scopes",
                   "hasPersonalNotifications",
                   "hasGlobalNotifications",
-                  "createdAt"
+                  "createdAt",
+                  "updatedAt"
                 ],
                 "type": "object",
                 "x-gen-struct": "DbUser",
