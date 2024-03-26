@@ -40,7 +40,7 @@ const useUISlice = create<UIState>()(
         version: 2,
         name: UI_SLICE_PERSIST_KEY,
         partialize(state) {
-          const { accessToken, ...rest } = state // always refetch access token from storage
+          const { accessToken, isLoggingOut, ...rest } = state // always get access token from cookie
           return rest
         },
       },

@@ -43,3 +43,13 @@ body {
     border-width: rem(2px) !important;
   }
 }
+
+/* this way we can have a single empty or nonempty badge that doesn't break alignment */
+.mrt-filter-range-fields {
+  width: 100%;
+}
+
+/* needs its own declaration when using has */
+.mrt-filter-range-fields:has(.date-filter-badge) {
+  align-self: center;
+}

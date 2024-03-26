@@ -54,6 +54,7 @@ import { useColorScheme, useDebouncedValue } from '@mantine/hooks'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
 import { IconCheck } from '@tabler/icons'
 import RoleBadge from 'src/components/Badges/RoleBadge'
+import clsx from 'clsx'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -95,7 +96,6 @@ const defaultSortableColumns: Array<DefaultFilters> = ['createdAt', 'deletedAt',
 
 const FILTER_OPTIONS = mrtFilterOptions(MRT_Localization_EN)
 
-// would basically need to reimplement: https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L148
 function MRTTextInput({ column, ...props }: { column: MRT_Column<any> }) {
   const columnFilterValue = (column.getFilterValue() as string) ?? ''
   const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
@@ -195,6 +195,8 @@ export default function DemoMantineReactTable() {
 
           col = {
             ...col,
+
+            // Custom filters would basically need to reimplement: https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L148
             Filter:
               // FIXME: for dates, filter mode options are changed by mrt - removing emptyModes by itself
               (props) => {
@@ -202,12 +204,31 @@ export default function DemoMantineReactTable() {
                 // however it does not change the filter for dates...
                 const filterMode = filterModes[props.column.id] ?? ''
                 if (emptyModes.includes(filterMode)) {
-                  return <Text>{sentenceCase(filterMode)}</Text>
+                  if (props.rangeFilterIndex === 1) {
+                    return null
+                  }
+                  return (
+                    <Badge className={'date-filter-badge'} size="sm">
+                      {sentenceCase(filterMode)}
+                    </Badge>
+                  )
                 }
                 if (c.type === 'date-time') {
                   // TODO: see https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L314
                   // will need to use rangeFilterIndex
-                  return <Text>DATE</Text>
+                  console.log({ propsrangefilter: props.rangeFilterIndex })
+
+                  return (
+                    <DateInput
+                      size="xs"
+                      valueFormat="DD/MM/YYYY"
+                      classNames={{
+                        root: classes.root,
+                        input: classes.input,
+                        label: classes.label,
+                      }}
+                    />
+                  )
                 }
 
                 // TODO: set filterMode in description and remove default from mrt since we wont use its filter modes
