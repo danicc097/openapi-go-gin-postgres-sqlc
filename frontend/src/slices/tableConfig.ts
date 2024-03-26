@@ -15,7 +15,7 @@ export type DynamicConfig = {
 }
 
 export type StaticConfig = {
-  columns: string[]
+  hiddenColumns: string[] // since they will change on update, just store hidden ones
   columnOrder: string[]
 }
 
@@ -27,12 +27,16 @@ interface TableConfigState {
     [tableName: string]: StaticConfig
   }
   setFilterModes(tableName: string, filterModes: FilterModes): void
+  setStaticConfig(tableName: string, config: StaticConfig): void
 }
 
 const initialDynamicConfig: DynamicConfig = {
   filterModes: {},
 }
-
+const initialStaticConfig: StaticConfig = {
+  columnOrder: [],
+  hiddenColumns: [],
+}
 const useTableConfigSlice = create<TableConfigState>()(
   devtools(
     persist(
@@ -52,6 +56,19 @@ const useTableConfigSlice = create<TableConfigState>()(
                     ...dynamicConfig,
                     filterModes: filterModes,
                   },
+                },
+              }
+            })
+          },
+          setStaticConfig(tableName, config) {
+            return set((state) => {
+              const staticConfig = state.staticConfig[tableName] || initialStaticConfig
+
+              return {
+                ...state,
+                staticConfig: {
+                  ...state.staticConfig,
+                  [tableName]: staticConfig,
                 },
               }
             })

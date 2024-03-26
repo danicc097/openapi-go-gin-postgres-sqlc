@@ -16,6 +16,7 @@ import {
   ActionIcon,
   Badge,
   Box,
+  Button,
   Card,
   Flex,
   Group,
@@ -27,7 +28,7 @@ import {
   Tooltip,
   useMantineColorScheme,
 } from '@mantine/core'
-import { IconRefresh, IconX } from '@tabler/icons-react'
+import { IconEdit, IconRefresh, IconTrash, IconX } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import { useGetPaginatedUsersInfinite } from 'src/gen/user/user'
 import dayjs from 'dayjs'
@@ -44,6 +45,7 @@ import { useDebouncedValue } from '@mantine/hooks'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
 import classes from 'src/utils/mantine-react-table.module.css'
 import { useMantineReactTableFilters } from 'src/hooks/ui/useMantineReactTableFilters'
+import { IconStar } from '@tabler/icons'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -525,13 +527,6 @@ export default function DemoMantineReactTable() {
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
-    renderTopToolbarCustomActions: () => (
-      <Tooltip label="Refresh data">
-        <ActionIcon onClick={() => refetch()}>
-          <IconRefresh />
-        </ActionIcon>
-      </Tooltip>
-    ),
     enableColumnOrdering: true,
     onColumnOrderChange: setColumnOrder,
     mantineTableContainerProps: {
@@ -544,6 +539,7 @@ export default function DemoMantineReactTable() {
     rowCount: totalRowCount,
     enableColumnResizing: true,
     columnResizeMode: 'onChange',
+    layoutMode: 'semantic', // because of enableColumnResizing, else it breaks actions row calculated size, and it cannot be set manually
     state: {
       columnOrder,
       density: 'xs',
@@ -555,7 +551,73 @@ export default function DemoMantineReactTable() {
       showAlertBanner: isError,
       showProgressBars: isFetching,
       sorting,
+      // isSaving: true,
     },
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Group>
+        <Tooltip label="Refresh data">
+          <ActionIcon onClick={() => refetch()}>
+            <IconRefresh />
+          </ActionIcon>
+        </Tooltip>
+        <Button
+          onClick={() => {
+            //
+          }}
+          size="xs"
+        >
+          Create New User
+        </Button>
+      </Group>
+    ),
+    enableRowActions: true,
+    renderRowActions: ({ row, table }) => (
+      // TODO: menu instead, no need to clutter
+      <Flex justify="space-between" gap={10}>
+        <Tooltip label="Edit">
+          <ActionIcon
+            onClick={() => {
+              // modal
+            }}
+          >
+            <IconEdit />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Delete">
+          <ActionIcon
+            color="red"
+            onClick={() => {
+              // modal
+            }}
+          >
+            <IconTrash />
+          </ActionIcon>
+        </Tooltip>
+        <Tooltip label="Extra">
+          <ActionIcon
+            color="yellow"
+            onClick={() => {
+              // modal
+            }}
+          >
+            <IconStar />
+          </ActionIcon>
+        </Tooltip>
+        {/* has deleted at */}
+        {row.original.deletedAt && (
+          <Tooltip label="Restore">
+            <ActionIcon
+              color="yellow"
+              onClick={() => {
+                // modal
+              }}
+            >
+              <IconTrash />
+            </ActionIcon>
+          </Tooltip>
+        )}
+      </Flex>
+    ),
     rowVirtualizerInstanceRef, //get access to the virtualizer instance
     rowVirtualizerOptions: { overscan: 10 },
     localization: MRT_Localization_EN,
