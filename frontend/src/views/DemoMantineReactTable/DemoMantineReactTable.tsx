@@ -212,21 +212,45 @@ export default function DemoMantineReactTable() {
                 }
                 if (c.type === 'date-time') {
                   return (
-                    <DateInput
-                      placeholder={`${props.rangeFilterIndex === 0 ? 'Start' : 'End'} date`}
-                      size="xs"
-                      valueFormat="DD/MM/YYYY"
-                      classNames={{
-                        root: classes.root,
-                        input: classes.input,
-                        label: classes.label,
-                      }}
-                    />
+                    <Flex gap={4} direction={'row'} pt={20} align="flex-start" justify="center">
+                      <>
+                        <DateInput
+                          placeholder={`${props.rangeFilterIndex === 0 ? 'Start' : 'End'} date`}
+                          size="xs"
+                          valueFormat="DD/MM/YYYY"
+                          classNames={{
+                            root: classes.root,
+                            input: classes.input,
+                            label: classes.label,
+                          }}
+                          miw={100}
+                          rightSection={
+                            /* TODO: may be cleaner to append nodes above via bare javascript below mrt-table-head-cell-content
+                             ideally mrt should allow rendering extra nodes below filters
+                             */
+                            filterMode && (
+                              <Text size="xs" fw={800}>
+                                {filterMode === 'between' ? '⇿' : '⬌'}
+                              </Text>
+                            )
+                          }
+                        />
+                      </>
+                    </Flex>
                   )
                 }
 
                 // TODO: set filterMode in description and remove default from mrt since we wont use its filter modes
-                return <MRTTextInput column={props.column} props={{ error: 'aaaa' }} />
+                return (
+                  <Flex gap={4} direction={'column'} pt={20}>
+                    <MRTTextInput column={props.column} props={{ error: 'aaaa' }} />
+                    {filterMode && (
+                      <Text c="var(--mantine-color-placeholder)" size="xs" className="filter-mode-custom-label">
+                        Filter mode: {sentenceCase(filterMode)}
+                      </Text>
+                    )}
+                  </Flex>
+                )
               },
             renderColumnFilterModeMenuItems: ({
               column,
