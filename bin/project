@@ -1225,7 +1225,7 @@ x.test.backend.setup() {
   { { {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
-    run_shared_services up -d --build --remove-orphans --wait
+    run_shared_services up -d --build --remove-orphans --force-recreate --wait
     x.gen
     # no need to migrate, done on every test run internally
     docker.postgres.drop_and_recreate_db $POSTGRES_TEST_DB
@@ -1384,8 +1384,13 @@ x.test.backend.watch-for() {
 
   test_backend_watch -run "^($fns)$" "$GOMOD_PKG/$dir" "${gotest_args[@]}"
 }
+
+pre_build_cmd="project setup-swagger-ui"
+
 # Run backend.
 x.run.backend() {
+  $pre_build_cmd
+  run_shared_services up -d --build --remove-orphans --force-recreate --wait
   go run ./cmd/rest-server/main.go -env=.env.$X_ENV
 }
 
@@ -1394,11 +1399,10 @@ x.run.backend-hr() {
   # TODO replace healthcheck with adhoc calls and bring services up in btaches
   # to prevent either bombarding with req or having to wait too long at startup.
   # see https://github.com/moby/moby/issues/33410
-  run_shared_services up -d --build --remove-orphans --wait
+  run_shared_services up -d --build --remove-orphans --force-recreate --wait
 
   # https://github.com/cosmtrek/air/blob/master/air_example.toml
   # NOTE: building binary unreliable, leads to bin not found.
-  local pre_build_cmd="project setup-swagger-ui"
   air \
     --build.pre_cmd "$pre_build_cmd" \
     --build.cmd "" \
