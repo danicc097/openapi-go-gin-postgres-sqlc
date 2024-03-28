@@ -14,13 +14,13 @@ import {
 import { useNavigate } from 'react-router-dom'
 import HttpStatus from 'src/utils/httpStatus'
 import classes from './ErrorPage.module.css'
-import { IsAuthorizedResult } from 'src/services/authorization'
+import { Authorization } from 'src/services/authorization'
 import { sentenceCase } from 'src/utils/strings'
 import { upperFirst } from 'lodash'
 
 interface ErrorPageProps {
   status: number
-  authResult?: IsAuthorizedResult
+  authResult?: Authorization
 }
 
 export function ErrorPage({ status, authResult }: ErrorPageProps) {
@@ -47,7 +47,7 @@ export function ErrorPage({ status, authResult }: ErrorPageProps) {
       <Text pb={30} color="dimmed" size="m" ta="center" className={classes.description}>
         {text}
       </Text>
-      {authResult && !authResult.isAuthorized && (
+      {authResult && !authResult.authorized && (
         <>
           <Flex justify={'center'} align={'center'}>
             <Card shadow="sm" radius="md" ta="center" className={classes.errorMessage}>

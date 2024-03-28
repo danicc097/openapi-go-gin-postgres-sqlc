@@ -15,9 +15,9 @@ services:
     networks:
       - traefik-net
     ports:
-      - ${MOCK_OIDC_SERVER_PORT:?not set}
+      - ${MOCK_OIDC_SERVER_PORT:?not set}:${MOCK_OIDC_SERVER_PORT:?not set}
     command:
-        - "--path-prefix=/oidc"
+        - "--path-prefix=${MOCK_OIDC_SERVER_PATH_PREFIX}"
     volumes:
       - ../cmd/oidc-server/data/:${MOCK_OIDC_SERVER_DATA_DIR:?not set}/:ro
       - /etc/ssl/certs:/etc/ssl/certs:ro

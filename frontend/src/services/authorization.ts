@@ -1,31 +1,33 @@
-import { ROLES } from 'src/config'
+import { OperationAuth, ROLES } from 'src/config'
 import { WorkItemRole, type Role, type Scopes, type User } from 'src/gen/model'
+import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import { apiPath } from 'src/services/apiPaths'
 import { joinWithAnd } from 'src/utils/format'
 import { keys } from 'src/utils/object'
 
-interface IsAuthorizedParams {
+interface CheckAuthorizationParams {
   user?: User
   requiredRole?: Role | null
   requiredScopes?: Scopes | null
 }
 
-export interface IsAuthorizedResult {
-  isAuthorized: boolean
+export interface Authorization {
+  authorized: boolean
   missingScopes?: Scopes
   missingRole?: Role
   errorMessage?: string
 }
-/* TODO: isAuthorized mapped against @operationAuth. would need to generate a wrapper
+/* TODO: checkAuthorization mapped against @operationAuth in . would need to generate a wrapper
    for orval's react query per operation id that checks the current user state and its
-  scopes, role and requiresAuthentication before making the request. */
-export function isAuthorized({
+  scopes, role and requiresAuthentication before making the request to prevent useless calls
+  in case frontend does not reimplement all auth logic in client. */
+export function checkAuthorization({
   user,
   requiredRole = null,
   requiredScopes = null,
-}: IsAuthorizedParams): IsAuthorizedResult {
-  const result: IsAuthorizedResult = {
-    isAuthorized: false,
+}: CheckAuthorizationParams): Authorization {
+  const result: Authorization = {
+    authorized: false,
   }
 
   if (!user) {
@@ -54,11 +56,11 @@ export function isAuthorized({
 
   if (result.missingRole || result.missingScopes) {
     result.errorMessage = getUnauthorizedMessage(result)
-    result.isAuthorized = false
+    result.authorized = false
     return result
   }
 
-  result.isAuthorized = true
+  result.authorized = true
   return result
 }
 
@@ -70,8 +72,8 @@ export const redirectToAuthLogin = () => {
   )
 }
 
-const getUnauthorizedMessage = (authResult: IsAuthorizedResult): string => {
-  if (!authResult.isAuthorized) {
+const getUnauthorizedMessage = (authResult: Authorization): string => {
+  if (!authResult.authorized) {
     const messages: string[] = []
 
     if (authResult.missingRole) {

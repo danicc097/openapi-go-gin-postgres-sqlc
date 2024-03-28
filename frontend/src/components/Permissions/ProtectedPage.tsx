@@ -3,12 +3,12 @@ import React, { useEffect, useState } from 'react'
 import InfiniteLoader from 'src/components/Loading/InfiniteLoader'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import { ErrorPage } from 'src/components/ErrorPage/ErrorPage'
-import { IsAuthorizedResult } from 'src/services/authorization'
+import { Authorization } from 'src/services/authorization'
 import HttpStatus from 'src/utils/httpStatus'
 
 type ProtectedPageProps = {
   children: JSX.Element
-  authResult: IsAuthorizedResult
+  authResult: Authorization
 }
 
 export default function ProtectedPage({ children, authResult }: ProtectedPageProps) {
@@ -34,7 +34,7 @@ export default function ProtectedPage({ children, authResult }: ProtectedPagePro
     )
   }
 
-  if (!authResult.isAuthorized) {
+  if (!authResult.authorized) {
     return <ErrorPage status={HttpStatus.FORBIDDEN_403} authResult={authResult} />
   }
 

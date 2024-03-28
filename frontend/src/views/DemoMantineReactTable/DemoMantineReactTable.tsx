@@ -36,7 +36,7 @@ import { User } from 'src/gen/model'
 import { getContrastYIQ, scopeColor } from 'src/utils/colors'
 import _, { lowerCase } from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
-import { ENTITY_FILTERS, ROLES } from 'src/config'
+import { ENTITY_FILTERS, OPERATION_AUTH, ROLES } from 'src/config'
 import { entries } from 'src/utils/object'
 import { sentenceCase } from 'src/utils/strings'
 import { arrModes, columnPropsByType, emptyModes } from 'src/utils/mantine-react-table'
@@ -46,6 +46,7 @@ import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mj
 import classes from 'src/utils/mantine-react-table.module.css'
 import { useMantineReactTableFilters } from 'src/hooks/ui/useMantineReactTableFilters'
 import { IconStar } from '@tabler/icons'
+import { RowActionsMenu } from 'src/utils/mantine-react-table.components'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -211,21 +212,45 @@ export default function DemoMantineReactTable() {
                 }
                 if (c.type === 'date-time') {
                   return (
-                    <DateInput
-                      placeholder={`${props.rangeFilterIndex === 0 ? 'Start' : 'End'} date`}
-                      size="xs"
-                      valueFormat="DD/MM/YYYY"
-                      classNames={{
-                        root: classes.root,
-                        input: classes.input,
-                        label: classes.label,
-                      }}
-                    />
+                    <Flex gap={4} direction={'row'} pt={20} align="flex-start" justify="center">
+                      <>
+                        <DateInput
+                          placeholder={`${props.rangeFilterIndex === 0 ? 'Start' : 'End'} date`}
+                          size="xs"
+                          valueFormat="DD/MM/YYYY"
+                          classNames={{
+                            root: classes.root,
+                            input: classes.input,
+                            label: classes.label,
+                          }}
+                          miw={100}
+                          rightSection={
+                            /* TODO: may be cleaner to append nodes above via bare javascript below mrt-table-head-cell-content
+                             ideally mrt should allow rendering extra nodes below filters
+                             */
+                            filterMode && (
+                              <Text size="xs" fw={800}>
+                                {filterMode === 'between' ? '⇿' : '⬌'}
+                              </Text>
+                            )
+                          }
+                        />
+                      </>
+                    </Flex>
                   )
                 }
 
                 // TODO: set filterMode in description and remove default from mrt since we wont use its filter modes
-                return <MRTTextInput column={props.column} props={{ error: 'aaaa' }} />
+                return (
+                  <Flex gap={4} direction={'column'} pt={20}>
+                    <MRTTextInput column={props.column} props={{ error: 'aaaa' }} />
+                    {filterMode && (
+                      <Text c="var(--mantine-color-placeholder)" size="xs" className="filter-mode-custom-label">
+                        Filter mode: {sentenceCase(filterMode)}
+                      </Text>
+                    )}
+                  </Flex>
+                )
               },
             renderColumnFilterModeMenuItems: ({
               column,
@@ -566,56 +591,23 @@ export default function DemoMantineReactTable() {
           }}
           size="xs"
         >
-          Create New User
+          Create user
         </Button>
       </Group>
     ),
     enableRowActions: true,
     renderRowActions: ({ row, table }) => (
-      // TODO: menu instead, no need to clutter
-      <Flex justify="space-between" gap={10}>
-        <Tooltip label="Edit">
-          <ActionIcon
-            onClick={() => {
-              // modal
-            }}
-          >
-            <IconEdit />
-          </ActionIcon>
-        </Tooltip>
-        <Tooltip label="Delete">
-          <ActionIcon
-            color="red"
-            onClick={() => {
-              // modal
-            }}
-          >
-            <IconTrash />
-          </ActionIcon>
-        </Tooltip>
-        <Tooltip label="Extra">
-          <ActionIcon
-            color="yellow"
-            onClick={() => {
-              // modal
-            }}
-          >
-            <IconStar />
-          </ActionIcon>
-        </Tooltip>
-        {/* has deleted at */}
-        {row.original.deletedAt && (
-          <Tooltip label="Restore">
-            <ActionIcon
-              color="yellow"
-              onClick={() => {
-                // modal
-              }}
-            >
-              <IconTrash />
-            </ActionIcon>
-          </Tooltip>
-        )}
+      <Flex justify="center" align="center" gap={10}>
+        <RowActionsMenu
+          canRestore={
+            !!row.original.deletedAt
+            // TODO: && useIsAuthorizedForOp(OPERATION_AUTH.RestoreUser)
+          }
+          // onEdit={}
+          // onRestore={}
+          // onDelete={}
+          // extraActions={}
+        />
       </Flex>
     ),
     rowVirtualizerInstanceRef, //get access to the virtualizer instance

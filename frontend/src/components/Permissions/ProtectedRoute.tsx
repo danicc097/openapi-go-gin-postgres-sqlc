@@ -5,7 +5,7 @@ import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
 import useAuthenticatedUser from 'src/hooks/auth/useAuthenticatedUser'
 import { useEffect, useState } from 'react'
-import { IsAuthorizedResult, isAuthorized, redirectToAuthLogin } from 'src/services/authorization'
+import { Authorization, checkAuthorization, redirectToAuthLogin } from 'src/services/authorization'
 import { apiPath } from 'src/services/apiPaths'
 import { notifications } from '@mantine/notifications'
 import { useMyProviderLogin } from 'src/gen/oidc/oidc'
@@ -25,7 +25,7 @@ export default function ProtectedRoute({ children, requiredRole, requiredScopes 
   const { user, isAuthenticated } = useAuthenticatedUser()
   const ui = useUISlice()
 
-  const authResult = isAuthorized({ user, requiredRole, requiredScopes })
+  const authResult = checkAuthorization({ user, requiredRole, requiredScopes })
 
   // if (!isAuthenticated && !currentUser.isFetching) {
   //   redirectToAuthLogin();
