@@ -55,6 +55,10 @@ body {
   align-self: center;
 }
 
+.date-filter-badge {
+  align-self: center;
+}
+
 [aria-label='Change filter mode'] {
   align-self: flex-start;
 }

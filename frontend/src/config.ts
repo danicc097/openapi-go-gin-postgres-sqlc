@@ -13,16 +13,16 @@ import { JSONSchema4 } from 'json-schema'
 
 export const CONFIG = CONFIG_JSON
 
+export type EntityFilterType = 'string' | 'number' | 'integer' | 'boolean' | 'date-time'
+
 export type EntityFilter = {
-  type: 'string' | 'number' | 'integer' | 'boolean' | 'date-time'
+  type: EntityFilterType
   db: string
   nullable: boolean
 }
 
-type k = keyof typeof ENTITY_FILTERS_JSON
-
 export const ENTITY_FILTERS = ENTITY_FILTERS_JSON as unknown as {
-  [Key in k]: {
+  [Key in keyof typeof ENTITY_FILTERS_JSON]: {
     [InnerKey in keyof typeof ENTITY_FILTERS_JSON[Key]]: EntityFilter
   }
 }
