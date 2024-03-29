@@ -1,4 +1,17 @@
-import { useMantineTheme, Menu, Button, rem, Text, ActionIcon, Tooltip, Badge, Flex, TextInput } from '@mantine/core'
+import {
+  useMantineTheme,
+  Menu,
+  Button,
+  rem,
+  Text,
+  ActionIcon,
+  Tooltip,
+  Badge,
+  Flex,
+  TextInput,
+  Box,
+  MenuItem,
+} from '@mantine/core'
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks'
 import {
   IconDots,
@@ -12,7 +25,13 @@ import {
   IconX,
 } from '@tabler/icons'
 import { IconRestore } from '@tabler/icons-react'
-import { MRT_Column, MRT_Header, MRT_TableInstance } from 'mantine-react-table'
+import {
+  MRT_Column,
+  MRT_Header,
+  MRT_InternalFilterOption,
+  MRT_TableInstance,
+  mrtFilterOptions,
+} from 'mantine-react-table'
 import { ComponentProps, useEffect, useRef, useState } from 'react'
 import { EntityFilter, EntityFilterType } from 'src/config'
 import { useMantineReactTableFilters } from 'src/hooks/ui/useMantineReactTableFilters'
@@ -22,6 +41,18 @@ import { DateInput } from '@mantine/dates'
 import { sentenceCase } from 'src/utils/strings'
 import { c } from 'vitest/dist/reporters-MmQN-57K'
 import { lowerCase } from 'lodash'
+import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
+
+const FILTER_OPTIONS: MRT_InternalFilterOption[] = [
+  ...mrtFilterOptions(MRT_Localization_EN),
+  // can be extended with custom filter modes if required
+  {
+    label: 'Extra mode',
+    divider: false,
+    option: 'extraMode',
+    symbol: '🆕',
+  },
+]
 
 interface RowActionsMenuProps {
   canRestore: boolean
@@ -82,7 +113,7 @@ export function MRTDateInput({ columnProps: { column, rangeFilterIndex }, ...pro
   return (
     <Flex gap={4} direction={'row'} pt={20} align="flex-start" justify="center">
       <DateInput
-        placeholder={`${rangeFilterIndex === 0 ? 'Start' : 'End'} date`}
+        placeholder={`${rangeFilterIndex === 0 ? 'Min' : 'Max'} date`}
         size="xs"
         valueFormat="DD/MM/YYYY"
         classNames={{
@@ -109,6 +140,52 @@ export function MRTDateInput({ columnProps: { column, rangeFilterIndex }, ...pro
 type MRTTextInputProps = {
   columnProps: GenericColumnProps
   props?: ComponentProps<typeof TextInput>
+}
+
+export const renderCustomColumnFilterModeMenuItems = ({
+  modeOptions,
+  column,
+}: {
+  modeOptions?: string[] | null
+  column: GenericColumnProps['column']
+}) => {
+  const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
+  return modeOptions ? (
+    modeOptions.map((option) => {
+      const fopt = FILTER_OPTIONS.find((v) => v.option === option)
+      if (!fopt) return
+
+      return (
+        <MenuItem
+          key={fopt.option}
+          onClick={() => {
+            column.setFilterValue(null)
+            setFilterMode(column.id, fopt.option)
+          }}
+        >
+          <Flex
+            gap={10}
+            justify="flex-start"
+            style={{
+              color:
+                dynamicConfig?.filterModes[column.id ?? ''] === fopt.option
+                  ? 'var(--mantine-primary-color-5)'
+                  : 'inherit',
+            }}
+          >
+            <Box miw={20} style={{ alignSelf: 'center', textAlign: 'center' }}>
+              {fopt.symbol}
+            </Box>
+            <Text size="sm">{sentenceCase(fopt.label)}</Text>
+          </Flex>
+        </MenuItem>
+      )
+    })
+  ) : (
+    <Text size="xs" p={8}>
+      No options available
+    </Text>
+  )
 }
 
 export function MRTTextInput({ columnProps: { column }, ...props }: MRTTextInputProps) {

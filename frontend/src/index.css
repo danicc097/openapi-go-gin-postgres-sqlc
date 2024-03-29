@@ -59,7 +59,12 @@ body {
   align-self: center;
 }
 
+div:has([aria-label='Change filter mode']) {
+  justify-content: space-between;
+}
+
 [aria-label='Change filter mode'] {
+  justify-self: stretch;
   align-self: flex-start;
 }
 /*

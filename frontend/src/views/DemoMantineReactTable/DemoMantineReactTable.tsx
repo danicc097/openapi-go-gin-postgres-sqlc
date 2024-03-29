@@ -42,10 +42,15 @@ import { sentenceCase } from 'src/utils/strings'
 import { arrModes, columnPropsByType, emptyModes } from 'src/utils/mantine-react-table'
 import { DateInput } from '@mantine/dates'
 import { useDebouncedValue } from '@mantine/hooks'
-import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
+
 import { useMantineReactTableFilters } from 'src/hooks/ui/useMantineReactTableFilters'
 import { IconStar } from '@tabler/icons'
-import { CustomMRTFilter, RowActionsMenu } from 'src/utils/mantine-react-table.components'
+import {
+  CustomMRTFilter,
+  RowActionsMenu,
+  renderCustomColumnFilterModeMenuItems,
+} from 'src/utils/mantine-react-table.components'
+import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -86,8 +91,6 @@ const defaultExcludedColumns: Array<DefaultFilters> = ['firstName', 'lastName']
 // TODO: deletedAt != null -> restore buttons.
 // also see CRUD: https://v2.mantine-react-table.com/docs/examples/editing-crud
 const defaultSortableColumns: Array<DefaultFilters> = ['createdAt', 'deletedAt', 'updatedAt']
-
-const FILTER_OPTIONS = mrtFilterOptions(MRT_Localization_EN)
 
 const TABLE_NAME = 'demoTable'
 
@@ -136,44 +139,8 @@ export default function DemoMantineReactTable() {
                   <CustomMRTFilter tableName={TABLE_NAME} nullable={c.nullable} type={c.type} columnProps={props} />
                 )
               },
-            // TODO: to shared components and override all mrt tables found.
-            renderColumnFilterModeMenuItems: ({
-              column,
-              onSelectFilterMode,
-              table,
-              // internalFilterOptions /* does not contain new modes */,
-            }) => {
-              return col.columnFilterModeOptions?.map((option) => {
-                const fopt = FILTER_OPTIONS.find((v) => v.option === option)
-                if (!fopt) return
-
-                return (
-                  <MenuItem
-                    key={fopt.option}
-                    onClick={() => {
-                      column.setFilterValue(null)
-                      setFilterMode(column.id, fopt.option)
-                    }}
-                  >
-                    <Flex
-                      gap={10}
-                      justify="flex-start"
-                      style={{
-                        color:
-                          dynamicConfig?.filterModes[col.id ?? ''] === fopt.option
-                            ? 'var(--mantine-primary-color-5)'
-                            : 'inherit',
-                      }}
-                    >
-                      <Box miw={20} style={{ alignSelf: 'center', textAlign: 'center' }}>
-                        {fopt.symbol}
-                      </Box>
-                      <Text size="sm">{sentenceCase(fopt.label)}</Text>
-                    </Flex>
-                  </MenuItem>
-                )
-              })
-            },
+            renderColumnFilterModeMenuItems: (props) =>
+              renderCustomColumnFilterModeMenuItems({ modeOptions: col.columnFilterModeOptions, ...props }),
           }
 
           return col
