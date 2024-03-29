@@ -2907,10 +2907,23 @@ components:
         - $ref: '#/components/schemas/PaginationFilterArrayValue'
       discriminator:
         propertyName: filterMode
-        # oapi broken for these
-        # mapping:
-        #   between: '#/components/schemas/PaginationFilterArrayValue'
-        #   ...
+        # oapi broken for these - it probably indexes by schema so we dont get all mappings...
+        # https://github.com/deepmap/oapi-codegen/blob/a14414f04fdd2206ac394e1e45527c1fbcbfc705/pkg/codegen/schema.go#L205
+        mapping:
+          between: '#/components/schemas/PaginationFilterArrayValue'
+          betweenInclusive: '#/components/schemas/PaginationFilterArrayValue'
+          contains: '#/components/schemas/PaginationFilterSingleValue'
+          empty: '#/components/schemas/PaginationFilterSingleValue'
+          endsWith: '#/components/schemas/PaginationFilterSingleValue'
+          equals: '#/components/schemas/PaginationFilterSingleValue'
+          fuzzy: '#/components/schemas/PaginationFilterSingleValue'
+          greaterThan: '#/components/schemas/PaginationFilterSingleValue'
+          greaterThanOrEqualTo: '#/components/schemas/PaginationFilterSingleValue'
+          lessThan: '#/components/schemas/PaginationFilterSingleValue'
+          lessThanOrEqualTo: '#/components/schemas/PaginationFilterSingleValue'
+          notEmpty: '#/components/schemas/PaginationFilterSingleValue'
+          notEquals: '#/components/schemas/PaginationFilterSingleValue'
+          startsWith: '#/components/schemas/PaginationFilterSingleValue'
       x-use-server-type: true
     PaginationFilter:
       type: object
