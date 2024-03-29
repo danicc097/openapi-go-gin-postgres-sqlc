@@ -48,7 +48,7 @@ import { IconStar } from '@tabler/icons'
 import {
   CustomMRTFilter,
   RowActionsMenu,
-  renderCustomColumnFilterModeMenuItems,
+  CustomColumnFilterModeMenuItems,
 } from 'src/utils/mantine-react-table.components'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
 
@@ -139,13 +139,14 @@ export default function DemoMantineReactTable() {
                   <CustomMRTFilter tableName={TABLE_NAME} nullable={c.nullable} type={c.type} columnProps={props} />
                 )
               },
-            renderColumnFilterModeMenuItems: (props) =>
-              renderCustomColumnFilterModeMenuItems({ modeOptions: col.columnFilterModeOptions, ...props }),
+            renderColumnFilterModeMenuItems: (props) => (
+              <CustomColumnFilterModeMenuItems modeOptions={col.columnFilterModeOptions} {...props} />
+            ),
           }
 
           return col
         }),
-    [dynamicConfig?.filterModes],
+    [],
   )
 
   const _columns = useMemo<Column[]>(
