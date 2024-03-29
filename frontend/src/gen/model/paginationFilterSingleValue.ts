@@ -6,9 +6,9 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { PaginationFilterModes } from './paginationFilterModes';
+import type { PaginationFilterSingleValueFilterMode } from './paginationFilterSingleValueFilterMode';
 
 export interface PaginationFilterSingleValue {
-  filterMode?: PaginationFilterModes;
+  filterMode: PaginationFilterSingleValueFilterMode;
   value?: string | null;
 }

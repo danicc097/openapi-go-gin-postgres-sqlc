@@ -71,7 +71,7 @@ github.com/dave/dst/dstutil
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/deepmap/oapi-codegen/v2 v2.1.0 => github.com/danicc097/oapi-codegen/v2 v2.0.10003
+# github.com/deepmap/oapi-codegen/v2 v2.1.0 => github.com/danicc097/oapi-codegen/v2 v2.0.10004
 ## explicit; go 1.20
 github.com/deepmap/oapi-codegen/v2/pkg/codegen
 github.com/deepmap/oapi-codegen/v2/pkg/util
@@ -748,6 +748,6 @@ mvdan.cc/gofumpt/internal/govendor/go/doc/comment
 mvdan.cc/gofumpt/internal/govendor/go/format
 mvdan.cc/gofumpt/internal/govendor/go/printer
 mvdan.cc/gofumpt/internal/version
-# github.com/deepmap/oapi-codegen/v2 => github.com/danicc097/oapi-codegen/v2 v2.0.10003
+# github.com/deepmap/oapi-codegen/v2 => github.com/danicc097/oapi-codegen/v2 v2.0.10004
 # github.com/getkin/kin-openapi => github.com/danicc097/kin-openapi v0.123.1-0.20240320222651-5a7e849603fb
 # github.com/oapi-codegen/runtime => github.com/danicc097/runtime v0.0.0-20240320224358-a94ad612e00c

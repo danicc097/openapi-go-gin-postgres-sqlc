@@ -1231,9 +1231,33 @@ func (t PaginationFilterValue) ValueByDiscriminator() (interface{}, error) {
 		return nil, err
 	}
 	switch discriminator {
+	case "between":
+		return t.AsPaginationFilterArrayValue()
 	case "betweenInclusive":
 		return t.AsPaginationFilterArrayValue()
 	case "contains":
+		return t.AsPaginationFilterSingleValue()
+	case "empty":
+		return t.AsPaginationFilterSingleValue()
+	case "endsWith":
+		return t.AsPaginationFilterSingleValue()
+	case "equals":
+		return t.AsPaginationFilterSingleValue()
+	case "fuzzy":
+		return t.AsPaginationFilterSingleValue()
+	case "greaterThan":
+		return t.AsPaginationFilterSingleValue()
+	case "greaterThanOrEqualTo":
+		return t.AsPaginationFilterSingleValue()
+	case "lessThan":
+		return t.AsPaginationFilterSingleValue()
+	case "lessThanOrEqualTo":
+		return t.AsPaginationFilterSingleValue()
+	case "notEmpty":
+		return t.AsPaginationFilterSingleValue()
+	case "notEquals":
+		return t.AsPaginationFilterSingleValue()
+	case "startsWith":
 		return t.AsPaginationFilterSingleValue()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)
