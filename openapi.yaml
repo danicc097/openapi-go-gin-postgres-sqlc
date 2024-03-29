@@ -2909,6 +2909,9 @@ components:
         propertyName: filterMode
         # oapi broken for these - it probably indexes by schema so we dont get all mappings...
         # https://github.com/deepmap/oapi-codegen/blob/a14414f04fdd2206ac394e1e45527c1fbcbfc705/pkg/codegen/schema.go#L205
+        # TODO: raise issues on both.
+        # also orval is broken
+        # ref: https://github.com/OAI/OpenAPI-Specification/discussions/3283
         mapping:
           between: '#/components/schemas/PaginationFilterArrayValue'
           betweenInclusive: '#/components/schemas/PaginationFilterArrayValue'
