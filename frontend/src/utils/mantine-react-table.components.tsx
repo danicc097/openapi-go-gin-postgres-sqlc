@@ -40,8 +40,9 @@ import classes from './mantine-react-table.module.css'
 import { DateInput } from '@mantine/dates'
 import { sentenceCase } from 'src/utils/strings'
 import { c } from 'vitest/dist/reporters-MmQN-57K'
-import { lowerCase } from 'lodash'
+import _, { lowerCase } from 'lodash'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
+import dayjs from 'dayjs'
 
 const FILTER_OPTIONS: MRT_InternalFilterOption[] = [
   ...mrtFilterOptions(MRT_Localization_EN),
@@ -106,14 +107,53 @@ type MRTDateInputProps = {
   props?: ComponentProps<typeof DateInput>
 }
 
-export function MRTDateInput({ columnProps: { column, rangeFilterIndex }, ...props }: MRTDateInputProps) {
+export function MRTDateInput({ columnProps: { column, rangeFilterIndex = 0 }, ...props }: MRTDateInputProps) {
   const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
   const filterMode = dynamicConfig?.filterModes[column.id]
+  const columnRangeValue = (column.getFilterValue() as (string | undefined)[]) ?? [undefined, undefined]
+  const columnFilterValue = columnRangeValue[rangeFilterIndex]
+  const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
+  const [debouncedFilterValue] = useDebouncedValue(filterValue, 400)
+
+  const isMounted = useRef(false)
+
+  useEffect(() => {
+    if (!isMounted.current) return
+    columnRangeValue[rangeFilterIndex] = debouncedFilterValue ?? undefined
+    column.setFilterValue(columnRangeValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedFilterValue])
+
+  const handleClear = () => {
+    setFilterValue(undefined)
+    removeFilterMode(column.id)
+    columnRangeValue[rangeFilterIndex] = undefined
+    column.setFilterValue(columnRangeValue)
+  }
+
+  useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true
+      return
+    }
+    const tableFilterValue = column.getFilterValue() as (string | undefined)[]
+    if (_.isEqual(tableFilterValue, [undefined, undefined])) {
+      handleClear()
+    } else {
+      setFilterValue(tableFilterValue?.[rangeFilterIndex] ?? undefined)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [columnFilterValue])
 
   return (
     <Flex gap={4} direction={'row'} pt={20} align="flex-start" justify="center">
       <DateInput
         placeholder={`${rangeFilterIndex === 0 ? 'Min' : 'Max'} date`}
+        value={filterValue ? dayjs(filterValue).toDate() : null}
+        onChange={(event) => {
+          setFilterValue(event ? dayjs(event.toDateString()) : null)
+          if (!filterMode) setFilterMode(column.id, 'between')
+        }}
         size="xs"
         valueFormat="DD/MM/YYYY"
         classNames={{
