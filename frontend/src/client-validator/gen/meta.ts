@@ -90,6 +90,10 @@ import {
   DemoTwoWorkItem,
   DemoWorkItem,
   WorkItemBase,
+  PaginationFilterSingleValue,
+  PaginationFilterArrayValue,
+  PaginationFilterValue,
+  PaginationFilter,
   PaginationFilterModes,
   DbCacheDemoWorkItemJoins,
   DbUserJoins,
@@ -242,6 +246,16 @@ export const schemaDefinitions = {
   DemoTwoWorkItem: info<DemoTwoWorkItem>('DemoTwoWorkItem', '#/definitions/DemoTwoWorkItem'),
   DemoWorkItem: info<DemoWorkItem>('DemoWorkItem', '#/definitions/DemoWorkItem'),
   WorkItemBase: info<WorkItemBase>('WorkItemBase', '#/definitions/WorkItemBase'),
+  PaginationFilterSingleValue: info<PaginationFilterSingleValue>(
+    'PaginationFilterSingleValue',
+    '#/definitions/PaginationFilterSingleValue',
+  ),
+  PaginationFilterArrayValue: info<PaginationFilterArrayValue>(
+    'PaginationFilterArrayValue',
+    '#/definitions/PaginationFilterArrayValue',
+  ),
+  PaginationFilterValue: info<PaginationFilterValue>('PaginationFilterValue', '#/definitions/PaginationFilterValue'),
+  PaginationFilter: info<PaginationFilter>('PaginationFilter', '#/definitions/PaginationFilter'),
   PaginationFilterModes: info<PaginationFilterModes>('PaginationFilterModes', '#/definitions/PaginationFilterModes'),
   DbCacheDemoWorkItemJoins: info<DbCacheDemoWorkItemJoins>(
     'DbCacheDemoWorkItemJoins',

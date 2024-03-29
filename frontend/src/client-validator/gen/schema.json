@@ -2437,6 +2437,60 @@
       "x-gen-struct": "WorkItemBase",
       "x-is-generated": true
     },
+    "PaginationFilterSingleValue": {
+      "type": "object",
+      "properties": {
+        "filterMode": {
+          "$ref": "#/definitions/PaginationFilterModes"
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "PaginationFilterArrayValue": {
+      "type": "object",
+      "properties": {
+        "filterMode": {
+          "$ref": "#/definitions/PaginationFilterModes"
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "PaginationFilterValue": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/PaginationFilterSingleValue"
+        },
+        {
+          "$ref": "#/definitions/PaginationFilterArrayValue"
+        }
+      ],
+      "x-use-server-type": true
+    },
+    "PaginationFilter": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/PaginationFilterValue"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "x-use-server-type": true
+    },
     "PaginationFilterModes": {
       "enum": [
         "between",
@@ -2826,6 +2880,18 @@
     },
     "WorkItemBase": {
       "$ref": "#/definitions/WorkItemBase"
+    },
+    "PaginationFilterSingleValue": {
+      "$ref": "#/definitions/PaginationFilterSingleValue"
+    },
+    "PaginationFilterArrayValue": {
+      "$ref": "#/definitions/PaginationFilterArrayValue"
+    },
+    "PaginationFilterValue": {
+      "$ref": "#/definitions/PaginationFilterValue"
+    },
+    "PaginationFilter": {
+      "$ref": "#/definitions/PaginationFilter"
     },
     "PaginationFilterModes": {
       "$ref": "#/definitions/PaginationFilterModes"

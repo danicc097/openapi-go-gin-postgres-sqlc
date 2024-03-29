@@ -6383,6 +6383,214 @@
       "x-gen-struct": "WorkItemBase",
       "x-is-generated": true
     },
+    "PaginationFilterSingleValue": {
+      "type": "object",
+      "properties": {
+        "filterMode": {
+          "enum": [
+            "between",
+            "betweenInclusive",
+            "contains",
+            "empty",
+            "endsWith",
+            "equals",
+            "fuzzy",
+            "greaterThan",
+            "greaterThanOrEqualTo",
+            "lessThan",
+            "lessThanOrEqualTo",
+            "notEmpty",
+            "notEquals",
+            "startsWith"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "PaginationFilterArrayValue": {
+      "type": "object",
+      "properties": {
+        "filterMode": {
+          "enum": [
+            "between",
+            "betweenInclusive",
+            "contains",
+            "empty",
+            "endsWith",
+            "equals",
+            "fuzzy",
+            "greaterThan",
+            "greaterThanOrEqualTo",
+            "lessThan",
+            "lessThanOrEqualTo",
+            "notEmpty",
+            "notEquals",
+            "startsWith"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "PaginationFilterValue": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "filterMode": {
+              "enum": [
+                "between",
+                "betweenInclusive",
+                "contains",
+                "empty",
+                "endsWith",
+                "equals",
+                "fuzzy",
+                "greaterThan",
+                "greaterThanOrEqualTo",
+                "lessThan",
+                "lessThanOrEqualTo",
+                "notEmpty",
+                "notEquals",
+                "startsWith"
+              ],
+              "type": "string"
+            },
+            "value": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "filterMode": {
+              "enum": [
+                "between",
+                "betweenInclusive",
+                "contains",
+                "empty",
+                "endsWith",
+                "equals",
+                "fuzzy",
+                "greaterThan",
+                "greaterThanOrEqualTo",
+                "lessThan",
+                "lessThanOrEqualTo",
+                "notEmpty",
+                "notEquals",
+                "startsWith"
+              ],
+              "type": "string"
+            },
+            "value": {
+              "type": "array",
+              "items": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "x-use-server-type": true
+    },
+    "PaginationFilter": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "filterMode": {
+                  "enum": [
+                    "between",
+                    "betweenInclusive",
+                    "contains",
+                    "empty",
+                    "endsWith",
+                    "equals",
+                    "fuzzy",
+                    "greaterThan",
+                    "greaterThanOrEqualTo",
+                    "lessThan",
+                    "lessThanOrEqualTo",
+                    "notEmpty",
+                    "notEquals",
+                    "startsWith"
+                  ],
+                  "type": "string"
+                },
+                "value": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "filterMode": {
+                  "enum": [
+                    "between",
+                    "betweenInclusive",
+                    "contains",
+                    "empty",
+                    "endsWith",
+                    "equals",
+                    "fuzzy",
+                    "greaterThan",
+                    "greaterThanOrEqualTo",
+                    "lessThan",
+                    "lessThanOrEqualTo",
+                    "notEmpty",
+                    "notEquals",
+                    "startsWith"
+                  ],
+                  "type": "string"
+                },
+                "value": {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "x-use-server-type": true
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "x-use-server-type": true
+    },
     "PaginationFilterModes": {
       "enum": [
         "between",
@@ -12977,6 +13185,214 @@
       "type": "object",
       "x-gen-struct": "WorkItemBase",
       "x-is-generated": true
+    },
+    "PaginationFilterSingleValue": {
+      "type": "object",
+      "properties": {
+        "filterMode": {
+          "enum": [
+            "between",
+            "betweenInclusive",
+            "contains",
+            "empty",
+            "endsWith",
+            "equals",
+            "fuzzy",
+            "greaterThan",
+            "greaterThanOrEqualTo",
+            "lessThan",
+            "lessThanOrEqualTo",
+            "notEmpty",
+            "notEquals",
+            "startsWith"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "PaginationFilterArrayValue": {
+      "type": "object",
+      "properties": {
+        "filterMode": {
+          "enum": [
+            "between",
+            "betweenInclusive",
+            "contains",
+            "empty",
+            "endsWith",
+            "equals",
+            "fuzzy",
+            "greaterThan",
+            "greaterThanOrEqualTo",
+            "lessThan",
+            "lessThanOrEqualTo",
+            "notEmpty",
+            "notEquals",
+            "startsWith"
+          ],
+          "type": "string"
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "PaginationFilterValue": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "filterMode": {
+              "enum": [
+                "between",
+                "betweenInclusive",
+                "contains",
+                "empty",
+                "endsWith",
+                "equals",
+                "fuzzy",
+                "greaterThan",
+                "greaterThanOrEqualTo",
+                "lessThan",
+                "lessThanOrEqualTo",
+                "notEmpty",
+                "notEquals",
+                "startsWith"
+              ],
+              "type": "string"
+            },
+            "value": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "filterMode": {
+              "enum": [
+                "between",
+                "betweenInclusive",
+                "contains",
+                "empty",
+                "endsWith",
+                "equals",
+                "fuzzy",
+                "greaterThan",
+                "greaterThanOrEqualTo",
+                "lessThan",
+                "lessThanOrEqualTo",
+                "notEmpty",
+                "notEquals",
+                "startsWith"
+              ],
+              "type": "string"
+            },
+            "value": {
+              "type": "array",
+              "items": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      ],
+      "x-use-server-type": true
+    },
+    "PaginationFilter": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "filterMode": {
+                  "enum": [
+                    "between",
+                    "betweenInclusive",
+                    "contains",
+                    "empty",
+                    "endsWith",
+                    "equals",
+                    "fuzzy",
+                    "greaterThan",
+                    "greaterThanOrEqualTo",
+                    "lessThan",
+                    "lessThanOrEqualTo",
+                    "notEmpty",
+                    "notEquals",
+                    "startsWith"
+                  ],
+                  "type": "string"
+                },
+                "value": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "filterMode": {
+                  "enum": [
+                    "between",
+                    "betweenInclusive",
+                    "contains",
+                    "empty",
+                    "endsWith",
+                    "equals",
+                    "fuzzy",
+                    "greaterThan",
+                    "greaterThanOrEqualTo",
+                    "lessThan",
+                    "lessThanOrEqualTo",
+                    "notEmpty",
+                    "notEquals",
+                    "startsWith"
+                  ],
+                  "type": "string"
+                },
+                "value": {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "x-use-server-type": true
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "x-use-server-type": true
     },
     "PaginationFilterModes": {
       "enum": [

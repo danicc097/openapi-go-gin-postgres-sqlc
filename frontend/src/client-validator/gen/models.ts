@@ -126,6 +126,7 @@ export type PaginationFilterModes =
   | 'notEmpty'
   | 'notEquals'
   | 'startsWith'
+export type PaginationFilterValue = PaginationFilterSingleValue | PaginationFilterArrayValue
 
 export interface Activity {
   activityID: number
@@ -609,6 +610,17 @@ export interface WorkItemBase {
   workItemTags?: DbWorkItemTag[] | null
   workItemType?: DbWorkItemType
   workItemTypeID: number
+}
+export interface PaginationFilterSingleValue {
+  filterMode?: PaginationFilterModes
+  value?: string | null
+}
+export interface PaginationFilterArrayValue {
+  filterMode?: PaginationFilterModes
+  value?: (string | null)[]
+}
+export interface PaginationFilter {
+  value: PaginationFilterValue
 }
 export interface DbCacheDemoWorkItemJoins {
   assignees: boolean

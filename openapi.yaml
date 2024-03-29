@@ -2883,6 +2883,43 @@ components:
       type: object
       x-gen-struct: WorkItemBase
       x-is-generated: true
+    PaginationFilterSingleValue:
+      type: object
+      properties:
+        filterMode:
+          $ref: '#/components/schemas/PaginationFilterModes'
+        value:
+          type: string
+          nullable: true
+    PaginationFilterArrayValue:
+      type: object
+      properties:
+        filterMode:
+          $ref: '#/components/schemas/PaginationFilterModes'
+        value:
+          type: array
+          items:
+            type: string
+            nullable: true
+    PaginationFilterValue:
+      oneOf:
+        - $ref: '#/components/schemas/PaginationFilterSingleValue'
+        - $ref: '#/components/schemas/PaginationFilterArrayValue'
+      discriminator:
+        propertyName: filterMode
+        # oapi broken for these
+        # mapping:
+        #   between: '#/components/schemas/PaginationFilterArrayValue'
+        #   ...
+      x-use-server-type: true
+    PaginationFilter:
+      type: object
+      properties:
+        value:
+          $ref: '#/components/schemas/PaginationFilterValue'
+      required:
+        - value
+      x-use-server-type: true
     PaginationFilterModes:
       enum:
         - between
