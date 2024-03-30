@@ -12,7 +12,7 @@ import { validateField } from 'src/utils/validation'
 import { UpdateUserAuthRequestDecoder } from 'src/client-validator/gen/decoders'
 import { ToastId } from 'src/utils/toasts'
 import { useUISlice } from 'src/slices/ui'
-import { getGetCurrentUserMock } from 'src/gen/user/user.msw'
+import { getGetCurrentUserResponseMock } from 'src/gen/user/user.msw'
 import type { PathType, RecursiveKeyOf, RequiredKeys } from 'src/types/utils'
 import {
   Avatar,
@@ -91,7 +91,7 @@ export default function UserPermissionsPage() {
 
   const [allUsers] = useState(
     [...Array(20)].map((x, i) => {
-      return getGetCurrentUserMock()
+      return getGetCurrentUserResponseMock()
     }),
   )
 
