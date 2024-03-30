@@ -2891,6 +2891,7 @@ components:
         value:
           type: string
           nullable: true
+      required: ["filterMode", "value"]
     PaginationFilterArrayValue:
       type: object
       properties:
@@ -2901,6 +2902,7 @@ components:
           items:
             type: string
             nullable: true
+      required: ["filterMode", "value"]
     PaginationFilterValue:
       oneOf:
         - $ref: '#/components/schemas/PaginationFilterSingleValue'

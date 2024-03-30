@@ -790,8 +790,8 @@ type PaginationFilter struct {
 
 // PaginationFilterArrayValue defines the model for PaginationFilterArrayValue.
 type PaginationFilterArrayValue struct {
-	FilterMode *PaginationFilterModes `json:"filterMode,omitempty"`
-	Value      *[]string              `json:"value,omitempty"`
+	FilterMode PaginationFilterModes `json:"filterMode"`
+	Value      []string              `json:"value"`
 }
 
 // PaginationFilterModes defines the model for PaginationFilterModes.
@@ -799,8 +799,8 @@ type PaginationFilterModes string
 
 // PaginationFilterSingleValue defines the model for PaginationFilterSingleValue.
 type PaginationFilterSingleValue struct {
-	FilterMode *PaginationFilterModes `json:"filterMode,omitempty"`
-	Value      *string                `json:"value"`
+	FilterMode PaginationFilterModes `json:"filterMode"`
+	Value      *string               `json:"value"`
 }
 
 // PaginationFilterValue defines the model for PaginationFilterValue.
