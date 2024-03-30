@@ -806,12 +806,12 @@ export interface components {
       workItemTypeID: number;
     };
     PaginationFilterSingleValue: {
-      filterMode?: components["schemas"]["PaginationFilterModes"];
-      value?: string | null;
+      filterMode: components["schemas"]["PaginationFilterModes"];
+      value: string | null;
     };
     PaginationFilterArrayValue: {
-      filterMode?: components["schemas"]["PaginationFilterModes"];
-      value?: (string | null)[];
+      filterMode: components["schemas"]["PaginationFilterModes"];
+      value: (string | null)[];
     };
     PaginationFilterValue: components["schemas"]["PaginationFilterSingleValue"] | components["schemas"]["PaginationFilterArrayValue"];
     PaginationFilter: {

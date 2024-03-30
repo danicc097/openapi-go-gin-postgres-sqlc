@@ -2449,7 +2449,11 @@
             "null"
           ]
         }
-      }
+      },
+      "required": [
+        "filterMode",
+        "value"
+      ]
     },
     "PaginationFilterArrayValue": {
       "type": "object",
@@ -2466,7 +2470,11 @@
             ]
           }
         }
-      }
+      },
+      "required": [
+        "filterMode",
+        "value"
+      ]
     },
     "PaginationFilterValue": {
       "oneOf": [

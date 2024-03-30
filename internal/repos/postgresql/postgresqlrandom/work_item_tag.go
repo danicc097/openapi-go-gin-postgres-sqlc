@@ -11,6 +11,6 @@ func WorkItemTagCreateParams(projectID db.ProjectID) *db.WorkItemTagCreateParams
 		Name:        "WorkItemTag " + testutil.RandomNameIdentifier(3, "-"),
 		Description: testutil.RandomString(10),
 		ProjectID:   projectID,
-		Color:       testutil.RandomColor(),
+		Color:       testutil.RandomHEXColor(),
 	}
 }

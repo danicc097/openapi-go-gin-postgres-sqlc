@@ -612,12 +612,12 @@ export interface WorkItemBase {
   workItemTypeID: number
 }
 export interface PaginationFilterSingleValue {
-  filterMode?: PaginationFilterModes
-  value?: string | null
+  filterMode: PaginationFilterModes
+  value: string | null
 }
 export interface PaginationFilterArrayValue {
-  filterMode?: PaginationFilterModes
-  value?: (string | null)[]
+  filterMode: PaginationFilterModes
+  value: (string | null)[]
 }
 export interface PaginationFilter {
   value: PaginationFilterValue

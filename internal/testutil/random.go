@@ -20,8 +20,8 @@ func RandomInt(min, max int) int {
 	return min + rand.Intn(max-min+1)
 }
 
-// RandomColor generates a random color in hexadecimal format (#RRGGBB).
-func RandomColor() string {
+// RandomHEXColor generates a random color in hexadecimal format (#RRGGBB).
+func RandomHEXColor() string {
 	return fmt.Sprintf("#%02X%02X%02X", rand.Intn(256), rand.Intn(256), rand.Intn(256))
 }
 

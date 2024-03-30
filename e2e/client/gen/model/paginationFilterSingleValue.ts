@@ -9,5 +9,5 @@ import type { PaginationFilterSingleValueFilterMode } from './paginationFilterSi
 
 export interface PaginationFilterSingleValue {
   filterMode: PaginationFilterSingleValueFilterMode
-  value?: string | null
+  value: string | null
 }

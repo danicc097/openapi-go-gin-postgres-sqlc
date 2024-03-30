@@ -6411,7 +6411,11 @@
             "null"
           ]
         }
-      }
+      },
+      "required": [
+        "filterMode",
+        "value"
+      ]
     },
     "PaginationFilterArrayValue": {
       "type": "object",
@@ -6444,7 +6448,11 @@
             ]
           }
         }
-      }
+      },
+      "required": [
+        "filterMode",
+        "value"
+      ]
     },
     "PaginationFilterValue": {
       "oneOf": [
@@ -6476,7 +6484,11 @@
                 "null"
               ]
             }
-          }
+          },
+          "required": [
+            "filterMode",
+            "value"
+          ]
         },
         {
           "type": "object",
@@ -6509,7 +6521,11 @@
                 ]
               }
             }
-          }
+          },
+          "required": [
+            "filterMode",
+            "value"
+          ]
         }
       ],
       "x-use-server-type": true
@@ -6547,7 +6563,11 @@
                     "null"
                   ]
                 }
-              }
+              },
+              "required": [
+                "filterMode",
+                "value"
+              ]
             },
             {
               "type": "object",
@@ -6580,7 +6600,11 @@
                     ]
                   }
                 }
-              }
+              },
+              "required": [
+                "filterMode",
+                "value"
+              ]
             }
           ],
           "x-use-server-type": true
@@ -13214,7 +13238,11 @@
             "null"
           ]
         }
-      }
+      },
+      "required": [
+        "filterMode",
+        "value"
+      ]
     },
     "PaginationFilterArrayValue": {
       "type": "object",
@@ -13247,7 +13275,11 @@
             ]
           }
         }
-      }
+      },
+      "required": [
+        "filterMode",
+        "value"
+      ]
     },
     "PaginationFilterValue": {
       "oneOf": [
@@ -13279,7 +13311,11 @@
                 "null"
               ]
             }
-          }
+          },
+          "required": [
+            "filterMode",
+            "value"
+          ]
         },
         {
           "type": "object",
@@ -13312,7 +13348,11 @@
                 ]
               }
             }
-          }
+          },
+          "required": [
+            "filterMode",
+            "value"
+          ]
         }
       ],
       "x-use-server-type": true
@@ -13350,7 +13390,11 @@
                     "null"
                   ]
                 }
-              }
+              },
+              "required": [
+                "filterMode",
+                "value"
+              ]
             },
             {
               "type": "object",
@@ -13383,7 +13427,11 @@
                     ]
                   }
                 }
-              }
+              },
+              "required": [
+                "filterMode",
+                "value"
+              ]
             }
           ],
           "x-use-server-type": true

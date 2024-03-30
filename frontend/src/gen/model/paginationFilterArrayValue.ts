@@ -10,5 +10,5 @@ import type { PaginationFilterArrayValueFilterMode } from './paginationFilterArr
 
 export interface PaginationFilterArrayValue {
   filterMode: PaginationFilterArrayValueFilterMode;
-  value?: (string | null)[];
+  value: (string | null)[];
 }
