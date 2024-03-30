@@ -12,6 +12,30 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func arrayValue(ss []string, mode models.PaginationFilterModes) models.PaginationFilterValue {
+	v := models.PaginationFilterArrayValue{
+		Value:      ss,
+		FilterMode: mode,
+	}
+	j, _ := json.Marshal(v)
+	p := models.PaginationFilterValue{}
+	_ = json.Unmarshal(j, &p)
+
+	return p
+}
+
+func singleValue(s string, mode models.PaginationFilterModes) models.PaginationFilterValue {
+	v := models.PaginationFilterSingleValue{
+		Value:      pointers.New(s),
+		FilterMode: mode,
+	}
+	j, _ := json.Marshal(v)
+	p := models.PaginationFilterValue{}
+	_ = json.Unmarshal(j, &p)
+
+	return p
+}
+
 func TestGenerateFilters(t *testing.T) {
 	const testEntity db.TableEntity = "testEntity"
 	db.EntityFilters[testEntity] = map[string]db.Filter{
@@ -27,19 +51,10 @@ func TestGenerateFilters(t *testing.T) {
 		errContains string
 	}{
 		{
-			name: "StringEqualsFilter",
+			name: "string equals",
 			queryParam: map[string]models.PaginationFilter{
 				"fullName": {
-					Value: func() models.PaginationFilterValue {
-						v := models.PaginationFilterSingleValue{
-							Value:      pointers.New("John Doe"),
-							FilterMode: models.PaginationFilterModesEquals,
-						}
-						j, _ := json.Marshal(v)
-						p := models.PaginationFilterValue{}
-						_ = json.Unmarshal(j, &p)
-						return p
-					}(),
+					Value: singleValue("John Doe", models.PaginationFilterModesEquals),
 				},
 			},
 			expected: map[string][]interface{}{
@@ -47,39 +62,21 @@ func TestGenerateFilters(t *testing.T) {
 			},
 		},
 		{
-			name: "StringContainsFilter",
+			name: "string contains",
 			queryParam: map[string]models.PaginationFilter{
 				"fullName": {
-					Value: func() models.PaginationFilterValue {
-						v := models.PaginationFilterSingleValue{
-							Value:      pointers.New("John"),
-							FilterMode: models.PaginationFilterModesContains,
-						}
-						j, _ := json.Marshal(v)
-						p := models.PaginationFilterValue{}
-						_ = json.Unmarshal(j, &p)
-						return p
-					}(),
+					Value: singleValue("John Doe", models.PaginationFilterModesContains),
 				},
 			},
 			expected: map[string][]interface{}{
-				"full_name ILIKE $i": {"%John%"},
+				"full_name ILIKE $i": {"%John Doe%"},
 			},
 		},
 		{
-			name: "IntegerEqualsFilter",
+			name: "integer equals",
 			queryParam: map[string]models.PaginationFilter{
 				"count": {
-					Value: func() models.PaginationFilterValue {
-						v := models.PaginationFilterSingleValue{
-							Value:      pointers.New("30"),
-							FilterMode: models.PaginationFilterModesEquals,
-						}
-						j, _ := json.Marshal(v)
-						p := models.PaginationFilterValue{}
-						_ = json.Unmarshal(j, &p)
-						return p
-					}(),
+					Value: singleValue("30", models.PaginationFilterModesEquals),
 				},
 			},
 			expected: map[string][]interface{}{
@@ -87,19 +84,13 @@ func TestGenerateFilters(t *testing.T) {
 			},
 		},
 		{
-			name: "DateTimeBetweenFilter",
+			name: "date-time between",
 			queryParam: map[string]models.PaginationFilter{
 				"createdAt": {
-					Value: func() models.PaginationFilterValue {
-						v := models.PaginationFilterArrayValue{
-							Value:      []string{"2023-01-01T00:00:00Z", "2023-12-31T23:59:59Z"},
-							FilterMode: models.PaginationFilterModesBetween,
-						}
-						j, _ := json.Marshal(v)
-						p := models.PaginationFilterValue{}
-						_ = json.Unmarshal(j, &p)
-						return p
-					}(),
+					Value: arrayValue(
+						[]string{"2023-01-01T00:00:00Z", "2023-12-31T23:59:59Z"},
+						models.PaginationFilterModesBetween,
+					),
 				},
 			},
 			expected: map[string][]interface{}{
@@ -110,19 +101,13 @@ func TestGenerateFilters(t *testing.T) {
 			},
 		},
 		{
-			name: "DateTimeBetweenFilter",
+			name: "date-time betweenInclusive",
 			queryParam: map[string]models.PaginationFilter{
 				"createdAt": {
-					Value: func() models.PaginationFilterValue {
-						v := models.PaginationFilterArrayValue{
-							Value:      []string{"2023-01-01T00:00:00Z", "2023-12-31T23:59:59Z"},
-							FilterMode: models.PaginationFilterModesBetweenInclusive,
-						}
-						j, _ := json.Marshal(v)
-						p := models.PaginationFilterValue{}
-						_ = json.Unmarshal(j, &p)
-						return p
-					}(),
+					Value: arrayValue(
+						[]string{"2023-01-01T00:00:00Z", "2023-12-31T23:59:59Z"},
+						models.PaginationFilterModesBetweenInclusive,
+					),
 				},
 			},
 			expected: map[string][]interface{}{

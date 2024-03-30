@@ -44,9 +44,11 @@ func GenerateFilters(entity db.TableEntity, queryParams map[string]models.Pagina
 		case models.PaginationFilterArrayValue:
 			vv := t.Value
 			switch dbfilter.Type {
-			case "date-time":
+			case "integer", "string": //...
+			// should support filtering multiple exact values at once
+			case "date-time": // min,max
 				switch filterMode {
-				case models.PaginationFilterModesBetween, models.PaginationFilterModesBetweenInclusive: // min,max
+				case models.PaginationFilterModesBetween, models.PaginationFilterModesBetweenInclusive:
 					var min, max interface{}
 					min, err = time.Parse(time.RFC3339, vv[0])
 					if err != nil {
