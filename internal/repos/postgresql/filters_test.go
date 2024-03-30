@@ -42,6 +42,8 @@ func TestGenerateFilters(t *testing.T) {
 		"createdAt": {Type: "date-time", Db: "created_at", Nullable: false},
 		"fullName":  {Type: "string", Db: "full_name", Nullable: true},
 		"count":     {Type: "integer", Db: "db_count", Nullable: false},
+		"countF":    {Type: "float", Db: "db_countf", Nullable: false},
+		"bool":      {Type: "boolean", Db: "db_bool", Nullable: false},
 	}
 
 	tests := []struct {
@@ -59,6 +61,28 @@ func TestGenerateFilters(t *testing.T) {
 			},
 			expected: map[string][]interface{}{
 				"full_name = $i": {"John Doe"},
+			},
+		},
+		{
+			name: "string startsWith",
+			queryParam: map[string]models.PaginationFilter{
+				"fullName": {
+					Value: singleValue("John Doe", models.PaginationFilterModesStartsWith),
+				},
+			},
+			expected: map[string][]interface{}{
+				"full_name ILIKE $i": {"John Doe%"},
+			},
+		},
+		{
+			name: "string endsWith",
+			queryParam: map[string]models.PaginationFilter{
+				"fullName": {
+					Value: singleValue("John Doe", models.PaginationFilterModesEndsWith),
+				},
+			},
+			expected: map[string][]interface{}{
+				"full_name ILIKE $i": {"%John Doe"},
 			},
 		},
 		{
@@ -81,6 +105,37 @@ func TestGenerateFilters(t *testing.T) {
 			},
 			expected: map[string][]interface{}{
 				"db_count = $i": {30},
+			},
+		},
+		{
+			name: "bad integer",
+			queryParam: map[string]models.PaginationFilter{
+				"count": {
+					Value: singleValue("30.123", models.PaginationFilterModesEquals),
+				},
+			},
+			errContains: "db_count: invalid integer \"30.123\"",
+		},
+		{
+			name: "float equals",
+			queryParam: map[string]models.PaginationFilter{
+				"countF": {
+					Value: singleValue("1.123", models.PaginationFilterModesEquals),
+				},
+			},
+			expected: map[string][]interface{}{
+				"db_countf = $i": {1.123},
+			},
+		},
+		{
+			name: "boolean equals",
+			queryParam: map[string]models.PaginationFilter{
+				"bool": {
+					Value: singleValue("true", models.PaginationFilterModesEquals),
+				},
+			},
+			expected: map[string][]interface{}{
+				"db_bool = $i": {true},
 			},
 		},
 		{

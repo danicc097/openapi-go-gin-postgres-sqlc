@@ -88,16 +88,21 @@ func GenerateFilters(entity db.TableEntity, queryParams map[string]models.Pagina
 			case "integer":
 				if intValue, err := strconv.Atoi(v); err == nil {
 					filters[dbfilter.Db+equal] = []interface{}{intValue}
+				} else {
+					return nil, fmt.Errorf("%s: invalid integer %q", dbfilter.Db, v)
 				}
 			case "float":
 				if floatValue, err := strconv.ParseFloat(v, 64); err == nil {
 					filters[dbfilter.Db+equal] = []interface{}{floatValue}
+				} else {
+					return nil, fmt.Errorf("%s: invalid float %q", dbfilter.Db, v)
 				}
 			case "boolean":
 				// we will receive actual types (boolean, time.Time) via runtime package
-				if v == "true" || v == "false" {
-					filters[dbfilter.Db+equal] = []interface{}{v == "true"}
+				if v != "true" && v != "false" {
+					return nil, fmt.Errorf("%s: invalid boolean %q", dbfilter.Db, v)
 				}
+				filters[dbfilter.Db+equal] = []interface{}{v == "true"}
 			}
 		default:
 			return nil, fmt.Errorf("unsupported filter mode type: %v", t)
