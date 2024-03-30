@@ -42,6 +42,28 @@ func GenerateFilters(entity db.TableEntity, queryParams map[string]models.Pagina
 		v, _ := filter.Value.ValueByDiscriminator()
 		switch t := v.(type) {
 		case models.PaginationFilterArrayValue:
+			vv := t.Value
+			switch dbfilter.Type {
+			case "date-time":
+				switch filterMode {
+				case models.PaginationFilterModesBetween, models.PaginationFilterModesBetweenInclusive: // min,max
+					var min, max interface{}
+					min, err = time.Parse(time.RFC3339, vv[0])
+					if err != nil {
+						min = "null"
+					}
+
+					max, err = time.Parse(time.RFC3339, vv[1])
+					if err != nil {
+						max = "null"
+					}
+					if filterMode == models.PaginationFilterModesBetween {
+						filters[fmt.Sprintf("%[1]s > $i AND %[1]s < $i", dbfilter.Db)] = []interface{}{min, max}
+					} else {
+						filters[fmt.Sprintf("%[1]s >= $i AND %[1]s <= $i", dbfilter.Db)] = []interface{}{min, max}
+					}
+				}
+			}
 			// we can have arrincludessome, arrincludesall, arrincludes.
 			// will not share modes with single values.
 		case models.PaginationFilterSingleValue:
@@ -68,10 +90,6 @@ func GenerateFilters(entity db.TableEntity, queryParams map[string]models.Pagina
 			case "float":
 				if floatValue, err := strconv.ParseFloat(v, 64); err == nil {
 					filters[dbfilter.Db+equal] = []interface{}{floatValue}
-				}
-			case "date-time":
-				if dateTimeValue, err := time.Parse(time.RFC3339, v); err == nil {
-					filters[dbfilter.Db+equal] = []interface{}{dateTimeValue}
 				}
 			case "boolean":
 				// we will receive actual types (boolean, time.Time) via runtime package
