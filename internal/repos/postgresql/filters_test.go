@@ -53,6 +53,28 @@ func TestGenerateFilters(t *testing.T) {
 		errContains string
 	}{
 		{
+			name: "null",
+			queryParam: map[string]models.PaginationFilter{
+				"fullName": {
+					Value: singleValue("", models.PaginationFilterModesEmpty),
+				},
+			},
+			expected: map[string][]interface{}{
+				"full_name is null": {},
+			},
+		},
+		{
+			name: "not null",
+			queryParam: map[string]models.PaginationFilter{
+				"fullName": {
+					Value: singleValue("", models.PaginationFilterModesNotEmpty),
+				},
+			},
+			expected: map[string][]interface{}{
+				"full_name is not null": {},
+			},
+		},
+		{
 			name: "string equals",
 			queryParam: map[string]models.PaginationFilter{
 				"fullName": {

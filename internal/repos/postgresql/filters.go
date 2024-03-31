@@ -10,8 +10,10 @@ import (
 )
 
 const (
-	ilike = " ILIKE $i"
-	equal = " = $i"
+	ilike     = " ILIKE $i"
+	equal     = " = $i"
+	isNull    = " is null"
+	isNotNull = " is not null"
 
 	// https://www.postgresql.org/docs/16/functions-array.html#ARRAY-OPERATORS-TABLE
 	// https://www.postgresql.org/docs/16/functions-subquery.html
@@ -25,10 +27,11 @@ const (
 func GenerateFilters(entity db.TableEntity, queryParams map[string]models.PaginationFilter) (map[string][]interface{}, error) {
 	filters := make(map[string][]interface{})
 
+	if _, ok := db.EntityFilters[entity]; !ok {
+		return nil, fmt.Errorf("invalid entity: %v", entity)
+	}
+
 	for id, filter := range queryParams {
-		if _, ok := db.EntityFilters[entity]; !ok {
-			return nil, fmt.Errorf("invalid entity: %v", entity)
-		}
 		dbfilter, ok := db.EntityFilters[entity][id]
 		if !ok {
 			continue
@@ -39,6 +42,16 @@ func GenerateFilters(entity db.TableEntity, queryParams map[string]models.Pagina
 			return nil, fmt.Errorf("discriminator: %w", err)
 		}
 		filterMode := models.PaginationFilterModes(disc)
+
+		switch filterMode {
+		case models.PaginationFilterModesEmpty:
+			filters[dbfilter.Db+isNull] = []interface{}{}
+			continue
+		case models.PaginationFilterModesNotEmpty:
+			filters[dbfilter.Db+isNotNull] = []interface{}{}
+			continue
+		}
+
 		v, _ := filter.Value.ValueByDiscriminator()
 		switch t := v.(type) {
 		case models.PaginationFilterArrayValue:
