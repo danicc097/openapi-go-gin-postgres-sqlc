@@ -24,20 +24,20 @@ const (
 	// not to be confused with filtering on array columns which isn't implemented at the moment
 )
 
-func GenerateFilters(entity db.TableEntity, queryParams map[string]models.PaginationFilter) (map[string][]interface{}, error) {
+func GenerateFilters(entity db.TableEntity, paginationParams models.PaginationItems) (map[string][]interface{}, error) {
 	filters := make(map[string][]interface{})
 
 	if _, ok := db.EntityFilters[entity]; !ok {
 		return nil, fmt.Errorf("invalid entity: %v", entity)
 	}
 
-	for id, filter := range queryParams {
+	for id, pag := range paginationParams {
 		dbfilter, ok := db.EntityFilters[entity][id]
 		if !ok {
 			continue
 		}
 
-		disc, err := filter.Value.Discriminator()
+		disc, err := pag.Filter.Discriminator()
 		if err != nil {
 			return nil, fmt.Errorf("discriminator: %w", err)
 		}
@@ -52,9 +52,9 @@ func GenerateFilters(entity db.TableEntity, queryParams map[string]models.Pagina
 			continue
 		}
 
-		v, _ := filter.Value.ValueByDiscriminator()
+		v, _ := pag.Filter.ValueByDiscriminator()
 		switch t := v.(type) {
-		case models.PaginationFilterArrayValue:
+		case models.PaginationFilterArray:
 			vv := t.Value
 			switch dbfilter.Type {
 			case "integer", "string": //...
@@ -81,7 +81,7 @@ func GenerateFilters(entity db.TableEntity, queryParams map[string]models.Pagina
 			}
 			// we can have arrincludessome, arrincludesall, arrincludes.
 			// will not share modes with single values.
-		case models.PaginationFilterSingleValue:
+		case models.PaginationFilterPrimitive:
 			if t.Value == nil {
 				continue
 			}

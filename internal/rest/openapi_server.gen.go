@@ -450,13 +450,19 @@ type NotificationType string
 
 /* Ignoring existing struct (rest/models.go) PaginatedUsersResponse */
 
-// PaginationFilter defines the model for PaginationFilter.
-type PaginationFilter struct {
-	Value externalRef0.PaginationFilterValue `json:"value"`
+// Pagination defines the model for Pagination.
+type Pagination struct {
+	Filter *externalRef0.PaginationFilter `json:"filter,omitempty"`
+	Sort   *externalRef0.Direction        `json:"sort,omitempty"`
 }
 
-// PaginationFilterArrayValue defines the model for PaginationFilterArrayValue.
-type PaginationFilterArrayValue struct {
+// PaginationFilter defines the model for PaginationFilter.
+type PaginationFilter struct {
+	union json.RawMessage
+}
+
+// PaginationFilterArray defines the model for PaginationFilterArray.
+type PaginationFilterArray struct {
 	FilterMode externalRef0.PaginationFilterModes `json:"filterMode"`
 	Value      []string                           `json:"value"`
 }
@@ -464,16 +470,14 @@ type PaginationFilterArrayValue struct {
 // PaginationFilterModes defines the model for PaginationFilterModes.
 type PaginationFilterModes string
 
-// PaginationFilterSingleValue defines the model for PaginationFilterSingleValue.
-type PaginationFilterSingleValue struct {
+// PaginationFilterPrimitive defines the model for PaginationFilterPrimitive.
+type PaginationFilterPrimitive struct {
 	FilterMode externalRef0.PaginationFilterModes `json:"filterMode"`
 	Value      *string                            `json:"value"`
 }
 
-// PaginationFilterValue defines the model for PaginationFilterValue.
-type PaginationFilterValue struct {
-	union json.RawMessage
-}
+// PaginationItems represents pagination data indexed by column id
+type PaginationItems map[string]externalRef0.Pagination
 
 /* Ignoring existing struct (rest/models.go) PaginationPage */
 
@@ -717,26 +721,26 @@ func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsPaginationFilterSingleValue returns the union data inside the PaginationFilterValue as a PaginationFilterSingleValue
-func (t PaginationFilterValue) AsPaginationFilterSingleValue() (PaginationFilterSingleValue, error) {
-	var body PaginationFilterSingleValue
+// AsPaginationFilterPrimitive returns the union data inside the PaginationFilter as a PaginationFilterPrimitive
+func (t PaginationFilter) AsPaginationFilterPrimitive() (PaginationFilterPrimitive, error) {
+	var body PaginationFilterPrimitive
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// AsPaginationFilterArrayValue returns the union data inside the PaginationFilterValue as a PaginationFilterArrayValue
-func (t PaginationFilterValue) AsPaginationFilterArrayValue() (PaginationFilterArrayValue, error) {
-	var body PaginationFilterArrayValue
+// AsPaginationFilterArray returns the union data inside the PaginationFilter as a PaginationFilterArray
+func (t PaginationFilter) AsPaginationFilterArray() (PaginationFilterArray, error) {
+	var body PaginationFilterArray
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-func (t PaginationFilterValue) MarshalJSON() ([]byte, error) {
+func (t PaginationFilter) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *PaginationFilterValue) UnmarshalJSON(b []byte) error {
+func (t *PaginationFilter) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

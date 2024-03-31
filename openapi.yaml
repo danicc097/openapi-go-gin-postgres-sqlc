@@ -2883,7 +2883,7 @@ components:
       type: object
       x-gen-struct: WorkItemBase
       x-is-generated: true
-    PaginationFilterSingleValue:
+    PaginationFilterPrimitive:
       type: object
       properties:
         filterMode:
@@ -2892,7 +2892,7 @@ components:
           type: string
           nullable: true
       required: ["filterMode", "value"]
-    PaginationFilterArrayValue:
+    PaginationFilterArray:
       type: object
       properties:
         filterMode:
@@ -2903,10 +2903,10 @@ components:
             type: string
             nullable: true
       required: ["filterMode", "value"]
-    PaginationFilterValue:
+    PaginationFilter:
       oneOf:
-        - $ref: '#/components/schemas/PaginationFilterSingleValue'
-        - $ref: '#/components/schemas/PaginationFilterArrayValue'
+        - $ref: '#/components/schemas/PaginationFilterPrimitive'
+        - $ref: '#/components/schemas/PaginationFilterArray'
       discriminator:
         propertyName: filterMode
         # oapi broken for these - it probably indexes by schema so we dont get all mappings...
@@ -2915,29 +2915,34 @@ components:
         # also orval is broken
         # ref: https://github.com/OAI/OpenAPI-Specification/discussions/3283
         mapping:
-          between: '#/components/schemas/PaginationFilterArrayValue'
-          betweenInclusive: '#/components/schemas/PaginationFilterArrayValue'
-          contains: '#/components/schemas/PaginationFilterSingleValue'
-          empty: '#/components/schemas/PaginationFilterSingleValue'
-          endsWith: '#/components/schemas/PaginationFilterSingleValue'
-          equals: '#/components/schemas/PaginationFilterSingleValue'
-          fuzzy: '#/components/schemas/PaginationFilterSingleValue'
-          greaterThan: '#/components/schemas/PaginationFilterSingleValue'
-          greaterThanOrEqualTo: '#/components/schemas/PaginationFilterSingleValue'
-          lessThan: '#/components/schemas/PaginationFilterSingleValue'
-          lessThanOrEqualTo: '#/components/schemas/PaginationFilterSingleValue'
-          notEmpty: '#/components/schemas/PaginationFilterSingleValue'
-          notEquals: '#/components/schemas/PaginationFilterSingleValue'
-          startsWith: '#/components/schemas/PaginationFilterSingleValue'
+          between: '#/components/schemas/PaginationFilterArray'
+          betweenInclusive: '#/components/schemas/PaginationFilterArray'
+          contains: '#/components/schemas/PaginationFilterPrimitive'
+          empty: '#/components/schemas/PaginationFilterPrimitive'
+          endsWith: '#/components/schemas/PaginationFilterPrimitive'
+          equals: '#/components/schemas/PaginationFilterPrimitive'
+          fuzzy: '#/components/schemas/PaginationFilterPrimitive'
+          greaterThan: '#/components/schemas/PaginationFilterPrimitive'
+          greaterThanOrEqualTo: '#/components/schemas/PaginationFilterPrimitive'
+          lessThan: '#/components/schemas/PaginationFilterPrimitive'
+          lessThanOrEqualTo: '#/components/schemas/PaginationFilterPrimitive'
+          notEmpty: '#/components/schemas/PaginationFilterPrimitive'
+          notEquals: '#/components/schemas/PaginationFilterPrimitive'
+          startsWith: '#/components/schemas/PaginationFilterPrimitive'
       x-use-server-type: true
-    PaginationFilter:
+    Pagination:
       type: object
       properties:
-        value:
-          $ref: '#/components/schemas/PaginationFilterValue'
-      required:
-        - value
+        filter:
+          $ref: '#/components/schemas/PaginationFilter'
+        sort:
+          $ref: '#/components/schemas/Direction'
       x-use-server-type: true
+    PaginationItems:
+      type: object
+      description: represents pagination data indexed by column id
+      additionalProperties:
+        $ref: '#/components/schemas/Pagination'
     PaginationFilterModes:
       enum:
         - between

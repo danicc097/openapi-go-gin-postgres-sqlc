@@ -5,8 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { PaginationFilterValue } from './paginationFilterValue'
+import type { PaginationFilterPrimitive } from './paginationFilterPrimitive'
+import type { PaginationFilterArray } from './paginationFilterArray'
 
-export interface PaginationFilter {
-  value: PaginationFilterValue
-}
+export type PaginationFilter = PaginationFilterPrimitive | PaginationFilterArray

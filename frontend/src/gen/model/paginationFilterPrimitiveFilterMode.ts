@@ -7,10 +7,10 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * OpenAPI spec version: 2.0.0
  */
 
-export type PaginationFilterSingleValueFilterMode = typeof PaginationFilterSingleValueFilterMode[keyof typeof PaginationFilterSingleValueFilterMode];
+export type PaginationFilterPrimitiveFilterMode = typeof PaginationFilterPrimitiveFilterMode[keyof typeof PaginationFilterPrimitiveFilterMode];
 
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PaginationFilterSingleValueFilterMode = {
+export const PaginationFilterPrimitiveFilterMode = {
   startsWith: 'startsWith',
 } as const;

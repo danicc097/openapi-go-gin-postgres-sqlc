@@ -5,9 +5,9 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { PaginationFilterArrayValueFilterMode } from './paginationFilterArrayValueFilterMode'
+import type { PaginationFilterArrayFilterMode } from './paginationFilterArrayFilterMode'
 
-export interface PaginationFilterArrayValue {
-  filterMode: PaginationFilterArrayValueFilterMode
+export interface PaginationFilterArray {
+  filterMode: PaginationFilterArrayFilterMode
   value: (string | null)[]
 }

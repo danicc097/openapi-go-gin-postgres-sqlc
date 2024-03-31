@@ -6,10 +6,10 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export type PaginationFilterSingleValueFilterMode =
-  typeof PaginationFilterSingleValueFilterMode[keyof typeof PaginationFilterSingleValueFilterMode]
+export type PaginationFilterArrayFilterMode =
+  typeof PaginationFilterArrayFilterMode[keyof typeof PaginationFilterArrayFilterMode]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const PaginationFilterSingleValueFilterMode = {
-  startsWith: 'startsWith',
+export const PaginationFilterArrayFilterMode = {
+  betweenInclusive: 'betweenInclusive',
 } as const

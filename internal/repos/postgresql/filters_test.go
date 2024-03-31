@@ -12,28 +12,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func arrayValue(ss []string, mode models.PaginationFilterModes) models.PaginationFilterValue {
-	v := models.PaginationFilterArrayValue{
+func arrayFilter(ss []string, mode models.PaginationFilterModes) *models.PaginationFilter {
+	v := models.PaginationFilterArray{
 		Value:      ss,
 		FilterMode: mode,
 	}
 	j, _ := json.Marshal(v)
-	p := models.PaginationFilterValue{}
+	p := models.PaginationFilter{}
 	_ = json.Unmarshal(j, &p)
 
-	return p
+	return &p
 }
 
-func singleValue(s string, mode models.PaginationFilterModes) models.PaginationFilterValue {
-	v := models.PaginationFilterSingleValue{
+func primitiveFilter(s string, mode models.PaginationFilterModes) *models.PaginationFilter {
+	v := models.PaginationFilterPrimitive{
 		Value:      pointers.New(s),
 		FilterMode: mode,
 	}
 	j, _ := json.Marshal(v)
-	p := models.PaginationFilterValue{}
+	p := models.PaginationFilter{}
 	_ = json.Unmarshal(j, &p)
 
-	return p
+	return &p
 }
 
 func TestGenerateFilters(t *testing.T) {
@@ -48,15 +48,15 @@ func TestGenerateFilters(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		queryParam  map[string]models.PaginationFilter
+		pagParams   models.PaginationItems
 		expected    map[string][]interface{}
 		errContains string
 	}{
 		{
 			name: "null",
-			queryParam: map[string]models.PaginationFilter{
+			pagParams: models.PaginationItems{
 				"fullName": {
-					Value: singleValue("", models.PaginationFilterModesEmpty),
+					Filter: primitiveFilter("", models.PaginationFilterModesEmpty),
 				},
 			},
 			expected: map[string][]interface{}{
@@ -65,9 +65,9 @@ func TestGenerateFilters(t *testing.T) {
 		},
 		{
 			name: "not null",
-			queryParam: map[string]models.PaginationFilter{
+			pagParams: models.PaginationItems{
 				"fullName": {
-					Value: singleValue("", models.PaginationFilterModesNotEmpty),
+					Filter: primitiveFilter("", models.PaginationFilterModesNotEmpty),
 				},
 			},
 			expected: map[string][]interface{}{
@@ -76,9 +76,9 @@ func TestGenerateFilters(t *testing.T) {
 		},
 		{
 			name: "string equals",
-			queryParam: map[string]models.PaginationFilter{
+			pagParams: models.PaginationItems{
 				"fullName": {
-					Value: singleValue("John Doe", models.PaginationFilterModesEquals),
+					Filter: primitiveFilter("John Doe", models.PaginationFilterModesEquals),
 				},
 			},
 			expected: map[string][]interface{}{
@@ -87,9 +87,9 @@ func TestGenerateFilters(t *testing.T) {
 		},
 		{
 			name: "string startsWith",
-			queryParam: map[string]models.PaginationFilter{
+			pagParams: models.PaginationItems{
 				"fullName": {
-					Value: singleValue("John Doe", models.PaginationFilterModesStartsWith),
+					Filter: primitiveFilter("John Doe", models.PaginationFilterModesStartsWith),
 				},
 			},
 			expected: map[string][]interface{}{
@@ -98,9 +98,9 @@ func TestGenerateFilters(t *testing.T) {
 		},
 		{
 			name: "string endsWith",
-			queryParam: map[string]models.PaginationFilter{
+			pagParams: models.PaginationItems{
 				"fullName": {
-					Value: singleValue("John Doe", models.PaginationFilterModesEndsWith),
+					Filter: primitiveFilter("John Doe", models.PaginationFilterModesEndsWith),
 				},
 			},
 			expected: map[string][]interface{}{
@@ -109,9 +109,9 @@ func TestGenerateFilters(t *testing.T) {
 		},
 		{
 			name: "string contains",
-			queryParam: map[string]models.PaginationFilter{
+			pagParams: models.PaginationItems{
 				"fullName": {
-					Value: singleValue("John Doe", models.PaginationFilterModesContains),
+					Filter: primitiveFilter("John Doe", models.PaginationFilterModesContains),
 				},
 			},
 			expected: map[string][]interface{}{
@@ -120,9 +120,9 @@ func TestGenerateFilters(t *testing.T) {
 		},
 		{
 			name: "integer equals",
-			queryParam: map[string]models.PaginationFilter{
+			pagParams: models.PaginationItems{
 				"count": {
-					Value: singleValue("30", models.PaginationFilterModesEquals),
+					Filter: primitiveFilter("30", models.PaginationFilterModesEquals),
 				},
 			},
 			expected: map[string][]interface{}{
@@ -131,18 +131,18 @@ func TestGenerateFilters(t *testing.T) {
 		},
 		{
 			name: "bad integer",
-			queryParam: map[string]models.PaginationFilter{
+			pagParams: models.PaginationItems{
 				"count": {
-					Value: singleValue("30.123", models.PaginationFilterModesEquals),
+					Filter: primitiveFilter("30.123", models.PaginationFilterModesEquals),
 				},
 			},
 			errContains: "db_count: invalid integer \"30.123\"",
 		},
 		{
 			name: "float equals",
-			queryParam: map[string]models.PaginationFilter{
+			pagParams: models.PaginationItems{
 				"countF": {
-					Value: singleValue("1.123", models.PaginationFilterModesEquals),
+					Filter: primitiveFilter("1.123", models.PaginationFilterModesEquals),
 				},
 			},
 			expected: map[string][]interface{}{
@@ -151,9 +151,9 @@ func TestGenerateFilters(t *testing.T) {
 		},
 		{
 			name: "boolean equals",
-			queryParam: map[string]models.PaginationFilter{
+			pagParams: models.PaginationItems{
 				"bool": {
-					Value: singleValue("true", models.PaginationFilterModesEquals),
+					Filter: primitiveFilter("true", models.PaginationFilterModesEquals),
 				},
 			},
 			expected: map[string][]interface{}{
@@ -162,9 +162,9 @@ func TestGenerateFilters(t *testing.T) {
 		},
 		{
 			name: "date-time between",
-			queryParam: map[string]models.PaginationFilter{
+			pagParams: models.PaginationItems{
 				"createdAt": {
-					Value: arrayValue(
+					Filter: arrayFilter(
 						[]string{"2023-01-01T00:00:00Z", "2023-12-31T23:59:59Z"},
 						models.PaginationFilterModesBetween,
 					),
@@ -179,9 +179,9 @@ func TestGenerateFilters(t *testing.T) {
 		},
 		{
 			name: "date-time betweenInclusive",
-			queryParam: map[string]models.PaginationFilter{
+			pagParams: models.PaginationItems{
 				"createdAt": {
-					Value: arrayValue(
+					Filter: arrayFilter(
 						[]string{"2023-01-01T00:00:00Z", "2023-12-31T23:59:59Z"},
 						models.PaginationFilterModesBetweenInclusive,
 					),
@@ -198,7 +198,7 @@ func TestGenerateFilters(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := postgresql.GenerateFilters(testEntity, tc.queryParam)
+			got, err := postgresql.GenerateFilters(testEntity, tc.pagParams)
 			if err != nil && tc.errContains == "" {
 				t.Errorf("unexpected error: %v", err)
 
