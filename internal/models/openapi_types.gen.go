@@ -783,8 +783,34 @@ type PaginatedUsersResponse struct {
 	Page  PaginationPage `json:"page"`
 }
 
+// Pagination defines the model for Pagination.
+type Pagination struct {
+	Filter *PaginationFilter `json:"filter,omitempty"`
+	Sort   *Direction        `json:"sort,omitempty"`
+}
+
+// PaginationFilter defines the model for PaginationFilter.
+type PaginationFilter struct {
+	union json.RawMessage
+}
+
+// PaginationFilterArray defines the model for PaginationFilterArray.
+type PaginationFilterArray struct {
+	FilterMode PaginationFilterModes `json:"filterMode"`
+	Value      []string              `json:"value"`
+}
+
 // PaginationFilterModes defines the model for PaginationFilterModes.
 type PaginationFilterModes string
+
+// PaginationFilterPrimitive defines the model for PaginationFilterPrimitive.
+type PaginationFilterPrimitive struct {
+	FilterMode PaginationFilterModes `json:"filterMode"`
+	Value      *string               `json:"value"`
+}
+
+// PaginationItems represents pagination data indexed by column id
+type PaginationItems map[string]Pagination
 
 // PaginationPage defines the model for PaginationPage.
 type PaginationPage struct {
@@ -1177,6 +1203,77 @@ func (t CreateWorkItemRequest) MarshalJSON() ([]byte, error) {
 }
 
 func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsPaginationFilterPrimitive returns the union data inside the PaginationFilter as a PaginationFilterPrimitive
+func (t PaginationFilter) AsPaginationFilterPrimitive() (PaginationFilterPrimitive, error) {
+	var body PaginationFilterPrimitive
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// AsPaginationFilterArray returns the union data inside the PaginationFilter as a PaginationFilterArray
+func (t PaginationFilter) AsPaginationFilterArray() (PaginationFilterArray, error) {
+	var body PaginationFilterArray
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t PaginationFilter) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"filterMode"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t PaginationFilter) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "between":
+		return t.AsPaginationFilterArray()
+	case "betweenInclusive":
+		return t.AsPaginationFilterArray()
+	case "contains":
+		return t.AsPaginationFilterPrimitive()
+	case "empty":
+		return t.AsPaginationFilterPrimitive()
+	case "endsWith":
+		return t.AsPaginationFilterPrimitive()
+	case "equals":
+		return t.AsPaginationFilterPrimitive()
+	case "fuzzy":
+		return t.AsPaginationFilterPrimitive()
+	case "greaterThan":
+		return t.AsPaginationFilterPrimitive()
+	case "greaterThanOrEqualTo":
+		return t.AsPaginationFilterPrimitive()
+	case "lessThan":
+		return t.AsPaginationFilterPrimitive()
+	case "lessThanOrEqualTo":
+		return t.AsPaginationFilterPrimitive()
+	case "notEmpty":
+		return t.AsPaginationFilterPrimitive()
+	case "notEquals":
+		return t.AsPaginationFilterPrimitive()
+	case "startsWith":
+		return t.AsPaginationFilterPrimitive()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t PaginationFilter) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *PaginationFilter) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

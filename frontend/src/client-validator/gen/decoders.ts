@@ -94,6 +94,11 @@ import {
   DemoTwoWorkItem,
   DemoWorkItem,
   WorkItemBase,
+  PaginationFilterPrimitive,
+  PaginationFilterArray,
+  PaginationFilter,
+  Pagination,
+  PaginationItems,
   PaginationFilterModes,
   DbCacheDemoWorkItemJoins,
   DbUserJoins,
@@ -1138,6 +1143,66 @@ export const WorkItemBaseDecoder: Decoder<WorkItemBase> = {
       throw new Error(`Schema ${WorkItemBaseDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, WorkItemBaseDecoder.definitionName)
+  },
+}
+export const PaginationFilterPrimitiveDecoder: Decoder<PaginationFilterPrimitive> = {
+  definitionName: 'PaginationFilterPrimitive',
+  schemaRef: '#/definitions/PaginationFilterPrimitive',
+
+  decode(json: unknown): PaginationFilterPrimitive {
+    const schema = ajv.getSchema(PaginationFilterPrimitiveDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${PaginationFilterPrimitiveDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, PaginationFilterPrimitiveDecoder.definitionName)
+  },
+}
+export const PaginationFilterArrayDecoder: Decoder<PaginationFilterArray> = {
+  definitionName: 'PaginationFilterArray',
+  schemaRef: '#/definitions/PaginationFilterArray',
+
+  decode(json: unknown): PaginationFilterArray {
+    const schema = ajv.getSchema(PaginationFilterArrayDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${PaginationFilterArrayDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, PaginationFilterArrayDecoder.definitionName)
+  },
+}
+export const PaginationFilterDecoder: Decoder<PaginationFilter> = {
+  definitionName: 'PaginationFilter',
+  schemaRef: '#/definitions/PaginationFilter',
+
+  decode(json: unknown): PaginationFilter {
+    const schema = ajv.getSchema(PaginationFilterDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${PaginationFilterDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, PaginationFilterDecoder.definitionName)
+  },
+}
+export const PaginationDecoder: Decoder<Pagination> = {
+  definitionName: 'Pagination',
+  schemaRef: '#/definitions/Pagination',
+
+  decode(json: unknown): Pagination {
+    const schema = ajv.getSchema(PaginationDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${PaginationDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, PaginationDecoder.definitionName)
+  },
+}
+export const PaginationItemsDecoder: Decoder<PaginationItems> = {
+  definitionName: 'PaginationItems',
+  schemaRef: '#/definitions/PaginationItems',
+
+  decode(json: unknown): PaginationItems {
+    const schema = ajv.getSchema(PaginationItemsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${PaginationItemsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, PaginationItemsDecoder.definitionName)
   },
 }
 export const PaginationFilterModesDecoder: Decoder<PaginationFilterModes> = {

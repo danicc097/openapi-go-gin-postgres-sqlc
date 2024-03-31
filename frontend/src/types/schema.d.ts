@@ -805,6 +805,23 @@ export interface components {
       workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
     };
+    PaginationFilterPrimitive: {
+      filterMode: components["schemas"]["PaginationFilterModes"];
+      value: string | null;
+    };
+    PaginationFilterArray: {
+      filterMode: components["schemas"]["PaginationFilterModes"];
+      value: (string | null)[];
+    };
+    PaginationFilter: components["schemas"]["PaginationFilterPrimitive"] | components["schemas"]["PaginationFilterArray"];
+    Pagination: {
+      filter?: components["schemas"]["PaginationFilter"];
+      sort?: components["schemas"]["Direction"];
+    };
+    /** @description represents pagination data indexed by column id */
+    PaginationItems: {
+      [key: string]: components["schemas"]["Pagination"] | undefined;
+    };
     /** @enum {string} */
     PaginationFilterModes: "between" | "betweenInclusive" | "contains" | "empty" | "endsWith" | "equals" | "fuzzy" | "greaterThan" | "greaterThanOrEqualTo" | "lessThan" | "lessThanOrEqualTo" | "notEmpty" | "notEquals" | "startsWith";
     DbCacheDemoWorkItemJoins: {

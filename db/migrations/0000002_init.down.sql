@@ -2,6 +2,8 @@ drop schema if exists v;
 
 drop schema if exists "cache";
 
+drop schema if exists extra_schema cascade;
+
 do $$
 declare
   table_rec RECORD;

@@ -50,12 +50,23 @@ body {
 }
 
 /* needs its own declaration when using has
-TODO: must align other inputs as well, not just range
 */
 .mrt-filter-range-fields:has(.date-filter-badge) {
   align-self: center;
 }
 
+.date-filter-badge {
+  align-self: center;
+}
+
+div:has([aria-label='Change filter mode']) {
+  justify-content: space-between;
+}
+
+[aria-label='Change filter mode'] {
+  justify-self: stretch;
+  align-self: flex-start;
+}
 /*
 workaround - maybe worth it to have opt upstream since showChangeModeButton
 is tied to both filter button and label

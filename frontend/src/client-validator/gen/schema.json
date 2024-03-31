@@ -2437,6 +2437,75 @@
       "x-gen-struct": "WorkItemBase",
       "x-is-generated": true
     },
+    "PaginationFilterPrimitive": {
+      "type": "object",
+      "properties": {
+        "filterMode": {
+          "$ref": "#/definitions/PaginationFilterModes"
+        },
+        "value": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "filterMode",
+        "value"
+      ]
+    },
+    "PaginationFilterArray": {
+      "type": "object",
+      "properties": {
+        "filterMode": {
+          "$ref": "#/definitions/PaginationFilterModes"
+        },
+        "value": {
+          "type": "array",
+          "items": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "required": [
+        "filterMode",
+        "value"
+      ]
+    },
+    "PaginationFilter": {
+      "oneOf": [
+        {
+          "$ref": "#/definitions/PaginationFilterPrimitive"
+        },
+        {
+          "$ref": "#/definitions/PaginationFilterArray"
+        }
+      ],
+      "x-use-server-type": true
+    },
+    "Pagination": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/PaginationFilter"
+        },
+        "sort": {
+          "$ref": "#/definitions/Direction"
+        }
+      },
+      "x-use-server-type": true
+    },
+    "PaginationItems": {
+      "type": "object",
+      "description": "represents pagination data indexed by column id",
+      "additionalProperties": {
+        "$ref": "#/definitions/Pagination"
+      }
+    },
     "PaginationFilterModes": {
       "enum": [
         "between",
@@ -2826,6 +2895,21 @@
     },
     "WorkItemBase": {
       "$ref": "#/definitions/WorkItemBase"
+    },
+    "PaginationFilterPrimitive": {
+      "$ref": "#/definitions/PaginationFilterPrimitive"
+    },
+    "PaginationFilterArray": {
+      "$ref": "#/definitions/PaginationFilterArray"
+    },
+    "PaginationFilter": {
+      "$ref": "#/definitions/PaginationFilter"
+    },
+    "Pagination": {
+      "$ref": "#/definitions/Pagination"
+    },
+    "PaginationItems": {
+      "$ref": "#/definitions/PaginationItems"
     },
     "PaginationFilterModes": {
       "$ref": "#/definitions/PaginationFilterModes"

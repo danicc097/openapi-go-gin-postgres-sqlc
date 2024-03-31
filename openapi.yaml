@@ -2883,6 +2883,66 @@ components:
       type: object
       x-gen-struct: WorkItemBase
       x-is-generated: true
+    PaginationFilterPrimitive:
+      type: object
+      properties:
+        filterMode:
+          $ref: '#/components/schemas/PaginationFilterModes'
+        value:
+          type: string
+          nullable: true
+      required: ["filterMode", "value"]
+    PaginationFilterArray:
+      type: object
+      properties:
+        filterMode:
+          $ref: '#/components/schemas/PaginationFilterModes'
+        value:
+          type: array
+          items:
+            type: string
+            nullable: true
+      required: ["filterMode", "value"]
+    PaginationFilter:
+      oneOf:
+        - $ref: '#/components/schemas/PaginationFilterPrimitive'
+        - $ref: '#/components/schemas/PaginationFilterArray'
+      discriminator:
+        propertyName: filterMode
+        # oapi broken for these - it probably indexes by schema so we dont get all mappings...
+        # https://github.com/deepmap/oapi-codegen/blob/a14414f04fdd2206ac394e1e45527c1fbcbfc705/pkg/codegen/schema.go#L205
+        # TODO: raise issues on both.
+        # also orval is broken
+        # ref: https://github.com/OAI/OpenAPI-Specification/discussions/3283
+        mapping:
+          between: '#/components/schemas/PaginationFilterArray'
+          betweenInclusive: '#/components/schemas/PaginationFilterArray'
+          contains: '#/components/schemas/PaginationFilterPrimitive'
+          empty: '#/components/schemas/PaginationFilterPrimitive'
+          endsWith: '#/components/schemas/PaginationFilterPrimitive'
+          equals: '#/components/schemas/PaginationFilterPrimitive'
+          fuzzy: '#/components/schemas/PaginationFilterPrimitive'
+          greaterThan: '#/components/schemas/PaginationFilterPrimitive'
+          greaterThanOrEqualTo: '#/components/schemas/PaginationFilterPrimitive'
+          lessThan: '#/components/schemas/PaginationFilterPrimitive'
+          lessThanOrEqualTo: '#/components/schemas/PaginationFilterPrimitive'
+          notEmpty: '#/components/schemas/PaginationFilterPrimitive'
+          notEquals: '#/components/schemas/PaginationFilterPrimitive'
+          startsWith: '#/components/schemas/PaginationFilterPrimitive'
+      x-use-server-type: true
+    Pagination:
+      type: object
+      properties:
+        filter:
+          $ref: '#/components/schemas/PaginationFilter'
+        sort:
+          $ref: '#/components/schemas/Direction'
+      x-use-server-type: true
+    PaginationItems:
+      type: object
+      description: represents pagination data indexed by column id
+      additionalProperties:
+        $ref: '#/components/schemas/Pagination'
     PaginationFilterModes:
       enum:
         - between

@@ -450,8 +450,34 @@ type NotificationType string
 
 /* Ignoring existing struct (rest/models.go) PaginatedUsersResponse */
 
+// Pagination defines the model for Pagination.
+type Pagination struct {
+	Filter *externalRef0.PaginationFilter `json:"filter,omitempty"`
+	Sort   *externalRef0.Direction        `json:"sort,omitempty"`
+}
+
+// PaginationFilter defines the model for PaginationFilter.
+type PaginationFilter struct {
+	union json.RawMessage
+}
+
+// PaginationFilterArray defines the model for PaginationFilterArray.
+type PaginationFilterArray struct {
+	FilterMode externalRef0.PaginationFilterModes `json:"filterMode"`
+	Value      []string                           `json:"value"`
+}
+
 // PaginationFilterModes defines the model for PaginationFilterModes.
 type PaginationFilterModes string
+
+// PaginationFilterPrimitive defines the model for PaginationFilterPrimitive.
+type PaginationFilterPrimitive struct {
+	FilterMode externalRef0.PaginationFilterModes `json:"filterMode"`
+	Value      *string                            `json:"value"`
+}
+
+// PaginationItems represents pagination data indexed by column id
+type PaginationItems map[string]externalRef0.Pagination
 
 /* Ignoring existing struct (rest/models.go) PaginationPage */
 
@@ -691,6 +717,30 @@ func (t CreateWorkItemRequest) MarshalJSON() ([]byte, error) {
 }
 
 func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsPaginationFilterPrimitive returns the union data inside the PaginationFilter as a PaginationFilterPrimitive
+func (t PaginationFilter) AsPaginationFilterPrimitive() (PaginationFilterPrimitive, error) {
+	var body PaginationFilterPrimitive
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// AsPaginationFilterArray returns the union data inside the PaginationFilter as a PaginationFilterArray
+func (t PaginationFilter) AsPaginationFilterArray() (PaginationFilterArray, error) {
+	var body PaginationFilterArray
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+func (t PaginationFilter) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *PaginationFilter) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }

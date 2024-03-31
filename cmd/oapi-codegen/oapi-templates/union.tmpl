@@ -4,10 +4,7 @@
     {{$properties := .Schema.Properties -}}
     {{range .Schema.UnionElements}}
         {{ $element := printf "%v" . -}}
-        {{ $name := $element -}}
-        {{ if (is_rest_type $element) -}}
-        {{ $name = (printf "%v" (rest_type $element)) -}}
-        {{ end -}}
+        {{ $name := (printf "%v" (rest_type $element)) -}}
         // As{{$name}} returns the union data inside the {{$typeName}} as a {{$name}}
         func (t {{$typeName}}) As{{$name}}() ({{$name}}, error) {
             var body {{$name}}
@@ -74,7 +71,7 @@
             return discriminator.Discriminator, err
         }
         {{/* TODO: can use is_rest_type here too. */}}
-        {{if ne 0 (len $discriminator.Mapping)}}
+        {{ if ne 0 (len $discriminator.Mapping)}}
             func (t {{.TypeName}}) ValueByDiscriminator() (interface{}, error) {
                 discriminator, err := t.Discriminator()
                 if err != nil {

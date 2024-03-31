@@ -36,16 +36,21 @@ import { User } from 'src/gen/model'
 import { getContrastYIQ, scopeColor } from 'src/utils/colors'
 import _, { lowerCase } from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
-import { ENTITY_FILTERS, ROLES } from 'src/config'
+import { ENTITY_FILTERS, OPERATION_AUTH, ROLES } from 'src/config'
 import { entries } from 'src/utils/object'
 import { sentenceCase } from 'src/utils/strings'
 import { arrModes, columnPropsByType, emptyModes } from 'src/utils/mantine-react-table'
 import { DateInput } from '@mantine/dates'
 import { useDebouncedValue } from '@mantine/hooks'
-import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
-import classes from 'src/utils/mantine-react-table.module.css'
+
 import { useMantineReactTableFilters } from 'src/hooks/ui/useMantineReactTableFilters'
 import { IconStar } from '@tabler/icons'
+import {
+  CustomMRTFilter,
+  RowActionsMenu,
+  CustomColumnFilterModeMenuItems,
+} from 'src/utils/mantine-react-table.components'
+import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
 
 interface Params {
   columnFilterFns: MRT_ColumnFilterFnsState
@@ -87,78 +92,7 @@ const defaultExcludedColumns: Array<DefaultFilters> = ['firstName', 'lastName']
 // also see CRUD: https://v2.mantine-react-table.com/docs/examples/editing-crud
 const defaultSortableColumns: Array<DefaultFilters> = ['createdAt', 'deletedAt', 'updatedAt']
 
-const FILTER_OPTIONS = mrtFilterOptions(MRT_Localization_EN)
-
-function MRTTextInput({ column, ...props }: { column: MRT_Column<any>; props?: ComponentProps<typeof TextInput> }) {
-  const columnFilterValue = (column.getFilterValue() as string) ?? ''
-  const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
-  const [debouncedFilterValue] = useDebouncedValue(filterValue, 400)
-  const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
-
-  const isMounted = useRef(false)
-
-  useEffect(() => {
-    if (!isMounted.current) return
-    column.setFilterValue(debouncedFilterValue ?? undefined)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedFilterValue])
-
-  const [focused, setFocused] = useState(false)
-  const floating = focused || filterValue?.length > 0 || undefined
-
-  const handleClear = () => {
-    setFilterValue('')
-    removeFilterMode(column.id)
-    column.setFilterValue(undefined)
-  }
-
-  //receive table filter value and set it to local state
-  useEffect(() => {
-    if (!isMounted.current) {
-      isMounted.current = true
-      return
-    }
-    const tableFilterValue = column.getFilterValue()
-    if (tableFilterValue === undefined) {
-      handleClear()
-    } else {
-      setFilterValue(tableFilterValue ?? '')
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columnFilterValue])
-
-  const filterMode = dynamicConfig?.filterModes[column.id]
-
-  return (
-    <TextInput
-      {...props}
-      value={filterValue}
-      size="xs"
-      onChange={(event) => {
-        setFilterValue(event.currentTarget.value)
-        if (!filterMode) setFilterMode(column.id, 'contains')
-      }}
-      rightSection={
-        filterMode ? (
-          <ActionIcon aria-label={'Clear search'} color="gray" onClick={handleClear} size="xs" variant="transparent">
-            <Tooltip label={'Clear search'} withinPortal>
-              <IconX />
-            </Tooltip>
-          </ActionIcon>
-        ) : null
-      }
-      placeholder={`Filter by ${lowerCase(column.id)}`}
-      // labelProps={{ 'data-floating': floating }}
-      classNames={{
-        root: classes.root,
-        input: classes.input,
-        label: classes.label,
-      }}
-      onFocus={() => setFocused(true)}
-      onBlur={() => setFocused(false)}
-    />
-  )
-}
+const TABLE_NAME = 'demoTable'
 
 // TODO: GetPaginatedUsers table
 // also see excalidraw
@@ -173,7 +107,7 @@ function MRTTextInput({ column, ...props }: { column: MRT_Column<any>; props?: C
 export default function DemoMantineReactTable() {
   const tableContainerRef = useRef<HTMLDivElement>(null)
   const rowVirtualizerInstanceRef = useRef<MRT_RowVirtualizer>(null) //we can get access to the underlying Virtualizer instance and call its scrollToIndex method
-  const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
+  const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters(TABLE_NAME)
 
   // TODO: hooks
 
@@ -198,77 +132,21 @@ export default function DemoMantineReactTable() {
               (props) => {
                 // https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L203
                 // however it does not change the filter for dates...
-                const filterMode = dynamicConfig?.filterModes[props.column.id] ?? ''
-                if (emptyModes.includes(filterMode)) {
-                  if (props.rangeFilterIndex === 1) {
-                    return null
-                  }
-                  return (
-                    <Badge className={'date-filter-badge'} size="sm">
-                      {sentenceCase(filterMode)}
-                    </Badge>
-                  )
-                }
-                if (c.type === 'date-time') {
-                  return (
-                    <DateInput
-                      placeholder={`${props.rangeFilterIndex === 0 ? 'Start' : 'End'} date`}
-                      size="xs"
-                      valueFormat="DD/MM/YYYY"
-                      classNames={{
-                        root: classes.root,
-                        input: classes.input,
-                        label: classes.label,
-                      }}
-                    />
-                  )
-                }
-
-                // TODO: set filterMode in description and remove default from mrt since we wont use its filter modes
-                return <MRTTextInput column={props.column} props={{ error: 'aaaa' }} />
-              },
-            renderColumnFilterModeMenuItems: ({
-              column,
-              onSelectFilterMode,
-              table,
-              // internalFilterOptions /* does not contain new modes */,
-            }) => {
-              return col.columnFilterModeOptions?.map((option) => {
-                const fopt = FILTER_OPTIONS.find((v) => v.option === option)
-                if (!fopt) return
-
+                // TODO: abstract to generic CustomComponent which accepts type: EntityFilter and columnProps
+                // and has built in empty mode check, so we can reuse in our custom components outside default
+                // generated columns (cant use built in mrt ones)
                 return (
-                  <MenuItem
-                    key={fopt.option}
-                    onClick={() => {
-                      column.setFilterValue(null)
-                      setFilterMode(column.id, fopt.option)
-                    }}
-                  >
-                    <Flex
-                      gap={10}
-                      justify="flex-start"
-                      style={{
-                        color:
-                          dynamicConfig?.filterModes[col.id ?? ''] === fopt.option
-                            ? 'var(--mantine-primary-color-5)'
-                            : 'inherit',
-                      }}
-                    >
-                      <Box miw={20} style={{ alignSelf: 'center', textAlign: 'center' }}>
-                        {fopt.symbol}
-                      </Box>
-                      <Text size="sm">{sentenceCase(fopt.label)}</Text>
-                    </Flex>
-                  </MenuItem>
+                  <CustomMRTFilter tableName={TABLE_NAME} nullable={c.nullable} type={c.type} columnProps={props} />
                 )
-              })
-            },
+              },
+            renderColumnFilterModeMenuItems: (props) => (
+              <CustomColumnFilterModeMenuItems modeOptions={col.columnFilterModeOptions} {...props} />
+            ),
           }
 
           return col
         }),
-    [dynamicConfig?.filterModes],
+    [],
   )
 
   const _columns = useMemo<Column[]>(
@@ -285,6 +163,8 @@ export default function DemoMantineReactTable() {
         // not a part of table entity so we define manually
         // repo will convert to role_rank filter, same as teams filter will internally
         // use xo join on teams teamID. frontend shouldnt care about these conversions
+        // TODO: have to reimplement select, just like input and dateinput.
+        // will allow passing combobox.options
         accessorKey: 'role',
         header: 'Role',
         // TODO: must use custom props for non default rows so we can use our own filters, badges...
@@ -566,56 +446,23 @@ export default function DemoMantineReactTable() {
           }}
           size="xs"
         >
-          Create New User
+          Create user
         </Button>
       </Group>
     ),
     enableRowActions: true,
     renderRowActions: ({ row, table }) => (
-      // TODO: menu instead, no need to clutter
-      <Flex justify="space-between" gap={10}>
-        <Tooltip label="Edit">
-          <ActionIcon
-            onClick={() => {
-              // modal
-            }}
-          >
-            <IconEdit />
-          </ActionIcon>
-        </Tooltip>
-        <Tooltip label="Delete">
-          <ActionIcon
-            color="red"
-            onClick={() => {
-              // modal
-            }}
-          >
-            <IconTrash />
-          </ActionIcon>
-        </Tooltip>
-        <Tooltip label="Extra">
-          <ActionIcon
-            color="yellow"
-            onClick={() => {
-              // modal
-            }}
-          >
-            <IconStar />
-          </ActionIcon>
-        </Tooltip>
-        {/* has deleted at */}
-        {row.original.deletedAt && (
-          <Tooltip label="Restore">
-            <ActionIcon
-              color="yellow"
-              onClick={() => {
-                // modal
-              }}
-            >
-              <IconTrash />
-            </ActionIcon>
-          </Tooltip>
-        )}
+      <Flex justify="center" align="center" gap={10}>
+        <RowActionsMenu
+          canRestore={
+            !!row.original.deletedAt
+            // TODO: && useIsAuthorizedForOp(OPERATION_AUTH.RestoreUser)
+          }
+          // onEdit={}
+          // onRestore={}
+          // onDelete={}
+          // extraActions={}
+        />
       </Flex>
     ),
     rowVirtualizerInstanceRef, //get access to the virtualizer instance
