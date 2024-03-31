@@ -53,6 +53,24 @@ func TestGenerateFilters(t *testing.T) {
 		errContains string
 	}{
 		{
+			name: "unknown column ignored",
+			pagParams: models.PaginationItems{
+				"=?¿": {
+					Filter: primitiveFilter("abc", models.PaginationFilterModesBetween),
+				},
+			},
+			expected: map[string][]interface{}{},
+		},
+		{
+			name: "empty filter ignored",
+			pagParams: models.PaginationItems{
+				"fullName": {
+					Filter: nil,
+				},
+			},
+			expected: map[string][]interface{}{},
+		},
+		{
 			name: "null",
 			pagParams: models.PaginationItems{
 				"fullName": {

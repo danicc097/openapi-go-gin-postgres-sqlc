@@ -36,6 +36,9 @@ func GenerateFilters(entity db.TableEntity, paginationParams models.PaginationIt
 		if !ok {
 			continue
 		}
+		if pag.Filter == nil {
+			continue
+		}
 
 		disc, err := pag.Filter.Discriminator()
 		if err != nil {
