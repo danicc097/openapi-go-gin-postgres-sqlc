@@ -17,6 +17,19 @@ func arrayFilter(ss []string, mode models.PaginationFilterModes) *models.Paginat
 		Value:      ss,
 		FilterMode: mode,
 	}
+
+	return paginationFilterArray(v)
+}
+
+func paginationFilterArray(v models.PaginationFilterArray) *models.PaginationFilter {
+	j, _ := json.Marshal(v)
+	p := models.PaginationFilter{}
+	_ = json.Unmarshal(j, &p)
+
+	return &p
+}
+
+func paginationFilterPrimitive(v models.PaginationFilterPrimitive) *models.PaginationFilter {
 	j, _ := json.Marshal(v)
 	p := models.PaginationFilter{}
 	_ = json.Unmarshal(j, &p)
@@ -29,11 +42,8 @@ func primitiveFilter(s string, mode models.PaginationFilterModes) *models.Pagina
 		Value:      pointers.New(s),
 		FilterMode: mode,
 	}
-	j, _ := json.Marshal(v)
-	p := models.PaginationFilter{}
-	_ = json.Unmarshal(j, &p)
 
-	return &p
+	return paginationFilterPrimitive(v)
 }
 
 func TestGenerateFilters(t *testing.T) {
@@ -93,6 +103,21 @@ func TestGenerateFilters(t *testing.T) {
 			},
 		},
 		{
+			name: "case sensitive string equals",
+			pagParams: models.PaginationItems{
+				"fullName": {
+					Filter: paginationFilterPrimitive(models.PaginationFilterPrimitive{
+						FilterMode:    models.PaginationFilterModesEquals,
+						Value:         pointers.New("John Doe"),
+						CaseSensitive: pointers.New(true),
+					}),
+				},
+			},
+			expected: map[string][]interface{}{
+				"full_name LIKE $i": {"John Doe"},
+			},
+		},
+		{
 			name: "string equals",
 			pagParams: models.PaginationItems{
 				"fullName": {
@@ -100,7 +125,7 @@ func TestGenerateFilters(t *testing.T) {
 				},
 			},
 			expected: map[string][]interface{}{
-				"full_name = $i": {"John Doe"},
+				"full_name ILIKE $i": {"John Doe"},
 			},
 		},
 		{
@@ -148,6 +173,50 @@ func TestGenerateFilters(t *testing.T) {
 			},
 		},
 		{
+			name: "integer greater",
+			pagParams: models.PaginationItems{
+				"count": {
+					Filter: primitiveFilter("30", models.PaginationFilterModesGreaterThan),
+				},
+			},
+			expected: map[string][]interface{}{
+				"db_count > $i": {30},
+			},
+		},
+		{
+			name: "integer greater or equal",
+			pagParams: models.PaginationItems{
+				"count": {
+					Filter: primitiveFilter("30", models.PaginationFilterModesGreaterThanOrEqualTo),
+				},
+			},
+			expected: map[string][]interface{}{
+				"db_count >= $i": {30},
+			},
+		},
+		{
+			name: "integer less",
+			pagParams: models.PaginationItems{
+				"count": {
+					Filter: primitiveFilter("30", models.PaginationFilterModesLessThan),
+				},
+			},
+			expected: map[string][]interface{}{
+				"db_count < $i": {30},
+			},
+		},
+		{
+			name: "integer less or equal",
+			pagParams: models.PaginationItems{
+				"count": {
+					Filter: primitiveFilter("30", models.PaginationFilterModesLessThanOrEqualTo),
+				},
+			},
+			expected: map[string][]interface{}{
+				"db_count <= $i": {30},
+			},
+		},
+		{
 			name: "bad integer",
 			pagParams: models.PaginationItems{
 				"count": {
@@ -166,6 +235,15 @@ func TestGenerateFilters(t *testing.T) {
 			expected: map[string][]interface{}{
 				"db_countf = $i": {1.123},
 			},
+		},
+		{
+			name: "bad float",
+			pagParams: models.PaginationItems{
+				"countF": {
+					Filter: primitiveFilter("aaa", models.PaginationFilterModesEquals),
+				},
+			},
+			errContains: "db_countf: invalid float \"aaa\"",
 		},
 		{
 			name: "boolean equals",
@@ -216,7 +294,7 @@ func TestGenerateFilters(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := postgresql.GenerateFilters(testEntity, tc.pagParams)
+			got, err := postgresql.GenerateDefaultFilters(testEntity, tc.pagParams)
 			if err != nil && tc.errContains == "" {
 				t.Errorf("unexpected error: %v", err)
 

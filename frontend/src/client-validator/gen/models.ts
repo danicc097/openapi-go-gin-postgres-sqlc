@@ -614,6 +614,7 @@ export interface WorkItemBase {
 export interface PaginationFilterPrimitive {
   filterMode: PaginationFilterModes
   value: string | null
+  caseSensitive?: boolean | null
 }
 export interface PaginationFilterArray {
   filterMode: PaginationFilterModes

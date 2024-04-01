@@ -136,6 +136,10 @@ func NewDB(options ...TestDBOption) (*pgxpool.Pool, *sql.DB, error) {
 		panic(fmt.Sprintf("Couldn't migrate (migrations): %s\n", err))
 	}
 
+	// when it gets slow, maybe we could squash them inmemory for tests.
+	// maybe see available sources, e.g.
+	// https://github.com/golang-migrate/migrate/blob/master/source/iofs/example_test.go
+	// else just pass in tmp file
 	mMigrations, err := migrate.NewWithDatabaseInstance("file://"+path.Join(path.Dir(src), "../../db/migrations/"), "postgres", driver)
 	if err != nil {
 		panic(fmt.Sprintf("Couldn't migrate (post-migrations): %s\n", err))

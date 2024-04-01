@@ -659,12 +659,15 @@ clean_yq_array() {
 }
 
 go_test() {
-  local cache_opt="-count=1"
+  local cache_opt="-count=1" exit_code=1
   cache_all "$GEN_CACHE/go-test.md5" .env.$X_ENV db/ >/dev/null && cache_opt=""
 
   set -x
   APP_ENV="$X_ENV" go test ${go_test_flags[@]} $cache_opt $@
+  exit_code=$?
   set +x
+
+  return $exit_code
 }
 
 # Run post-generation scripts in the internal package.
@@ -1227,9 +1230,9 @@ x.test.backend.setup() {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
     run_shared_services up -d --build --remove-orphans --force-recreate --wait
-    x.gen
     # no need to migrate, done on every test run internally
     docker.postgres.drop_and_recreate_db $POSTGRES_TEST_DB
+    x.gen
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
@@ -1350,8 +1353,7 @@ test_backend_watch() {
       --format='%T %f' \
       --timefmt='%s' \
       . && clear &&
-      go_test -tags $tags "$@" &&
-      echo "${GREEN}✓ All tests passing${OFF}"
+      { go_test -tags $tags "$@" && echo "${GREEN}✓ All tests passing${OFF}"; } || echo "${RED}X Tests failed${OFF}"
   done
 }
 

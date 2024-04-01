@@ -808,6 +808,7 @@ export interface components {
     PaginationFilterPrimitive: {
       filterMode: components["schemas"]["PaginationFilterModes"];
       value: string | null;
+      caseSensitive?: boolean | null;
     };
     PaginationFilterArray: {
       filterMode: components["schemas"]["PaginationFilterModes"];

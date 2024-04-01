@@ -10,10 +10,15 @@ import (
 )
 
 const (
-	ilike     = " ILIKE $i"
-	equal     = " = $i"
-	isNull    = " is null"
-	isNotNull = " is not null"
+	like         = " LIKE $i"
+	ilike        = " ILIKE $i"
+	equal        = " = $i"
+	greater      = " > $i"
+	greaterEqual = " >= $i"
+	less         = " < $i"
+	lessEqual    = " <= $i"
+	isNull       = " is null"
+	isNotNull    = " is not null"
 
 	// https://www.postgresql.org/docs/16/functions-array.html#ARRAY-OPERATORS-TABLE
 	// https://www.postgresql.org/docs/16/functions-subquery.html
@@ -24,7 +29,8 @@ const (
 	// not to be confused with filtering on array columns which isn't implemented at the moment
 )
 
-func GenerateFilters(entity db.TableEntity, paginationParams models.PaginationItems) (map[string][]interface{}, error) {
+// GenerateDefaultFilters generates SQL where clauses for a given set of pagination params.
+func GenerateDefaultFilters(entity db.TableEntity, paginationParams models.PaginationItems) (map[string][]interface{}, error) {
 	filters := make(map[string][]interface{})
 
 	if _, ok := db.EntityFilters[entity]; !ok {
@@ -89,32 +95,49 @@ func GenerateFilters(entity db.TableEntity, paginationParams models.PaginationIt
 				continue
 			}
 			v := *t.Value
+
 			switch dbfilter.Type {
 			case "string":
+
+				op := ilike
+				if t.CaseSensitive != nil && *t.CaseSensitive {
+					op = like
+				}
 				switch filterMode {
 				case models.PaginationFilterModesEquals:
-					filters[dbfilter.Db+equal] = []interface{}{v}
+					filters[dbfilter.Db+op] = []interface{}{v}
 				case models.PaginationFilterModesContains:
-					filters[dbfilter.Db+ilike] = []interface{}{"%" + v + "%"}
+					filters[dbfilter.Db+op] = []interface{}{"%" + v + "%"}
 				case models.PaginationFilterModesStartsWith:
-					filters[dbfilter.Db+ilike] = []interface{}{v + "%"}
+					filters[dbfilter.Db+op] = []interface{}{v + "%"}
 				case models.PaginationFilterModesEndsWith:
-					filters[dbfilter.Db+ilike] = []interface{}{"%" + v}
+					filters[dbfilter.Db+op] = []interface{}{"%" + v}
 				}
-			case "integer":
-				if intValue, err := strconv.Atoi(v); err == nil {
-					filters[dbfilter.Db+equal] = []interface{}{intValue}
-				} else {
-					return nil, fmt.Errorf("%s: invalid integer %q", dbfilter.Db, v)
+			case "float", "integer":
+				var num interface{}
+				switch dbfilter.Type {
+				case "integer":
+					num, err = strconv.Atoi(v)
+				case "float":
+					num, err = strconv.ParseFloat(v, 64)
 				}
-			case "float":
-				if floatValue, err := strconv.ParseFloat(v, 64); err == nil {
-					filters[dbfilter.Db+equal] = []interface{}{floatValue}
-				} else {
-					return nil, fmt.Errorf("%s: invalid float %q", dbfilter.Db, v)
+				if err != nil {
+					return nil, fmt.Errorf("%s: invalid %s %q", dbfilter.Db, dbfilter.Type, v)
+				}
+
+				switch filterMode {
+				case models.PaginationFilterModesEquals:
+					filters[dbfilter.Db+equal] = []interface{}{num}
+				case models.PaginationFilterModesGreaterThan:
+					filters[dbfilter.Db+greater] = []interface{}{num}
+				case models.PaginationFilterModesGreaterThanOrEqualTo:
+					filters[dbfilter.Db+greaterEqual] = []interface{}{num}
+				case models.PaginationFilterModesLessThan:
+					filters[dbfilter.Db+less] = []interface{}{num}
+				case models.PaginationFilterModesLessThanOrEqualTo:
+					filters[dbfilter.Db+lessEqual] = []interface{}{num}
 				}
 			case "boolean":
-				// we will receive actual types (boolean, time.Time) via runtime package
 				if v != "true" && v != "false" {
 					return nil, fmt.Errorf("%s: invalid boolean %q", dbfilter.Db, v)
 				}

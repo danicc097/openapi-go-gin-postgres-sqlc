@@ -472,8 +472,9 @@ type PaginationFilterModes string
 
 // PaginationFilterPrimitive defines the model for PaginationFilterPrimitive.
 type PaginationFilterPrimitive struct {
-	FilterMode externalRef0.PaginationFilterModes `json:"filterMode"`
-	Value      *string                            `json:"value"`
+	CaseSensitive *bool                              `json:"caseSensitive"`
+	FilterMode    externalRef0.PaginationFilterModes `json:"filterMode"`
+	Value         *string                            `json:"value"`
 }
 
 // PaginationItems represents pagination data indexed by column id

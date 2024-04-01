@@ -9,6 +9,7 @@ import type * as EntityIDs from 'src/gen/entity-ids'
 import type { PaginationFilterPrimitiveFilterMode } from './paginationFilterPrimitiveFilterMode';
 
 export interface PaginationFilterPrimitive {
+  caseSensitive?: boolean | null;
   filterMode: PaginationFilterPrimitiveFilterMode;
   value: string | null;
 }
