@@ -237,18 +237,22 @@ begin
        - gin is apparently not too helpful for very short string searches.
        - btree not usable for text except for equals and startsWith.
 
-       create index on cache__demo_work_items using gin (
+
+       make sure the index used in explain is the one being tested...
+       drop index if exists lastmsg;
+       create index lastmsg on cache__demo_work_items using btree (
+       last_message_at desc);
+
+       drop index if exists abc;
+       create index abc on cache__demo_work_items using gin (
        description gin_trgm_ops
        , last_message_at
        , reopened);
 
        set enable_seqscan = "off";
-       explain analyze select * from cache__demo_work_items where description  ilike '%54%' order by last_message_at  desc;
-
-       1000 rows dataset: (to properly test index, rows returned must be >0)
-       Index Scan Backward using cache__demo_work_items_last_message_at_idx on cache__demo_work_items  (cost=0.28..58.22 rows=20 width=145) (actual time=0.059..0.725 rows=20 loops=1)
-       Filter: (description ~~* '%54%'::text)
-       Rows Removed by Filter: 980
+       -- with 1000 rows
+       explain analyze select * from cache__demo_work_items where description  ilike '%4%' order by last_message_at  desc limit 20;
+       ->  Index Scan using lastmsg on cache__demo_work_items  (cost=0.28..58.23 rows=263 width=145) (actual time=0.018..0.160 rows=20 loops=1)
        */
       case project_name
       when 'demo_work_items' then

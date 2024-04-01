@@ -254,7 +254,7 @@ func main() {
 	demoWorkItems := []*db.WorkItem{}
 	var wg sync.WaitGroup
 	semaphore := make(chan struct{}, 2000)
-	for i := 1; i <= 200; i++ {
+	for i := 1; i <= 1000; i++ {
 		semaphore <- struct{}{} // acquire
 		wg.Add(1)
 
