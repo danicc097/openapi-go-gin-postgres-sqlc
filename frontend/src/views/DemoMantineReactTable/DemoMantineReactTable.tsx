@@ -293,7 +293,7 @@ export default function DemoMantineReactTable() {
   const [sorting, setSorting] = useState<MRT_SortingState>([])
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 15,
   })
 
   const [cursor, setCursor] = useState(dayjs().toRFC3339NANO())
@@ -311,7 +311,7 @@ export default function DemoMantineReactTable() {
     {
       direction: 'desc',
       cursor,
-      limit: 15,
+      limit: pagination.pageSize,
       // deepmap needs to be updated for kin-openapi new Type struct
       // filter: { post: ['fesefesf', '1'], bools: [true, false], objects: [{ nestedObj: 'something' }] },
       // nested: { obj: { nestedObj: '1212' } },
@@ -347,6 +347,15 @@ export default function DemoMantineReactTable() {
       },
     },
   )
+
+  useEffect(() => {
+    // TODO: custom BooleanInput -> onChange if e.target.indeterminate remove removeFilterMode(k)
+    console.log({
+      columnFilters,
+      globalFilter,
+      dynamicCOnfigFilterModes: dynamicConfig?.filterModes,
+    })
+  }, [columnFilterFns, columnFilters, globalFilter, dynamicConfig?.filterModes])
 
   // useStopInfiniteRenders(60)
 
