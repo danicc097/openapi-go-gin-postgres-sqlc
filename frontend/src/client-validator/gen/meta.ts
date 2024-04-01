@@ -95,11 +95,11 @@ import {
   PaginationFilter,
   Pagination,
   PaginationItems,
+  GetPaginatedUsersQueryParameters,
   PaginationFilterModes,
   DbCacheDemoWorkItemJoins,
   DbUserJoins,
   GetCacheDemoWorkItemQueryParameters,
-  GetPaginatedUsersQueryParameters,
   GetCurrentUserQueryParameters,
 } from './models'
 
@@ -255,6 +255,10 @@ export const schemaDefinitions = {
   PaginationFilter: info<PaginationFilter>('PaginationFilter', '#/definitions/PaginationFilter'),
   Pagination: info<Pagination>('Pagination', '#/definitions/Pagination'),
   PaginationItems: info<PaginationItems>('PaginationItems', '#/definitions/PaginationItems'),
+  GetPaginatedUsersQueryParameters: info<GetPaginatedUsersQueryParameters>(
+    'GetPaginatedUsersQueryParameters',
+    '#/definitions/GetPaginatedUsersQueryParameters',
+  ),
   PaginationFilterModes: info<PaginationFilterModes>('PaginationFilterModes', '#/definitions/PaginationFilterModes'),
   DbCacheDemoWorkItemJoins: info<DbCacheDemoWorkItemJoins>(
     'DbCacheDemoWorkItemJoins',
@@ -264,10 +268,6 @@ export const schemaDefinitions = {
   GetCacheDemoWorkItemQueryParameters: info<GetCacheDemoWorkItemQueryParameters>(
     'GetCacheDemoWorkItemQueryParameters',
     '#/definitions/GetCacheDemoWorkItemQueryParameters',
-  ),
-  GetPaginatedUsersQueryParameters: info<GetPaginatedUsersQueryParameters>(
-    'GetPaginatedUsersQueryParameters',
-    '#/definitions/GetPaginatedUsersQueryParameters',
   ),
   GetCurrentUserQueryParameters: info<GetCurrentUserQueryParameters>(
     'GetCurrentUserQueryParameters',

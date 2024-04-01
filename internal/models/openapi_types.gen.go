@@ -729,8 +729,11 @@ type GetCurrentUserQueryParameters struct {
 
 // GetPaginatedUsersQueryParameters defines the model for GetPaginatedUsersQueryParameters.
 type GetPaginatedUsersQueryParameters struct {
+	// Items represents pagination data indexed by column id
+	Items *PaginationItems `json:"items,omitempty"`
+
 	// Role is generated from roles.json keys.
-	Role Role `json:"role"`
+	Role *Role `json:"role,omitempty"`
 }
 
 // HTTPError represents an error message response.
@@ -1092,10 +1095,11 @@ type GetProjectWorkitemsParams struct {
 
 // GetPaginatedUsersParams defines parameters for GetPaginatedUsers.
 type GetPaginatedUsersParams struct {
-	Limit     int       `form:"limit" json:"limit"`
-	Direction Direction `form:"direction" json:"direction"`
-	Cursor    string    `form:"cursor" json:"cursor"`
-	Filter    *struct {
+	Limit       int                               `form:"limit" json:"limit"`
+	Direction   Direction                         `form:"direction" json:"direction"`
+	Cursor      string                            `form:"cursor" json:"cursor"`
+	SearchQuery *GetPaginatedUsersQueryParameters `json:"searchQuery,omitempty"`
+	Filter      *struct {
 		Bools   *[]bool `json:"bools,omitempty"`
 		Ints    *[]int  `json:"ints,omitempty"`
 		Objects *[]struct {

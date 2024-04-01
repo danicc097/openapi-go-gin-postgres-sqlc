@@ -413,7 +413,14 @@ type ErrorCode string
 
 /* Ignoring existing struct (rest/models.go) GetCurrentUserQueryParameters */
 
-/* Ignoring existing struct (rest/models.go) GetPaginatedUsersQueryParameters */
+// GetPaginatedUsersQueryParameters defines the model for GetPaginatedUsersQueryParameters.
+type GetPaginatedUsersQueryParameters struct {
+	// Items represents pagination data indexed by column id
+	Items *externalRef0.PaginationItems `json:"items,omitempty"`
+
+	// Role is generated from roles.json keys.
+	Role *externalRef0.Role `json:"role,omitempty"`
+}
 
 // HTTPError represents an error message response.
 type HTTPError struct {
@@ -629,10 +636,11 @@ type GetProjectWorkitemsParams struct {
 
 // GetPaginatedUsersParams defines parameters for GetPaginatedUsers.
 type GetPaginatedUsersParams struct {
-	Limit     int                    `form:"limit" json:"limit"`
-	Direction externalRef0.Direction `form:"direction" json:"direction"`
-	Cursor    string                 `form:"cursor" json:"cursor"`
-	Filter    *struct {
+	Limit       int                                            `form:"limit" json:"limit"`
+	Direction   externalRef0.Direction                         `form:"direction" json:"direction"`
+	Cursor      string                                         `form:"cursor" json:"cursor"`
+	SearchQuery *externalRef0.GetPaginatedUsersQueryParameters `json:"searchQuery,omitempty"`
+	Filter      *struct {
 		Bools   *[]bool `json:"bools,omitempty"`
 		Ints    *[]int  `json:"ints,omitempty"`
 		Objects *[]struct {
@@ -1531,6 +1539,14 @@ func (siw *ServerInterfaceWrapper) GetPaginatedUsers(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, true, "cursor", c.Request.URL.Query(), &params.Cursor)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter cursor: %s", err)})
+		return
+	}
+
+	// ------------- Optional query parameter "searchQuery" -------------
+
+	err = runtime.BindQueryParameter("deepObject", true, false, "searchQuery", c.Request.URL.Query(), &params.SearchQuery)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter searchQuery: %s", err)})
 		return
 	}
 

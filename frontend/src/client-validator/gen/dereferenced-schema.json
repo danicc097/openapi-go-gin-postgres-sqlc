@@ -6736,6 +6736,123 @@
         "x-use-server-type": true
       }
     },
+    "GetPaginatedUsersQueryParameters": {
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "guest",
+            "user",
+            "advancedUser",
+            "manager",
+            "admin",
+            "superAdmin"
+          ],
+          "x-is-generated": true,
+          "description": "is generated from roles.json keys."
+        },
+        "items": {
+          "type": "object",
+          "description": "represents pagination data indexed by column id",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "filter": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "filterMode": {
+                        "enum": [
+                          "between",
+                          "betweenInclusive",
+                          "contains",
+                          "empty",
+                          "endsWith",
+                          "equals",
+                          "fuzzy",
+                          "greaterThan",
+                          "greaterThanOrEqualTo",
+                          "lessThan",
+                          "lessThanOrEqualTo",
+                          "notEmpty",
+                          "notEquals",
+                          "startsWith"
+                        ],
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "caseSensitive": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "filterMode",
+                      "value"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "filterMode": {
+                        "enum": [
+                          "between",
+                          "betweenInclusive",
+                          "contains",
+                          "empty",
+                          "endsWith",
+                          "equals",
+                          "fuzzy",
+                          "greaterThan",
+                          "greaterThanOrEqualTo",
+                          "lessThan",
+                          "lessThanOrEqualTo",
+                          "notEmpty",
+                          "notEquals",
+                          "startsWith"
+                        ],
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "array",
+                        "items": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "filterMode",
+                      "value"
+                    ]
+                  }
+                ],
+                "x-use-server-type": true
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            "x-use-server-type": true
+          }
+        }
+      },
+      "type": "object"
+    },
     "PaginationFilterModes": {
       "enum": [
         "between",
@@ -6873,29 +6990,6 @@
       },
       "type": "object",
       "x-gen-struct": "GetCacheDemoWorkItemQueryParameters",
-      "x-is-generated": true
-    },
-    "GetPaginatedUsersQueryParameters": {
-      "properties": {
-        "role": {
-          "type": "string",
-          "enum": [
-            "guest",
-            "user",
-            "advancedUser",
-            "manager",
-            "admin",
-            "superAdmin"
-          ],
-          "x-is-generated": true,
-          "description": "is generated from roles.json keys."
-        }
-      },
-      "required": [
-        "role"
-      ],
-      "type": "object",
-      "x-gen-struct": "GetPaginatedUsersQueryParameters",
       "x-is-generated": true
     },
     "GetCurrentUserQueryParameters": {
@@ -13684,6 +13778,123 @@
         "x-use-server-type": true
       }
     },
+    "GetPaginatedUsersQueryParameters": {
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "guest",
+            "user",
+            "advancedUser",
+            "manager",
+            "admin",
+            "superAdmin"
+          ],
+          "x-is-generated": true,
+          "description": "is generated from roles.json keys."
+        },
+        "items": {
+          "type": "object",
+          "description": "represents pagination data indexed by column id",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "filter": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "filterMode": {
+                        "enum": [
+                          "between",
+                          "betweenInclusive",
+                          "contains",
+                          "empty",
+                          "endsWith",
+                          "equals",
+                          "fuzzy",
+                          "greaterThan",
+                          "greaterThanOrEqualTo",
+                          "lessThan",
+                          "lessThanOrEqualTo",
+                          "notEmpty",
+                          "notEquals",
+                          "startsWith"
+                        ],
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "caseSensitive": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "filterMode",
+                      "value"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "filterMode": {
+                        "enum": [
+                          "between",
+                          "betweenInclusive",
+                          "contains",
+                          "empty",
+                          "endsWith",
+                          "equals",
+                          "fuzzy",
+                          "greaterThan",
+                          "greaterThanOrEqualTo",
+                          "lessThan",
+                          "lessThanOrEqualTo",
+                          "notEmpty",
+                          "notEquals",
+                          "startsWith"
+                        ],
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "array",
+                        "items": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "filterMode",
+                      "value"
+                    ]
+                  }
+                ],
+                "x-use-server-type": true
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            "x-use-server-type": true
+          }
+        }
+      },
+      "type": "object"
+    },
     "PaginationFilterModes": {
       "enum": [
         "between",
@@ -13821,29 +14032,6 @@
       },
       "type": "object",
       "x-gen-struct": "GetCacheDemoWorkItemQueryParameters",
-      "x-is-generated": true
-    },
-    "GetPaginatedUsersQueryParameters": {
-      "properties": {
-        "role": {
-          "type": "string",
-          "enum": [
-            "guest",
-            "user",
-            "advancedUser",
-            "manager",
-            "admin",
-            "superAdmin"
-          ],
-          "x-is-generated": true,
-          "description": "is generated from roles.json keys."
-        }
-      },
-      "required": [
-        "role"
-      ],
-      "type": "object",
-      "x-gen-struct": "GetPaginatedUsersQueryParameters",
       "x-is-generated": true
     },
     "GetCurrentUserQueryParameters": {

@@ -245,7 +245,6 @@ var PublicStructs = map[string]any{
 	"DemoWorkItem":                        new(rest.DemoWorkItem),
 	"GetCacheDemoWorkItemQueryParameters": new(rest.GetCacheDemoWorkItemQueryParameters),
 	"GetCurrentUserQueryParameters":       new(rest.GetCurrentUserQueryParameters),
-	"GetPaginatedUsersQueryParameters":    new(rest.GetPaginatedUsersQueryParameters),
 	"Notification":                        new(rest.Notification),
 	"PaginatedNotificationsResponse":      new(rest.PaginatedNotificationsResponse),
 	"PaginatedUsersResponse":              new(rest.PaginatedUsersResponse),

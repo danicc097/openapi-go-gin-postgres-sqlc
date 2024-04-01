@@ -630,6 +630,10 @@ export interface Pagination {
 export interface PaginationItems {
   [k: string]: Pagination
 }
+export interface GetPaginatedUsersQueryParameters {
+  role?: Role
+  items?: PaginationItems
+}
 export interface DbCacheDemoWorkItemJoins {
   assignees: boolean
   kanbanStep: boolean
@@ -652,9 +656,6 @@ export interface DbUserJoins {
 }
 export interface GetCacheDemoWorkItemQueryParameters {
   joins?: DbCacheDemoWorkItemJoins
-}
-export interface GetPaginatedUsersQueryParameters {
-  role: Role
 }
 export interface GetCurrentUserQueryParameters {
   joins?: DbUserJoins

@@ -91,6 +91,8 @@ func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateU
 }
 
 func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedUsersRequestObject) (GetPaginatedUsersResponseObject, error) {
+	// TODO: support discriminator unmarshaling in runtime package, or mark param to skip gen via x-no-binding or similar if its a mess.
+	//
 	users, err := h.svc.User.Paginated(c, h.pool, request.Params)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)

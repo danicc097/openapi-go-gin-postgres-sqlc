@@ -2512,6 +2512,17 @@
         "$ref": "#/definitions/Pagination"
       }
     },
+    "GetPaginatedUsersQueryParameters": {
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/Role"
+        },
+        "items": {
+          "$ref": "#/definitions/PaginationItems"
+        }
+      },
+      "type": "object"
+    },
     "PaginationFilterModes": {
       "enum": [
         "between",
@@ -2617,19 +2628,6 @@
       },
       "type": "object",
       "x-gen-struct": "GetCacheDemoWorkItemQueryParameters",
-      "x-is-generated": true
-    },
-    "GetPaginatedUsersQueryParameters": {
-      "properties": {
-        "role": {
-          "$ref": "#/definitions/Role"
-        }
-      },
-      "required": [
-        "role"
-      ],
-      "type": "object",
-      "x-gen-struct": "GetPaginatedUsersQueryParameters",
       "x-is-generated": true
     },
     "GetCurrentUserQueryParameters": {
@@ -2917,6 +2915,9 @@
     "PaginationItems": {
       "$ref": "#/definitions/PaginationItems"
     },
+    "GetPaginatedUsersQueryParameters": {
+      "$ref": "#/definitions/GetPaginatedUsersQueryParameters"
+    },
     "PaginationFilterModes": {
       "$ref": "#/definitions/PaginationFilterModes"
     },
@@ -2928,9 +2929,6 @@
     },
     "GetCacheDemoWorkItemQueryParameters": {
       "$ref": "#/definitions/GetCacheDemoWorkItemQueryParameters"
-    },
-    "GetPaginatedUsersQueryParameters": {
-      "$ref": "#/definitions/GetPaginatedUsersQueryParameters"
     },
     "GetCurrentUserQueryParameters": {
       "$ref": "#/definitions/GetCurrentUserQueryParameters"

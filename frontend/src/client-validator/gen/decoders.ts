@@ -99,11 +99,11 @@ import {
   PaginationFilter,
   Pagination,
   PaginationItems,
+  GetPaginatedUsersQueryParameters,
   PaginationFilterModes,
   DbCacheDemoWorkItemJoins,
   DbUserJoins,
   GetCacheDemoWorkItemQueryParameters,
-  GetPaginatedUsersQueryParameters,
   GetCurrentUserQueryParameters,
 } from './models'
 import jsonSchema from './schema.json'
@@ -1205,6 +1205,18 @@ export const PaginationItemsDecoder: Decoder<PaginationItems> = {
     return validateJson(json, schema, PaginationItemsDecoder.definitionName)
   },
 }
+export const GetPaginatedUsersQueryParametersDecoder: Decoder<GetPaginatedUsersQueryParameters> = {
+  definitionName: 'GetPaginatedUsersQueryParameters',
+  schemaRef: '#/definitions/GetPaginatedUsersQueryParameters',
+
+  decode(json: unknown): GetPaginatedUsersQueryParameters {
+    const schema = ajv.getSchema(GetPaginatedUsersQueryParametersDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${GetPaginatedUsersQueryParametersDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, GetPaginatedUsersQueryParametersDecoder.definitionName)
+  },
+}
 export const PaginationFilterModesDecoder: Decoder<PaginationFilterModes> = {
   definitionName: 'PaginationFilterModes',
   schemaRef: '#/definitions/PaginationFilterModes',
@@ -1251,18 +1263,6 @@ export const GetCacheDemoWorkItemQueryParametersDecoder: Decoder<GetCacheDemoWor
       throw new Error(`Schema ${GetCacheDemoWorkItemQueryParametersDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, GetCacheDemoWorkItemQueryParametersDecoder.definitionName)
-  },
-}
-export const GetPaginatedUsersQueryParametersDecoder: Decoder<GetPaginatedUsersQueryParameters> = {
-  definitionName: 'GetPaginatedUsersQueryParameters',
-  schemaRef: '#/definitions/GetPaginatedUsersQueryParameters',
-
-  decode(json: unknown): GetPaginatedUsersQueryParameters {
-    const schema = ajv.getSchema(GetPaginatedUsersQueryParametersDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${GetPaginatedUsersQueryParametersDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, GetPaginatedUsersQueryParametersDecoder.definitionName)
   },
 }
 export const GetCurrentUserQueryParametersDecoder: Decoder<GetCurrentUserQueryParameters> = {

@@ -41,6 +41,13 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParam
 }
 
 func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPaginatedUsersParams) ([]db.User, error) {
+	if params.SearchQuery.Items != nil {
+		filters, err := GenerateDefaultFilters(db.TableEntityUser, *params.SearchQuery.Items)
+		if err != nil {
+			return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid default filters")
+		}
+		fmt.Printf("filters: %+v\n", filters)
+	}
 	createdAt, err := time.Parse(time.RFC3339, params.Cursor)
 	if err != nil {
 		return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid createdAt cursor for paginated user: %s", params.Cursor)

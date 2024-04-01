@@ -6,6 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { Direction } from './direction'
+import type { GetPaginatedUsersQueryParameters } from './getPaginatedUsersQueryParameters'
 import type { GetPaginatedUsersFilterObjectsItem } from './getPaginatedUsersFilterObjectsItem'
 import type { GetPaginatedUsersNestedObj } from './getPaginatedUsersNestedObj'
 
@@ -13,6 +14,7 @@ export type GetPaginatedUsersParams = {
   limit: number
   direction: Direction
   cursor: string
+  searchQuery?: GetPaginatedUsersQueryParameters
   filter?: {
     bools?: boolean[]
     ints?: number[]

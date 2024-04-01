@@ -823,6 +823,10 @@ export interface components {
     PaginationItems: {
       [key: string]: components["schemas"]["Pagination"] | undefined;
     };
+    GetPaginatedUsersQueryParameters: {
+      role?: components["schemas"]["Role"];
+      items?: components["schemas"]["PaginationItems"];
+    };
     /** @enum {string} */
     PaginationFilterModes: "between" | "betweenInclusive" | "contains" | "empty" | "endsWith" | "equals" | "fuzzy" | "greaterThan" | "greaterThanOrEqualTo" | "lessThan" | "lessThanOrEqualTo" | "notEmpty" | "notEquals" | "startsWith";
     DbCacheDemoWorkItemJoins: {
@@ -847,9 +851,6 @@ export interface components {
     };
     GetCacheDemoWorkItemQueryParameters: {
       joins?: components["schemas"]["DbCacheDemoWorkItemJoins"];
-    };
-    GetPaginatedUsersQueryParameters: {
-      role: components["schemas"]["Role"];
     };
     GetCurrentUserQueryParameters: {
       joins?: components["schemas"]["DbUserJoins"];
@@ -1603,6 +1604,7 @@ export interface operations {
         limit: number;
         direction: components["schemas"]["Direction"];
         cursor: string;
+        searchQuery?: components["schemas"]["GetPaginatedUsersQueryParameters"];
         filter?: {
           post?: string[];
           bools?: boolean[];

@@ -1393,7 +1393,6 @@ pre_build_cmd="project setup-swagger-ui"
 # Run backend.
 x.run.backend() {
   $pre_build_cmd
-  run_shared_services up -d --build --remove-orphans --force-recreate --wait
   go run ./cmd/rest-server/main.go -env=.env.$X_ENV
 }
 
@@ -1402,7 +1401,6 @@ x.run.backend-hr() {
   # TODO replace healthcheck with adhoc calls and bring services up in btaches
   # to prevent either bombarding with req or having to wait too long at startup.
   # see https://github.com/moby/moby/issues/33410
-  run_shared_services up -d --build --remove-orphans --force-recreate --wait
 
   # https://github.com/cosmtrek/air/blob/master/air_example.toml
   # NOTE: building binary unreliable, leads to bin not found.
