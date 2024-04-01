@@ -1230,9 +1230,9 @@ x.test.backend.setup() {
     # NOTE: tests run independently in Go so we can't have a function be called and run
     # only once before any test starts
     run_shared_services up -d --build --remove-orphans --force-recreate --wait
-    x.gen
     # no need to migrate, done on every test run internally
     docker.postgres.drop_and_recreate_db $POSTGRES_TEST_DB
+    x.gen
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
   xsetup.backup.cleanup
 }
