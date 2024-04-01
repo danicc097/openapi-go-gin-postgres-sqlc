@@ -191,7 +191,50 @@ func fieldIndicesByJSONTag(i interface{}) (map[string]int, error) {
 	return fieldMap, nil
 }
 
+// DiscriminatorProvider is implemented by anyOf, oneOf, allOf schemas.
+type DiscriminatorProvider interface {
+	Discriminator() (string, error)
+	UnmarshalJSON(b []byte) error
+}
+
+func (f *fieldOrValue) marshal() ([]byte, error) {
+	m := make(map[string]interface{})
+	for key, fov := range f.fields {
+		if len(fov.fields) > 0 {
+			nestedJSON, err := fov.marshal()
+			if err != nil {
+				return nil, err
+			}
+			var nestedValue interface{}
+			if err := json.Unmarshal(nestedJSON, &nestedValue); err != nil {
+				return nil, err
+			}
+			m[key] = nestedValue
+		} else {
+			// add leafs directly to the map
+			m[key] = fov.value
+		}
+	}
+
+	return json.Marshal(m)
+}
+
 func assignPathValues(dst interface{}, pathValues fieldOrValue) error {
+	if _, ok := dst.(DiscriminatorProvider); ok {
+		// marshal pathValues back, will be converted manually via
+		// dedicated methods
+		vv, err := pathValues.marshal()
+		if err != nil {
+			return fmt.Errorf("error marshaling discriminator map: %v", err)
+		}
+
+		if err := json.Unmarshal(vv, dst); err != nil {
+			return fmt.Errorf("Unmarshal dst: %v", err)
+		}
+
+		return nil
+	}
+
 	// t := reflect.TypeOf(dst)
 	v := reflect.ValueOf(dst)
 

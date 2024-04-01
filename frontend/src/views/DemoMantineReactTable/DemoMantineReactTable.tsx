@@ -325,9 +325,9 @@ export default function DemoMantineReactTable() {
       // },
       searchQuery: {
         items: {
-          description: {
+          email: {
             filter: {
-              value: 'this',
+              value: 'user_19',
               filterMode: 'startsWith',
             },
           },
