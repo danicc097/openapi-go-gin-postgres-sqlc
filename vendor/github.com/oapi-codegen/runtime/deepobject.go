@@ -225,11 +225,11 @@ func assignPathValues(dst interface{}, pathValues fieldOrValue) error {
 		// dedicated methods
 		vv, err := pathValues.marshal()
 		if err != nil {
-			return fmt.Errorf("error marshaling discriminator map: %v", err)
+			return fmt.Errorf("error marshaling object with discriminator values: %v", err)
 		}
 
 		if err := json.Unmarshal(vv, dst); err != nil {
-			return fmt.Errorf("Unmarshal dst: %v", err)
+			return fmt.Errorf("error unmarshaling object with discriminator: %v", err)
 		}
 
 		return nil

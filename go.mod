@@ -6,7 +6,7 @@ replace (
 	// all 3 are branches named `custom`.
 	github.com/deepmap/oapi-codegen/v2 => github.com/danicc097/oapi-codegen/v2 v2.0.10004
 	github.com/getkin/kin-openapi => github.com/danicc097/kin-openapi v0.123.1-0.20240320222651-5a7e849603fb
-	github.com/oapi-codegen/runtime => github.com/danicc097/runtime v1.0.10001
+	github.com/oapi-codegen/runtime => github.com/danicc097/runtime v1.0.10002
 )
 
 require (
