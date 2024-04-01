@@ -659,12 +659,15 @@ clean_yq_array() {
 }
 
 go_test() {
-  local cache_opt="-count=1"
+  local cache_opt="-count=1" exit_code=1
   cache_all "$GEN_CACHE/go-test.md5" .env.$X_ENV db/ >/dev/null && cache_opt=""
 
   set -x
   APP_ENV="$X_ENV" go test ${go_test_flags[@]} $cache_opt $@
+  exit_code=$?
   set +x
+
+  return $exit_code
 }
 
 # Run post-generation scripts in the internal package.
@@ -1350,8 +1353,7 @@ test_backend_watch() {
       --format='%T %f' \
       --timefmt='%s' \
       . && clear &&
-      go_test -tags $tags "$@" &&
-      echo "${GREEN}✓ All tests passing${OFF}"
+      { go_test -tags $tags "$@" && echo "${GREEN}✓ All tests passing${OFF}"; } || echo "${RED}X Tests failed${OFF}"
   done
 }
 

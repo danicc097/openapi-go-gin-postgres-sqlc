@@ -2448,6 +2448,12 @@
             "string",
             "null"
           ]
+        },
+        "caseSensitive": {
+          "type": [
+            "boolean",
+            "null"
+          ]
         }
       },
       "required": [

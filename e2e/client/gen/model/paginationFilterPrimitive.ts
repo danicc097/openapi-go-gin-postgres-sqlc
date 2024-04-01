@@ -8,6 +8,7 @@
 import type { PaginationFilterPrimitiveFilterMode } from './paginationFilterPrimitiveFilterMode'
 
 export interface PaginationFilterPrimitive {
+  caseSensitive?: boolean | null
   filterMode: PaginationFilterPrimitiveFilterMode
   value: string | null
 }

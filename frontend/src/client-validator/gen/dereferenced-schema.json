@@ -6410,6 +6410,12 @@
             "string",
             "null"
           ]
+        },
+        "caseSensitive": {
+          "type": [
+            "boolean",
+            "null"
+          ]
         }
       },
       "required": [
@@ -6481,6 +6487,12 @@
             "value": {
               "type": [
                 "string",
+                "null"
+              ]
+            },
+            "caseSensitive": {
+              "type": [
+                "boolean",
                 "null"
               ]
             }
@@ -6560,6 +6572,12 @@
                 "value": {
                   "type": [
                     "string",
+                    "null"
+                  ]
+                },
+                "caseSensitive": {
+                  "type": [
+                    "boolean",
                     "null"
                   ]
                 }
@@ -6652,6 +6670,12 @@
                   "value": {
                     "type": [
                       "string",
+                      "null"
+                    ]
+                  },
+                  "caseSensitive": {
+                    "type": [
+                      "boolean",
                       "null"
                     ]
                   }
@@ -13334,6 +13358,12 @@
             "string",
             "null"
           ]
+        },
+        "caseSensitive": {
+          "type": [
+            "boolean",
+            "null"
+          ]
         }
       },
       "required": [
@@ -13405,6 +13435,12 @@
             "value": {
               "type": [
                 "string",
+                "null"
+              ]
+            },
+            "caseSensitive": {
+              "type": [
+                "boolean",
                 "null"
               ]
             }
@@ -13484,6 +13520,12 @@
                 "value": {
                   "type": [
                     "string",
+                    "null"
+                  ]
+                },
+                "caseSensitive": {
+                  "type": [
+                    "boolean",
                     "null"
                   ]
                 }
@@ -13576,6 +13618,12 @@
                   "value": {
                     "type": [
                       "string",
+                      "null"
+                    ]
+                  },
+                  "caseSensitive": {
+                    "type": [
+                      "boolean",
                       "null"
                     ]
                   }

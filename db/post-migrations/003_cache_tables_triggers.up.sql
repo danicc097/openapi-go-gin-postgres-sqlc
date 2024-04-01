@@ -1,4 +1,5 @@
-create or replace function remove_comments (input_string text)
+-- NOTE: do not use `extensions.` prefix for indexes. Already in search_path.
+create or replace function normalize_index_def (input_string text)
   returns text
   as $$
 declare
@@ -8,12 +9,15 @@ begin
   output_string := REGEXP_REPLACE(input_string , '/\*([^*]|\*+[^*/])*\*+/' , '' , 'g');
   -- Remove -- style comments
   output_string := REGEXP_REPLACE(output_string , '--.*?\n' , '' , 'g');
-  -- Replace newlines with spaces
+  -- Replace newlines
   output_string := REGEXP_REPLACE(output_string , E'[\n\r]+' , ' ' , 'g');
-  -- Replace consecutive spaces with a single space
+  -- No ; in stored def
+  output_string := REGEXP_REPLACE(output_string , ';$' , '' , 'g');
   output_string := REGEXP_REPLACE(output_string , ' +' , ' ' , 'g');
-  -- Trim leading and trailing whitespace
-  output_string := TRIM(output_string);
+  output_string := REGEXP_REPLACE(output_string , '\s*\(\s*' , '(' , 'g');
+  output_string := REGEXP_REPLACE(output_string , '\s*\)\s*' , ')' , 'g');
+  output_string := REGEXP_REPLACE(output_string , '\s*,\s*' , ',' , 'g');
+  output_string := TRIM(LOWER(output_string));
 
   return output_string;
 end;
@@ -36,15 +40,13 @@ begin
     return false;
   end if;
 
-  execute FORMAT('SELECT remove_comments(pg_get_indexdef(''%I''::regclass));' , index_name) into existing_def;
-  new_index_def := remove_comments (new_index_def);
-  if existing_def is null then
-    return true;
-  ELSIF existing_def <> new_index_def then
-    return true;
-  else
+  execute FORMAT('SELECT normalize_index_def(pg_get_indexdef(''%I''::regclass));' , index_name) into existing_def;
+  new_index_def := normalize_index_def (new_index_def);
+  if existing_def is null or existing_def <> new_index_def then
     return false;
   end if;
+
+  return true;
 end;
 $$
 language plpgsql;
@@ -225,31 +227,57 @@ begin
       perform
         create_or_update_work_item_cache_table (project_name);
 
-      idx_name := FORMAT('cache__%I_gin_index' , project_name);
+      idx_name := FORMAT('public.cache__%I_gin_index' , project_name);
 
+
+      /*
+       - gin cannot use sort index, just btrees (or using btree_gin since pg12). the only alternative would be RUM
+       but its not guaranteed to be always faster. also doesnt support like op unless changing code:
+       see https://github.com/postgrespro/rum/issues/34 for supporting LIKE.
+       - gin is apparently not too helpful for very short string searches.
+       - btree not usable for text except for equals and startsWith.
+
+       create index on cache__demo_work_items using gin (
+       description gin_trgm_ops
+       , last_message_at
+       , reopened);
+
+       set enable_seqscan = "off";
+       explain analyze select * from cache__demo_work_items where description  ilike '%54%' order by last_message_at  desc;
+
+       1000 rows dataset: (to properly test index, rows returned must be >0)
+       Index Scan Backward using cache__demo_work_items_last_message_at_idx on cache__demo_work_items  (cost=0.28..58.22 rows=20 width=145) (actual time=0.059..0.725 rows=20 loops=1)
+       Filter: (description ~~* '%54%'::text)
+       Rows Removed by Filter: 980
+       */
       case project_name
       when 'demo_work_items' then
         idx_def := 'using gin (
-        title extensions.gin_trgm_ops
-        , line extensions.gin_trgm_ops
-        , ref extensions.gin_trgm_ops
+        title gin_trgm_ops
+        , line gin_trgm_ops
+        , description gin_trgm_ops
+        , ref gin_trgm_ops
+        , last_message_at
         , reopened)';
       when 'demo_two_work_items' then
         idx_def := 'using gin (
-        title extensions.gin_trgm_ops
+        title gin_trgm_ops
+        , description gin_trgm_ops
         )';
       else
         idx_def := ''; raise exception 'No index definition found for cache__%' , project_name;
       end case;
 
       if idx_def <> '' and not same_index_definition (idx_name , idx_def) then
-          execute FORMAT('create index newidx on cache__%I %s;' , project_name , idx_def);
-          --
-          execute FORMAT('drop index if exists %s;' , idx_name);
-          --
-          execute FORMAT('alter index newidx rename to %s;' , idx_name);
-        else
-          raise notice 'skipping identical create index statement: %' , idx_name;
+        raise notice 'recreating differing index: %' , idx_name;
+        --
+        execute FORMAT('create index newidx on cache__%I %s;' , project_name , idx_def);
+        --
+        execute FORMAT('drop index if exists %I;' , idx_name);
+        --
+        execute FORMAT('alter index newidx rename to %I;' , idx_name);
+      else
+        raise notice 'skipping identical create index statement: %' , idx_name;
         end if;
 
       execute FORMAT('create or replace trigger work_items_sync_trigger_%1$I

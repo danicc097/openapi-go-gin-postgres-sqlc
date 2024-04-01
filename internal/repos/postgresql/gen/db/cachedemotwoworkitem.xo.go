@@ -854,14 +854,14 @@ func CacheDemoTwoWorkItems(ctx context.Context, db DB, opts ...CacheDemoTwoWorkI
 	// logf(sqlstr, )
 	rows, err := db.Query(ctx, sqlstr, append([]any{}, append(filterParams, havingParams...)...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("CacheDemoTwoWorkItem/CacheDemoTwoWorkItemsByTitle/Query: %w", &XoError{Entity: "Cache  demo two work item", Err: err}))
+		return nil, logerror(fmt.Errorf("CacheDemoTwoWorkItem/CacheDemoTwoWorkItemsByTitleDescription/Query: %w", &XoError{Entity: "Cache  demo two work item", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[CacheDemoTwoWorkItem])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("CacheDemoTwoWorkItem/CacheDemoTwoWorkItemsByTitle/pgx.CollectRows: %w", &XoError{Entity: "Cache  demo two work item", Err: err}))
+		return nil, logerror(fmt.Errorf("CacheDemoTwoWorkItem/CacheDemoTwoWorkItemsByTitleDescription/pgx.CollectRows: %w", &XoError{Entity: "Cache  demo two work item", Err: err}))
 	}
 	return res, nil
 }
