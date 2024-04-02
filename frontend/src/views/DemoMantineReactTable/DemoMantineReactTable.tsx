@@ -264,7 +264,11 @@ export default function DemoMantineReactTable() {
     pageSize: 15,
   })
 
+  const [searchQuery, setSearchQuery] = useState<GetPaginatedUsersQueryParameters>({
+    items: {},
+  })
   const [cursor, setCursor] = useState(dayjs().toRFC3339NANO())
+
   const {
     data: usersData,
     refetch,
@@ -290,16 +294,7 @@ export default function DemoMantineReactTable() {
       //   globalFilter: globalFilter ?? '',
       //   sorting: sorting,
       // },
-      searchQuery: {
-        items: {
-          email: {
-            filter: {
-              value: 'user_19',
-              filterMode: 'startsWith',
-            },
-          },
-        },
-      },
+      searchQuery,
     },
     {
       query: {
@@ -316,17 +311,14 @@ export default function DemoMantineReactTable() {
   )
 
   useEffect(() => {
-    // TODO: we have to listen to columnFilters changes and construct q
-    const searchQuery: GetPaginatedUsersQueryParameters = {
-      items: {},
-    }
+    const items = _.cloneDeep(searchQuery.items)
 
     columnFilters.forEach((filter) => {
       const { id, value } = filter
       const filterMode = dynamicConfig?.filterModes[id]
       const sort = sorting[id]
       if (filterMode) {
-        searchQuery.items![id] = {
+        items![id] = {
           filter: {
             value: value as any,
             filterMode: filterMode as any, // must fix orval upstream
@@ -335,8 +327,13 @@ export default function DemoMantineReactTable() {
         }
       }
     })
-    console.log(searchQuery.items)
+    console.log(items)
+    setSearchQuery((v) => ({ ...v, items }))
   }, [columnFilters, globalFilter, dynamicConfig?.filterModes, sorting])
+
+  useEffect(() => {
+    console.log({ searchQuery })
+  }, [searchQuery])
 
   // useStopInfiniteRenders(60)
 
