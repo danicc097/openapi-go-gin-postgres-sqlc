@@ -14,7 +14,7 @@ import (
 
 func arrayFilter(ss []string, mode models.PaginationFilterModes) *models.PaginationFilter {
 	v := models.PaginationFilterArray{
-		Value:      ss,
+		Value:      pointers.New(ss),
 		FilterMode: mode,
 	}
 

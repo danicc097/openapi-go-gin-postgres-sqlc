@@ -615,12 +615,12 @@ export interface WorkItemBase {
 }
 export interface PaginationFilterPrimitive {
   filterMode: PaginationFilterModes
-  value: string | null
+  value?: string | null
   caseSensitive?: boolean | null
 }
 export interface PaginationFilterArray {
   filterMode: PaginationFilterModes
-  value: (string | null)[]
+  value?: (string | null)[] | null
 }
 export interface Pagination {
   filter?: PaginationFilter

@@ -809,12 +809,12 @@ export interface components {
     };
     PaginationFilterPrimitive: {
       filterMode: components["schemas"]["PaginationFilterModes"];
-      value: string | null;
+      value?: string | null;
       caseSensitive?: boolean | null;
     };
     PaginationFilterArray: {
       filterMode: components["schemas"]["PaginationFilterModes"];
-      value: (string | null)[];
+      value?: ((string | null)[]) | null;
     };
     PaginationFilter: components["schemas"]["PaginationFilterPrimitive"] | components["schemas"]["PaginationFilterArray"];
     Pagination: {

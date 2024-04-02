@@ -2469,8 +2469,7 @@
         }
       },
       "required": [
-        "filterMode",
-        "value"
+        "filterMode"
       ]
     },
     "PaginationFilterArray": {
@@ -2480,7 +2479,10 @@
           "$ref": "#/definitions/PaginationFilterModes"
         },
         "value": {
-          "type": "array",
+          "type": [
+            "array",
+            "null"
+          ],
           "items": {
             "type": [
               "string",
@@ -2490,8 +2492,7 @@
         }
       },
       "required": [
-        "filterMode",
-        "value"
+        "filterMode"
       ]
     },
     "PaginationFilter": {

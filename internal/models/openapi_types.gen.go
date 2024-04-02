@@ -801,7 +801,7 @@ type PaginationFilter struct {
 // PaginationFilterArray defines the model for PaginationFilterArray.
 type PaginationFilterArray struct {
 	FilterMode PaginationFilterModes `json:"filterMode"`
-	Value      []string              `json:"value"`
+	Value      *[]string             `json:"value"`
 }
 
 // PaginationFilterModes defines the model for PaginationFilterModes.

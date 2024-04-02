@@ -9,5 +9,5 @@ import type { PaginationFilterArrayFilterMode } from './paginationFilterArrayFil
 
 export interface PaginationFilterArray {
   filterMode: PaginationFilterArrayFilterMode
-  value: (string | null)[]
+  value?: (string | null)[] | null
 }

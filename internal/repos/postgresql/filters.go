@@ -64,11 +64,18 @@ func GenerateDefaultFilters(entity db.TableEntity, paginationParams models.Pagin
 		v, _ := pag.Filter.ValueByDiscriminator()
 		switch t := v.(type) {
 		case models.PaginationFilterArray:
-			vv := t.Value
+			if t.Value == nil {
+				continue
+			}
+			vv := *t.Value
 
 			switch filterMode {
 			case models.PaginationFilterModesBetween, models.PaginationFilterModesBetweenInclusive: // [min,max]
 				var min, max interface{}
+				if len(vv) != 2 {
+					fmt.Printf("vv: %v\n", vv)
+					continue
+				}
 				switch dbfilter.Type {
 				case "float":
 					if min, err = strconv.ParseFloat(vv[0], 64); err != nil {

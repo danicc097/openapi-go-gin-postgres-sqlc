@@ -6491,8 +6491,7 @@
         }
       },
       "required": [
-        "filterMode",
-        "value"
+        "filterMode"
       ]
     },
     "PaginationFilterArray": {
@@ -6518,7 +6517,10 @@
           "type": "string"
         },
         "value": {
-          "type": "array",
+          "type": [
+            "array",
+            "null"
+          ],
           "items": {
             "type": [
               "string",
@@ -6528,8 +6530,7 @@
         }
       },
       "required": [
-        "filterMode",
-        "value"
+        "filterMode"
       ]
     },
     "PaginationFilter": {
@@ -6570,8 +6571,7 @@
             }
           },
           "required": [
-            "filterMode",
-            "value"
+            "filterMode"
           ]
         },
         {
@@ -6597,7 +6597,10 @@
               "type": "string"
             },
             "value": {
-              "type": "array",
+              "type": [
+                "array",
+                "null"
+              ],
               "items": {
                 "type": [
                   "string",
@@ -6607,8 +6610,7 @@
             }
           },
           "required": [
-            "filterMode",
-            "value"
+            "filterMode"
           ]
         }
       ],
@@ -6655,8 +6657,7 @@
                 }
               },
               "required": [
-                "filterMode",
-                "value"
+                "filterMode"
               ]
             },
             {
@@ -6682,7 +6683,10 @@
                   "type": "string"
                 },
                 "value": {
-                  "type": "array",
+                  "type": [
+                    "array",
+                    "null"
+                  ],
                   "items": {
                     "type": [
                       "string",
@@ -6692,8 +6696,7 @@
                 }
               },
               "required": [
-                "filterMode",
-                "value"
+                "filterMode"
               ]
             }
           ],
@@ -6753,8 +6756,7 @@
                   }
                 },
                 "required": [
-                  "filterMode",
-                  "value"
+                  "filterMode"
                 ]
               },
               {
@@ -6780,7 +6782,10 @@
                     "type": "string"
                   },
                   "value": {
-                    "type": "array",
+                    "type": [
+                      "array",
+                      "null"
+                    ],
                     "items": {
                       "type": [
                         "string",
@@ -6790,8 +6795,7 @@
                   }
                 },
                 "required": [
-                  "filterMode",
-                  "value"
+                  "filterMode"
                 ]
               }
             ],
@@ -6867,8 +6871,7 @@
                       }
                     },
                     "required": [
-                      "filterMode",
-                      "value"
+                      "filterMode"
                     ]
                   },
                   {
@@ -6894,7 +6897,10 @@
                         "type": "string"
                       },
                       "value": {
-                        "type": "array",
+                        "type": [
+                          "array",
+                          "null"
+                        ],
                         "items": {
                           "type": [
                             "string",
@@ -6904,8 +6910,7 @@
                       }
                     },
                     "required": [
-                      "filterMode",
-                      "value"
+                      "filterMode"
                     ]
                   }
                 ],
@@ -13605,8 +13610,7 @@
         }
       },
       "required": [
-        "filterMode",
-        "value"
+        "filterMode"
       ]
     },
     "PaginationFilterArray": {
@@ -13632,7 +13636,10 @@
           "type": "string"
         },
         "value": {
-          "type": "array",
+          "type": [
+            "array",
+            "null"
+          ],
           "items": {
             "type": [
               "string",
@@ -13642,8 +13649,7 @@
         }
       },
       "required": [
-        "filterMode",
-        "value"
+        "filterMode"
       ]
     },
     "PaginationFilter": {
@@ -13684,8 +13690,7 @@
             }
           },
           "required": [
-            "filterMode",
-            "value"
+            "filterMode"
           ]
         },
         {
@@ -13711,7 +13716,10 @@
               "type": "string"
             },
             "value": {
-              "type": "array",
+              "type": [
+                "array",
+                "null"
+              ],
               "items": {
                 "type": [
                   "string",
@@ -13721,8 +13729,7 @@
             }
           },
           "required": [
-            "filterMode",
-            "value"
+            "filterMode"
           ]
         }
       ],
@@ -13769,8 +13776,7 @@
                 }
               },
               "required": [
-                "filterMode",
-                "value"
+                "filterMode"
               ]
             },
             {
@@ -13796,7 +13802,10 @@
                   "type": "string"
                 },
                 "value": {
-                  "type": "array",
+                  "type": [
+                    "array",
+                    "null"
+                  ],
                   "items": {
                     "type": [
                       "string",
@@ -13806,8 +13815,7 @@
                 }
               },
               "required": [
-                "filterMode",
-                "value"
+                "filterMode"
               ]
             }
           ],
@@ -13867,8 +13875,7 @@
                   }
                 },
                 "required": [
-                  "filterMode",
-                  "value"
+                  "filterMode"
                 ]
               },
               {
@@ -13894,7 +13901,10 @@
                     "type": "string"
                   },
                   "value": {
-                    "type": "array",
+                    "type": [
+                      "array",
+                      "null"
+                    ],
                     "items": {
                       "type": [
                         "string",
@@ -13904,8 +13914,7 @@
                   }
                 },
                 "required": [
-                  "filterMode",
-                  "value"
+                  "filterMode"
                 ]
               }
             ],
@@ -13981,8 +13990,7 @@
                       }
                     },
                     "required": [
-                      "filterMode",
-                      "value"
+                      "filterMode"
                     ]
                   },
                   {
@@ -14008,7 +14016,10 @@
                         "type": "string"
                       },
                       "value": {
-                        "type": "array",
+                        "type": [
+                          "array",
+                          "null"
+                        ],
                         "items": {
                           "type": [
                             "string",
@@ -14018,8 +14029,7 @@
                       }
                     },
                     "required": [
-                      "filterMode",
-                      "value"
+                      "filterMode"
                     ]
                   }
                 ],
