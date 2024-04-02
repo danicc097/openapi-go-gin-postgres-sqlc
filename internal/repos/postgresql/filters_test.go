@@ -290,6 +290,102 @@ func TestGenerateFilters(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "integer between",
+			pagParams: models.PaginationItems{
+				"count": {
+					Filter: arrayFilter(
+						[]string{"1", "2"},
+						models.PaginationFilterModesBetween,
+					),
+				},
+			},
+			expected: map[string][]interface{}{
+				"db_count > $i AND db_count < $i": {1, 2},
+			},
+		},
+		{
+			name: "integer betweenInclusive",
+			pagParams: models.PaginationItems{
+				"count": {
+					Filter: arrayFilter(
+						[]string{"1", "2"},
+						models.PaginationFilterModesBetweenInclusive,
+					),
+				},
+			},
+			expected: map[string][]interface{}{
+				"db_count >= $i AND db_count <= $i": {1, 2},
+			},
+		},
+		{
+			name: "float between",
+			pagParams: models.PaginationItems{
+				"countF": {
+					Filter: arrayFilter(
+						[]string{"1.234", "2"},
+						models.PaginationFilterModesBetween,
+					),
+				},
+			},
+			expected: map[string][]interface{}{
+				"db_countf > $i AND db_countf < $i": {1.234, float64(2)},
+			},
+		},
+		{
+			name: "float betweenInclusive",
+			pagParams: models.PaginationItems{
+				"countF": {
+					Filter: arrayFilter(
+						[]string{"1.234", "2"},
+						models.PaginationFilterModesBetweenInclusive,
+					),
+				},
+			},
+			expected: map[string][]interface{}{
+				"db_countf >= $i AND db_countf <= $i": {1.234, float64(2)},
+			},
+		},
+		{
+			name: "range with null min",
+			pagParams: models.PaginationItems{
+				"countF": {
+					Filter: arrayFilter(
+						[]string{"null", "2"},
+						models.PaginationFilterModesBetweenInclusive,
+					),
+				},
+			},
+			expected: map[string][]interface{}{
+				"db_countf <= $i": {float64(2)},
+			},
+		},
+		{
+			name: "range with null max",
+			pagParams: models.PaginationItems{
+				"countF": {
+					Filter: arrayFilter(
+						[]string{"1.234", "null"},
+						models.PaginationFilterModesBetweenInclusive,
+					),
+				},
+			},
+			expected: map[string][]interface{}{
+				"db_countf >= $i": {1.234},
+			},
+		},
+		{
+			name: "range with all nulls",
+			pagParams: models.PaginationItems{
+				"countF": {
+					Filter: arrayFilter(
+						[]string{"null", "null"},
+						models.PaginationFilterModesBetweenInclusive,
+					),
+				},
+			},
+			expected: map[string][]interface{}{},
+		},
 	}
 
 	for _, tc := range tests {

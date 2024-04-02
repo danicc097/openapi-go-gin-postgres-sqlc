@@ -75,6 +75,7 @@ func (u *User) Register(ctx context.Context, d db.DBTX, params UserRegisterParam
 		APIKeyID:                 nil,
 		HasGlobalNotifications:   false,
 		HasPersonalNotifications: false,
+		Age:                      nil,
 	}
 
 	user, err := u.repos.User.Create(ctx, d, &repoParams)

@@ -9,6 +9,7 @@ import type { Scopes } from './scopes'
 import type { DbUserID } from './dbUserID'
 
 export interface DbUser {
+  age?: number | null
   createdAt: Date
   deletedAt?: Date | null
   email: string

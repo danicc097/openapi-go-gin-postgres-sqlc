@@ -1679,6 +1679,9 @@ components:
       x-is-generated: true
     DbUser: # Generated schema. DO NOT EDIT.
       properties:
+        age:
+          nullable: true
+          type: integer
         createdAt:
           format: date-time
           type: string
@@ -2111,6 +2114,9 @@ components:
       x-is-generated: true
     User: # Generated schema. DO NOT EDIT.
       properties:
+        age:
+          nullable: true
+          type: integer
         apiKey:
           $ref: '#/components/schemas/DbUserAPIKey'
         createdAt:

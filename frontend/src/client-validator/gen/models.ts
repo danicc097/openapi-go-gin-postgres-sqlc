@@ -280,6 +280,7 @@ export interface DbTimeEntry {
   workItemID?: number | null
 }
 export interface DbUser {
+  age?: number | null
   createdAt: string
   deletedAt?: string | null
   email: string
@@ -358,6 +359,7 @@ export interface PaginatedUsersResponse {
   page: PaginationPage
 }
 export interface User {
+  age?: number | null
   apiKey?: DbUserAPIKey
   createdAt: string
   deletedAt?: string | null

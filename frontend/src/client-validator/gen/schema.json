@@ -583,6 +583,12 @@
     },
     "DbUser": {
       "properties": {
+        "age": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "createdAt": {
           "format": "date-time",
           "type": [
@@ -1240,6 +1246,12 @@
     },
     "User": {
       "properties": {
+        "age": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "apiKey": {
           "$ref": "#/definitions/DbUserAPIKey"
         },

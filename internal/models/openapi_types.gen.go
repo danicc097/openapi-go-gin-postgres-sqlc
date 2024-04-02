@@ -508,6 +508,7 @@ type DbTimeEntry struct {
 
 // DbUser defines the model for DbUser.
 type DbUser struct {
+	Age                      *int       `json:"age"`
 	CreatedAt                time.Time  `json:"createdAt"`
 	DeletedAt                *time.Time `json:"deletedAt"`
 	Email                    string     `json:"email"`
@@ -962,6 +963,7 @@ type UpdateWorkItemTypeRequest struct {
 
 // User defines the model for User.
 type User struct {
+	Age                      *int          `json:"age"`
 	ApiKey                   *DbUserAPIKey `json:"apiKey,omitempty"`
 	CreatedAt                time.Time     `json:"createdAt"`
 	DeletedAt                *time.Time    `json:"deletedAt"`

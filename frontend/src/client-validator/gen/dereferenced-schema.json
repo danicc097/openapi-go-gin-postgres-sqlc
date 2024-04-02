@@ -886,6 +886,12 @@
     },
     "DbUser": {
       "properties": {
+        "age": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "createdAt": {
           "format": "date-time",
           "type": [
@@ -1044,6 +1050,12 @@
         },
         "user": {
           "properties": {
+            "age": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "createdAt": {
               "format": "date-time",
               "type": [
@@ -1659,6 +1671,12 @@
         "items": {
           "items": {
             "properties": {
+              "age": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
               "apiKey": {
                 "properties": {
                   "apiKey": {
@@ -2046,6 +2064,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -2489,6 +2513,12 @@
     },
     "User": {
       "properties": {
+        "age": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "apiKey": {
           "properties": {
             "apiKey": {
@@ -3518,6 +3548,12 @@
                   },
                   "user": {
                     "properties": {
+                      "age": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
                       "createdAt": {
                         "format": "date-time",
                         "type": [
@@ -3946,6 +3982,12 @@
                   },
                   "user": {
                     "properties": {
+                      "age": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
                       "createdAt": {
                         "format": "date-time",
                         "type": [
@@ -4708,6 +4750,12 @@
         },
         "user": {
           "properties": {
+            "age": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "createdAt": {
               "format": "date-time",
               "type": [
@@ -4831,6 +4879,12 @@
         },
         "user": {
           "properties": {
+            "age": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "createdAt": {
               "format": "date-time",
               "type": [
@@ -5158,6 +5212,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -5604,6 +5664,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -6015,6 +6081,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -7928,6 +8000,12 @@
     },
     "DbUser": {
       "properties": {
+        "age": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "createdAt": {
           "format": "date-time",
           "type": [
@@ -8086,6 +8164,12 @@
         },
         "user": {
           "properties": {
+            "age": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "createdAt": {
               "format": "date-time",
               "type": [
@@ -8701,6 +8785,12 @@
         "items": {
           "items": {
             "properties": {
+              "age": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
               "apiKey": {
                 "properties": {
                   "apiKey": {
@@ -9088,6 +9178,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -9531,6 +9627,12 @@
     },
     "User": {
       "properties": {
+        "age": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "apiKey": {
           "properties": {
             "apiKey": {
@@ -10560,6 +10662,12 @@
                   },
                   "user": {
                     "properties": {
+                      "age": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
                       "createdAt": {
                         "format": "date-time",
                         "type": [
@@ -10988,6 +11096,12 @@
                   },
                   "user": {
                     "properties": {
+                      "age": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
                       "createdAt": {
                         "format": "date-time",
                         "type": [
@@ -11750,6 +11864,12 @@
         },
         "user": {
           "properties": {
+            "age": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "createdAt": {
               "format": "date-time",
               "type": [
@@ -11873,6 +11993,12 @@
         },
         "user": {
           "properties": {
+            "age": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "createdAt": {
               "format": "date-time",
               "type": [
@@ -12200,6 +12326,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -12646,6 +12778,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -13057,6 +13195,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [

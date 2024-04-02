@@ -298,6 +298,7 @@ export interface components {
       workItemID?: number | null;
     };
     DbUser: {
+      age?: number | null;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
@@ -459,6 +460,7 @@ export interface components {
       name?: string;
     };
     User: {
+      age?: number | null;
       apiKey?: components["schemas"]["DbUserAPIKey"];
       /** Format: date-time */
       createdAt: string;

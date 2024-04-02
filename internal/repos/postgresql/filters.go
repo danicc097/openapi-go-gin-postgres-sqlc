@@ -65,26 +65,51 @@ func GenerateDefaultFilters(entity db.TableEntity, paginationParams models.Pagin
 		switch t := v.(type) {
 		case models.PaginationFilterArray:
 			vv := t.Value
-			switch dbfilter.Type {
-			case "integer", "string": //...
-			// should support filtering multiple exact values at once
-			case "date-time": // min,max
-				switch filterMode {
-				case models.PaginationFilterModesBetween, models.PaginationFilterModesBetweenInclusive:
-					var min, max interface{}
-					min, err = time.Parse(time.RFC3339, vv[0])
-					if err != nil {
-						min = "null"
-					}
 
-					max, err = time.Parse(time.RFC3339, vv[1])
-					if err != nil {
-						max = "null"
+			switch filterMode {
+			case models.PaginationFilterModesBetween, models.PaginationFilterModesBetweenInclusive: // [min,max]
+				var min, max interface{}
+				switch dbfilter.Type {
+				case "float":
+					if min, err = strconv.ParseFloat(vv[0], 64); err != nil {
+						min = nil
 					}
-					if filterMode == models.PaginationFilterModesBetween {
+					if max, err = strconv.ParseFloat(vv[1], 64); err != nil {
+						max = nil
+					}
+				case "integer":
+					if min, err = strconv.Atoi(vv[0]); err != nil {
+						min = nil
+					}
+					if max, err = strconv.Atoi(vv[1]); err != nil {
+						max = nil
+					}
+				case "date-time":
+					if min, err = time.Parse(time.RFC3339, vv[0]); err != nil {
+						min = nil
+					}
+					if max, err = time.Parse(time.RFC3339, vv[1]); err != nil {
+						max = nil
+					}
+				}
+
+				if filterMode == models.PaginationFilterModesBetween {
+					switch {
+					case min != nil && max != nil:
 						filters[fmt.Sprintf("%[1]s > $i AND %[1]s < $i", dbfilter.Db)] = []interface{}{min, max}
-					} else {
+					case min != nil:
+						filters[fmt.Sprintf("%[1]s > $i", dbfilter.Db)] = []interface{}{min}
+					case max != nil:
+						filters[fmt.Sprintf("%[1]s < $i", dbfilter.Db)] = []interface{}{max}
+					}
+				} else {
+					switch {
+					case min != nil && max != nil:
 						filters[fmt.Sprintf("%[1]s >= $i AND %[1]s <= $i", dbfilter.Db)] = []interface{}{min, max}
+					case min != nil:
+						filters[fmt.Sprintf("%[1]s >= $i", dbfilter.Db)] = []interface{}{min}
+					case max != nil:
+						filters[fmt.Sprintf("%[1]s <= $i", dbfilter.Db)] = []interface{}{max}
 					}
 				}
 			}

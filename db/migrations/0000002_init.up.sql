@@ -270,6 +270,7 @@ create table users (
   user_id uuid default gen_random_uuid () primary key
   , username text not null unique
   , email text not null unique
+  , age int
   , first_name text
   , last_name text
   , full_name text generated always as ( case when first_name is null then

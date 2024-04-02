@@ -16,6 +16,7 @@ type Users struct {
 	UserID                   uuid.UUID  `sql:"primary_key" db:"user_id"`
 	Username                 string     `db:"username"`
 	Email                    string     `db:"email"`
+	Age                      *int32     `db:"age"`
 	FirstName                *string    `db:"first_name"`
 	LastName                 *string    `db:"last_name"`
 	FullName                 *string    `db:"full_name"`

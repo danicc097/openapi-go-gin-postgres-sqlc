@@ -14,6 +14,7 @@ import type { DbTeam } from './dbTeam';
 import type { DbUserID } from './dbUserID';
 
 export interface User {
+  age?: number | null;
   apiKey?: DbUserAPIKey;
   createdAt: Date;
   deletedAt?: Date | null;
