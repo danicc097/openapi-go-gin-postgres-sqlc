@@ -1543,7 +1543,7 @@ func (siw *ServerInterfaceWrapper) GetPaginatedUsers(c *gin.Context) {
 	}
 
 	// ------------- Optional query parameter "searchQuery" -------------
-
+	
 	err = runtime.BindQueryParameter("deepObject", true, false, "searchQuery", c.Request.URL.Query(), &params.SearchQuery)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"msg": fmt.Sprintf("Invalid format for parameter searchQuery: %s", err)})

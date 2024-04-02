@@ -32,7 +32,7 @@ import { IconEdit, IconRefresh, IconTrash, IconX } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import { useGetPaginatedUsersInfinite } from 'src/gen/user/user'
 import dayjs from 'dayjs'
-import { GetPaginatedUsersParams, GetPaginatedUsersQueryParameters, User } from 'src/gen/model'
+import { GetPaginatedUsersParams, GetPaginatedUsersQueryParameters, PaginationItems, User } from 'src/gen/model'
 import { getContrastYIQ, scopeColor } from 'src/utils/colors'
 import _, { lowerCase } from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
@@ -311,14 +311,14 @@ export default function DemoMantineReactTable() {
   )
 
   useEffect(() => {
-    const items = _.cloneDeep(searchQuery.items)
+    const items: PaginationItems = {}
 
     columnFilters.forEach((filter) => {
       const { id, value } = filter
       const filterMode = dynamicConfig?.filterModes[id]
       const sort = sorting[id]
       if (filterMode) {
-        items![id] = {
+        items[id] = {
           filter: {
             value: value as any,
             filterMode: filterMode as any, // must fix orval upstream
@@ -327,7 +327,7 @@ export default function DemoMantineReactTable() {
         }
       }
     })
-    console.log(items)
+
     setSearchQuery((v) => ({ ...v, items }))
   }, [columnFilters, globalFilter, dynamicConfig?.filterModes, sorting])
 

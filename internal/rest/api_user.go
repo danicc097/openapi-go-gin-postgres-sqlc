@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/gin-gonic/gin"
 )
 
@@ -91,16 +93,47 @@ func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateU
 }
 
 func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedUsersRequestObject) (GetPaginatedUsersResponseObject, error) {
-	// TODO: support discriminator unmarshaling in runtime package, or mark param to skip gen via x-no-binding or similar if its a mess.
-	//
 	users, err := h.svc.User.Paginated(c, h.pool, request.Params)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)
 
 		return nil, nil
 	}
-
-	// format.PrintJSON(request.Params)
+	if request.Params.SearchQuery.Items != nil {
+		for _, item := range *request.Params.SearchQuery.Items {
+			v, _ := item.Filter.ValueByDiscriminator()
+			switch t := v.(type) {
+			case models.PaginationFilterPrimitive:
+				fmt.Printf("t.Value: %+v\n", *t.Value)
+			case models.PaginationFilterArray:
+				fmt.Printf("t.Value (requires bind with openapi3.Schema): %+v\n", *t.Value)
+			}
+		}
+	}
+	fmt.Printf("c.Request.URL.Query().Get(\"searchQuery\"): %v\n", c.Request.URL.Query())
+	format.PrintJSON(request.Params)
+	// TODO: need a custom Unmarshal when we use a struct as query params
+	// that takes care of converting url.Values map indexed by pos to array (like kin-openapi util)
+	// need to generate a func (t PaginationFilter) MarshalJSON() ([]byte, error) {
+	// that deals with it based dynamically based on a loaded openapi3.Schema and avoid generating all possible options at compile time, since the json we get from the query params uses indexes.
+	// we can replicate the same logic in kin-openapi/openapi3filter/req_resp_decoder.go,
+	// by checking the list of anyof,oneof,allof schemas and converting query param  maps recursively
+	// to arrays based on the given schema name, where type is array.
+	// IMPORTANT: or maybe just use POST body and be done with it... who cares,
+	// we cannot even cache most pagination requests
+	// -------
+	// NOTE: to handle anyof, oneof, allof with arrays we must convert union json before
+	// calling Unmarshal on the users side, cannot be done by the runtime package in UnmarshalDeepObject.
+	// ie each As(.*) interface{} method, eg:
+	// (t PaginationFilter) AsPaginationFilterPrimitive() (PaginationFilterPrimitive, error)
+	// (t PaginationFilter) AsPaginationFilterArray() (PaginationFilterArray, error)
+	// will have to modify t.union by calling some fn with parameter schemaName
+	// "PaginationFilterPrimitive" or "PaginationFilterArray",
+	// and pass the openapi3.Schema, so that this fn can find the given schema with name == schemaName
+	// and build a new json object as map[string]interface{} recursively from the existing
+	// one which uses map[0:map[key:true] 1:map[key:false]] and convert to
+	// slice [map[key:true] map[key:false]]
+	// the overhead should be minimal
 
 	nextCursor := ""
 	if len(users) > 0 {
