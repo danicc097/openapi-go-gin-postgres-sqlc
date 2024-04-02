@@ -110,7 +110,28 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 			}
 		}
 	}
-	fmt.Printf("c.Request.URL.Query().Get(\"searchQuery\"): %v\n", c.Request.URL.Query())
+
+	// TODO: will save to handlers.Spec at server startup
+	spec, err := GetSwagger()
+	if err != nil {
+		renderErrorResponse(c, "could not get openapi spec", err)
+
+		return nil, nil
+	}
+	fp, ok := spec.Components.Schemas["PaginationFilter"]
+	if !ok {
+		renderErrorResponse(c, "PaginationFilter schema not found", err)
+
+		return nil, nil
+	}
+
+	fmt.Printf("PaginationFilter schema: %+v\n", fp.Value)
+
+	// 1. pass schema to some fn, alongside SchemaName (to be found inside any|one|allof else err)
+	// 2. this fn returns a new map[string]interface{} constructed based on types.
+	// all it does is convert maps to arrays if required when type is "array" - rest.sliceMapToSlice
+	// else it returns the same map
+
 	format.PrintJSON(request.Params)
 	// TODO: need a custom Unmarshal when we use a struct as query params
 	// that takes care of converting url.Values map indexed by pos to array (like kin-openapi util)

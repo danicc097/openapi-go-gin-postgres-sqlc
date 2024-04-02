@@ -40,7 +40,7 @@ func PathToRawSpec(pathToFile string) map[string]func() ([]byte, error) {
     if len(pathToFile) > 0 {
         res[pathToFile] = rawSpec
     }
-    {{ if .ImportMapping }}
+    {{/* {{ if .ImportMapping }}
     pathPrefix := path.Dir(pathToFile)
     {{ end }}
     {{ range $key, $value := .ImportMapping }}
@@ -50,7 +50,7 @@ func PathToRawSpec(pathToFile string) map[string]func() ([]byte, error) {
         }
         res[rawPath] = rawFunc
     }
-    {{- end }}
+    {{- end }} */}}
     return res
 }
 

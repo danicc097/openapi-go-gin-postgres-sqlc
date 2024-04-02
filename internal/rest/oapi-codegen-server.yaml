@@ -4,6 +4,7 @@ generate:
   gin-server: true
   strict-server: true
   models: true
+  embedded-spec: true
 output: internal/rest/openapi_server.gen.go
 exclude-rest-types: true
 skip-discriminator-utils: true
