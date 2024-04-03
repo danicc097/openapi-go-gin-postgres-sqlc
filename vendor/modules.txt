@@ -340,7 +340,7 @@ github.com/muhlemmer/gu
 # github.com/muhlemmer/httpforwarded v0.1.0
 ## explicit; go 1.19
 github.com/muhlemmer/httpforwarded
-# github.com/oapi-codegen/runtime v1.1.1 => github.com/danicc097/runtime v1.0.10002
+# github.com/oapi-codegen/runtime v1.1.1 => github.com/danicc097/runtime v1.0.10003
 ## explicit; go 1.20
 github.com/oapi-codegen/runtime
 github.com/oapi-codegen/runtime/strictmiddleware/gin
@@ -749,4 +749,4 @@ mvdan.cc/gofumpt/internal/govendor/go/format
 mvdan.cc/gofumpt/internal/govendor/go/printer
 mvdan.cc/gofumpt/internal/version
 # github.com/deepmap/oapi-codegen/v2 => github.com/danicc097/oapi-codegen/v2 v2.0.10004
-# github.com/oapi-codegen/runtime => github.com/danicc097/runtime v1.0.10002
+# github.com/oapi-codegen/runtime => github.com/danicc097/runtime v1.0.10003
