@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -126,6 +127,31 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 	}
 
 	fmt.Printf("PaginationFilter schema: %+v\n", fp.Value)
+
+	// qp := c.Request.URL.Query() // don't use these, have a base of map[string]interface{}
+	// from json representation of request.Params instead which is more manageable
+	// qpjson: {
+	// ...,
+	// "searchQuery":{
+	// 	"items":{
+	// 		"age":{
+	// 			"filter":{"filterMode":"between","value":{"0":"123"}}}
+	// 		},
+	// 	},
+	// }
+	var qpItems map[string]interface{}
+	qpjson, _ := json.Marshal(request.Params.SearchQuery.Items)
+	fmt.Printf("qpjson: %v\n", string(qpjson))
+	_ = json.Unmarshal(qpjson, &qpItems)
+	// result := parseSchema(fp.Value, qp)
+	// fmt.Printf("result: %+v\n", result)
+
+	reconstructedMap, err := reconstructMapFromSchema(fp.Value, qpItems, "PaginationFilterArray")
+	if err != nil {
+		fmt.Println("Error:", err)
+		return nil, nil
+	}
+	fmt.Printf("reconstructedMap: %v\n", reconstructedMap)
 
 	// 1. pass schema to some fn, alongside SchemaName (to be found inside any|one|allof else err)
 	// 2. this fn returns a new map[string]interface{} constructed based on types.
