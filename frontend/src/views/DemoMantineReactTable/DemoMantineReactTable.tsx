@@ -315,12 +315,19 @@ export default function DemoMantineReactTable() {
 
     columnFilters.forEach((filter) => {
       const { id, value } = filter
+      console.log({ value })
+      let v = value
+      if (_.isArray(value)) {
+        value.map(tryDate)
+      } else {
+        v = tryDate(value)
+      }
       const filterMode = dynamicConfig?.filterModes[id]
       const sort = sorting[id]
       if (filterMode) {
         items[id] = {
           filter: {
-            value: value as any,
+            value: v as any,
             filterMode: filterMode as any, // must fix orval upstream
           },
           ...(sort && { sort: sort.desc === true ? 'desc' : 'asc' }),
@@ -505,4 +512,13 @@ export default function DemoMantineReactTable() {
       </Card>
     </>
   )
+}
+
+function tryDate(value: unknown) {
+  let v = value
+  const dateVal = dayjs(value as any)
+  if (dateVal.isValid()) {
+    v = dateVal.toRFC3339NANO()
+  }
+  return v
 }

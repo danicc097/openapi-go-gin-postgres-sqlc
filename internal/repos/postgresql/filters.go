@@ -99,6 +99,7 @@ func GenerateDefaultFilters(entity db.TableEntity, paginationParams models.Pagin
 						max = nil
 					}
 				}
+				fmt.Printf("min: %v max: %v\n", min, max)
 
 				if filterMode == models.PaginationFilterModesBetween {
 					switch {

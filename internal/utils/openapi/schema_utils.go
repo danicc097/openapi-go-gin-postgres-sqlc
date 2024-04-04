@@ -1,4 +1,4 @@
-package rest
+package openapi
 
 import (
 	"fmt"
@@ -32,7 +32,17 @@ func sliceMapToSlice(m map[string]interface{}) ([]interface{}, error) {
 	return result, nil
 }
 
-func reconstructMapFromSchema(schema *openapi3.Schema, data map[string]interface{}, schemaName string) (map[string]interface{}, error) {
+// ReconstructSchemaFromQueryParams converts query params that may include arrays represented as maps
+// to the correct go types.
+// This utility is necessary for generated methods when the schemas are being used as query params.
+// It also supports anyOf, oneOf and allOf keywords.
+func ReconstructSchemaFromQueryParams(schema *openapi3.Schema, data interface{}, schemaName string) (interface{}, error) {
+	mdata, ok := data.(map[string]interface{})
+	if !ok {
+		// its not map, just return the primitive (array and maps both represented as maps in query params)
+		return data, nil
+	}
+
 	result := make(map[string]interface{})
 
 	if schema == nil {
@@ -65,12 +75,22 @@ func reconstructMapFromSchema(schema *openapi3.Schema, data map[string]interface
 			return nil, fmt.Errorf("property schema %s not found in anyOf, oneOf, or allOf", schemaName)
 		}
 
-		return reconstructMapFromSchema(matchingSchema, data, schemaName)
+		return ReconstructSchemaFromQueryParams(matchingSchema, mdata, schemaName)
 	}
 
 	props := schema.Properties
+	additPropsSchema := schema.AdditionalProperties.Schema
 	if props == nil {
-		return nil, fmt.Errorf("invalid schema")
+		if additPropsSchema == nil {
+			return nil, fmt.Errorf("invalid schema")
+		}
+		for k, v := range mdata {
+			obj, err := ReconstructSchemaFromQueryParams(additPropsSchema.Value, v, schemaName)
+			if err != nil {
+				return nil, err
+			}
+			result[k] = obj
+		}
 	}
 
 	for propName, prop := range props {
@@ -79,24 +99,24 @@ func reconstructMapFromSchema(schema *openapi3.Schema, data map[string]interface
 			return nil, fmt.Errorf("invalid schema for property %s", propName)
 		}
 
-		propData, ok := data[propName]
+		propData, ok := mdata[propName]
 		if !ok {
-			fmt.Printf("propname %q not found in data: %v\n", propName, data)
+			fmt.Printf("propname %q not found in data: %v\n", propName, mdata)
 			continue
 		}
 
 		switch {
-		case propSchema.Type.Is("object"):
+		case propSchema.Type.Permits("object"):
 			objData, ok := propData.(map[string]interface{})
 			if !ok {
 				return nil, fmt.Errorf("invalid object data type for property %s: %T", propName, propData)
 			}
-			obj, err := reconstructMapFromSchema(propSchema, objData, schemaName)
+			obj, err := ReconstructSchemaFromQueryParams(propSchema, objData, schemaName)
 			if err != nil {
 				return nil, err
 			}
 			result[propName] = obj
-		case propSchema.Type.Is("array"):
+		case propSchema.Type.Permits("array"):
 			arrData, ok := propData.(map[string]interface{})
 			if !ok {
 				return nil, fmt.Errorf("invalid array data type for property %s: %T", propName, propData)
