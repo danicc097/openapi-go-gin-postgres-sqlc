@@ -20,6 +20,7 @@ type usersTable struct {
 	UserID                   postgres.ColumnString
 	Username                 postgres.ColumnString
 	Email                    postgres.ColumnString
+	Age                      postgres.ColumnInteger
 	FirstName                postgres.ColumnString
 	LastName                 postgres.ColumnString
 	FullName                 postgres.ColumnString
@@ -75,6 +76,7 @@ func newUsersTableImpl(schemaName, tableName, alias string) usersTable {
 		UserIDColumn                   = postgres.StringColumn("user_id")
 		UsernameColumn                 = postgres.StringColumn("username")
 		EmailColumn                    = postgres.StringColumn("email")
+		AgeColumn                      = postgres.IntegerColumn("age")
 		FirstNameColumn                = postgres.StringColumn("first_name")
 		LastNameColumn                 = postgres.StringColumn("last_name")
 		FullNameColumn                 = postgres.StringColumn("full_name")
@@ -87,8 +89,8 @@ func newUsersTableImpl(schemaName, tableName, alias string) usersTable {
 		CreatedAtColumn                = postgres.TimestampzColumn("created_at")
 		UpdatedAtColumn                = postgres.TimestampzColumn("updated_at")
 		DeletedAtColumn                = postgres.TimestampzColumn("deleted_at")
-		allColumns                     = postgres.ColumnList{UserIDColumn, UsernameColumn, EmailColumn, FirstNameColumn, LastNameColumn, FullNameColumn, ExternalIDColumn, APIKeyIDColumn, ScopesColumn, RoleRankColumn, HasPersonalNotificationsColumn, HasGlobalNotificationsColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
-		mutableColumns                 = postgres.ColumnList{UsernameColumn, EmailColumn, FirstNameColumn, LastNameColumn, ExternalIDColumn, APIKeyIDColumn, ScopesColumn, RoleRankColumn, HasPersonalNotificationsColumn, HasGlobalNotificationsColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
+		allColumns                     = postgres.ColumnList{UserIDColumn, UsernameColumn, EmailColumn, AgeColumn, FirstNameColumn, LastNameColumn, FullNameColumn, ExternalIDColumn, APIKeyIDColumn, ScopesColumn, RoleRankColumn, HasPersonalNotificationsColumn, HasGlobalNotificationsColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
+		mutableColumns                 = postgres.ColumnList{UsernameColumn, EmailColumn, AgeColumn, FirstNameColumn, LastNameColumn, ExternalIDColumn, APIKeyIDColumn, ScopesColumn, RoleRankColumn, HasPersonalNotificationsColumn, HasGlobalNotificationsColumn, CreatedAtColumn, UpdatedAtColumn, DeletedAtColumn}
 	)
 
 	return usersTable{
@@ -98,6 +100,7 @@ func newUsersTableImpl(schemaName, tableName, alias string) usersTable {
 		UserID:                   UserIDColumn,
 		Username:                 UsernameColumn,
 		Email:                    EmailColumn,
+		Age:                      AgeColumn,
 		FirstName:                FirstNameColumn,
 		LastName:                 LastNameColumn,
 		FullName:                 FullNameColumn,

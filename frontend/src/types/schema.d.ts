@@ -298,6 +298,7 @@ export interface components {
       workItemID?: number | null;
     };
     DbUser: {
+      age?: number | null;
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
@@ -459,6 +460,7 @@ export interface components {
       name?: string;
     };
     User: {
+      age?: number | null;
       apiKey?: components["schemas"]["DbUserAPIKey"];
       /** Format: date-time */
       createdAt: string;
@@ -807,12 +809,12 @@ export interface components {
     };
     PaginationFilterPrimitive: {
       filterMode: components["schemas"]["PaginationFilterModes"];
-      value: string | null;
+      value?: string | null;
       caseSensitive?: boolean | null;
     };
     PaginationFilterArray: {
       filterMode: components["schemas"]["PaginationFilterModes"];
-      value: (string | null)[];
+      value?: ((string | null)[]) | null;
     };
     PaginationFilter: components["schemas"]["PaginationFilterPrimitive"] | components["schemas"]["PaginationFilterArray"];
     Pagination: {
@@ -822,6 +824,10 @@ export interface components {
     /** @description represents pagination data indexed by column id */
     PaginationItems: {
       [key: string]: components["schemas"]["Pagination"] | undefined;
+    };
+    GetPaginatedUsersQueryParameters: {
+      role?: components["schemas"]["Role"];
+      items?: components["schemas"]["PaginationItems"];
     };
     /** @enum {string} */
     PaginationFilterModes: "between" | "betweenInclusive" | "contains" | "empty" | "endsWith" | "equals" | "fuzzy" | "greaterThan" | "greaterThanOrEqualTo" | "lessThan" | "lessThanOrEqualTo" | "notEmpty" | "notEquals" | "startsWith";
@@ -847,9 +853,6 @@ export interface components {
     };
     GetCacheDemoWorkItemQueryParameters: {
       joins?: components["schemas"]["DbCacheDemoWorkItemJoins"];
-    };
-    GetPaginatedUsersQueryParameters: {
-      role: components["schemas"]["Role"];
     };
     GetCurrentUserQueryParameters: {
       joins?: components["schemas"]["DbUserJoins"];
@@ -1603,6 +1606,7 @@ export interface operations {
         limit: number;
         direction: components["schemas"]["Direction"];
         cursor: string;
+        searchQuery?: components["schemas"]["GetPaginatedUsersQueryParameters"];
         filter?: {
           post?: string[];
           bools?: boolean[];

@@ -34,6 +34,7 @@ type User struct {
 	UserID                   UserID        `json:"userID" db:"user_id" required:"true" nullable:"false"`                                      // user_id
 	Username                 string        `json:"username" db:"username" required:"true" nullable:"false"`                                   // username
 	Email                    string        `json:"email" db:"email" required:"true" nullable:"false"`                                         // email
+	Age                      *int          `json:"age" db:"age"`                                                                              // age
 	FirstName                *string       `json:"firstName" db:"first_name"`                                                                 // first_name
 	LastName                 *string       `json:"lastName" db:"last_name"`                                                                   // last_name
 	FullName                 *string       `json:"fullName" db:"full_name"`                                                                   // full_name
@@ -61,6 +62,7 @@ type User struct {
 
 // UserCreateParams represents insert params for 'public.users'.
 type UserCreateParams struct {
+	Age                      *int          `json:"age"`                                                                       // age
 	APIKeyID                 *UserAPIKeyID `json:"-"`                                                                         // api_key_id
 	Email                    string        `json:"email" required:"true" nullable:"false"`                                    // email
 	ExternalID               string        `json:"-" nullable:"false"`                                                        // external_id
@@ -75,6 +77,7 @@ type UserCreateParams struct {
 
 // UserParams represents common params for both insert and update of 'public.users'.
 type UserParams interface {
+	GetAge() *int
 	GetAPIKeyID() *UserAPIKeyID
 	GetEmail() *string
 	GetExternalID() *string
@@ -85,6 +88,16 @@ type UserParams interface {
 	GetRoleRank() *int
 	GetScopes() *models.Scopes
 	GetUsername() *string
+}
+
+func (p UserCreateParams) GetAge() *int {
+	return p.Age
+}
+func (p UserUpdateParams) GetAge() *int {
+	if p.Age != nil {
+		return *p.Age
+	}
+	return nil
 }
 
 func (p UserCreateParams) GetAPIKeyID() *UserAPIKeyID {
@@ -186,6 +199,7 @@ func NewUserID(id uuid.UUID) UserID {
 // CreateUser creates a new User in the database with the given params.
 func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
 	u := &User{
+		Age:                      params.Age,
 		APIKeyID:                 params.APIKeyID,
 		Email:                    params.Email,
 		ExternalID:               params.ExternalID,
@@ -488,6 +502,7 @@ const userTableWorkItemCommentsGroupBySQL = `users.user_id`
 
 // UserUpdateParams represents update params for 'public.users'.
 type UserUpdateParams struct {
+	Age                      **int          `json:"age"`                                                       // age
 	APIKeyID                 **UserAPIKeyID `json:"-"`                                                         // api_key_id
 	Email                    *string        `json:"email" nullable:"false"`                                    // email
 	ExternalID               *string        `json:"-" nullable:"false"`                                        // external_id
@@ -502,6 +517,9 @@ type UserUpdateParams struct {
 
 // SetUpdateParams updates public.users struct fields with the specified params.
 func (u *User) SetUpdateParams(params *UserUpdateParams) {
+	if params.Age != nil {
+		u.Age = *params.Age
+	}
 	if params.APIKeyID != nil {
 		u.APIKeyID = *params.APIKeyID
 	}
@@ -538,14 +556,14 @@ func (u *User) SetUpdateParams(params *UserUpdateParams) {
 func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 	// insert (primary key generated and returned by database)
 	sqlstr := `INSERT INTO public.users (
-	api_key_id, deleted_at, email, external_id, first_name, has_global_notifications, has_personal_notifications, last_name, role_rank, scopes, username
+	age, api_key_id, deleted_at, email, external_id, first_name, has_global_notifications, has_personal_notifications, last_name, role_rank, scopes, username
 	) VALUES (
-	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
+	$1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12
 	) RETURNING * `
 	// run
-	logf(sqlstr, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username)
+	logf(sqlstr, u.Age, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username)
 
-	rows, err := db.Query(ctx, sqlstr, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username)
+	rows, err := db.Query(ctx, sqlstr, u.Age, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Insert/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -563,13 +581,13 @@ func (u *User) Insert(ctx context.Context, db DB) (*User, error) {
 func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 	// update with composite primary key
 	sqlstr := `UPDATE public.users SET 
-	api_key_id = $1, deleted_at = $2, email = $3, external_id = $4, first_name = $5, has_global_notifications = $6, has_personal_notifications = $7, last_name = $8, role_rank = $9, scopes = $10, username = $11 
-	WHERE user_id = $12 
+	age = $1, api_key_id = $2, deleted_at = $3, email = $4, external_id = $5, first_name = $6, has_global_notifications = $7, has_personal_notifications = $8, last_name = $9, role_rank = $10, scopes = $11, username = $12 
+	WHERE user_id = $13 
 	RETURNING * `
 	// run
-	logf(sqlstr, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username, u.UserID)
+	logf(sqlstr, u.Age, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username, u.UserID)
 
-	rows, err := db.Query(ctx, sqlstr, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username, u.UserID)
+	rows, err := db.Query(ctx, sqlstr, u.Age, u.APIKeyID, u.DeletedAt, u.Email, u.ExternalID, u.FirstName, u.HasGlobalNotifications, u.HasPersonalNotifications, u.LastName, u.RoleRank, u.Scopes, u.Username, u.UserID)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Update/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -587,6 +605,7 @@ func (u *User) Update(ctx context.Context, db DB) (*User, error) {
 func (u *User) Upsert(ctx context.Context, db DB, params *UserCreateParams) (*User, error) {
 	var err error
 
+	u.Age = params.Age
 	u.APIKeyID = params.APIKeyID
 	u.Email = params.Email
 	u.ExternalID = params.ExternalID
@@ -773,6 +792,7 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	users.age,
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -927,6 +947,7 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	users.age,
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1082,6 +1103,7 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	users.age,
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1239,6 +1261,7 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	users.age,
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1394,6 +1417,7 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	users.age,
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1549,6 +1573,7 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	users.age,
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1704,6 +1729,7 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	users.age,
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,
@@ -1861,6 +1887,7 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
+	users.age,
 	users.api_key_id,
 	users.created_at,
 	users.deleted_at,

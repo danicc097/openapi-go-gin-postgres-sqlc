@@ -41,14 +41,12 @@ github.com/coreos/go-systemd v0.0.0-20190719114852-fd7a80b32e1f/go.mod h1:F5haX7
 github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46tRHOmNcaadrF8o=
 github.com/creack/pty v1.1.7/go.mod h1:lj5s0c3V2DBrqTV7llrYr5NG6My20zk30Fl46Y7DoTY=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/danicc097/kin-openapi v0.123.1-0.20240320222651-5a7e849603fb h1:SVh64ZpwEMBONccAb4Jw4wndjPG+iq0IfnxgQccN0GI=
-github.com/danicc097/kin-openapi v0.123.1-0.20240320222651-5a7e849603fb/go.mod h1:GZsxYZpdC71oFwQLnBSGHHoXpD+OGcvFszGwY7HIUkY=
-github.com/danicc097/oapi-codegen/v2 v2.0.10004 h1:Btewcp0QZUiveXewJ8GxcxLHHlQgLcAQrd1fdc/kkFI=
-github.com/danicc097/oapi-codegen/v2 v2.0.10004/go.mod h1:/9cXHjWBQH6avJiZ53BjyODTdKW43zq7hK6jgOKMoX4=
+github.com/danicc097/oapi-codegen/v2 v2.0.200000 h1:JpGLI/sDuuHeP+ILoz0uWM2i1lAnROQYbDzhWWeyeFY=
+github.com/danicc097/oapi-codegen/v2 v2.0.200000/go.mod h1:WTJv5Ke3mvJ0oWc9qgHE+v2NkuK61PlYgMihBuOcFAQ=
 github.com/danicc097/oidc-server/v3 v3.5.0 h1:aqNuzC6+Q8NFmDX2lXJip2oWGJTP8Epy/uBtu8nuQwA=
 github.com/danicc097/oidc-server/v3 v3.5.0/go.mod h1:dRbodhLy7B2hVEjtD2dnF8ZXj5QHfAP8QE4LtIfGvNk=
-github.com/danicc097/runtime v0.0.0-20240320224358-a94ad612e00c h1:8VwmAKNoCAjSptKxYvXfTMa/wFfaAOrYdLWlSZ9qxhA=
-github.com/danicc097/runtime v0.0.0-20240320224358-a94ad612e00c/go.mod h1:62ciEUU4rGbj1Vad0r/FHwwV0K37thGfV3JHzPr05Ug=
+github.com/danicc097/runtime v1.0.10003 h1:o4meZmSv4mW8ntXKyl5R83qUndv4iD9t/kDbl4pQZmw=
+github.com/danicc097/runtime v1.0.10003/go.mod h1:lX5Rywb5QMoY8KNXOqfOaXErhcJ8gJfMj9R3bkHKQgU=
 github.com/danicc097/xo/v5 v5.6.0 h1:ctBxldyVIndMO60Ygvx5e2SHFYy2cPVdVJC5RS9ZcOw=
 github.com/danicc097/xo/v5 v5.6.0/go.mod h1:oU6s/elNFlD8CvhR7s5/pTTKnHAd8VJNBfAqwoq9xrA=
 github.com/dave/dst v0.27.3 h1:P1HPoMza3cMEquVf9kKy8yXsFirry4zEnWOdYPOoIzY=
@@ -80,6 +78,8 @@ github.com/fsnotify/fsnotify v1.7.0 h1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nos
 github.com/fsnotify/fsnotify v1.7.0/go.mod h1:40Bi/Hjc2AVfZrqy+aj+yEI+/bRxZnMJyTJwOpGvigM=
 github.com/gabriel-vasile/mimetype v1.4.3 h1:in2uUcidCuFcDKtdcBxlR0rJ1+fsokWf+uqxgUFjbI0=
 github.com/gabriel-vasile/mimetype v1.4.3/go.mod h1:d8uq/6HKRL6CGdk+aubisF/M5GcPfT7nKyLpA0lbSSk=
+github.com/getkin/kin-openapi v0.123.1-0.20240322191506-78bb273e5892 h1:i3KP1js2ektr0hLxpunmorA061t2frUxpX8rvMgrvEw=
+github.com/getkin/kin-openapi v0.123.1-0.20240322191506-78bb273e5892/go.mod h1:wb1aSZA/iWmorQP9KTAS/phLj/t17B5jT7+fS8ed9NM=
 github.com/gin-contrib/cors v1.7.1 h1:s9SIppU/rk8enVvkzwiC2VK3UZ/0NNGsWfUKvV55rqs=
 github.com/gin-contrib/cors v1.7.1/go.mod h1:n/Zj7B4xyrgk/cX1WCX2dkzFfaNm/xJb6oIUk7WTtps=
 github.com/gin-contrib/pprof v1.4.0 h1:XxiBSf5jWZ5i16lNOPbMTVdgHBdhfGRD5PZ1LWazzvg=

@@ -98,8 +98,6 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 		return nil, nil
 	}
 
-	// format.PrintJSON(request.Params)
-
 	nextCursor := ""
 	if len(users) > 0 {
 		nextCursor = users[len(users)-1].CreatedAt.Format(time.RFC3339Nano)

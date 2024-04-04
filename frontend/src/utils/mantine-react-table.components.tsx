@@ -11,6 +11,8 @@ import {
   TextInput,
   Box,
   MenuItem,
+  Checkbox,
+  NumberInput,
 } from '@mantine/core'
 import { useDebouncedValue, useDisclosure } from '@mantine/hooks'
 import {
@@ -32,10 +34,10 @@ import {
   MRT_TableInstance,
   mrtFilterOptions,
 } from 'mantine-react-table'
-import { ComponentProps, memo, useEffect, useRef, useState } from 'react'
+import { ComponentProps, RefObject, createElement, forwardRef, memo, useEffect, useRef, useState } from 'react'
 import { EntityFilter, EntityFilterType } from 'src/config'
 import { useMantineReactTableFilters } from 'src/hooks/ui/useMantineReactTableFilters'
-import { emptyModes } from 'src/utils/mantine-react-table'
+import { emptyModes, indexOneModes, indexZeroModes, rangeModes } from 'src/utils/mantine-react-table'
 import classes from './mantine-react-table.module.css'
 import { DateInput } from '@mantine/dates'
 import { sentenceCase } from 'src/utils/strings'
@@ -43,6 +45,7 @@ import { c } from 'vitest/dist/reporters-MmQN-57K'
 import _, { lowerCase } from 'lodash'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
 import dayjs from 'dayjs'
+import { render } from 'react-dom'
 
 const FILTER_OPTIONS: MRT_InternalFilterOption[] = [
   ...mrtFilterOptions(MRT_Localization_EN),
@@ -76,7 +79,33 @@ interface CustomMRTFilterProps {
 export function CustomMRTFilter({ columnProps, nullable, type, tableName }: CustomMRTFilterProps) {
   const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters(tableName)
   const filterMode = dynamicConfig?.filterModes[columnProps.column.id] ?? ''
+
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  const findInputFilterModeLabels = () =>
+    inputRef.current?.closest('.mantine-Table-th')?.querySelectorAll('.filter-mode-helptext')
+
+  // Effect to manage appending/removing the label
+  useEffect(() => {
+    const existingLabel = findInputFilterModeLabels()
+
+    existingLabel?.forEach((e) => e.remove())
+    if (columnProps.rangeFilterIndex === 1 && rangeModes.includes(filterMode)) return
+
+    if (filterMode && inputRef.current) {
+      const container = document.createElement('div')
+      render(
+        <p className={`${classes.filterMode} filter-mode-helptext`}>{`Filter mode: ${sentenceCase(filterMode)}`}</p>,
+        container,
+      )
+      inputRef.current?.closest('.mantine-Table-th')?.appendChild(container)
+    }
+  }, [filterMode])
+
   if (emptyModes.includes(filterMode)) {
+    const existingLabel = findInputFilterModeLabels()
+
+    existingLabel?.forEach((e) => e.remove())
     if (columnProps.rangeFilterIndex === 1) {
       return null
     }
@@ -86,28 +115,135 @@ export function CustomMRTFilter({ columnProps, nullable, type, tableName }: Cust
       </Badge>
     )
   }
-  if (type === 'date-time') {
-    return <MRTDateInput columnProps={columnProps} />
+
+  if (
+    (columnProps.rangeFilterIndex === 1 && indexZeroModes.includes(filterMode)) ||
+    (columnProps.rangeFilterIndex === 0 && indexOneModes.includes(filterMode))
+  ) {
+    return (
+      <Badge className={'date-filter-badge'} size="sm">
+        Empty
+      </Badge>
+    )
   }
 
+  if (type === 'number' || type === 'integer') {
+    return (
+      <MRTNumberInput
+        ref={inputRef}
+        columnProps={columnProps}
+        type={type}
+        props={
+          {
+            // rightSection: FILTER_OPTIONS.find((o) => o.option === filterMode)?.symbol
+          }
+        }
+      />
+    )
+  }
+  if (type === 'date-time') {
+    return (
+      <MRTDateInput
+        ref={inputRef}
+        columnProps={columnProps}
+        props={
+          {
+            // rightSection: FILTER_OPTIONS.find((o) => o.option === filterMode)?.symbol
+          }
+        }
+      />
+    )
+  }
+  if (type === 'boolean') {
+    return <MRTCheckboxInput ref={inputRef} columnProps={columnProps} />
+  }
+
+  return <MRTTextInput ref={inputRef} columnProps={columnProps} />
+}
+
+type MRTNumberInputProps = {
+  columnProps: GenericColumnProps
+  props?: ComponentProps<typeof NumberInput>
+  type: EntityFilterType
+}
+
+export const MRTNumberInput = forwardRef(function MRTNumberInput(
+  { columnProps: { column, rangeFilterIndex = 0 }, type, props: { ...props } = {} }: MRTNumberInputProps,
+  ref,
+) {
+  const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
+  const filterMode = dynamicConfig?.filterModes[column.id]
+  const columnRangeValue = (column.getFilterValue() as (string | undefined)[]) ?? [undefined, undefined]
+  const columnFilterValue = columnRangeValue[rangeFilterIndex]
+  const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
+  const [debouncedFilterValue] = useDebouncedValue<string>(filterValue, 400)
+
+  const isMounted = useRef(false)
+  // see https://github.com/KevinVandy/mantine-react-table/blob/v2/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L47
+  // debounced doing weird things
+  useEffect(() => {
+    if (!isMounted.current) return
+    column.setFilterValue((old: [string, string]) => {
+      const newFilterValues = Array.isArray(old) ? old : ['', '']
+      newFilterValues[rangeFilterIndex] = debouncedFilterValue
+      return newFilterValues
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedFilterValue])
+
+  const handleClear = () => {
+    setFilterValue(undefined)
+    // dynamicConfig?.filterModes[column.id] && removeFilterMode(column.id)
+    columnRangeValue[rangeFilterIndex] = undefined
+    column.setFilterValue(columnRangeValue)
+  }
+
+  useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true
+      return
+    }
+    const tableFilterValue = column.getFilterValue() as (string | undefined)[]
+    if (_.isEqual(tableFilterValue, [undefined, undefined])) {
+      handleClear()
+    } else {
+      setFilterValue(tableFilterValue?.[rangeFilterIndex] ?? undefined)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [column.getFilterValue()]) // don't use columnFilterValue
+
   return (
-    <Flex gap={4} direction={'column'} pt={20}>
-      <MRTTextInput columnProps={columnProps} />
-      {filterMode && (
-        <Text c="var(--mantine-color-placeholder)" size="xs" className="filter-mode-custom-label">
-          Filter mode: {sentenceCase(filterMode)}
-        </Text>
-      )}
+    <Flex ref={ref as any} gap={4} direction={'row'} pt={20} align="flex-start" justify="center">
+      <NumberInput
+        {...props}
+        placeholder={rangeFilterIndex === 0 ? 'Min' : 'Max'}
+        value={filterValue}
+        allowDecimal={type === 'number'}
+        onChange={(event) => {
+          setFilterValue(event !== '' ? event : null)
+          if (!filterMode) setFilterMode(column.id, 'between')
+        }}
+        size="xs"
+        classNames={{
+          root: classes.root,
+          input: classes.input,
+          label: classes.label,
+        }}
+        miw={40}
+      />
     </Flex>
   )
-}
+})
 
 type MRTDateInputProps = {
   columnProps: GenericColumnProps
   props?: ComponentProps<typeof DateInput>
 }
 
-export function MRTDateInput({ columnProps: { column, rangeFilterIndex = 0 }, ...props }: MRTDateInputProps) {
+export const MRTDateInput = forwardRef(function MRTDateInput(
+  { columnProps: { column, rangeFilterIndex = 0 }, props: { ...props } = {} }: MRTDateInputProps,
+  ref,
+) {
   const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
   const filterMode = dynamicConfig?.filterModes[column.id]
   const columnRangeValue = (column.getFilterValue() as (string | undefined)[]) ?? [undefined, undefined]
@@ -126,7 +262,7 @@ export function MRTDateInput({ columnProps: { column, rangeFilterIndex = 0 }, ..
 
   const handleClear = () => {
     setFilterValue(undefined)
-    removeFilterMode(column.id)
+    // dynamicConfig?.filterModes[column.id] && removeFilterMode(column.id)
     columnRangeValue[rangeFilterIndex] = undefined
     column.setFilterValue(columnRangeValue)
   }
@@ -137,17 +273,19 @@ export function MRTDateInput({ columnProps: { column, rangeFilterIndex = 0 }, ..
       return
     }
     const tableFilterValue = column.getFilterValue() as (string | undefined)[]
+    console.log({ tableFilterValue })
     if (_.isEqual(tableFilterValue, [undefined, undefined])) {
       handleClear()
     } else {
       setFilterValue(tableFilterValue?.[rangeFilterIndex] ?? undefined)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columnFilterValue])
+  }, [column.getFilterValue()]) // don't use columnFilterValue
 
   return (
-    <Flex gap={4} direction={'row'} pt={20} align="flex-start" justify="center">
+    <Flex ref={ref as any} gap={4} direction={'row'} pt={20} align="flex-start" justify="center">
       <DateInput
+        {...props}
         placeholder={`${rangeFilterIndex === 0 ? 'Min' : 'Max'} date`}
         value={filterValue ? dayjs(filterValue).toDate() : null}
         onChange={(event) => {
@@ -161,21 +299,11 @@ export function MRTDateInput({ columnProps: { column, rangeFilterIndex = 0 }, ..
           input: classes.input,
           label: classes.label,
         }}
-        miw={100}
-        rightSection={
-          /* TODO: may be cleaner to append nodes above via bare javascript below mrt-table-head-cell-content
-      ideally mrt should allow rendering extra nodes below filters
-      */
-          filterMode && (
-            <Text size="xs" fw={800}>
-              {filterMode === 'between' ? '⇿' : '⬌'}
-            </Text>
-          )
-        }
+        miw={60}
       />
     </Flex>
   )
-}
+})
 
 type MRTTextInputProps = {
   columnProps: GenericColumnProps
@@ -226,7 +354,48 @@ export const CustomColumnFilterModeMenuItems = memo(
   },
 )
 
-export function MRTTextInput({ columnProps: { column }, ...props }: MRTTextInputProps) {
+type MRTCheckboxInputProps = {
+  columnProps: GenericColumnProps
+  props?: ComponentProps<typeof Checkbox>
+}
+
+export const MRTCheckboxInput = forwardRef(function MRTCheckboxInput(
+  { columnProps: { column }, props: { ...props } = {} }: MRTCheckboxInputProps,
+  ref,
+) {
+  const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
+
+  const filterMode = dynamicConfig?.filterModes[column.id]
+  const value = column.getFilterValue()
+
+  return (
+    <Checkbox
+      {...props}
+      ref={ref as any}
+      checked={value === 'true'}
+      indeterminate={value === undefined}
+      size="xs"
+      onChange={(event) => {
+        const newValue =
+          column.getFilterValue() === undefined ? 'true' : column.getFilterValue() === 'true' ? 'false' : undefined
+        column.setFilterValue(newValue)
+        if (!filterMode) setFilterMode(column.id, 'equals')
+        if (newValue === undefined) removeFilterMode(column.id)
+      }}
+      label={`Filter values`}
+      // labelProps={{ 'data-floating': floating }}
+      classNames={{
+        root: classes.checkBox,
+        label: classes.checkboxLabel,
+      }}
+    />
+  )
+})
+
+export const MRTTextInput = forwardRef(function MRTTextInput(
+  { columnProps: { column }, props: { ...props } = {} }: MRTTextInputProps,
+  ref,
+) {
   const columnFilterValue = (column.getFilterValue() as string) ?? ''
   const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
   const [debouncedFilterValue] = useDebouncedValue(filterValue, 400)
@@ -257,18 +426,19 @@ export function MRTTextInput({ columnProps: { column }, ...props }: MRTTextInput
     }
     const tableFilterValue = column.getFilterValue()
     if (tableFilterValue === undefined) {
-      handleClear()
+      setFilterValue('')
     } else {
       setFilterValue(tableFilterValue ?? '')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [columnFilterValue])
+  }, [column.getFilterValue()]) // don't use columnFilterValue
 
   const filterMode = dynamicConfig?.filterModes[column.id]
 
   return (
     <TextInput
       {...props}
+      ref={ref as any}
       value={filterValue}
       size="xs"
       onChange={(event) => {
@@ -277,11 +447,19 @@ export function MRTTextInput({ columnProps: { column }, ...props }: MRTTextInput
       }}
       rightSection={
         filterMode ? (
-          <ActionIcon aria-label={'Clear search'} color="gray" onClick={handleClear} size="xs" variant="transparent">
-            <Tooltip label={'Clear search'} withinPortal>
-              <IconX />
-            </Tooltip>
-          </ActionIcon>
+          <Tooltip label={'Clear search'} withinPortal>
+            <Box>
+              <ActionIcon
+                aria-label={'Clear search'}
+                color="gray"
+                onClick={handleClear}
+                size="xs"
+                variant="transparent"
+              >
+                <IconX />
+              </ActionIcon>
+            </Box>
+          </Tooltip>
         ) : null
       }
       placeholder={`Filter by ${lowerCase(column.id)}`}
@@ -295,7 +473,7 @@ export function MRTTextInput({ columnProps: { column }, ...props }: MRTTextInput
       onBlur={() => setFocused(false)}
     />
   )
-}
+})
 
 export function RowActionsMenu({ canRestore: canBeRestored }: RowActionsMenuProps) {
   const theme = useMantineTheme()

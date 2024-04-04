@@ -19,10 +19,9 @@ export default class AxiosInterceptors {
     const appKey = instance.defaults.baseURL!
 
     instance.defaults.paramsSerializer = {
-      // FIXME: ignored by axios, yields array indexes
-      // serialize: (params) => {
-      //   return qs.stringify(params, { arrayFormat: 'repeat', encode: false })
-      // }, // kin-openapi and oapi-codegen runtime
+      serialize: (params) => {
+        return qs.stringify(params, { arrayFormat: 'indices', encode: false })
+      }, // kin-openapi and oapi-codegen runtime
     }
 
     const tokenRequestInterceptor = instance.interceptors.request.use(

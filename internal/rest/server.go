@@ -207,16 +207,6 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	}
 	//
 
-	// -- openapi
-	openapi, err := ReadOpenAPI(conf.SpecPath)
-	if err != nil {
-		return nil, err
-	}
-
-	oasMw := NewOpenapiMiddleware(conf.Logger, openapi)
-	oaOptions := CreateOpenAPIValidatorOptions()
-	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
-
 	switch cfg.AppEnv {
 	case internal.AppEnvProd, internal.AppEnvE2E:
 		rlMw := newRateLimitMiddleware(conf.Logger, 15, 5)
@@ -230,6 +220,17 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	default:
 		panic("unknown app env: " + cfg.AppEnv)
 	}
+
+	// -- openapi
+	openapi, err := ReadOpenAPI(conf.SpecPath)
+	if err != nil {
+		return nil, err
+	}
+
+	oasMw := NewOpenapiMiddleware(conf.Logger, openapi)
+	oaOptions := CreateOpenAPIValidatorOptions()
+	vg.Use(oasMw.RequestValidatorWithOptions(&oaOptions))
+
 	repos := services.CreateRepos()
 
 	svcs := services.New(conf.Logger, repos, conf.Pool)

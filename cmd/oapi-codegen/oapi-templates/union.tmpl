@@ -8,7 +8,33 @@
         // As{{$name}} returns the union data inside the {{$typeName}} as a {{$name}}
         func (t {{$typeName}}) As{{$name}}() ({{$name}}, error) {
             var body {{$name}}
-            err := json.Unmarshal(t.union, &body)
+            if !t.FromQueryParams {
+              err := json.Unmarshal(t.union, &body)
+              return body, err
+            }
+            // arrays are passed as maps, so reconstruct json properly
+            var unionm map[string]interface{}
+            err := json.Unmarshal(t.union, &unionm)
+            if err != nil {
+              return {{$name}}{}, err
+            }
+
+            s := "{{$typeName}}"
+            discriminatorSchema:= "{{$name}}"
+            fp, ok := spec.Components.Schemas[s]
+            if !ok {
+              return {{$name}}{}, fmt.Errorf("schema %s not found", s)
+            }
+            union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
+            if err != nil {
+              return {{$name}}{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
+            }
+            jsonUnion, err := json.Marshal(union)
+            if err != nil {
+              return {{$name}}{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
+            }
+            err = json.Unmarshal(jsonUnion, &body)
+
             return body, err
         }
 

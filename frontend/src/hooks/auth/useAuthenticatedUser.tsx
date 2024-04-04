@@ -22,9 +22,8 @@ export default function useAuthenticatedUser() {
     query: {
       retry(failureCount, error) {
         console.log(`retry on useAuthenticatedUser: ${failureCount}`)
-        const shouldRetry = failureCount < 2 && !failedAuthentication
+        const shouldRetry = failureCount < 10 && !failedAuthentication
         if (!shouldRetry) setFailedAuthentication(true)
-
         return shouldRetry
       },
     },
@@ -39,13 +38,14 @@ export default function useAuthenticatedUser() {
   useEffect(() => {
     if (mountedRef.current && isFirstRender) {
       // FIXME: ... one-off logic (in theory, not working)
-      // console.log({ renders: renders })
+      console.log({ renders: renders })
+      currentUser.refetch() // FIXME: infinite calls
     }
     // console.log({ rendersOutside: renders })
 
-    if (!isAuthenticated && !isAuthenticating) {
-      currentUser.refetch()
-    }
+    // if (!isAuthenticated && !isAuthenticating) {
+    //   currentUser.refetch() // FIXME: infinite calls
+    // }
 
     if (failedAuthentication) {
       notifications.show({

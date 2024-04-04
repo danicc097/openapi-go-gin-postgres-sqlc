@@ -167,6 +167,7 @@ var EntityFilters = map[TableEntity]map[string]Filter{
 		"workItemID":      Filter{Type: "integer", Db: "work_item_id", Nullable: true},
 	},
 	TableEntityUser: {
+		"age":                      Filter{Type: "integer", Db: "age", Nullable: true},
 		"createdAt":                Filter{Type: "date-time", Db: "created_at", Nullable: false},
 		"deletedAt":                Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
 		"email":                    Filter{Type: "string", Db: "email", Nullable: false},

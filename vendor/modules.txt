@@ -71,7 +71,7 @@ github.com/dave/dst/dstutil
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
-# github.com/deepmap/oapi-codegen/v2 v2.1.0 => github.com/danicc097/oapi-codegen/v2 v2.0.10004
+# github.com/deepmap/oapi-codegen/v2 v2.1.0 => github.com/danicc097/oapi-codegen/v2 v2.0.200000
 ## explicit; go 1.20
 github.com/deepmap/oapi-codegen/v2/pkg/codegen
 github.com/deepmap/oapi-codegen/v2/pkg/util
@@ -93,7 +93,7 @@ github.com/gabriel-vasile/mimetype
 github.com/gabriel-vasile/mimetype/internal/charset
 github.com/gabriel-vasile/mimetype/internal/json
 github.com/gabriel-vasile/mimetype/internal/magic
-# github.com/getkin/kin-openapi v0.123.1-0.20240305161826-7aa9f7ee3d53 => github.com/danicc097/kin-openapi v0.123.1-0.20240320222651-5a7e849603fb
+# github.com/getkin/kin-openapi v0.123.1-0.20240322191506-78bb273e5892
 ## explicit; go 1.20
 github.com/getkin/kin-openapi/openapi3
 github.com/getkin/kin-openapi/openapi3filter
@@ -340,7 +340,7 @@ github.com/muhlemmer/gu
 # github.com/muhlemmer/httpforwarded v0.1.0
 ## explicit; go 1.19
 github.com/muhlemmer/httpforwarded
-# github.com/oapi-codegen/runtime v1.1.1 => github.com/danicc097/runtime v0.0.0-20240320224358-a94ad612e00c
+# github.com/oapi-codegen/runtime v1.1.1 => github.com/danicc097/runtime v1.0.10003
 ## explicit; go 1.20
 github.com/oapi-codegen/runtime
 github.com/oapi-codegen/runtime/strictmiddleware/gin
@@ -748,6 +748,5 @@ mvdan.cc/gofumpt/internal/govendor/go/doc/comment
 mvdan.cc/gofumpt/internal/govendor/go/format
 mvdan.cc/gofumpt/internal/govendor/go/printer
 mvdan.cc/gofumpt/internal/version
-# github.com/deepmap/oapi-codegen/v2 => github.com/danicc097/oapi-codegen/v2 v2.0.10004
-# github.com/getkin/kin-openapi => github.com/danicc097/kin-openapi v0.123.1-0.20240320222651-5a7e849603fb
-# github.com/oapi-codegen/runtime => github.com/danicc097/runtime v0.0.0-20240320224358-a94ad612e00c
+# github.com/deepmap/oapi-codegen/v2 => github.com/danicc097/oapi-codegen/v2 v2.0.200000
+# github.com/oapi-codegen/runtime => github.com/danicc097/runtime v1.0.10003

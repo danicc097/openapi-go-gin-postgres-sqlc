@@ -208,6 +208,23 @@ end;
 $$
 language plpgsql;
 
+-- NOTE: concurrently not supported in migration transactions
+create or replace function create_or_update_index (idx_name text , project_name text , idx_def text)
+  returns VOID
+  as $$
+begin
+  if idx_def <> '' and not same_index_definition (idx_name , idx_def) then
+    raise notice 'recreating differing index: %' , idx_name;
+    execute FORMAT('create index newidx on cache__%I %s;' , project_name , idx_def);
+    execute FORMAT('drop index if exists %I;' , idx_name);
+    execute FORMAT('alter index newidx rename to %I;' , idx_name);
+  else
+    raise notice 'skipping identical create index statement: %' , idx_name;
+  end if;
+end;
+$$
+language plpgsql;
+
 --
 --
 -- Sync project work item tables cache
@@ -224,9 +241,14 @@ begin
     work_items_table_name
   from
     projects loop
+      --
+      -- sync cache table - idempotent
+      --
       perform
         create_or_update_work_item_cache_table (project_name);
-
+      --
+      -- at least one gin index mandatory for all projects
+      --
       idx_name := FORMAT('public.cache__%I_gin_index' , project_name);
 
 
@@ -237,18 +259,23 @@ begin
        - gin is apparently not too helpful for very short string searches.
        - btree not usable for text except for equals and startsWith.
 
-       create index on cache__demo_work_items using gin (
+
+       make sure the index used in explain is the one being tested...
+
+       drop index if exists lastmsg;
+       create index lastmsg on cache__demo_work_items using btree (
+       last_message_at desc);
+
+       drop index if exists abc;
+       create index abc on cache__demo_work_items using gin (
        description gin_trgm_ops
        , last_message_at
        , reopened);
 
        set enable_seqscan = "off";
-       explain analyze select * from cache__demo_work_items where description  ilike '%54%' order by last_message_at  desc;
-
-       1000 rows dataset: (to properly test index, rows returned must be >0)
-       Index Scan Backward using cache__demo_work_items_last_message_at_idx on cache__demo_work_items  (cost=0.28..58.22 rows=20 width=145) (actual time=0.059..0.725 rows=20 loops=1)
-       Filter: (description ~~* '%54%'::text)
-       Rows Removed by Filter: 980
+       -- with 1000 rows
+       explain analyze select * from cache__demo_work_items where description  ilike '%4%' order by last_message_at  desc limit 20;
+       ->  Index Scan using lastmsg on cache__demo_work_items  (cost=0.28..58.23 rows=263 width=145) (actual time=0.018..0.160 rows=20 loops=1)
        */
       case project_name
       when 'demo_work_items' then
@@ -257,7 +284,6 @@ begin
         , line gin_trgm_ops
         , description gin_trgm_ops
         , ref gin_trgm_ops
-        , last_message_at
         , reopened)';
       when 'demo_two_work_items' then
         idx_def := 'using gin (
@@ -268,22 +294,27 @@ begin
         idx_def := ''; raise exception 'No index definition found for cache__%' , project_name;
       end case;
 
-      if idx_def <> '' and not same_index_definition (idx_name , idx_def) then
-        raise notice 'recreating differing index: %' , idx_name;
+      perform
+        create_or_update_index (idx_name , project_name , idx_def);
         --
-        execute FORMAT('create index newidx on cache__%I %s;' , project_name , idx_def);
+        -- adhoc indexes. TODO: abstract away idx create/replace
         --
-        execute FORMAT('drop index if exists %I;' , idx_name);
+        case project_name
+        when 'demo_work_items' then
+          idx_name := FORMAT('public.cache__%I_last_message_at_index' , project_name);
+          --
+          idx_def := 'using btree (last_message_at)';
+          perform
+            create_or_update_index (idx_name , project_name , idx_def);
+          else
+        end case;
         --
-        execute FORMAT('alter index newidx rename to %I;' , idx_name);
-      else
-        raise notice 'skipping identical create index statement: %' , idx_name;
-        end if;
-
-      execute FORMAT('create or replace trigger work_items_sync_trigger_%1$I
+        -- triggers
+        --
+        execute FORMAT('create or replace trigger work_items_sync_trigger_%1$I
         after insert or update on %1$I for each row
         execute function sync_work_items (%1$s);' , project_name);
-    end loop;
-end;
+        end loop;
+      end;
 $BODY$
 language plpgsql;

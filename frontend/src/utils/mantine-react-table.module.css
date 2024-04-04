@@ -20,6 +20,21 @@
   transition: color 100ms ease, transform 100ms ease, font-size 100ms ease;
 }
 
+.filterMode {
+  color: var(--mantine-color-placeholder);
+  font-weight: 500;
+  font-size: var(--mantine-font-size-xs);
+  margin-bottom: 0;
+}
+
 .checkboxLabel {
   font-weight: 600;
+}
+
+.checkBox {
+  align-items: flex-end;
+}
+
+.root {
+  margin-bottom: -4px;
 }

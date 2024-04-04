@@ -419,6 +419,11 @@
     }
   },
   "user": {
+    "age": {
+      "type": "integer",
+      "db": "age",
+      "nullable": true
+    },
     "createdAt": {
       "type": "date-time",
       "db": "created_at",

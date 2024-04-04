@@ -11,5 +11,5 @@ import type { PaginationFilterPrimitiveFilterMode } from './paginationFilterPrim
 export interface PaginationFilterPrimitive {
   caseSensitive?: boolean | null;
   filterMode: PaginationFilterPrimitiveFilterMode;
-  value: string | null;
+  value?: string | null;
 }

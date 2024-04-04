@@ -886,6 +886,12 @@
     },
     "DbUser": {
       "properties": {
+        "age": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "createdAt": {
           "format": "date-time",
           "type": [
@@ -1044,6 +1050,12 @@
         },
         "user": {
           "properties": {
+            "age": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "createdAt": {
               "format": "date-time",
               "type": [
@@ -1659,6 +1671,12 @@
         "items": {
           "items": {
             "properties": {
+              "age": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
               "apiKey": {
                 "properties": {
                   "apiKey": {
@@ -2046,6 +2064,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -2489,6 +2513,12 @@
     },
     "User": {
       "properties": {
+        "age": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "apiKey": {
           "properties": {
             "apiKey": {
@@ -3518,6 +3548,12 @@
                   },
                   "user": {
                     "properties": {
+                      "age": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
                       "createdAt": {
                         "format": "date-time",
                         "type": [
@@ -3946,6 +3982,12 @@
                   },
                   "user": {
                     "properties": {
+                      "age": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
                       "createdAt": {
                         "format": "date-time",
                         "type": [
@@ -4708,6 +4750,12 @@
         },
         "user": {
           "properties": {
+            "age": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "createdAt": {
               "format": "date-time",
               "type": [
@@ -4831,6 +4879,12 @@
         },
         "user": {
           "properties": {
+            "age": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "createdAt": {
               "format": "date-time",
               "type": [
@@ -5158,6 +5212,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -5604,6 +5664,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -6015,6 +6081,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -6419,8 +6491,7 @@
         }
       },
       "required": [
-        "filterMode",
-        "value"
+        "filterMode"
       ]
     },
     "PaginationFilterArray": {
@@ -6446,7 +6517,10 @@
           "type": "string"
         },
         "value": {
-          "type": "array",
+          "type": [
+            "array",
+            "null"
+          ],
           "items": {
             "type": [
               "string",
@@ -6456,8 +6530,7 @@
         }
       },
       "required": [
-        "filterMode",
-        "value"
+        "filterMode"
       ]
     },
     "PaginationFilter": {
@@ -6498,8 +6571,7 @@
             }
           },
           "required": [
-            "filterMode",
-            "value"
+            "filterMode"
           ]
         },
         {
@@ -6525,7 +6597,10 @@
               "type": "string"
             },
             "value": {
-              "type": "array",
+              "type": [
+                "array",
+                "null"
+              ],
               "items": {
                 "type": [
                   "string",
@@ -6535,8 +6610,7 @@
             }
           },
           "required": [
-            "filterMode",
-            "value"
+            "filterMode"
           ]
         }
       ],
@@ -6583,8 +6657,7 @@
                 }
               },
               "required": [
-                "filterMode",
-                "value"
+                "filterMode"
               ]
             },
             {
@@ -6610,7 +6683,10 @@
                   "type": "string"
                 },
                 "value": {
-                  "type": "array",
+                  "type": [
+                    "array",
+                    "null"
+                  ],
                   "items": {
                     "type": [
                       "string",
@@ -6620,8 +6696,7 @@
                 }
               },
               "required": [
-                "filterMode",
-                "value"
+                "filterMode"
               ]
             }
           ],
@@ -6681,8 +6756,7 @@
                   }
                 },
                 "required": [
-                  "filterMode",
-                  "value"
+                  "filterMode"
                 ]
               },
               {
@@ -6708,7 +6782,10 @@
                     "type": "string"
                   },
                   "value": {
-                    "type": "array",
+                    "type": [
+                      "array",
+                      "null"
+                    ],
                     "items": {
                       "type": [
                         "string",
@@ -6718,8 +6795,7 @@
                   }
                 },
                 "required": [
-                  "filterMode",
-                  "value"
+                  "filterMode"
                 ]
               }
             ],
@@ -6735,6 +6811,124 @@
         },
         "x-use-server-type": true
       }
+    },
+    "GetPaginatedUsersQueryParameters": {
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "guest",
+            "user",
+            "advancedUser",
+            "manager",
+            "admin",
+            "superAdmin"
+          ],
+          "x-is-generated": true,
+          "description": "is generated from roles.json keys."
+        },
+        "items": {
+          "type": "object",
+          "description": "represents pagination data indexed by column id",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "filter": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "filterMode": {
+                        "enum": [
+                          "between",
+                          "betweenInclusive",
+                          "contains",
+                          "empty",
+                          "endsWith",
+                          "equals",
+                          "fuzzy",
+                          "greaterThan",
+                          "greaterThanOrEqualTo",
+                          "lessThan",
+                          "lessThanOrEqualTo",
+                          "notEmpty",
+                          "notEquals",
+                          "startsWith"
+                        ],
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "caseSensitive": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "filterMode"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "filterMode": {
+                        "enum": [
+                          "between",
+                          "betweenInclusive",
+                          "contains",
+                          "empty",
+                          "endsWith",
+                          "equals",
+                          "fuzzy",
+                          "greaterThan",
+                          "greaterThanOrEqualTo",
+                          "lessThan",
+                          "lessThanOrEqualTo",
+                          "notEmpty",
+                          "notEquals",
+                          "startsWith"
+                        ],
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": [
+                          "array",
+                          "null"
+                        ],
+                        "items": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "filterMode"
+                    ]
+                  }
+                ],
+                "x-use-server-type": true
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            "x-use-server-type": true
+          }
+        }
+      },
+      "type": "object"
     },
     "PaginationFilterModes": {
       "enum": [
@@ -6873,29 +7067,6 @@
       },
       "type": "object",
       "x-gen-struct": "GetCacheDemoWorkItemQueryParameters",
-      "x-is-generated": true
-    },
-    "GetPaginatedUsersQueryParameters": {
-      "properties": {
-        "role": {
-          "type": "string",
-          "enum": [
-            "guest",
-            "user",
-            "advancedUser",
-            "manager",
-            "admin",
-            "superAdmin"
-          ],
-          "x-is-generated": true,
-          "description": "is generated from roles.json keys."
-        }
-      },
-      "required": [
-        "role"
-      ],
-      "type": "object",
-      "x-gen-struct": "GetPaginatedUsersQueryParameters",
       "x-is-generated": true
     },
     "GetCurrentUserQueryParameters": {
@@ -7834,6 +8005,12 @@
     },
     "DbUser": {
       "properties": {
+        "age": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "createdAt": {
           "format": "date-time",
           "type": [
@@ -7992,6 +8169,12 @@
         },
         "user": {
           "properties": {
+            "age": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "createdAt": {
               "format": "date-time",
               "type": [
@@ -8607,6 +8790,12 @@
         "items": {
           "items": {
             "properties": {
+              "age": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
               "apiKey": {
                 "properties": {
                   "apiKey": {
@@ -8994,6 +9183,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -9437,6 +9632,12 @@
     },
     "User": {
       "properties": {
+        "age": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "apiKey": {
           "properties": {
             "apiKey": {
@@ -10466,6 +10667,12 @@
                   },
                   "user": {
                     "properties": {
+                      "age": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
                       "createdAt": {
                         "format": "date-time",
                         "type": [
@@ -10894,6 +11101,12 @@
                   },
                   "user": {
                     "properties": {
+                      "age": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
                       "createdAt": {
                         "format": "date-time",
                         "type": [
@@ -11656,6 +11869,12 @@
         },
         "user": {
           "properties": {
+            "age": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "createdAt": {
               "format": "date-time",
               "type": [
@@ -11779,6 +11998,12 @@
         },
         "user": {
           "properties": {
+            "age": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
             "createdAt": {
               "format": "date-time",
               "type": [
@@ -12106,6 +12331,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -12552,6 +12783,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -12963,6 +13200,12 @@
               },
               "user": {
                 "properties": {
+                  "age": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
                   "createdAt": {
                     "format": "date-time",
                     "type": [
@@ -13367,8 +13610,7 @@
         }
       },
       "required": [
-        "filterMode",
-        "value"
+        "filterMode"
       ]
     },
     "PaginationFilterArray": {
@@ -13394,7 +13636,10 @@
           "type": "string"
         },
         "value": {
-          "type": "array",
+          "type": [
+            "array",
+            "null"
+          ],
           "items": {
             "type": [
               "string",
@@ -13404,8 +13649,7 @@
         }
       },
       "required": [
-        "filterMode",
-        "value"
+        "filterMode"
       ]
     },
     "PaginationFilter": {
@@ -13446,8 +13690,7 @@
             }
           },
           "required": [
-            "filterMode",
-            "value"
+            "filterMode"
           ]
         },
         {
@@ -13473,7 +13716,10 @@
               "type": "string"
             },
             "value": {
-              "type": "array",
+              "type": [
+                "array",
+                "null"
+              ],
               "items": {
                 "type": [
                   "string",
@@ -13483,8 +13729,7 @@
             }
           },
           "required": [
-            "filterMode",
-            "value"
+            "filterMode"
           ]
         }
       ],
@@ -13531,8 +13776,7 @@
                 }
               },
               "required": [
-                "filterMode",
-                "value"
+                "filterMode"
               ]
             },
             {
@@ -13558,7 +13802,10 @@
                   "type": "string"
                 },
                 "value": {
-                  "type": "array",
+                  "type": [
+                    "array",
+                    "null"
+                  ],
                   "items": {
                     "type": [
                       "string",
@@ -13568,8 +13815,7 @@
                 }
               },
               "required": [
-                "filterMode",
-                "value"
+                "filterMode"
               ]
             }
           ],
@@ -13629,8 +13875,7 @@
                   }
                 },
                 "required": [
-                  "filterMode",
-                  "value"
+                  "filterMode"
                 ]
               },
               {
@@ -13656,7 +13901,10 @@
                     "type": "string"
                   },
                   "value": {
-                    "type": "array",
+                    "type": [
+                      "array",
+                      "null"
+                    ],
                     "items": {
                       "type": [
                         "string",
@@ -13666,8 +13914,7 @@
                   }
                 },
                 "required": [
-                  "filterMode",
-                  "value"
+                  "filterMode"
                 ]
               }
             ],
@@ -13683,6 +13930,124 @@
         },
         "x-use-server-type": true
       }
+    },
+    "GetPaginatedUsersQueryParameters": {
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "guest",
+            "user",
+            "advancedUser",
+            "manager",
+            "admin",
+            "superAdmin"
+          ],
+          "x-is-generated": true,
+          "description": "is generated from roles.json keys."
+        },
+        "items": {
+          "type": "object",
+          "description": "represents pagination data indexed by column id",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "filter": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "filterMode": {
+                        "enum": [
+                          "between",
+                          "betweenInclusive",
+                          "contains",
+                          "empty",
+                          "endsWith",
+                          "equals",
+                          "fuzzy",
+                          "greaterThan",
+                          "greaterThanOrEqualTo",
+                          "lessThan",
+                          "lessThanOrEqualTo",
+                          "notEmpty",
+                          "notEquals",
+                          "startsWith"
+                        ],
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "caseSensitive": {
+                        "type": [
+                          "boolean",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "filterMode"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "filterMode": {
+                        "enum": [
+                          "between",
+                          "betweenInclusive",
+                          "contains",
+                          "empty",
+                          "endsWith",
+                          "equals",
+                          "fuzzy",
+                          "greaterThan",
+                          "greaterThanOrEqualTo",
+                          "lessThan",
+                          "lessThanOrEqualTo",
+                          "notEmpty",
+                          "notEquals",
+                          "startsWith"
+                        ],
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": [
+                          "array",
+                          "null"
+                        ],
+                        "items": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
+                        }
+                      }
+                    },
+                    "required": [
+                      "filterMode"
+                    ]
+                  }
+                ],
+                "x-use-server-type": true
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            "x-use-server-type": true
+          }
+        }
+      },
+      "type": "object"
     },
     "PaginationFilterModes": {
       "enum": [
@@ -13821,29 +14186,6 @@
       },
       "type": "object",
       "x-gen-struct": "GetCacheDemoWorkItemQueryParameters",
-      "x-is-generated": true
-    },
-    "GetPaginatedUsersQueryParameters": {
-      "properties": {
-        "role": {
-          "type": "string",
-          "enum": [
-            "guest",
-            "user",
-            "advancedUser",
-            "manager",
-            "admin",
-            "superAdmin"
-          ],
-          "x-is-generated": true,
-          "description": "is generated from roles.json keys."
-        }
-      },
-      "required": [
-        "role"
-      ],
-      "type": "object",
-      "x-gen-struct": "GetPaginatedUsersQueryParameters",
       "x-is-generated": true
     },
     "GetCurrentUserQueryParameters": {

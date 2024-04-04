@@ -4,9 +4,10 @@ go 1.21
 
 replace (
 	// all 3 are branches named `custom`.
-	github.com/deepmap/oapi-codegen/v2 => github.com/danicc097/oapi-codegen/v2 v2.0.10004
-	github.com/getkin/kin-openapi => github.com/danicc097/kin-openapi v0.123.1-0.20240320222651-5a7e849603fb
-	github.com/oapi-codegen/runtime => github.com/danicc097/runtime v0.0.0-20240320224358-a94ad612e00c
+	github.com/deepmap/oapi-codegen/v2 => github.com/danicc097/oapi-codegen/v2 v2.0.200000
+	// the fork should also use replace directory of upstream to ./
+	// and just change module name
+	github.com/oapi-codegen/runtime => github.com/danicc097/runtime v1.0.10003
 )
 
 require (
@@ -16,7 +17,7 @@ require (
 	github.com/deepmap/oapi-codegen/v2 v2.1.0
 	github.com/fatih/structs v1.1.0
 	github.com/fatih/structtag v1.2.0
-	github.com/getkin/kin-openapi v0.123.1-0.20240305161826-7aa9f7ee3d53
+	github.com/getkin/kin-openapi v0.123.1-0.20240322191506-78bb273e5892
 	github.com/gin-contrib/cors v1.7.1
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-contrib/zap v1.1.1

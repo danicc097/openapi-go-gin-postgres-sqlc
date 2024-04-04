@@ -4,22 +4,17 @@ import { EntityFilter } from 'src/config'
 import classes from './mantine-react-table.module.css'
 import dayjs from 'dayjs'
 
-export const rangeModes: FilterModeOptions = ['between', 'betweenInclusive', 'inNumberRange']
+export const rangeModes: FilterModeOptions = ['between', 'betweenInclusive']
 export const emptyModes: FilterModeOptions = ['empty', 'notEmpty']
 export const arrModes: FilterModeOptions = ['arrIncludesSome', 'arrIncludesAll', 'arrIncludes']
-export const numberModes: FilterModeOptions = [
-  ...rangeModes,
-  'equals',
-  'greaterThan',
-  'greaterThanOrEqualTo',
-  'lessThan',
-  'lessThanOrEqualTo',
-]
-export const dateModes = ['between', 'betweenInclusive']
+export const indexZeroModes = ['equals', 'greaterThan', 'greaterThanOrEqualTo']
+export const indexOneModes = ['lessThan', 'lessThanOrEqualTo']
+export const numberModes: FilterModeOptions = [...rangeModes, ...indexZeroModes, ...indexOneModes]
+export const dateModes = rangeModes
 export const textModes: FilterModeOptions = ['contains', 'endsWith', 'equals', 'notEquals', 'startsWith'] //, 'fuzzy'
 
 function filterVariantByType(c: EntityFilter): MRT_ColumnDef<any>['filterVariant'] {
-  if (c.type === 'boolean') return 'checkbox'
+  if (c.type === 'boolean') return 'text' // 'checkbox' will ignore the given Filter fn
   if (c.type === 'number') return 'range'
   if (c.type === 'integer') return 'range'
   if (c.type === 'date-time') return 'date-range'

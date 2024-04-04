@@ -45,11 +45,23 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPagina
 	if err != nil {
 		return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid createdAt cursor for paginated user: %s", params.Cursor)
 	}
+	var filters map[string][]interface{}
+	if params.SearchQuery.Items != nil {
+		filters, err = GenerateDefaultFilters(db.TableEntityUser, *params.SearchQuery.Items)
+		if err != nil {
+			return nil, internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid default filters")
+		}
+
+		// TODO: sort mapping could also be generated, just like db.EntityFilters
+		// we can have db.EntitySorting indexed by entity, field and direction,
+		// ignoring nulls first/last.
+
+		// handle custom keys as desired. They should be set in spec directly and
+		// not via rest/models.go
+	}
 
 	opts := []db.UserSelectConfigOption{
-		db.WithUserFilters(map[string][]any{
-			// restrict as desired
-		}),
+		db.WithUserFilters(filters),
 		db.WithUserJoin(db.UserJoins{MemberTeams: true, MemberProjects: true}),
 	}
 	if params.Limit > 0 { // for users, allow 0 or less to fetch all

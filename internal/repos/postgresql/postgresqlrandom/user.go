@@ -17,6 +17,7 @@ func UserCreateParams() *db.UserCreateParams {
 		ExternalID:               testutil.RandomString(10),
 		Scopes:                   models.Scopes{"scope1", "scope2"},
 		RoleRank:                 testutil.RandomInt(2, 4),
+		Age:                      pointers.New(testutil.RandomInt(20, 60)),
 		APIKeyID:                 nil,
 		HasGlobalNotifications:   false,
 		HasPersonalNotifications: false,

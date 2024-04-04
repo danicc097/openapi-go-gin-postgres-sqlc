@@ -32,7 +32,7 @@ import { IconEdit, IconRefresh, IconTrash, IconX } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import { useGetPaginatedUsersInfinite } from 'src/gen/user/user'
 import dayjs from 'dayjs'
-import { User } from 'src/gen/model'
+import { GetPaginatedUsersParams, GetPaginatedUsersQueryParameters, PaginationItems, User } from 'src/gen/model'
 import { getContrastYIQ, scopeColor } from 'src/utils/colors'
 import _, { lowerCase } from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
@@ -51,36 +51,6 @@ import {
   CustomColumnFilterModeMenuItems,
 } from 'src/utils/mantine-react-table.components'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
-
-interface Params {
-  columnFilterFns: MRT_ColumnFilterFnsState
-  columnFilters: MRT_ColumnFiltersState
-  globalFilter: string
-  sorting: MRT_SortingState
-  pagination: MRT_PaginationState
-}
-
-//custom react-query hook
-const A = ({ columnFilterFns, columnFilters, globalFilter, sorting, pagination }: Params) => {
-  //build the URL (https://www.mantine-react-table.com/api/data?start=0&size=10&filters=[]&globalFilter=&sorting=[])
-  const fetchURL = new URL(
-    '/api/data',
-    process.env.NODE_ENV === 'production' ? 'https://www.mantine-react-table.com' : 'http://localhost:3001',
-  )
-  fetchURL.searchParams.set('start', `${pagination.pageIndex * pagination.pageSize}`)
-  fetchURL.searchParams.set('size', `${pagination.pageSize}`)
-  fetchURL.searchParams.set('filters', JSON.stringify(columnFilters ?? []))
-  fetchURL.searchParams.set('filterModes', JSON.stringify(columnFilterFns ?? {}))
-  fetchURL.searchParams.set('globalFilter', globalFilter ?? '')
-  fetchURL.searchParams.set('sorting', JSON.stringify(sorting ?? []))
-
-  return useQuery({
-    queryKey: ['users', fetchURL.href], //refetch whenever the URL changes (columnFilters, globalFilter, sorting, pagination)
-    queryFn: () => fetch(fetchURL.href).then((res) => res.json()),
-    // placeholderData: keepPreviousData, //useful for paginated queries by keeping data from previous pages on screen while fetching the next page
-    staleTime: 30_000, //don't refetch previously viewed pages until cache is more than 30 seconds old
-  })
-}
 
 type Column = MRT_ColumnDef<User>
 
@@ -184,6 +154,12 @@ export default function DemoMantineReactTable() {
             data: roleOptions,
             size: 'xs',
             fw: 800,
+            styles: {
+              root: {
+                // TODO: move select and multiselect to mrt .components and use classes
+                borderBottomColor: 'light-dark(#d0d5db, #414141)',
+              },
+            },
           }
         },
         filterVariant: 'select',
@@ -287,16 +263,18 @@ export default function DemoMantineReactTable() {
   }, [_columns])
 
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>([])
-  const [columnFilterFns, setColumnFilterFns] = //filter modes
-    useState<MRT_ColumnFilterFnsState>(Object.fromEntries(columns.map(({ accessorKey }) => [accessorKey, 'contains']))) //default to "contains" for all columns
   const [globalFilter, setGlobalFilter] = useState('')
   const [sorting, setSorting] = useState<MRT_SortingState>([])
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 15,
   })
 
+  const [searchQuery, setSearchQuery] = useState<GetPaginatedUsersQueryParameters>({
+    items: {},
+  })
   const [cursor, setCursor] = useState(dayjs().toRFC3339NANO())
+
   const {
     data: usersData,
     refetch,
@@ -311,18 +289,18 @@ export default function DemoMantineReactTable() {
     {
       direction: 'desc',
       cursor,
-      limit: 15,
+      limit: pagination.pageSize,
       // deepmap needs to be updated for kin-openapi new Type struct
-      filter: { post: ['fesefesf', '1'], bools: [true, false], objects: [{ nestedObj: 'something' }] },
-      nested: { obj: { nestedObj: '1212' } },
+      // filter: { post: ['fesefesf', '1'], bools: [true, false], objects: [{ nestedObj: 'something' }] },
+      // nested: { obj: { nestedObj: '1212' } },
       // custom: {
       //   // cursor: `${usersData?.page.nextCursor}`,
       //   size: `${pagination.pageSize}`,
       //   filters: columnFilters,
-      //   filterModes: columnFilterFns,
       //   globalFilter: globalFilter ?? '',
       //   sorting: sorting,
       // },
+      searchQuery,
     },
     {
       query: {
@@ -337,6 +315,38 @@ export default function DemoMantineReactTable() {
       },
     },
   )
+
+  useEffect(() => {
+    const items: PaginationItems = {}
+
+    columnFilters.forEach((filter) => {
+      const { id, value } = filter
+      console.log({ value })
+      let v = value
+      if (_.isArray(v)) {
+        v = v.map(tryDate)
+      } else {
+        v = tryDate(v)
+      }
+      const filterMode = dynamicConfig?.filterModes[id]
+      const sort = sorting[id]
+      if (filterMode) {
+        items[id] = {
+          filter: {
+            value: v as any,
+            filterMode: filterMode as any, // must fix orval upstream
+          },
+          ...(sort && { sort: sort.desc === true ? 'desc' : 'asc' }),
+        }
+      }
+    })
+
+    setSearchQuery((v) => ({ ...v, items }))
+  }, [columnFilters, globalFilter, dynamicConfig?.filterModes, sorting])
+
+  useEffect(() => {
+    console.log({ searchQuery })
+  }, [searchQuery])
 
   // useStopInfiniteRenders(60)
 
@@ -402,7 +412,6 @@ export default function DemoMantineReactTable() {
           ),
         }
       : undefined,
-    onColumnFilterFnsChange: setColumnFilterFns,
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
@@ -423,7 +432,6 @@ export default function DemoMantineReactTable() {
     state: {
       columnOrder,
       density: 'xs',
-      columnFilterFns,
       columnFilters,
       globalFilter,
       isLoading,
@@ -488,7 +496,6 @@ export default function DemoMantineReactTable() {
                   cursor: `${usersData?.pages[0]?.page.nextCursor}`,
                   size: `${pagination.pageSize}`,
                   columnFilters,
-                  columnFilterFns,
                   globalFilter: globalFilter ?? '',
                   sorting: sorting,
                 },
@@ -511,4 +518,14 @@ export default function DemoMantineReactTable() {
       </Card>
     </>
   )
+}
+
+function tryDate(value: unknown) {
+  let v = value
+  if (!v) return v
+  const dateVal = dayjs(value as any)
+  if (dateVal.isValid()) {
+    v = dateVal.toRFC3339NANO()
+  }
+  return v
 }

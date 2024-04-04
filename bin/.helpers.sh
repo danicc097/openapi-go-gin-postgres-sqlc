@@ -495,20 +495,10 @@ docker.postgres.drop_and_recreate_db() {
 
   docker.postgres.wait_until_ready
 
-  docker.postgres psql --no-psqlrc \
-    -U "$POSTGRES_USER" \
-    -d "postgres" \
-    -c "CREATE DATABASE db_template OWNER $POSTGRES_USER;" 2>/dev/null || true
-
   echo "${RED}${BOLD}Dropping database $db.${OFF}"
-  docker.postgres \
-    dropdb --if-exists -f "$db"
+  docker.postgres dropdb --force --if-exists -f "$db"
 
-  echo "${BLUE}${BOLD}Creating database $db.${OFF}"
-  docker.postgres psql --no-psqlrc \
-    -U "$POSTGRES_USER" \
-    -d db_template \
-    -c "CREATE DATABASE $db OWNER $POSTGRES_USER;"
+  docker.postgres.create_db $db
 }
 
 # Create database `db`.
@@ -518,12 +508,7 @@ docker.postgres.create_db() {
   docker.postgres.wait_until_ready
 
   echo "${BLUE}${BOLD}Creating database $db.${OFF}"
-  {
-    docker.postgres psql --no-psqlrc -U "$POSTGRES_USER" \
-      -tc "SELECT 1 FROM pg_database WHERE datname = '$db'" |
-      grep -q 1
-  } ||
-    docker.postgres psql --no-psqlrc -U "$POSTGRES_USER" -c "CREATE DATABASE $db" ||
+  docker.postgres createdb $db -U "$POSTGRES_USER" -O "$POSTGRES_USER" ||
     echo "Skipping $db database creation"
 }
 

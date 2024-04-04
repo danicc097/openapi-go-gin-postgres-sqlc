@@ -4,10 +4,19 @@
 package models
 
 import (
+	"bytes"
+	"compress/gzip"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"net/url"
+	"path"
+	"strings"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/openapi"
+	"github.com/getkin/kin-openapi/openapi3"
 	uuid "github.com/google/uuid"
 )
 
@@ -361,7 +370,8 @@ type CreateWorkItemCommentRequest struct {
 
 // CreateWorkItemRequest defines the model for CreateWorkItemRequest.
 type CreateWorkItemRequest struct {
-	union json.RawMessage
+	union           json.RawMessage
+	FromQueryParams bool
 }
 
 // CreateWorkItemTagRequest defines the model for CreateWorkItemTagRequest.
@@ -508,6 +518,7 @@ type DbTimeEntry struct {
 
 // DbUser defines the model for DbUser.
 type DbUser struct {
+	Age                      *int       `json:"age"`
 	CreatedAt                time.Time  `json:"createdAt"`
 	DeletedAt                *time.Time `json:"deletedAt"`
 	Email                    string     `json:"email"`
@@ -729,8 +740,11 @@ type GetCurrentUserQueryParameters struct {
 
 // GetPaginatedUsersQueryParameters defines the model for GetPaginatedUsersQueryParameters.
 type GetPaginatedUsersQueryParameters struct {
+	// Items represents pagination data indexed by column id
+	Items *PaginationItems `json:"items,omitempty"`
+
 	// Role is generated from roles.json keys.
-	Role Role `json:"role"`
+	Role *Role `json:"role,omitempty"`
 }
 
 // HTTPError represents an error message response.
@@ -791,13 +805,14 @@ type Pagination struct {
 
 // PaginationFilter defines the model for PaginationFilter.
 type PaginationFilter struct {
-	union json.RawMessage
+	union           json.RawMessage
+	FromQueryParams bool
 }
 
 // PaginationFilterArray defines the model for PaginationFilterArray.
 type PaginationFilterArray struct {
 	FilterMode PaginationFilterModes `json:"filterMode"`
-	Value      []string              `json:"value"`
+	Value      *[]string             `json:"value"`
 }
 
 // PaginationFilterModes defines the model for PaginationFilterModes.
@@ -959,6 +974,7 @@ type UpdateWorkItemTypeRequest struct {
 
 // User defines the model for User.
 type User struct {
+	Age                      *int          `json:"age"`
 	ApiKey                   *DbUserAPIKey `json:"apiKey,omitempty"`
 	CreatedAt                time.Time     `json:"createdAt"`
 	DeletedAt                *time.Time    `json:"deletedAt"`
@@ -1001,7 +1017,8 @@ type ValidationError struct {
 
 // WorkItem defines the model for WorkItem.
 type WorkItem struct {
-	union json.RawMessage
+	union           json.RawMessage
+	FromQueryParams bool
 }
 
 // WorkItemBase defines the model for WorkItemBase.
@@ -1092,10 +1109,11 @@ type GetProjectWorkitemsParams struct {
 
 // GetPaginatedUsersParams defines parameters for GetPaginatedUsers.
 type GetPaginatedUsersParams struct {
-	Limit     int       `form:"limit" json:"limit"`
-	Direction Direction `form:"direction" json:"direction"`
-	Cursor    string    `form:"cursor" json:"cursor"`
-	Filter    *struct {
+	Limit       int                               `form:"limit" json:"limit"`
+	Direction   Direction                         `form:"direction" json:"direction"`
+	Cursor      string                            `form:"cursor" json:"cursor"`
+	SearchQuery *GetPaginatedUsersQueryParameters `json:"searchQuery,omitempty"`
+	Filter      *struct {
 		Bools   *[]bool `json:"bools,omitempty"`
 		Ints    *[]int  `json:"ints,omitempty"`
 		Objects *[]struct {
@@ -1164,14 +1182,66 @@ type UpdateWorkItemCommentJSONRequestBody = UpdateWorkItemCommentRequest
 // AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {
 	var body CreateDemoWorkItemRequest
-	err := json.Unmarshal(t.union, &body)
+	if !t.FromQueryParams {
+		err := json.Unmarshal(t.union, &body)
+		return body, err
+	}
+	// arrays are passed as maps, so reconstruct json properly
+	var unionm map[string]interface{}
+	err := json.Unmarshal(t.union, &unionm)
+	if err != nil {
+		return CreateDemoWorkItemRequest{}, err
+	}
+
+	s := "CreateWorkItemRequest"
+	discriminatorSchema := "CreateDemoWorkItemRequest"
+	fp, ok := spec.Components.Schemas[s]
+	if !ok {
+		return CreateDemoWorkItemRequest{}, fmt.Errorf("schema %s not found", s)
+	}
+	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
+	if err != nil {
+		return CreateDemoWorkItemRequest{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
+	}
+	jsonUnion, err := json.Marshal(union)
+	if err != nil {
+		return CreateDemoWorkItemRequest{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
+	}
+	err = json.Unmarshal(jsonUnion, &body)
+
 	return body, err
 }
 
 // AsCreateDemoTwoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoTwoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoTwoWorkItemRequest() (CreateDemoTwoWorkItemRequest, error) {
 	var body CreateDemoTwoWorkItemRequest
-	err := json.Unmarshal(t.union, &body)
+	if !t.FromQueryParams {
+		err := json.Unmarshal(t.union, &body)
+		return body, err
+	}
+	// arrays are passed as maps, so reconstruct json properly
+	var unionm map[string]interface{}
+	err := json.Unmarshal(t.union, &unionm)
+	if err != nil {
+		return CreateDemoTwoWorkItemRequest{}, err
+	}
+
+	s := "CreateWorkItemRequest"
+	discriminatorSchema := "CreateDemoTwoWorkItemRequest"
+	fp, ok := spec.Components.Schemas[s]
+	if !ok {
+		return CreateDemoTwoWorkItemRequest{}, fmt.Errorf("schema %s not found", s)
+	}
+	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
+	if err != nil {
+		return CreateDemoTwoWorkItemRequest{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
+	}
+	jsonUnion, err := json.Marshal(union)
+	if err != nil {
+		return CreateDemoTwoWorkItemRequest{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
+	}
+	err = json.Unmarshal(jsonUnion, &body)
+
 	return body, err
 }
 
@@ -1211,14 +1281,66 @@ func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
 // AsPaginationFilterPrimitive returns the union data inside the PaginationFilter as a PaginationFilterPrimitive
 func (t PaginationFilter) AsPaginationFilterPrimitive() (PaginationFilterPrimitive, error) {
 	var body PaginationFilterPrimitive
-	err := json.Unmarshal(t.union, &body)
+	if !t.FromQueryParams {
+		err := json.Unmarshal(t.union, &body)
+		return body, err
+	}
+	// arrays are passed as maps, so reconstruct json properly
+	var unionm map[string]interface{}
+	err := json.Unmarshal(t.union, &unionm)
+	if err != nil {
+		return PaginationFilterPrimitive{}, err
+	}
+
+	s := "PaginationFilter"
+	discriminatorSchema := "PaginationFilterPrimitive"
+	fp, ok := spec.Components.Schemas[s]
+	if !ok {
+		return PaginationFilterPrimitive{}, fmt.Errorf("schema %s not found", s)
+	}
+	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
+	if err != nil {
+		return PaginationFilterPrimitive{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
+	}
+	jsonUnion, err := json.Marshal(union)
+	if err != nil {
+		return PaginationFilterPrimitive{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
+	}
+	err = json.Unmarshal(jsonUnion, &body)
+
 	return body, err
 }
 
 // AsPaginationFilterArray returns the union data inside the PaginationFilter as a PaginationFilterArray
 func (t PaginationFilter) AsPaginationFilterArray() (PaginationFilterArray, error) {
 	var body PaginationFilterArray
-	err := json.Unmarshal(t.union, &body)
+	if !t.FromQueryParams {
+		err := json.Unmarshal(t.union, &body)
+		return body, err
+	}
+	// arrays are passed as maps, so reconstruct json properly
+	var unionm map[string]interface{}
+	err := json.Unmarshal(t.union, &unionm)
+	if err != nil {
+		return PaginationFilterArray{}, err
+	}
+
+	s := "PaginationFilter"
+	discriminatorSchema := "PaginationFilterArray"
+	fp, ok := spec.Components.Schemas[s]
+	if !ok {
+		return PaginationFilterArray{}, fmt.Errorf("schema %s not found", s)
+	}
+	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
+	if err != nil {
+		return PaginationFilterArray{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
+	}
+	jsonUnion, err := json.Marshal(union)
+	if err != nil {
+		return PaginationFilterArray{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
+	}
+	err = json.Unmarshal(jsonUnion, &body)
+
 	return body, err
 }
 
@@ -1282,14 +1404,66 @@ func (t *PaginationFilter) UnmarshalJSON(b []byte) error {
 // AsDemoWorkItem returns the union data inside the WorkItem as a DemoWorkItem
 func (t WorkItem) AsDemoWorkItem() (DemoWorkItem, error) {
 	var body DemoWorkItem
-	err := json.Unmarshal(t.union, &body)
+	if !t.FromQueryParams {
+		err := json.Unmarshal(t.union, &body)
+		return body, err
+	}
+	// arrays are passed as maps, so reconstruct json properly
+	var unionm map[string]interface{}
+	err := json.Unmarshal(t.union, &unionm)
+	if err != nil {
+		return DemoWorkItem{}, err
+	}
+
+	s := "WorkItem"
+	discriminatorSchema := "DemoWorkItem"
+	fp, ok := spec.Components.Schemas[s]
+	if !ok {
+		return DemoWorkItem{}, fmt.Errorf("schema %s not found", s)
+	}
+	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
+	if err != nil {
+		return DemoWorkItem{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
+	}
+	jsonUnion, err := json.Marshal(union)
+	if err != nil {
+		return DemoWorkItem{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
+	}
+	err = json.Unmarshal(jsonUnion, &body)
+
 	return body, err
 }
 
 // AsDemoTwoWorkItem returns the union data inside the WorkItem as a DemoTwoWorkItem
 func (t WorkItem) AsDemoTwoWorkItem() (DemoTwoWorkItem, error) {
 	var body DemoTwoWorkItem
-	err := json.Unmarshal(t.union, &body)
+	if !t.FromQueryParams {
+		err := json.Unmarshal(t.union, &body)
+		return body, err
+	}
+	// arrays are passed as maps, so reconstruct json properly
+	var unionm map[string]interface{}
+	err := json.Unmarshal(t.union, &unionm)
+	if err != nil {
+		return DemoTwoWorkItem{}, err
+	}
+
+	s := "WorkItem"
+	discriminatorSchema := "DemoTwoWorkItem"
+	fp, ok := spec.Components.Schemas[s]
+	if !ok {
+		return DemoTwoWorkItem{}, fmt.Errorf("schema %s not found", s)
+	}
+	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
+	if err != nil {
+		return DemoTwoWorkItem{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
+	}
+	jsonUnion, err := json.Marshal(union)
+	if err != nil {
+		return DemoTwoWorkItem{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
+	}
+	err = json.Unmarshal(jsonUnion, &body)
+
 	return body, err
 }
 
@@ -1324,4 +1498,201 @@ func (t WorkItem) MarshalJSON() ([]byte, error) {
 func (t *WorkItem) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
+}
+
+// Base64 encoded, gzipped, json marshaled Swagger object
+var swaggerSpec = []string{
+
+	"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",
+}
+
+var spec, _ = GetSwagger()
+
+// GetSwagger returns the content of the embedded swagger specification file
+// or error if failed to decode
+func decodeSpec() ([]byte, error) {
+	zipped, err := base64.StdEncoding.DecodeString(strings.Join(swaggerSpec, ""))
+	if err != nil {
+		return nil, fmt.Errorf("error base64 decoding spec: %s", err)
+	}
+	zr, err := gzip.NewReader(bytes.NewReader(zipped))
+	if err != nil {
+		return nil, fmt.Errorf("error decompressing spec: %s", err)
+	}
+	var buf bytes.Buffer
+	_, err = buf.ReadFrom(zr)
+	if err != nil {
+		return nil, fmt.Errorf("error decompressing spec: %s", err)
+	}
+
+	return buf.Bytes(), nil
+}
+
+var rawSpec = decodeSpecCached()
+
+// a naive cached of a decoded swagger spec
+func decodeSpecCached() func() ([]byte, error) {
+	data, err := decodeSpec()
+	return func() ([]byte, error) {
+		return data, err
+	}
+}
+
+// Constructs a synthetic filesystem for resolving external references when loading openapi specifications.
+func PathToRawSpec(pathToFile string) map[string]func() ([]byte, error) {
+	var res = make(map[string]func() ([]byte, error))
+	if len(pathToFile) > 0 {
+		res[pathToFile] = rawSpec
+	}
+
+	return res
+}
+
+// GetSwagger returns the Swagger specification corresponding to the generated code
+// in this file. The external references of Swagger specification are resolved.
+// The logic of resolving external references is tightly connected to "import-mapping" feature.
+// Externally referenced files must be embedded in the corresponding golang packages.
+// Urls can be supported but this task was out of the scope.
+func GetSwagger() (swagger *openapi3.T, err error) {
+	var resolvePath = PathToRawSpec("")
+
+	loader := openapi3.NewLoader()
+	loader.IsExternalRefsAllowed = true
+	loader.ReadFromURIFunc = func(loader *openapi3.Loader, url *url.URL) ([]byte, error) {
+		var pathToFile = url.String()
+		pathToFile = path.Clean(pathToFile)
+		getSpec, ok := resolvePath[pathToFile]
+		if !ok {
+			err1 := fmt.Errorf("path not found: %s", pathToFile)
+			return nil, err1
+		}
+		return getSpec()
+	}
+	var specData []byte
+	specData, err = rawSpec()
+	if err != nil {
+		return
+	}
+	swagger, err = loader.LoadFromData(specData)
+	if err != nil {
+		return
+	}
+	return
 }

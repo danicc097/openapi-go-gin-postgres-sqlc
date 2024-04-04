@@ -280,6 +280,7 @@ export interface DbTimeEntry {
   workItemID?: number | null
 }
 export interface DbUser {
+  age?: number | null
   createdAt: string
   deletedAt?: string | null
   email: string
@@ -358,6 +359,7 @@ export interface PaginatedUsersResponse {
   page: PaginationPage
 }
 export interface User {
+  age?: number | null
   apiKey?: DbUserAPIKey
   createdAt: string
   deletedAt?: string | null
@@ -613,12 +615,12 @@ export interface WorkItemBase {
 }
 export interface PaginationFilterPrimitive {
   filterMode: PaginationFilterModes
-  value: string | null
+  value?: string | null
   caseSensitive?: boolean | null
 }
 export interface PaginationFilterArray {
   filterMode: PaginationFilterModes
-  value: (string | null)[]
+  value?: (string | null)[] | null
 }
 export interface Pagination {
   filter?: PaginationFilter
@@ -629,6 +631,10 @@ export interface Pagination {
  */
 export interface PaginationItems {
   [k: string]: Pagination
+}
+export interface GetPaginatedUsersQueryParameters {
+  role?: Role
+  items?: PaginationItems
 }
 export interface DbCacheDemoWorkItemJoins {
   assignees: boolean
@@ -652,9 +658,6 @@ export interface DbUserJoins {
 }
 export interface GetCacheDemoWorkItemQueryParameters {
   joins?: DbCacheDemoWorkItemJoins
-}
-export interface GetPaginatedUsersQueryParameters {
-  role: Role
 }
 export interface GetCurrentUserQueryParameters {
   joins?: DbUserJoins
