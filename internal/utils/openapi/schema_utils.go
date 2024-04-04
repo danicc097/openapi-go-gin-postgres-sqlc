@@ -39,7 +39,7 @@ func sliceMapToSlice(m map[string]interface{}) ([]interface{}, error) {
 func ReconstructQueryParamsValues(schema *openapi3.Schema, data interface{}, schemaName string) (interface{}, error) {
 	mdata, ok := data.(map[string]interface{})
 	if !ok {
-		// its not map, just return the primitive (array and maps both represented as maps in query params)
+		// must be primitive (array and maps both represented as maps in query params)
 		return data, nil
 	}
 
@@ -117,6 +117,11 @@ func ReconstructQueryParamsValues(schema *openapi3.Schema, data interface{}, sch
 			}
 			result[propName] = obj
 		case propSchema.Type.Permits("array"):
+			if arrData, ok := propData.([]interface{}); ok { // already array
+				result[propName] = arrData
+
+				continue
+			}
 			arrData, ok := propData.(map[string]interface{})
 			if !ok {
 				return nil, fmt.Errorf("invalid array data type for property %s: %T", propName, propData)

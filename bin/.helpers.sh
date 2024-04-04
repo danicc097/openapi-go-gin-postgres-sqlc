@@ -512,7 +512,8 @@ docker.postgres.create_db() {
   docker.postgres.wait_until_ready
 
   echo "${BLUE}${BOLD}Creating database $db.${OFF}"
-  docker.postgres createdb $db -U "$POSTGRES_USER" -O "$POSTGRES_USER"
+  docker.postgres createdb $db -U "$POSTGRES_USER" -O "$POSTGRES_USER" ||
+    echo "Skipping $db database creation"
 }
 
 # Stop running processes in `db`.

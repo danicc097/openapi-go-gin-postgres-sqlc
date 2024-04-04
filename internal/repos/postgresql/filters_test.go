@@ -23,7 +23,9 @@ func arrayFilter(ss []string, mode models.PaginationFilterModes) *models.Paginat
 
 func paginationFilterArray(v models.PaginationFilterArray) *models.PaginationFilter {
 	j, _ := json.Marshal(v)
-	p := models.PaginationFilter{}
+	p := models.PaginationFilter{
+		FromQueryParams: true,
+	}
 	_ = json.Unmarshal(j, &p)
 
 	return &p
@@ -31,7 +33,9 @@ func paginationFilterArray(v models.PaginationFilterArray) *models.PaginationFil
 
 func paginationFilterPrimitive(v models.PaginationFilterPrimitive) *models.PaginationFilter {
 	j, _ := json.Marshal(v)
-	p := models.PaginationFilter{}
+	p := models.PaginationFilter{
+		FromQueryParams: true,
+	}
 	_ = json.Unmarshal(j, &p)
 
 	return &p
