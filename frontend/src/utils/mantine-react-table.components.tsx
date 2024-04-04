@@ -25,8 +25,9 @@ import {
   IconTrash,
   IconSend,
   IconX,
+  IconClearAll,
 } from '@tabler/icons'
-import { IconRestore } from '@tabler/icons-react'
+import { IconRestore, IconRowRemove } from '@tabler/icons-react'
 import {
   MRT_Column,
   MRT_Header,
@@ -310,49 +311,66 @@ type MRTTextInputProps = {
   props?: ComponentProps<typeof TextInput>
 }
 
-export const CustomColumnFilterModeMenuItems = memo(
-  ({ modeOptions, column }: { modeOptions?: string[] | null; column: GenericColumnProps['column'] }) => {
-    const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
-    return modeOptions && modeOptions.length > 0 ? (
-      <>
-        {modeOptions.map((option) => {
-          const fopt = FILTER_OPTIONS.find((v) => v.option === option)
-          if (!fopt) return
+interface CustomColumnFilterModeMenuItemsProps {
+  modeOptions?: string[] | null
+  column: GenericColumnProps['column']
+}
 
-          return (
-            <MenuItem
-              key={fopt.option}
-              onClick={() => {
-                column.setFilterValue(null)
-                setFilterMode(column.id, fopt.option)
+export const CustomColumnFilterModeMenuItems = memo(({ modeOptions, column }: CustomColumnFilterModeMenuItemsProps) => {
+  const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
+  return modeOptions && modeOptions.length > 0 ? (
+    <>
+      {modeOptions.map((option) => {
+        const fopt = FILTER_OPTIONS.find((v) => v.option === option)
+        if (!fopt) return
+
+        return (
+          <MenuItem
+            key={fopt.option}
+            onClick={() => {
+              column.setFilterValue(null)
+              setFilterMode(column.id, fopt.option)
+            }}
+          >
+            <Flex
+              gap={10}
+              justify="flex-start"
+              align="center"
+              style={{
+                color:
+                  dynamicConfig?.filterModes[column.id ?? ''] === fopt.option
+                    ? 'var(--mantine-primary-color-5)'
+                    : 'inherit',
               }}
             >
-              <Flex
-                gap={10}
-                justify="flex-start"
-                style={{
-                  color:
-                    dynamicConfig?.filterModes[column.id ?? ''] === fopt.option
-                      ? 'var(--mantine-primary-color-5)'
-                      : 'inherit',
-                }}
-              >
-                <Box miw={20} style={{ alignSelf: 'center', textAlign: 'center' }}>
-                  {fopt.symbol}
-                </Box>
-                <Text size="sm">{sentenceCase(fopt.label)}</Text>
-              </Flex>
-            </MenuItem>
-          )
-        })}
-      </>
-    ) : (
-      <Text size="xs" p={8}>
-        No options available
-      </Text>
-    )
-  },
-)
+              <Box miw={20} style={{ alignSelf: 'center', textAlign: 'center' }}>
+                {fopt.symbol}
+              </Box>
+              <Text size="sm">{sentenceCase(fopt.label)}</Text>
+            </Flex>
+          </MenuItem>
+        )
+      })}
+      <Menu.Divider />
+      <MenuItem
+        key={'clearFilter'}
+        onClick={() => {
+          column.setFilterValue(undefined)
+          removeFilterMode(column.id)
+        }}
+      >
+        <Flex gap={10} justify="flex-start" align="center">
+          <IconClearAll stroke={1} size={18} />
+          <Text size="sm">Clear filters</Text>
+        </Flex>
+      </MenuItem>
+    </>
+  ) : (
+    <Text size="xs" p={8}>
+      No options available
+    </Text>
+  )
+})
 
 type MRTCheckboxInputProps = {
   columnProps: GenericColumnProps
