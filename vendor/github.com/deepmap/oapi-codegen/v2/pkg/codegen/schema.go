@@ -780,6 +780,7 @@ func GenStructFromSchema(schema Schema) string {
 	}
 	if len(schema.UnionElements) != 0 {
 		objectParts = append(objectParts, "union json.RawMessage")
+		objectParts = append(objectParts, "FromQueryParams bool")
 	}
 	objectParts = append(objectParts, "}")
 	return strings.Join(objectParts, "\n")

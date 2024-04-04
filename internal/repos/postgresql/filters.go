@@ -61,7 +61,12 @@ func GenerateDefaultFilters(entity db.TableEntity, paginationParams models.Pagin
 			continue
 		}
 
-		v, _ := pag.Filter.ValueByDiscriminator()
+		pag.Filter.FromQueryParams = true // can come from both body or params
+
+		v, err := pag.Filter.ValueByDiscriminator()
+		if err != nil {
+			return nil, fmt.Errorf("could not get value by discriminator: %w", err)
+		}
 		switch t := v.(type) {
 		case models.PaginationFilterArray:
 			if t.Value == nil {

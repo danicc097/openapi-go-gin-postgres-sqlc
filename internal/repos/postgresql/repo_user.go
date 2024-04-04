@@ -49,7 +49,7 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPagina
 	if params.SearchQuery.Items != nil {
 		filters, err = GenerateDefaultFilters(db.TableEntityUser, *params.SearchQuery.Items)
 		if err != nil {
-			return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid default filters")
+			return nil, internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid default filters")
 		}
 
 		// TODO: sort mapping could also be generated, just like db.EntityFilters

@@ -370,7 +370,8 @@ type CreateWorkItemCommentRequest struct {
 
 // CreateWorkItemRequest defines the model for CreateWorkItemRequest.
 type CreateWorkItemRequest struct {
-	union json.RawMessage
+	union           json.RawMessage
+	FromQueryParams bool
 }
 
 // CreateWorkItemTagRequest defines the model for CreateWorkItemTagRequest.
@@ -804,7 +805,8 @@ type Pagination struct {
 
 // PaginationFilter defines the model for PaginationFilter.
 type PaginationFilter struct {
-	union json.RawMessage
+	union           json.RawMessage
+	FromQueryParams bool
 }
 
 // PaginationFilterArray defines the model for PaginationFilterArray.
@@ -1015,7 +1017,8 @@ type ValidationError struct {
 
 // WorkItem defines the model for WorkItem.
 type WorkItem struct {
-	union json.RawMessage
+	union           json.RawMessage
+	FromQueryParams bool
 }
 
 // WorkItemBase defines the model for WorkItemBase.
@@ -1179,14 +1182,66 @@ type UpdateWorkItemCommentJSONRequestBody = UpdateWorkItemCommentRequest
 // AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {
 	var body CreateDemoWorkItemRequest
-	err := json.Unmarshal(t.union, &body)
+	if !t.FromQueryParams {
+		err := json.Unmarshal(t.union, &body)
+		return body, err
+	}
+	// arrays are passed as maps, so reconstruct json properly
+	var unionm map[string]interface{}
+	err := json.Unmarshal(t.union, &unionm)
+	if err != nil {
+		return CreateDemoWorkItemRequest{}, err
+	}
+
+	s := "CreateWorkItemRequest"
+	discriminatorSchema := "CreateDemoWorkItemRequest"
+	fp, ok := spec.Components.Schemas[s]
+	if !ok {
+		return CreateDemoWorkItemRequest{}, fmt.Errorf("schema %s not found", s)
+	}
+	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
+	if err != nil {
+		return CreateDemoWorkItemRequest{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
+	}
+	jsonUnion, err := json.Marshal(union)
+	if err != nil {
+		return CreateDemoWorkItemRequest{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
+	}
+	err = json.Unmarshal(jsonUnion, &body)
+
 	return body, err
 }
 
 // AsCreateDemoTwoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoTwoWorkItemRequest
 func (t CreateWorkItemRequest) AsCreateDemoTwoWorkItemRequest() (CreateDemoTwoWorkItemRequest, error) {
 	var body CreateDemoTwoWorkItemRequest
-	err := json.Unmarshal(t.union, &body)
+	if !t.FromQueryParams {
+		err := json.Unmarshal(t.union, &body)
+		return body, err
+	}
+	// arrays are passed as maps, so reconstruct json properly
+	var unionm map[string]interface{}
+	err := json.Unmarshal(t.union, &unionm)
+	if err != nil {
+		return CreateDemoTwoWorkItemRequest{}, err
+	}
+
+	s := "CreateWorkItemRequest"
+	discriminatorSchema := "CreateDemoTwoWorkItemRequest"
+	fp, ok := spec.Components.Schemas[s]
+	if !ok {
+		return CreateDemoTwoWorkItemRequest{}, fmt.Errorf("schema %s not found", s)
+	}
+	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
+	if err != nil {
+		return CreateDemoTwoWorkItemRequest{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
+	}
+	jsonUnion, err := json.Marshal(union)
+	if err != nil {
+		return CreateDemoTwoWorkItemRequest{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
+	}
+	err = json.Unmarshal(jsonUnion, &body)
+
 	return body, err
 }
 
@@ -1225,59 +1280,67 @@ func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
 
 // AsPaginationFilterPrimitive returns the union data inside the PaginationFilter as a PaginationFilterPrimitive
 func (t PaginationFilter) AsPaginationFilterPrimitive() (PaginationFilterPrimitive, error) {
-// all As* will receive queryParams bool parameter, if true we must convert since arrays 
-	// are passed as maps...
 	var body PaginationFilterPrimitive
+	if !t.FromQueryParams {
+		err := json.Unmarshal(t.union, &body)
+		return body, err
+	}
+	// arrays are passed as maps, so reconstruct json properly
 	var unionm map[string]interface{}
 	err := json.Unmarshal(t.union, &unionm)
 	if err != nil {
 		return PaginationFilterPrimitive{}, err
 	}
 
-	s := "PaginationFilter" // gen from method
-	discriminatorSchema:= "PaginationFilterPrimitive" // gen from As*
+	s := "PaginationFilter"
+	discriminatorSchema := "PaginationFilterPrimitive"
 	fp, ok := spec.Components.Schemas[s]
 	if !ok {
 		return PaginationFilterPrimitive{}, fmt.Errorf("schema %s not found", s)
 	}
-	union, err := openapi.ReconstructSchemaFromQueryParams(fp.Value, unionm, discriminatorSchema)
+	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
 	if err != nil {
-		return PaginationFilterPrimitive{}, fmt.Errorf("could not reconstruct query params: %v", err)
+		return PaginationFilterPrimitive{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
 	}
 	jsonUnion, err := json.Marshal(union)
-	fmt.Printf("jsonUnion: %v\n", string(jsonUnion))
+	if err != nil {
+		return PaginationFilterPrimitive{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
+	}
 	err = json.Unmarshal(jsonUnion, &body)
-	
+
 	return body, err
 }
 
-var spec, _ = GetSwagger()
-
 // AsPaginationFilterArray returns the union data inside the PaginationFilter as a PaginationFilterArray
 func (t PaginationFilter) AsPaginationFilterArray() (PaginationFilterArray, error) {
-	// all As* will receive queryParams bool parameter, if true we must convert since arrays 
-	// are passed as maps...
 	var body PaginationFilterArray
+	if !t.FromQueryParams {
+		err := json.Unmarshal(t.union, &body)
+		return body, err
+	}
+	// arrays are passed as maps, so reconstruct json properly
 	var unionm map[string]interface{}
 	err := json.Unmarshal(t.union, &unionm)
 	if err != nil {
 		return PaginationFilterArray{}, err
 	}
 
-	s := "PaginationFilter" // gen from method
-	discriminatorSchema:= "PaginationFilterArray" // gen from As*
+	s := "PaginationFilter"
+	discriminatorSchema := "PaginationFilterArray"
 	fp, ok := spec.Components.Schemas[s]
 	if !ok {
 		return PaginationFilterArray{}, fmt.Errorf("schema %s not found", s)
 	}
-	union, err := openapi.ReconstructSchemaFromQueryParams(fp.Value, unionm, discriminatorSchema)
+	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
 	if err != nil {
-		return PaginationFilterArray{}, fmt.Errorf("could not reconstruct query params: %v", err)
+		return PaginationFilterArray{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
 	}
 	jsonUnion, err := json.Marshal(union)
-	fmt.Printf("jsonUnion: %v\n", string(jsonUnion))
+	if err != nil {
+		return PaginationFilterArray{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
+	}
 	err = json.Unmarshal(jsonUnion, &body)
-	
+
 	return body, err
 }
 
@@ -1341,14 +1404,66 @@ func (t *PaginationFilter) UnmarshalJSON(b []byte) error {
 // AsDemoWorkItem returns the union data inside the WorkItem as a DemoWorkItem
 func (t WorkItem) AsDemoWorkItem() (DemoWorkItem, error) {
 	var body DemoWorkItem
-	err := json.Unmarshal(t.union, &body)
+	if !t.FromQueryParams {
+		err := json.Unmarshal(t.union, &body)
+		return body, err
+	}
+	// arrays are passed as maps, so reconstruct json properly
+	var unionm map[string]interface{}
+	err := json.Unmarshal(t.union, &unionm)
+	if err != nil {
+		return DemoWorkItem{}, err
+	}
+
+	s := "WorkItem"
+	discriminatorSchema := "DemoWorkItem"
+	fp, ok := spec.Components.Schemas[s]
+	if !ok {
+		return DemoWorkItem{}, fmt.Errorf("schema %s not found", s)
+	}
+	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
+	if err != nil {
+		return DemoWorkItem{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
+	}
+	jsonUnion, err := json.Marshal(union)
+	if err != nil {
+		return DemoWorkItem{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
+	}
+	err = json.Unmarshal(jsonUnion, &body)
+
 	return body, err
 }
 
 // AsDemoTwoWorkItem returns the union data inside the WorkItem as a DemoTwoWorkItem
 func (t WorkItem) AsDemoTwoWorkItem() (DemoTwoWorkItem, error) {
 	var body DemoTwoWorkItem
-	err := json.Unmarshal(t.union, &body)
+	if !t.FromQueryParams {
+		err := json.Unmarshal(t.union, &body)
+		return body, err
+	}
+	// arrays are passed as maps, so reconstruct json properly
+	var unionm map[string]interface{}
+	err := json.Unmarshal(t.union, &unionm)
+	if err != nil {
+		return DemoTwoWorkItem{}, err
+	}
+
+	s := "WorkItem"
+	discriminatorSchema := "DemoTwoWorkItem"
+	fp, ok := spec.Components.Schemas[s]
+	if !ok {
+		return DemoTwoWorkItem{}, fmt.Errorf("schema %s not found", s)
+	}
+	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
+	if err != nil {
+		return DemoTwoWorkItem{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
+	}
+	jsonUnion, err := json.Marshal(union)
+	if err != nil {
+		return DemoTwoWorkItem{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
+	}
+	err = json.Unmarshal(jsonUnion, &body)
+
 	return body, err
 }
 
@@ -1507,6 +1622,8 @@ var swaggerSpec = []string{
 	"nHyVW/c6ViddmaOfgJWZJMhv3XM3zNvPvepiiudH1x7fRI1LPmol0G0L+uNbC67T8bxVBD/jwE8NpaIS",
 	"2hax+txruBVwK0yfbSL32RdPWfx/AAAA//9FUACuiiwBAA==",
 }
+
+var spec, _ = GetSwagger()
 
 // GetSwagger returns the content of the embedded swagger specification file
 // or error if failed to decode

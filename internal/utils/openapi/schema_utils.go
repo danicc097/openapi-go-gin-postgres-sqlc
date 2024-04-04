@@ -32,11 +32,11 @@ func sliceMapToSlice(m map[string]interface{}) ([]interface{}, error) {
 	return result, nil
 }
 
-// ReconstructSchemaFromQueryParams converts query params that may include arrays represented as maps
+// ReconstructQueryParamsValues converts query params that may include arrays represented as maps
 // to the correct go types.
 // This utility is necessary for generated methods when the schemas are being used as query params.
 // It also supports anyOf, oneOf and allOf keywords.
-func ReconstructSchemaFromQueryParams(schema *openapi3.Schema, data interface{}, schemaName string) (interface{}, error) {
+func ReconstructQueryParamsValues(schema *openapi3.Schema, data interface{}, schemaName string) (interface{}, error) {
 	mdata, ok := data.(map[string]interface{})
 	if !ok {
 		// its not map, just return the primitive (array and maps both represented as maps in query params)
@@ -75,7 +75,7 @@ func ReconstructSchemaFromQueryParams(schema *openapi3.Schema, data interface{},
 			return nil, fmt.Errorf("property schema %s not found in anyOf, oneOf, or allOf", schemaName)
 		}
 
-		return ReconstructSchemaFromQueryParams(matchingSchema, mdata, schemaName)
+		return ReconstructQueryParamsValues(matchingSchema, mdata, schemaName)
 	}
 
 	props := schema.Properties
@@ -85,7 +85,7 @@ func ReconstructSchemaFromQueryParams(schema *openapi3.Schema, data interface{},
 			return nil, fmt.Errorf("invalid schema")
 		}
 		for k, v := range mdata {
-			obj, err := ReconstructSchemaFromQueryParams(additPropsSchema.Value, v, schemaName)
+			obj, err := ReconstructQueryParamsValues(additPropsSchema.Value, v, schemaName)
 			if err != nil {
 				return nil, err
 			}
@@ -111,7 +111,7 @@ func ReconstructSchemaFromQueryParams(schema *openapi3.Schema, data interface{},
 			if !ok {
 				return nil, fmt.Errorf("invalid object data type for property %s: %T", propName, propData)
 			}
-			obj, err := ReconstructSchemaFromQueryParams(propSchema, objData, schemaName)
+			obj, err := ReconstructQueryParamsValues(propSchema, objData, schemaName)
 			if err != nil {
 				return nil, err
 			}

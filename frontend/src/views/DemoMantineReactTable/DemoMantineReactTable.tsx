@@ -317,10 +317,10 @@ export default function DemoMantineReactTable() {
       const { id, value } = filter
       console.log({ value })
       let v = value
-      if (_.isArray(value)) {
-        value.map(tryDate)
+      if (_.isArray(v)) {
+        v = v.map(tryDate)
       } else {
-        v = tryDate(value)
+        v = tryDate(v)
       }
       const filterMode = dynamicConfig?.filterModes[id]
       const sort = sorting[id]
@@ -516,6 +516,7 @@ export default function DemoMantineReactTable() {
 
 function tryDate(value: unknown) {
   let v = value
+  if (!v) return v
   const dateVal = dayjs(value as any)
   if (dateVal.isValid()) {
     v = dateVal.toRFC3339NANO()
