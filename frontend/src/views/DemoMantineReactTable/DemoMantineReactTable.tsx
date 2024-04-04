@@ -79,8 +79,6 @@ export default function DemoMantineReactTable() {
   const rowVirtualizerInstanceRef = useRef<MRT_RowVirtualizer>(null) //we can get access to the underlying Virtualizer instance and call its scrollToIndex method
   const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters(TABLE_NAME)
 
-  // TODO: hooks
-
   const defaultPaginatedUserColumns = useMemo<Column[]>(
     () =>
       entries(ENTITY_FILTERS.user)
@@ -95,20 +93,11 @@ export default function DemoMantineReactTable() {
 
           col = {
             ...col,
-
-            // Custom filters would basically need to reimplement: https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L148
-            Filter:
-              // FIXME: for dates, filter mode options are changed by mrt - removing emptyModes by itself
-              (props) => {
-                // https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L203
-                // however it does not change the filter for dates...
-                // TODO: abstract to generic CustomComponent which accepts type: EntityFilter and columnProps
-                // and has built in empty mode check, so we can reuse in our custom components outside default
-                // generated columns (cant use built in mrt ones)
-                return (
-                  <CustomMRTFilter tableName={TABLE_NAME} nullable={c.nullable} type={c.type} columnProps={props} />
-                )
-              },
+            // Custom filters would basically need to reimplement:
+            // https://github.com/KevinVandy/mantine-react-table/blob/v2/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L148
+            Filter: (props) => {
+              return <CustomMRTFilter tableName={TABLE_NAME} nullable={c.nullable} type={c.type} columnProps={props} />
+            },
             renderColumnFilterModeMenuItems: (props) => (
               <CustomColumnFilterModeMenuItems modeOptions={col.columnFilterModeOptions} {...props} />
             ),
@@ -133,22 +122,12 @@ export default function DemoMantineReactTable() {
         // not a part of table entity so we define manually
         // repo will convert to role_rank filter, same as teams filter will internally
         // use xo join on teams teamID. frontend shouldnt care about these conversions
-        // TODO: have to reimplement select, just like input and dateinput.
-        // will allow passing combobox.options
+        // TODO: have to reimplement select and multiselect, just like input and dateinput.
+        // will allow passing combobox.options s
         accessorKey: 'role',
         header: 'Role',
-        // TODO: must use custom props for non default rows so we can use our own filters, badges...
         mantineFilterSelectProps(props) {
           const roleOptions = entries(ROLES).map(([role, v]) => ({ value: role, label: sentenceCase(role) }))
-
-          // TODO: MRT should allow custom combobox options to be passed instead:
-          // const roleOptions = entries(ROLES).map(([role, v]) => (
-          //   <Combobox.Option key={role} value={role}>
-          //     <RoleBadge role={role} />
-          //   </Combobox.Option>
-          // ))
-
-          // return <Combobox.Options>{roleOptions}</Combobox.Options>
 
           return {
             data: roleOptions,
@@ -156,16 +135,15 @@ export default function DemoMantineReactTable() {
             fw: 800,
             styles: {
               root: {
-                // TODO: move select and multiselect to mrt .components and use classes
+                // TODO: shared css modules for select and multiselect
                 borderBottomColor: 'light-dark(#d0d5db, #414141)',
               },
             },
           }
         },
         filterVariant: 'select',
-
+        //  TODO: Combobox.Options with <RoleBadge role={role} />
         // Filter(props) {
-        //   // TODO: combobox with <RoleBadge role={role} />
         //   return <MRTTextInput column={props.column} />
         // },
       },
