@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -104,16 +103,6 @@ func main() {
 		fmt.Printf("TODO: create superAdmin only")
 		os.Exit(0)
 	}
-
-	// TODO: use users which will exist in auth server. that way we can test out these users as well.
-	// no need to do it for local.json. as for e2e, we dont want any initial data apart from the superadmin at all
-	// so that it mimics real usage from an empty project.
-	authServerUsersPath := "cmd/oidc-server/data/users/base.json"
-	usersBlob, err := os.ReadFile(authServerUsersPath)
-	handleError(err)
-	var uu map[string]*models.AuthServerUser
-	err = json.Unmarshal(usersBlob, &uu)
-	handleError(err)
 
 	logger.Info("Creating users...")
 	for i := 0; i < 50; i++ {

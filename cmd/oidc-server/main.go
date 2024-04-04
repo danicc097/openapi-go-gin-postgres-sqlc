@@ -6,8 +6,8 @@ import (
 
 	oidc_server "github.com/danicc097/oidc-server/v3"
 	"github.com/danicc097/oidc-server/v3/storage"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/zitadel/oidc/v2/pkg/oidc"
+	"golang.org/x/text/language"
 )
 
 const (
@@ -39,7 +39,7 @@ func getPrivateClaimsFromScopesFunc(ctx context.Context, userID, clientID string
 	return claims, nil
 }
 
-func setUserInfoFunc(user *models.AuthServerUser, userInfo *oidc.UserInfo, scope, clientID string) {
+func setUserInfoFunc(user *AuthServerUser, userInfo *oidc.UserInfo, scope, clientID string) {
 	switch scope {
 	case oidc.ScopeOpenID:
 		userInfo.Subject = user.ID()
@@ -75,7 +75,7 @@ func main() {
 
 	flag.Parse()
 
-	config := oidc_server.Config[models.AuthServerUser]{
+	config := oidc_server.Config[AuthServerUser]{
 		SetUserInfoFunc:                setUserInfoFunc,
 		GetPrivateClaimsFromScopesFunc: getPrivateClaimsFromScopesFunc,
 		PathPrefix:                     pathPrefix,
@@ -93,3 +93,41 @@ func main() {
 
 	oidc_server.Run(config)
 }
+
+// AuthServerUser implements oidc-server storage.User.
+// It is used for development and testing purposes only.
+// nolint: revive
+// Still cannot access common interface fields:
+//
+//	https://go101.org/generics/888-the-status-quo-of-go-custom-generics.html
+type AuthServerUser struct {
+	ID_               string       `json:"id"` // need exported for unmarshalling
+	Username_         string       `json:"username"`
+	Password_         string       `json:"password"`
+	FirstName         string       `json:"firstName"`
+	LastName          string       `json:"lastName"`
+	Email             string       `json:"email"`
+	EmailVerified     bool         `json:"emailVerified"`
+	Phone             string       `json:"phone"`
+	PhoneVerified     bool         `json:"phoneVerified"`
+	PreferredLanguage language.Tag `json:"preferredLanguage"`
+	IsAdmin_          bool         `json:"isAdmin"`
+}
+
+func (u AuthServerUser) ID() string {
+	return u.ID_
+}
+
+func (u AuthServerUser) Username() string {
+	return u.Username_
+}
+
+func (u AuthServerUser) IsAdmin() bool {
+	return u.IsAdmin_
+}
+
+func (u AuthServerUser) Password() string {
+	return u.Password_
+}
+
+var _ storage.User = (*AuthServerUser)(nil)
