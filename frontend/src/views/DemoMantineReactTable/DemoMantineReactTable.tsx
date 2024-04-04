@@ -154,6 +154,12 @@ export default function DemoMantineReactTable() {
             data: roleOptions,
             size: 'xs',
             fw: 800,
+            styles: {
+              root: {
+                // TODO: move select and multiselect to mrt .components and use classes
+                borderBottomColor: 'light-dark(#d0d5db, #414141)',
+              },
+            },
           }
         },
         filterVariant: 'select',

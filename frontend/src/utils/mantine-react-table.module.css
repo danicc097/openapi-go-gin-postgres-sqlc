@@ -34,3 +34,7 @@
 .checkBox {
   align-items: flex-end;
 }
+
+.root {
+  margin-bottom: -4px;
+}
