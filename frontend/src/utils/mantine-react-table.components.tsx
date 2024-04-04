@@ -299,17 +299,7 @@ export const MRTDateInput = forwardRef(function MRTDateInput(
           input: classes.input,
           label: classes.label,
         }}
-        miw={100}
-        rightSection={
-          /* TODO: may be cleaner to append nodes above via bare javascript below mrt-table-head-cell-content
-      ideally mrt should allow rendering extra nodes below filters
-      */
-          filterMode && (
-            <Text size="xs" fw={800}>
-              {filterMode === 'between' ? '⇿' : '⬌'}
-            </Text>
-          )
-        }
+        miw={60}
       />
     </Flex>
   )

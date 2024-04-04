@@ -10,7 +10,7 @@ export const arrModes: FilterModeOptions = ['arrIncludesSome', 'arrIncludesAll',
 export const indexZeroModes = ['equals', 'greaterThan', 'greaterThanOrEqualTo']
 export const indexOneModes = ['lessThan', 'lessThanOrEqualTo']
 export const numberModes: FilterModeOptions = [...rangeModes, ...indexZeroModes, ...indexOneModes]
-export const dateModes = ['between', 'betweenInclusive']
+export const dateModes = rangeModes
 export const textModes: FilterModeOptions = ['contains', 'endsWith', 'equals', 'notEquals', 'startsWith'] //, 'fuzzy'
 
 function filterVariantByType(c: EntityFilter): MRT_ColumnDef<any>['filterVariant'] {
