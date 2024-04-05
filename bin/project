@@ -1149,8 +1149,8 @@ linters-settings:
       - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest\.DemoWorkItems$'
       # internal/rest may need to run this, alongside all services structs
       - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*'
-      # - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*CreateParams$'
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos\.Repos$'
+      # these are all adapters from service to db, so make sure they're always updated
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos\..*$'
     exclude:
       - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*UpdateParams$'
       - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*Joins$'
