@@ -59,8 +59,6 @@ const useTableConfigSlice = create<TableConfigState>()(
           },
           setStaticConfig(tableName, config) {
             return set((state) => {
-              const staticConfig = state.staticConfig[tableName] || initialStaticConfig
-
               return {
                 ...state,
                 staticConfig: {
@@ -85,4 +83,4 @@ const useTableConfigSlice = create<TableConfigState>()(
   ),
 )
 
-export { useTableConfigSlice }
+export { useTableConfigSlice, initialDynamicConfig, initialStaticConfig }

@@ -10,6 +10,7 @@ import {
   MRT_RowVirtualizer,
   mrtFilterOptions,
   MRT_Column,
+  MRT_VisibilityState,
 } from 'mantine-react-table'
 import {
   Accordion,
@@ -78,7 +79,7 @@ export default function DemoMantineReactTable() {
   const tableContainerRef = useRef<HTMLDivElement>(null)
   const rowVirtualizerInstanceRef = useRef<MRT_RowVirtualizer>(null) //we can get access to the underlying Virtualizer instance and call its scrollToIndex method
   const { dynamicConfig, staticConfig, setColumnOrder, setHiddenColumns } = useMantineReactTableFilters(TABLE_NAME)
-
+  const [columnVisibility, setColumnVisibility] = useState<MRT_VisibilityState>({})
   const defaultPaginatedUserColumns = useMemo<Column[]>(
     () =>
       entries(ENTITY_FILTERS.user)
@@ -363,7 +364,7 @@ export default function DemoMantineReactTable() {
     enableBottomToolbar: false,
     enableStickyHeader: true,
     columns,
-    enableDensityToggle: true,
+    enableDensityToggle: false,
     mantineTableBodyCellProps: {},
     data: fetchedUsers,
     enableColumnFilterModes: true,
@@ -394,11 +395,7 @@ export default function DemoMantineReactTable() {
     onSortingChange: setSorting,
     enableColumnOrdering: true,
     // https://tanstack.com/table/v8/docs/api/features/column-visibility#oncolumnvisibilitychange
-    onColumnVisibilityChange: (updater) => {
-      const r = (updater as any)()
-      setHiddenColumns(r)
-      return r
-    },
+    onColumnVisibilityChange: setColumnVisibility, // doesn't update state like onColumnOrderChange for some reason
     onColumnOrderChange: setColumnOrder,
     mantineTableContainerProps: {
       ref: tableContainerRef, //get access to the table container element
@@ -409,6 +406,7 @@ export default function DemoMantineReactTable() {
     },
     rowCount: totalRowCount,
     enableColumnResizing: true,
+    enableGlobalFilter: false,
     columnResizeMode: 'onChange',
     layoutMode: 'semantic', // because of enableColumnResizing, else it breaks actions row calculated size, and it cannot be set manually
     state: {
@@ -421,7 +419,7 @@ export default function DemoMantineReactTable() {
       showAlertBanner: isError,
       showProgressBars: isFetching,
       sorting,
-      columnVisibility: staticConfig?.hiddenColumns ?? {},
+      columnVisibility: columnVisibility,
       // isSaving: true,
     },
     renderTopToolbarCustomActions: ({ table }) => (
@@ -462,11 +460,8 @@ export default function DemoMantineReactTable() {
   })
 
   useEffect(() => {
-    const hiddenColumns = table.getState().columnVisibility as any
-    if (!_.isEqual(table.getState().columnVisibility, staticConfig?.hiddenColumns)) {
-      setHiddenColumns(hiddenColumns)
-    }
-  }, [table.getState()])
+    setHiddenColumns(columnVisibility)
+  }, [columnVisibility])
 
   return (
     <>

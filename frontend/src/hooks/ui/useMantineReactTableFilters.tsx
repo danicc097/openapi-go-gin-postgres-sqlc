@@ -1,12 +1,12 @@
 import _ from 'lodash'
 import { useState } from 'react'
-import { FilterModes, useTableConfigSlice } from 'src/slices/tableConfig'
+import { FilterModes, initialDynamicConfig, initialStaticConfig, useTableConfigSlice } from 'src/slices/tableConfig'
 
 export function useMantineReactTableFilters(tableName: string) {
   const tableConfig = useTableConfigSlice()
 
-  const dynamicConfig = useTableConfigSlice((state) => state.dynamicConfig[tableName])
-  const staticConfig = useTableConfigSlice((state) => state.staticConfig[tableName])
+  const dynamicConfig = useTableConfigSlice((state) => state.dynamicConfig[tableName] ?? initialDynamicConfig)
+  const staticConfig = useTableConfigSlice((state) => state.staticConfig[tableName] ?? initialStaticConfig)
 
   // const dynamicConfig = tableConfig.dynamicConfig[tableName] // won't trigger rerender
   // const staticConfig = tableConfig.staticConfig[tableName] // won't trigger rerender
@@ -26,14 +26,14 @@ export function useMantineReactTableFilters(tableName: string) {
   function setHiddenColumns(columns: Record<string, boolean>) {
     console.log({ columns })
     tableConfig.setStaticConfig(tableName, {
-      ...staticConfig!,
+      ...staticConfig,
       hiddenColumns: columns,
     })
   }
 
   function setColumnOrder(columns: string[]) {
     tableConfig.setStaticConfig(tableName, {
-      ...staticConfig!,
+      ...staticConfig,
       columnOrder: columns,
     })
   }
