@@ -33,7 +33,14 @@ import { IconEdit, IconRefresh, IconTrash, IconX } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import { useGetPaginatedUsersInfinite } from 'src/gen/user/user'
 import dayjs from 'dayjs'
-import { GetPaginatedUsersParams, GetPaginatedUsersQueryParameters, PaginationItems, User } from 'src/gen/model'
+import {
+  GetPaginatedUsersParams,
+  GetPaginatedUsersQueryParameters,
+  PaginationFilterModes,
+  PaginationItems,
+  Role,
+  User,
+} from 'src/gen/model'
 import { getContrastYIQ, scopeColor } from 'src/utils/colors'
 import _, { lowerCase } from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
@@ -297,7 +304,7 @@ export default function DemoMantineReactTable() {
 
   useEffect(() => {
     const items: PaginationItems = {}
-
+    let role: Role
     columnFilters.forEach((filter) => {
       const { id, value } = filter
       let v = value
@@ -320,9 +327,24 @@ export default function DemoMantineReactTable() {
           ...(sort && { sort: sort.desc === true ? 'desc' : 'asc' }),
         }
       }
+
+      // TODO: select and multiselect must set filter mode, or alternatively always add if column.filterVariant is one of those
+      if (column?.filterVariant === 'select' && v !== undefined) {
+        items[id] = {
+          filter: {
+            value: v as any,
+            filterMode: PaginationFilterModes.equals,
+          },
+          ...(sort && { sort: sort.desc === true ? 'desc' : 'asc' }),
+        }
+      }
+
+      if (column?.id === 'role' && v) {
+        role = v as Role
+      }
     })
 
-    setSearchQuery((v) => ({ ...v, items }))
+    setSearchQuery((v) => ({ ...v, items, role: role }))
   }, [columnFilters, globalFilter, dynamicConfig?.filterModes, sorting])
 
   useEffect(() => {

@@ -40,14 +40,14 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParam
 	return user, nil
 }
 
-func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPaginatedUsersParams) ([]db.User, error) {
+func (u *User) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginatedUsersParams) ([]db.User, error) {
 	createdAt, err := time.Parse(time.RFC3339, params.Cursor)
 	if err != nil {
 		return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid createdAt cursor for paginated user: %s", params.Cursor)
 	}
 	var filters map[string][]interface{}
-	if params.SearchQuery.Items != nil {
-		filters, err = GenerateDefaultFilters(db.TableEntityUser, *params.SearchQuery.Items)
+	if ii := params.Items; ii != nil {
+		filters, err = GenerateDefaultFilters(db.TableEntityUser, *ii)
 		if err != nil {
 			return nil, internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid default filters")
 		}
@@ -56,8 +56,12 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPagina
 		// we can have db.EntitySorting indexed by entity, field and direction,
 		// ignoring nulls first/last.
 
-		// handle custom keys as desired. They should be set in spec directly and
-		// not via rest/models.go
+	}
+
+	// handle custom keys as desired. They should be set in spec directly and
+	// not via rest/models.go
+	if r := params.RoleRank; r != nil {
+		filters["role_rank = $i"] = []interface{}{r}
 	}
 
 	opts := []db.UserSelectConfigOption{
