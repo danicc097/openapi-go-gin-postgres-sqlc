@@ -300,12 +300,14 @@ export default function DemoMantineReactTable() {
 
     columnFilters.forEach((filter) => {
       const { id, value } = filter
-      console.log({ value })
       let v = value
-      if (_.isArray(v)) {
-        v = v.map(tryDate)
-      } else {
-        v = tryDate(v)
+      const column = columns.find((c) => c.id === id || c.accessorKey === id)
+      if (column?.filterVariant === 'date-range') {
+        if (_.isArray(v)) {
+          v = v.map(tryDate)
+        } else {
+          v = tryDate(v)
+        }
       }
       const filterMode = dynamicConfig?.filterModes[id]
       const sort = sorting[id]
