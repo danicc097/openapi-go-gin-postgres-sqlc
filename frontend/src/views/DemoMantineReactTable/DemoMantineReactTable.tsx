@@ -77,7 +77,7 @@ const TABLE_NAME = 'demoTable'
 export default function DemoMantineReactTable() {
   const tableContainerRef = useRef<HTMLDivElement>(null)
   const rowVirtualizerInstanceRef = useRef<MRT_RowVirtualizer>(null) //we can get access to the underlying Virtualizer instance and call its scrollToIndex method
-  const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters(TABLE_NAME)
+  const { dynamicConfig, staticConfig, setColumnOrder, setHiddenColumns } = useMantineReactTableFilters(TABLE_NAME)
 
   const defaultPaginatedUserColumns = useMemo<Column[]>(
     () =>
@@ -357,8 +357,6 @@ export default function DemoMantineReactTable() {
 
   const { colorScheme } = useMantineColorScheme()
 
-  const [columnOrder, setColumnOrder] = useState(['fullName', 'email', 'role'])
-
   const validationError = error?.response?.data.validationError
 
   const table = useMantineReactTable({
@@ -395,6 +393,12 @@ export default function DemoMantineReactTable() {
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     enableColumnOrdering: true,
+    // https://tanstack.com/table/v8/docs/api/features/column-visibility#oncolumnvisibilitychange
+    onColumnVisibilityChange: (updater) => {
+      const r = (updater as any)()
+      setHiddenColumns(r)
+      return r
+    },
     onColumnOrderChange: setColumnOrder,
     mantineTableContainerProps: {
       ref: tableContainerRef, //get access to the table container element
@@ -408,7 +412,7 @@ export default function DemoMantineReactTable() {
     columnResizeMode: 'onChange',
     layoutMode: 'semantic', // because of enableColumnResizing, else it breaks actions row calculated size, and it cannot be set manually
     state: {
-      columnOrder,
+      columnOrder: staticConfig?.columnOrder ?? ['mrt-row-actions', 'fullName', 'email', 'role'],
       density: 'xs',
       columnFilters,
       globalFilter,
@@ -417,6 +421,7 @@ export default function DemoMantineReactTable() {
       showAlertBanner: isError,
       showProgressBars: isFetching,
       sorting,
+      columnVisibility: staticConfig?.hiddenColumns ?? {},
       // isSaving: true,
     },
     renderTopToolbarCustomActions: ({ table }) => (
@@ -456,9 +461,15 @@ export default function DemoMantineReactTable() {
     localization: MRT_Localization_EN,
   })
 
+  useEffect(() => {
+    const hiddenColumns = table.getState().columnVisibility as any
+    if (!_.isEqual(table.getState().columnVisibility, staticConfig?.hiddenColumns)) {
+      setHiddenColumns(hiddenColumns)
+    }
+  }, [table.getState()])
+
   return (
     <>
-      <CodeHighlight lang="json" code={JSON.stringify(dynamicConfig?.filterModes ?? {}, null, '  ')}></CodeHighlight>
       <Accordion
         styles={{
           content: { paddingRight: 0, paddingLeft: 0 },
@@ -467,6 +478,10 @@ export default function DemoMantineReactTable() {
         <Accordion.Item value={'a'}>
           <Accordion.Control>Filters</Accordion.Control>
           <Accordion.Panel>
+            <CodeHighlight
+              lang="json"
+              code={JSON.stringify(dynamicConfig?.filterModes ?? {}, null, '  ')}
+            ></CodeHighlight>
             <CodeHighlight
               lang="json"
               code={JSON.stringify(

@@ -8,15 +8,15 @@ export type FilterModes = Record<string, string>
 
 export const LOGIN_COOKIE_KEY = CONFIG.LOGIN_COOKIE_KEY
 
-export const CONFIG_SLICE_PERSIST_KEY = 'Config-slice'
+export const CONFIG_SLICE_PERSIST_KEY = 'config-slice'
 
 export type DynamicConfig = {
   filterModes: FilterModes
 }
 
 export type StaticConfig = {
-  hiddenColumns: string[] // since they will change on update, just store hidden ones
-  columnOrder: string[]
+  hiddenColumns?: Record<string, boolean> // since they will change on app updates, just store hidden ones
+  columnOrder?: string[]
 }
 
 interface TableConfigState {
@@ -33,10 +33,7 @@ interface TableConfigState {
 const initialDynamicConfig: DynamicConfig = {
   filterModes: {},
 }
-const initialStaticConfig: StaticConfig = {
-  columnOrder: [],
-  hiddenColumns: [],
-}
+const initialStaticConfig: StaticConfig = {}
 const useTableConfigSlice = create<TableConfigState>()(
   devtools(
     persist(
@@ -68,7 +65,7 @@ const useTableConfigSlice = create<TableConfigState>()(
                 ...state,
                 staticConfig: {
                   ...state.staticConfig,
-                  [tableName]: staticConfig,
+                  [tableName]: config,
                 },
               }
             })

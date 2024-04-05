@@ -5,8 +5,8 @@ import { FilterModes, useTableConfigSlice } from 'src/slices/tableConfig'
 export function useMantineReactTableFilters(tableName: string) {
   const tableConfig = useTableConfigSlice()
 
-  const dynamicConfig = useTableConfigSlice((state) => tableConfig.dynamicConfig[tableName])
-  const staticConfig = useTableConfigSlice((state) => tableConfig.staticConfig[tableName])
+  const dynamicConfig = useTableConfigSlice((state) => state.dynamicConfig[tableName])
+  const staticConfig = useTableConfigSlice((state) => state.staticConfig[tableName])
 
   // const dynamicConfig = tableConfig.dynamicConfig[tableName] // won't trigger rerender
   // const staticConfig = tableConfig.staticConfig[tableName] // won't trigger rerender
@@ -23,5 +23,20 @@ export function useMantineReactTableFilters(tableName: string) {
     tableConfig.setFilterModes(tableName, modes)
   }
 
-  return { dynamicConfig, staticConfig, setFilterMode, removeFilterMode }
+  function setHiddenColumns(columns: Record<string, boolean>) {
+    console.log({ columns })
+    tableConfig.setStaticConfig(tableName, {
+      ...staticConfig!,
+      hiddenColumns: columns,
+    })
+  }
+
+  function setColumnOrder(columns: string[]) {
+    tableConfig.setStaticConfig(tableName, {
+      ...staticConfig!,
+      columnOrder: columns,
+    })
+  }
+
+  return { dynamicConfig, staticConfig, setFilterMode, removeFilterMode, setColumnOrder, setHiddenColumns }
 }

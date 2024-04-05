@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/getkin/kin-openapi/openapi3"
 )
 
@@ -78,11 +79,52 @@ func ReconstructQueryParamsValues(schema *openapi3.Schema, data interface{}, sch
 		return ReconstructQueryParamsValues(matchingSchema, mdata, schemaName)
 	}
 
+	if schema.Type.Permits("array") {
+		if dataArr, ok := data.([]interface{}); ok {
+			arr := make([]interface{}, len(dataArr))
+			for i, v := range dataArr {
+				el, err := ReconstructQueryParamsValues(schema.Items.Value, v, schemaName)
+				if err != nil {
+					return nil, err
+				}
+				arr[i] = el
+			}
+
+			return arr, nil
+		} else if dataMap, ok := data.(map[string]interface{}); ok {
+			keys := make([]int, 0, len(dataMap))
+			for k := range dataMap {
+				key, err := strconv.Atoi(k)
+				if err != nil {
+					return nil, fmt.Errorf("array indexes must be integers: %w", err)
+				}
+				keys = append(keys, key)
+			}
+			arr := make([]interface{}, slices.Max(keys)+1)
+			for i, v := range dataMap {
+				el, err := ReconstructQueryParamsValues(schema.Items.Value, v, schemaName)
+				if err != nil {
+					return nil, err
+				}
+				index, err := strconv.Atoi(i)
+				if err != nil {
+					return nil, err
+				}
+				arr[index] = el
+			}
+
+			return arr, nil
+		} else {
+			return nil, fmt.Errorf("data not convertible to array: %v", data)
+		}
+	}
+
 	props := schema.Properties
 	additPropsSchema := schema.AdditionalProperties.Schema
 	if props == nil {
 		if additPropsSchema == nil {
-			return nil, fmt.Errorf("invalid schema")
+			format.PrintJSON(schema)
+			return nil, fmt.Errorf("invalid schema for data: %v", data)
 		}
 		for k, v := range mdata {
 			obj, err := ReconstructQueryParamsValues(additPropsSchema.Value, v, schemaName)
@@ -101,7 +143,6 @@ func ReconstructQueryParamsValues(schema *openapi3.Schema, data interface{}, sch
 
 		propData, ok := mdata[propName]
 		if !ok {
-			fmt.Printf("propname %q not found in data: %v\n", propName, mdata)
 			continue
 		}
 
