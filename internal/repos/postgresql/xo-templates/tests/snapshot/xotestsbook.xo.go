@@ -69,7 +69,7 @@ func CreateXoTestsBook(ctx context.Context, db DB, params *XoTestsBookCreatePara
 
 type XoTestsBookSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsBookJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -337,7 +337,12 @@ func (xtb *XoTestsBook) Delete(ctx context.Context, db DB) error {
 
 // XoTestsBookPaginatedByBookID returns a cursor-paginated list of XoTestsBook.
 func XoTestsBookPaginatedByBookID(ctx context.Context, db DB, bookID XoTestsBookID, direction models.Direction, opts ...XoTestsBookSelectConfigOption) ([]XoTestsBook, error) {
-	c := &XoTestsBookSelectConfig{joins: XoTestsBookJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &XoTestsBookSelectConfig{
+		joins:   XoTestsBookJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -497,6 +502,18 @@ func XoTestsBookByBookID(ctx context.Context, db DB, bookID XoTestsBookID, opts 
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -543,7 +560,7 @@ func XoTestsBookByBookID(ctx context.Context, db DB, bookID XoTestsBookID, opts 
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookByBookID */\n" + sqlstr
 

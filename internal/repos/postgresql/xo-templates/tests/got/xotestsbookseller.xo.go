@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -73,7 +74,7 @@ func CreateXoTestsBookSeller(ctx context.Context, db DB, params *XoTestsBookSell
 
 type XoTestsBookSellerSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsBookSellerJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -285,6 +286,18 @@ func XoTestsBookSellersByBookIDSeller(ctx context.Context, db DB, bookID XoTests
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -319,7 +332,7 @@ func XoTestsBookSellersByBookIDSeller(ctx context.Context, db DB, bookID XoTests
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookSellersByBookIDSeller */\n" + sqlstr
 
@@ -387,6 +400,18 @@ func XoTestsBookSellersByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -421,7 +446,7 @@ func XoTestsBookSellersByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookSellersByBookID */\n" + sqlstr
 
@@ -489,6 +514,18 @@ func XoTestsBookSellersBySeller(ctx context.Context, db DB, seller XoTestsUserID
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -523,7 +560,7 @@ func XoTestsBookSellersBySeller(ctx context.Context, db DB, seller XoTestsUserID
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookSellersBySeller */\n" + sqlstr
 
@@ -591,6 +628,18 @@ func XoTestsBookSellersBySellerBookID(ctx context.Context, db DB, seller XoTests
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -625,7 +674,7 @@ func XoTestsBookSellersBySellerBookID(ctx context.Context, db DB, seller XoTests
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookSellersBySellerBookID */\n" + sqlstr
 

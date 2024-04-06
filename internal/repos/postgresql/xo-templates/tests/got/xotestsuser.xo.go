@@ -102,7 +102,7 @@ func CreateXoTestsUser(ctx context.Context, db DB, params *XoTestsUserCreatePara
 
 type XoTestsUserSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsUserJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -140,16 +140,20 @@ const (
 	XoTestsUserDeletedAtAscNullsLast   XoTestsUserOrderBy = " deleted_at ASC NULLS LAST "
 )
 
-// WithXoTestsUserOrderBy orders results by the given columns.
-func WithXoTestsUserOrderBy(rows ...XoTestsUserOrderBy) XoTestsUserSelectConfigOption {
+// WithXoTestsUserOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithXoTestsUserOrderBy(rows map[string]*models.Direction) XoTestsUserSelectConfigOption {
 	return func(s *XoTestsUserSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := XoTestsEntityFields[XoTestsTableEntityXoTestsUser]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -534,7 +538,12 @@ func (xtu *XoTestsUser) Restore(ctx context.Context, db DB) (*XoTestsUser, error
 
 // XoTestsUserPaginatedByCreatedAt returns a cursor-paginated list of XoTestsUser.
 func XoTestsUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...XoTestsUserSelectConfigOption) ([]XoTestsUser, error) {
-	c := &XoTestsUserSelectConfig{deletedAt: " null ", joins: XoTestsUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &XoTestsUserSelectConfig{
+		deletedAt: " null ", joins: XoTestsUserJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -727,6 +736,18 @@ func XoTestsUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -806,7 +827,7 @@ func XoTestsUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opt
 	 %s   AND users.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserByCreatedAt */\n" + sqlstr
 
@@ -871,6 +892,18 @@ func XoTestsUserByName(ctx context.Context, db DB, name string, opts ...XoTestsU
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -951,7 +984,7 @@ func XoTestsUserByName(ctx context.Context, db DB, name string, opts ...XoTestsU
 	 %s   AND users.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserByName */\n" + sqlstr
 
@@ -1016,6 +1049,18 @@ func XoTestsUserByUserID(ctx context.Context, db DB, userID XoTestsUserID, opts 
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -1096,7 +1141,7 @@ func XoTestsUserByUserID(ctx context.Context, db DB, userID XoTestsUserID, opts 
 	 %s   AND users.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserByUserID */\n" + sqlstr
 

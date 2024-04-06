@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -91,7 +92,7 @@ func CreateXoTestsBookAuthor(ctx context.Context, db DB, params *XoTestsBookAuth
 
 type XoTestsBookAuthorSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsBookAuthorJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -372,6 +373,18 @@ func XoTestsBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID XoTest
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -407,7 +420,7 @@ func XoTestsBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID XoTest
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorByBookIDAuthorID */\n" + sqlstr
 
@@ -473,6 +486,18 @@ func XoTestsBookAuthorsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -508,7 +533,7 @@ func XoTestsBookAuthorsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsByBookID */\n" + sqlstr
 
@@ -576,6 +601,18 @@ func XoTestsBookAuthorsByAuthorID(ctx context.Context, db DB, authorID XoTestsUs
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -611,7 +648,7 @@ func XoTestsBookAuthorsByAuthorID(ctx context.Context, db DB, authorID XoTestsUs
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsByAuthorID */\n" + sqlstr
 

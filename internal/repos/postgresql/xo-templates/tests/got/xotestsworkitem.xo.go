@@ -100,7 +100,7 @@ func CreateXoTestsWorkItem(ctx context.Context, db DB, params *XoTestsWorkItemCr
 
 type XoTestsWorkItemSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsWorkItemJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -362,7 +362,12 @@ func (xtwi *XoTestsWorkItem) Delete(ctx context.Context, db DB) error {
 
 // XoTestsWorkItemPaginatedByWorkItemID returns a cursor-paginated list of XoTestsWorkItem.
 func XoTestsWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID XoTestsWorkItemID, direction models.Direction, opts ...XoTestsWorkItemSelectConfigOption) ([]XoTestsWorkItem, error) {
-	c := &XoTestsWorkItemSelectConfig{joins: XoTestsWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &XoTestsWorkItemSelectConfig{
+		joins:   XoTestsWorkItemJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -530,6 +535,18 @@ func XoTestsWorkItems(ctx context.Context, db DB, opts ...XoTestsWorkItemSelectC
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -584,7 +601,7 @@ func XoTestsWorkItems(ctx context.Context, db DB, opts ...XoTestsWorkItemSelectC
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItems */\n" + sqlstr
 
@@ -652,6 +669,18 @@ func XoTestsWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTestsW
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -706,7 +735,7 @@ func XoTestsWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTestsW
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemByWorkItemID */\n" + sqlstr
 
@@ -772,6 +801,18 @@ func XoTestsWorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -826,7 +867,7 @@ func XoTestsWorkItemsByTitle(ctx context.Context, db DB, title *string, opts ...
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemsByTitle */\n" + sqlstr
 

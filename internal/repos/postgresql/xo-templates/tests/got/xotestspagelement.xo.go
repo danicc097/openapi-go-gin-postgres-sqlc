@@ -93,7 +93,7 @@ func CreateXoTestsPagElement(ctx context.Context, db DB, params *XoTestsPagEleme
 
 type XoTestsPagElementSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsPagElementJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -118,16 +118,20 @@ const (
 	XoTestsPagElementCreatedAtAscNullsLast   XoTestsPagElementOrderBy = " created_at ASC NULLS LAST "
 )
 
-// WithXoTestsPagElementOrderBy orders results by the given columns.
-func WithXoTestsPagElementOrderBy(rows ...XoTestsPagElementOrderBy) XoTestsPagElementSelectConfigOption {
+// WithXoTestsPagElementOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithXoTestsPagElementOrderBy(rows map[string]*models.Direction) XoTestsPagElementSelectConfigOption {
 	return func(s *XoTestsPagElementSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := XoTestsEntityFields[XoTestsTableEntityXoTestsPagElement]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -291,7 +295,12 @@ func (xtpe *XoTestsPagElement) Delete(ctx context.Context, db DB) error {
 
 // XoTestsPagElementPaginatedByCreatedAt returns a cursor-paginated list of XoTestsPagElement.
 func XoTestsPagElementPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...XoTestsPagElementSelectConfigOption) ([]XoTestsPagElement, error) {
-	c := &XoTestsPagElementSelectConfig{joins: XoTestsPagElementJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &XoTestsPagElementSelectConfig{
+		joins:   XoTestsPagElementJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -435,6 +444,18 @@ func XoTestsPagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Tim
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -465,7 +486,7 @@ func XoTestsPagElementByCreatedAt(ctx context.Context, db DB, createdAt time.Tim
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsPagElementByCreatedAt */\n" + sqlstr
 
@@ -531,6 +552,18 @@ func XoTestsPagElementByPaginatedElementID(ctx context.Context, db DB, paginated
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -561,7 +594,7 @@ func XoTestsPagElementByPaginatedElementID(ctx context.Context, db DB, paginated
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsPagElementByPaginatedElementID */\n" + sqlstr
 

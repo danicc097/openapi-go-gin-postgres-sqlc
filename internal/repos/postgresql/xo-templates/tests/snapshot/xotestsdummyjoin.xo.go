@@ -66,7 +66,7 @@ func CreateXoTestsDummyJoin(ctx context.Context, db DB, params *XoTestsDummyJoin
 
 type XoTestsDummyJoinSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsDummyJoinJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -224,7 +224,12 @@ func (xtdj *XoTestsDummyJoin) Delete(ctx context.Context, db DB) error {
 
 // XoTestsDummyJoinPaginatedByDummyJoinID returns a cursor-paginated list of XoTestsDummyJoin.
 func XoTestsDummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID XoTestsDummyJoinID, direction models.Direction, opts ...XoTestsDummyJoinSelectConfigOption) ([]XoTestsDummyJoin, error) {
-	c := &XoTestsDummyJoinSelectConfig{joins: XoTestsDummyJoinJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &XoTestsDummyJoinSelectConfig{
+		joins:   XoTestsDummyJoinJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -360,6 +365,18 @@ func XoTestsDummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID XoTes
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -382,7 +399,7 @@ func XoTestsDummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID XoTes
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsDummyJoinByDummyJoinID */\n" + sqlstr
 

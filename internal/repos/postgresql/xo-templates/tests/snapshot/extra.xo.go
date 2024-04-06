@@ -6,6 +6,17 @@ import (
 	"fmt"
 )
 
+type Filter struct {
+	// Type is one of: string, number, integer, boolean, date-time
+	// Arrays and objects are ignored for default filter generation
+	Type string `json:"type"`
+	// Db is the corresponding db column name
+	Db       string `json:"db"`
+	Nullable bool   `json:"nullable"`
+}
+
+type DbField struct{}
+
 func newPointer[T any](v T) *T {
 	return &v
 }
@@ -27,11 +38,6 @@ func (err *XoError) Unwrap() error {
 
 type TableEntity string
 
-type Filter struct {
-	// Type is one of: string, number, integer, boolean, date-time
-	// Arrays and objects are ignored for default filter generation
-	Type string `json:"type"`
-	// Db is the corresponding db column name
-	Db       string `json:"db"`
-	Nullable bool   `json:"nullable"`
-}
+var EntityFilters = map[TableEntity]map[string]Filter{}
+
+var EntityFields = map[TableEntity]map[string]DbField{}

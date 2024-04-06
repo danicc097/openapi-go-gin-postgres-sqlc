@@ -80,7 +80,7 @@ func CreateXoTestsBookReview(ctx context.Context, db DB, params *XoTestsBookRevi
 
 type XoTestsBookReviewSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsBookReviewJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -269,7 +269,12 @@ func (xtbr *XoTestsBookReview) Delete(ctx context.Context, db DB) error {
 
 // XoTestsBookReviewPaginatedByBookReviewID returns a cursor-paginated list of XoTestsBookReview.
 func XoTestsBookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookReviewID XoTestsBookReviewID, direction models.Direction, opts ...XoTestsBookReviewSelectConfigOption) ([]XoTestsBookReview, error) {
-	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &XoTestsBookReviewSelectConfig{
+		joins:   XoTestsBookReviewJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -372,7 +377,12 @@ func XoTestsBookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookRe
 
 // XoTestsBookReviewPaginatedByBookID returns a cursor-paginated list of XoTestsBookReview.
 func XoTestsBookReviewPaginatedByBookID(ctx context.Context, db DB, bookID XoTestsBookID, direction models.Direction, opts ...XoTestsBookReviewSelectConfigOption) ([]XoTestsBookReview, error) {
-	c := &XoTestsBookReviewSelectConfig{joins: XoTestsBookReviewJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &XoTestsBookReviewSelectConfig{
+		joins:   XoTestsBookReviewJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -521,6 +531,18 @@ func XoTestsBookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID Xo
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -556,7 +578,7 @@ func XoTestsBookReviewByBookReviewID(ctx context.Context, db DB, bookReviewID Xo
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookReviewByBookReviewID */\n" + sqlstr
 
@@ -622,6 +644,18 @@ func XoTestsBookReviewByReviewerBookID(ctx context.Context, db DB, reviewer XoTe
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -657,7 +691,7 @@ func XoTestsBookReviewByReviewerBookID(ctx context.Context, db DB, reviewer XoTe
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookReviewByReviewerBookID */\n" + sqlstr
 
@@ -723,6 +757,18 @@ func XoTestsBookReviewsByReviewer(ctx context.Context, db DB, reviewer XoTestsUs
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -758,7 +804,7 @@ func XoTestsBookReviewsByReviewer(ctx context.Context, db DB, reviewer XoTestsUs
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookReviewsByReviewer */\n" + sqlstr
 
@@ -826,6 +872,18 @@ func XoTestsBookReviewsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -861,7 +919,7 @@ func XoTestsBookReviewsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookReviewsByBookID */\n" + sqlstr
 

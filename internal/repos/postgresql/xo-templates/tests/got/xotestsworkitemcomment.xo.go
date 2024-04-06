@@ -96,7 +96,7 @@ func CreateXoTestsWorkItemComment(ctx context.Context, db DB, params *XoTestsWor
 
 type XoTestsWorkItemCommentSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsWorkItemCommentJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -125,16 +125,20 @@ const (
 	XoTestsWorkItemCommentUpdatedAtAscNullsLast   XoTestsWorkItemCommentOrderBy = " updated_at ASC NULLS LAST "
 )
 
-// WithXoTestsWorkItemCommentOrderBy orders results by the given columns.
-func WithXoTestsWorkItemCommentOrderBy(rows ...XoTestsWorkItemCommentOrderBy) XoTestsWorkItemCommentSelectConfigOption {
+// WithXoTestsWorkItemCommentOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithXoTestsWorkItemCommentOrderBy(rows map[string]*models.Direction) XoTestsWorkItemCommentSelectConfigOption {
 	return func(s *XoTestsWorkItemCommentSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := XoTestsEntityFields[XoTestsTableEntityXoTestsWorkItemComment]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -315,7 +319,12 @@ func (xtwic *XoTestsWorkItemComment) Delete(ctx context.Context, db DB) error {
 
 // XoTestsWorkItemCommentPaginatedByWorkItemCommentID returns a cursor-paginated list of XoTestsWorkItemComment.
 func XoTestsWorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID XoTestsWorkItemCommentID, direction models.Direction, opts ...XoTestsWorkItemCommentSelectConfigOption) ([]XoTestsWorkItemComment, error) {
-	c := &XoTestsWorkItemCommentSelectConfig{joins: XoTestsWorkItemCommentJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &XoTestsWorkItemCommentSelectConfig{
+		joins:   XoTestsWorkItemCommentJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -467,6 +476,18 @@ func XoTestsWorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workI
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -505,7 +526,7 @@ func XoTestsWorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workI
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemCommentByWorkItemCommentID */\n" + sqlstr
 
@@ -571,6 +592,18 @@ func XoTestsWorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID 
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -609,7 +642,7 @@ func XoTestsWorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID 
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemCommentsByWorkItemID */\n" + sqlstr
 

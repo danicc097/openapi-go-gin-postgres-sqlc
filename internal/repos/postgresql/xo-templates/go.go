@@ -2736,7 +2736,7 @@ func (f *Funcs) generate_entity_fields(schema string, tables Tables) string {
 	if schema == "public" {
 		schema = ""
 	}
-	if f.currentDatabase != "gen_db" {
+	if f.currentDatabase != "gen_db" && f.currentDatabase != "xo_tests_db" {
 		return ""
 	}
 	for _, t := range tables {
@@ -2797,7 +2797,7 @@ func (f *Funcs) generate_entity_filters(schema string, tables Tables) string {
 	if schema == "public" {
 		schema = ""
 	}
-	if f.currentDatabase != "gen_db" {
+	if f.currentDatabase != "gen_db" && f.currentDatabase != "xo_tests_db" {
 		return ""
 	}
 	for _, t := range tables {

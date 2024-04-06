@@ -95,7 +95,7 @@ func CreateXoTestsBookAuthorsSurrogateKey(ctx context.Context, db DB, params *Xo
 
 type XoTestsBookAuthorsSurrogateKeySelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsBookAuthorsSurrogateKeyJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -331,7 +331,12 @@ func (xtbask *XoTestsBookAuthorsSurrogateKey) Delete(ctx context.Context, db DB)
 
 // XoTestsBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID returns a cursor-paginated list of XoTestsBookAuthorsSurrogateKey.
 func XoTestsBookAuthorsSurrogateKeyPaginatedByBookAuthorsSurrogateKeyID(ctx context.Context, db DB, bookAuthorsSurrogateKeyID XoTestsBookAuthorsSurrogateKeyID, direction models.Direction, opts ...XoTestsBookAuthorsSurrogateKeySelectConfigOption) ([]XoTestsBookAuthorsSurrogateKey, error) {
-	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{joins: XoTestsBookAuthorsSurrogateKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{
+		joins:   XoTestsBookAuthorsSurrogateKeyJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -481,6 +486,18 @@ func XoTestsBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, 
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -517,7 +534,7 @@ func XoTestsBookAuthorsSurrogateKeyByBookIDAuthorID(ctx context.Context, db DB, 
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsSurrogateKeyByBookIDAuthorID */\n" + sqlstr
 
@@ -583,6 +600,18 @@ func XoTestsBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID 
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -619,7 +648,7 @@ func XoTestsBookAuthorsSurrogateKeysByBookID(ctx context.Context, db DB, bookID 
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsSurrogateKeysByBookID */\n" + sqlstr
 
@@ -687,6 +716,18 @@ func XoTestsBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, autho
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -723,7 +764,7 @@ func XoTestsBookAuthorsSurrogateKeysByAuthorID(ctx context.Context, db DB, autho
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsSurrogateKeysByAuthorID */\n" + sqlstr
 
@@ -791,6 +832,18 @@ func XoTestsBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Conte
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -827,7 +880,7 @@ func XoTestsBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID(ctx context.Conte
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsSurrogateKeyByBookAuthorsSurrogateKeyID */\n" + sqlstr
 

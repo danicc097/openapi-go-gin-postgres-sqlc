@@ -3,7 +3,7 @@
 {{- $schema := .Data.Schema -}}
 
 
-{{ if or (eq $schema "public") (eq $schema "xo_tests") }}
+{{ if or (eq $schema "public") }}
 type Filter struct {
   // Type is one of: string, number, integer, boolean, date-time
   // Arrays and objects are ignored for default filter generation
