@@ -200,7 +200,7 @@ export const MRTNumberInput = forwardRef(function MRTNumberInput(
   }
 
   useEffect(() => {
-    if (_.isEqual(column.getFilterValue(), ['', ''])) {
+    if ((column.getFilterValue() as string[]).every((i) => i === null || i === undefined || i === '')) {
       removeFilterMode(column.id)
     }
   }, [debouncedFilterValue])
@@ -276,6 +276,12 @@ export const MRTDateInput = forwardRef(function MRTDateInput(
     columnRangeValue[rangeFilterIndex] = undefined
     column.setFilterValue(columnRangeValue)
   }
+
+  useEffect(() => {
+    if ((column.getFilterValue() as string[]).every((i) => i === null || i === undefined || i === '')) {
+      removeFilterMode(column.id)
+    }
+  }, [debouncedFilterValue])
 
   useEffect(() => {
     if (!isMounted.current) {
@@ -434,6 +440,9 @@ export const MRTTextInput = forwardRef(function MRTTextInput(
   useEffect(() => {
     if (!isMounted.current) return
     column.setFilterValue(debouncedFilterValue ?? undefined)
+    if (!debouncedFilterValue) {
+      removeFilterMode(column.id)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedFilterValue])
 
