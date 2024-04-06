@@ -1,0 +1,181 @@
+{
+  "activity": {
+    "activityID": {},
+    "deletedAt": {},
+    "description": {},
+    "isProductive": {},
+    "name": {},
+    "projectID": {}
+  },
+  "cacheDemoTwoWorkItem": {
+    "closedAt": {},
+    "createdAt": {},
+    "customDateForProject2": {},
+    "deletedAt": {},
+    "description": {},
+    "kanbanStepID": {},
+    "targetDate": {},
+    "teamID": {},
+    "title": {},
+    "updatedAt": {},
+    "workItemID": {},
+    "workItemTypeID": {}
+  },
+  "cacheDemoWorkItem": {
+    "closedAt": {},
+    "createdAt": {},
+    "deletedAt": {},
+    "description": {},
+    "kanbanStepID": {},
+    "lastMessageAt": {},
+    "line": {},
+    "ref": {},
+    "reopened": {},
+    "targetDate": {},
+    "teamID": {},
+    "title": {},
+    "updatedAt": {},
+    "workItemID": {},
+    "workItemTypeID": {}
+  },
+  "demoTwoWorkItem": {
+    "customDateForProject2": {},
+    "workItemID": {}
+  },
+  "demoWorkItem": {
+    "lastMessageAt": {},
+    "line": {},
+    "ref": {},
+    "reopened": {},
+    "workItemID": {}
+  },
+  "entityNotification": {
+    "createdAt": {},
+    "entityNotificationID": {},
+    "id": {},
+    "message": {},
+    "topic": {}
+  },
+  "kanbanStep": {
+    "color": {},
+    "description": {},
+    "kanbanStepID": {},
+    "name": {},
+    "projectID": {},
+    "stepOrder": {},
+    "timeTrackable": {}
+  },
+  "movie": {
+    "movieID": {},
+    "synopsis": {},
+    "title": {},
+    "year": {}
+  },
+  "notification": {
+    "body": {},
+    "createdAt": {},
+    "link": {},
+    "notificationID": {},
+    "receiverRank": {},
+    "title": {}
+  },
+  "project": {
+    "createdAt": {},
+    "description": {},
+    "name": {},
+    "projectID": {},
+    "updatedAt": {},
+    "workItemsTableName": {}
+  },
+  "team": {
+    "createdAt": {},
+    "description": {},
+    "name": {},
+    "projectID": {},
+    "teamID": {},
+    "updatedAt": {}
+  },
+  "timeEntry": {
+    "activityID": {},
+    "comment": {},
+    "durationMinutes": {},
+    "start": {},
+    "teamID": {},
+    "timeEntryID": {},
+    "workItemID": {}
+  },
+  "user": {
+    "age": {},
+    "apiKeyID": {},
+    "createdAt": {},
+    "deletedAt": {},
+    "email": {},
+    "externalID": {},
+    "firstName": {},
+    "fullName": {},
+    "hasGlobalNotifications": {},
+    "hasPersonalNotifications": {},
+    "lastName": {},
+    "roleRank": {},
+    "updatedAt": {},
+    "username": {}
+  },
+  "userAPIKey": {
+    "apiKey": {},
+    "expiresOn": {},
+    "userAPIKeyID": {}
+  },
+  "userNotification": {
+    "notificationID": {},
+    "read": {},
+    "userNotificationID": {}
+  },
+  "userProject": {
+    "projectID": {}
+  },
+  "userTeam": {
+    "teamID": {}
+  },
+  "workItem": {
+    "closedAt": {},
+    "createdAt": {},
+    "deletedAt": {},
+    "description": {},
+    "kanbanStepID": {},
+    "targetDate": {},
+    "teamID": {},
+    "title": {},
+    "updatedAt": {},
+    "workItemID": {},
+    "workItemTypeID": {}
+  },
+  "workItemAssignee": {
+    "workItemID": {}
+  },
+  "workItemComment": {
+    "createdAt": {},
+    "message": {},
+    "updatedAt": {},
+    "workItemCommentID": {},
+    "workItemID": {}
+  },
+  "workItemTag": {
+    "color": {},
+    "deletedAt": {},
+    "description": {},
+    "name": {},
+    "projectID": {},
+    "workItemTagID": {}
+  },
+  "workItemType": {
+    "color": {},
+    "description": {},
+    "name": {},
+    "projectID": {},
+    "workItemTypeID": {}
+  },
+  "workItemWorkItemTag": {
+    "workItemID": {},
+    "workItemTagID": {}
+  }
+}

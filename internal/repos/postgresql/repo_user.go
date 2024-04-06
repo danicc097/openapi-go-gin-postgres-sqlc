@@ -51,12 +51,6 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginat
 		if err != nil {
 			return nil, internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid default filters")
 		}
-
-		// TODO: for sorts just use asc and desc .
-		// no need to generate a map like EntityFilters, just have map[string]*models.Direction
-		// parameter in WithUserOrderBy instead. every call simply ranges over keys and sets them.
-		// nil allows us to exclude already set orders.
-		// WithUserOrderBy will ignore keys that are not present in EntityFilters's entity
 	}
 
 	// handle custom keys as desired. They should be set in spec directly and

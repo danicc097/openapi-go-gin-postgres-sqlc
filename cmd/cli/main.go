@@ -16,6 +16,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
@@ -97,7 +98,9 @@ func main() {
 			MemberTeams:       true,
 			UserAPIKey:        true,
 		}),
-		db.WithUserOrderBy(db.UserCreatedAtDescNullsLast))
+		db.WithUserOrderBy(map[string]*models.Direction{
+			"created_at": pointers.New(models.DirectionDesc),
+		}))
 	if err != nil {
 		log.Fatalf("db.UserByUsername: %s\n", err)
 	}

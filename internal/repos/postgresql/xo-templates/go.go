@@ -438,16 +438,7 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 			_, _, schemaOpt := xo.DriverDbSchema(ctx) // cli arg
 			// TODO: we should merge public and custom schemas generation in one with comma separated list.
 			// so we can generate f.entities properly
-			if !NotFirst(ctx) && !Append(ctx) && schemaOpt == "public" {
-				emit(xo.Template{
-					Partial: "db",
-					Dest:    "db.xo.go",
-				})
-				// If --single is provided, don't generate header for db.xo.go.
-				if xo.Single(ctx) == "" {
-					files["db.xo.go"] = true
-				}
-
+			if !NotFirst(ctx) && !Append(ctx) {
 				tables := make(Tables)
 				for _, schema := range set.Schemas {
 					tcc := append(schema.Tables, schema.Views...)
@@ -460,17 +451,44 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 						tables[table.SQLName] = table
 					}
 				}
+				if schemaOpt == "public" {
+					emit(xo.Template{
+						Partial: "db",
+						Dest:    "db.xo.go",
+					})
+					// If --single is provided, don't generate header for db.xo.go.
+					if xo.Single(ctx) == "" {
+						files["db.xo.go"] = true
+					}
 
-				emit(xo.Template{
-					Partial: "extra",
-					Dest:    "extra.xo.go",
-					Data: struct {
-						Tables any
-					}{Tables: tables},
-				})
+					emit(xo.Template{
+						Partial: "extra",
+						Dest:    "extra.xo.go",
+						Data: struct {
+							Tables any
+							Schema string
+						}{Tables: tables, Schema: schemaOpt},
+					})
+					// If --single is provided, don't generate header for db.xo.go.
+					if xo.Single(ctx) == "" {
+						files["extra.xo.go"] = true
+					}
+				}
+
+				if schemaOpt != "public" {
+					emit(xo.Template{
+						Partial: "extra",
+						Dest:    schemaOpt + "_" + "extra.xo.go",
+						Data: struct {
+							Tables any
+							Schema string
+						}{Tables: tables, Schema: schemaOpt},
+					})
+				}
+
 				// If --single is provided, don't generate header for db.xo.go.
 				if xo.Single(ctx) == "" {
-					files["extra.xo.go"] = true
+					files[schemaOpt+"_"+"extra.xo.go"] = true
 				}
 			}
 
@@ -1599,6 +1617,9 @@ type Filter struct {
 	Nullable bool   `json:"nullable"`
 }
 
+// can extend as required to prevent getting db info via reflection
+type DbField struct{}
+
 // Funcs is a set of template funcs.
 type Funcs struct {
 	driver          string
@@ -1614,6 +1635,7 @@ type Funcs struct {
 	tableConstraints map[string][]Constraint
 	// filters indexed by entity name and json field name.
 	entityFilters   map[string]map[string]Filter
+	entityFields    map[string]map[string]DbField
 	conflict        string
 	custom          string
 	escSchema       bool
@@ -1673,6 +1695,7 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 	funcs := &Funcs{
 		tableConstraints: make(map[string][]Constraint),
 		entityFilters:    make(map[string]map[string]Filter),
+		entityFields:     make(map[string]map[string]DbField),
 		first:            first,
 		currentDatabase:  currentDatabase,
 		driver:           driver,
@@ -1745,6 +1768,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"db_named":                f.db_named,
 		"named":                   f.named,
 		"generate_entity_filters": f.generate_entity_filters,
+		"generate_entity_fields":  f.generate_entity_fields,
 		"logf":                    f.logf,
 		"logf_pkeys":              f.logf_pkeys,
 		"logf_update":             f.logf_update,
@@ -2111,7 +2135,10 @@ func (f *Funcs) initial_opts(v any) string {
 			buf.WriteString(`deletedAt: " null ",`)
 		}
 		buf.WriteString(fmt.Sprintf(`joins: %sJoins{},`, x.GoName))
-		buf.WriteString(`filters: make(map[string][]any), having: make(map[string][]any),
+		buf.WriteString(`
+		filters: make(map[string][]any), 
+		having: make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
 }`)
 	case Index:
 		for _, field := range x.Table.Fields { // table fields, not index fields
@@ -2186,7 +2213,7 @@ func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constra
 	buf.WriteString(fmt.Sprintf(`
 	type %[1]sSelectConfig struct {
 		limit       string
-		orderBy     string
+		orderBy     map[string]models.Direction
 		joins       %[1]sJoins
 		filters     map[string][]any
 		having     map[string][]any
@@ -2235,20 +2262,24 @@ func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constra
 
 	if len(orderbys) > 0 {
 		buf.WriteString(fmt.Sprintf(`
-	// With%[1]sOrderBy orders results by the given columns.
-func With%[1]sOrderBy(rows ...%[1]sOrderBy) %[1]sSelectConfigOption {
+// With%[1]sOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func With%[1]sOrderBy(rows map[string]*models.Direction) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := %[2]sEntityFields[%[2]sTableEntity%[1]s]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
-	`, tGoName))
+	`, tGoName, camelExport(f.schemaPrefix)))
 	}
 
 	var extraStructs []string
@@ -2674,7 +2705,10 @@ func (f *Funcs) db_named(name string, v any) string {
 	return f.db(name, strings.Join(p, ", "))
 }
 
-func (f *Funcs) entities(tables Tables) string {
+func (f *Funcs) entities(schema string, tables Tables) string {
+	if schema == "public" {
+		schema = ""
+	}
 	var b strings.Builder
 
 	ee := make([]string, len(tables))
@@ -2688,18 +2722,82 @@ func (f *Funcs) entities(tables Tables) string {
 		return ee[i] < ee[j]
 	})
 
-	b.WriteString("type TableEntity string\n")
+	b.WriteString(fmt.Sprintf("type %sTableEntity string\n", camelExport(schema)))
 	b.WriteString("const (\n")
 	for _, e := range ee {
-		b.WriteString(fmt.Sprintf("TableEntity%s TableEntity = %q \n", camelExport(e), camel(e)))
+		b.WriteString(fmt.Sprintf("%[1]sTableEntity%[2]s %[1]sTableEntity = %[3]q \n", camelExport(schema), camelExport(e), camel(e)))
 	}
 	b.WriteString(")")
 
 	return b.String()
 }
 
-func (f *Funcs) generate_entity_filters(tables Tables) string {
-	if f.schemaPrefix != "" /* not public */ || f.currentDatabase != "gen_db" {
+func (f *Funcs) generate_entity_fields(schema string, tables Tables) string {
+	if schema == "public" {
+		schema = ""
+	}
+	if f.currentDatabase != "gen_db" {
+		return ""
+	}
+	for _, t := range tables {
+		for _, field := range t.Fields {
+			f.field(field, "EntityFields", t)
+		}
+	}
+
+	content, err := json.MarshalIndent(f.entityFields, "", "  ")
+	if err != nil {
+		panic("json.MarshalIndent: " + err.Error())
+	}
+	if schema == "" {
+		outputPath := "entityFields.gen.json"
+		if err := os.WriteFile(outputPath, content, 0o644); err != nil {
+			panic("os.WriteFile: " + err.Error())
+		}
+	}
+
+	return fmt.Sprintf(formatEntityFields(f.schemaPrefix, f.entityFields))
+}
+
+func formatEntityFields(schema string, entityFields map[string]map[string]DbField) string {
+	var buf bytes.Buffer
+
+	var entityTypes []string
+	for entityType := range entityFields {
+		entityTypes = append(entityTypes, entityType)
+	}
+	sort.Strings(entityTypes)
+
+	buf.WriteString(fmt.Sprintf("var %[1]sEntityFields = map[%[1]sTableEntity]map[string]DbField {\n", camelExport(schema)))
+	for _, entityType := range entityTypes {
+		fields := entityFields[entityType]
+
+		var fieldNames []string
+		for fieldName := range fields {
+			fieldNames = append(fieldNames, fieldName)
+		}
+		sort.Strings(fieldNames)
+
+		buf.WriteString(fmt.Sprintf("\t%sTableEntity%s: {\n", camelExport(schema), camelExport(entityType)))
+		for _, fieldName := range fieldNames {
+			field := fields[fieldName]
+			buf.WriteString(
+				fmt.Sprintf("\t\t\"%s\": DbField{},\n",
+					fieldName,
+				))
+		}
+		buf.WriteString("\t},\n")
+	}
+	buf.WriteString("}\n")
+
+	return buf.String()
+}
+
+func (f *Funcs) generate_entity_filters(schema string, tables Tables) string {
+	if schema == "public" {
+		schema = ""
+	}
+	if f.currentDatabase != "gen_db" {
 		return ""
 	}
 	for _, t := range tables {
@@ -2712,14 +2810,17 @@ func (f *Funcs) generate_entity_filters(tables Tables) string {
 	if err != nil {
 		panic("json.MarshalIndent: " + err.Error())
 	}
-	if err := os.WriteFile("entityFilters.gen.json", content, 0o644); err != nil {
-		panic("os.WriteFile: " + err.Error())
+	if schema == "" {
+		outputPath := "entityFilters.gen.json"
+		if err := os.WriteFile(outputPath, content, 0o644); err != nil {
+			panic("os.WriteFile: " + err.Error())
+		}
 	}
 
-	return fmt.Sprintf(formatEntityFilters(f.entityFilters))
+	return fmt.Sprintf(formatEntityFilters(f.schemaPrefix, f.entityFilters))
 }
 
-func formatEntityFilters(entityFilters map[string]map[string]Filter) string {
+func formatEntityFilters(schema string, entityFilters map[string]map[string]Filter) string {
 	var buf bytes.Buffer
 
 	var entityTypes []string
@@ -2728,7 +2829,7 @@ func formatEntityFilters(entityFilters map[string]map[string]Filter) string {
 	}
 	sort.Strings(entityTypes)
 
-	buf.WriteString("var EntityFilters = map[TableEntity]map[string]Filter {\n")
+	buf.WriteString(fmt.Sprintf("var %[1]sEntityFilters = map[%[1]sTableEntity]map[string]Filter {\n", camelExport(schema)))
 	for _, entityType := range entityTypes {
 		fields := entityFilters[entityType]
 
@@ -2738,7 +2839,7 @@ func formatEntityFilters(entityFilters map[string]map[string]Filter) string {
 		}
 		sort.Strings(fieldNames)
 
-		buf.WriteString(fmt.Sprintf("\tTableEntity%s: {\n", camelExport(entityType)))
+		buf.WriteString(fmt.Sprintf("\t%sTableEntity%s: {\n", camelExport(schema), camelExport(entityType)))
 		for _, fieldName := range fieldNames {
 			field := fields[fieldName]
 			buf.WriteString(fmt.Sprintf("\t\t\"%s\": Filter{Type: \"%s\", Db: \"%s\", Nullable: %t},\n",
@@ -4203,7 +4304,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		return fmt.Sprintf("Get%[1]s() *%[2]s \n", goName, strings.TrimPrefix(fieldType, "*")), nil
 	}
 
-	// TODO: call initializer for all tables in extra.xo.go
+	// call initializer for all tables in extra.xo.go
 	if mode == "EntityFilters" && !ignoreJson {
 		// mantine react table EMPTY and NOT EMPTY special filterModes - ie, enabling those filters if nullable)
 		entityName := camel(table.GoName)
@@ -4216,6 +4317,18 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 				Db:       field.SQLName,
 				Nullable: nullable,
 			}
+		}
+	}
+
+	// call initializer for all tables in extra.xo.go
+	if mode == "EntityFields" && !hidden {
+		// mantine react table EMPTY and NOT EMPTY special filterModes - ie, enabling those Fields if nullable)
+		entityName := camel(table.GoName)
+		if _, ok := f.entityFields[entityName]; !ok {
+			f.entityFields[entityName] = make(map[string]DbField)
+		}
+		if typ, err := goTypeToSimpleType(field.UnderlyingType); err == nil {
+			f.entityFields[entityName][camel(field.GoName)] = DbField{}
 		}
 	}
 

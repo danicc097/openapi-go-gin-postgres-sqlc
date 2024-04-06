@@ -148,7 +148,7 @@ func CreateTimeEntry(ctx context.Context, db DB, params *TimeEntryCreateParams) 
 
 type TimeEntrySelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   TimeEntryJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -173,16 +173,20 @@ const (
 	TimeEntryStartAscNullsLast   TimeEntryOrderBy = " start ASC NULLS LAST "
 )
 
-// WithTimeEntryOrderBy orders results by the given columns.
-func WithTimeEntryOrderBy(rows ...TimeEntryOrderBy) TimeEntrySelectConfigOption {
+// WithTimeEntryOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithTimeEntryOrderBy(rows map[string]*models.Direction) TimeEntrySelectConfigOption {
 	return func(s *TimeEntrySelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := EntityFields[TableEntityTimeEntry]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -407,7 +411,11 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 
 // TimeEntryPaginatedByTimeEntryID returns a cursor-paginated list of TimeEntry.
 func TimeEntryPaginatedByTimeEntryID(ctx context.Context, db DB, timeEntryID TimeEntryID, direction models.Direction, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
-	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -573,6 +581,18 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID TimeEntryID,
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -625,7 +645,7 @@ func TimeEntryByTimeEntryID(ctx context.Context, db DB, timeEntryID TimeEntryID,
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TimeEntryByTimeEntryID */\n" + sqlstr
 
@@ -691,6 +711,18 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID UserID, teamID
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -743,7 +775,7 @@ func TimeEntriesByUserIDTeamID(ctx context.Context, db DB, userID UserID, teamID
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TimeEntriesByUserIDTeamID */\n" + sqlstr
 
@@ -811,6 +843,18 @@ func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID WorkIt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -863,7 +907,7 @@ func TimeEntriesByWorkItemIDTeamID(ctx context.Context, db DB, workItemID WorkIt
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TimeEntriesByWorkItemIDTeamID */\n" + sqlstr
 

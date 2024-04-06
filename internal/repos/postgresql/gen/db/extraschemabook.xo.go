@@ -69,7 +69,7 @@ func CreateExtraSchemaBook(ctx context.Context, db DB, params *ExtraSchemaBookCr
 
 type ExtraSchemaBookSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ExtraSchemaBookJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -339,7 +339,11 @@ func (esb *ExtraSchemaBook) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaBookPaginatedByBookID returns a cursor-paginated list of ExtraSchemaBook.
 func ExtraSchemaBookPaginatedByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookID, direction models.Direction, opts ...ExtraSchemaBookSelectConfigOption) ([]ExtraSchemaBook, error) {
-	c := &ExtraSchemaBookSelectConfig{joins: ExtraSchemaBookJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &ExtraSchemaBookSelectConfig{joins: ExtraSchemaBookJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -499,6 +503,18 @@ func ExtraSchemaBookByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookI
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -545,7 +561,7 @@ func ExtraSchemaBookByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookI
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookByBookID */\n" + sqlstr
 

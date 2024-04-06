@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -72,7 +73,7 @@ func CreateExtraSchemaWorkItemAdmin(ctx context.Context, db DB, params *ExtraSch
 
 type ExtraSchemaWorkItemAdminSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ExtraSchemaWorkItemAdminJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -286,6 +287,18 @@ func ExtraSchemaWorkItemAdminsByAdminWorkItemID(ctx context.Context, db DB, admi
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -320,7 +333,7 @@ func ExtraSchemaWorkItemAdminsByAdminWorkItemID(ctx context.Context, db DB, admi
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAdminsByAdminWorkItemID */\n" + sqlstr
 
@@ -388,6 +401,18 @@ func ExtraSchemaWorkItemAdminByWorkItemIDAdmin(ctx context.Context, db DB, workI
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -422,7 +447,7 @@ func ExtraSchemaWorkItemAdminByWorkItemIDAdmin(ctx context.Context, db DB, workI
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAdminByWorkItemIDAdmin */\n" + sqlstr
 
@@ -488,6 +513,18 @@ func ExtraSchemaWorkItemAdminsByWorkItemID(ctx context.Context, db DB, workItemI
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -522,7 +559,7 @@ func ExtraSchemaWorkItemAdminsByWorkItemID(ctx context.Context, db DB, workItemI
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAdminsByWorkItemID */\n" + sqlstr
 
@@ -590,6 +627,18 @@ func ExtraSchemaWorkItemAdminsByAdmin(ctx context.Context, db DB, admin ExtraSch
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -624,7 +673,7 @@ func ExtraSchemaWorkItemAdminsByAdmin(ctx context.Context, db DB, admin ExtraSch
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAdminsByAdmin */\n" + sqlstr
 

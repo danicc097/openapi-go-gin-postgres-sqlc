@@ -160,7 +160,7 @@ func CreateNotification(ctx context.Context, db DB, params *NotificationCreatePa
 
 type NotificationSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   NotificationJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -185,16 +185,20 @@ const (
 	NotificationCreatedAtAscNullsLast   NotificationOrderBy = " created_at ASC NULLS LAST "
 )
 
-// WithNotificationOrderBy orders results by the given columns.
-func WithNotificationOrderBy(rows ...NotificationOrderBy) NotificationSelectConfigOption {
+// WithNotificationOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithNotificationOrderBy(rows map[string]*models.Direction) NotificationSelectConfigOption {
 	return func(s *NotificationSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := EntityFields[TableEntityNotification]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -418,7 +422,11 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 
 // NotificationPaginatedByNotificationID returns a cursor-paginated list of Notification.
 func NotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID NotificationID, direction models.Direction, opts ...NotificationSelectConfigOption) ([]Notification, error) {
-	c := &NotificationSelectConfig{joins: NotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &NotificationSelectConfig{joins: NotificationJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -580,6 +588,18 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID Not
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -628,7 +648,7 @@ func NotificationByNotificationID(ctx context.Context, db DB, notificationID Not
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* NotificationByNotificationID */\n" + sqlstr
 
@@ -694,6 +714,18 @@ func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, d
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -742,7 +774,7 @@ func NotificationsByReceiverRankNotificationTypeCreatedAt(ctx context.Context, d
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* NotificationsByReceiverRankNotificationTypeCreatedAt */\n" + sqlstr
 

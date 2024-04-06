@@ -1,5 +1,19 @@
 {{ define "extra" -}}
 {{- $tables := .Data.Tables -}}
+{{- $schema := .Data.Schema -}}
+
+
+{{ if or (eq $schema "public") (eq $schema "xo_tests") }}
+type Filter struct {
+  // Type is one of: string, number, integer, boolean, date-time
+  // Arrays and objects are ignored for default filter generation
+  Type string `json:"type"`
+  // Db is the corresponding db column name
+  Db       string `json:"db"`
+  Nullable bool   `json:"nullable"`
+}
+
+type DbField struct{}
 
 func newPointer[T any](v T) *T {
 	return &v
@@ -19,22 +33,14 @@ func (e *XoError) Error() string {
 func (err *XoError) Unwrap() error {
 	return err.Err
 }
-
-{{entities $tables}}
-
-type Filter struct {
-  // Type is one of: string, number, integer, boolean, date-time
-  // Arrays and objects are ignored for default filter generation
-  Type string `json:"type"`
-  // Db is the corresponding db column name
-  Db       string `json:"db"`
-  Nullable bool   `json:"nullable"`
-}
+{{ end }}
 
 
-{{/* TODO: initialize f.entityFilters via code for all tables. we already have $tables here... */}}
-{{/* else we dont get all entities */}}
-{{ generate_entity_filters $tables }}
+{{entities $schema $tables}}
+
+{{ generate_entity_filters $schema $tables }}
+
+{{ generate_entity_fields $schema $tables }}
 
 {{- end }}
 

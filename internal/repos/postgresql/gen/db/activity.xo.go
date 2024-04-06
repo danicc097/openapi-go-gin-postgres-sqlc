@@ -105,7 +105,7 @@ func CreateActivity(ctx context.Context, db DB, params *ActivityCreateParams) (*
 
 type ActivitySelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ActivityJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -139,16 +139,20 @@ const (
 	ActivityDeletedAtAscNullsLast   ActivityOrderBy = " deleted_at ASC NULLS LAST "
 )
 
-// WithActivityOrderBy orders results by the given columns.
-func WithActivityOrderBy(rows ...ActivityOrderBy) ActivitySelectConfigOption {
+// WithActivityOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithActivityOrderBy(rows map[string]*models.Direction) ActivitySelectConfigOption {
 	return func(s *ActivitySelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := EntityFields[TableEntityActivity]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -366,7 +370,11 @@ func (a *Activity) Restore(ctx context.Context, db DB) (*Activity, error) {
 
 // ActivityPaginatedByActivityID returns a cursor-paginated list of Activity.
 func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID ActivityID, direction models.Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -472,7 +480,11 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 
 // ActivityPaginatedByProjectID returns a cursor-paginated list of Activity.
 func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -624,6 +636,18 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -662,7 +686,7 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 	 %s   AND activities.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivityByNameProjectID */\n" + sqlstr
 
@@ -728,6 +752,18 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -766,7 +802,7 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 	 %s   AND activities.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivitiesByName */\n" + sqlstr
 
@@ -834,6 +870,18 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -872,7 +920,7 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts
 	 %s   AND activities.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivitiesByProjectID */\n" + sqlstr
 
@@ -940,6 +988,18 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID ActivityID, opt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -978,7 +1038,7 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID ActivityID, opt
 	 %s   AND activities.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivityByActivityID */\n" + sqlstr
 

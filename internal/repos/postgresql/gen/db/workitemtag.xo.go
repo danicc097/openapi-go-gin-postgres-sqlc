@@ -105,7 +105,7 @@ func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreatePara
 
 type WorkItemTagSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   WorkItemTagJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -139,16 +139,20 @@ const (
 	WorkItemTagDeletedAtAscNullsLast   WorkItemTagOrderBy = " deleted_at ASC NULLS LAST "
 )
 
-// WithWorkItemTagOrderBy orders results by the given columns.
-func WithWorkItemTagOrderBy(rows ...WorkItemTagOrderBy) WorkItemTagSelectConfigOption {
+// WithWorkItemTagOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithWorkItemTagOrderBy(rows map[string]*models.Direction) WorkItemTagSelectConfigOption {
 	return func(s *WorkItemTagSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := EntityFields[TableEntityWorkItemTag]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -372,7 +376,11 @@ func (wit *WorkItemTag) Restore(ctx context.Context, db DB) (*WorkItemTag, error
 
 // WorkItemTagPaginatedByWorkItemTagID returns a cursor-paginated list of WorkItemTag.
 func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkItemTagID, direction models.Direction, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -478,7 +486,11 @@ func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTag
 
 // WorkItemTagPaginatedByProjectID returns a cursor-paginated list of WorkItemTag.
 func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -630,6 +642,18 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -668,7 +692,7 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 	 %s   AND work_item_tags.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagByNameProjectID */\n" + sqlstr
 
@@ -734,6 +758,18 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -772,7 +808,7 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 	 %s   AND work_item_tags.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagsByName */\n" + sqlstr
 
@@ -840,6 +876,18 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -878,7 +926,7 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 	 %s   AND work_item_tags.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagsByProjectID */\n" + sqlstr
 
@@ -946,6 +994,18 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkIt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -984,7 +1044,7 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkIt
 	 %s   AND work_item_tags.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagByWorkItemTagID */\n" + sqlstr
 

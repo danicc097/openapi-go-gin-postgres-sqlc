@@ -91,7 +91,7 @@ func CreateUserNotification(ctx context.Context, db DB, params *UserNotification
 
 type UserNotificationSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   UserNotificationJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -287,7 +287,11 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 
 // UserNotificationPaginatedByUserNotificationID returns a cursor-paginated list of UserNotification.
 func UserNotificationPaginatedByUserNotificationID(ctx context.Context, db DB, userNotificationID UserNotificationID, direction models.Direction, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -391,7 +395,11 @@ func UserNotificationPaginatedByUserNotificationID(ctx context.Context, db DB, u
 
 // UserNotificationPaginatedByNotificationID returns a cursor-paginated list of UserNotification.
 func UserNotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID NotificationID, direction models.Direction, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
-	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -541,6 +549,18 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -577,7 +597,7 @@ func UserNotificationByNotificationIDUserID(ctx context.Context, db DB, notifica
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserNotificationByNotificationIDUserID */\n" + sqlstr
 
@@ -643,6 +663,18 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -679,7 +711,7 @@ func UserNotificationsByNotificationID(ctx context.Context, db DB, notificationI
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserNotificationsByNotificationID */\n" + sqlstr
 
@@ -747,6 +779,18 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -783,7 +827,7 @@ func UserNotificationByUserNotificationID(ctx context.Context, db DB, userNotifi
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserNotificationByUserNotificationID */\n" + sqlstr
 
@@ -849,6 +893,18 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID UserID, opts .
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -885,7 +941,7 @@ func UserNotificationsByUserID(ctx context.Context, db DB, userID UserID, opts .
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserNotificationsByUserID */\n" + sqlstr
 

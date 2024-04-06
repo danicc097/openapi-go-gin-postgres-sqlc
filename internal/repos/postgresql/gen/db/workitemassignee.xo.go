@@ -88,7 +88,7 @@ func CreateWorkItemAssignee(ctx context.Context, db DB, params *WorkItemAssignee
 
 type WorkItemAssigneeSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   WorkItemAssigneeJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -371,6 +371,18 @@ func WorkItemAssigneesByAssigneeWorkItemID(ctx context.Context, db DB, assignee 
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -406,7 +418,7 @@ func WorkItemAssigneesByAssigneeWorkItemID(ctx context.Context, db DB, assignee 
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemAssigneesByAssigneeWorkItemID */\n" + sqlstr
 
@@ -474,6 +486,18 @@ func WorkItemAssigneeByWorkItemIDAssignee(ctx context.Context, db DB, workItemID
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -509,7 +533,7 @@ func WorkItemAssigneeByWorkItemIDAssignee(ctx context.Context, db DB, workItemID
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemAssigneeByWorkItemIDAssignee */\n" + sqlstr
 
@@ -575,6 +599,18 @@ func WorkItemAssigneesByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -610,7 +646,7 @@ func WorkItemAssigneesByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemAssigneesByWorkItemID */\n" + sqlstr
 
@@ -678,6 +714,18 @@ func WorkItemAssigneesByAssignee(ctx context.Context, db DB, assignee UserID, op
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -713,7 +761,7 @@ func WorkItemAssigneesByAssignee(ctx context.Context, db DB, assignee UserID, op
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemAssigneesByAssignee */\n" + sqlstr
 

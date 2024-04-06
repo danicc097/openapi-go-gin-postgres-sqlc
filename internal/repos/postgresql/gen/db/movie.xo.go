@@ -88,7 +88,7 @@ func CreateMovie(ctx context.Context, db DB, params *MovieCreateParams) (*Movie,
 
 type MovieSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   MovieJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -259,7 +259,11 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 
 // MoviePaginatedByMovieID returns a cursor-paginated list of Movie.
 func MoviePaginatedByMovieID(ctx context.Context, db DB, movieID MovieID, direction models.Direction, opts ...MovieSelectConfigOption) ([]Movie, error) {
-	c := &MovieSelectConfig{joins: MovieJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &MovieSelectConfig{joins: MovieJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -397,6 +401,18 @@ func MovieByMovieID(ctx context.Context, db DB, movieID MovieID, opts ...MovieSe
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -421,7 +437,7 @@ func MovieByMovieID(ctx context.Context, db DB, movieID MovieID, opts ...MovieSe
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* MovieByMovieID */\n" + sqlstr
 

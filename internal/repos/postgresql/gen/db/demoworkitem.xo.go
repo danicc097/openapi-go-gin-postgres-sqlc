@@ -103,7 +103,7 @@ func CreateDemoWorkItem(ctx context.Context, db DB, params *DemoWorkItemCreatePa
 
 type DemoWorkItemSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   DemoWorkItemJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -128,16 +128,20 @@ const (
 	DemoWorkItemLastMessageAtAscNullsLast   DemoWorkItemOrderBy = " last_message_at ASC NULLS LAST "
 )
 
-// WithDemoWorkItemOrderBy orders results by the given columns.
-func WithDemoWorkItemOrderBy(rows ...DemoWorkItemOrderBy) DemoWorkItemSelectConfigOption {
+// WithDemoWorkItemOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithDemoWorkItemOrderBy(rows map[string]*models.Direction) DemoWorkItemSelectConfigOption {
 	return func(s *DemoWorkItemSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := EntityFields[TableEntityDemoWorkItem]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -311,7 +315,11 @@ func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 
 // DemoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of DemoWorkItem.
 func DemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
-	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -456,6 +464,18 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID,
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -487,7 +507,7 @@ func DemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID,
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* DemoWorkItemByWorkItemID */\n" + sqlstr
 
@@ -553,6 +573,18 @@ func DemoWorkItemsByRefLine(ctx context.Context, db DB, ref string, line string,
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -584,7 +616,7 @@ func DemoWorkItemsByRefLine(ctx context.Context, db DB, ref string, line string,
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* DemoWorkItemsByRefLine */\n" + sqlstr
 

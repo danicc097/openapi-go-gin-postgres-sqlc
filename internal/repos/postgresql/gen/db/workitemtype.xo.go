@@ -102,7 +102,7 @@ func CreateWorkItemType(ctx context.Context, db DB, params *WorkItemTypeCreatePa
 
 type WorkItemTypeSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   WorkItemTypeJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -291,7 +291,11 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 
 // WorkItemTypePaginatedByWorkItemTypeID returns a cursor-paginated list of WorkItemType.
 func WorkItemTypePaginatedByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID WorkItemTypeID, direction models.Direction, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -390,7 +394,11 @@ func WorkItemTypePaginatedByWorkItemTypeID(ctx context.Context, db DB, workItemT
 
 // WorkItemTypePaginatedByProjectID returns a cursor-paginated list of WorkItemType.
 func WorkItemTypePaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
-	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -535,6 +543,18 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -566,7 +586,7 @@ func WorkItemTypeByNameProjectID(ctx context.Context, db DB, name string, projec
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTypeByNameProjectID */\n" + sqlstr
 
@@ -632,6 +652,18 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -663,7 +695,7 @@ func WorkItemTypesByName(ctx context.Context, db DB, name string, opts ...WorkIt
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTypesByName */\n" + sqlstr
 
@@ -731,6 +763,18 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID ProjectID, o
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -762,7 +806,7 @@ func WorkItemTypesByProjectID(ctx context.Context, db DB, projectID ProjectID, o
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTypesByProjectID */\n" + sqlstr
 
@@ -830,6 +874,18 @@ func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID Wor
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -861,7 +917,7 @@ func WorkItemTypeByWorkItemTypeID(ctx context.Context, db DB, workItemTypeID Wor
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTypeByWorkItemTypeID */\n" + sqlstr
 

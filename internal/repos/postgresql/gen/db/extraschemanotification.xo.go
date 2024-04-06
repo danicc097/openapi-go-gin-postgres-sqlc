@@ -105,7 +105,7 @@ func CreateExtraSchemaNotification(ctx context.Context, db DB, params *ExtraSche
 
 type ExtraSchemaNotificationSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ExtraSchemaNotificationJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -306,7 +306,11 @@ func (esn *ExtraSchemaNotification) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaNotificationPaginatedByNotificationID returns a cursor-paginated list of ExtraSchemaNotification.
 func ExtraSchemaNotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID ExtraSchemaNotificationID, direction models.Direction, opts ...ExtraSchemaNotificationSelectConfigOption) ([]ExtraSchemaNotification, error) {
-	c := &ExtraSchemaNotificationSelectConfig{joins: ExtraSchemaNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &ExtraSchemaNotificationSelectConfig{joins: ExtraSchemaNotificationJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -457,6 +461,18 @@ func ExtraSchemaNotificationByNotificationID(ctx context.Context, db DB, notific
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -494,7 +510,7 @@ func ExtraSchemaNotificationByNotificationID(ctx context.Context, db DB, notific
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaNotificationByNotificationID */\n" + sqlstr
 
@@ -560,6 +576,18 @@ func ExtraSchemaNotificationsBySender(ctx context.Context, db DB, sender ExtraSc
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -597,7 +625,7 @@ func ExtraSchemaNotificationsBySender(ctx context.Context, db DB, sender ExtraSc
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaNotificationsBySender */\n" + sqlstr
 

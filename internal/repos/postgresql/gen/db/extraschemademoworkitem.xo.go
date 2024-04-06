@@ -66,7 +66,7 @@ func CreateExtraSchemaDemoWorkItem(ctx context.Context, db DB, params *ExtraSche
 
 type ExtraSchemaDemoWorkItemSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ExtraSchemaDemoWorkItemJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -240,7 +240,11 @@ func (esdwi *ExtraSchemaDemoWorkItem) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaDemoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of ExtraSchemaDemoWorkItem.
 func ExtraSchemaDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID ExtraSchemaWorkItemID, direction models.Direction, opts ...ExtraSchemaDemoWorkItemSelectConfigOption) ([]ExtraSchemaDemoWorkItem, error) {
-	c := &ExtraSchemaDemoWorkItemSelectConfig{joins: ExtraSchemaDemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &ExtraSchemaDemoWorkItemSelectConfig{joins: ExtraSchemaDemoWorkItemJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -382,6 +386,18 @@ func ExtraSchemaDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID 
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -410,7 +426,7 @@ func ExtraSchemaDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID 
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaDemoWorkItemByWorkItemID */\n" + sqlstr
 

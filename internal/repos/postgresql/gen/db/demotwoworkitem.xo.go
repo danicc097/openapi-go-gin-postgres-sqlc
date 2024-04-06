@@ -69,7 +69,7 @@ func CreateDemoTwoWorkItem(ctx context.Context, db DB, params *DemoTwoWorkItemCr
 
 type DemoTwoWorkItemSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   DemoTwoWorkItemJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -94,16 +94,20 @@ const (
 	DemoTwoWorkItemCustomDateForProject2AscNullsLast   DemoTwoWorkItemOrderBy = " custom_date_for_project_2 ASC NULLS LAST "
 )
 
-// WithDemoTwoWorkItemOrderBy orders results by the given columns.
-func WithDemoTwoWorkItemOrderBy(rows ...DemoTwoWorkItemOrderBy) DemoTwoWorkItemSelectConfigOption {
+// WithDemoTwoWorkItemOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithDemoTwoWorkItemOrderBy(rows map[string]*models.Direction) DemoTwoWorkItemSelectConfigOption {
 	return func(s *DemoTwoWorkItemSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := EntityFields[TableEntityDemoTwoWorkItem]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -262,7 +266,11 @@ func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
 
 // DemoTwoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of DemoTwoWorkItem.
 func DemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
-	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -404,6 +412,18 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItem
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -432,7 +452,7 @@ func DemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItem
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* DemoTwoWorkItemByWorkItemID */\n" + sqlstr
 

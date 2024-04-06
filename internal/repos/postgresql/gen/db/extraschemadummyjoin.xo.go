@@ -66,7 +66,7 @@ func CreateExtraSchemaDummyJoin(ctx context.Context, db DB, params *ExtraSchemaD
 
 type ExtraSchemaDummyJoinSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ExtraSchemaDummyJoinJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -227,7 +227,11 @@ func (esdj *ExtraSchemaDummyJoin) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaDummyJoinPaginatedByDummyJoinID returns a cursor-paginated list of ExtraSchemaDummyJoin.
 func ExtraSchemaDummyJoinPaginatedByDummyJoinID(ctx context.Context, db DB, dummyJoinID ExtraSchemaDummyJoinID, direction models.Direction, opts ...ExtraSchemaDummyJoinSelectConfigOption) ([]ExtraSchemaDummyJoin, error) {
-	c := &ExtraSchemaDummyJoinSelectConfig{joins: ExtraSchemaDummyJoinJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &ExtraSchemaDummyJoinSelectConfig{joins: ExtraSchemaDummyJoinJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -363,6 +367,18 @@ func ExtraSchemaDummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID E
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -385,7 +401,7 @@ func ExtraSchemaDummyJoinByDummyJoinID(ctx context.Context, db DB, dummyJoinID E
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaDummyJoinByDummyJoinID */\n" + sqlstr
 

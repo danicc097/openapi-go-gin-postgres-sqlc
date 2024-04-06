@@ -79,7 +79,7 @@ func CreateExtraSchemaBookReview(ctx context.Context, db DB, params *ExtraSchema
 
 type ExtraSchemaBookReviewSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ExtraSchemaBookReviewJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -270,7 +270,11 @@ func (esbr *ExtraSchemaBookReview) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaBookReviewPaginatedByBookReviewID returns a cursor-paginated list of ExtraSchemaBookReview.
 func ExtraSchemaBookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bookReviewID ExtraSchemaBookReviewID, direction models.Direction, opts ...ExtraSchemaBookReviewSelectConfigOption) ([]ExtraSchemaBookReview, error) {
-	c := &ExtraSchemaBookReviewSelectConfig{joins: ExtraSchemaBookReviewJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &ExtraSchemaBookReviewSelectConfig{joins: ExtraSchemaBookReviewJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -373,7 +377,11 @@ func ExtraSchemaBookReviewPaginatedByBookReviewID(ctx context.Context, db DB, bo
 
 // ExtraSchemaBookReviewPaginatedByBookID returns a cursor-paginated list of ExtraSchemaBookReview.
 func ExtraSchemaBookReviewPaginatedByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookID, direction models.Direction, opts ...ExtraSchemaBookReviewSelectConfigOption) ([]ExtraSchemaBookReview, error) {
-	c := &ExtraSchemaBookReviewSelectConfig{joins: ExtraSchemaBookReviewJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &ExtraSchemaBookReviewSelectConfig{joins: ExtraSchemaBookReviewJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -522,6 +530,18 @@ func ExtraSchemaBookReviewByBookReviewID(ctx context.Context, db DB, bookReviewI
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -557,7 +577,7 @@ func ExtraSchemaBookReviewByBookReviewID(ctx context.Context, db DB, bookReviewI
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookReviewByBookReviewID */\n" + sqlstr
 
@@ -623,6 +643,18 @@ func ExtraSchemaBookReviewByReviewerBookID(ctx context.Context, db DB, reviewer 
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -658,7 +690,7 @@ func ExtraSchemaBookReviewByReviewerBookID(ctx context.Context, db DB, reviewer 
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookReviewByReviewerBookID */\n" + sqlstr
 
@@ -724,6 +756,18 @@ func ExtraSchemaBookReviewsByReviewer(ctx context.Context, db DB, reviewer Extra
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -759,7 +803,7 @@ func ExtraSchemaBookReviewsByReviewer(ctx context.Context, db DB, reviewer Extra
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookReviewsByReviewer */\n" + sqlstr
 
@@ -827,6 +871,18 @@ func ExtraSchemaBookReviewsByBookID(ctx context.Context, db DB, bookID ExtraSche
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -862,7 +918,7 @@ func ExtraSchemaBookReviewsByBookID(ctx context.Context, db DB, bookID ExtraSche
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookReviewsByBookID */\n" + sqlstr
 

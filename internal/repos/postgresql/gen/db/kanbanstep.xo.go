@@ -126,7 +126,7 @@ func CreateKanbanStep(ctx context.Context, db DB, params *KanbanStepCreateParams
 
 type KanbanStepSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   KanbanStepJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -325,7 +325,11 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 
 // KanbanStepPaginatedByKanbanStepID returns a cursor-paginated list of KanbanStep.
 func KanbanStepPaginatedByKanbanStepID(ctx context.Context, db DB, kanbanStepID KanbanStepID, direction models.Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -426,7 +430,11 @@ func KanbanStepPaginatedByKanbanStepID(ctx context.Context, db DB, kanbanStepID 
 
 // KanbanStepPaginatedByProjectID returns a cursor-paginated list of KanbanStep.
 func KanbanStepPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -527,7 +535,11 @@ func KanbanStepPaginatedByProjectID(ctx context.Context, db DB, projectID Projec
 
 // KanbanStepPaginatedByStepOrder returns a cursor-paginated list of KanbanStep.
 func KanbanStepPaginatedByStepOrder(ctx context.Context, db DB, stepOrder int, direction models.Direction, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
-	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -674,6 +686,18 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID KanbanSte
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -707,7 +731,7 @@ func KanbanStepByKanbanStepID(ctx context.Context, db DB, kanbanStepID KanbanSte
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepByKanbanStepID */\n" + sqlstr
 
@@ -773,6 +797,18 @@ func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID Pr
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -806,7 +842,7 @@ func KanbanStepByProjectIDNameStepOrder(ctx context.Context, db DB, projectID Pr
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepByProjectIDNameStepOrder */\n" + sqlstr
 
@@ -872,6 +908,18 @@ func KanbanStepsByProjectID(ctx context.Context, db DB, projectID ProjectID, opt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -905,7 +953,7 @@ func KanbanStepsByProjectID(ctx context.Context, db DB, projectID ProjectID, opt
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepsByProjectID */\n" + sqlstr
 
@@ -973,6 +1021,18 @@ func KanbanStepsByName(ctx context.Context, db DB, name string, opts ...KanbanSt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1006,7 +1066,7 @@ func KanbanStepsByName(ctx context.Context, db DB, name string, opts ...KanbanSt
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepsByName */\n" + sqlstr
 
@@ -1074,6 +1134,18 @@ func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...K
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1107,7 +1179,7 @@ func KanbanStepsByStepOrder(ctx context.Context, db DB, stepOrder int, opts ...K
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepsByStepOrder */\n" + sqlstr
 
@@ -1175,6 +1247,18 @@ func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID Projec
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1208,7 +1292,7 @@ func KanbanStepByProjectIDStepOrder(ctx context.Context, db DB, projectID Projec
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* KanbanStepByProjectIDStepOrder */\n" + sqlstr
 

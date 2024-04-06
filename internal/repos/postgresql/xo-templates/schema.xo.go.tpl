@@ -117,8 +117,20 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+  orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	{{ sqlstr_index $i $tables }}
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
   sqlstr = "/* {{ func_name_context $i "" }} */\n"+sqlstr
 

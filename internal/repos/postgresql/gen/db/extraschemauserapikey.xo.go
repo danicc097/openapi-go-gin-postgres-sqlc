@@ -91,7 +91,7 @@ func CreateExtraSchemaUserAPIKey(ctx context.Context, db DB, params *ExtraSchema
 
 type ExtraSchemaUserAPIKeySelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ExtraSchemaUserAPIKeyJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -116,16 +116,20 @@ const (
 	ExtraSchemaUserAPIKeyExpiresOnAscNullsLast   ExtraSchemaUserAPIKeyOrderBy = " expires_on ASC NULLS LAST "
 )
 
-// WithExtraSchemaUserAPIKeyOrderBy orders results by the given columns.
-func WithExtraSchemaUserAPIKeyOrderBy(rows ...ExtraSchemaUserAPIKeyOrderBy) ExtraSchemaUserAPIKeySelectConfigOption {
+// WithExtraSchemaUserAPIKeyOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithExtraSchemaUserAPIKeyOrderBy(rows map[string]*models.Direction) ExtraSchemaUserAPIKeySelectConfigOption {
 	return func(s *ExtraSchemaUserAPIKeySelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaUserAPIKey]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -294,7 +298,11 @@ func (esuak *ExtraSchemaUserAPIKey) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaUserAPIKeyPaginatedByUserAPIKeyID returns a cursor-paginated list of ExtraSchemaUserAPIKey.
 func ExtraSchemaUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID ExtraSchemaUserAPIKeyID, direction models.Direction, opts ...ExtraSchemaUserAPIKeySelectConfigOption) ([]ExtraSchemaUserAPIKey, error) {
-	c := &ExtraSchemaUserAPIKeySelectConfig{joins: ExtraSchemaUserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &ExtraSchemaUserAPIKeySelectConfig{joins: ExtraSchemaUserAPIKeyJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -438,6 +446,18 @@ func ExtraSchemaUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, op
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -468,7 +488,7 @@ func ExtraSchemaUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, op
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserAPIKeyByAPIKey */\n" + sqlstr
 
@@ -534,6 +554,18 @@ func ExtraSchemaUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyI
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -564,7 +596,7 @@ func ExtraSchemaUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyI
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserAPIKeyByUserAPIKeyID */\n" + sqlstr
 
@@ -630,6 +662,18 @@ func ExtraSchemaUserAPIKeyByUserID(ctx context.Context, db DB, userID ExtraSchem
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -660,7 +704,7 @@ func ExtraSchemaUserAPIKeyByUserID(ctx context.Context, db DB, userID ExtraSchem
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserAPIKeyByUserID */\n" + sqlstr
 

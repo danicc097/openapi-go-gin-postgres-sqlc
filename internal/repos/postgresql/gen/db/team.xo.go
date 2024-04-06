@@ -95,7 +95,7 @@ func CreateTeam(ctx context.Context, db DB, params *TeamCreateParams) (*Team, er
 
 type TeamSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   TeamJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -124,16 +124,20 @@ const (
 	TeamUpdatedAtAscNullsLast   TeamOrderBy = " updated_at ASC NULLS LAST "
 )
 
-// WithTeamOrderBy orders results by the given columns.
-func WithTeamOrderBy(rows ...TeamOrderBy) TeamSelectConfigOption {
+// WithTeamOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithTeamOrderBy(rows map[string]*models.Direction) TeamSelectConfigOption {
 	return func(s *TeamSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := EntityFields[TableEntityTeam]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -344,7 +348,11 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 
 // TeamPaginatedByTeamID returns a cursor-paginated list of Team.
 func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID TeamID, direction models.Direction, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &TeamSelectConfig{joins: TeamJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -456,7 +464,11 @@ func TeamPaginatedByTeamID(ctx context.Context, db DB, teamID TeamID, direction 
 
 // TeamPaginatedByProjectID returns a cursor-paginated list of Team.
 func TeamPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...TeamSelectConfigOption) ([]Team, error) {
-	c := &TeamSelectConfig{joins: TeamJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &TeamSelectConfig{joins: TeamJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -614,6 +626,18 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID Proj
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -658,7 +682,7 @@ func TeamByNameProjectID(ctx context.Context, db DB, name string, projectID Proj
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TeamByNameProjectID */\n" + sqlstr
 
@@ -724,6 +748,18 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -768,7 +804,7 @@ func TeamsByName(ctx context.Context, db DB, name string, opts ...TeamSelectConf
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TeamsByName */\n" + sqlstr
 
@@ -836,6 +872,18 @@ func TeamsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...T
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -880,7 +928,7 @@ func TeamsByProjectID(ctx context.Context, db DB, projectID ProjectID, opts ...T
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TeamsByProjectID */\n" + sqlstr
 
@@ -948,6 +996,18 @@ func TeamByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...TeamSelectC
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -992,7 +1052,7 @@ func TeamByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...TeamSelectC
 	 %s   %s 
   %s 
 `, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* TeamByTeamID */\n" + sqlstr
 

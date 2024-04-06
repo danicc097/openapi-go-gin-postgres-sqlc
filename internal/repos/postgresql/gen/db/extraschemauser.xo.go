@@ -101,7 +101,7 @@ func CreateExtraSchemaUser(ctx context.Context, db DB, params *ExtraSchemaUserCr
 
 type ExtraSchemaUserSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ExtraSchemaUserJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -139,16 +139,20 @@ const (
 	ExtraSchemaUserDeletedAtAscNullsLast   ExtraSchemaUserOrderBy = " deleted_at ASC NULLS LAST "
 )
 
-// WithExtraSchemaUserOrderBy orders results by the given columns.
-func WithExtraSchemaUserOrderBy(rows ...ExtraSchemaUserOrderBy) ExtraSchemaUserSelectConfigOption {
+// WithExtraSchemaUserOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithExtraSchemaUserOrderBy(rows map[string]*models.Direction) ExtraSchemaUserSelectConfigOption {
 	return func(s *ExtraSchemaUserSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaUser]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -539,7 +543,11 @@ func (esu *ExtraSchemaUser) Restore(ctx context.Context, db DB) (*ExtraSchemaUse
 
 // ExtraSchemaUserPaginatedByCreatedAt returns a cursor-paginated list of ExtraSchemaUser.
 func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...ExtraSchemaUserSelectConfigOption) ([]ExtraSchemaUser, error) {
-	c := &ExtraSchemaUserSelectConfig{deletedAt: " null ", joins: ExtraSchemaUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &ExtraSchemaUserSelectConfig{deletedAt: " null ", joins: ExtraSchemaUserJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -732,6 +740,18 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -811,7 +831,7 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 	 %s   AND users.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserByCreatedAt */\n" + sqlstr
 
@@ -876,6 +896,18 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -956,7 +988,7 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 	 %s   AND users.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserByName */\n" + sqlstr
 
@@ -1021,6 +1053,18 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -1101,7 +1145,7 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 	 %s   AND users.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserByUserID */\n" + sqlstr
 

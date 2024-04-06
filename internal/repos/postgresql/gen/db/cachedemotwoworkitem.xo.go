@@ -176,7 +176,7 @@ func CreateCacheDemoTwoWorkItem(ctx context.Context, db DB, params *CacheDemoTwo
 
 type CacheDemoTwoWorkItemSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   CacheDemoTwoWorkItemJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -230,16 +230,20 @@ const (
 	CacheDemoTwoWorkItemUpdatedAtAscNullsLast               CacheDemoTwoWorkItemOrderBy = " updated_at ASC NULLS LAST "
 )
 
-// WithCacheDemoTwoWorkItemOrderBy orders results by the given columns.
-func WithCacheDemoTwoWorkItemOrderBy(rows ...CacheDemoTwoWorkItemOrderBy) CacheDemoTwoWorkItemSelectConfigOption {
+// WithCacheDemoTwoWorkItemOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithCacheDemoTwoWorkItemOrderBy(rows map[string]*models.Direction) CacheDemoTwoWorkItemSelectConfigOption {
 	return func(s *CacheDemoTwoWorkItemSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := EntityFields[TableEntityCacheDemoTwoWorkItem]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -582,7 +586,11 @@ func (cdtwi *CacheDemoTwoWorkItem) Restore(ctx context.Context, db DB) (*CacheDe
 
 // CacheDemoTwoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of CacheDemoTwoWorkItem.
 func CacheDemoTwoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID int, direction models.Direction, opts ...CacheDemoTwoWorkItemSelectConfigOption) ([]CacheDemoTwoWorkItem, error) {
-	c := &CacheDemoTwoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoTwoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+	c := &CacheDemoTwoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoTwoWorkItemJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
@@ -771,6 +779,18 @@ func CacheDemoTwoWorkItems(ctx context.Context, db DB, opts ...CacheDemoTwoWorkI
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -846,7 +866,7 @@ func CacheDemoTwoWorkItems(ctx context.Context, db DB, opts ...CacheDemoTwoWorkI
 	 %s   AND cache__demo_two_work_items.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* CacheDemoTwoWorkItems */\n" + sqlstr
 
@@ -913,6 +933,18 @@ func CacheDemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -989,7 +1021,7 @@ func CacheDemoTwoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int
 	 %s   AND cache__demo_two_work_items.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* CacheDemoTwoWorkItemByWorkItemID */\n" + sqlstr
 
