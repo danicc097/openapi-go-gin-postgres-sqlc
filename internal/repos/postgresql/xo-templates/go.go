@@ -2749,7 +2749,7 @@ func (f *Funcs) generate_entity_fields(schema string, tables Tables) string {
 	if err != nil {
 		panic("json.MarshalIndent: " + err.Error())
 	}
-	if schema == "" {
+	if schema == "" && f.currentDatabase == "gen_db" {
 		outputPath := "entityFields.gen.json"
 		if err := os.WriteFile(outputPath, content, 0o644); err != nil {
 			panic("os.WriteFile: " + err.Error())
@@ -2810,7 +2810,7 @@ func (f *Funcs) generate_entity_filters(schema string, tables Tables) string {
 	if err != nil {
 		panic("json.MarshalIndent: " + err.Error())
 	}
-	if schema == "" {
+	if schema == "" && f.currentDatabase == "gen_db" {
 		outputPath := "entityFilters.gen.json"
 		if err := os.WriteFile(outputPath, content, 0o644); err != nil {
 			panic("os.WriteFile: " + err.Error())
