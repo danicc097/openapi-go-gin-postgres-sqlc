@@ -68,7 +68,8 @@ const defaultExcludedColumns: Array<DefaultFilters> = ['firstName', 'lastName']
 // just btrees, or extension indexes if applicable https://www.postgresql.org/docs/16/indexes-ordering.html
 // TODO: deletedAt != null -> restore buttons.
 // also see CRUD: https://v2.mantine-react-table.com/docs/examples/editing-crud
-const defaultSortableColumns: Array<DefaultFilters> = ['createdAt', 'deletedAt', 'updatedAt']
+const defaultSortableColumns: Array<DefaultFilters> = ['createdAt'] // if we use PaginatedBy*, can't sort by anything else.
+// we could have a base PaginatedBy which receives at most a field to paginate by
 
 const TABLE_NAME = 'demoTable'
 
@@ -150,6 +151,7 @@ export default function DemoMantineReactTable() {
           }
         },
         filterVariant: 'select',
+        enableSorting: false,
         //  TODO: Combobox.Options with <RoleBadge role={role} />
         // Filter(props) {
         //   return <MRTTextInput column={props.column} />
@@ -250,7 +252,7 @@ export default function DemoMantineReactTable() {
 
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState('')
-  const [sorting, setSorting] = useState<MRT_SortingState>([])
+  const [sorting, setSorting] = useState<MRT_SortingState>([{ id: 'created_at', desc: true }])
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
     pageSize: 15,

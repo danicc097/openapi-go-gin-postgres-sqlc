@@ -177,7 +177,7 @@ export const MRTNumberInput = forwardRef(function MRTNumberInput(
   const columnRangeValue = (column.getFilterValue() as (string | undefined)[]) ?? ['', '']
   const columnFilterValue = columnRangeValue[rangeFilterIndex]
   const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
-  const [debouncedFilterValue] = useDebouncedValue<string>(filterValue, 400)
+  const [debouncedFilterValue] = useDebouncedValue<string>(filterValue, 250)
 
   const isMounted = useRef(false)
   // see https://github.com/KevinVandy/mantine-react-table/blob/v2/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L47
@@ -259,7 +259,7 @@ export const MRTDateInput = forwardRef(function MRTDateInput(
   const columnRangeValue = (column.getFilterValue() as (string | undefined)[]) ?? [undefined, undefined]
   const columnFilterValue = columnRangeValue[rangeFilterIndex]
   const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
-  const [debouncedFilterValue] = useDebouncedValue(filterValue, 400)
+  const [debouncedFilterValue] = useDebouncedValue(filterValue, 250)
 
   const isMounted = useRef(false)
 
@@ -426,7 +426,7 @@ export const MRTTextInput = forwardRef(function MRTTextInput(
 ) {
   const columnFilterValue = (column.getFilterValue() as string) ?? ''
   const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
-  const [debouncedFilterValue] = useDebouncedValue(filterValue, 400)
+  const [debouncedFilterValue] = useDebouncedValue(filterValue, 250)
   const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
 
   const isMounted = useRef(false)
