@@ -200,7 +200,7 @@ export const MRTNumberInput = forwardRef(function MRTNumberInput(
   }
 
   useEffect(() => {
-    if ((column.getFilterValue() as string[]).every((i) => i === null || i === undefined || i === '')) {
+    if (((column.getFilterValue() as string[]) ?? []).every((i) => i === null || i === undefined || i === '')) {
       removeFilterMode(column.id)
     }
   }, [debouncedFilterValue])
@@ -278,7 +278,7 @@ export const MRTDateInput = forwardRef(function MRTDateInput(
   }
 
   useEffect(() => {
-    if ((column.getFilterValue() as string[]).every((i) => i === null || i === undefined || i === '')) {
+    if (((column.getFilterValue() as string[]) ?? []).every((i) => i === null || i === undefined || i === '')) {
       removeFilterMode(column.id)
     }
   }, [debouncedFilterValue])

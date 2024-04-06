@@ -676,8 +676,8 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 	return newu, nil
 }
 
-// UserPaginatedByCreatedAt returns a cursor-paginated list of User.
-func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...UserSelectConfigOption) ([]User, error) {
+// UserPaginated returns a cursor-paginated list of User.
+func UserPaginated(ctx context.Context, db DB, cursors map[string]interface{}, direction models.Direction, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -686,6 +686,16 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 
 	for _, o := range opts {
 		o(c)
+	}
+	var dbCursors map[string]interface{}
+	for c, cursorValue := range cursors {
+	cursorDbCol := ""
+	field, ok := EntityFields[TableEntityUser][c]
+	if  !ok {
+		return nil, logerror(fmt.Errorf("users/UserPaginated/cursor: %w", &XoError{Entity: "User", Err: fmt.Errorf("invalid cursor column: %s", c)}))
+	}
+	cursorDbCol = field.Db
+	dbCursors[cursorDbCol] = cursorValue
 	}
 
 	paramStart := 1
@@ -799,6 +809,21 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 		operator = ">"
 	}
 
+	// TODO: build one or more cursors as in 
+	// sqlstr := fmt.Sprintf(`SELECT 
+	// work_item_work_item_tag.work_item_id,
+	// work_item_work_item_tag.work_item_tag_id %s 
+	//  FROM public.work_item_work_item_tag %s 
+	//  WHERE work_item_work_item_tag.work_item_tag_id %s $1 AND work_item_work_item_tag.work_item_id %s $2
+	//  %s   %s 
+  // %s 
+  // ORDER BY 
+	// 	work_item_tag_id %s  ,
+	// 	work_item_id %s `, selects, joins, operator, operator, filters, groupbys, havingClause, direction, direction)
+
+	// IMPORTANT: order by will come exclusively from cursors for *Paginated functions.
+	// for desc, if cursorValue is nil it will be set as postgres 'Infinity'
+
 	sqlstr := fmt.Sprintf(`SELECT 
 	users.age,
 	users.api_key_id,
@@ -817,17 +842,17 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 	users.user_id,
 	users.username %s 
 	 FROM public.users %s 
-	 WHERE users.created_at %s $1
+	 WHERE users.%s %s $1
 	 %s   AND users.deleted_at is %s  %s 
   %s 
   ORDER BY 
-		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
+		%s %s `, selects, joins, cursorDbCol, operator, filters, c.deletedAt, groupbys, havingClause, cursorDbCol, direction)
 	sqlstr += c.limit
 	sqlstr = "/* UserPaginatedByCreatedAt */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append([]any{cursor}, append(filterParams, havingParams...)...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}

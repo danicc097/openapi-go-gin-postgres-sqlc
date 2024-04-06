@@ -1618,7 +1618,9 @@ type Filter struct {
 }
 
 // can extend as required to prevent getting db info via reflection
-type DbField struct{}
+type DbField struct {
+	Db string `json:"db"`
+}
 
 // Funcs is a set of template funcs.
 type Funcs struct {
@@ -2782,8 +2784,8 @@ func formatEntityFields(schema string, entityFields map[string]map[string]DbFiel
 		for _, fieldName := range fieldNames {
 			field := fields[fieldName]
 			buf.WriteString(
-				fmt.Sprintf("\t\t\"%s\": DbField{},\n",
-					fieldName,
+				fmt.Sprintf("\t\t\"%s\": DbField{Db: \"%s\"},\n",
+					fieldName, field.Db,
 				))
 		}
 		buf.WriteString("\t},\n")
@@ -4328,7 +4330,9 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 			f.entityFields[entityName] = make(map[string]DbField)
 		}
 		if typ, err := goTypeToSimpleType(field.UnderlyingType); err == nil {
-			f.entityFields[entityName][camel(field.GoName)] = DbField{}
+			f.entityFields[entityName][camel(field.GoName)] = DbField{
+				Db: field.SQLName,
+			}
 		}
 	}
 

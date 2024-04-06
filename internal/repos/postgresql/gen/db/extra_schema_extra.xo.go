@@ -83,62 +83,62 @@ var ExtraSchemaEntityFilters = map[ExtraSchemaTableEntity]map[string]Filter{
 
 var ExtraSchemaEntityFields = map[ExtraSchemaTableEntity]map[string]DbField{
 	ExtraSchemaTableEntityExtraSchemaBook: {
-		"bookID": DbField{},
-		"name":   DbField{},
+		"bookID": DbField{Db: "book_id"},
+		"name":   DbField{Db: "name"},
 	},
 	ExtraSchemaTableEntityExtraSchemaBookAuthor: {
-		"bookID":    DbField{},
-		"pseudonym": DbField{},
+		"bookID":    DbField{Db: "book_id"},
+		"pseudonym": DbField{Db: "pseudonym"},
 	},
 	ExtraSchemaTableEntityExtraSchemaBookAuthorsSurrogateKey: {
-		"bookAuthorsSurrogateKeyID": DbField{},
-		"bookID":                    DbField{},
-		"pseudonym":                 DbField{},
+		"bookAuthorsSurrogateKeyID": DbField{Db: "book_authors_surrogate_key_id"},
+		"bookID":                    DbField{Db: "book_id"},
+		"pseudonym":                 DbField{Db: "pseudonym"},
 	},
 	ExtraSchemaTableEntityExtraSchemaBookReview: {
-		"bookID":       DbField{},
-		"bookReviewID": DbField{},
+		"bookID":       DbField{Db: "book_id"},
+		"bookReviewID": DbField{Db: "book_review_id"},
 	},
 	ExtraSchemaTableEntityExtraSchemaBookSeller: {
-		"bookID": DbField{},
+		"bookID": DbField{Db: "book_id"},
 	},
 	ExtraSchemaTableEntityExtraSchemaDemoWorkItem: {
-		"checked":    DbField{},
-		"workItemID": DbField{},
+		"checked":    DbField{Db: "checked"},
+		"workItemID": DbField{Db: "work_item_id"},
 	},
 	ExtraSchemaTableEntityExtraSchemaDummyJoin: {
-		"dummyJoinID": DbField{},
-		"name":        DbField{},
+		"dummyJoinID": DbField{Db: "dummy_join_id"},
+		"name":        DbField{Db: "name"},
 	},
 	ExtraSchemaTableEntityExtraSchemaNotification: {
-		"body":           DbField{},
-		"notificationID": DbField{},
+		"body":           DbField{Db: "body"},
+		"notificationID": DbField{Db: "notification_id"},
 	},
 	ExtraSchemaTableEntityExtraSchemaPagElement: {
-		"createdAt": DbField{},
-		"dummy":     DbField{},
-		"name":      DbField{},
+		"createdAt": DbField{Db: "created_at"},
+		"dummy":     DbField{Db: "dummy"},
+		"name":      DbField{Db: "name"},
 	},
 	ExtraSchemaTableEntityExtraSchemaUser: {
-		"apiKeyID":  DbField{},
-		"createdAt": DbField{},
-		"deletedAt": DbField{},
-		"name":      DbField{},
+		"apiKeyID":  DbField{Db: "api_key_id"},
+		"createdAt": DbField{Db: "created_at"},
+		"deletedAt": DbField{Db: "deleted_at"},
+		"name":      DbField{Db: "name"},
 	},
 	ExtraSchemaTableEntityExtraSchemaUserAPIKey: {
-		"apiKey":       DbField{},
-		"expiresOn":    DbField{},
-		"userAPIKeyID": DbField{},
+		"apiKey":       DbField{Db: "api_key"},
+		"expiresOn":    DbField{Db: "expires_on"},
+		"userAPIKeyID": DbField{Db: "user_api_key_id"},
 	},
 	ExtraSchemaTableEntityExtraSchemaWorkItem: {
-		"description": DbField{},
-		"title":       DbField{},
-		"workItemID":  DbField{},
+		"description": DbField{Db: "description"},
+		"title":       DbField{Db: "title"},
+		"workItemID":  DbField{Db: "work_item_id"},
 	},
 	ExtraSchemaTableEntityExtraSchemaWorkItemAdmin: {
-		"workItemID": DbField{},
+		"workItemID": DbField{Db: "work_item_id"},
 	},
 	ExtraSchemaTableEntityExtraSchemaWorkItemAssignee: {
-		"workItemID": DbField{},
+		"workItemID": DbField{Db: "work_item_id"},
 	},
 }

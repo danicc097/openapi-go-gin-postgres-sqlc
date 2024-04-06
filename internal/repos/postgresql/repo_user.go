@@ -74,7 +74,7 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginat
 		opts = append(opts, db.WithUserLimit(params.Limit))
 	}
 
-	users, err := db.UserPaginatedByCreatedAt(ctx, d, createdAt, params.Direction, opts...)
+	users, err := db.UserPaginated(ctx, d, "createdAt", createdAt, params.Direction, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get paginated users: %w", ParseDBErrorDetail(err))
 	}

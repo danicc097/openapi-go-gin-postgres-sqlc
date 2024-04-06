@@ -15,7 +15,9 @@ type Filter struct {
 	Nullable bool   `json:"nullable"`
 }
 
-type DbField struct{}
+type DbField struct {
+	Db string `json:"db"`
+}
 
 func newPointer[T any](v T) *T {
 	return &v
