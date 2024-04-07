@@ -45,7 +45,7 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginat
 	if err != nil {
 		return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid createdAt cursor for paginated user: %s", params.Cursor)
 	}
-	var filters map[string][]interface{}
+	filters := make(map[string][]interface{})
 	if ii := params.Items; ii != nil {
 		filters, err = GenerateDefaultFilters(db.TableEntityUser, *ii)
 		if err != nil {
@@ -66,15 +66,19 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginat
 	// at most one field to sort by, so we construct the sql query
 	// in the same way as UserPaginatedBy*
 
+	cursors := []db.Cursor{{Column: "createdAt", Value: createdAt, Direction: params.Direction}}
 	opts := []db.UserSelectConfigOption{
 		db.WithUserFilters(filters),
 		db.WithUserJoin(db.UserJoins{MemberTeams: true, MemberProjects: true}),
+		db.WithUserOrderBy(map[string]*models.Direction{
+			"createdAt": pointers.New(models.DirectionDesc),
+		}),
 	}
 	if params.Limit > 0 { // for users, allow 0 or less to fetch all
 		opts = append(opts, db.WithUserLimit(params.Limit))
 	}
 
-	users, err := db.UserPaginated(ctx, d, "createdAt", createdAt, params.Direction, opts...)
+	users, err := db.UserPaginated(ctx, d, cursors, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get paginated users: %w", ParseDBErrorDetail(err))
 	}

@@ -449,21 +449,27 @@ export default function DemoMantineReactTable() {
       // isSaving: true,
     },
     renderTopToolbarCustomActions: ({ table }) => (
-      <Group>
-        <Tooltip label="Refresh data">
-          <ActionIcon onClick={() => refetch()}>
-            <IconRefresh />
-          </ActionIcon>
-        </Tooltip>
-        <Button
-          onClick={() => {
-            //
-          }}
-          size="xs"
-        >
-          Create user
-        </Button>
-      </Group>
+      <Flex direction="column">
+        <Text size="sm">
+          TODO: to show/hide deleted users, if deletedAt exists show a switch that sets deletedAt column filterMode
+          empty/notEmpty.
+        </Text>
+        <Group>
+          <Tooltip label="Refresh data">
+            <ActionIcon onClick={() => refetch()}>
+              <IconRefresh />
+            </ActionIcon>
+          </Tooltip>
+          <Button
+            onClick={() => {
+              //
+            }}
+            size="xs"
+          >
+            Create user
+          </Button>
+        </Group>
+      </Flex>
     ),
     enableRowActions: true,
     renderRowActions: ({ row, table }) => (

@@ -259,20 +259,21 @@ const (
 	UserUpdatedAtAscNullsLast   UserOrderBy = " updated_at ASC NULLS LAST "
 )
 
-// WithUserOrderBy accumulates orders results by the given columns.
+// WithUserOrderBy accumulates orders results by the given column names in JSON representation.
 // A nil entry removes the existing column sort, if any.
 func WithUserOrderBy(rows map[string]*models.Direction) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
 		te := EntityFields[TableEntityUser]
-		for dbcol, dir := range rows {
-			if _, ok := te[dbcol]; !ok {
+		for colJSON, dir := range rows {
+			field, ok := te[colJSON]
+			if !ok {
 				continue
 			}
 			if dir == nil {
-				delete(s.orderBy, dbcol)
+				delete(s.orderBy, field.Db)
 				continue
 			}
-			s.orderBy[dbcol] = *dir
+			s.orderBy[field.Db] = *dir
 		}
 	}
 }
@@ -676,8 +677,14 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 	return newu, nil
 }
 
+type Cursor struct {
+	Column string
+	Value interface{}
+	Direction models.Direction
+}
+
 // UserPaginated returns a cursor-paginated list of User.
-func UserPaginated(ctx context.Context, db DB, cursors map[string]interface{}, direction models.Direction, opts ...UserSelectConfigOption) ([]User, error) {
+func UserPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -687,18 +694,21 @@ func UserPaginated(ctx context.Context, db DB, cursors map[string]interface{}, d
 	for _, o := range opts {
 		o(c)
 	}
-	var dbCursors map[string]interface{}
-	for c, cursorValue := range cursors {
-	cursorDbCol := ""
-	field, ok := EntityFields[TableEntityUser][c]
+	
+	for _, cursor := range cursors {
+	field, ok := EntityFields[TableEntityUser][cursor.Column]
 	if  !ok {
-		return nil, logerror(fmt.Errorf("users/UserPaginated/cursor: %w", &XoError{Entity: "User", Err: fmt.Errorf("invalid cursor column: %s", c)}))
+		return nil, logerror(fmt.Errorf("users/UserPaginated/cursor: %w", &XoError{Entity: "User", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
 	}
-	cursorDbCol = field.Db
-	dbCursors[cursorDbCol] = cursorValue
+	
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("%s %s $i", field.Db, op)] = []any{cursor.Value}
 	}
 
-	paramStart := 1
+	paramStart := 0 // should fix itself once changed
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -717,7 +727,10 @@ func UserPaginated(ctx context.Context, db DB, cursors map[string]interface{}, d
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where "
+	}
+	if len(filterClauses) > 0 {
+		filters = strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -799,15 +812,11 @@ func UserPaginated(ctx context.Context, db DB, cursors map[string]interface{}, d
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
-	}
 
 	// TODO: build one or more cursors as in 
 	// sqlstr := fmt.Sprintf(`SELECT 
@@ -823,6 +832,22 @@ func UserPaginated(ctx context.Context, db DB, cursors map[string]interface{}, d
 
 	// IMPORTANT: order by will come exclusively from cursors for *Paginated functions.
 	// for desc, if cursorValue is nil it will be set as postgres 'Infinity'
+	// if orderbys len is 0, we will error out with `at least one sorted column is required`.
+
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("users/UserPaginated/orderBy: %w", &XoError{Entity: "User", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	users.age,
@@ -842,17 +867,18 @@ func UserPaginated(ctx context.Context, db DB, cursors map[string]interface{}, d
 	users.user_id,
 	users.username %s 
 	 FROM public.users %s 
-	 WHERE users.%s %s $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
-		%s %s `, selects, joins, cursorDbCol, operator, filters, c.deletedAt, groupbys, havingClause, cursorDbCol, direction)
+	 WHERE 
+	 %s
+	 %s 
+   %s 
+   %s
+	`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
 	sqlstr = "/* UserPaginatedByCreatedAt */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{cursor}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr,  append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
