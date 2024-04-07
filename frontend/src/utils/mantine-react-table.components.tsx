@@ -47,6 +47,7 @@ import _, { lowerCase } from 'lodash'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
 import dayjs from 'dayjs'
 import { render } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
 const FILTER_OPTIONS: MRT_InternalFilterOption[] = [
   ...mrtFilterOptions(MRT_Localization_EN),
@@ -95,9 +96,9 @@ export function CustomMRTFilter({ columnProps, nullable, type, tableName }: Cust
 
     if (filterMode && inputRef.current) {
       const container = document.createElement('div')
-      render(
+      const root = createRoot(container)
+      root.render(
         <p className={`${classes.filterMode} filter-mode-helptext`}>{`Filter mode: ${sentenceCase(filterMode)}`}</p>,
-        container,
       )
       inputRef.current?.closest('.mantine-Table-th')?.appendChild(container)
     }
