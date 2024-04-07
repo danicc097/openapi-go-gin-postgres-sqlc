@@ -83,6 +83,8 @@ export * from './notificationType';
 export * from './paginatedNotificationsResponse';
 export * from './paginatedUsersResponse';
 export * from './pagination';
+export * from './paginationCursor';
+export * from './paginationCursors';
 export * from './paginationFilter';
 export * from './paginationFilterArray';
 export * from './paginationFilterArrayFilterMode';

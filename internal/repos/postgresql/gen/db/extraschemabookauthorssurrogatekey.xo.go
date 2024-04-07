@@ -345,7 +345,7 @@ func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Delete(ctx context.Context, db
 
 // ExtraSchemaBookAuthorsSurrogateKeyPaginated returns a cursor-paginated list of ExtraSchemaBookAuthorsSurrogateKey.
 // At least one cursor is required.
-func ExtraSchemaBookAuthorsSurrogateKeyPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
+func ExtraSchemaBookAuthorsSurrogateKeyPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
 	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

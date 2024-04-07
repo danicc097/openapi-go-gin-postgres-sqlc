@@ -273,7 +273,7 @@ func (m *Movie) Delete(ctx context.Context, db DB) error {
 
 // MoviePaginated returns a cursor-paginated list of Movie.
 // At least one cursor is required.
-func MoviePaginated(ctx context.Context, db DB, cursors []Cursor, opts ...MovieSelectConfigOption) ([]Movie, error) {
+func MoviePaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...MovieSelectConfigOption) ([]Movie, error) {
 	c := &MovieSelectConfig{joins: MovieJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

@@ -341,7 +341,7 @@ func (esba *ExtraSchemaBookAuthor) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaBookAuthorPaginated returns a cursor-paginated list of ExtraSchemaBookAuthor.
 // At least one cursor is required.
-func ExtraSchemaBookAuthorPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaBookAuthorSelectConfigOption) ([]ExtraSchemaBookAuthor, error) {
+func ExtraSchemaBookAuthorPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaBookAuthorSelectConfigOption) ([]ExtraSchemaBookAuthor, error) {
 	c := &ExtraSchemaBookAuthorSelectConfig{joins: ExtraSchemaBookAuthorJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

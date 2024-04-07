@@ -413,7 +413,7 @@ func (n *Notification) Delete(ctx context.Context, db DB) error {
 
 // NotificationPaginated returns a cursor-paginated list of Notification.
 // At least one cursor is required.
-func NotificationPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...NotificationSelectConfigOption) ([]Notification, error) {
+func NotificationPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...NotificationSelectConfigOption) ([]Notification, error) {
 	c := &NotificationSelectConfig{joins: NotificationJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

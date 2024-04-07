@@ -2525,6 +2525,33 @@
         "$ref": "#/definitions/Pagination"
       }
     },
+    "PaginationCursors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/PaginationCursor"
+      }
+    },
+    "PaginationCursor": {
+      "type": "object",
+      "properties": {
+        "direction": {
+          "$ref": "#/definitions/Direction"
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        },
+        "column": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "direction",
+        "value",
+        "column"
+      ]
+    },
     "GetPaginatedUsersQueryParameters": {
       "properties": {
         "role": {
@@ -2532,8 +2559,14 @@
         },
         "items": {
           "$ref": "#/definitions/PaginationItems"
+        },
+        "cursors": {
+          "$ref": "#/definitions/PaginationCursors"
         }
       },
+      "required": [
+        "cursors"
+      ],
       "type": "object"
     },
     "PaginationFilterModes": {
@@ -2927,6 +2960,12 @@
     },
     "PaginationItems": {
       "$ref": "#/definitions/PaginationItems"
+    },
+    "PaginationCursors": {
+      "$ref": "#/definitions/PaginationCursors"
+    },
+    "PaginationCursor": {
+      "$ref": "#/definitions/PaginationCursor"
     },
     "GetPaginatedUsersQueryParameters": {
       "$ref": "#/definitions/GetPaginatedUsersQueryParameters"

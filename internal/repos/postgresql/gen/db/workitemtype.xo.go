@@ -305,7 +305,7 @@ func (wit *WorkItemType) Delete(ctx context.Context, db DB) error {
 
 // WorkItemTypePaginated returns a cursor-paginated list of WorkItemType.
 // At least one cursor is required.
-func WorkItemTypePaginated(ctx context.Context, db DB, cursors []Cursor, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
+func WorkItemTypePaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...WorkItemTypeSelectConfigOption) ([]WorkItemType, error) {
 	c := &WorkItemTypeSelectConfig{joins: WorkItemTypeJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

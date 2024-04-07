@@ -339,7 +339,7 @@ func (ks *KanbanStep) Delete(ctx context.Context, db DB) error {
 
 // KanbanStepPaginated returns a cursor-paginated list of KanbanStep.
 // At least one cursor is required.
-func KanbanStepPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
+func KanbanStepPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...KanbanStepSelectConfigOption) ([]KanbanStep, error) {
 	c := &KanbanStepSelectConfig{joins: KanbanStepJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

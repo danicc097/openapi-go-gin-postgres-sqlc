@@ -304,7 +304,7 @@ func (wic *WorkItemComment) Delete(ctx context.Context, db DB) error {
 
 // WorkItemCommentPaginated returns a cursor-paginated list of WorkItemComment.
 // At least one cursor is required.
-func WorkItemCommentPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
+func WorkItemCommentPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...WorkItemCommentSelectConfigOption) ([]WorkItemComment, error) {
 	c := &WorkItemCommentSelectConfig{joins: WorkItemCommentJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

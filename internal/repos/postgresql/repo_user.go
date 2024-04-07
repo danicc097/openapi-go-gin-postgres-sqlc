@@ -41,10 +41,7 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParam
 }
 
 func (u *User) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginatedUsersParams) ([]db.User, error) {
-	createdAt, err := time.Parse(time.RFC3339, params.Cursor)
-	if err != nil {
-		return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid createdAt cursor for paginated user: %s", params.Cursor)
-	}
+	var err error
 	filters := make(map[string][]interface{})
 	if ii := params.Items; ii != nil {
 		filters, err = GenerateDefaultFilters(db.TableEntityUser, *ii)
@@ -59,7 +56,6 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginat
 		filters["role_rank = $i"] = []interface{}{r}
 	}
 
-	cursors := []db.Cursor{{Column: "createdAt", Value: createdAt, Direction: params.Direction}}
 	opts := []db.UserSelectConfigOption{
 		db.WithUserFilters(filters),
 		db.WithUserJoin(db.UserJoins{MemberTeams: true, MemberProjects: true}),
@@ -68,7 +64,7 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginat
 		opts = append(opts, db.WithUserLimit(params.Limit))
 	}
 
-	users, err := db.UserPaginated(ctx, d, cursors, opts...)
+	users, err := db.UserPaginated(ctx, d, params.Cursors, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get paginated users: %w", ParseDBErrorDetail(err))
 	}

@@ -95,6 +95,8 @@ import {
   PaginationFilter,
   Pagination,
   PaginationItems,
+  PaginationCursors,
+  PaginationCursor,
   GetPaginatedUsersQueryParameters,
   PaginationFilterModes,
   DbCacheDemoWorkItemJoins,
@@ -255,6 +257,8 @@ export const schemaDefinitions = {
   PaginationFilter: info<PaginationFilter>('PaginationFilter', '#/definitions/PaginationFilter'),
   Pagination: info<Pagination>('Pagination', '#/definitions/Pagination'),
   PaginationItems: info<PaginationItems>('PaginationItems', '#/definitions/PaginationItems'),
+  PaginationCursors: info<PaginationCursors>('PaginationCursors', '#/definitions/PaginationCursors'),
+  PaginationCursor: info<PaginationCursor>('PaginationCursor', '#/definitions/PaginationCursor'),
   GetPaginatedUsersQueryParameters: info<GetPaginatedUsersQueryParameters>(
     'GetPaginatedUsersQueryParameters',
     '#/definitions/GetPaginatedUsersQueryParameters',

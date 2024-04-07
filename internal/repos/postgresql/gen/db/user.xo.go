@@ -661,7 +661,7 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 
 // UserPaginated returns a cursor-paginated list of User.
 // At least one cursor is required.
-func UserPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...UserSelectConfigOption) ([]User, error) {
+func UserPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

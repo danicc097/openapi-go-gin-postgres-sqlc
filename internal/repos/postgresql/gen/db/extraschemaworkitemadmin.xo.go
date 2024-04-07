@@ -255,7 +255,7 @@ func (eswia *ExtraSchemaWorkItemAdmin) Delete(ctx context.Context, db DB) error 
 
 // ExtraSchemaWorkItemAdminPaginated returns a cursor-paginated list of ExtraSchemaWorkItemAdmin.
 // At least one cursor is required.
-func ExtraSchemaWorkItemAdminPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaWorkItemAdminSelectConfigOption) ([]ExtraSchemaWorkItemAdmin, error) {
+func ExtraSchemaWorkItemAdminPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaWorkItemAdminSelectConfigOption) ([]ExtraSchemaWorkItemAdmin, error) {
 	c := &ExtraSchemaWorkItemAdminSelectConfig{joins: ExtraSchemaWorkItemAdminJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

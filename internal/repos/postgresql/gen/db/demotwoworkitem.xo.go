@@ -257,7 +257,7 @@ func (dtwi *DemoTwoWorkItem) Delete(ctx context.Context, db DB) error {
 
 // DemoTwoWorkItemPaginated returns a cursor-paginated list of DemoTwoWorkItem.
 // At least one cursor is required.
-func DemoTwoWorkItemPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
+func DemoTwoWorkItemPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...DemoTwoWorkItemSelectConfigOption) ([]DemoTwoWorkItem, error) {
 	c := &DemoTwoWorkItemSelectConfig{joins: DemoTwoWorkItemJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

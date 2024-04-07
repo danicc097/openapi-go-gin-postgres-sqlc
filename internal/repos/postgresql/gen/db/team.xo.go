@@ -335,7 +335,7 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 
 // TeamPaginated returns a cursor-paginated list of Team.
 // At least one cursor is required.
-func TeamPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...TeamSelectConfigOption) ([]Team, error) {
+func TeamPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...TeamSelectConfigOption) ([]Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

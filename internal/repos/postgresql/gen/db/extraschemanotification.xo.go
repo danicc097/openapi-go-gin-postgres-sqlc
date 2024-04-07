@@ -320,7 +320,7 @@ func (esn *ExtraSchemaNotification) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaNotificationPaginated returns a cursor-paginated list of ExtraSchemaNotification.
 // At least one cursor is required.
-func ExtraSchemaNotificationPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaNotificationSelectConfigOption) ([]ExtraSchemaNotification, error) {
+func ExtraSchemaNotificationPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaNotificationSelectConfigOption) ([]ExtraSchemaNotification, error) {
 	c := &ExtraSchemaNotificationSelectConfig{joins: ExtraSchemaNotificationJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

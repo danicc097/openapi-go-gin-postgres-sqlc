@@ -289,7 +289,7 @@ func (esuak *ExtraSchemaUserAPIKey) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaUserAPIKeyPaginated returns a cursor-paginated list of ExtraSchemaUserAPIKey.
 // At least one cursor is required.
-func ExtraSchemaUserAPIKeyPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaUserAPIKeySelectConfigOption) ([]ExtraSchemaUserAPIKey, error) {
+func ExtraSchemaUserAPIKeyPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaUserAPIKeySelectConfigOption) ([]ExtraSchemaUserAPIKey, error) {
 	c := &ExtraSchemaUserAPIKeySelectConfig{joins: ExtraSchemaUserAPIKeyJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

@@ -415,7 +415,7 @@ func (p *Project) Delete(ctx context.Context, db DB) error {
 
 // ProjectPaginated returns a cursor-paginated list of Project.
 // At least one cursor is required.
-func ProjectPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ProjectSelectConfigOption) ([]Project, error) {
+func ProjectPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ProjectSelectConfigOption) ([]Project, error) {
 	c := &ProjectSelectConfig{joins: ProjectJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

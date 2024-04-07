@@ -530,7 +530,7 @@ func (esu *ExtraSchemaUser) Restore(ctx context.Context, db DB) (*ExtraSchemaUse
 
 // ExtraSchemaUserPaginated returns a cursor-paginated list of ExtraSchemaUser.
 // At least one cursor is required.
-func ExtraSchemaUserPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaUserSelectConfigOption) ([]ExtraSchemaUser, error) {
+func ExtraSchemaUserPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaUserSelectConfigOption) ([]ExtraSchemaUser, error) {
 	c := &ExtraSchemaUserSelectConfig{deletedAt: " null ", joins: ExtraSchemaUserJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

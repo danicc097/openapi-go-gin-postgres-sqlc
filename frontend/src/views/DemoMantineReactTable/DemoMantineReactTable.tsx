@@ -261,10 +261,16 @@ export default function DemoMantineReactTable() {
     pageSize: 15,
   })
 
-  const [searchQuery, setSearchQuery] = useState<GetPaginatedUsersQueryParameters>({
+  const [searchQuery, setSearchQuery] = useState<GetPaginatedUsersQueryParameters>(() => ({
     items: {},
-  })
-  const [cursor, setCursor] = useState(dayjs().toRFC3339NANO())
+    cursors: [
+      {
+        column: 'createdAt',
+        direction: 'desc',
+        value: dayjs().toRFC3339NANO(),
+      },
+    ],
+  }))
 
   const {
     data: usersData,
@@ -279,7 +285,7 @@ export default function DemoMantineReactTable() {
   } = useGetPaginatedUsersInfinite(
     {
       direction: 'desc',
-      cursor,
+      cursor: '123', // must have something for react-query to work
       limit: pagination.pageSize,
       // deepmap needs to be updated for kin-openapi new Type struct
       // filter: { post: ['fesefesf', '1'], bools: [true, false], objects: [{ nestedObj: 'something' }] },
@@ -352,12 +358,32 @@ export default function DemoMantineReactTable() {
       }
     })
 
-    sorting.forEach((s) => {
-      const item = items[s.id]
-      items[s.id] = {
-        ...item,
-        sort: s.desc ? 'desc' : 'asc',
-      }
+    searchQuery.cursors = sorting.flatMap((s) => {
+      const col = columns.find((col) => col.id === s.id)
+      if (!col) return []
+      return [
+        {
+          column: s.id,
+          direction: s.desc ? 'desc' : 'asc',
+          // for natural sorting we need: CREATE COLLATION numeric (provider = icu, locale = 'en@colNumeric=yes')
+          // used as SELECT email COLLATE numeric FROM users ORDER BY email DESC;
+          // therefore indexes would need to be applied with COLLATE numeric
+          // TODO: these are defaults - use nextCursor if sorting hasnt changed
+          value: String(
+            s.desc
+              ? col.filterVariant === 'date-range'
+                ? dayjs().toRFC3339NANO()
+                : col.filterVariant === 'text'
+                ? '\ufffd' // lower bound
+                : -Infinity
+              : col.filterVariant === 'date-range'
+              ? dayjs(0).toRFC3339NANO()
+              : col.filterVariant === 'text'
+              ? 'zzzzzzzzzzzzzzzzzz' // need querying select <col> from users order by <col> desc limit 1 for this one.
+              : Infinity,
+          ),
+        },
+      ]
     })
 
     setSearchQuery((v) => ({ ...v, items, role: role }))

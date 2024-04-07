@@ -341,7 +341,7 @@ func (eswia *ExtraSchemaWorkItemAssignee) Delete(ctx context.Context, db DB) err
 
 // ExtraSchemaWorkItemAssigneePaginated returns a cursor-paginated list of ExtraSchemaWorkItemAssignee.
 // At least one cursor is required.
-func ExtraSchemaWorkItemAssigneePaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaWorkItemAssigneeSelectConfigOption) ([]ExtraSchemaWorkItemAssignee, error) {
+func ExtraSchemaWorkItemAssigneePaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaWorkItemAssigneeSelectConfigOption) ([]ExtraSchemaWorkItemAssignee, error) {
 	c := &ExtraSchemaWorkItemAssigneeSelectConfig{joins: ExtraSchemaWorkItemAssigneeJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

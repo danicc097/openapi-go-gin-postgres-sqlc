@@ -255,7 +255,7 @@ func (esbs *ExtraSchemaBookSeller) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaBookSellerPaginated returns a cursor-paginated list of ExtraSchemaBookSeller.
 // At least one cursor is required.
-func ExtraSchemaBookSellerPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
+func ExtraSchemaBookSellerPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaBookSellerSelectConfigOption) ([]ExtraSchemaBookSeller, error) {
 	c := &ExtraSchemaBookSellerSelectConfig{joins: ExtraSchemaBookSellerJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

@@ -339,7 +339,7 @@ func (wia *WorkItemAssignee) Delete(ctx context.Context, db DB) error {
 
 // WorkItemAssigneePaginated returns a cursor-paginated list of WorkItemAssignee.
 // At least one cursor is required.
-func WorkItemAssigneePaginated(ctx context.Context, db DB, cursors []Cursor, opts ...WorkItemAssigneeSelectConfigOption) ([]WorkItemAssignee, error) {
+func WorkItemAssigneePaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...WorkItemAssigneeSelectConfigOption) ([]WorkItemAssignee, error) {
 	c := &WorkItemAssigneeSelectConfig{joins: WorkItemAssigneeJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

@@ -361,7 +361,7 @@ func (a *Activity) Restore(ctx context.Context, db DB) (*Activity, error) {
 
 // ActivityPaginated returns a cursor-paginated list of Activity.
 // At least one cursor is required.
-func ActivityPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+func ActivityPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

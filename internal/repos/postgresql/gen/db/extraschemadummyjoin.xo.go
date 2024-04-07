@@ -241,7 +241,7 @@ func (esdj *ExtraSchemaDummyJoin) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaDummyJoinPaginated returns a cursor-paginated list of ExtraSchemaDummyJoin.
 // At least one cursor is required.
-func ExtraSchemaDummyJoinPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaDummyJoinSelectConfigOption) ([]ExtraSchemaDummyJoin, error) {
+func ExtraSchemaDummyJoinPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaDummyJoinSelectConfigOption) ([]ExtraSchemaDummyJoin, error) {
 	c := &ExtraSchemaDummyJoinSelectConfig{joins: ExtraSchemaDummyJoinJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

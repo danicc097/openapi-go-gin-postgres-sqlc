@@ -557,7 +557,7 @@ func (cdtwi *CacheDemoTwoWorkItem) Restore(ctx context.Context, db DB) (*CacheDe
 
 // CacheDemoTwoWorkItemPaginated returns a cursor-paginated list of CacheDemoTwoWorkItem.
 // At least one cursor is required.
-func CacheDemoTwoWorkItemPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...CacheDemoTwoWorkItemSelectConfigOption) ([]CacheDemoTwoWorkItem, error) {
+func CacheDemoTwoWorkItemPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...CacheDemoTwoWorkItemSelectConfigOption) ([]CacheDemoTwoWorkItem, error) {
 	c := &CacheDemoTwoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoTwoWorkItemJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

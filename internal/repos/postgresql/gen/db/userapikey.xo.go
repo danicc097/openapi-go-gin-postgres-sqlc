@@ -289,7 +289,7 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 
 // UserAPIKeyPaginated returns a cursor-paginated list of UserAPIKey.
 // At least one cursor is required.
-func UserAPIKeyPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
+func UserAPIKeyPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

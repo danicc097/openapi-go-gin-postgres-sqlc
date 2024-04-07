@@ -285,7 +285,7 @@ func (espe *ExtraSchemaPagElement) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaPagElementPaginated returns a cursor-paginated list of ExtraSchemaPagElement.
 // At least one cursor is required.
-func ExtraSchemaPagElementPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaPagElementSelectConfigOption) ([]ExtraSchemaPagElement, error) {
+func ExtraSchemaPagElementPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaPagElementSelectConfigOption) ([]ExtraSchemaPagElement, error) {
 	c := &ExtraSchemaPagElementSelectConfig{joins: ExtraSchemaPagElementJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

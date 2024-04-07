@@ -6812,6 +6812,59 @@
         "x-use-server-type": true
       }
     },
+    "PaginationCursors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1
+          },
+          "column": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "direction",
+          "value",
+          "column"
+        ]
+      }
+    },
+    "PaginationCursor": {
+      "type": "object",
+      "properties": {
+        "direction": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        },
+        "column": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "direction",
+        "value",
+        "column"
+      ]
+    },
     "GetPaginatedUsersQueryParameters": {
       "properties": {
         "role": {
@@ -6926,8 +6979,39 @@
             },
             "x-use-server-type": true
           }
+        },
+        "cursors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1
+              },
+              "column": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "direction",
+              "value",
+              "column"
+            ]
+          }
         }
       },
+      "required": [
+        "cursors"
+      ],
       "type": "object"
     },
     "PaginationFilterModes": {
@@ -13931,6 +14015,59 @@
         "x-use-server-type": true
       }
     },
+    "PaginationCursors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ]
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1
+          },
+          "column": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "direction",
+          "value",
+          "column"
+        ]
+      }
+    },
+    "PaginationCursor": {
+      "type": "object",
+      "properties": {
+        "direction": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ]
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1
+        },
+        "column": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "direction",
+        "value",
+        "column"
+      ]
+    },
     "GetPaginatedUsersQueryParameters": {
       "properties": {
         "role": {
@@ -14045,8 +14182,39 @@
             },
             "x-use-server-type": true
           }
+        },
+        "cursors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1
+              },
+              "column": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "direction",
+              "value",
+              "column"
+            ]
+          }
         }
       },
+      "required": [
+        "cursors"
+      ],
       "type": "object"
     },
     "PaginationFilterModes": {

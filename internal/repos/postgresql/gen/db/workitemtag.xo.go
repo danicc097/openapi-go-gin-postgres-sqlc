@@ -367,7 +367,7 @@ func (wit *WorkItemTag) Restore(ctx context.Context, db DB) (*WorkItemTag, error
 
 // WorkItemTagPaginated returns a cursor-paginated list of WorkItemTag.
 // At least one cursor is required.
-func WorkItemTagPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
+func WorkItemTagPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
 	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

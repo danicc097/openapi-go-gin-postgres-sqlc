@@ -10,7 +10,7 @@ import (
 type GetPaginatedUsersParams struct {
 	Limit     int
 	Direction models.Direction
-	Cursor    string
+	Cursors   models.PaginationCursors
 
 	Items *models.PaginationItems
 

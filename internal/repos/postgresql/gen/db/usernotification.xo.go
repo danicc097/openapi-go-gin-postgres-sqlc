@@ -301,7 +301,7 @@ func (un *UserNotification) Delete(ctx context.Context, db DB) error {
 
 // UserNotificationPaginated returns a cursor-paginated list of UserNotification.
 // At least one cursor is required.
-func UserNotificationPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
+func UserNotificationPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...UserNotificationSelectConfigOption) ([]UserNotification, error) {
 	c := &UserNotificationSelectConfig{joins: UserNotificationJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

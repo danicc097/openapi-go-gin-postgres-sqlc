@@ -254,7 +254,7 @@ func (esdwi *ExtraSchemaDemoWorkItem) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaDemoWorkItemPaginated returns a cursor-paginated list of ExtraSchemaDemoWorkItem.
 // At least one cursor is required.
-func ExtraSchemaDemoWorkItemPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaDemoWorkItemSelectConfigOption) ([]ExtraSchemaDemoWorkItem, error) {
+func ExtraSchemaDemoWorkItemPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaDemoWorkItemSelectConfigOption) ([]ExtraSchemaDemoWorkItem, error) {
 	c := &ExtraSchemaDemoWorkItemSelectConfig{joins: ExtraSchemaDemoWorkItemJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

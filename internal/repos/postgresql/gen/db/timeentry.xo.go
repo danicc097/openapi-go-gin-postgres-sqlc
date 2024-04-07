@@ -402,7 +402,7 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 
 // TimeEntryPaginated returns a cursor-paginated list of TimeEntry.
 // At least one cursor is required.
-func TimeEntryPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
+func TimeEntryPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

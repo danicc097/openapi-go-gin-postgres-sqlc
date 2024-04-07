@@ -457,7 +457,7 @@ func ({{ short $t }} *{{$t.GoName}}) SetUpdateParams(params *{{$t.GoName}}Update
 {{ $suffix := print "Paginated" }}
 // {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{$t.GoName}}.
 // At least one cursor is required.
-{{ func_context $t $suffix "" $t "cursors []Cursor" }} {
+{{ func_context $t $suffix "" $t "cursors models.PaginationCursors" }} {
 	{{ initial_opts $t }}
 
 	for _, o := range opts {

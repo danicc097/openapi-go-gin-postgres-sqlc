@@ -255,7 +255,7 @@ func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 
 // WorkItemWorkItemTagPaginated returns a cursor-paginated list of WorkItemWorkItemTag.
 // At least one cursor is required.
-func WorkItemWorkItemTagPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
+func WorkItemWorkItemTagPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),

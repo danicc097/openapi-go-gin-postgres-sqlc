@@ -275,7 +275,7 @@ func (en *EntityNotification) Delete(ctx context.Context, db DB) error {
 
 // EntityNotificationPaginated returns a cursor-paginated list of EntityNotification.
 // At least one cursor is required.
-func EntityNotificationPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
+func EntityNotificationPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
 	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
