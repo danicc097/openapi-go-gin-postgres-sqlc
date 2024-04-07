@@ -305,7 +305,7 @@ func (xtn *XoTestsNotification) Delete(ctx context.Context, db DB) error {
 
 // XoTestsNotificationPaginated returns a cursor-paginated list of XoTestsNotification.
 // At least one cursor is required.
-func XoTestsNotificationPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsNotificationSelectConfigOption) ([]XoTestsNotification, error) {
+func XoTestsNotificationPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsNotificationSelectConfigOption) ([]XoTestsNotification, error) {
 	c := &XoTestsNotificationSelectConfig{
 		joins:   XoTestsNotificationJoins{},
 		filters: make(map[string][]any),

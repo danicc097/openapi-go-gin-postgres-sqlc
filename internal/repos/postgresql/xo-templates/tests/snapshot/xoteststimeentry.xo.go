@@ -275,7 +275,7 @@ func (xtte *XoTestsTimeEntry) Delete(ctx context.Context, db DB) error {
 
 // XoTestsTimeEntryPaginated returns a cursor-paginated list of XoTestsTimeEntry.
 // At least one cursor is required.
-func XoTestsTimeEntryPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsTimeEntrySelectConfigOption) ([]XoTestsTimeEntry, error) {
+func XoTestsTimeEntryPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsTimeEntrySelectConfigOption) ([]XoTestsTimeEntry, error) {
 	c := &XoTestsTimeEntrySelectConfig{
 		joins:   XoTestsTimeEntryJoins{},
 		filters: make(map[string][]any),

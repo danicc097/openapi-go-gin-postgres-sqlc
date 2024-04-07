@@ -828,7 +828,9 @@ export interface components {
     PaginationCursors: components["schemas"]["PaginationCursor"][];
     PaginationCursor: {
       direction: components["schemas"]["Direction"];
-      value: string;
+      /** @description represents a cursor value */
+      value: unknown;
+      /** @description represents the JSON name of the db column */
       column: string;
     };
     GetPaginatedUsersQueryParameters: {

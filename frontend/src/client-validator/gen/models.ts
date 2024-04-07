@@ -635,7 +635,13 @@ export interface PaginationItems {
 }
 export interface PaginationCursor {
   direction: Direction
-  value: string
+  /**
+   * represents a cursor value
+   */
+  value: {}
+  /**
+   * represents the JSON name of the db column
+   */
   column: string
 }
 export interface GetPaginatedUsersQueryParameters {

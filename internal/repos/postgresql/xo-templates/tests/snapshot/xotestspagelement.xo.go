@@ -286,7 +286,7 @@ func (xtpe *XoTestsPagElement) Delete(ctx context.Context, db DB) error {
 
 // XoTestsPagElementPaginated returns a cursor-paginated list of XoTestsPagElement.
 // At least one cursor is required.
-func XoTestsPagElementPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsPagElementSelectConfigOption) ([]XoTestsPagElement, error) {
+func XoTestsPagElementPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsPagElementSelectConfigOption) ([]XoTestsPagElement, error) {
 	c := &XoTestsPagElementSelectConfig{
 		joins:   XoTestsPagElementJoins{},
 		filters: make(map[string][]any),

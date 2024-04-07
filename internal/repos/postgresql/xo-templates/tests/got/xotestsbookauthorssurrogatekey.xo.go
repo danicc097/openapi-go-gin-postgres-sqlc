@@ -347,7 +347,7 @@ func (xtbask *XoTestsBookAuthorsSurrogateKey) Delete(ctx context.Context, db DB)
 
 // XoTestsBookAuthorsSurrogateKeyPaginated returns a cursor-paginated list of XoTestsBookAuthorsSurrogateKey.
 // At least one cursor is required.
-func XoTestsBookAuthorsSurrogateKeyPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsBookAuthorsSurrogateKeySelectConfigOption) ([]XoTestsBookAuthorsSurrogateKey, error) {
+func XoTestsBookAuthorsSurrogateKeyPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsBookAuthorsSurrogateKeySelectConfigOption) ([]XoTestsBookAuthorsSurrogateKey, error) {
 	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{
 		joins:   XoTestsBookAuthorsSurrogateKeyJoins{},
 		filters: make(map[string][]any),

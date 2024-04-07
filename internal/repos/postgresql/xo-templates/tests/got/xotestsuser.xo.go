@@ -525,7 +525,7 @@ func (xtu *XoTestsUser) Restore(ctx context.Context, db DB) (*XoTestsUser, error
 
 // XoTestsUserPaginated returns a cursor-paginated list of XoTestsUser.
 // At least one cursor is required.
-func XoTestsUserPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsUserSelectConfigOption) ([]XoTestsUser, error) {
+func XoTestsUserPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsUserSelectConfigOption) ([]XoTestsUser, error) {
 	c := &XoTestsUserSelectConfig{
 		deletedAt: " null ", joins: XoTestsUserJoins{},
 		filters: make(map[string][]any),

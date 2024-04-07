@@ -291,7 +291,7 @@ func (xtuak *XoTestsUserAPIKey) Delete(ctx context.Context, db DB) error {
 
 // XoTestsUserAPIKeyPaginated returns a cursor-paginated list of XoTestsUserAPIKey.
 // At least one cursor is required.
-func XoTestsUserAPIKeyPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsUserAPIKeySelectConfigOption) ([]XoTestsUserAPIKey, error) {
+func XoTestsUserAPIKeyPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsUserAPIKeySelectConfigOption) ([]XoTestsUserAPIKey, error) {
 	c := &XoTestsUserAPIKeySelectConfig{
 		joins:   XoTestsUserAPIKeyJoins{},
 		filters: make(map[string][]any),

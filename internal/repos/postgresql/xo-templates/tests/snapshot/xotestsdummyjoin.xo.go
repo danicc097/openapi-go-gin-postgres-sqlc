@@ -240,7 +240,7 @@ func (xtdj *XoTestsDummyJoin) Delete(ctx context.Context, db DB) error {
 
 // XoTestsDummyJoinPaginated returns a cursor-paginated list of XoTestsDummyJoin.
 // At least one cursor is required.
-func XoTestsDummyJoinPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsDummyJoinSelectConfigOption) ([]XoTestsDummyJoin, error) {
+func XoTestsDummyJoinPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsDummyJoinSelectConfigOption) ([]XoTestsDummyJoin, error) {
 	c := &XoTestsDummyJoinSelectConfig{
 		joins:   XoTestsDummyJoinJoins{},
 		filters: make(map[string][]any),

@@ -238,7 +238,7 @@ func (xtt *XoTestsTeam) Delete(ctx context.Context, db DB) error {
 
 // XoTestsTeamPaginated returns a cursor-paginated list of XoTestsTeam.
 // At least one cursor is required.
-func XoTestsTeamPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsTeamSelectConfigOption) ([]XoTestsTeam, error) {
+func XoTestsTeamPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsTeamSelectConfigOption) ([]XoTestsTeam, error) {
 	c := &XoTestsTeamSelectConfig{
 		joins:   XoTestsTeamJoins{},
 		filters: make(map[string][]any),

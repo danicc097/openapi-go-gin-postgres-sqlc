@@ -343,7 +343,7 @@ func (xtwia *XoTestsWorkItemAssignee) Delete(ctx context.Context, db DB) error {
 
 // XoTestsWorkItemAssigneePaginated returns a cursor-paginated list of XoTestsWorkItemAssignee.
 // At least one cursor is required.
-func XoTestsWorkItemAssigneePaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsWorkItemAssigneeSelectConfigOption) ([]XoTestsWorkItemAssignee, error) {
+func XoTestsWorkItemAssigneePaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsWorkItemAssigneeSelectConfigOption) ([]XoTestsWorkItemAssignee, error) {
 	c := &XoTestsWorkItemAssigneeSelectConfig{
 		joins:   XoTestsWorkItemAssigneeJoins{},
 		filters: make(map[string][]any),

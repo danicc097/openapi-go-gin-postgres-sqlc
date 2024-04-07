@@ -2970,8 +2970,9 @@ components:
         direction:
           $ref: '#/components/schemas/Direction'
         value:
-          type: string
+          description: represents a cursor value
         column:
+          description: represents the JSON name of the db column
           type: string
       required:
         - direction

@@ -353,7 +353,7 @@ func (xtb *XoTestsBook) Delete(ctx context.Context, db DB) error {
 
 // XoTestsBookPaginated returns a cursor-paginated list of XoTestsBook.
 // At least one cursor is required.
-func XoTestsBookPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsBookSelectConfigOption) ([]XoTestsBook, error) {
+func XoTestsBookPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsBookSelectConfigOption) ([]XoTestsBook, error) {
 	c := &XoTestsBookSelectConfig{
 		joins:   XoTestsBookJoins{},
 		filters: make(map[string][]any),

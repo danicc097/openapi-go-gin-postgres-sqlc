@@ -378,7 +378,7 @@ func (xtwi *XoTestsWorkItem) Delete(ctx context.Context, db DB) error {
 
 // XoTestsWorkItemPaginated returns a cursor-paginated list of XoTestsWorkItem.
 // At least one cursor is required.
-func XoTestsWorkItemPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsWorkItemSelectConfigOption) ([]XoTestsWorkItem, error) {
+func XoTestsWorkItemPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsWorkItemSelectConfigOption) ([]XoTestsWorkItem, error) {
 	c := &XoTestsWorkItemSelectConfig{
 		joins:   XoTestsWorkItemJoins{},
 		filters: make(map[string][]any),

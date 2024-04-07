@@ -306,7 +306,7 @@ func (xtwic *XoTestsWorkItemComment) Delete(ctx context.Context, db DB) error {
 
 // XoTestsWorkItemCommentPaginated returns a cursor-paginated list of XoTestsWorkItemComment.
 // At least one cursor is required.
-func XoTestsWorkItemCommentPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsWorkItemCommentSelectConfigOption) ([]XoTestsWorkItemComment, error) {
+func XoTestsWorkItemCommentPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsWorkItemCommentSelectConfigOption) ([]XoTestsWorkItemComment, error) {
 	c := &XoTestsWorkItemCommentSelectConfig{
 		joins:   XoTestsWorkItemCommentJoins{},
 		filters: make(map[string][]any),
