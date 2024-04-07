@@ -70,7 +70,7 @@ const defaultExcludedColumns: Array<DefaultFilters> = ['firstName', 'lastName']
 // just btrees, or extension indexes if applicable https://www.postgresql.org/docs/16/indexes-ordering.html
 // TODO: deletedAt != null -> restore buttons.
 // also see CRUD: https://v2.mantine-react-table.com/docs/examples/editing-crud
-const defaultSortableColumns: Array<DefaultFilters> = ['createdAt'] // if we use PaginatedBy*, can't sort by anything else.
+const defaultSortableColumns: Array<DefaultFilters> = ['createdAt', 'deletedAt', 'email'] // if we use PaginatedBy*, can't sort by anything else.
 // we could have a base PaginatedBy which receives at most a field to paginate by
 
 const TABLE_NAME = 'demoTable'
@@ -255,7 +255,7 @@ export default function DemoMantineReactTable() {
 
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState('')
-  const [sorting, setSorting] = useState<MRT_SortingState>([{ id: 'created_at', desc: true }])
+  const [sorting, setSorting] = useState<MRT_SortingState>([{ id: 'createdAt', desc: true }])
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
     pageSize: 15,
@@ -310,6 +310,7 @@ export default function DemoMantineReactTable() {
   useEffect(() => {
     const items: PaginationItems = {}
     let role: Role
+
     columnFilters.forEach((filter) => {
       const { id, value } = filter
       let v = value
@@ -329,7 +330,8 @@ export default function DemoMantineReactTable() {
             value: v as any,
             filterMode: filterMode as any, // must fix orval upstream
           },
-          ...(sort && { sort: sort.desc === true ? 'desc' : 'asc' }),
+          // we remove old sorts at the same time
+          ...(sort && { sort: sort.desc ? 'desc' : 'asc' }),
         }
       }
 
@@ -340,12 +342,21 @@ export default function DemoMantineReactTable() {
             value: v as any,
             filterMode: PaginationFilterModes.equals,
           },
-          ...(sort && { sort: sort.desc === true ? 'desc' : 'asc' }),
+          // we remove old sorts at the same time
+          ...(sort && { sort: sort.desc ? 'desc' : 'asc' }),
         }
       }
 
       if (column?.id === 'role' && v) {
         role = v as Role
+      }
+    })
+
+    sorting.forEach((s) => {
+      const item = items[s.id]
+      items[s.id] = {
+        ...item,
+        sort: s.desc ? 'desc' : 'asc',
       }
     })
 
