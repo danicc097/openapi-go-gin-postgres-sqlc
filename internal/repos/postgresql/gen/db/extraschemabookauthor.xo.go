@@ -386,10 +386,7 @@ func ExtraSchemaBookAuthorPaginated(ctx context.Context, db DB, cursors []Cursor
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters += " where "
-	}
-	if len(filterClauses) > 0 {
-		filters += strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string

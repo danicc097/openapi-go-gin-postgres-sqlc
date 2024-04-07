@@ -111,8 +111,7 @@ func TestCursorPagination_HavingClause(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	pagCol := "workItemID"
-	cursors := []db.Cursor{{Column: pagCol, Value: 0 /* should filter all */, Direction: models.DirectionAsc}}
+	cursors := []db.Cursor{{Column: "workItemID", Value: 0 /* should filter all */, Direction: models.DirectionAsc}}
 	ee, err := db.XoTestsWorkItemPaginated(ctx, testPool, cursors,
 		db.WithXoTestsWorkItemJoin(db.XoTestsWorkItemJoins{Assignees: true, WorkItemComments: true, TimeEntries: true}),
 		db.WithXoTestsWorkItemHavingClause(map[string][]any{

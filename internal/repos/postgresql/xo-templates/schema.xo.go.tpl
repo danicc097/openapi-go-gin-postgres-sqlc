@@ -501,10 +501,7 @@ func ({{ short $t }} *{{$t.GoName}}) SetUpdateParams(params *{{$t.GoName}}Update
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters += " where "
-	}
-	if len(filterClauses) > 0 {
-		filters += strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
