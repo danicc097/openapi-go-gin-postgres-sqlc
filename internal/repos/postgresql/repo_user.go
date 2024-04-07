@@ -59,20 +59,10 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginat
 		filters["role_rank = $i"] = []interface{}{r}
 	}
 
-	// IMPORTANT: sorts are ignored in UserPaginated* since we are obviously using
-	// a predefined indexed column for pagination.
-	// to allow users to paginate by their given sort field,
-	// we would need a new bare UserPaginated that must receive
-	// at most one field to sort by, so we construct the sql query
-	// in the same way as UserPaginatedBy*
-
 	cursors := []db.Cursor{{Column: "createdAt", Value: createdAt, Direction: params.Direction}}
 	opts := []db.UserSelectConfigOption{
 		db.WithUserFilters(filters),
 		db.WithUserJoin(db.UserJoins{MemberTeams: true, MemberProjects: true}),
-		db.WithUserOrderBy(map[string]*models.Direction{
-			"createdAt": pointers.New(models.DirectionDesc),
-		}),
 	}
 	if params.Limit > 0 { // for users, allow 0 or less to fetch all
 		opts = append(opts, db.WithUserLimit(params.Limit))
