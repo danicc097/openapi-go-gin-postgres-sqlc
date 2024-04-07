@@ -368,7 +368,9 @@ export default function DemoMantineReactTable() {
           // for natural sorting we need: CREATE COLLATION numeric (provider = icu, locale = 'en@colNumeric=yes')
           // used as SELECT email COLLATE numeric FROM users ORDER BY email DESC;
           // therefore indexes would need to be applied with COLLATE numeric
-          // TODO: these are defaults - use nextCursor if sorting hasnt changed
+          // FIXME: these are defaults - use nextCursor if sorting hasnt changed
+          // TODO: nullable cursor value, and if nullable then in repo we query select <col> ...order by <col> limit 1
+          // scan to string and use that as cursor
           value: String(
             s.desc
               ? col.filterVariant === 'date-range'
