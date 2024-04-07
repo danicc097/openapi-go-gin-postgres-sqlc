@@ -99,6 +99,8 @@ import {
   PaginationFilter,
   Pagination,
   PaginationItems,
+  PaginationCursors,
+  PaginationCursor,
   GetPaginatedUsersQueryParameters,
   PaginationFilterModes,
   DbCacheDemoWorkItemJoins,
@@ -1203,6 +1205,30 @@ export const PaginationItemsDecoder: Decoder<PaginationItems> = {
       throw new Error(`Schema ${PaginationItemsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, PaginationItemsDecoder.definitionName)
+  },
+}
+export const PaginationCursorsDecoder: Decoder<PaginationCursors> = {
+  definitionName: 'PaginationCursors',
+  schemaRef: '#/definitions/PaginationCursors',
+
+  decode(json: unknown): PaginationCursors {
+    const schema = ajv.getSchema(PaginationCursorsDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${PaginationCursorsDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, PaginationCursorsDecoder.definitionName)
+  },
+}
+export const PaginationCursorDecoder: Decoder<PaginationCursor> = {
+  definitionName: 'PaginationCursor',
+  schemaRef: '#/definitions/PaginationCursor',
+
+  decode(json: unknown): PaginationCursor {
+    const schema = ajv.getSchema(PaginationCursorDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${PaginationCursorDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, PaginationCursorDecoder.definitionName)
   },
 }
 export const GetPaginatedUsersQueryParametersDecoder: Decoder<GetPaginatedUsersQueryParameters> = {

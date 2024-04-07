@@ -9,22 +9,17 @@ export default function LoginButton() {
   const { colors } = useMantineTheme()
 
   return (
-    <>
-      <form>
-        <Button
-          type="submit"
-          style={{
-            backgroundColor: colors.blue[9],
-          }}
-          onClick={(e) => {
-            e.preventDefault()
-            redirectToAuthLogin()
-          }}
-          leftSection={<FontAwesomeIcon icon={faSignIn} size="xl" />}
-        >
-          Login
-        </Button>
-      </form>
-    </>
+    <Button
+      style={{
+        backgroundColor: colors.blue[9],
+      }}
+      onClick={(e) => {
+        e.preventDefault()
+        redirectToAuthLogin()
+      }}
+      leftSection={<FontAwesomeIcon icon={faSignIn} size="sm" />}
+    >
+      Login
+    </Button>
   )
 }

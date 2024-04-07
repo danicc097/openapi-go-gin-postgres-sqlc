@@ -210,7 +210,7 @@ func CreateCacheDemoWorkItem(ctx context.Context, db DB, params *CacheDemoWorkIt
 
 type CacheDemoWorkItemSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   CacheDemoWorkItemJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -235,45 +235,20 @@ func WithDeletedCacheDemoWorkItemOnly() CacheDemoWorkItemSelectConfigOption {
 	}
 }
 
-type CacheDemoWorkItemOrderBy string
-
-const (
-	CacheDemoWorkItemClosedAtDescNullsFirst      CacheDemoWorkItemOrderBy = " closed_at DESC NULLS FIRST "
-	CacheDemoWorkItemClosedAtDescNullsLast       CacheDemoWorkItemOrderBy = " closed_at DESC NULLS LAST "
-	CacheDemoWorkItemClosedAtAscNullsFirst       CacheDemoWorkItemOrderBy = " closed_at ASC NULLS FIRST "
-	CacheDemoWorkItemClosedAtAscNullsLast        CacheDemoWorkItemOrderBy = " closed_at ASC NULLS LAST "
-	CacheDemoWorkItemCreatedAtDescNullsFirst     CacheDemoWorkItemOrderBy = " created_at DESC NULLS FIRST "
-	CacheDemoWorkItemCreatedAtDescNullsLast      CacheDemoWorkItemOrderBy = " created_at DESC NULLS LAST "
-	CacheDemoWorkItemCreatedAtAscNullsFirst      CacheDemoWorkItemOrderBy = " created_at ASC NULLS FIRST "
-	CacheDemoWorkItemCreatedAtAscNullsLast       CacheDemoWorkItemOrderBy = " created_at ASC NULLS LAST "
-	CacheDemoWorkItemDeletedAtDescNullsFirst     CacheDemoWorkItemOrderBy = " deleted_at DESC NULLS FIRST "
-	CacheDemoWorkItemDeletedAtDescNullsLast      CacheDemoWorkItemOrderBy = " deleted_at DESC NULLS LAST "
-	CacheDemoWorkItemDeletedAtAscNullsFirst      CacheDemoWorkItemOrderBy = " deleted_at ASC NULLS FIRST "
-	CacheDemoWorkItemDeletedAtAscNullsLast       CacheDemoWorkItemOrderBy = " deleted_at ASC NULLS LAST "
-	CacheDemoWorkItemLastMessageAtDescNullsFirst CacheDemoWorkItemOrderBy = " last_message_at DESC NULLS FIRST "
-	CacheDemoWorkItemLastMessageAtDescNullsLast  CacheDemoWorkItemOrderBy = " last_message_at DESC NULLS LAST "
-	CacheDemoWorkItemLastMessageAtAscNullsFirst  CacheDemoWorkItemOrderBy = " last_message_at ASC NULLS FIRST "
-	CacheDemoWorkItemLastMessageAtAscNullsLast   CacheDemoWorkItemOrderBy = " last_message_at ASC NULLS LAST "
-	CacheDemoWorkItemTargetDateDescNullsFirst    CacheDemoWorkItemOrderBy = " target_date DESC NULLS FIRST "
-	CacheDemoWorkItemTargetDateDescNullsLast     CacheDemoWorkItemOrderBy = " target_date DESC NULLS LAST "
-	CacheDemoWorkItemTargetDateAscNullsFirst     CacheDemoWorkItemOrderBy = " target_date ASC NULLS FIRST "
-	CacheDemoWorkItemTargetDateAscNullsLast      CacheDemoWorkItemOrderBy = " target_date ASC NULLS LAST "
-	CacheDemoWorkItemUpdatedAtDescNullsFirst     CacheDemoWorkItemOrderBy = " updated_at DESC NULLS FIRST "
-	CacheDemoWorkItemUpdatedAtDescNullsLast      CacheDemoWorkItemOrderBy = " updated_at DESC NULLS LAST "
-	CacheDemoWorkItemUpdatedAtAscNullsFirst      CacheDemoWorkItemOrderBy = " updated_at ASC NULLS FIRST "
-	CacheDemoWorkItemUpdatedAtAscNullsLast       CacheDemoWorkItemOrderBy = " updated_at ASC NULLS LAST "
-)
-
-// WithCacheDemoWorkItemOrderBy orders results by the given columns.
-func WithCacheDemoWorkItemOrderBy(rows ...CacheDemoWorkItemOrderBy) CacheDemoWorkItemSelectConfigOption {
+// WithCacheDemoWorkItemOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithCacheDemoWorkItemOrderBy(rows map[string]*models.Direction) CacheDemoWorkItemSelectConfigOption {
 	return func(s *CacheDemoWorkItemSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := EntityFields[TableEntityCacheDemoWorkItem]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -579,11 +554,11 @@ func (cdwi *CacheDemoWorkItem) Upsert(ctx context.Context, db DB, params *CacheD
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Cache  demo work item", Err: err})
+				return nil, fmt.Errorf("UpsertCacheDemoWorkItem/Insert: %w", &XoError{Entity: "Cache  demo work item", Err: err})
 			}
 			cdwi, err = cdwi.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Cache  demo work item", Err: err})
+				return nil, fmt.Errorf("UpsertCacheDemoWorkItem/Update: %w", &XoError{Entity: "Cache  demo work item", Err: err})
 			}
 		}
 	}
@@ -629,15 +604,38 @@ func (cdwi *CacheDemoWorkItem) Restore(ctx context.Context, db DB) (*CacheDemoWo
 	return newcdwi, nil
 }
 
-// CacheDemoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of CacheDemoWorkItem.
-func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID int, direction models.Direction, opts ...CacheDemoWorkItemSelectConfigOption) ([]CacheDemoWorkItem, error) {
-	c := &CacheDemoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+// CacheDemoWorkItemPaginated returns a cursor-paginated list of CacheDemoWorkItem.
+// At least one cursor is required.
+func CacheDemoWorkItemPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...CacheDemoWorkItemSelectConfigOption) ([]CacheDemoWorkItem, error) {
+	c := &CacheDemoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoWorkItemJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := EntityFields[TableEntityCacheDemoWorkItem][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("CacheDemoWorkItem/Paginated/cursor: %w", &XoError{Entity: "Cache  demo work item", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("cache__demo_work_items.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -656,7 +654,7 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -674,6 +672,20 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("CacheDemoWorkItem/Paginated/orderBy: %w", &XoError{Entity: "Cache  demo work item", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -726,14 +738,9 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -754,17 +761,13 @@ func CacheDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItem
 	cache__demo_work_items.work_item_id,
 	cache__demo_work_items.work_item_type_id %s 
 	 FROM public.cache__demo_work_items %s 
-	 WHERE cache__demo_work_items.work_item_id %s $1
-	 %s   AND cache__demo_work_items.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
-		work_item_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* CacheDemoWorkItemPaginatedByWorkItemID */\n" + sqlstr
+	sqlstr = "/* CacheDemoWorkItemPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("CacheDemoWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Cache  demo work item", Err: err}))
 	}
@@ -823,6 +826,18 @@ func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, o
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -874,9 +889,9 @@ func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, o
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -900,8 +915,8 @@ func CacheDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID int, o
 	 WHERE cache__demo_work_items.work_item_id = $1
 	 %s   AND cache__demo_work_items.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* CacheDemoWorkItemByWorkItemID */\n" + sqlstr
 
@@ -967,6 +982,18 @@ func CacheDemoWorkItemsByReopened(ctx context.Context, db DB, reopened bool, opt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1018,9 +1045,9 @@ func CacheDemoWorkItemsByReopened(ctx context.Context, db DB, reopened bool, opt
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -1044,8 +1071,8 @@ func CacheDemoWorkItemsByReopened(ctx context.Context, db DB, reopened bool, opt
 	 WHERE cache__demo_work_items.reopened = $1
 	 %s   AND cache__demo_work_items.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* CacheDemoWorkItemsByReopened */\n" + sqlstr
 
@@ -1113,6 +1140,18 @@ func CacheDemoWorkItemsByLastMessageAt(ctx context.Context, db DB, lastMessageAt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1164,9 +1203,9 @@ func CacheDemoWorkItemsByLastMessageAt(ctx context.Context, db DB, lastMessageAt
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -1190,8 +1229,8 @@ func CacheDemoWorkItemsByLastMessageAt(ctx context.Context, db DB, lastMessageAt
 	 WHERE cache__demo_work_items.last_message_at = $1
 	 %s   AND cache__demo_work_items.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* CacheDemoWorkItemsByLastMessageAt */\n" + sqlstr
 

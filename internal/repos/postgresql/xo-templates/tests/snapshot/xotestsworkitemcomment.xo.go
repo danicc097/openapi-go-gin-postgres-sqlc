@@ -96,7 +96,7 @@ func CreateXoTestsWorkItemComment(ctx context.Context, db DB, params *XoTestsWor
 
 type XoTestsWorkItemCommentSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsWorkItemCommentJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -112,29 +112,20 @@ func WithXoTestsWorkItemCommentLimit(limit int) XoTestsWorkItemCommentSelectConf
 	}
 }
 
-type XoTestsWorkItemCommentOrderBy string
-
-const (
-	XoTestsWorkItemCommentCreatedAtDescNullsFirst XoTestsWorkItemCommentOrderBy = " created_at DESC NULLS FIRST "
-	XoTestsWorkItemCommentCreatedAtDescNullsLast  XoTestsWorkItemCommentOrderBy = " created_at DESC NULLS LAST "
-	XoTestsWorkItemCommentCreatedAtAscNullsFirst  XoTestsWorkItemCommentOrderBy = " created_at ASC NULLS FIRST "
-	XoTestsWorkItemCommentCreatedAtAscNullsLast   XoTestsWorkItemCommentOrderBy = " created_at ASC NULLS LAST "
-	XoTestsWorkItemCommentUpdatedAtDescNullsFirst XoTestsWorkItemCommentOrderBy = " updated_at DESC NULLS FIRST "
-	XoTestsWorkItemCommentUpdatedAtDescNullsLast  XoTestsWorkItemCommentOrderBy = " updated_at DESC NULLS LAST "
-	XoTestsWorkItemCommentUpdatedAtAscNullsFirst  XoTestsWorkItemCommentOrderBy = " updated_at ASC NULLS FIRST "
-	XoTestsWorkItemCommentUpdatedAtAscNullsLast   XoTestsWorkItemCommentOrderBy = " updated_at ASC NULLS LAST "
-)
-
-// WithXoTestsWorkItemCommentOrderBy orders results by the given columns.
-func WithXoTestsWorkItemCommentOrderBy(rows ...XoTestsWorkItemCommentOrderBy) XoTestsWorkItemCommentSelectConfigOption {
+// WithXoTestsWorkItemCommentOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithXoTestsWorkItemCommentOrderBy(rows map[string]*models.Direction) XoTestsWorkItemCommentSelectConfigOption {
 	return func(s *XoTestsWorkItemCommentSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := XoTestsEntityFields[XoTestsTableEntityXoTestsWorkItemComment]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -289,11 +280,11 @@ func (xtwic *XoTestsWorkItemComment) Upsert(ctx context.Context, db DB, params *
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Work item comment", Err: err})
+				return nil, fmt.Errorf("UpsertXoTestsWorkItemComment/Insert: %w", &XoError{Entity: "Work item comment", Err: err})
 			}
 			xtwic, err = xtwic.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Work item comment", Err: err})
+				return nil, fmt.Errorf("UpsertXoTestsWorkItemComment/Update: %w", &XoError{Entity: "Work item comment", Err: err})
 			}
 		}
 	}
@@ -313,15 +304,38 @@ func (xtwic *XoTestsWorkItemComment) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// XoTestsWorkItemCommentPaginatedByWorkItemCommentID returns a cursor-paginated list of XoTestsWorkItemComment.
-func XoTestsWorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db DB, workItemCommentID XoTestsWorkItemCommentID, direction models.Direction, opts ...XoTestsWorkItemCommentSelectConfigOption) ([]XoTestsWorkItemComment, error) {
-	c := &XoTestsWorkItemCommentSelectConfig{joins: XoTestsWorkItemCommentJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+// XoTestsWorkItemCommentPaginated returns a cursor-paginated list of XoTestsWorkItemComment.
+// At least one cursor is required.
+func XoTestsWorkItemCommentPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsWorkItemCommentSelectConfigOption) ([]XoTestsWorkItemComment, error) {
+	c := &XoTestsWorkItemCommentSelectConfig{
+		joins:   XoTestsWorkItemCommentJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := XoTestsEntityFields[XoTestsTableEntityXoTestsWorkItemComment][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("XoTestsWorkItemComment/Paginated/cursor: %w", &XoError{Entity: "Work item comment", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("work_item_comments.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -340,7 +354,7 @@ func XoTestsWorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db 
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -358,6 +372,20 @@ func XoTestsWorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db 
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("XoTestsWorkItemComment/Paginated/orderBy: %w", &XoError{Entity: "Work item comment", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -380,14 +408,9 @@ func XoTestsWorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db 
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -398,17 +421,13 @@ func XoTestsWorkItemCommentPaginatedByWorkItemCommentID(ctx context.Context, db 
 	work_item_comments.work_item_comment_id,
 	work_item_comments.work_item_id %s 
 	 FROM xo_tests.work_item_comments %s 
-	 WHERE work_item_comments.work_item_comment_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
-		work_item_comment_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* XoTestsWorkItemCommentPaginatedByWorkItemCommentID */\n" + sqlstr
+	sqlstr = "/* XoTestsWorkItemCommentPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemCommentID}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsWorkItemComment/Paginated/db.Query: %w", &XoError{Entity: "Work item comment", Err: err}))
 	}
@@ -467,6 +486,18 @@ func XoTestsWorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workI
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -488,9 +519,9 @@ func XoTestsWorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workI
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -504,8 +535,8 @@ func XoTestsWorkItemCommentByWorkItemCommentID(ctx context.Context, db DB, workI
 	 WHERE work_item_comments.work_item_comment_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemCommentByWorkItemCommentID */\n" + sqlstr
 
@@ -571,6 +602,18 @@ func XoTestsWorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID 
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -592,9 +635,9 @@ func XoTestsWorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID 
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -608,8 +651,8 @@ func XoTestsWorkItemCommentsByWorkItemID(ctx context.Context, db DB, workItemID 
 	 WHERE work_item_comments.work_item_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsWorkItemCommentsByWorkItemID */\n" + sqlstr
 

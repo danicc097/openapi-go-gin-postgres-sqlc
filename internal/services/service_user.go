@@ -238,7 +238,18 @@ func (u *User) ByExternalID(ctx context.Context, d db.DBTX, id string, dbOpts ..
 func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPaginatedUsersParams) ([]db.User, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	users, err := u.repos.User.Paginated(ctx, d, params)
+	var roleRank *int
+	if r := params.SearchQuery.Role; r != nil {
+		role := u.authzsvc.RoleByName(*r)
+		roleRank = &role.Rank
+	}
+	users, err := u.repos.User.Paginated(ctx, d, repos.GetPaginatedUsersParams{
+		Limit:     params.Limit,
+		Direction: params.Direction,
+		Cursors:   params.SearchQuery.Cursors,
+		Items:     params.SearchQuery.Items,
+		RoleRank:  roleRank,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("repos.User.Paginated: %w", err)
 	}

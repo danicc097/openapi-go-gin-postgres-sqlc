@@ -25,6 +25,8 @@ var PublicStructs = map[string]any{
 	"DbCacheDemoWorkItemM2MAssigneeWIA":                 new(db.CacheDemoWorkItemM2MAssigneeWIA),
 	"DbCacheDemoWorkItemSelectConfig":                   new(db.CacheDemoWorkItemSelectConfig),
 	"DbCacheDemoWorkItemUpdateParams":                   new(db.CacheDemoWorkItemUpdateParams),
+	"DbCursor":                                          new(db.Cursor),
+	"DbDbField":                                         new(db.DbField),
 	"DbDemoTwoWorkItem":                                 new(db.DemoTwoWorkItem),
 	"DbDemoTwoWorkItemCreateParams":                     new(db.DemoTwoWorkItemCreateParams),
 	"DbDemoTwoWorkItemJoins":                            new(db.DemoTwoWorkItemJoins),

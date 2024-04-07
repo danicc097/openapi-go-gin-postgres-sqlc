@@ -6,10 +6,12 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
+import type { PaginationCursors } from './paginationCursors';
 import type { PaginationItems } from './paginationItems';
 import type { Role } from './role';
 
 export interface GetPaginatedUsersQueryParameters {
+  cursors: PaginationCursors;
   items?: PaginationItems;
   role?: Role;
 }

@@ -25,8 +25,9 @@ import {
   IconTrash,
   IconSend,
   IconX,
+  IconClearAll,
 } from '@tabler/icons'
-import { IconRestore } from '@tabler/icons-react'
+import { IconRestore, IconRowRemove } from '@tabler/icons-react'
 import {
   MRT_Column,
   MRT_Header,
@@ -46,6 +47,7 @@ import _, { lowerCase } from 'lodash'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
 import dayjs from 'dayjs'
 import { render } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
 const FILTER_OPTIONS: MRT_InternalFilterOption[] = [
   ...mrtFilterOptions(MRT_Localization_EN),
@@ -94,9 +96,9 @@ export function CustomMRTFilter({ columnProps, nullable, type, tableName }: Cust
 
     if (filterMode && inputRef.current) {
       const container = document.createElement('div')
-      render(
+      const root = createRoot(container)
+      root.render(
         <p className={`${classes.filterMode} filter-mode-helptext`}>{`Filter mode: ${sentenceCase(filterMode)}`}</p>,
-        container,
       )
       inputRef.current?.closest('.mantine-Table-th')?.appendChild(container)
     }
@@ -173,14 +175,14 @@ export const MRTNumberInput = forwardRef(function MRTNumberInput(
 ) {
   const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
   const filterMode = dynamicConfig?.filterModes[column.id]
-  const columnRangeValue = (column.getFilterValue() as (string | undefined)[]) ?? [undefined, undefined]
+  const columnRangeValue = (column.getFilterValue() as (string | undefined)[]) ?? ['', '']
   const columnFilterValue = columnRangeValue[rangeFilterIndex]
   const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
-  const [debouncedFilterValue] = useDebouncedValue<string>(filterValue, 400)
+  const [debouncedFilterValue] = useDebouncedValue<string>(filterValue, 250)
 
   const isMounted = useRef(false)
   // see https://github.com/KevinVandy/mantine-react-table/blob/v2/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L47
-  // debounced doing weird things
+  // debounced doing weird things when being cleared
   useEffect(() => {
     if (!isMounted.current) return
     column.setFilterValue((old: [string, string]) => {
@@ -192,22 +194,30 @@ export const MRTNumberInput = forwardRef(function MRTNumberInput(
   }, [debouncedFilterValue])
 
   const handleClear = () => {
-    setFilterValue(undefined)
+    setFilterValue('')
     // dynamicConfig?.filterModes[column.id] && removeFilterMode(column.id)
-    columnRangeValue[rangeFilterIndex] = undefined
+    columnRangeValue[rangeFilterIndex] = ''
     column.setFilterValue(columnRangeValue)
   }
 
+  useEffect(() => {
+    if (((column.getFilterValue() as string[]) ?? []).every((i) => i === null || i === undefined || i === '')) {
+      removeFilterMode(column.id)
+    }
+  }, [debouncedFilterValue])
+
+  // one-off fire
   useEffect(() => {
     if (!isMounted.current) {
       isMounted.current = true
       return
     }
     const tableFilterValue = column.getFilterValue() as (string | undefined)[]
-    if (_.isEqual(tableFilterValue, [undefined, undefined])) {
+
+    if (_.isEqual(tableFilterValue, ['', '']) || tableFilterValue === undefined) {
       handleClear()
     } else {
-      setFilterValue(tableFilterValue?.[rangeFilterIndex] ?? undefined)
+      setFilterValue(tableFilterValue?.[rangeFilterIndex] ?? '')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [column.getFilterValue()]) // don't use columnFilterValue
@@ -230,6 +240,7 @@ export const MRTNumberInput = forwardRef(function MRTNumberInput(
           label: classes.label,
         }}
         miw={40}
+        rightSection={filterValue ? renderClearSearchButton(handleClear) : <></>}
       />
     </Flex>
   )
@@ -249,7 +260,7 @@ export const MRTDateInput = forwardRef(function MRTDateInput(
   const columnRangeValue = (column.getFilterValue() as (string | undefined)[]) ?? [undefined, undefined]
   const columnFilterValue = columnRangeValue[rangeFilterIndex]
   const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
-  const [debouncedFilterValue] = useDebouncedValue(filterValue, 400)
+  const [debouncedFilterValue] = useDebouncedValue(filterValue, 250)
 
   const isMounted = useRef(false)
 
@@ -266,6 +277,12 @@ export const MRTDateInput = forwardRef(function MRTDateInput(
     columnRangeValue[rangeFilterIndex] = undefined
     column.setFilterValue(columnRangeValue)
   }
+
+  useEffect(() => {
+    if (((column.getFilterValue() as string[]) ?? []).every((i) => i === null || i === undefined || i === '')) {
+      removeFilterMode(column.id)
+    }
+  }, [debouncedFilterValue])
 
   useEffect(() => {
     if (!isMounted.current) {
@@ -300,6 +317,7 @@ export const MRTDateInput = forwardRef(function MRTDateInput(
           label: classes.label,
         }}
         miw={60}
+        rightSection={filterValue ? renderClearSearchButton(handleClear) : null}
       />
     </Flex>
   )
@@ -310,49 +328,66 @@ type MRTTextInputProps = {
   props?: ComponentProps<typeof TextInput>
 }
 
-export const CustomColumnFilterModeMenuItems = memo(
-  ({ modeOptions, column }: { modeOptions?: string[] | null; column: GenericColumnProps['column'] }) => {
-    const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
-    return modeOptions && modeOptions.length > 0 ? (
-      <>
-        {modeOptions.map((option) => {
-          const fopt = FILTER_OPTIONS.find((v) => v.option === option)
-          if (!fopt) return
+interface CustomColumnFilterModeMenuItemsProps {
+  modeOptions?: string[] | null
+  column: GenericColumnProps['column']
+}
 
-          return (
-            <MenuItem
-              key={fopt.option}
-              onClick={() => {
-                column.setFilterValue(null)
-                setFilterMode(column.id, fopt.option)
+export const CustomColumnFilterModeMenuItems = memo(({ modeOptions, column }: CustomColumnFilterModeMenuItemsProps) => {
+  const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
+  return modeOptions && modeOptions.length > 0 ? (
+    <>
+      {modeOptions.map((option) => {
+        const fopt = FILTER_OPTIONS.find((v) => v.option === option)
+        if (!fopt) return
+
+        return (
+          <MenuItem
+            key={fopt.option}
+            onClick={() => {
+              column.setFilterValue(null)
+              setFilterMode(column.id, fopt.option)
+            }}
+          >
+            <Flex
+              gap={10}
+              justify="flex-start"
+              align="center"
+              style={{
+                color:
+                  dynamicConfig?.filterModes[column.id ?? ''] === fopt.option
+                    ? 'var(--mantine-primary-color-5)'
+                    : 'inherit',
               }}
             >
-              <Flex
-                gap={10}
-                justify="flex-start"
-                style={{
-                  color:
-                    dynamicConfig?.filterModes[column.id ?? ''] === fopt.option
-                      ? 'var(--mantine-primary-color-5)'
-                      : 'inherit',
-                }}
-              >
-                <Box miw={20} style={{ alignSelf: 'center', textAlign: 'center' }}>
-                  {fopt.symbol}
-                </Box>
-                <Text size="sm">{sentenceCase(fopt.label)}</Text>
-              </Flex>
-            </MenuItem>
-          )
-        })}
-      </>
-    ) : (
-      <Text size="xs" p={8}>
-        No options available
-      </Text>
-    )
-  },
-)
+              <Box miw={20} style={{ alignSelf: 'center', textAlign: 'center' }}>
+                {fopt.symbol}
+              </Box>
+              <Text size="sm">{sentenceCase(fopt.label)}</Text>
+            </Flex>
+          </MenuItem>
+        )
+      })}
+      <Menu.Divider />
+      <MenuItem
+        key={'clearFilter'}
+        onClick={() => {
+          column.setFilterValue(undefined)
+          removeFilterMode(column.id)
+        }}
+      >
+        <Flex gap={10} justify="flex-start" align="center">
+          <IconClearAll stroke={1} size={18} />
+          <Text size="sm">Clear filters</Text>
+        </Flex>
+      </MenuItem>
+    </>
+  ) : (
+    <Text size="xs" p={8}>
+      No options available
+    </Text>
+  )
+})
 
 type MRTCheckboxInputProps = {
   columnProps: GenericColumnProps
@@ -398,7 +433,7 @@ export const MRTTextInput = forwardRef(function MRTTextInput(
 ) {
   const columnFilterValue = (column.getFilterValue() as string) ?? ''
   const [filterValue, setFilterValue] = useState<any>(() => columnFilterValue)
-  const [debouncedFilterValue] = useDebouncedValue(filterValue, 400)
+  const [debouncedFilterValue] = useDebouncedValue(filterValue, 250)
   const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters('demoTable')
 
   const isMounted = useRef(false)
@@ -406,6 +441,9 @@ export const MRTTextInput = forwardRef(function MRTTextInput(
   useEffect(() => {
     if (!isMounted.current) return
     column.setFilterValue(debouncedFilterValue ?? undefined)
+    if (!debouncedFilterValue) {
+      removeFilterMode(column.id)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedFilterValue])
 
@@ -445,23 +483,7 @@ export const MRTTextInput = forwardRef(function MRTTextInput(
         setFilterValue(event.currentTarget.value)
         if (!filterMode) setFilterMode(column.id, 'contains')
       }}
-      rightSection={
-        filterMode ? (
-          <Tooltip label={'Clear search'} withinPortal>
-            <Box>
-              <ActionIcon
-                aria-label={'Clear search'}
-                color="gray"
-                onClick={handleClear}
-                size="xs"
-                variant="transparent"
-              >
-                <IconX />
-              </ActionIcon>
-            </Box>
-          </Tooltip>
-        ) : null
-      }
+      rightSection={filterValue ? renderClearSearchButton(handleClear) : null}
       placeholder={`Filter by ${lowerCase(column.id)}`}
       // labelProps={{ 'data-floating': floating }}
       classNames={{
@@ -474,6 +496,18 @@ export const MRTTextInput = forwardRef(function MRTTextInput(
     />
   )
 })
+
+function renderClearSearchButton(handleClear: () => void) {
+  return (
+    <Tooltip label={'Clear search'} withinPortal>
+      <Box>
+        <ActionIcon aria-label={'Clear search'} color="gray" onClick={handleClear} size="xs" variant="transparent">
+          <IconX size={14} />
+        </ActionIcon>
+      </Box>
+    </Tooltip>
+  )
+}
 
 export function RowActionsMenu({ canRestore: canBeRestored }: RowActionsMenuProps) {
   const theme = useMantineTheme()

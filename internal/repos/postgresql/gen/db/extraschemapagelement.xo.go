@@ -92,7 +92,7 @@ func CreateExtraSchemaPagElement(ctx context.Context, db DB, params *ExtraSchema
 
 type ExtraSchemaPagElementSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ExtraSchemaPagElementJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -108,25 +108,20 @@ func WithExtraSchemaPagElementLimit(limit int) ExtraSchemaPagElementSelectConfig
 	}
 }
 
-type ExtraSchemaPagElementOrderBy string
-
-const (
-	ExtraSchemaPagElementCreatedAtDescNullsFirst ExtraSchemaPagElementOrderBy = " created_at DESC NULLS FIRST "
-	ExtraSchemaPagElementCreatedAtDescNullsLast  ExtraSchemaPagElementOrderBy = " created_at DESC NULLS LAST "
-	ExtraSchemaPagElementCreatedAtAscNullsFirst  ExtraSchemaPagElementOrderBy = " created_at ASC NULLS FIRST "
-	ExtraSchemaPagElementCreatedAtAscNullsLast   ExtraSchemaPagElementOrderBy = " created_at ASC NULLS LAST "
-)
-
-// WithExtraSchemaPagElementOrderBy orders results by the given columns.
-func WithExtraSchemaPagElementOrderBy(rows ...ExtraSchemaPagElementOrderBy) ExtraSchemaPagElementSelectConfigOption {
+// WithExtraSchemaPagElementOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithExtraSchemaPagElementOrderBy(rows map[string]*models.Direction) ExtraSchemaPagElementSelectConfigOption {
 	return func(s *ExtraSchemaPagElementSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaPagElement]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -264,11 +259,11 @@ func (espe *ExtraSchemaPagElement) Upsert(ctx context.Context, db DB, params *Ex
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Pag element", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaPagElement/Insert: %w", &XoError{Entity: "Pag element", Err: err})
 			}
 			espe, err = espe.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Pag element", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaPagElement/Update: %w", &XoError{Entity: "Pag element", Err: err})
 			}
 		}
 	}
@@ -288,15 +283,38 @@ func (espe *ExtraSchemaPagElement) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// ExtraSchemaPagElementPaginatedByCreatedAt returns a cursor-paginated list of ExtraSchemaPagElement.
-func ExtraSchemaPagElementPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...ExtraSchemaPagElementSelectConfigOption) ([]ExtraSchemaPagElement, error) {
-	c := &ExtraSchemaPagElementSelectConfig{joins: ExtraSchemaPagElementJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+// ExtraSchemaPagElementPaginated returns a cursor-paginated list of ExtraSchemaPagElement.
+// At least one cursor is required.
+func ExtraSchemaPagElementPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaPagElementSelectConfigOption) ([]ExtraSchemaPagElement, error) {
+	c := &ExtraSchemaPagElementSelectConfig{joins: ExtraSchemaPagElementJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaPagElement][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("ExtraSchemaPagElement/Paginated/cursor: %w", &XoError{Entity: "Pag element", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("pag_element.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -315,7 +333,7 @@ func ExtraSchemaPagElementPaginatedByCreatedAt(ctx context.Context, db DB, creat
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -334,6 +352,20 @@ func ExtraSchemaPagElementPaginatedByCreatedAt(ctx context.Context, db DB, creat
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("ExtraSchemaPagElement/Paginated/orderBy: %w", &XoError{Entity: "Pag element", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -349,14 +381,9 @@ func ExtraSchemaPagElementPaginatedByCreatedAt(ctx context.Context, db DB, creat
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -365,17 +392,13 @@ func ExtraSchemaPagElementPaginatedByCreatedAt(ctx context.Context, db DB, creat
 	pag_element.name,
 	pag_element.paginated_element_id %s 
 	 FROM extra_schema.pag_element %s 
-	 WHERE pag_element.created_at %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
-		created_at %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* ExtraSchemaPagElementPaginatedByCreatedAt */\n" + sqlstr
+	sqlstr = "/* ExtraSchemaPagElementPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaPagElement/Paginated/db.Query: %w", &XoError{Entity: "Pag element", Err: err}))
 	}
@@ -434,6 +457,18 @@ func ExtraSchemaPagElementByCreatedAt(ctx context.Context, db DB, createdAt time
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -449,9 +484,9 @@ func ExtraSchemaPagElementByCreatedAt(ctx context.Context, db DB, createdAt time
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -463,8 +498,8 @@ func ExtraSchemaPagElementByCreatedAt(ctx context.Context, db DB, createdAt time
 	 WHERE pag_element.created_at = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaPagElementByCreatedAt */\n" + sqlstr
 
@@ -530,6 +565,18 @@ func ExtraSchemaPagElementByPaginatedElementID(ctx context.Context, db DB, pagin
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -545,9 +592,9 @@ func ExtraSchemaPagElementByPaginatedElementID(ctx context.Context, db DB, pagin
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -559,8 +606,8 @@ func ExtraSchemaPagElementByPaginatedElementID(ctx context.Context, db DB, pagin
 	 WHERE pag_element.paginated_element_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaPagElementByPaginatedElementID */\n" + sqlstr
 

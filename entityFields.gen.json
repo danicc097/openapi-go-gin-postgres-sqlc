@@ -1,0 +1,447 @@
+{
+  "activity": {
+    "activityID": {
+      "db": "activity_id"
+    },
+    "deletedAt": {
+      "db": "deleted_at"
+    },
+    "description": {
+      "db": "description"
+    },
+    "isProductive": {
+      "db": "is_productive"
+    },
+    "name": {
+      "db": "name"
+    },
+    "projectID": {
+      "db": "project_id"
+    }
+  },
+  "cacheDemoTwoWorkItem": {
+    "closedAt": {
+      "db": "closed_at"
+    },
+    "createdAt": {
+      "db": "created_at"
+    },
+    "customDateForProject2": {
+      "db": "custom_date_for_project_2"
+    },
+    "deletedAt": {
+      "db": "deleted_at"
+    },
+    "description": {
+      "db": "description"
+    },
+    "kanbanStepID": {
+      "db": "kanban_step_id"
+    },
+    "targetDate": {
+      "db": "target_date"
+    },
+    "teamID": {
+      "db": "team_id"
+    },
+    "title": {
+      "db": "title"
+    },
+    "updatedAt": {
+      "db": "updated_at"
+    },
+    "workItemID": {
+      "db": "work_item_id"
+    },
+    "workItemTypeID": {
+      "db": "work_item_type_id"
+    }
+  },
+  "cacheDemoWorkItem": {
+    "closedAt": {
+      "db": "closed_at"
+    },
+    "createdAt": {
+      "db": "created_at"
+    },
+    "deletedAt": {
+      "db": "deleted_at"
+    },
+    "description": {
+      "db": "description"
+    },
+    "kanbanStepID": {
+      "db": "kanban_step_id"
+    },
+    "lastMessageAt": {
+      "db": "last_message_at"
+    },
+    "line": {
+      "db": "line"
+    },
+    "ref": {
+      "db": "ref"
+    },
+    "reopened": {
+      "db": "reopened"
+    },
+    "targetDate": {
+      "db": "target_date"
+    },
+    "teamID": {
+      "db": "team_id"
+    },
+    "title": {
+      "db": "title"
+    },
+    "updatedAt": {
+      "db": "updated_at"
+    },
+    "workItemID": {
+      "db": "work_item_id"
+    },
+    "workItemTypeID": {
+      "db": "work_item_type_id"
+    }
+  },
+  "demoTwoWorkItem": {
+    "customDateForProject2": {
+      "db": "custom_date_for_project_2"
+    },
+    "workItemID": {
+      "db": "work_item_id"
+    }
+  },
+  "demoWorkItem": {
+    "lastMessageAt": {
+      "db": "last_message_at"
+    },
+    "line": {
+      "db": "line"
+    },
+    "ref": {
+      "db": "ref"
+    },
+    "reopened": {
+      "db": "reopened"
+    },
+    "workItemID": {
+      "db": "work_item_id"
+    }
+  },
+  "entityNotification": {
+    "createdAt": {
+      "db": "created_at"
+    },
+    "entityNotificationID": {
+      "db": "entity_notification_id"
+    },
+    "id": {
+      "db": "id"
+    },
+    "message": {
+      "db": "message"
+    },
+    "topic": {
+      "db": "topic"
+    }
+  },
+  "kanbanStep": {
+    "color": {
+      "db": "color"
+    },
+    "description": {
+      "db": "description"
+    },
+    "kanbanStepID": {
+      "db": "kanban_step_id"
+    },
+    "name": {
+      "db": "name"
+    },
+    "projectID": {
+      "db": "project_id"
+    },
+    "stepOrder": {
+      "db": "step_order"
+    },
+    "timeTrackable": {
+      "db": "time_trackable"
+    }
+  },
+  "movie": {
+    "movieID": {
+      "db": "movie_id"
+    },
+    "synopsis": {
+      "db": "synopsis"
+    },
+    "title": {
+      "db": "title"
+    },
+    "year": {
+      "db": "year"
+    }
+  },
+  "notification": {
+    "body": {
+      "db": "body"
+    },
+    "createdAt": {
+      "db": "created_at"
+    },
+    "link": {
+      "db": "link"
+    },
+    "notificationID": {
+      "db": "notification_id"
+    },
+    "receiverRank": {
+      "db": "receiver_rank"
+    },
+    "title": {
+      "db": "title"
+    }
+  },
+  "project": {
+    "createdAt": {
+      "db": "created_at"
+    },
+    "description": {
+      "db": "description"
+    },
+    "name": {
+      "db": "name"
+    },
+    "projectID": {
+      "db": "project_id"
+    },
+    "updatedAt": {
+      "db": "updated_at"
+    },
+    "workItemsTableName": {
+      "db": "work_items_table_name"
+    }
+  },
+  "team": {
+    "createdAt": {
+      "db": "created_at"
+    },
+    "description": {
+      "db": "description"
+    },
+    "name": {
+      "db": "name"
+    },
+    "projectID": {
+      "db": "project_id"
+    },
+    "teamID": {
+      "db": "team_id"
+    },
+    "updatedAt": {
+      "db": "updated_at"
+    }
+  },
+  "timeEntry": {
+    "activityID": {
+      "db": "activity_id"
+    },
+    "comment": {
+      "db": "comment"
+    },
+    "durationMinutes": {
+      "db": "duration_minutes"
+    },
+    "start": {
+      "db": "start"
+    },
+    "teamID": {
+      "db": "team_id"
+    },
+    "timeEntryID": {
+      "db": "time_entry_id"
+    },
+    "workItemID": {
+      "db": "work_item_id"
+    }
+  },
+  "user": {
+    "age": {
+      "db": "age"
+    },
+    "apiKeyID": {
+      "db": "api_key_id"
+    },
+    "createdAt": {
+      "db": "created_at"
+    },
+    "deletedAt": {
+      "db": "deleted_at"
+    },
+    "email": {
+      "db": "email"
+    },
+    "externalID": {
+      "db": "external_id"
+    },
+    "firstName": {
+      "db": "first_name"
+    },
+    "fullName": {
+      "db": "full_name"
+    },
+    "hasGlobalNotifications": {
+      "db": "has_global_notifications"
+    },
+    "hasPersonalNotifications": {
+      "db": "has_personal_notifications"
+    },
+    "lastName": {
+      "db": "last_name"
+    },
+    "roleRank": {
+      "db": "role_rank"
+    },
+    "updatedAt": {
+      "db": "updated_at"
+    },
+    "username": {
+      "db": "username"
+    }
+  },
+  "userAPIKey": {
+    "apiKey": {
+      "db": "api_key"
+    },
+    "expiresOn": {
+      "db": "expires_on"
+    },
+    "userAPIKeyID": {
+      "db": "user_api_key_id"
+    }
+  },
+  "userNotification": {
+    "notificationID": {
+      "db": "notification_id"
+    },
+    "read": {
+      "db": "read"
+    },
+    "userNotificationID": {
+      "db": "user_notification_id"
+    }
+  },
+  "userProject": {
+    "projectID": {
+      "db": "project_id"
+    }
+  },
+  "userTeam": {
+    "teamID": {
+      "db": "team_id"
+    }
+  },
+  "workItem": {
+    "closedAt": {
+      "db": "closed_at"
+    },
+    "createdAt": {
+      "db": "created_at"
+    },
+    "deletedAt": {
+      "db": "deleted_at"
+    },
+    "description": {
+      "db": "description"
+    },
+    "kanbanStepID": {
+      "db": "kanban_step_id"
+    },
+    "targetDate": {
+      "db": "target_date"
+    },
+    "teamID": {
+      "db": "team_id"
+    },
+    "title": {
+      "db": "title"
+    },
+    "updatedAt": {
+      "db": "updated_at"
+    },
+    "workItemID": {
+      "db": "work_item_id"
+    },
+    "workItemTypeID": {
+      "db": "work_item_type_id"
+    }
+  },
+  "workItemAssignee": {
+    "workItemID": {
+      "db": "work_item_id"
+    }
+  },
+  "workItemComment": {
+    "createdAt": {
+      "db": "created_at"
+    },
+    "message": {
+      "db": "message"
+    },
+    "updatedAt": {
+      "db": "updated_at"
+    },
+    "workItemCommentID": {
+      "db": "work_item_comment_id"
+    },
+    "workItemID": {
+      "db": "work_item_id"
+    }
+  },
+  "workItemTag": {
+    "color": {
+      "db": "color"
+    },
+    "deletedAt": {
+      "db": "deleted_at"
+    },
+    "description": {
+      "db": "description"
+    },
+    "name": {
+      "db": "name"
+    },
+    "projectID": {
+      "db": "project_id"
+    },
+    "workItemTagID": {
+      "db": "work_item_tag_id"
+    }
+  },
+  "workItemType": {
+    "color": {
+      "db": "color"
+    },
+    "description": {
+      "db": "description"
+    },
+    "name": {
+      "db": "name"
+    },
+    "projectID": {
+      "db": "project_id"
+    },
+    "workItemTypeID": {
+      "db": "work_item_type_id"
+    }
+  },
+  "workItemWorkItemTag": {
+    "workItemID": {
+      "db": "work_item_id"
+    },
+    "workItemTagID": {
+      "db": "work_item_tag_id"
+    }
+  }
+}

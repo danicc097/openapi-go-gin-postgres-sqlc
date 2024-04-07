@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"strings"
 
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -89,7 +90,7 @@ func CreateExtraSchemaWorkItemAssignee(ctx context.Context, db DB, params *Extra
 
 type ExtraSchemaWorkItemAssigneeSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ExtraSchemaWorkItemAssigneeJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -105,9 +106,23 @@ func WithExtraSchemaWorkItemAssigneeLimit(limit int) ExtraSchemaWorkItemAssignee
 	}
 }
 
-type ExtraSchemaWorkItemAssigneeOrderBy string
-
-const ()
+// WithExtraSchemaWorkItemAssigneeOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithExtraSchemaWorkItemAssigneeOrderBy(rows map[string]*models.Direction) ExtraSchemaWorkItemAssigneeSelectConfigOption {
+	return func(s *ExtraSchemaWorkItemAssigneeSelectConfig) {
+		te := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaWorkItemAssignee]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
+			}
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
+		}
+	}
+}
 
 type ExtraSchemaWorkItemAssigneeJoins struct {
 	WorkItems bool `json:"workItems" required:"true" nullable:"false"` // M2M work_item_assignee
@@ -300,11 +315,11 @@ func (eswia *ExtraSchemaWorkItemAssignee) Upsert(ctx context.Context, db DB, par
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Work item assignee", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaWorkItemAssignee/Insert: %w", &XoError{Entity: "Work item assignee", Err: err})
 			}
 			eswia, err = eswia.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Work item assignee", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaWorkItemAssignee/Update: %w", &XoError{Entity: "Work item assignee", Err: err})
 			}
 		}
 	}
@@ -322,6 +337,137 @@ func (eswia *ExtraSchemaWorkItemAssignee) Delete(ctx context.Context, db DB) err
 		return logerror(err)
 	}
 	return nil
+}
+
+// ExtraSchemaWorkItemAssigneePaginated returns a cursor-paginated list of ExtraSchemaWorkItemAssignee.
+// At least one cursor is required.
+func ExtraSchemaWorkItemAssigneePaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaWorkItemAssigneeSelectConfigOption) ([]ExtraSchemaWorkItemAssignee, error) {
+	c := &ExtraSchemaWorkItemAssigneeSelectConfig{joins: ExtraSchemaWorkItemAssigneeJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaWorkItemAssignee][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("ExtraSchemaWorkItemAssignee/Paginated/cursor: %w", &XoError{Entity: "Work item assignee", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("work_item_assignee.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItemAssignee/Paginated/orderBy: %w", &XoError{Entity: "Work item assignee", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAssigneeTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAssigneeTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAssigneeTableWorkItemsGroupBySQL)
+	}
+
+	if c.joins.Assignees {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAssigneeTableAssigneesSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAssigneeTableAssigneesJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAssigneeTableAssigneesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupByClause := ""
+	if len(groupByClauses) > 0 {
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_assignee.assignee,
+	work_item_assignee.role,
+	work_item_assignee.work_item_id %s 
+	 FROM extra_schema.work_item_assignee %s 
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
+	sqlstr += c.limit
+	sqlstr = "/* ExtraSchemaWorkItemAssigneePaginated */\n" + sqlstr
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItemAssignee/Paginated/db.Query: %w", &XoError{Entity: "Work item assignee", Err: err}))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[ExtraSchemaWorkItemAssignee])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItemAssignee/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Work item assignee", Err: err}))
+	}
+	return res, nil
 }
 
 // ExtraSchemaWorkItemAssigneesByAssigneeWorkItemID retrieves a row from 'extra_schema.work_item_assignee' as a ExtraSchemaWorkItemAssignee.
@@ -372,6 +518,18 @@ func ExtraSchemaWorkItemAssigneesByAssigneeWorkItemID(ctx context.Context, db DB
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -393,9 +551,9 @@ func ExtraSchemaWorkItemAssigneesByAssigneeWorkItemID(ctx context.Context, db DB
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -406,8 +564,8 @@ func ExtraSchemaWorkItemAssigneesByAssigneeWorkItemID(ctx context.Context, db DB
 	 WHERE work_item_assignee.assignee = $1 AND work_item_assignee.work_item_id = $2
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAssigneesByAssigneeWorkItemID */\n" + sqlstr
 
@@ -475,6 +633,18 @@ func ExtraSchemaWorkItemAssigneeByWorkItemIDAssignee(ctx context.Context, db DB,
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -496,9 +666,9 @@ func ExtraSchemaWorkItemAssigneeByWorkItemIDAssignee(ctx context.Context, db DB,
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -509,8 +679,8 @@ func ExtraSchemaWorkItemAssigneeByWorkItemIDAssignee(ctx context.Context, db DB,
 	 WHERE work_item_assignee.work_item_id = $1 AND work_item_assignee.assignee = $2
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAssigneeByWorkItemIDAssignee */\n" + sqlstr
 
@@ -576,6 +746,18 @@ func ExtraSchemaWorkItemAssigneesByWorkItemID(ctx context.Context, db DB, workIt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -597,9 +779,9 @@ func ExtraSchemaWorkItemAssigneesByWorkItemID(ctx context.Context, db DB, workIt
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -610,8 +792,8 @@ func ExtraSchemaWorkItemAssigneesByWorkItemID(ctx context.Context, db DB, workIt
 	 WHERE work_item_assignee.work_item_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAssigneesByWorkItemID */\n" + sqlstr
 
@@ -679,6 +861,18 @@ func ExtraSchemaWorkItemAssigneesByAssignee(ctx context.Context, db DB, assignee
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -700,9 +894,9 @@ func ExtraSchemaWorkItemAssigneesByAssignee(ctx context.Context, db DB, assignee
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -713,8 +907,8 @@ func ExtraSchemaWorkItemAssigneesByAssignee(ctx context.Context, db DB, assignee
 	 WHERE work_item_assignee.assignee = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAssigneesByAssignee */\n" + sqlstr
 

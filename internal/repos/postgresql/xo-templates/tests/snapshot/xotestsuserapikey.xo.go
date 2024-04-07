@@ -93,7 +93,7 @@ func CreateXoTestsUserAPIKey(ctx context.Context, db DB, params *XoTestsUserAPIK
 
 type XoTestsUserAPIKeySelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsUserAPIKeyJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -109,25 +109,20 @@ func WithXoTestsUserAPIKeyLimit(limit int) XoTestsUserAPIKeySelectConfigOption {
 	}
 }
 
-type XoTestsUserAPIKeyOrderBy string
-
-const (
-	XoTestsUserAPIKeyExpiresOnDescNullsFirst XoTestsUserAPIKeyOrderBy = " expires_on DESC NULLS FIRST "
-	XoTestsUserAPIKeyExpiresOnDescNullsLast  XoTestsUserAPIKeyOrderBy = " expires_on DESC NULLS LAST "
-	XoTestsUserAPIKeyExpiresOnAscNullsFirst  XoTestsUserAPIKeyOrderBy = " expires_on ASC NULLS FIRST "
-	XoTestsUserAPIKeyExpiresOnAscNullsLast   XoTestsUserAPIKeyOrderBy = " expires_on ASC NULLS LAST "
-)
-
-// WithXoTestsUserAPIKeyOrderBy orders results by the given columns.
-func WithXoTestsUserAPIKeyOrderBy(rows ...XoTestsUserAPIKeyOrderBy) XoTestsUserAPIKeySelectConfigOption {
+// WithXoTestsUserAPIKeyOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithXoTestsUserAPIKeyOrderBy(rows map[string]*models.Direction) XoTestsUserAPIKeySelectConfigOption {
 	return func(s *XoTestsUserAPIKeySelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := XoTestsEntityFields[XoTestsTableEntityXoTestsUserAPIKey]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -270,11 +265,11 @@ func (xtuak *XoTestsUserAPIKey) Upsert(ctx context.Context, db DB, params *XoTes
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "User api key", Err: err})
+				return nil, fmt.Errorf("UpsertXoTestsUserAPIKey/Insert: %w", &XoError{Entity: "User api key", Err: err})
 			}
 			xtuak, err = xtuak.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "User api key", Err: err})
+				return nil, fmt.Errorf("UpsertXoTestsUserAPIKey/Update: %w", &XoError{Entity: "User api key", Err: err})
 			}
 		}
 	}
@@ -294,15 +289,38 @@ func (xtuak *XoTestsUserAPIKey) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// XoTestsUserAPIKeyPaginatedByUserAPIKeyID returns a cursor-paginated list of XoTestsUserAPIKey.
-func XoTestsUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID XoTestsUserAPIKeyID, direction models.Direction, opts ...XoTestsUserAPIKeySelectConfigOption) ([]XoTestsUserAPIKey, error) {
-	c := &XoTestsUserAPIKeySelectConfig{joins: XoTestsUserAPIKeyJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+// XoTestsUserAPIKeyPaginated returns a cursor-paginated list of XoTestsUserAPIKey.
+// At least one cursor is required.
+func XoTestsUserAPIKeyPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsUserAPIKeySelectConfigOption) ([]XoTestsUserAPIKey, error) {
+	c := &XoTestsUserAPIKeySelectConfig{
+		joins:   XoTestsUserAPIKeyJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := XoTestsEntityFields[XoTestsTableEntityXoTestsUserAPIKey][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("XoTestsUserAPIKey/Paginated/cursor: %w", &XoError{Entity: "User api key", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("user_api_keys.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -321,7 +339,7 @@ func XoTestsUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAP
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -340,6 +358,20 @@ func XoTestsUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAP
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("XoTestsUserAPIKey/Paginated/orderBy: %w", &XoError{Entity: "User api key", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -355,14 +387,9 @@ func XoTestsUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAP
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -371,17 +398,13 @@ func XoTestsUserAPIKeyPaginatedByUserAPIKeyID(ctx context.Context, db DB, userAP
 	user_api_keys.user_api_key_id,
 	user_api_keys.user_id %s 
 	 FROM xo_tests.user_api_keys %s 
-	 WHERE user_api_keys.user_api_key_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
-		user_api_key_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* XoTestsUserAPIKeyPaginatedByUserAPIKeyID */\n" + sqlstr
+	sqlstr = "/* XoTestsUserAPIKeyPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{userAPIKeyID}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsUserAPIKey/Paginated/db.Query: %w", &XoError{Entity: "User api key", Err: err}))
 	}
@@ -440,6 +463,18 @@ func XoTestsUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts .
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -455,9 +490,9 @@ func XoTestsUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts .
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -469,8 +504,8 @@ func XoTestsUserAPIKeyByAPIKey(ctx context.Context, db DB, apiKey string, opts .
 	 WHERE user_api_keys.api_key = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserAPIKeyByAPIKey */\n" + sqlstr
 
@@ -536,6 +571,18 @@ func XoTestsUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID Xo
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -551,9 +598,9 @@ func XoTestsUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID Xo
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -565,8 +612,8 @@ func XoTestsUserAPIKeyByUserAPIKeyID(ctx context.Context, db DB, userAPIKeyID Xo
 	 WHERE user_api_keys.user_api_key_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserAPIKeyByUserAPIKeyID */\n" + sqlstr
 
@@ -632,6 +679,18 @@ func XoTestsUserAPIKeyByUserID(ctx context.Context, db DB, userID XoTestsUserID,
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -647,9 +706,9 @@ func XoTestsUserAPIKeyByUserID(ctx context.Context, db DB, userID XoTestsUserID,
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -661,8 +720,8 @@ func XoTestsUserAPIKeyByUserID(ctx context.Context, db DB, userID XoTestsUserID,
 	 WHERE user_api_keys.user_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserAPIKeyByUserID */\n" + sqlstr
 

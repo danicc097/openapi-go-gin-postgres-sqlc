@@ -88,7 +88,7 @@ func CreateWorkItemAssignee(ctx context.Context, db DB, params *WorkItemAssignee
 
 type WorkItemAssigneeSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   WorkItemAssigneeJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -104,9 +104,23 @@ func WithWorkItemAssigneeLimit(limit int) WorkItemAssigneeSelectConfigOption {
 	}
 }
 
-type WorkItemAssigneeOrderBy string
-
-const ()
+// WithWorkItemAssigneeOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithWorkItemAssigneeOrderBy(rows map[string]*models.Direction) WorkItemAssigneeSelectConfigOption {
+	return func(s *WorkItemAssigneeSelectConfig) {
+		te := EntityFields[TableEntityWorkItemAssignee]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
+			}
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
+		}
+	}
+}
 
 type WorkItemAssigneeJoins struct {
 	WorkItems bool `json:"workItems" required:"true" nullable:"false"` // M2M work_item_assignee
@@ -299,11 +313,11 @@ func (wia *WorkItemAssignee) Upsert(ctx context.Context, db DB, params *WorkItem
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Work item assignee", Err: err})
+				return nil, fmt.Errorf("UpsertWorkItemAssignee/Insert: %w", &XoError{Entity: "Work item assignee", Err: err})
 			}
 			wia, err = wia.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Work item assignee", Err: err})
+				return nil, fmt.Errorf("UpsertWorkItemAssignee/Update: %w", &XoError{Entity: "Work item assignee", Err: err})
 			}
 		}
 	}
@@ -321,6 +335,137 @@ func (wia *WorkItemAssignee) Delete(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	return nil
+}
+
+// WorkItemAssigneePaginated returns a cursor-paginated list of WorkItemAssignee.
+// At least one cursor is required.
+func WorkItemAssigneePaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...WorkItemAssigneeSelectConfigOption) ([]WorkItemAssignee, error) {
+	c := &WorkItemAssigneeSelectConfig{joins: WorkItemAssigneeJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := EntityFields[TableEntityWorkItemAssignee][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("WorkItemAssignee/Paginated/cursor: %w", &XoError{Entity: "Work item assignee", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("work_item_assignee.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("WorkItemAssignee/Paginated/orderBy: %w", &XoError{Entity: "Work item assignee", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, workItemAssigneeTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, workItemAssigneeTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, workItemAssigneeTableWorkItemsGroupBySQL)
+	}
+
+	if c.joins.Assignees {
+		selectClauses = append(selectClauses, workItemAssigneeTableAssigneesSelectSQL)
+		joinClauses = append(joinClauses, workItemAssigneeTableAssigneesJoinSQL)
+		groupByClauses = append(groupByClauses, workItemAssigneeTableAssigneesGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupByClause := ""
+	if len(groupByClauses) > 0 {
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_assignee.assignee,
+	work_item_assignee.role,
+	work_item_assignee.work_item_id %s 
+	 FROM public.work_item_assignee %s 
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
+	sqlstr += c.limit
+	sqlstr = "/* WorkItemAssigneePaginated */\n" + sqlstr
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemAssignee/Paginated/db.Query: %w", &XoError{Entity: "Work item assignee", Err: err}))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemAssignee])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("WorkItemAssignee/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Work item assignee", Err: err}))
+	}
+	return res, nil
 }
 
 // WorkItemAssigneesByAssigneeWorkItemID retrieves a row from 'public.work_item_assignee' as a WorkItemAssignee.
@@ -371,6 +516,18 @@ func WorkItemAssigneesByAssigneeWorkItemID(ctx context.Context, db DB, assignee 
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -392,9 +549,9 @@ func WorkItemAssigneesByAssigneeWorkItemID(ctx context.Context, db DB, assignee 
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -405,8 +562,8 @@ func WorkItemAssigneesByAssigneeWorkItemID(ctx context.Context, db DB, assignee 
 	 WHERE work_item_assignee.assignee = $1 AND work_item_assignee.work_item_id = $2
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemAssigneesByAssigneeWorkItemID */\n" + sqlstr
 
@@ -474,6 +631,18 @@ func WorkItemAssigneeByWorkItemIDAssignee(ctx context.Context, db DB, workItemID
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -495,9 +664,9 @@ func WorkItemAssigneeByWorkItemIDAssignee(ctx context.Context, db DB, workItemID
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -508,8 +677,8 @@ func WorkItemAssigneeByWorkItemIDAssignee(ctx context.Context, db DB, workItemID
 	 WHERE work_item_assignee.work_item_id = $1 AND work_item_assignee.assignee = $2
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemAssigneeByWorkItemIDAssignee */\n" + sqlstr
 
@@ -575,6 +744,18 @@ func WorkItemAssigneesByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -596,9 +777,9 @@ func WorkItemAssigneesByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -609,8 +790,8 @@ func WorkItemAssigneesByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 	 WHERE work_item_assignee.work_item_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemAssigneesByWorkItemID */\n" + sqlstr
 
@@ -678,6 +859,18 @@ func WorkItemAssigneesByAssignee(ctx context.Context, db DB, assignee UserID, op
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -699,9 +892,9 @@ func WorkItemAssigneesByAssignee(ctx context.Context, db DB, assignee UserID, op
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -712,8 +905,8 @@ func WorkItemAssigneesByAssignee(ctx context.Context, db DB, assignee UserID, op
 	 WHERE work_item_assignee.assignee = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemAssigneesByAssignee */\n" + sqlstr
 

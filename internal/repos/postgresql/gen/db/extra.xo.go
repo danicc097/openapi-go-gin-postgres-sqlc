@@ -4,7 +4,28 @@ package db
 
 import (
 	"fmt"
+
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 )
+
+type Cursor struct {
+	Column    string
+	Value     interface{}
+	Direction models.Direction
+}
+
+type Filter struct {
+	// Type is one of: string, number, integer, boolean, date-time
+	// Arrays and objects are ignored for default filter generation
+	Type string `json:"type"`
+	// Db is the corresponding db column name
+	Db       string `json:"db"`
+	Nullable bool   `json:"nullable"`
+}
+
+type DbField struct {
+	Db string `json:"db"`
+}
 
 func newPointer[T any](v T) *T {
 	return &v
@@ -17,7 +38,7 @@ type XoError struct {
 
 // Error satisfies the error interface.
 func (e *XoError) Error() string {
-	return fmt.Sprintf("%s %v", e.Entity, e.Err)
+	return fmt.Sprintf("%s: %v", e.Entity, e.Err)
 }
 
 // Unwrap satisfies the unwrap interface.
@@ -52,15 +73,6 @@ const (
 	TableEntityWorkItemType         TableEntity = "workItemType"
 	TableEntityWorkItemWorkItemTag  TableEntity = "workItemWorkItemTag"
 )
-
-type Filter struct {
-	// Type is one of: string, number, integer, boolean, date-time
-	// Arrays and objects are ignored for default filter generation
-	Type string `json:"type"`
-	// Db is the corresponding db column name
-	Db       string `json:"db"`
-	Nullable bool   `json:"nullable"`
-}
 
 var EntityFilters = map[TableEntity]map[string]Filter{
 	TableEntityActivity: {
@@ -235,5 +247,187 @@ var EntityFilters = map[TableEntity]map[string]Filter{
 	TableEntityWorkItemWorkItemTag: {
 		"workItemID":    Filter{Type: "integer", Db: "work_item_id", Nullable: false},
 		"workItemTagID": Filter{Type: "integer", Db: "work_item_tag_id", Nullable: false},
+	},
+}
+
+var EntityFields = map[TableEntity]map[string]DbField{
+	TableEntityActivity: {
+		"activityID":   DbField{Db: "activity_id"},
+		"deletedAt":    DbField{Db: "deleted_at"},
+		"description":  DbField{Db: "description"},
+		"isProductive": DbField{Db: "is_productive"},
+		"name":         DbField{Db: "name"},
+		"projectID":    DbField{Db: "project_id"},
+	},
+	TableEntityCacheDemoTwoWorkItem: {
+		"closedAt":              DbField{Db: "closed_at"},
+		"createdAt":             DbField{Db: "created_at"},
+		"customDateForProject2": DbField{Db: "custom_date_for_project_2"},
+		"deletedAt":             DbField{Db: "deleted_at"},
+		"description":           DbField{Db: "description"},
+		"kanbanStepID":          DbField{Db: "kanban_step_id"},
+		"targetDate":            DbField{Db: "target_date"},
+		"teamID":                DbField{Db: "team_id"},
+		"title":                 DbField{Db: "title"},
+		"updatedAt":             DbField{Db: "updated_at"},
+		"workItemID":            DbField{Db: "work_item_id"},
+		"workItemTypeID":        DbField{Db: "work_item_type_id"},
+	},
+	TableEntityCacheDemoWorkItem: {
+		"closedAt":       DbField{Db: "closed_at"},
+		"createdAt":      DbField{Db: "created_at"},
+		"deletedAt":      DbField{Db: "deleted_at"},
+		"description":    DbField{Db: "description"},
+		"kanbanStepID":   DbField{Db: "kanban_step_id"},
+		"lastMessageAt":  DbField{Db: "last_message_at"},
+		"line":           DbField{Db: "line"},
+		"ref":            DbField{Db: "ref"},
+		"reopened":       DbField{Db: "reopened"},
+		"targetDate":     DbField{Db: "target_date"},
+		"teamID":         DbField{Db: "team_id"},
+		"title":          DbField{Db: "title"},
+		"updatedAt":      DbField{Db: "updated_at"},
+		"workItemID":     DbField{Db: "work_item_id"},
+		"workItemTypeID": DbField{Db: "work_item_type_id"},
+	},
+	TableEntityDemoTwoWorkItem: {
+		"customDateForProject2": DbField{Db: "custom_date_for_project_2"},
+		"workItemID":            DbField{Db: "work_item_id"},
+	},
+	TableEntityDemoWorkItem: {
+		"lastMessageAt": DbField{Db: "last_message_at"},
+		"line":          DbField{Db: "line"},
+		"ref":           DbField{Db: "ref"},
+		"reopened":      DbField{Db: "reopened"},
+		"workItemID":    DbField{Db: "work_item_id"},
+	},
+	TableEntityEntityNotification: {
+		"createdAt":            DbField{Db: "created_at"},
+		"entityNotificationID": DbField{Db: "entity_notification_id"},
+		"id":                   DbField{Db: "id"},
+		"message":              DbField{Db: "message"},
+		"topic":                DbField{Db: "topic"},
+	},
+	TableEntityKanbanStep: {
+		"color":         DbField{Db: "color"},
+		"description":   DbField{Db: "description"},
+		"kanbanStepID":  DbField{Db: "kanban_step_id"},
+		"name":          DbField{Db: "name"},
+		"projectID":     DbField{Db: "project_id"},
+		"stepOrder":     DbField{Db: "step_order"},
+		"timeTrackable": DbField{Db: "time_trackable"},
+	},
+	TableEntityMovie: {
+		"movieID":  DbField{Db: "movie_id"},
+		"synopsis": DbField{Db: "synopsis"},
+		"title":    DbField{Db: "title"},
+		"year":     DbField{Db: "year"},
+	},
+	TableEntityNotification: {
+		"body":           DbField{Db: "body"},
+		"createdAt":      DbField{Db: "created_at"},
+		"link":           DbField{Db: "link"},
+		"notificationID": DbField{Db: "notification_id"},
+		"receiverRank":   DbField{Db: "receiver_rank"},
+		"title":          DbField{Db: "title"},
+	},
+	TableEntityProject: {
+		"createdAt":          DbField{Db: "created_at"},
+		"description":        DbField{Db: "description"},
+		"name":               DbField{Db: "name"},
+		"projectID":          DbField{Db: "project_id"},
+		"updatedAt":          DbField{Db: "updated_at"},
+		"workItemsTableName": DbField{Db: "work_items_table_name"},
+	},
+	TableEntityTeam: {
+		"createdAt":   DbField{Db: "created_at"},
+		"description": DbField{Db: "description"},
+		"name":        DbField{Db: "name"},
+		"projectID":   DbField{Db: "project_id"},
+		"teamID":      DbField{Db: "team_id"},
+		"updatedAt":   DbField{Db: "updated_at"},
+	},
+	TableEntityTimeEntry: {
+		"activityID":      DbField{Db: "activity_id"},
+		"comment":         DbField{Db: "comment"},
+		"durationMinutes": DbField{Db: "duration_minutes"},
+		"start":           DbField{Db: "start"},
+		"teamID":          DbField{Db: "team_id"},
+		"timeEntryID":     DbField{Db: "time_entry_id"},
+		"workItemID":      DbField{Db: "work_item_id"},
+	},
+	TableEntityUser: {
+		"age":                      DbField{Db: "age"},
+		"apiKeyID":                 DbField{Db: "api_key_id"},
+		"createdAt":                DbField{Db: "created_at"},
+		"deletedAt":                DbField{Db: "deleted_at"},
+		"email":                    DbField{Db: "email"},
+		"externalID":               DbField{Db: "external_id"},
+		"firstName":                DbField{Db: "first_name"},
+		"fullName":                 DbField{Db: "full_name"},
+		"hasGlobalNotifications":   DbField{Db: "has_global_notifications"},
+		"hasPersonalNotifications": DbField{Db: "has_personal_notifications"},
+		"lastName":                 DbField{Db: "last_name"},
+		"roleRank":                 DbField{Db: "role_rank"},
+		"updatedAt":                DbField{Db: "updated_at"},
+		"username":                 DbField{Db: "username"},
+	},
+	TableEntityUserAPIKey: {
+		"apiKey":       DbField{Db: "api_key"},
+		"expiresOn":    DbField{Db: "expires_on"},
+		"userAPIKeyID": DbField{Db: "user_api_key_id"},
+	},
+	TableEntityUserNotification: {
+		"notificationID":     DbField{Db: "notification_id"},
+		"read":               DbField{Db: "read"},
+		"userNotificationID": DbField{Db: "user_notification_id"},
+	},
+	TableEntityUserProject: {
+		"projectID": DbField{Db: "project_id"},
+	},
+	TableEntityUserTeam: {
+		"teamID": DbField{Db: "team_id"},
+	},
+	TableEntityWorkItem: {
+		"closedAt":       DbField{Db: "closed_at"},
+		"createdAt":      DbField{Db: "created_at"},
+		"deletedAt":      DbField{Db: "deleted_at"},
+		"description":    DbField{Db: "description"},
+		"kanbanStepID":   DbField{Db: "kanban_step_id"},
+		"targetDate":     DbField{Db: "target_date"},
+		"teamID":         DbField{Db: "team_id"},
+		"title":          DbField{Db: "title"},
+		"updatedAt":      DbField{Db: "updated_at"},
+		"workItemID":     DbField{Db: "work_item_id"},
+		"workItemTypeID": DbField{Db: "work_item_type_id"},
+	},
+	TableEntityWorkItemAssignee: {
+		"workItemID": DbField{Db: "work_item_id"},
+	},
+	TableEntityWorkItemComment: {
+		"createdAt":         DbField{Db: "created_at"},
+		"message":           DbField{Db: "message"},
+		"updatedAt":         DbField{Db: "updated_at"},
+		"workItemCommentID": DbField{Db: "work_item_comment_id"},
+		"workItemID":        DbField{Db: "work_item_id"},
+	},
+	TableEntityWorkItemTag: {
+		"color":         DbField{Db: "color"},
+		"deletedAt":     DbField{Db: "deleted_at"},
+		"description":   DbField{Db: "description"},
+		"name":          DbField{Db: "name"},
+		"projectID":     DbField{Db: "project_id"},
+		"workItemTagID": DbField{Db: "work_item_tag_id"},
+	},
+	TableEntityWorkItemType: {
+		"color":          DbField{Db: "color"},
+		"description":    DbField{Db: "description"},
+		"name":           DbField{Db: "name"},
+		"projectID":      DbField{Db: "project_id"},
+		"workItemTypeID": DbField{Db: "work_item_type_id"},
+	},
+	TableEntityWorkItemWorkItemTag: {
+		"workItemID":    DbField{Db: "work_item_id"},
+		"workItemTagID": DbField{Db: "work_item_tag_id"},
 	},
 }

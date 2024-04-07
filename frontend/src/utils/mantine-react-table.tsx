@@ -3,6 +3,7 @@ import { LiteralUnion, MRT_ColumnDef, MRT_FilterOption, MRT_RowData } from 'mant
 import { EntityFilter } from 'src/config'
 import classes from './mantine-react-table.module.css'
 import dayjs from 'dayjs'
+import { ReactNode, cloneElement, isValidElement } from 'react'
 
 export const rangeModes: FilterModeOptions = ['between', 'betweenInclusive']
 export const emptyModes: FilterModeOptions = ['empty', 'notEmpty']
@@ -81,5 +82,48 @@ export function columnPropsByType<T extends MRT_RowData>(id: string, c: EntityFi
       },
       enableColumnFilterModes: false,
     }),
+    // enableColumnActions: false,
+    renderColumnActionsMenuItems(props) {
+      const menuItems = removeNodesWithTextContent(props.internalColumnMenuItems, 'Clear filter') // TODO: array to remove, and regex
+      return menuItems
+    },
   }
+}
+
+const removeNodesWithTextContent = (node: ReactNode, textContentToRemove: string): ReactNode => {
+  if (typeof node === 'string') {
+    return node
+  }
+
+  if (Array.isArray(node)) {
+    return node.map((n, index) => {
+      const modifiedNode = removeNodesWithTextContent(n, textContentToRemove)
+      // Preserve the key prop for arrays
+      if (isValidElement(n) && isValidElement(modifiedNode)) {
+        return cloneElement(modifiedNode, { key: n.key ?? index })
+      }
+      return modifiedNode
+    })
+  }
+
+  if (isValidElement(node)) {
+    const element = node as React.ReactElement
+    if (element?.props?.children?.toString().includes(textContentToRemove)) {
+      return null
+    }
+
+    const props = element.props || {}
+    const children = props.children
+
+    if (!children) {
+      return cloneElement(element, props)
+    }
+
+    return cloneElement(element, {
+      ...props,
+      children: removeNodesWithTextContent(children, textContentToRemove),
+    })
+  }
+
+  return node
 }

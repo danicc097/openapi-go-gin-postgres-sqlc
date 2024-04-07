@@ -164,7 +164,7 @@ func CreateWorkItem(ctx context.Context, db DB, params *WorkItemCreateParams) (*
 
 type WorkItemSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   WorkItemJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -189,41 +189,20 @@ func WithDeletedWorkItemOnly() WorkItemSelectConfigOption {
 	}
 }
 
-type WorkItemOrderBy string
-
-const (
-	WorkItemClosedAtDescNullsFirst   WorkItemOrderBy = " closed_at DESC NULLS FIRST "
-	WorkItemClosedAtDescNullsLast    WorkItemOrderBy = " closed_at DESC NULLS LAST "
-	WorkItemClosedAtAscNullsFirst    WorkItemOrderBy = " closed_at ASC NULLS FIRST "
-	WorkItemClosedAtAscNullsLast     WorkItemOrderBy = " closed_at ASC NULLS LAST "
-	WorkItemCreatedAtDescNullsFirst  WorkItemOrderBy = " created_at DESC NULLS FIRST "
-	WorkItemCreatedAtDescNullsLast   WorkItemOrderBy = " created_at DESC NULLS LAST "
-	WorkItemCreatedAtAscNullsFirst   WorkItemOrderBy = " created_at ASC NULLS FIRST "
-	WorkItemCreatedAtAscNullsLast    WorkItemOrderBy = " created_at ASC NULLS LAST "
-	WorkItemDeletedAtDescNullsFirst  WorkItemOrderBy = " deleted_at DESC NULLS FIRST "
-	WorkItemDeletedAtDescNullsLast   WorkItemOrderBy = " deleted_at DESC NULLS LAST "
-	WorkItemDeletedAtAscNullsFirst   WorkItemOrderBy = " deleted_at ASC NULLS FIRST "
-	WorkItemDeletedAtAscNullsLast    WorkItemOrderBy = " deleted_at ASC NULLS LAST "
-	WorkItemTargetDateDescNullsFirst WorkItemOrderBy = " target_date DESC NULLS FIRST "
-	WorkItemTargetDateDescNullsLast  WorkItemOrderBy = " target_date DESC NULLS LAST "
-	WorkItemTargetDateAscNullsFirst  WorkItemOrderBy = " target_date ASC NULLS FIRST "
-	WorkItemTargetDateAscNullsLast   WorkItemOrderBy = " target_date ASC NULLS LAST "
-	WorkItemUpdatedAtDescNullsFirst  WorkItemOrderBy = " updated_at DESC NULLS FIRST "
-	WorkItemUpdatedAtDescNullsLast   WorkItemOrderBy = " updated_at DESC NULLS LAST "
-	WorkItemUpdatedAtAscNullsFirst   WorkItemOrderBy = " updated_at ASC NULLS FIRST "
-	WorkItemUpdatedAtAscNullsLast    WorkItemOrderBy = " updated_at ASC NULLS LAST "
-)
-
-// WithWorkItemOrderBy orders results by the given columns.
-func WithWorkItemOrderBy(rows ...WorkItemOrderBy) WorkItemSelectConfigOption {
+// WithWorkItemOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithWorkItemOrderBy(rows map[string]*models.Direction) WorkItemSelectConfigOption {
 	return func(s *WorkItemSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := EntityFields[TableEntityWorkItem]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -530,11 +509,11 @@ func (wi *WorkItem) Upsert(ctx context.Context, db DB, params *WorkItemCreatePar
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Work item", Err: err})
+				return nil, fmt.Errorf("UpsertWorkItem/Insert: %w", &XoError{Entity: "Work item", Err: err})
 			}
 			wi, err = wi.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Work item", Err: err})
+				return nil, fmt.Errorf("UpsertWorkItem/Update: %w", &XoError{Entity: "Work item", Err: err})
 			}
 		}
 	}
@@ -580,15 +559,38 @@ func (wi *WorkItem) Restore(ctx context.Context, db DB) (*WorkItem, error) {
 	return newwi, nil
 }
 
-// WorkItemPaginatedByWorkItemID returns a cursor-paginated list of WorkItem.
-func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, direction models.Direction, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
-	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+// WorkItemPaginated returns a cursor-paginated list of WorkItem.
+// At least one cursor is required.
+func WorkItemPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...WorkItemSelectConfigOption) ([]WorkItem, error) {
+	c := &WorkItemSelectConfig{deletedAt: " null ", joins: WorkItemJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := EntityFields[TableEntityWorkItem][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("WorkItem/Paginated/cursor: %w", &XoError{Entity: "Work item", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("work_items.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -607,7 +609,7 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -625,6 +627,20 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("WorkItem/Paginated/orderBy: %w", &XoError{Entity: "Work item", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -689,14 +705,9 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -713,17 +724,13 @@ func WorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID WorkIt
 	work_items.work_item_id,
 	work_items.work_item_type_id %s 
 	 FROM public.work_items %s 
-	 WHERE work_items.work_item_id %s $1
-	 %s   AND work_items.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
-		work_item_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* WorkItemPaginatedByWorkItemID */\n" + sqlstr
+	sqlstr = "/* WorkItemPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItem/Paginated/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -782,6 +789,18 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -845,9 +864,9 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -867,8 +886,8 @@ func WorkItemsByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, de
 	 WHERE work_items.deleted_at = $1 AND (deleted_at IS NOT NULL)
 	 %s   AND work_items.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemsByDeletedAt_WhereDeletedAtIsNotNull */\n" + sqlstr
 
@@ -936,6 +955,18 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -999,9 +1030,9 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -1021,8 +1052,8 @@ func WorkItemByWorkItemID(ctx context.Context, db DB, workItemID WorkItemID, opt
 	 WHERE work_items.work_item_id = $1
 	 %s   AND work_items.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemByWorkItemID */\n" + sqlstr
 
@@ -1088,6 +1119,18 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...WorkIt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1151,9 +1194,9 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...WorkIt
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -1173,8 +1216,8 @@ func WorkItemsByTeamID(ctx context.Context, db DB, teamID TeamID, opts ...WorkIt
 	 WHERE work_items.team_id = $1
 	 %s   AND work_items.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemsByTeamID */\n" + sqlstr
 

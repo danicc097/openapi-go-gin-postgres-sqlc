@@ -2960,12 +2960,35 @@ components:
       description: represents pagination data indexed by column id
       additionalProperties:
         $ref: '#/components/schemas/Pagination'
+    PaginationCursors:
+      type: array
+      items:
+        $ref: '#/components/schemas/PaginationCursor'
+    PaginationCursor:
+      type: object
+      properties:
+        direction:
+          $ref: '#/components/schemas/Direction'
+        value:
+          description: represents a cursor value
+          nullable: true
+        column:
+          description: represents the JSON name of the db column
+          type: string
+      required:
+        - direction
+        - value
+        - column
     GetPaginatedUsersQueryParameters: # Generated schema. DO NOT EDIT.
       properties:
         role:
           $ref: '#/components/schemas/Role'
         items:
           $ref: '#/components/schemas/PaginationItems'
+        cursors:
+          $ref: '#/components/schemas/PaginationCursors'
+      required:
+        - cursors
       type: object
     PaginationFilterModes:
       enum:

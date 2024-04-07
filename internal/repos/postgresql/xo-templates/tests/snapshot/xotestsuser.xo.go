@@ -102,7 +102,7 @@ func CreateXoTestsUser(ctx context.Context, db DB, params *XoTestsUserCreatePara
 
 type XoTestsUserSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsUserJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -127,29 +127,20 @@ func WithDeletedXoTestsUserOnly() XoTestsUserSelectConfigOption {
 	}
 }
 
-type XoTestsUserOrderBy string
-
-const (
-	XoTestsUserCreatedAtDescNullsFirst XoTestsUserOrderBy = " created_at DESC NULLS FIRST "
-	XoTestsUserCreatedAtDescNullsLast  XoTestsUserOrderBy = " created_at DESC NULLS LAST "
-	XoTestsUserCreatedAtAscNullsFirst  XoTestsUserOrderBy = " created_at ASC NULLS FIRST "
-	XoTestsUserCreatedAtAscNullsLast   XoTestsUserOrderBy = " created_at ASC NULLS LAST "
-	XoTestsUserDeletedAtDescNullsFirst XoTestsUserOrderBy = " deleted_at DESC NULLS FIRST "
-	XoTestsUserDeletedAtDescNullsLast  XoTestsUserOrderBy = " deleted_at DESC NULLS LAST "
-	XoTestsUserDeletedAtAscNullsFirst  XoTestsUserOrderBy = " deleted_at ASC NULLS FIRST "
-	XoTestsUserDeletedAtAscNullsLast   XoTestsUserOrderBy = " deleted_at ASC NULLS LAST "
-)
-
-// WithXoTestsUserOrderBy orders results by the given columns.
-func WithXoTestsUserOrderBy(rows ...XoTestsUserOrderBy) XoTestsUserSelectConfigOption {
+// WithXoTestsUserOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithXoTestsUserOrderBy(rows map[string]*models.Direction) XoTestsUserSelectConfigOption {
 	return func(s *XoTestsUserSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := XoTestsEntityFields[XoTestsTableEntityXoTestsUser]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -482,11 +473,11 @@ func (xtu *XoTestsUser) Upsert(ctx context.Context, db DB, params *XoTestsUserCr
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "User", Err: err})
+				return nil, fmt.Errorf("UpsertXoTestsUser/Insert: %w", &XoError{Entity: "User", Err: err})
 			}
 			xtu, err = xtu.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "User", Err: err})
+				return nil, fmt.Errorf("UpsertXoTestsUser/Update: %w", &XoError{Entity: "User", Err: err})
 			}
 		}
 	}
@@ -532,15 +523,38 @@ func (xtu *XoTestsUser) Restore(ctx context.Context, db DB) (*XoTestsUser, error
 	return newxtu, nil
 }
 
-// XoTestsUserPaginatedByCreatedAt returns a cursor-paginated list of XoTestsUser.
-func XoTestsUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...XoTestsUserSelectConfigOption) ([]XoTestsUser, error) {
-	c := &XoTestsUserSelectConfig{deletedAt: " null ", joins: XoTestsUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+// XoTestsUserPaginated returns a cursor-paginated list of XoTestsUser.
+// At least one cursor is required.
+func XoTestsUserPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsUserSelectConfigOption) ([]XoTestsUser, error) {
+	c := &XoTestsUserSelectConfig{
+		deletedAt: " null ", joins: XoTestsUserJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := XoTestsEntityFields[XoTestsTableEntityXoTestsUser][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursor: %w", &XoError{Entity: "User", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("users.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -559,7 +573,7 @@ func XoTestsUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -577,6 +591,20 @@ func XoTestsUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/orderBy: %w", &XoError{Entity: "User", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -641,14 +669,9 @@ func XoTestsUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -658,17 +681,13 @@ func XoTestsUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.
 	users.name,
 	users.user_id %s 
 	 FROM xo_tests.users %s 
-	 WHERE users.created_at %s $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
-		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* XoTestsUserPaginatedByCreatedAt */\n" + sqlstr
+	sqlstr = "/* XoTestsUserPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -727,6 +746,18 @@ func XoTestsUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -790,9 +821,9 @@ func XoTestsUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opt
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -805,8 +836,8 @@ func XoTestsUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opt
 	 WHERE users.created_at = $1
 	 %s   AND users.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserByCreatedAt */\n" + sqlstr
 
@@ -872,6 +903,18 @@ func XoTestsUserByName(ctx context.Context, db DB, name string, opts ...XoTestsU
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -935,9 +978,9 @@ func XoTestsUserByName(ctx context.Context, db DB, name string, opts ...XoTestsU
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -950,8 +993,8 @@ func XoTestsUserByName(ctx context.Context, db DB, name string, opts ...XoTestsU
 	 WHERE users.name = $1
 	 %s   AND users.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserByName */\n" + sqlstr
 
@@ -1017,6 +1060,18 @@ func XoTestsUserByUserID(ctx context.Context, db DB, userID XoTestsUserID, opts 
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1080,9 +1135,9 @@ func XoTestsUserByUserID(ctx context.Context, db DB, userID XoTestsUserID, opts 
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -1095,8 +1150,8 @@ func XoTestsUserByUserID(ctx context.Context, db DB, userID XoTestsUserID, opts 
 	 WHERE users.user_id = $1
 	 %s   AND users.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsUserByUserID */\n" + sqlstr
 

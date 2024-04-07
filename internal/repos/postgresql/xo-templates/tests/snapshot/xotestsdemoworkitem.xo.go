@@ -66,7 +66,7 @@ func CreateXoTestsDemoWorkItem(ctx context.Context, db DB, params *XoTestsDemoWo
 
 type XoTestsDemoWorkItemSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   XoTestsDemoWorkItemJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -82,7 +82,23 @@ func WithXoTestsDemoWorkItemLimit(limit int) XoTestsDemoWorkItemSelectConfigOpti
 	}
 }
 
-type XoTestsDemoWorkItemOrderBy string
+// WithXoTestsDemoWorkItemOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithXoTestsDemoWorkItemOrderBy(rows map[string]*models.Direction) XoTestsDemoWorkItemSelectConfigOption {
+	return func(s *XoTestsDemoWorkItemSelectConfig) {
+		te := XoTestsEntityFields[XoTestsTableEntityXoTestsDemoWorkItem]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
+			}
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
+		}
+	}
+}
 
 type XoTestsDemoWorkItemJoins struct {
 	WorkItem bool `json:"workItem" required:"true" nullable:"false"` // O2O work_items
@@ -212,11 +228,11 @@ func (xtdwi *XoTestsDemoWorkItem) Upsert(ctx context.Context, db DB, params *XoT
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Demo work item", Err: err})
+				return nil, fmt.Errorf("UpsertXoTestsDemoWorkItem/Insert: %w", &XoError{Entity: "Demo work item", Err: err})
 			}
 			xtdwi, err = xtdwi.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Demo work item", Err: err})
+				return nil, fmt.Errorf("UpsertXoTestsDemoWorkItem/Update: %w", &XoError{Entity: "Demo work item", Err: err})
 			}
 		}
 	}
@@ -236,15 +252,38 @@ func (xtdwi *XoTestsDemoWorkItem) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// XoTestsDemoWorkItemPaginatedByWorkItemID returns a cursor-paginated list of XoTestsDemoWorkItem.
-func XoTestsDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID XoTestsWorkItemID, direction models.Direction, opts ...XoTestsDemoWorkItemSelectConfigOption) ([]XoTestsDemoWorkItem, error) {
-	c := &XoTestsDemoWorkItemSelectConfig{joins: XoTestsDemoWorkItemJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+// XoTestsDemoWorkItemPaginated returns a cursor-paginated list of XoTestsDemoWorkItem.
+// At least one cursor is required.
+func XoTestsDemoWorkItemPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsDemoWorkItemSelectConfigOption) ([]XoTestsDemoWorkItem, error) {
+	c := &XoTestsDemoWorkItemSelectConfig{
+		joins:   XoTestsDemoWorkItemJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := XoTestsEntityFields[XoTestsTableEntityXoTestsDemoWorkItem][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("XoTestsDemoWorkItem/Paginated/cursor: %w", &XoError{Entity: "Demo work item", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("demo_work_items.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -263,7 +302,7 @@ func XoTestsDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -282,6 +321,20 @@ func XoTestsDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("XoTestsDemoWorkItem/Paginated/orderBy: %w", &XoError{Entity: "Demo work item", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -297,31 +350,22 @@ func XoTestsDemoWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	demo_work_items.checked,
 	demo_work_items.work_item_id %s 
 	 FROM xo_tests.demo_work_items %s 
-	 WHERE demo_work_items.work_item_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
-		work_item_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* XoTestsDemoWorkItemPaginatedByWorkItemID */\n" + sqlstr
+	sqlstr = "/* XoTestsDemoWorkItemPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsDemoWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Demo work item", Err: err}))
 	}
@@ -380,6 +424,18 @@ func XoTestsDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTe
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -395,9 +451,9 @@ func XoTestsDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTe
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -407,8 +463,8 @@ func XoTestsDemoWorkItemByWorkItemID(ctx context.Context, db DB, workItemID XoTe
 	 WHERE demo_work_items.work_item_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsDemoWorkItemByWorkItemID */\n" + sqlstr
 

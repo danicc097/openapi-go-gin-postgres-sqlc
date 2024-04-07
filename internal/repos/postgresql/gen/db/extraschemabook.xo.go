@@ -69,7 +69,7 @@ func CreateExtraSchemaBook(ctx context.Context, db DB, params *ExtraSchemaBookCr
 
 type ExtraSchemaBookSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ExtraSchemaBookJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -85,9 +85,23 @@ func WithExtraSchemaBookLimit(limit int) ExtraSchemaBookSelectConfigOption {
 	}
 }
 
-type ExtraSchemaBookOrderBy string
-
-const ()
+// WithExtraSchemaBookOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithExtraSchemaBookOrderBy(rows map[string]*models.Direction) ExtraSchemaBookSelectConfigOption {
+	return func(s *ExtraSchemaBookSelectConfig) {
+		te := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaBook]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
+			}
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
+		}
+	}
+}
 
 type ExtraSchemaBookJoins struct {
 	Authors     bool `json:"authors" required:"true" nullable:"false"`     // M2M book_authors
@@ -313,11 +327,11 @@ func (esb *ExtraSchemaBook) Upsert(ctx context.Context, db DB, params *ExtraSche
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Book", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaBook/Insert: %w", &XoError{Entity: "Book", Err: err})
 			}
 			esb, err = esb.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Book", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaBook/Update: %w", &XoError{Entity: "Book", Err: err})
 			}
 		}
 	}
@@ -337,15 +351,38 @@ func (esb *ExtraSchemaBook) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// ExtraSchemaBookPaginatedByBookID returns a cursor-paginated list of ExtraSchemaBook.
-func ExtraSchemaBookPaginatedByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookID, direction models.Direction, opts ...ExtraSchemaBookSelectConfigOption) ([]ExtraSchemaBook, error) {
-	c := &ExtraSchemaBookSelectConfig{joins: ExtraSchemaBookJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+// ExtraSchemaBookPaginated returns a cursor-paginated list of ExtraSchemaBook.
+// At least one cursor is required.
+func ExtraSchemaBookPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaBookSelectConfigOption) ([]ExtraSchemaBook, error) {
+	c := &ExtraSchemaBookSelectConfig{joins: ExtraSchemaBookJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaBook][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("ExtraSchemaBook/Paginated/cursor: %w", &XoError{Entity: "Book", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("books.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -364,7 +401,7 @@ func ExtraSchemaBookPaginatedByBookID(ctx context.Context, db DB, bookID ExtraSc
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -382,6 +419,20 @@ func ExtraSchemaBookPaginatedByBookID(ctx context.Context, db DB, bookID ExtraSc
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBook/Paginated/orderBy: %w", &XoError{Entity: "Book", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -416,31 +467,22 @@ func ExtraSchemaBookPaginatedByBookID(ctx context.Context, db DB, bookID ExtraSc
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	books.book_id,
 	books.name %s 
 	 FROM extra_schema.books %s 
-	 WHERE books.book_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
-		book_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* ExtraSchemaBookPaginatedByBookID */\n" + sqlstr
+	sqlstr = "/* ExtraSchemaBookPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{bookID}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaBook/Paginated/db.Query: %w", &XoError{Entity: "Book", Err: err}))
 	}
@@ -499,6 +541,18 @@ func ExtraSchemaBookByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookI
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -532,9 +586,9 @@ func ExtraSchemaBookByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookI
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -544,8 +598,8 @@ func ExtraSchemaBookByBookID(ctx context.Context, db DB, bookID ExtraSchemaBookI
 	 WHERE books.book_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookByBookID */\n" + sqlstr
 

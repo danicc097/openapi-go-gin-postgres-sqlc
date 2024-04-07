@@ -10,6 +10,7 @@ import {
   MRT_RowVirtualizer,
   mrtFilterOptions,
   MRT_Column,
+  MRT_VisibilityState,
 } from 'mantine-react-table'
 import {
   Accordion,
@@ -18,6 +19,7 @@ import {
   Box,
   Button,
   Card,
+  Checkbox,
   Flex,
   Group,
   List,
@@ -32,7 +34,14 @@ import { IconEdit, IconRefresh, IconTrash, IconX } from '@tabler/icons-react'
 import { useQuery } from '@tanstack/react-query'
 import { useGetPaginatedUsersInfinite } from 'src/gen/user/user'
 import dayjs from 'dayjs'
-import { GetPaginatedUsersParams, GetPaginatedUsersQueryParameters, PaginationItems, User } from 'src/gen/model'
+import {
+  GetPaginatedUsersParams,
+  GetPaginatedUsersQueryParameters,
+  PaginationFilterModes,
+  PaginationItems,
+  Role,
+  User,
+} from 'src/gen/model'
 import { getContrastYIQ, scopeColor } from 'src/utils/colors'
 import _, { lowerCase } from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
@@ -51,6 +60,7 @@ import {
   CustomColumnFilterModeMenuItems,
 } from 'src/utils/mantine-react-table.components'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
+import { useDeletedEntityFilter } from 'src/hooks/tables/useFilters'
 
 type Column = MRT_ColumnDef<User>
 
@@ -60,7 +70,8 @@ const defaultExcludedColumns: Array<DefaultFilters> = ['firstName', 'lastName']
 // just btrees, or extension indexes if applicable https://www.postgresql.org/docs/16/indexes-ordering.html
 // TODO: deletedAt != null -> restore buttons.
 // also see CRUD: https://v2.mantine-react-table.com/docs/examples/editing-crud
-const defaultSortableColumns: Array<DefaultFilters> = ['createdAt', 'deletedAt', 'updatedAt']
+const defaultSortableColumns: Array<DefaultFilters> = ['createdAt', 'deletedAt', 'email'] // if we use PaginatedBy*, can't sort by anything else.
+// we could have a base PaginatedBy which receives at most a field to paginate by
 
 const TABLE_NAME = 'demoTable'
 
@@ -77,10 +88,9 @@ const TABLE_NAME = 'demoTable'
 export default function DemoMantineReactTable() {
   const tableContainerRef = useRef<HTMLDivElement>(null)
   const rowVirtualizerInstanceRef = useRef<MRT_RowVirtualizer>(null) //we can get access to the underlying Virtualizer instance and call its scrollToIndex method
-  const { dynamicConfig, removeFilterMode, setFilterMode } = useMantineReactTableFilters(TABLE_NAME)
-
-  // TODO: hooks
-
+  const { dynamicConfig, staticConfig, setColumnOrder, setHiddenColumns, setFilterMode, removeFilterMode } =
+    useMantineReactTableFilters(TABLE_NAME)
+  const [columnVisibility, setColumnVisibility] = useState<MRT_VisibilityState>({})
   const defaultPaginatedUserColumns = useMemo<Column[]>(
     () =>
       entries(ENTITY_FILTERS.user)
@@ -95,20 +105,11 @@ export default function DemoMantineReactTable() {
 
           col = {
             ...col,
-
-            // Custom filters would basically need to reimplement: https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L148
-            Filter:
-              // FIXME: for dates, filter mode options are changed by mrt - removing emptyModes by itself
-              (props) => {
-                // https://github.com/KevinVandy/mantine-react-table/blob/25a38325dfbf7ed83877dc79a81c68a6290957f1/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L203
-                // however it does not change the filter for dates...
-                // TODO: abstract to generic CustomComponent which accepts type: EntityFilter and columnProps
-                // and has built in empty mode check, so we can reuse in our custom components outside default
-                // generated columns (cant use built in mrt ones)
-                return (
-                  <CustomMRTFilter tableName={TABLE_NAME} nullable={c.nullable} type={c.type} columnProps={props} />
-                )
-              },
+            // Custom filters would basically need to reimplement:
+            // https://github.com/KevinVandy/mantine-react-table/blob/v2/packages/mantine-react-table/src/components/inputs/MRT_FilterTextInput.tsx#L148
+            Filter: (props) => {
+              return <CustomMRTFilter tableName={TABLE_NAME} nullable={c.nullable} type={c.type} columnProps={props} />
+            },
             renderColumnFilterModeMenuItems: (props) => (
               <CustomColumnFilterModeMenuItems modeOptions={col.columnFilterModeOptions} {...props} />
             ),
@@ -133,22 +134,12 @@ export default function DemoMantineReactTable() {
         // not a part of table entity so we define manually
         // repo will convert to role_rank filter, same as teams filter will internally
         // use xo join on teams teamID. frontend shouldnt care about these conversions
-        // TODO: have to reimplement select, just like input and dateinput.
-        // will allow passing combobox.options
+        // TODO: have to reimplement select and multiselect, just like input and dateinput.
+        // will allow passing combobox.options s
         accessorKey: 'role',
         header: 'Role',
-        // TODO: must use custom props for non default rows so we can use our own filters, badges...
         mantineFilterSelectProps(props) {
           const roleOptions = entries(ROLES).map(([role, v]) => ({ value: role, label: sentenceCase(role) }))
-
-          // TODO: MRT should allow custom combobox options to be passed instead:
-          // const roleOptions = entries(ROLES).map(([role, v]) => (
-          //   <Combobox.Option key={role} value={role}>
-          //     <RoleBadge role={role} />
-          //   </Combobox.Option>
-          // ))
-
-          // return <Combobox.Options>{roleOptions}</Combobox.Options>
 
           return {
             data: roleOptions,
@@ -156,16 +147,16 @@ export default function DemoMantineReactTable() {
             fw: 800,
             styles: {
               root: {
-                // TODO: move select and multiselect to mrt .components and use classes
+                // TODO: shared css modules for select and multiselect
                 borderBottomColor: 'light-dark(#d0d5db, #414141)',
               },
             },
           }
         },
         filterVariant: 'select',
-
+        enableSorting: false,
+        //  TODO: Combobox.Options with <RoleBadge role={role} />
         // Filter(props) {
-        //   // TODO: combobox with <RoleBadge role={role} />
         //   return <MRTTextInput column={props.column} />
         // },
       },
@@ -264,16 +255,22 @@ export default function DemoMantineReactTable() {
 
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState('')
-  const [sorting, setSorting] = useState<MRT_SortingState>([])
+  const [sorting, setSorting] = useState<MRT_SortingState>([{ id: 'createdAt', desc: true }])
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
     pageSize: 15,
   })
 
-  const [searchQuery, setSearchQuery] = useState<GetPaginatedUsersQueryParameters>({
+  const [searchQuery, setSearchQuery] = useState<GetPaginatedUsersQueryParameters>(() => ({
     items: {},
-  })
-  const [cursor, setCursor] = useState(dayjs().toRFC3339NANO())
+    cursors: [
+      {
+        column: 'createdAt',
+        direction: 'desc',
+        value: dayjs().toRFC3339NANO(),
+      },
+    ],
+  }))
 
   const {
     data: usersData,
@@ -288,7 +285,7 @@ export default function DemoMantineReactTable() {
   } = useGetPaginatedUsersInfinite(
     {
       direction: 'desc',
-      cursor,
+      cursor: '123', // must have something for react-query to work
       limit: pagination.pageSize,
       // deepmap needs to be updated for kin-openapi new Type struct
       // filter: { post: ['fesefesf', '1'], bools: [true, false], objects: [{ nestedObj: 'something' }] },
@@ -318,15 +315,18 @@ export default function DemoMantineReactTable() {
 
   useEffect(() => {
     const items: PaginationItems = {}
+    let role: Role
 
     columnFilters.forEach((filter) => {
       const { id, value } = filter
-      console.log({ value })
       let v = value
-      if (_.isArray(v)) {
-        v = v.map(tryDate)
-      } else {
-        v = tryDate(v)
+      const column = columns.find((c) => c.id === id || c.accessorKey === id)
+      if (column?.filterVariant === 'date-range') {
+        if (_.isArray(v)) {
+          v = v.map(tryDate)
+        } else {
+          v = tryDate(v)
+        }
       }
       const filterMode = dynamicConfig?.filterModes[id]
       const sort = sorting[id]
@@ -336,12 +336,59 @@ export default function DemoMantineReactTable() {
             value: v as any,
             filterMode: filterMode as any, // must fix orval upstream
           },
-          ...(sort && { sort: sort.desc === true ? 'desc' : 'asc' }),
+          // we remove old sorts at the same time
+          ...(sort && { sort: sort.desc ? 'desc' : 'asc' }),
         }
+      }
+
+      // TODO: select and multiselect must set filter mode, or alternatively always add if column.filterVariant is one of those
+      if (column?.filterVariant === 'select' && v !== undefined) {
+        items[id] = {
+          filter: {
+            value: v as any,
+            filterMode: PaginationFilterModes.equals,
+          },
+          // we remove old sorts at the same time
+          ...(sort && { sort: sort.desc ? 'desc' : 'asc' }),
+        }
+      }
+
+      if (column?.id === 'role' && v) {
+        role = v as Role
       }
     })
 
-    setSearchQuery((v) => ({ ...v, items }))
+    searchQuery.cursors = sorting.flatMap((s) => {
+      const col = columns.find((col) => col.id === s.id)
+      if (!col) return []
+      return [
+        {
+          column: s.id,
+          direction: s.desc ? 'desc' : 'asc',
+          // for natural sorting we need: CREATE COLLATION numeric (provider = icu, locale = 'en@colNumeric=yes')
+          // used as SELECT email COLLATE numeric FROM users ORDER BY email DESC;
+          // therefore indexes would need to be applied with COLLATE numeric
+          // FIXME: these are defaults - use nextCursor if sorting hasnt changed
+          // TODO: nullable cursor value, and if nullable then in repo we query select <col> ...order by <col> limit 1
+          // scan to string and use that as cursor
+          value: String(
+            s.desc
+              ? col.filterVariant === 'date-range'
+                ? dayjs().toRFC3339NANO()
+                : col.filterVariant === 'text'
+                ? '\ufffd' // lower bound
+                : -Infinity
+              : col.filterVariant === 'date-range'
+              ? dayjs(0).toRFC3339NANO()
+              : col.filterVariant === 'text'
+              ? 'zzzzzzzzzzzzzzzzzz' // need querying select <col> from users order by <col> desc limit 1 for this one.
+              : Infinity,
+          ),
+        },
+      ]
+    })
+
+    setSearchQuery((v) => ({ ...v, items, role: role }))
   }, [columnFilters, globalFilter, dynamicConfig?.filterModes, sorting])
 
   useEffect(() => {
@@ -379,7 +426,22 @@ export default function DemoMantineReactTable() {
 
   const { colorScheme } = useMantineColorScheme()
 
-  const [columnOrder, setColumnOrder] = useState(['fullName', 'email', 'role'])
+  const { deletedEntityFilterState, getLabelText, toggleDeletedUsersFilter } = useDeletedEntityFilter('user')
+
+  useEffect(() => {
+    switch (deletedEntityFilterState) {
+      case true:
+        setFilterMode('deletedAt', PaginationFilterModes.notEmpty)
+        break
+      case false:
+        setFilterMode('deletedAt', PaginationFilterModes.empty)
+        break
+      case null:
+        removeFilterMode('deletedAt')
+      default:
+        break
+    }
+  }, [deletedEntityFilterState])
 
   const validationError = error?.response?.data.validationError
 
@@ -387,7 +449,7 @@ export default function DemoMantineReactTable() {
     enableBottomToolbar: false,
     enableStickyHeader: true,
     columns,
-    enableDensityToggle: true,
+    enableDensityToggle: false,
     mantineTableBodyCellProps: {},
     data: fetchedUsers,
     enableColumnFilterModes: true,
@@ -417,6 +479,8 @@ export default function DemoMantineReactTable() {
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     enableColumnOrdering: true,
+    // https://tanstack.com/table/v8/docs/api/features/column-visibility#oncolumnvisibilitychange
+    onColumnVisibilityChange: setColumnVisibility, // doesn't update state like onColumnOrderChange for some reason
     onColumnOrderChange: setColumnOrder,
     mantineTableContainerProps: {
       ref: tableContainerRef, //get access to the table container element
@@ -427,10 +491,11 @@ export default function DemoMantineReactTable() {
     },
     rowCount: totalRowCount,
     enableColumnResizing: true,
+    enableGlobalFilter: false,
     columnResizeMode: 'onChange',
     layoutMode: 'semantic', // because of enableColumnResizing, else it breaks actions row calculated size, and it cannot be set manually
     state: {
-      columnOrder,
+      columnOrder: staticConfig?.columnOrder ?? ['mrt-row-actions', 'fullName', 'email', 'role'],
       density: 'xs',
       columnFilters,
       globalFilter,
@@ -439,25 +504,38 @@ export default function DemoMantineReactTable() {
       showAlertBanner: isError,
       showProgressBars: isFetching,
       sorting,
+      columnVisibility: columnVisibility,
       // isSaving: true,
     },
     renderTopToolbarCustomActions: ({ table }) => (
-      <Group>
-        <Tooltip label="Refresh data">
-          <ActionIcon onClick={() => refetch()}>
-            <IconRefresh />
-          </ActionIcon>
-        </Tooltip>
-        <Button
-          onClick={() => {
-            //
-          }}
-          size="xs"
-        >
-          Create user
-        </Button>
-      </Group>
+      <Flex direction="column">
+        <Group>
+          <Tooltip label="Refresh data">
+            <ActionIcon onClick={() => refetch()}>
+              <IconRefresh />
+            </ActionIcon>
+          </Tooltip>
+          <Button
+            onClick={() => {
+              //
+            }}
+            size="xs"
+          >
+            Create user
+          </Button>
+          {defaultPaginatedUserColumns.findIndex((c) => c.id === 'deletedAt') !== -1 && (
+            <Checkbox
+              checked={deletedEntityFilterState ?? true}
+              size="sm"
+              indeterminate={deletedEntityFilterState === null}
+              onChange={toggleDeletedUsersFilter}
+              label={getLabelText()}
+            />
+          )}
+        </Group>
+      </Flex>
     ),
+    // enableRowNumbers: true,
     enableRowActions: true,
     renderRowActions: ({ row, table }) => (
       <Flex justify="center" align="center" gap={10}>
@@ -478,9 +556,12 @@ export default function DemoMantineReactTable() {
     localization: MRT_Localization_EN,
   })
 
+  useEffect(() => {
+    setHiddenColumns(columnVisibility)
+  }, [columnVisibility])
+
   return (
     <>
-      <CodeHighlight lang="json" code={JSON.stringify(dynamicConfig?.filterModes ?? {}, null, '  ')}></CodeHighlight>
       <Accordion
         styles={{
           content: { paddingRight: 0, paddingLeft: 0 },
@@ -489,6 +570,10 @@ export default function DemoMantineReactTable() {
         <Accordion.Item value={'a'}>
           <Accordion.Control>Filters</Accordion.Control>
           <Accordion.Panel>
+            <CodeHighlight
+              lang="json"
+              code={JSON.stringify(dynamicConfig?.filterModes ?? {}, null, '  ')}
+            ></CodeHighlight>
             <CodeHighlight
               lang="json"
               code={JSON.stringify(

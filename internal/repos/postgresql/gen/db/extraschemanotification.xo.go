@@ -105,7 +105,7 @@ func CreateExtraSchemaNotification(ctx context.Context, db DB, params *ExtraSche
 
 type ExtraSchemaNotificationSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ExtraSchemaNotificationJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -121,9 +121,23 @@ func WithExtraSchemaNotificationLimit(limit int) ExtraSchemaNotificationSelectCo
 	}
 }
 
-type ExtraSchemaNotificationOrderBy string
-
-const ()
+// WithExtraSchemaNotificationOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithExtraSchemaNotificationOrderBy(rows map[string]*models.Direction) ExtraSchemaNotificationSelectConfigOption {
+	return func(s *ExtraSchemaNotificationSelectConfig) {
+		te := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaNotification]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
+			}
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
+		}
+	}
+}
 
 type ExtraSchemaNotificationJoins struct {
 	UserReceiver bool `json:"userReceiver" required:"true" nullable:"false"` // O2O users
@@ -280,11 +294,11 @@ func (esn *ExtraSchemaNotification) Upsert(ctx context.Context, db DB, params *E
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Notification", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaNotification/Insert: %w", &XoError{Entity: "Notification", Err: err})
 			}
 			esn, err = esn.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Notification", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaNotification/Update: %w", &XoError{Entity: "Notification", Err: err})
 			}
 		}
 	}
@@ -304,15 +318,38 @@ func (esn *ExtraSchemaNotification) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// ExtraSchemaNotificationPaginatedByNotificationID returns a cursor-paginated list of ExtraSchemaNotification.
-func ExtraSchemaNotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID ExtraSchemaNotificationID, direction models.Direction, opts ...ExtraSchemaNotificationSelectConfigOption) ([]ExtraSchemaNotification, error) {
-	c := &ExtraSchemaNotificationSelectConfig{joins: ExtraSchemaNotificationJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+// ExtraSchemaNotificationPaginated returns a cursor-paginated list of ExtraSchemaNotification.
+// At least one cursor is required.
+func ExtraSchemaNotificationPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaNotificationSelectConfigOption) ([]ExtraSchemaNotification, error) {
+	c := &ExtraSchemaNotificationSelectConfig{joins: ExtraSchemaNotificationJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaNotification][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("ExtraSchemaNotification/Paginated/cursor: %w", &XoError{Entity: "Notification", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("notifications.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -331,7 +368,7 @@ func ExtraSchemaNotificationPaginatedByNotificationID(ctx context.Context, db DB
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -349,6 +386,20 @@ func ExtraSchemaNotificationPaginatedByNotificationID(ctx context.Context, db DB
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("ExtraSchemaNotification/Paginated/orderBy: %w", &XoError{Entity: "Notification", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -371,14 +422,9 @@ func ExtraSchemaNotificationPaginatedByNotificationID(ctx context.Context, db DB
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -388,17 +434,13 @@ func ExtraSchemaNotificationPaginatedByNotificationID(ctx context.Context, db DB
 	notifications.receiver,
 	notifications.sender %s 
 	 FROM extra_schema.notifications %s 
-	 WHERE notifications.notification_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
-		notification_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* ExtraSchemaNotificationPaginatedByNotificationID */\n" + sqlstr
+	sqlstr = "/* ExtraSchemaNotificationPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaNotification/Paginated/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -457,6 +499,18 @@ func ExtraSchemaNotificationByNotificationID(ctx context.Context, db DB, notific
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -478,9 +532,9 @@ func ExtraSchemaNotificationByNotificationID(ctx context.Context, db DB, notific
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -493,8 +547,8 @@ func ExtraSchemaNotificationByNotificationID(ctx context.Context, db DB, notific
 	 WHERE notifications.notification_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaNotificationByNotificationID */\n" + sqlstr
 
@@ -560,6 +614,18 @@ func ExtraSchemaNotificationsBySender(ctx context.Context, db DB, sender ExtraSc
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -581,9 +647,9 @@ func ExtraSchemaNotificationsBySender(ctx context.Context, db DB, sender ExtraSc
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -596,8 +662,8 @@ func ExtraSchemaNotificationsBySender(ctx context.Context, db DB, sender ExtraSc
 	 WHERE notifications.sender = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaNotificationsBySender */\n" + sqlstr
 

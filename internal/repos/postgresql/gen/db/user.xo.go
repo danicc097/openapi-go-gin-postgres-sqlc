@@ -217,7 +217,7 @@ func CreateUser(ctx context.Context, db DB, params *UserCreateParams) (*User, er
 
 type UserSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   UserJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -242,33 +242,20 @@ func WithDeletedUserOnly() UserSelectConfigOption {
 	}
 }
 
-type UserOrderBy string
-
-const (
-	UserCreatedAtDescNullsFirst UserOrderBy = " created_at DESC NULLS FIRST "
-	UserCreatedAtDescNullsLast  UserOrderBy = " created_at DESC NULLS LAST "
-	UserCreatedAtAscNullsFirst  UserOrderBy = " created_at ASC NULLS FIRST "
-	UserCreatedAtAscNullsLast   UserOrderBy = " created_at ASC NULLS LAST "
-	UserDeletedAtDescNullsFirst UserOrderBy = " deleted_at DESC NULLS FIRST "
-	UserDeletedAtDescNullsLast  UserOrderBy = " deleted_at DESC NULLS LAST "
-	UserDeletedAtAscNullsFirst  UserOrderBy = " deleted_at ASC NULLS FIRST "
-	UserDeletedAtAscNullsLast   UserOrderBy = " deleted_at ASC NULLS LAST "
-	UserUpdatedAtDescNullsFirst UserOrderBy = " updated_at DESC NULLS FIRST "
-	UserUpdatedAtDescNullsLast  UserOrderBy = " updated_at DESC NULLS LAST "
-	UserUpdatedAtAscNullsFirst  UserOrderBy = " updated_at ASC NULLS FIRST "
-	UserUpdatedAtAscNullsLast   UserOrderBy = " updated_at ASC NULLS LAST "
-)
-
-// WithUserOrderBy orders results by the given columns.
-func WithUserOrderBy(rows ...UserOrderBy) UserSelectConfigOption {
+// WithUserOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithUserOrderBy(rows map[string]*models.Direction) UserSelectConfigOption {
 	return func(s *UserSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := EntityFields[TableEntityUser]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -672,15 +659,38 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 	return newu, nil
 }
 
-// UserPaginatedByCreatedAt returns a cursor-paginated list of User.
-func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...UserSelectConfigOption) ([]User, error) {
-	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+// UserPaginated returns a cursor-paginated list of User.
+// At least one cursor is required.
+func UserPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...UserSelectConfigOption) ([]User, error) {
+	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := EntityFields[TableEntityUser][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("User/Paginated/cursor: %w", &XoError{Entity: "User", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("users.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -699,7 +709,7 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -717,6 +727,20 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("User/Paginated/orderBy: %w", &XoError{Entity: "User", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -781,14 +805,9 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -809,17 +828,13 @@ func UserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, d
 	users.user_id,
 	users.username %s 
 	 FROM public.users %s 
-	 WHERE users.created_at %s $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
-		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* UserPaginatedByCreatedAt */\n" + sqlstr
+	sqlstr = "/* UserPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("User/Paginated/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -878,6 +893,18 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -941,9 +968,9 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -967,8 +994,8 @@ func UserByCreatedAt(ctx context.Context, db DB, createdAt time.Time, opts ...Us
 	 WHERE users.created_at = $1
 	 %s   AND users.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByCreatedAt */\n" + sqlstr
 
@@ -1034,6 +1061,18 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1097,9 +1136,9 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -1123,8 +1162,8 @@ func UsersByDeletedAt_WhereDeletedAtIsNotNull(ctx context.Context, db DB, delete
 	 WHERE users.deleted_at = $1 AND (deleted_at IS NOT NULL)
 	 %s   AND users.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UsersByDeletedAt_WhereDeletedAtIsNotNull */\n" + sqlstr
 
@@ -1192,6 +1231,18 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1255,9 +1306,9 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -1281,8 +1332,8 @@ func UserByEmail(ctx context.Context, db DB, email string, opts ...UserSelectCon
 	 WHERE users.email = $1
 	 %s   AND users.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByEmail */\n" + sqlstr
 
@@ -1348,6 +1399,18 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1411,9 +1474,9 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -1437,8 +1500,8 @@ func UserByExternalID(ctx context.Context, db DB, externalID string, opts ...Use
 	 WHERE users.external_id = $1
 	 %s   AND users.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByExternalID */\n" + sqlstr
 
@@ -1504,6 +1567,18 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1567,9 +1642,9 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -1593,8 +1668,8 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 	 WHERE users.user_id = $1
 	 %s   AND users.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByUserID */\n" + sqlstr
 
@@ -1660,6 +1735,18 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1723,9 +1810,9 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -1749,8 +1836,8 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 	 WHERE users.updated_at = $1
 	 %s   AND users.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UsersByUpdatedAt */\n" + sqlstr
 
@@ -1818,6 +1905,18 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1881,9 +1980,9 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -1907,8 +2006,8 @@ func UserByUsername(ctx context.Context, db DB, username string, opts ...UserSel
 	 WHERE users.username = $1
 	 %s   AND users.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserByUsername */\n" + sqlstr
 

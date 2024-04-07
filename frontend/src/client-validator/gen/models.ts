@@ -127,6 +127,7 @@ export type PaginationFilterModes =
   | 'notEquals'
   | 'startsWith'
 export type PaginationFilter = PaginationFilterPrimitive | PaginationFilterArray
+export type PaginationCursors = PaginationCursor[]
 
 export interface Activity {
   activityID: number
@@ -632,9 +633,21 @@ export interface Pagination {
 export interface PaginationItems {
   [k: string]: Pagination
 }
+export interface PaginationCursor {
+  direction: Direction
+  /**
+   * represents a cursor value
+   */
+  value: {}
+  /**
+   * represents the JSON name of the db column
+   */
+  column: string
+}
 export interface GetPaginatedUsersQueryParameters {
   role?: Role
   items?: PaginationItems
+  cursors: PaginationCursors
 }
 export interface DbCacheDemoWorkItemJoins {
   assignees: boolean

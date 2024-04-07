@@ -105,7 +105,7 @@ func CreateWorkItemTag(ctx context.Context, db DB, params *WorkItemTagCreatePara
 
 type WorkItemTagSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   WorkItemTagJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -130,25 +130,20 @@ func WithDeletedWorkItemTagOnly() WorkItemTagSelectConfigOption {
 	}
 }
 
-type WorkItemTagOrderBy string
-
-const (
-	WorkItemTagDeletedAtDescNullsFirst WorkItemTagOrderBy = " deleted_at DESC NULLS FIRST "
-	WorkItemTagDeletedAtDescNullsLast  WorkItemTagOrderBy = " deleted_at DESC NULLS LAST "
-	WorkItemTagDeletedAtAscNullsFirst  WorkItemTagOrderBy = " deleted_at ASC NULLS FIRST "
-	WorkItemTagDeletedAtAscNullsLast   WorkItemTagOrderBy = " deleted_at ASC NULLS LAST "
-)
-
-// WithWorkItemTagOrderBy orders results by the given columns.
-func WithWorkItemTagOrderBy(rows ...WorkItemTagOrderBy) WorkItemTagSelectConfigOption {
+// WithWorkItemTagOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithWorkItemTagOrderBy(rows map[string]*models.Direction) WorkItemTagSelectConfigOption {
 	return func(s *WorkItemTagSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := EntityFields[TableEntityWorkItemTag]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -320,11 +315,11 @@ func (wit *WorkItemTag) Upsert(ctx context.Context, db DB, params *WorkItemTagCr
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Work item tag", Err: err})
+				return nil, fmt.Errorf("UpsertWorkItemTag/Insert: %w", &XoError{Entity: "Work item tag", Err: err})
 			}
 			wit, err = wit.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Work item tag", Err: err})
+				return nil, fmt.Errorf("UpsertWorkItemTag/Update: %w", &XoError{Entity: "Work item tag", Err: err})
 			}
 		}
 	}
@@ -370,15 +365,38 @@ func (wit *WorkItemTag) Restore(ctx context.Context, db DB) (*WorkItemTag, error
 	return newwit, nil
 }
 
-// WorkItemTagPaginatedByWorkItemTagID returns a cursor-paginated list of WorkItemTag.
-func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkItemTagID, direction models.Direction, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+// WorkItemTagPaginated returns a cursor-paginated list of WorkItemTag.
+// At least one cursor is required.
+func WorkItemTagPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
+	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := EntityFields[TableEntityWorkItemTag][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/cursor: %w", &XoError{Entity: "Work item tag", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("work_item_tags.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -397,7 +415,7 @@ func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTag
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -415,6 +433,20 @@ func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTag
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/orderBy: %w", &XoError{Entity: "Work item tag", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -437,14 +469,9 @@ func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTag
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -455,123 +482,13 @@ func WorkItemTagPaginatedByWorkItemTagID(ctx context.Context, db DB, workItemTag
 	work_item_tags.project_id,
 	work_item_tags.work_item_tag_id %s 
 	 FROM public.work_item_tags %s 
-	 WHERE work_item_tags.work_item_tag_id %s $1
-	 %s   AND work_item_tags.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
-		work_item_tag_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* WorkItemTagPaginatedByWorkItemTagID */\n" + sqlstr
+	sqlstr = "/* WorkItemTagPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID}, append(filterParams, havingParams...)...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[WorkItemTag])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Work item tag", Err: err}))
-	}
-	return res, nil
-}
-
-// WorkItemTagPaginatedByProjectID returns a cursor-paginated list of WorkItemTag.
-func WorkItemTagPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...WorkItemTagSelectConfigOption) ([]WorkItemTag, error) {
-	c := &WorkItemTagSelectConfig{deletedAt: " null ", joins: WorkItemTagJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var havingClauses []string
-	var havingParams []any
-	for havingTmpl, params := range c.having {
-		having := havingTmpl
-		for strings.Contains(having, "$i") {
-			having = strings.Replace(having, "$i", "$"+nth(), 1)
-		}
-		havingClauses = append(havingClauses, having)
-		havingParams = append(havingParams, params...)
-	}
-
-	havingClause := "" // must be empty if no actual clause passed, else it errors out
-	if len(havingClauses) > 0 {
-		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.Project {
-		selectClauses = append(selectClauses, workItemTagTableProjectSelectSQL)
-		joinClauses = append(joinClauses, workItemTagTableProjectJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTagTableProjectGroupBySQL)
-	}
-
-	if c.joins.WorkItems {
-		selectClauses = append(selectClauses, workItemTagTableWorkItemsSelectSQL)
-		joinClauses = append(joinClauses, workItemTagTableWorkItemsJoinSQL)
-		groupByClauses = append(groupByClauses, workItemTagTableWorkItemsGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
-	}
-
-	sqlstr := fmt.Sprintf(`SELECT 
-	work_item_tags.color,
-	work_item_tags.deleted_at,
-	work_item_tags.description,
-	work_item_tags.name,
-	work_item_tags.project_id,
-	work_item_tags.work_item_tag_id %s 
-	 FROM public.work_item_tags %s 
-	 WHERE work_item_tags.project_id %s $1
-	 %s   AND work_item_tags.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
-		project_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
-	sqlstr += c.limit
-	sqlstr = "/* WorkItemTagPaginatedByProjectID */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemTag/Paginated/db.Query: %w", &XoError{Entity: "Work item tag", Err: err}))
 	}
@@ -630,6 +547,18 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -651,9 +580,9 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -667,8 +596,8 @@ func WorkItemTagByNameProjectID(ctx context.Context, db DB, name string, project
 	 WHERE work_item_tags.name = $1 AND work_item_tags.project_id = $2
 	 %s   AND work_item_tags.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagByNameProjectID */\n" + sqlstr
 
@@ -734,6 +663,18 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -755,9 +696,9 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -771,8 +712,8 @@ func WorkItemTagsByName(ctx context.Context, db DB, name string, opts ...WorkIte
 	 WHERE work_item_tags.name = $1
 	 %s   AND work_item_tags.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagsByName */\n" + sqlstr
 
@@ -840,6 +781,18 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -861,9 +814,9 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -877,8 +830,8 @@ func WorkItemTagsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 	 WHERE work_item_tags.project_id = $1
 	 %s   AND work_item_tags.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagsByProjectID */\n" + sqlstr
 
@@ -946,6 +899,18 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkIt
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -967,9 +932,9 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkIt
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -983,8 +948,8 @@ func WorkItemTagByWorkItemTagID(ctx context.Context, db DB, workItemTagID WorkIt
 	 WHERE work_item_tags.work_item_tag_id = $1
 	 %s   AND work_item_tags.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemTagByWorkItemTagID */\n" + sqlstr
 

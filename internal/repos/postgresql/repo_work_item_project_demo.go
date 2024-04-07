@@ -33,7 +33,11 @@ func (u *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, op
 func (u *DemoWorkItem) Paginated(ctx context.Context, d db.DBTX, cursor db.WorkItemID, opts ...db.CacheDemoWorkItemSelectConfigOption) ([]db.CacheDemoWorkItem, error) {
 	extraOpts := []db.CacheDemoWorkItemSelectConfigOption{db.WithCacheDemoWorkItemJoin(db.CacheDemoWorkItemJoins{})}
 
-	return db.CacheDemoWorkItemPaginatedByWorkItemID(ctx, d, int(cursor), models.DirectionDesc, (append(extraOpts, opts...))...)
+	var c interface{}
+	c = cursor
+	cursors := models.PaginationCursors{{Column: "workItemID", Value: &c, Direction: models.DirectionDesc}}
+
+	return db.CacheDemoWorkItemPaginated(ctx, d, cursors, (append(extraOpts, opts...))...)
 }
 
 func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (*db.WorkItem, error) {

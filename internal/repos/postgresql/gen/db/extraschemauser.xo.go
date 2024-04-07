@@ -101,7 +101,7 @@ func CreateExtraSchemaUser(ctx context.Context, db DB, params *ExtraSchemaUserCr
 
 type ExtraSchemaUserSelectConfig struct {
 	limit   string
-	orderBy string
+	orderBy map[string]models.Direction
 	joins   ExtraSchemaUserJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -126,29 +126,20 @@ func WithDeletedExtraSchemaUserOnly() ExtraSchemaUserSelectConfigOption {
 	}
 }
 
-type ExtraSchemaUserOrderBy string
-
-const (
-	ExtraSchemaUserCreatedAtDescNullsFirst ExtraSchemaUserOrderBy = " created_at DESC NULLS FIRST "
-	ExtraSchemaUserCreatedAtDescNullsLast  ExtraSchemaUserOrderBy = " created_at DESC NULLS LAST "
-	ExtraSchemaUserCreatedAtAscNullsFirst  ExtraSchemaUserOrderBy = " created_at ASC NULLS FIRST "
-	ExtraSchemaUserCreatedAtAscNullsLast   ExtraSchemaUserOrderBy = " created_at ASC NULLS LAST "
-	ExtraSchemaUserDeletedAtDescNullsFirst ExtraSchemaUserOrderBy = " deleted_at DESC NULLS FIRST "
-	ExtraSchemaUserDeletedAtDescNullsLast  ExtraSchemaUserOrderBy = " deleted_at DESC NULLS LAST "
-	ExtraSchemaUserDeletedAtAscNullsFirst  ExtraSchemaUserOrderBy = " deleted_at ASC NULLS FIRST "
-	ExtraSchemaUserDeletedAtAscNullsLast   ExtraSchemaUserOrderBy = " deleted_at ASC NULLS LAST "
-)
-
-// WithExtraSchemaUserOrderBy orders results by the given columns.
-func WithExtraSchemaUserOrderBy(rows ...ExtraSchemaUserOrderBy) ExtraSchemaUserSelectConfigOption {
+// WithExtraSchemaUserOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithExtraSchemaUserOrderBy(rows map[string]*models.Direction) ExtraSchemaUserSelectConfigOption {
 	return func(s *ExtraSchemaUserSelectConfig) {
-		if len(rows) > 0 {
-			orderStrings := make([]string, len(rows))
-			for i, row := range rows {
-				orderStrings[i] = string(row)
+		te := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaUser]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
 			}
-			s.orderBy = " order by "
-			s.orderBy += strings.Join(orderStrings, ", ")
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
 		}
 	}
 }
@@ -487,11 +478,11 @@ func (esu *ExtraSchemaUser) Upsert(ctx context.Context, db DB, params *ExtraSche
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "User", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaUser/Insert: %w", &XoError{Entity: "User", Err: err})
 			}
 			esu, err = esu.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "User", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaUser/Update: %w", &XoError{Entity: "User", Err: err})
 			}
 		}
 	}
@@ -537,15 +528,38 @@ func (esu *ExtraSchemaUser) Restore(ctx context.Context, db DB) (*ExtraSchemaUse
 	return newesu, nil
 }
 
-// ExtraSchemaUserPaginatedByCreatedAt returns a cursor-paginated list of ExtraSchemaUser.
-func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt time.Time, direction models.Direction, opts ...ExtraSchemaUserSelectConfigOption) ([]ExtraSchemaUser, error) {
-	c := &ExtraSchemaUserSelectConfig{deletedAt: " null ", joins: ExtraSchemaUserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
+// ExtraSchemaUserPaginated returns a cursor-paginated list of ExtraSchemaUser.
+// At least one cursor is required.
+func ExtraSchemaUserPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaUserSelectConfigOption) ([]ExtraSchemaUser, error) {
+	c := &ExtraSchemaUserSelectConfig{deletedAt: " null ", joins: ExtraSchemaUserJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		if cursor.Value == nil {
+
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaUser][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("ExtraSchemaUser/Paginated/cursor: %w", &XoError{Entity: "User", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("users.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -564,7 +578,7 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where " + strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -582,6 +596,20 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("ExtraSchemaUser/Paginated/orderBy: %w", &XoError{Entity: "User", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -646,14 +674,9 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -663,17 +686,13 @@ func ExtraSchemaUserPaginatedByCreatedAt(ctx context.Context, db DB, createdAt t
 	users.name,
 	users.user_id %s 
 	 FROM extra_schema.users %s 
-	 WHERE users.created_at %s $1
-	 %s   AND users.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
-		created_at %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* ExtraSchemaUserPaginatedByCreatedAt */\n" + sqlstr
+	sqlstr = "/* ExtraSchemaUserPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{createdAt}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaUser/Paginated/db.Query: %w", &XoError{Entity: "User", Err: err}))
 	}
@@ -732,6 +751,18 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -795,9 +826,9 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -810,8 +841,8 @@ func ExtraSchemaUserByCreatedAt(ctx context.Context, db DB, createdAt time.Time,
 	 WHERE users.created_at = $1
 	 %s   AND users.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserByCreatedAt */\n" + sqlstr
 
@@ -877,6 +908,18 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -940,9 +983,9 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -955,8 +998,8 @@ func ExtraSchemaUserByName(ctx context.Context, db DB, name string, opts ...Extr
 	 WHERE users.name = $1
 	 %s   AND users.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserByName */\n" + sqlstr
 
@@ -1022,6 +1065,18 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderBy := ""
+	if len(c.orderBy) > 0 {
+		orderBy += " order by "
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderBy += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -1085,9 +1140,9 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -1100,8 +1155,8 @@ func ExtraSchemaUserByUserID(ctx context.Context, db DB, userID ExtraSchemaUserI
 	 WHERE users.user_id = $1
 	 %s   AND users.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
-	sqlstr += c.orderBy
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
+	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaUserByUserID */\n" + sqlstr
 
