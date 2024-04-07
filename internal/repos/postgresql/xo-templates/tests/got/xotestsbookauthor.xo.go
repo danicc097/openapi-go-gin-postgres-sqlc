@@ -108,7 +108,23 @@ func WithXoTestsBookAuthorLimit(limit int) XoTestsBookAuthorSelectConfigOption {
 	}
 }
 
-type XoTestsBookAuthorOrderBy string
+// WithXoTestsBookAuthorOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithXoTestsBookAuthorOrderBy(rows map[string]*models.Direction) XoTestsBookAuthorSelectConfigOption {
+	return func(s *XoTestsBookAuthorSelectConfig) {
+		te := XoTestsEntityFields[XoTestsTableEntityXoTestsBookAuthor]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
+			}
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
+		}
+	}
+}
 
 type XoTestsBookAuthorJoins struct {
 	Books   bool `json:"books" required:"true" nullable:"false"`   // M2M book_authors
@@ -301,11 +317,11 @@ func (xtba *XoTestsBookAuthor) Upsert(ctx context.Context, db DB, params *XoTest
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Book author", Err: err})
+				return nil, fmt.Errorf("UpsertXoTestsBookAuthor/Insert: %w", &XoError{Entity: "Book author", Err: err})
 			}
 			xtba, err = xtba.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Book author", Err: err})
+				return nil, fmt.Errorf("UpsertXoTestsBookAuthor/Update: %w", &XoError{Entity: "Book author", Err: err})
 			}
 		}
 	}
@@ -323,6 +339,138 @@ func (xtba *XoTestsBookAuthor) Delete(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	return nil
+}
+
+// XoTestsBookAuthorPaginated returns a cursor-paginated list of XoTestsBookAuthor.
+// At least one cursor is required.
+func XoTestsBookAuthorPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsBookAuthorSelectConfigOption) ([]XoTestsBookAuthor, error) {
+	c := &XoTestsBookAuthorSelectConfig{
+		joins:   XoTestsBookAuthorJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	for _, cursor := range cursors {
+
+		field, ok := XoTestsEntityFields[XoTestsTableEntityXoTestsBookAuthor][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("XoTestsBookAuthor/Paginated/cursor: %w", &XoError{Entity: "Book author", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("book_authors.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters += " where "
+	}
+	if len(filterClauses) > 0 {
+		filters += strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("XoTestsBookAuthor/Paginated/orderBy: %w", &XoError{Entity: "Book author", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Books {
+		selectClauses = append(selectClauses, xoTestsBookAuthorTableBooksSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookAuthorTableBooksJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookAuthorTableBooksGroupBySQL)
+	}
+
+	if c.joins.Authors {
+		selectClauses = append(selectClauses, xoTestsBookAuthorTableAuthorsSelectSQL)
+		joinClauses = append(joinClauses, xoTestsBookAuthorTableAuthorsJoinSQL)
+		groupByClauses = append(groupByClauses, xoTestsBookAuthorTableAuthorsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupByClause := ""
+	if len(groupByClauses) > 0 {
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors.author_id,
+	book_authors.book_id,
+	book_authors.pseudonym %s 
+	 FROM xo_tests.book_authors %s 
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
+	sqlstr += c.limit
+	sqlstr = "/* XoTestsBookAuthorPaginated */\n" + sqlstr
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("XoTestsBookAuthor/Paginated/db.Query: %w", &XoError{Entity: "Book author", Err: err}))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[XoTestsBookAuthor])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("XoTestsBookAuthor/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Book author", Err: err}))
+	}
+	return res, nil
 }
 
 // XoTestsBookAuthorByBookIDAuthorID retrieves a row from 'xo_tests.book_authors' as a XoTestsBookAuthor.
@@ -406,9 +554,9 @@ func XoTestsBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID XoTest
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -419,7 +567,7 @@ func XoTestsBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID XoTest
 	 WHERE book_authors.book_id = $1 AND book_authors.author_id = $2
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorByBookIDAuthorID */\n" + sqlstr
@@ -519,9 +667,9 @@ func XoTestsBookAuthorsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -532,7 +680,7 @@ func XoTestsBookAuthorsByBookID(ctx context.Context, db DB, bookID XoTestsBookID
 	 WHERE book_authors.book_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsByBookID */\n" + sqlstr
@@ -634,9 +782,9 @@ func XoTestsBookAuthorsByAuthorID(ctx context.Context, db DB, authorID XoTestsUs
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -647,7 +795,7 @@ func XoTestsBookAuthorsByAuthorID(ctx context.Context, db DB, authorID XoTestsUs
 	 WHERE book_authors.author_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsBookAuthorsByAuthorID */\n" + sqlstr

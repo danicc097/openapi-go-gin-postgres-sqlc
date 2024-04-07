@@ -89,9 +89,23 @@ func WithExtraSchemaWorkItemAdminLimit(limit int) ExtraSchemaWorkItemAdminSelect
 	}
 }
 
-type ExtraSchemaWorkItemAdminOrderBy string
-
-const ()
+// WithExtraSchemaWorkItemAdminOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithExtraSchemaWorkItemAdminOrderBy(rows map[string]*models.Direction) ExtraSchemaWorkItemAdminSelectConfigOption {
+	return func(s *ExtraSchemaWorkItemAdminSelectConfig) {
+		te := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaWorkItemAdmin]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
+			}
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
+		}
+	}
+}
 
 type ExtraSchemaWorkItemAdminJoins struct {
 	WorkItems bool `json:"workItems" required:"true" nullable:"false"` // M2M work_item_admin
@@ -239,6 +253,136 @@ func (eswia *ExtraSchemaWorkItemAdmin) Delete(ctx context.Context, db DB) error 
 	return nil
 }
 
+// ExtraSchemaWorkItemAdminPaginated returns a cursor-paginated list of ExtraSchemaWorkItemAdmin.
+// At least one cursor is required.
+func ExtraSchemaWorkItemAdminPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaWorkItemAdminSelectConfigOption) ([]ExtraSchemaWorkItemAdmin, error) {
+	c := &ExtraSchemaWorkItemAdminSelectConfig{joins: ExtraSchemaWorkItemAdminJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	for _, cursor := range cursors {
+
+		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaWorkItemAdmin][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("ExtraSchemaWorkItemAdmin/Paginated/cursor: %w", &XoError{Entity: "Work item admin", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("work_item_admin.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters += " where "
+	}
+	if len(filterClauses) > 0 {
+		filters += strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItemAdmin/Paginated/orderBy: %w", &XoError{Entity: "Work item admin", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.WorkItems {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableWorkItemsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableWorkItemsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableWorkItemsGroupBySQL)
+	}
+
+	if c.joins.Admins {
+		selectClauses = append(selectClauses, extraSchemaWorkItemAdminTableAdminsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaWorkItemAdminTableAdminsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaWorkItemAdminTableAdminsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupByClause := ""
+	if len(groupByClauses) > 0 {
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	work_item_admin.admin,
+	work_item_admin.work_item_id %s 
+	 FROM extra_schema.work_item_admin %s 
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
+	sqlstr += c.limit
+	sqlstr = "/* ExtraSchemaWorkItemAdminPaginated */\n" + sqlstr
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItemAdmin/Paginated/db.Query: %w", &XoError{Entity: "Work item admin", Err: err}))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[ExtraSchemaWorkItemAdmin])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItemAdmin/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Work item admin", Err: err}))
+	}
+	return res, nil
+}
+
 // ExtraSchemaWorkItemAdminsByAdminWorkItemID retrieves a row from 'extra_schema.work_item_admin' as a ExtraSchemaWorkItemAdmin.
 //
 // Generated from index 'work_item_admin_admin_work_item_id_idx'.
@@ -320,9 +464,9 @@ func ExtraSchemaWorkItemAdminsByAdminWorkItemID(ctx context.Context, db DB, admi
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -332,7 +476,7 @@ func ExtraSchemaWorkItemAdminsByAdminWorkItemID(ctx context.Context, db DB, admi
 	 WHERE work_item_admin.admin = $1 AND work_item_admin.work_item_id = $2
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAdminsByAdminWorkItemID */\n" + sqlstr
@@ -434,9 +578,9 @@ func ExtraSchemaWorkItemAdminByWorkItemIDAdmin(ctx context.Context, db DB, workI
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -446,7 +590,7 @@ func ExtraSchemaWorkItemAdminByWorkItemIDAdmin(ctx context.Context, db DB, workI
 	 WHERE work_item_admin.work_item_id = $1 AND work_item_admin.admin = $2
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAdminByWorkItemIDAdmin */\n" + sqlstr
@@ -546,9 +690,9 @@ func ExtraSchemaWorkItemAdminsByWorkItemID(ctx context.Context, db DB, workItemI
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -558,7 +702,7 @@ func ExtraSchemaWorkItemAdminsByWorkItemID(ctx context.Context, db DB, workItemI
 	 WHERE work_item_admin.work_item_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAdminsByWorkItemID */\n" + sqlstr
@@ -660,9 +804,9 @@ func ExtraSchemaWorkItemAdminsByAdmin(ctx context.Context, db DB, admin ExtraSch
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -672,7 +816,7 @@ func ExtraSchemaWorkItemAdminsByAdmin(ctx context.Context, db DB, admin ExtraSch
 	 WHERE work_item_admin.admin = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemAdminsByAdmin */\n" + sqlstr

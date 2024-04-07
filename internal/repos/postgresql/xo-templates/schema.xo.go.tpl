@@ -69,7 +69,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- $constraints := .Data.Constraints -}}
 {{/* TODO: maybe can be init beforehand */}}
 {{- $_ := initialize_constraints $t $constraints }}
-// {{ func_name_context $i "" }} retrieves a row from '{{ schema $t.SQLName }}' as a {{ $t.GoName }}.
+// {{ func_name_context $i "" }} retrieves a row from '{{ schema $t.SQLName }}' as a {{$t.GoName}}.
 //
 // Generated from index '{{ $i.SQLName }}'.
 {{ func_context $i "" "" $t "" }} {
@@ -154,14 +154,14 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{- else }}
 	rows, err := {{ db "Query" $i }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/{{ $i.Func }}/Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
+		return nil, logerror(fmt.Errorf("{{$t.GoName}}/{{ $i.Func }}/Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	defer rows.Close()
 	// process
   {{/* might need to use non pointer []<st> in return if we get a NumField of non-struct type*/}}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/{{ $i.Func }}/pgx.CollectRows: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
+		return nil, logerror(fmt.Errorf("{{$t.GoName}}/{{ $i.Func }}/pgx.CollectRows: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	return res, nil
 {{- end }}
@@ -217,6 +217,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{ define "typedef" }}
 {{- $t := .Data.Table -}}
 {{- $tables := .Data.Tables -}}
+{{- $schema := .Data.Schema -}}
 {{- $constraints := .Data.Constraints -}}
 {{/* TODO: maybe can be init beforehand */}}
 {{- $_ := initialize_constraints $t $constraints }}
@@ -224,7 +225,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 {{if $t.Comment -}}
 // {{ $t.Comment | eval $t.GoName }}
 {{- else -}}
-// {{ $t.GoName }} represents a row from '{{ schema $t.SQLName }}'.
+// {{$t.GoName}} represents a row from '{{ schema $t.SQLName }}'.
 // Change properties via SQL column comments, joined with " && ":
 //     - "properties":<p1>,<p2>,...
 //         -- private: exclude a field from JSON.
@@ -238,7 +239,7 @@ func All{{ $e.GoName }}Values() []{{ $e.GoName }} {
 //     - "tags":<tags> to append literal struct tag strings.
 
 {{- end }}
-type {{ $t.GoName }} struct {
+type {{$t.GoName}} struct {
 {{ range $t.Fields -}}
 	{{ field . "Table" $t -}}
 {{ end }}
@@ -249,15 +250,15 @@ type {{ $t.GoName }} struct {
 {{/* create params and helper only if theres PKs */}}
 {{ if $t.PrimaryKeys -}}
 
-// {{ $t.GoName }}CreateParams represents insert params for '{{ schema $t.SQLName }}'.
-type {{ $t.GoName }}CreateParams struct {
+// {{$t.GoName}}CreateParams represents insert params for '{{ schema $t.SQLName }}'.
+type {{$t.GoName}}CreateParams struct {
 {{ range sort_fields $t.Fields -}}
 	{{ field . "CreateParams" $t -}}
 {{ end -}}
 }
 
-// {{ $t.GoName }}Params represents common params for both insert and update of '{{ schema $t.SQLName }}'.
-type {{ $t.GoName }}Params interface {
+// {{$t.GoName}}Params represents common params for both insert and update of '{{ schema $t.SQLName }}'.
+type {{$t.GoName}}Params interface {
 {{ range sort_fields $t.Fields -}}
 	{{ field . "ParamsInterface" $t -}}
 {{ end -}}
@@ -271,9 +272,9 @@ type {{ $t.GoName }}Params interface {
 	{{ field . "IDTypes" $t -}}
 {{ end -}}
 
-// Create{{ $t.GoName }} creates a new {{ $t.GoName }} in the database with the given params.
-func Create{{ $t.GoName }}(ctx context.Context, db DB, params *{{ $t.GoName }}CreateParams) (*{{ $t.GoName }}, error) {
-  {{ short $t }} := &{{ $t.GoName }}{
+// Create{{$t.GoName}} creates a new {{$t.GoName}} in the database with the given params.
+func Create{{$t.GoName}}(ctx context.Context, db DB, params *{{$t.GoName}}CreateParams) (*{{$t.GoName}}, error) {
+  {{ short $t }} := &{{$t.GoName}}{
 {{ range $t.Fields -}}
 	{{ set_field . "CreateParams" $t -}}
 {{ end -}}
@@ -290,21 +291,21 @@ func Create{{ $t.GoName }}(ctx context.Context, db DB, params *{{ $t.GoName }}Cr
 
 {{ if $t.PrimaryKeys -}}
 
-// {{ $t.GoName }}UpdateParams represents update params for '{{ schema $t.SQLName }}'.
-type {{ $t.GoName }}UpdateParams struct {
+// {{$t.GoName}}UpdateParams represents update params for '{{ schema $t.SQLName }}'.
+type {{$t.GoName}}UpdateParams struct {
 {{ range sort_fields $t.Fields -}}
 	{{ field . "UpdateParams" $t -}}
 {{ end -}}
 }
 
 // SetUpdateParams updates {{ schema $t.SQLName }} struct fields with the specified params.
-func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}UpdateParams) {
+func ({{ short $t }} *{{$t.GoName}}) SetUpdateParams(params *{{$t.GoName}}UpdateParams) {
 {{ range $t.Fields -}}
 	{{ set_field . "UpdateParams" $t -}}
 {{ end -}}
 }
 
-// {{ func_name_context "Insert" "" }} inserts the {{ $t.GoName }} to the database.
+// {{ func_name_context "Insert" "" }} inserts the {{$t.GoName}} to the database.
 {{ recv_context $t "Insert" "" }} {
 {{ if and (eq (len $t.Generated) 0) (eq (len $t.Ignored) 0) -}}
 	// insert (manual)
@@ -313,11 +314,11 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	{{ logf $t }}
 	rows, err := {{ db_prefix "Query" false false $t }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
+		return nil, logerror(fmt.Errorf("{{$t.GoName}}/Insert/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	new{{ short $t }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
+		return nil, logerror(fmt.Errorf("{{$t.GoName}}/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 {{- else -}}
 	// insert (primary key generated and returned by database)
@@ -327,11 +328,11 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 	rows, err := {{ db_prefix "Query" false false $t }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
+		return nil, logerror(fmt.Errorf("{{$t.GoName}}/Insert/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	new{{ short $t }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
+		return nil, logerror(fmt.Errorf("{{$t.GoName}}/Insert/pgx.CollectOneRow: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 {{ end }}
   *{{ short $t }} = new{{ short $t }}
@@ -343,7 +344,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 {{ if not (table_is_updatable $t.Fields) -}}
 // ------ NOTE: Update statements omitted due to lack of fields other than primary key or generated fields
 {{- else -}}
-// {{ func_name_context "Update" "" }} updates a {{ $t.GoName }} in the database.
+// {{ func_name_context "Update" "" }} updates a {{$t.GoName}} in the database.
 {{ recv_context $t "Update" "" }}  {
 	// update with {{ if driver "postgres" }}composite {{ end }}primary key
 	{{ sqlstr "update" $t }}
@@ -352,11 +353,11 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
   rows, err := {{ db_update "Query" $t }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Update/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
+		return nil, logerror(fmt.Errorf("{{$t.GoName}}/Update/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	new{{ short $t }}, err := pgx.CollectOneRow(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Update/pgx.CollectOneRow: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
+		return nil, logerror(fmt.Errorf("{{$t.GoName}}/Update/pgx.CollectOneRow: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
   *{{ short $t }} = new{{ short $t }}
 
@@ -364,7 +365,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 }
 
 
-// {{ func_name_context "Upsert" "" }} upserts a {{ $t.GoName }} in the database.
+// {{ func_name_context "Upsert" "" }} upserts a {{$t.GoName}} in the database.
 // Requires appropriate PK(s) to be set beforehand.
 {{ recv_context $t "Upsert" "" }}  {
 	var err error
@@ -378,11 +379,11 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-			  return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err })
+			  return nil, fmt.Errorf("Upsert{{$t.GoName}}/Insert: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err })
 			}
 		  {{ short $t }}, err = {{ short $t }}.Update(ctx, db)
       if err != nil {
-			  return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err })
+			  return nil, fmt.Errorf("Upsert{{$t.GoName}}/Update: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err })
       }
 		}
 	}
@@ -392,7 +393,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 {{- end }}
 
-// {{ func_name_context "Delete" "" }} deletes the {{ $t.GoName }} from the database.
+// {{ func_name_context "Delete" "" }} deletes the {{$t.GoName}} from the database.
 {{ recv_context $t "Delete" "" }} {
 {{ if eq (len $t.PrimaryKeys) 1 -}}
 	// delete with single primary key
@@ -417,7 +418,7 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 {{ if $t.PrimaryKeys -}}
 {{ if and (has_deleted_at $t) (table_is_updatable $t.Fields) }}
 
-// {{ func_name_context "SoftDelete" "" }} soft deletes the {{ $t.GoName }} from the database via 'deleted_at'.
+// {{ func_name_context "SoftDelete" "" }} soft deletes the {{$t.GoName}} from the database via 'deleted_at'.
 {{ recv_context $t "SoftDelete" "" }} {
 	{{ if eq (len $t.PrimaryKeys) 1 -}}
 	// delete with single primary key
@@ -440,12 +441,12 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 	return nil
 }
 
-// {{ func_name_context "Restore" "" }} restores a soft deleted {{ $t.GoName }} from the database.
+// {{ func_name_context "Restore" "" }} restores a soft deleted {{$t.GoName}} from the database.
 {{ recv_context $t "Restore" "" }} {
 	{{ short $t }}.DeletedAt = nil
 	new{{ short $t }}, err:= {{ short $t }}.Update(ctx,db)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Restore/pgx.CollectRows: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
+		return nil, logerror(fmt.Errorf("{{$t.GoName}}/Restore/pgx.CollectRows: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	return new{{ short $t }}, nil
 }
@@ -453,19 +454,35 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 {{ end }}
 {{ end }}
 
-{{ range $cursor_fields := cursor_columns $t $constraints $tables }}
-{{ if len $cursor_fields }}
-{{ $suffix := print "PaginatedBy" (fields_to_goname $cursor_fields "") }}
-// {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{ $t.GoName }}.
-{{ func_context $t $suffix $cursor_fields $t "direction models.Direction" }} {
+{{ $suffix := print "Paginated" }}
+// {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{$t.GoName}}.
+// At least one cursor is required.
+{{ func_context $t $suffix "" $t "cursors []Cursor" }} {
 	{{ initial_opts $t }}
 
 	for _, o := range opts {
 		o(c)
 	}
 
+  for _, cursor := range cursors {
+    {{if not (eq $schema "public")}}
+		field, ok := {{camel_export $schema}}EntityFields[{{camel_export $schema}}TableEntity{{$t.GoName}}][cursor.Column]
+    {{else -}}
+		field, ok := EntityFields[TableEntity{{$t.GoName}}][cursor.Column]
+    {{end -}}
+		if !ok {
+			return nil, logerror(fmt.Errorf("{{$t.GoName}}/Paginated/cursor: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
 
-  paramStart := {{ last_nth $t $tables $cursor_fields }}
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("{{$t.SQLName}}.%s %s $i", field.Db, op)] = []any{cursor.Value}
+    c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+  paramStart := 0 // all filters will come from the user
 	nth := func ()  string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -484,7 +501,10 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND "+strings.Join(filterClauses, " AND ")+" "
+		filters += " where "
+	}
+	if len(filterClauses) > 0 {
+		filters += strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -503,23 +523,35 @@ func ({{ short $t }} *{{ $t.GoName }}) SetUpdateParams(params *{{ $t.GoName }}Up
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
-	{{ sqlstr_paginated $t $tables $cursor_fields }}
+  orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("{{$t.GoName}}/Paginated/orderBy: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
+
+	{{ sqlstr_paginated $t $tables }}
 	sqlstr += c.limit
   sqlstr = "/* {{ func_name_context $t $suffix }} */\n"+sqlstr
 
 	// run
 
-	rows, err := {{ db_paginated "Query" $t $cursor_fields }}
+	rows, err := {{ db_paginated "Query" $t }}
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
+		return nil, logerror(fmt.Errorf("{{$t.GoName}}/Paginated/db.Query: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[{{$t.GoName}}])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("{{ $t.GoName }}/Paginated/pgx.CollectRows: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
+		return nil, logerror(fmt.Errorf("{{$t.GoName}}/Paginated/pgx.CollectRows: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: err }))
 	}
 	return res, nil
 }
-{{ end }}
-{{ end }}
 
 {{ end }}

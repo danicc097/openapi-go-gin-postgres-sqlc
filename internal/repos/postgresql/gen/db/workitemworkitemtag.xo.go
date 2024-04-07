@@ -89,9 +89,23 @@ func WithWorkItemWorkItemTagLimit(limit int) WorkItemWorkItemTagSelectConfigOpti
 	}
 }
 
-type WorkItemWorkItemTagOrderBy string
-
-const ()
+// WithWorkItemWorkItemTagOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithWorkItemWorkItemTagOrderBy(rows map[string]*models.Direction) WorkItemWorkItemTagSelectConfigOption {
+	return func(s *WorkItemWorkItemTagSelectConfig) {
+		te := EntityFields[TableEntityWorkItemWorkItemTag]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
+			}
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
+		}
+	}
+}
 
 type WorkItemWorkItemTagJoins struct {
 	WorkItemTags bool `json:"workItemTags" required:"true" nullable:"false"` // M2M work_item_work_item_tag
@@ -239,8 +253,9 @@ func (wiwit *WorkItemWorkItemTag) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID returns a cursor-paginated list of WorkItemWorkItemTag.
-func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, db DB, workItemTagID WorkItemTagID, workItemID WorkItemID, direction models.Direction, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
+// WorkItemWorkItemTagPaginated returns a cursor-paginated list of WorkItemWorkItemTag.
+// At least one cursor is required.
+func WorkItemWorkItemTagPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...WorkItemWorkItemTagSelectConfigOption) ([]WorkItemWorkItemTag, error) {
 	c := &WorkItemWorkItemTagSelectConfig{joins: WorkItemWorkItemTagJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -251,7 +266,21 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, 
 		o(c)
 	}
 
-	paramStart := 2
+	for _, cursor := range cursors {
+		field, ok := EntityFields[TableEntityWorkItemWorkItemTag][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/cursor: %w", &XoError{Entity: "Work item work item tag", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("work_item_work_item_tag.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -270,7 +299,10 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, 
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where "
+	}
+	if len(filterClauses) > 0 {
+		filters += strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -288,6 +320,20 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, 
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/orderBy: %w", &XoError{Entity: "Work item work item tag", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -310,32 +356,22 @@ func WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID(ctx context.Context, 
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
 	work_item_work_item_tag.work_item_id,
 	work_item_work_item_tag.work_item_tag_id %s 
 	 FROM public.work_item_work_item_tag %s 
-	 WHERE work_item_work_item_tag.work_item_tag_id %s $1 AND work_item_work_item_tag.work_item_id %s $2
-	 %s   %s 
-  %s 
-  ORDER BY 
-		work_item_tag_id %s  ,
-		work_item_id %s `, selects, joins, operator, operator, filters, groupbys, havingClause, direction, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* WorkItemWorkItemTagPaginatedByWorkItemTagIDWorkItemID */\n" + sqlstr
+	sqlstr = "/* WorkItemWorkItemTagPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemTagID, workItemID}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("WorkItemWorkItemTag/Paginated/db.Query: %w", &XoError{Entity: "Work item work item tag", Err: err}))
 	}
@@ -427,9 +463,9 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -439,7 +475,7 @@ func WorkItemWorkItemTagByWorkItemIDWorkItemTagID(ctx context.Context, db DB, wo
 	 WHERE work_item_work_item_tag.work_item_id = $1 AND work_item_work_item_tag.work_item_tag_id = $2
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemWorkItemTagByWorkItemIDWorkItemTagID */\n" + sqlstr
@@ -539,9 +575,9 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID Wor
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -551,7 +587,7 @@ func WorkItemWorkItemTagsByWorkItemID(ctx context.Context, db DB, workItemID Wor
 	 WHERE work_item_work_item_tag.work_item_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemWorkItemTagsByWorkItemID */\n" + sqlstr
@@ -653,9 +689,9 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -665,7 +701,7 @@ func WorkItemWorkItemTagsByWorkItemTagID(ctx context.Context, db DB, workItemTag
 	 WHERE work_item_work_item_tag.work_item_tag_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemWorkItemTagsByWorkItemTagID */\n" + sqlstr
@@ -767,9 +803,9 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -779,7 +815,7 @@ func WorkItemWorkItemTagsByWorkItemTagIDWorkItemID(ctx context.Context, db DB, w
 	 WHERE work_item_work_item_tag.work_item_tag_id = $1 AND work_item_work_item_tag.work_item_id = $2
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* WorkItemWorkItemTagsByWorkItemTagIDWorkItemID */\n" + sqlstr

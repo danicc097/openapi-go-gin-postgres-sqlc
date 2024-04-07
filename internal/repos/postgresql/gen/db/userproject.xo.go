@@ -89,9 +89,23 @@ func WithUserProjectLimit(limit int) UserProjectSelectConfigOption {
 	}
 }
 
-type UserProjectOrderBy string
-
-const ()
+// WithUserProjectOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithUserProjectOrderBy(rows map[string]*models.Direction) UserProjectSelectConfigOption {
+	return func(s *UserProjectSelectConfig) {
+		te := EntityFields[TableEntityUserProject]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
+			}
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
+		}
+	}
+}
 
 type UserProjectJoins struct {
 	Projects bool `json:"projects" required:"true" nullable:"false"` // M2M user_project
@@ -239,6 +253,135 @@ func (up *UserProject) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
+// UserProjectPaginated returns a cursor-paginated list of UserProject.
+// At least one cursor is required.
+func UserProjectPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...UserProjectSelectConfigOption) ([]UserProject, error) {
+	c := &UserProjectSelectConfig{joins: UserProjectJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	for _, cursor := range cursors {
+		field, ok := EntityFields[TableEntityUserProject][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("UserProject/Paginated/cursor: %w", &XoError{Entity: "User project", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("user_project.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters += " where "
+	}
+	if len(filterClauses) > 0 {
+		filters += strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("UserProject/Paginated/orderBy: %w", &XoError{Entity: "User project", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Projects {
+		selectClauses = append(selectClauses, userProjectTableProjectsSelectSQL)
+		joinClauses = append(joinClauses, userProjectTableProjectsJoinSQL)
+		groupByClauses = append(groupByClauses, userProjectTableProjectsGroupBySQL)
+	}
+
+	if c.joins.Members {
+		selectClauses = append(selectClauses, userProjectTableMembersSelectSQL)
+		joinClauses = append(joinClauses, userProjectTableMembersJoinSQL)
+		groupByClauses = append(groupByClauses, userProjectTableMembersGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupByClause := ""
+	if len(groupByClauses) > 0 {
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	user_project.member,
+	user_project.project_id %s 
+	 FROM public.user_project %s 
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
+	sqlstr += c.limit
+	sqlstr = "/* UserProjectPaginated */\n" + sqlstr
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserProject/Paginated/db.Query: %w", &XoError{Entity: "User project", Err: err}))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[UserProject])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("UserProject/Paginated/pgx.CollectRows: %w", &XoError{Entity: "User project", Err: err}))
+	}
+	return res, nil
+}
+
 // UserProjectsByMember retrieves a row from 'public.user_project' as a UserProject.
 //
 // Generated from index 'user_project_member_idx'.
@@ -320,9 +463,9 @@ func UserProjectsByMember(ctx context.Context, db DB, member UserID, opts ...Use
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -332,7 +475,7 @@ func UserProjectsByMember(ctx context.Context, db DB, member UserID, opts ...Use
 	 WHERE user_project.member = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserProjectsByMember */\n" + sqlstr
@@ -434,9 +577,9 @@ func UserProjectByMemberProjectID(ctx context.Context, db DB, member UserID, pro
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -446,7 +589,7 @@ func UserProjectByMemberProjectID(ctx context.Context, db DB, member UserID, pro
 	 WHERE user_project.member = $1 AND user_project.project_id = $2
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserProjectByMemberProjectID */\n" + sqlstr
@@ -546,9 +689,9 @@ func UserProjectsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -558,7 +701,7 @@ func UserProjectsByProjectID(ctx context.Context, db DB, projectID ProjectID, op
 	 WHERE user_project.project_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserProjectsByProjectID */\n" + sqlstr
@@ -660,9 +803,9 @@ func UserProjectsByProjectIDMember(ctx context.Context, db DB, projectID Project
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -672,7 +815,7 @@ func UserProjectsByProjectIDMember(ctx context.Context, db DB, projectID Project
 	 WHERE user_project.project_id = $1 AND user_project.member = $2
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* UserProjectsByProjectIDMember */\n" + sqlstr

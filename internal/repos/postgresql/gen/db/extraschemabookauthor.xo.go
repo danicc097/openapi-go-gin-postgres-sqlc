@@ -106,9 +106,23 @@ func WithExtraSchemaBookAuthorLimit(limit int) ExtraSchemaBookAuthorSelectConfig
 	}
 }
 
-type ExtraSchemaBookAuthorOrderBy string
-
-const ()
+// WithExtraSchemaBookAuthorOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithExtraSchemaBookAuthorOrderBy(rows map[string]*models.Direction) ExtraSchemaBookAuthorSelectConfigOption {
+	return func(s *ExtraSchemaBookAuthorSelectConfig) {
+		te := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaBookAuthor]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
+			}
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
+		}
+	}
+}
 
 type ExtraSchemaBookAuthorJoins struct {
 	Books   bool `json:"books" required:"true" nullable:"false"`   // M2M book_authors
@@ -301,11 +315,11 @@ func (esba *ExtraSchemaBookAuthor) Upsert(ctx context.Context, db DB, params *Ex
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Book author", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaBookAuthor/Insert: %w", &XoError{Entity: "Book author", Err: err})
 			}
 			esba, err = esba.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Book author", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaBookAuthor/Update: %w", &XoError{Entity: "Book author", Err: err})
 			}
 		}
 	}
@@ -323,6 +337,137 @@ func (esba *ExtraSchemaBookAuthor) Delete(ctx context.Context, db DB) error {
 		return logerror(err)
 	}
 	return nil
+}
+
+// ExtraSchemaBookAuthorPaginated returns a cursor-paginated list of ExtraSchemaBookAuthor.
+// At least one cursor is required.
+func ExtraSchemaBookAuthorPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaBookAuthorSelectConfigOption) ([]ExtraSchemaBookAuthor, error) {
+	c := &ExtraSchemaBookAuthorSelectConfig{joins: ExtraSchemaBookAuthorJoins{},
+		filters: make(map[string][]any),
+		having:  make(map[string][]any),
+		orderBy: make(map[string]models.Direction),
+	}
+
+	for _, o := range opts {
+		o(c)
+	}
+
+	for _, cursor := range cursors {
+
+		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaBookAuthor][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthor/Paginated/cursor: %w", &XoError{Entity: "Book author", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("book_authors.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
+	nth := func() string {
+		paramStart++
+		return strconv.Itoa(paramStart)
+	}
+
+	var filterClauses []string
+	var filterParams []any
+	for filterTmpl, params := range c.filters {
+		filter := filterTmpl
+		for strings.Contains(filter, "$i") {
+			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
+		}
+		filterClauses = append(filterClauses, filter)
+		filterParams = append(filterParams, params...)
+	}
+
+	filters := ""
+	if len(filterClauses) > 0 {
+		filters += " where "
+	}
+	if len(filterClauses) > 0 {
+		filters += strings.Join(filterClauses, " AND ") + " "
+	}
+
+	var havingClauses []string
+	var havingParams []any
+	for havingTmpl, params := range c.having {
+		having := havingTmpl
+		for strings.Contains(having, "$i") {
+			having = strings.Replace(having, "$i", "$"+nth(), 1)
+		}
+		havingClauses = append(havingClauses, having)
+		havingParams = append(havingParams, params...)
+	}
+
+	havingClause := "" // must be empty if no actual clause passed, else it errors out
+	if len(havingClauses) > 0 {
+		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
+	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthor/Paginated/orderBy: %w", &XoError{Entity: "Book author", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
+
+	var selectClauses []string
+	var joinClauses []string
+	var groupByClauses []string
+
+	if c.joins.Books {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorTableBooksSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorTableBooksJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableBooksGroupBySQL)
+	}
+
+	if c.joins.Authors {
+		selectClauses = append(selectClauses, extraSchemaBookAuthorTableAuthorsSelectSQL)
+		joinClauses = append(joinClauses, extraSchemaBookAuthorTableAuthorsJoinSQL)
+		groupByClauses = append(groupByClauses, extraSchemaBookAuthorTableAuthorsGroupBySQL)
+	}
+
+	selects := ""
+	if len(selectClauses) > 0 {
+		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
+	}
+	joins := strings.Join(joinClauses, " \n ") + " "
+	groupByClause := ""
+	if len(groupByClauses) > 0 {
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+	}
+
+	sqlstr := fmt.Sprintf(`SELECT 
+	book_authors.author_id,
+	book_authors.book_id,
+	book_authors.pseudonym %s 
+	 FROM extra_schema.book_authors %s 
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
+	sqlstr += c.limit
+	sqlstr = "/* ExtraSchemaBookAuthorPaginated */\n" + sqlstr
+
+	// run
+
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthor/Paginated/db.Query: %w", &XoError{Entity: "Book author", Err: err}))
+	}
+	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[ExtraSchemaBookAuthor])
+	if err != nil {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthor/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Book author", Err: err}))
+	}
+	return res, nil
 }
 
 // ExtraSchemaBookAuthorByBookIDAuthorID retrieves a row from 'extra_schema.book_authors' as a ExtraSchemaBookAuthor.
@@ -406,9 +551,9 @@ func ExtraSchemaBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID Ex
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -419,7 +564,7 @@ func ExtraSchemaBookAuthorByBookIDAuthorID(ctx context.Context, db DB, bookID Ex
 	 WHERE book_authors.book_id = $1 AND book_authors.author_id = $2
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookAuthorByBookIDAuthorID */\n" + sqlstr
@@ -519,9 +664,9 @@ func ExtraSchemaBookAuthorsByBookID(ctx context.Context, db DB, bookID ExtraSche
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -532,7 +677,7 @@ func ExtraSchemaBookAuthorsByBookID(ctx context.Context, db DB, bookID ExtraSche
 	 WHERE book_authors.book_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookAuthorsByBookID */\n" + sqlstr
@@ -634,9 +779,9 @@ func ExtraSchemaBookAuthorsByAuthorID(ctx context.Context, db DB, authorID Extra
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -647,7 +792,7 @@ func ExtraSchemaBookAuthorsByAuthorID(ctx context.Context, db DB, authorID Extra
 	 WHERE book_authors.author_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaBookAuthorsByAuthorID */\n" + sqlstr

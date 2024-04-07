@@ -100,9 +100,23 @@ func WithExtraSchemaWorkItemLimit(limit int) ExtraSchemaWorkItemSelectConfigOpti
 	}
 }
 
-type ExtraSchemaWorkItemOrderBy string
-
-const ()
+// WithExtraSchemaWorkItemOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithExtraSchemaWorkItemOrderBy(rows map[string]*models.Direction) ExtraSchemaWorkItemSelectConfigOption {
+	return func(s *ExtraSchemaWorkItemSelectConfig) {
+		te := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaWorkItem]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
+			}
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
+		}
+	}
+}
 
 type ExtraSchemaWorkItemJoins struct {
 	DemoWorkItem bool `json:"demoWorkItem" required:"true" nullable:"false"` // O2O demo_work_items
@@ -293,11 +307,11 @@ func (eswi *ExtraSchemaWorkItem) Upsert(ctx context.Context, db DB, params *Extr
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Work item", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaWorkItem/Insert: %w", &XoError{Entity: "Work item", Err: err})
 			}
 			eswi, err = eswi.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Work item", Err: err})
+				return nil, fmt.Errorf("UpsertExtraSchemaWorkItem/Update: %w", &XoError{Entity: "Work item", Err: err})
 			}
 		}
 	}
@@ -317,8 +331,9 @@ func (eswi *ExtraSchemaWorkItem) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// ExtraSchemaWorkItemPaginatedByWorkItemID returns a cursor-paginated list of ExtraSchemaWorkItem.
-func ExtraSchemaWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workItemID ExtraSchemaWorkItemID, direction models.Direction, opts ...ExtraSchemaWorkItemSelectConfigOption) ([]ExtraSchemaWorkItem, error) {
+// ExtraSchemaWorkItemPaginated returns a cursor-paginated list of ExtraSchemaWorkItem.
+// At least one cursor is required.
+func ExtraSchemaWorkItemPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ExtraSchemaWorkItemSelectConfigOption) ([]ExtraSchemaWorkItem, error) {
 	c := &ExtraSchemaWorkItemSelectConfig{joins: ExtraSchemaWorkItemJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -329,7 +344,22 @@ func ExtraSchemaWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+
+		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaWorkItem][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("ExtraSchemaWorkItem/Paginated/cursor: %w", &XoError{Entity: "Work item", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("work_items.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -348,7 +378,10 @@ func ExtraSchemaWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where "
+	}
+	if len(filterClauses) > 0 {
+		filters += strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -366,6 +399,20 @@ func ExtraSchemaWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItem/Paginated/orderBy: %w", &XoError{Entity: "Work item", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -394,14 +441,9 @@ func ExtraSchemaWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -409,17 +451,13 @@ func ExtraSchemaWorkItemPaginatedByWorkItemID(ctx context.Context, db DB, workIt
 	work_items.title,
 	work_items.work_item_id %s 
 	 FROM extra_schema.work_items %s 
-	 WHERE work_items.work_item_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
-		work_item_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* ExtraSchemaWorkItemPaginatedByWorkItemID */\n" + sqlstr
+	sqlstr = "/* ExtraSchemaWorkItemPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{workItemID}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("ExtraSchemaWorkItem/Paginated/db.Query: %w", &XoError{Entity: "Work item", Err: err}))
 	}
@@ -517,9 +555,9 @@ func ExtraSchemaWorkItems(ctx context.Context, db DB, opts ...ExtraSchemaWorkIte
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -530,7 +568,7 @@ func ExtraSchemaWorkItems(ctx context.Context, db DB, opts ...ExtraSchemaWorkIte
 	 WHERE true
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItems */\n" + sqlstr
@@ -638,9 +676,9 @@ func ExtraSchemaWorkItemByWorkItemID(ctx context.Context, db DB, workItemID Extr
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -651,7 +689,7 @@ func ExtraSchemaWorkItemByWorkItemID(ctx context.Context, db DB, workItemID Extr
 	 WHERE work_items.work_item_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemByWorkItemID */\n" + sqlstr
@@ -757,9 +795,9 @@ func ExtraSchemaWorkItemsByTitle(ctx context.Context, db DB, title *string, opts
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -770,7 +808,7 @@ func ExtraSchemaWorkItemsByTitle(ctx context.Context, db DB, title *string, opts
 	 WHERE work_items.title = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ExtraSchemaWorkItemsByTitle */\n" + sqlstr

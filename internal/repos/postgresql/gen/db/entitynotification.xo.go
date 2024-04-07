@@ -106,15 +106,6 @@ func WithEntityNotificationLimit(limit int) EntityNotificationSelectConfigOption
 	}
 }
 
-type EntityNotificationOrderBy string
-
-const (
-	EntityNotificationCreatedAtDescNullsFirst EntityNotificationOrderBy = " created_at DESC NULLS FIRST "
-	EntityNotificationCreatedAtDescNullsLast  EntityNotificationOrderBy = " created_at DESC NULLS LAST "
-	EntityNotificationCreatedAtAscNullsFirst  EntityNotificationOrderBy = " created_at ASC NULLS FIRST "
-	EntityNotificationCreatedAtAscNullsLast   EntityNotificationOrderBy = " created_at ASC NULLS LAST "
-)
-
 // WithEntityNotificationOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
 func WithEntityNotificationOrderBy(rows map[string]*models.Direction) EntityNotificationSelectConfigOption {
@@ -258,11 +249,11 @@ func (en *EntityNotification) Upsert(ctx context.Context, db DB, params *EntityN
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Entity notification", Err: err})
+				return nil, fmt.Errorf("UpsertEntityNotification/Insert: %w", &XoError{Entity: "Entity notification", Err: err})
 			}
 			en, err = en.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Entity notification", Err: err})
+				return nil, fmt.Errorf("UpsertEntityNotification/Update: %w", &XoError{Entity: "Entity notification", Err: err})
 			}
 		}
 	}
@@ -282,8 +273,9 @@ func (en *EntityNotification) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// EntityNotificationPaginatedByEntityNotificationID returns a cursor-paginated list of EntityNotification.
-func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db DB, entityNotificationID EntityNotificationID, direction models.Direction, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
+// EntityNotificationPaginated returns a cursor-paginated list of EntityNotification.
+// At least one cursor is required.
+func EntityNotificationPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...EntityNotificationSelectConfigOption) ([]EntityNotification, error) {
 	c := &EntityNotificationSelectConfig{joins: EntityNotificationJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -294,7 +286,21 @@ func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db D
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		field, ok := EntityFields[TableEntityEntityNotification][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("EntityNotification/Paginated/cursor: %w", &XoError{Entity: "Entity notification", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("entity_notifications.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -313,7 +319,10 @@ func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db D
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where "
+	}
+	if len(filterClauses) > 0 {
+		filters += strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -332,6 +341,20 @@ func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db D
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
 
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("EntityNotification/Paginated/orderBy: %w", &XoError{Entity: "Entity notification", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
+
 	var selectClauses []string
 	var joinClauses []string
 	var groupByClauses []string
@@ -341,14 +364,9 @@ func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db D
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -358,17 +376,13 @@ func EntityNotificationPaginatedByEntityNotificationID(ctx context.Context, db D
 	entity_notifications.message,
 	entity_notifications.topic %s 
 	 FROM public.entity_notifications %s 
-	 WHERE entity_notifications.entity_notification_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
-		entity_notification_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* EntityNotificationPaginatedByEntityNotificationID */\n" + sqlstr
+	sqlstr = "/* EntityNotificationPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{entityNotificationID}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("EntityNotification/Paginated/db.Query: %w", &XoError{Entity: "Entity notification", Err: err}))
 	}
@@ -448,9 +462,9 @@ func EntityNotificationByEntityNotificationID(ctx context.Context, db DB, entity
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -463,7 +477,7 @@ func EntityNotificationByEntityNotificationID(ctx context.Context, db DB, entity
 	 WHERE entity_notifications.entity_notification_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* EntityNotificationByEntityNotificationID */\n" + sqlstr

@@ -4,7 +4,15 @@ package got
 
 import (
 	"fmt"
+
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 )
+
+type Cursor struct {
+	Column    string
+	Value     interface{}
+	Direction models.Direction
+}
 
 type Filter struct {
 	// Type is one of: string, number, integer, boolean, date-time
@@ -30,7 +38,7 @@ type XoError struct {
 
 // Error satisfies the error interface.
 func (e *XoError) Error() string {
-	return fmt.Sprintf("%s %v", e.Entity, e.Err)
+	return fmt.Sprintf("%s: %v", e.Entity, e.Err)
 }
 
 // Unwrap satisfies the unwrap interface.

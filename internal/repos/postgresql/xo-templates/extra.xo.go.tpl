@@ -4,6 +4,12 @@
 
 
 {{ if or (eq $schema "public") }}
+type Cursor struct {
+	Column string
+	Value interface{}
+	Direction models.Direction
+}
+
 type Filter struct {
   // Type is one of: string, number, integer, boolean, date-time
   // Arrays and objects are ignored for default filter generation
@@ -28,7 +34,7 @@ type XoError struct {
 
 // Error satisfies the error interface.
 func (e *XoError) Error() string {
-	return fmt.Sprintf("%s %v", e.Entity, e.Err)
+	return fmt.Sprintf("%s: %v", e.Entity, e.Err)
 }
 
 // Unwrap satisfies the unwrap interface.

@@ -130,15 +130,6 @@ func WithDeletedActivityOnly() ActivitySelectConfigOption {
 	}
 }
 
-type ActivityOrderBy string
-
-const (
-	ActivityDeletedAtDescNullsFirst ActivityOrderBy = " deleted_at DESC NULLS FIRST "
-	ActivityDeletedAtDescNullsLast  ActivityOrderBy = " deleted_at DESC NULLS LAST "
-	ActivityDeletedAtAscNullsFirst  ActivityOrderBy = " deleted_at ASC NULLS FIRST "
-	ActivityDeletedAtAscNullsLast   ActivityOrderBy = " deleted_at ASC NULLS LAST "
-)
-
 // WithActivityOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
 func WithActivityOrderBy(rows map[string]*models.Direction) ActivitySelectConfigOption {
@@ -318,11 +309,11 @@ func (a *Activity) Upsert(ctx context.Context, db DB, params *ActivityCreatePara
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Activity", Err: err})
+				return nil, fmt.Errorf("UpsertActivity/Insert: %w", &XoError{Entity: "Activity", Err: err})
 			}
 			a, err = a.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Activity", Err: err})
+				return nil, fmt.Errorf("UpsertActivity/Update: %w", &XoError{Entity: "Activity", Err: err})
 			}
 		}
 	}
@@ -368,8 +359,9 @@ func (a *Activity) Restore(ctx context.Context, db DB) (*Activity, error) {
 	return newa, nil
 }
 
-// ActivityPaginatedByActivityID returns a cursor-paginated list of Activity.
-func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID ActivityID, direction models.Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
+// ActivityPaginated returns a cursor-paginated list of Activity.
+// At least one cursor is required.
+func ActivityPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...ActivitySelectConfigOption) ([]Activity, error) {
 	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -380,7 +372,21 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+		field, ok := EntityFields[TableEntityActivity][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("Activity/Paginated/cursor: %w", &XoError{Entity: "Activity", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("activities.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -399,7 +405,10 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where "
+	}
+	if len(filterClauses) > 0 {
+		filters += strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -417,6 +426,20 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("Activity/Paginated/orderBy: %w", &XoError{Entity: "Activity", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -439,14 +462,9 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -457,127 +475,13 @@ func ActivityPaginatedByActivityID(ctx context.Context, db DB, activityID Activi
 	activities.name,
 	activities.project_id %s 
 	 FROM public.activities %s 
-	 WHERE activities.activity_id %s $1
-	 %s   AND activities.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
-		activity_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* ActivityPaginatedByActivityID */\n" + sqlstr
+	sqlstr = "/* ActivityPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{activityID}, append(filterParams, havingParams...)...)...)
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
-	}
-	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[Activity])
-	if err != nil {
-		return nil, logerror(fmt.Errorf("Activity/Paginated/pgx.CollectRows: %w", &XoError{Entity: "Activity", Err: err}))
-	}
-	return res, nil
-}
-
-// ActivityPaginatedByProjectID returns a cursor-paginated list of Activity.
-func ActivityPaginatedByProjectID(ctx context.Context, db DB, projectID ProjectID, direction models.Direction, opts ...ActivitySelectConfigOption) ([]Activity, error) {
-	c := &ActivitySelectConfig{deletedAt: " null ", joins: ActivityJoins{},
-		filters: make(map[string][]any),
-		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
-	}
-
-	for _, o := range opts {
-		o(c)
-	}
-
-	paramStart := 1
-	nth := func() string {
-		paramStart++
-		return strconv.Itoa(paramStart)
-	}
-
-	var filterClauses []string
-	var filterParams []any
-	for filterTmpl, params := range c.filters {
-		filter := filterTmpl
-		for strings.Contains(filter, "$i") {
-			filter = strings.Replace(filter, "$i", "$"+nth(), 1)
-		}
-		filterClauses = append(filterClauses, filter)
-		filterParams = append(filterParams, params...)
-	}
-
-	filters := ""
-	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
-	}
-
-	var havingClauses []string
-	var havingParams []any
-	for havingTmpl, params := range c.having {
-		having := havingTmpl
-		for strings.Contains(having, "$i") {
-			having = strings.Replace(having, "$i", "$"+nth(), 1)
-		}
-		havingClauses = append(havingClauses, having)
-		havingParams = append(havingParams, params...)
-	}
-
-	havingClause := "" // must be empty if no actual clause passed, else it errors out
-	if len(havingClauses) > 0 {
-		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
-	}
-
-	var selectClauses []string
-	var joinClauses []string
-	var groupByClauses []string
-
-	if c.joins.Project {
-		selectClauses = append(selectClauses, activityTableProjectSelectSQL)
-		joinClauses = append(joinClauses, activityTableProjectJoinSQL)
-		groupByClauses = append(groupByClauses, activityTableProjectGroupBySQL)
-	}
-
-	if c.joins.TimeEntries {
-		selectClauses = append(selectClauses, activityTableTimeEntriesSelectSQL)
-		joinClauses = append(joinClauses, activityTableTimeEntriesJoinSQL)
-		groupByClauses = append(groupByClauses, activityTableTimeEntriesGroupBySQL)
-	}
-
-	selects := ""
-	if len(selectClauses) > 0 {
-		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
-	}
-	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
-	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
-	}
-
-	sqlstr := fmt.Sprintf(`SELECT 
-	activities.activity_id,
-	activities.deleted_at,
-	activities.description,
-	activities.is_productive,
-	activities.name,
-	activities.project_id %s 
-	 FROM public.activities %s 
-	 WHERE activities.project_id %s $1
-	 %s   AND activities.deleted_at is %s  %s 
-  %s 
-  ORDER BY 
-		project_id %s `, selects, joins, operator, filters, c.deletedAt, groupbys, havingClause, direction)
-	sqlstr += c.limit
-	sqlstr = "/* ActivityPaginatedByProjectID */\n" + sqlstr
-
-	// run
-
-	rows, err := db.Query(ctx, sqlstr, append([]any{projectID}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("Activity/Paginated/db.Query: %w", &XoError{Entity: "Activity", Err: err}))
 	}
@@ -669,9 +573,9 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -685,7 +589,7 @@ func ActivityByNameProjectID(ctx context.Context, db DB, name string, projectID 
 	 WHERE activities.name = $1 AND activities.project_id = $2
 	 %s   AND activities.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivityByNameProjectID */\n" + sqlstr
@@ -785,9 +689,9 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -801,7 +705,7 @@ func ActivitiesByName(ctx context.Context, db DB, name string, opts ...ActivityS
 	 WHERE activities.name = $1
 	 %s   AND activities.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivitiesByName */\n" + sqlstr
@@ -903,9 +807,9 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -919,7 +823,7 @@ func ActivitiesByProjectID(ctx context.Context, db DB, projectID ProjectID, opts
 	 WHERE activities.project_id = $1
 	 %s   AND activities.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivitiesByProjectID */\n" + sqlstr
@@ -1021,9 +925,9 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID ActivityID, opt
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -1037,7 +941,7 @@ func ActivityByActivityID(ctx context.Context, db DB, activityID ActivityID, opt
 	 WHERE activities.activity_id = $1
 	 %s   AND activities.deleted_at is %s  %s 
   %s 
-`, selects, joins, filters, c.deletedAt, groupbys, havingClause)
+`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* ActivityByActivityID */\n" + sqlstr

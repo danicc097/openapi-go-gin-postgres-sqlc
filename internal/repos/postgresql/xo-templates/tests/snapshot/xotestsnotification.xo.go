@@ -111,7 +111,23 @@ func WithXoTestsNotificationLimit(limit int) XoTestsNotificationSelectConfigOpti
 	}
 }
 
-type XoTestsNotificationOrderBy string
+// WithXoTestsNotificationOrderBy accumulates orders results by the given columns.
+// A nil entry removes the existing column sort, if any.
+func WithXoTestsNotificationOrderBy(rows map[string]*models.Direction) XoTestsNotificationSelectConfigOption {
+	return func(s *XoTestsNotificationSelectConfig) {
+		te := XoTestsEntityFields[XoTestsTableEntityXoTestsNotification]
+		for dbcol, dir := range rows {
+			if _, ok := te[dbcol]; !ok {
+				continue
+			}
+			if dir == nil {
+				delete(s.orderBy, dbcol)
+				continue
+			}
+			s.orderBy[dbcol] = *dir
+		}
+	}
+}
 
 type XoTestsNotificationJoins struct {
 	UserReceiver bool `json:"userReceiver" required:"true" nullable:"false"` // O2O users
@@ -263,11 +279,11 @@ func (xtn *XoTestsNotification) Upsert(ctx context.Context, db DB, params *XoTes
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			if pgErr.Code != pgerrcode.UniqueViolation {
-				return nil, fmt.Errorf("UpsertUser/Insert: %w", &XoError{Entity: "Notification", Err: err})
+				return nil, fmt.Errorf("UpsertXoTestsNotification/Insert: %w", &XoError{Entity: "Notification", Err: err})
 			}
 			xtn, err = xtn.Update(ctx, db)
 			if err != nil {
-				return nil, fmt.Errorf("UpsertUser/Update: %w", &XoError{Entity: "Notification", Err: err})
+				return nil, fmt.Errorf("UpsertXoTestsNotification/Update: %w", &XoError{Entity: "Notification", Err: err})
 			}
 		}
 	}
@@ -287,8 +303,9 @@ func (xtn *XoTestsNotification) Delete(ctx context.Context, db DB) error {
 	return nil
 }
 
-// XoTestsNotificationPaginatedByNotificationID returns a cursor-paginated list of XoTestsNotification.
-func XoTestsNotificationPaginatedByNotificationID(ctx context.Context, db DB, notificationID XoTestsNotificationID, direction models.Direction, opts ...XoTestsNotificationSelectConfigOption) ([]XoTestsNotification, error) {
+// XoTestsNotificationPaginated returns a cursor-paginated list of XoTestsNotification.
+// At least one cursor is required.
+func XoTestsNotificationPaginated(ctx context.Context, db DB, cursors []Cursor, opts ...XoTestsNotificationSelectConfigOption) ([]XoTestsNotification, error) {
 	c := &XoTestsNotificationSelectConfig{
 		joins:   XoTestsNotificationJoins{},
 		filters: make(map[string][]any),
@@ -300,7 +317,22 @@ func XoTestsNotificationPaginatedByNotificationID(ctx context.Context, db DB, no
 		o(c)
 	}
 
-	paramStart := 1
+	for _, cursor := range cursors {
+
+		field, ok := XoTestsEntityFields[XoTestsTableEntityXoTestsNotification][cursor.Column]
+		if !ok {
+			return nil, logerror(fmt.Errorf("XoTestsNotification/Paginated/cursor: %w", &XoError{Entity: "Notification", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+		}
+
+		op := "<"
+		if cursor.Direction == models.DirectionAsc {
+			op = ">"
+		}
+		c.filters[fmt.Sprintf("notifications.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	}
+
+	paramStart := 0 // all filters will come from the user
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -319,7 +351,10 @@ func XoTestsNotificationPaginatedByNotificationID(ctx context.Context, db DB, no
 
 	filters := ""
 	if len(filterClauses) > 0 {
-		filters = " AND " + strings.Join(filterClauses, " AND ") + " "
+		filters += " where "
+	}
+	if len(filterClauses) > 0 {
+		filters += strings.Join(filterClauses, " AND ") + " "
 	}
 
 	var havingClauses []string
@@ -337,6 +372,20 @@ func XoTestsNotificationPaginatedByNotificationID(ctx context.Context, db DB, no
 	if len(havingClauses) > 0 {
 		havingClause = " HAVING " + strings.Join(havingClauses, " AND ") + " "
 	}
+
+	orderByClause := ""
+	if len(c.orderBy) > 0 {
+		orderByClause += " order by "
+	} else {
+		return nil, logerror(fmt.Errorf("XoTestsNotification/Paginated/orderBy: %w", &XoError{Entity: "Notification", Err: fmt.Errorf("at least one sorted column is required")}))
+	}
+	i := 0
+	orderBys := make([]string, len(c.orderBy))
+	for dbcol, dir := range c.orderBy {
+		orderBys[i] = dbcol + " " + string(dir)
+		i++
+	}
+	orderByClause += " " + strings.Join(orderBys, ", ") + " "
 
 	var selectClauses []string
 	var joinClauses []string
@@ -359,14 +408,9 @@ func XoTestsNotificationPaginatedByNotificationID(ctx context.Context, db DB, no
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
-	}
-
-	operator := "<"
-	if direction == models.DirectionAsc {
-		operator = ">"
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -375,17 +419,13 @@ func XoTestsNotificationPaginatedByNotificationID(ctx context.Context, db DB, no
 	notifications.receiver,
 	notifications.sender %s 
 	 FROM xo_tests.notifications %s 
-	 WHERE notifications.notification_id %s $1
-	 %s   %s 
-  %s 
-  ORDER BY 
-		notification_id %s `, selects, joins, operator, filters, groupbys, havingClause, direction)
+	 %s  %s %s %s`, selects, joins, filters, groupByClause, havingClause, orderByClause)
 	sqlstr += c.limit
-	sqlstr = "/* XoTestsNotificationPaginatedByNotificationID */\n" + sqlstr
+	sqlstr = "/* XoTestsNotificationPaginated */\n" + sqlstr
 
 	// run
 
-	rows, err := db.Query(ctx, sqlstr, append([]any{notificationID}, append(filterParams, havingParams...)...)...)
+	rows, err := db.Query(ctx, sqlstr, append(filterParams, havingParams...)...)
 	if err != nil {
 		return nil, logerror(fmt.Errorf("XoTestsNotification/Paginated/db.Query: %w", &XoError{Entity: "Notification", Err: err}))
 	}
@@ -477,9 +517,9 @@ func XoTestsNotificationByNotificationID(ctx context.Context, db DB, notificatio
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -491,7 +531,7 @@ func XoTestsNotificationByNotificationID(ctx context.Context, db DB, notificatio
 	 WHERE notifications.notification_id = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsNotificationByNotificationID */\n" + sqlstr
@@ -591,9 +631,9 @@ func XoTestsNotificationsBySender(ctx context.Context, db DB, sender XoTestsUser
 		selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 	}
 	joins := strings.Join(joinClauses, " \n ") + " "
-	groupbys := ""
+	groupByClause := ""
 	if len(groupByClauses) > 0 {
-		groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+		groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 	}
 
 	sqlstr := fmt.Sprintf(`SELECT 
@@ -605,7 +645,7 @@ func XoTestsNotificationsBySender(ctx context.Context, db DB, sender XoTestsUser
 	 WHERE notifications.sender = $1
 	 %s   %s 
   %s 
-`, selects, joins, filters, groupbys, havingClause)
+`, selects, joins, filters, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
 	sqlstr = "/* XoTestsNotificationsBySender */\n" + sqlstr

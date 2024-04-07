@@ -660,7 +660,8 @@ func emitQuery(ctx context.Context, query xo.Query, emit func(xo.Template)) erro
 			Data: struct {
 				Table       any
 				Constraints any
-			}{Table: table, Constraints: []Constraint{}},
+				Schema      string
+			}{Table: table, Constraints: []Constraint{}, Schema: table.Schema},
 		})
 	}
 	// build query params
@@ -835,7 +836,8 @@ func emitSchema(ctx context.Context, schema xo.Schema, emit func(xo.Template)) e
 				Table       any
 				Constraints any
 				Tables      any
-			}{Table: table, Constraints: constraints, Tables: tables},
+				Schema      string
+			}{Table: table, Constraints: constraints, Tables: tables, Schema: table.Schema},
 		})
 
 		// emit indexes
@@ -1723,6 +1725,10 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 	return funcs.FuncMap(), nil
 }
 
+func (f *Funcs) camel_export(names ...string) string {
+	return snaker.ForceCamelIdentifier(strings.Join(names, "_"))
+}
+
 func (f *Funcs) camel(names ...string) string {
 	return snaker.ForceLowerCamelIdentifier(strings.Join(names, "_"))
 }
@@ -1739,6 +1745,7 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		"entities":      f.entities,
 		"sentence_case": f.sentence_case,
 		"camel":         f.camel,
+		"camel_export":  f.camel_export,
 		"lowerFirst":    f.lower_first,
 		"first":         f.firstfn,
 		"driver":        f.driverfn,
@@ -1818,7 +1825,7 @@ func (f *Funcs) last_nth(v any, tables Tables, fields ...any) string {
 		case Field:
 			extraFields = append(extraFields, x)
 		default:
-			return fmt.Sprintf("[[ UNSUPPORTED TYPE extraFields: %T ]]", x)
+			return fmt.Sprintf("[[ UNSUPPORTED TYPE last_nth fields: %T ]]", x)
 		}
 	}
 
@@ -2202,13 +2209,6 @@ func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constra
 		cc = tablecc
 	}
 
-	orderByOpts := [][]string{
-		{"DescNullsFirst", "DESC NULLS FIRST"},
-		{"DescNullsLast", "DESC NULLS LAST"},
-		{"AscNullsFirst", "ASC NULLS FIRST"},
-		{"AscNullsLast", "ASC NULLS LAST"},
-	}
-
 	var buf strings.Builder
 	var sqlstrBuf strings.Builder
 
@@ -2249,21 +2249,6 @@ func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constra
 	}
 
 	buf.WriteString(fmt.Sprintf(`
-	type %[1]sOrderBy string`, tGoName))
-
-	buf.WriteString(`
-	const (
-	`)
-	for _, ob := range orderbys {
-		for _, opt := range orderByOpts {
-			buf.WriteString(fmt.Sprintf(`%s%s%s %sOrderBy = " %s %s "
-			`, tGoName, ob.GoName, opt[0], tGoName, ob.SQLName, opt[1]))
-		}
-	}
-	buf.WriteString(")\n")
-
-	if len(orderbys) > 0 {
-		buf.WriteString(fmt.Sprintf(`
 // With%[1]sOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
 func With%[1]sOrderBy(rows map[string]*models.Direction) %[1]sSelectConfigOption {
@@ -2282,7 +2267,6 @@ func With%[1]sOrderBy(rows map[string]*models.Direction) %[1]sSelectConfigOption
 	}
 }
 	`, tGoName, camelExport(f.schemaPrefix)))
-	}
 
 	var extraStructs []string
 
@@ -2686,8 +2670,8 @@ func (f *Funcs) db_update(name string, v any) string {
 
 // db_paginated generates a db.<name>Context(ctx, sqlstr, params)
 // query for cursor pagination by the given columns
-func (f *Funcs) db_paginated(name string, t Table, columns []Field) string {
-	return f.db(name, CursorPagination{Table: t, Fields: columns})
+func (f *Funcs) db_paginated(name string, t Table) string {
+	return f.db(name, CursorPagination{Table: t})
 }
 
 // db_named generates a db.<name>Context(ctx, sql.Named(name, res)...)
@@ -2967,7 +2951,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 			if len(names[2:]) > 0 {
 				nn = strings.Join(names[2:], ", ")
 			}
-			return "ctx, sqlstr, append([]any{" + nn + "}, append(filterParams, havingParams...)...)..."
+			return "ctx, sqlstr, append(filterParams, havingParams...)..."
 		default:
 			names = append(names, fmt.Sprintf("/* UNSUPPORTED TYPE 14 (%d): %T */", i, v))
 		}
@@ -3194,11 +3178,11 @@ func (f *Funcs) cursor_columns(table Table, constraints []Constraint, tables Tab
 }
 
 // sqlstr_paginated builds a cursor-paginated query string from columns.
-func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field) string {
+func (f *Funcs) sqlstr_paginated(v any, tables Tables) string {
 	var groupbys []string
 	switch x := v.(type) {
 	case Table:
-		var filters, fields []string
+		var fields []string
 
 		var tableHasDeletedAt bool
 		for _, field := range x.Fields {
@@ -3222,57 +3206,19 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables, columns []Field) string {
 
 		var n int
 		var orderbys []string
-		for _, c := range columns {
-			filters = append(filters, fmt.Sprintf("%s.%s %%s %s", x.SQLName, c.SQLName, f.nth(n))) // operator is now %s based on `direction`
-			// TODO generate paginated for indexes as well.
-			orderbys = append(orderbys, c.SQLName+" %s ")
-			n++
-		}
-
-		ff := "true"
-		if len(filters) > 0 {
-			ff = strings.Join(filters, " AND ")
-		}
 
 		lines := []string{
 			"SELECT ",
 			strings.Join(fields, ",\n\t") + " %s ",
 			" FROM " + f.schemafn(x.SQLName) + " %s ",
-			" WHERE " + ff,
 			" %s ",
 		}
 
-		groupbyClause := " %s \n"
-		havingClause := " %s \n"
-
 		buf := f.sqlstrBase(x)
 
-		buf.WriteString(`
-		operator := "<"
-		if direction == models.DirectionAsc {
-			operator = ">"
-		}
-	`)
-		if tableHasDeletedAt {
-			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s %s %s`, selects, joins %s, filters, c.deletedAt, groupbys, havingClause %s)",
-				strings.Join(lines, "\n\t"),
-				fmt.Sprintf(" AND %s.deleted_at is %%s", x.SQLName),
-				groupbyClause,
-				havingClause,
-				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
-				strings.Repeat(", operator", len(orderbys)),
-				strings.Repeat(", direction", len(orderbys)),
-			))
-		} else {
-			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s %s`, selects, joins %s, filters, groupbys, havingClause %s)",
-				strings.Join(lines, "\n\t"),
-				groupbyClause,
-				havingClause,
-				" ORDER BY \n\t\t"+strings.Join(orderbys, " ,\n\t\t"),
-				strings.Repeat(", operator", len(orderbys)),
-				strings.Repeat(", direction", len(orderbys)),
-			))
-		}
+		buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %%s %%s %%s`, selects, joins, filters, groupByClause, havingClause, orderByClause)",
+			strings.Join(lines, "\n\t"),
+		))
 
 		return buf.String()
 	}
@@ -3302,11 +3248,10 @@ func (f *Funcs) sqlstrBase(x Table) *strings.Builder {
 			selects = ", " + strings.Join(selectClauses, " ,\n ") + " "
 		}
 		joins := strings.Join(joinClauses, " \n ") + " "
-		groupbys := ""
+		groupByClause := ""
 		if len(groupByClauses) > 0 {
-			groupbys = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
+			groupByClause = "GROUP BY " + strings.Join(groupByClauses, " ,\n ") + " "
 		}
-
 		`)
 
 	return buf
@@ -3623,14 +3568,14 @@ func (f *Funcs) sqlstr_index(v any, tables Tables) string {
 		buf := f.sqlstrBase(x.Table)
 
 		if tableHasDeletedAt {
-			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s %s`, selects, joins, filters, c.deletedAt, groupbys, havingClause)",
+			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s %s`, selects, joins, filters, c.deletedAt, groupByClause, havingClause)",
 				strings.Join(lines, "\n\t"),
 				fmt.Sprintf(" AND %s.deleted_at is %%s", x.Table.SQLName),
 				groupbyClause,
 				havingClause,
 			))
 		} else {
-			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s`, selects, joins, filters, groupbys, havingClause)",
+			buf.WriteString(fmt.Sprintf("\nsqlstr := fmt.Sprintf(`%s %s %s`, selects, joins, filters, groupByClause, havingClause)",
 				strings.Join(lines, "\n\t"),
 				groupbyClause,
 				havingClause,
