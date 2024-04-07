@@ -19,6 +19,7 @@ import {
   Box,
   Button,
   Card,
+  Checkbox,
   Flex,
   Group,
   List,
@@ -59,6 +60,7 @@ import {
   CustomColumnFilterModeMenuItems,
 } from 'src/utils/mantine-react-table.components'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
+import { useDeletedEntityFilter } from 'src/hooks/tables/useFilters'
 
 type Column = MRT_ColumnDef<User>
 
@@ -86,7 +88,8 @@ const TABLE_NAME = 'demoTable'
 export default function DemoMantineReactTable() {
   const tableContainerRef = useRef<HTMLDivElement>(null)
   const rowVirtualizerInstanceRef = useRef<MRT_RowVirtualizer>(null) //we can get access to the underlying Virtualizer instance and call its scrollToIndex method
-  const { dynamicConfig, staticConfig, setColumnOrder, setHiddenColumns } = useMantineReactTableFilters(TABLE_NAME)
+  const { dynamicConfig, staticConfig, setColumnOrder, setHiddenColumns, setFilterMode, removeFilterMode } =
+    useMantineReactTableFilters(TABLE_NAME)
   const [columnVisibility, setColumnVisibility] = useState<MRT_VisibilityState>({})
   const defaultPaginatedUserColumns = useMemo<Column[]>(
     () =>
@@ -384,6 +387,23 @@ export default function DemoMantineReactTable() {
 
   const { colorScheme } = useMantineColorScheme()
 
+  const { deletedEntityFilterState, getLabelText, toggleDeletedUsersFilter } = useDeletedEntityFilter('user')
+
+  useEffect(() => {
+    switch (deletedEntityFilterState) {
+      case true:
+        setFilterMode('deletedAt', PaginationFilterModes.notEmpty)
+        break
+      case false:
+        setFilterMode('deletedAt', PaginationFilterModes.empty)
+        break
+      case null:
+        removeFilterMode('deletedAt')
+      default:
+        break
+    }
+  }, [deletedEntityFilterState])
+
   const validationError = error?.response?.data.validationError
 
   const table = useMantineReactTable({
@@ -450,10 +470,6 @@ export default function DemoMantineReactTable() {
     },
     renderTopToolbarCustomActions: ({ table }) => (
       <Flex direction="column">
-        <Text size="sm">
-          TODO: to show/hide deleted users, if deletedAt exists show a switch that sets deletedAt column filterMode
-          empty/notEmpty.
-        </Text>
         <Group>
           <Tooltip label="Refresh data">
             <ActionIcon onClick={() => refetch()}>
@@ -468,9 +484,19 @@ export default function DemoMantineReactTable() {
           >
             Create user
           </Button>
+          {defaultPaginatedUserColumns.findIndex((c) => c.id === 'deletedAt') !== -1 && (
+            <Checkbox
+              checked={deletedEntityFilterState ?? true}
+              size="sm"
+              indeterminate={deletedEntityFilterState === null}
+              onChange={toggleDeletedUsersFilter}
+              label={getLabelText()}
+            />
+          )}
         </Group>
       </Flex>
     ),
+    // enableRowNumbers: true,
     enableRowActions: true,
     renderRowActions: ({ row, table }) => (
       <Flex justify="center" align="center" gap={10}>
