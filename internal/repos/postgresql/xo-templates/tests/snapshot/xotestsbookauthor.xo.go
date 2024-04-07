@@ -356,7 +356,9 @@ func XoTestsBookAuthorPaginated(ctx context.Context, db DB, cursors models.Pagin
 	}
 
 	for _, cursor := range cursors {
-
+		if cursor.Value == nil {
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
 		field, ok := XoTestsEntityFields[XoTestsTableEntityXoTestsBookAuthor][cursor.Column]
 		if !ok {
 			return nil, logerror(fmt.Errorf("XoTestsBookAuthor/Paginated/cursor: %w", &XoError{Entity: "Book author", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
@@ -366,7 +368,7 @@ func XoTestsBookAuthorPaginated(ctx context.Context, db DB, cursors models.Pagin
 		if cursor.Direction == models.DirectionAsc {
 			op = ">"
 		}
-		c.filters[fmt.Sprintf("book_authors.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.filters[fmt.Sprintf("book_authors.%s %s $i", field.Db, op)] = []any{*cursor.Value}
 		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 	}
 

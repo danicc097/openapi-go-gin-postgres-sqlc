@@ -465,7 +465,12 @@ func ({{ short $t }} *{{$t.GoName}}) SetUpdateParams(params *{{$t.GoName}}Update
 	}
 
   for _, cursor := range cursors {
-    {{if not (eq $schema "public")}}
+    if cursor.Value == nil {
+      {{/* last/first (desc/asc) element is meant to be queried automatically if cursor was nil, and set thereafter.
+      this is necessary when Infinity cannot be used, etc. */}}
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
+    {{if not (eq $schema "public") -}}
 		field, ok := {{camel_export $schema}}EntityFields[{{camel_export $schema}}TableEntity{{$t.GoName}}][cursor.Column]
     {{else -}}
 		field, ok := EntityFields[TableEntity{{$t.GoName}}][cursor.Column]
@@ -478,7 +483,7 @@ func ({{ short $t }} *{{$t.GoName}}) SetUpdateParams(params *{{$t.GoName}}Update
 		if cursor.Direction == models.DirectionAsc {
 			op = ">"
 		}
-		c.filters[fmt.Sprintf("{{$t.SQLName}}.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.filters[fmt.Sprintf("{{$t.SQLName}}.%s %s $i", field.Db, op)] = []any{*cursor.Value}
     c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 	}
 

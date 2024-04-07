@@ -414,6 +414,10 @@ func TimeEntryPaginated(ctx context.Context, db DB, cursors models.PaginationCur
 	}
 
 	for _, cursor := range cursors {
+		if cursor.Value == nil {
+
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
 		field, ok := EntityFields[TableEntityTimeEntry][cursor.Column]
 		if !ok {
 			return nil, logerror(fmt.Errorf("TimeEntry/Paginated/cursor: %w", &XoError{Entity: "Time entry", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
@@ -423,7 +427,7 @@ func TimeEntryPaginated(ctx context.Context, db DB, cursors models.PaginationCur
 		if cursor.Direction == models.DirectionAsc {
 			op = ">"
 		}
-		c.filters[fmt.Sprintf("time_entries.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.filters[fmt.Sprintf("time_entries.%s %s $i", field.Db, op)] = []any{*cursor.Value}
 		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 	}
 

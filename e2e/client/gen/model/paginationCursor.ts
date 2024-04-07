@@ -6,11 +6,12 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { Direction } from './direction'
+import type { PaginationCursorValue } from './paginationCursorValue'
 
 export interface PaginationCursor {
   /** represents the JSON name of the db column */
   column: string
   direction: Direction
   /** represents a cursor value */
-  value: unknown
+  value: PaginationCursorValue
 }

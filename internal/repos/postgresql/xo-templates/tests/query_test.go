@@ -33,18 +33,25 @@ FIXME:
 - might be broken since FK ref is not in public schema
 */
 
+func cursorFrom(v interface{}) *interface{} {
+	var c interface{}
+	c = v
+
+	return &c
+}
+
 func TestCursorPagination_Timestamp(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
 
-	cursors := models.PaginationCursors{{Column: "createdAt", Value: time.Now().Add(-(24 + 1) * time.Hour), Direction: models.DirectionDesc}}
+	cursors := models.PaginationCursors{{Column: "createdAt", Value: cursorFrom(time.Now().Add(-(24 + 1) * time.Hour)), Direction: models.DirectionDesc}}
 	ee, err := db.XoTestsPagElementPaginated(ctx, testPool, cursors, db.WithXoTestsPagElementLimit(1), db.WithXoTestsPagElementJoin(db.XoTestsPagElementJoins{}))
 	require.NoError(t, err)
 	require.Len(t, ee, 1)
 	assert.Equal(t, "element -2 days", ee[0].Name)
 
-	cursors = models.PaginationCursors{{Column: "createdAt", Value: ee[0].CreatedAt, Direction: models.DirectionDesc}}
+	cursors = models.PaginationCursors{{Column: "createdAt", Value: cursorFrom(ee[0].CreatedAt), Direction: models.DirectionDesc}}
 	ee, err = db.XoTestsPagElementPaginated(ctx, testPool, cursors, db.WithXoTestsPagElementLimit(2))
 	require.NoError(t, err)
 	require.Len(t, ee, 2)
@@ -74,7 +81,7 @@ func TestSharedRefConstraints(t *testing.T) {
 	ctx := context.Background()
 
 	// generated with refs-ignore,share-ref-constraints
-	cursors := models.PaginationCursors{{Column: "workItemID", Value: 0, Direction: models.DirectionAsc}}
+	cursors := models.PaginationCursors{{Column: "workItemID", Value: cursorFrom(0), Direction: models.DirectionAsc}}
 
 	ee, err := db.XoTestsCacheDemoWorkItemPaginated(ctx, testPool, cursors,
 		db.WithXoTestsCacheDemoWorkItemJoin(db.XoTestsCacheDemoWorkItemJoins{Assignees: true}),
@@ -86,7 +93,7 @@ func TestSharedRefConstraints(t *testing.T) {
 	require.Len(t, *ee[0].AssigneesJoin, 2)
 	require.Nil(t, ee[0].WorkItemCommentsJoin)
 
-	cursors = models.PaginationCursors{{Column: "workItemID", Value: 1, Direction: models.DirectionAsc}}
+	cursors = models.PaginationCursors{{Column: "workItemID", Value: cursorFrom(1), Direction: models.DirectionAsc}}
 
 	ee, err = db.XoTestsCacheDemoWorkItemPaginated(ctx, testPool, cursors)
 	require.NoError(t, err)
@@ -117,7 +124,7 @@ func TestCursorPagination_HavingClause(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	cursors := models.PaginationCursors{{Column: "workItemID", Value: 0 /* should filter all */, Direction: models.DirectionAsc}}
+	cursors := models.PaginationCursors{{Column: "workItemID", Value: cursorFrom(0 /* should filter all */), Direction: models.DirectionAsc}}
 	ee, err := db.XoTestsWorkItemPaginated(ctx, testPool, cursors,
 		db.WithXoTestsWorkItemJoin(db.XoTestsWorkItemJoins{Assignees: true, WorkItemComments: true, TimeEntries: true}),
 		db.WithXoTestsWorkItemHavingClause(map[string][]any{
@@ -144,13 +151,13 @@ func Test_Filters(t *testing.T) {
 
 	ctx := context.Background()
 
-	cursors := models.PaginationCursors{{Column: "createdAt", Value: time.Now().Add(-(24 + 1) * time.Hour), Direction: models.DirectionDesc}}
+	cursors := models.PaginationCursors{{Column: "createdAt", Value: cursorFrom(time.Now().Add(-(24 + 1) * time.Hour)), Direction: models.DirectionDesc}}
 	ee, err := db.XoTestsPagElementPaginated(ctx, testPool, cursors, db.WithXoTestsPagElementLimit(1), db.WithXoTestsPagElementJoin(db.XoTestsPagElementJoins{}))
 	require.NoError(t, err)
 	require.Len(t, ee, 1)
 	assert.Equal(t, ee[0].Name, "element -2 days")
 
-	cursors = models.PaginationCursors{{Column: "createdAt", Value: ee[0].CreatedAt, Direction: models.DirectionDesc}}
+	cursors = models.PaginationCursors{{Column: "createdAt", Value: cursorFrom(ee[0].CreatedAt), Direction: models.DirectionDesc}}
 	ee, err = db.XoTestsPagElementPaginated(ctx, testPool, cursors, db.WithXoTestsPagElementLimit(2))
 	require.NoError(t, err)
 	require.Len(t, ee, 2)
@@ -308,7 +315,7 @@ func TestCustomFilters(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
-	cursors := models.PaginationCursors{{Column: "createdAt", Value: time.Now().Add(-999 * time.Hour), Direction: models.DirectionAsc}}
+	cursors := models.PaginationCursors{{Column: "createdAt", Value: cursorFrom(time.Now().Add(-999 * time.Hour)), Direction: models.DirectionAsc}}
 	uu, err := db.XoTestsUserPaginated(ctx, testPool, cursors,
 		db.WithXoTestsUserJoin(db.XoTestsUserJoins{UserAPIKey: true, AuthorBooks: true}),
 		db.WithXoTestsUserFilters(map[string][]any{

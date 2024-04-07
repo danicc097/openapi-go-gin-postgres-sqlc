@@ -253,7 +253,10 @@ func ExtraSchemaDummyJoinPaginated(ctx context.Context, db DB, cursors models.Pa
 	}
 
 	for _, cursor := range cursors {
+		if cursor.Value == nil {
 
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
 		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaDummyJoin][cursor.Column]
 		if !ok {
 			return nil, logerror(fmt.Errorf("ExtraSchemaDummyJoin/Paginated/cursor: %w", &XoError{Entity: "Dummy join", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
@@ -263,7 +266,7 @@ func ExtraSchemaDummyJoinPaginated(ctx context.Context, db DB, cursors models.Pa
 		if cursor.Direction == models.DirectionAsc {
 			op = ">"
 		}
-		c.filters[fmt.Sprintf("dummy_join.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.filters[fmt.Sprintf("dummy_join.%s %s $i", field.Db, op)] = []any{*cursor.Value}
 		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 	}
 

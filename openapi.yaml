@@ -2971,6 +2971,7 @@ components:
           $ref: '#/components/schemas/Direction'
         value:
           description: represents a cursor value
+          nullable: true
         column:
           description: represents the JSON name of the db column
           type: string

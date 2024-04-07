@@ -266,7 +266,10 @@ func ExtraSchemaDemoWorkItemPaginated(ctx context.Context, db DB, cursors models
 	}
 
 	for _, cursor := range cursors {
+		if cursor.Value == nil {
 
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
 		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaDemoWorkItem][cursor.Column]
 		if !ok {
 			return nil, logerror(fmt.Errorf("ExtraSchemaDemoWorkItem/Paginated/cursor: %w", &XoError{Entity: "Demo work item", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
@@ -276,7 +279,7 @@ func ExtraSchemaDemoWorkItemPaginated(ctx context.Context, db DB, cursors models
 		if cursor.Direction == models.DirectionAsc {
 			op = ">"
 		}
-		c.filters[fmt.Sprintf("demo_work_items.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.filters[fmt.Sprintf("demo_work_items.%s %s $i", field.Db, op)] = []any{*cursor.Value}
 		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 	}
 

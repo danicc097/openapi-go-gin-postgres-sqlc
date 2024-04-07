@@ -391,7 +391,9 @@ func XoTestsWorkItemPaginated(ctx context.Context, db DB, cursors models.Paginat
 	}
 
 	for _, cursor := range cursors {
-
+		if cursor.Value == nil {
+			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+		}
 		field, ok := XoTestsEntityFields[XoTestsTableEntityXoTestsWorkItem][cursor.Column]
 		if !ok {
 			return nil, logerror(fmt.Errorf("XoTestsWorkItem/Paginated/cursor: %w", &XoError{Entity: "Work item", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
@@ -401,7 +403,7 @@ func XoTestsWorkItemPaginated(ctx context.Context, db DB, cursors models.Paginat
 		if cursor.Direction == models.DirectionAsc {
 			op = ">"
 		}
-		c.filters[fmt.Sprintf("work_items.%s %s $i", field.Db, op)] = []any{cursor.Value}
+		c.filters[fmt.Sprintf("work_items.%s %s $i", field.Db, op)] = []any{*cursor.Value}
 		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 	}
 
