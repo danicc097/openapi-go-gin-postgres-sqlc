@@ -17,7 +17,7 @@ require (
 	github.com/deepmap/oapi-codegen/v2 v2.1.0
 	github.com/fatih/structs v1.1.0
 	github.com/fatih/structtag v1.2.0
-	github.com/getkin/kin-openapi v0.123.1-0.20240322191506-78bb273e5892
+	github.com/getkin/kin-openapi v0.124.0
 	github.com/gin-contrib/cors v1.7.1
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-contrib/zap v1.1.1
