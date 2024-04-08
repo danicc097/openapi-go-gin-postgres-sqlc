@@ -2549,7 +2549,6 @@
       },
       "required": [
         "direction",
-        "value",
         "column"
       ]
     },

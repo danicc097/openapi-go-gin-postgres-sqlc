@@ -6835,7 +6835,6 @@
         },
         "required": [
           "direction",
-          "value",
           "column"
         ]
       },
@@ -6862,7 +6861,6 @@
       },
       "required": [
         "direction",
-        "value",
         "column"
       ]
     },
@@ -7004,7 +7002,6 @@
             },
             "required": [
               "direction",
-              "value",
               "column"
             ]
           },
@@ -14040,7 +14037,6 @@
         },
         "required": [
           "direction",
-          "value",
           "column"
         ]
       },
@@ -14067,7 +14063,6 @@
       },
       "required": [
         "direction",
-        "value",
         "column"
       ]
     },
@@ -14209,7 +14204,6 @@
             },
             "required": [
               "direction",
-              "value",
               "column"
             ]
           },

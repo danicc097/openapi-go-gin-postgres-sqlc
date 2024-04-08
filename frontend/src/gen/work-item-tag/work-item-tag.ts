@@ -123,7 +123,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(workItemTagID),  cacheTime: 0, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItemTag>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(workItemTagID),  cacheTime: 2000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getWorkItemTag>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetWorkItemTagInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItemTag>>>
@@ -163,7 +163,7 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(workItemTagID),  cacheTime: 0, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWorkItemTag>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(workItemTagID),  cacheTime: 2000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getWorkItemTag>>, TError, TData> & { queryKey: QueryKey }
 }
 
 export type GetWorkItemTagQueryResult = NonNullable<Awaited<ReturnType<typeof getWorkItemTag>>>

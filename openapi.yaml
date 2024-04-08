@@ -2978,7 +2978,6 @@ components:
           type: string
       required:
         - direction
-        - value
         - column
     GetPaginatedUsersQueryParameters: # Generated schema. DO NOT EDIT.
       properties:

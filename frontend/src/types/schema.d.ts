@@ -829,7 +829,7 @@ export interface components {
     PaginationCursor: {
       direction: components["schemas"]["Direction"];
       /** @description represents a cursor value */
-      value: Record<string, unknown> | null;
+      value?: Record<string, unknown> | null;
       /** @description represents the JSON name of the db column */
       column: string;
     };

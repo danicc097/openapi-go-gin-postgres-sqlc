@@ -11,6 +11,7 @@ import {
   mrtFilterOptions,
   MRT_Column,
   MRT_VisibilityState,
+  MRT_SelectCheckbox,
 } from 'mantine-react-table'
 import {
   Accordion,
@@ -54,7 +55,7 @@ import { DateInput } from '@mantine/dates'
 import { useDebouncedValue } from '@mantine/hooks'
 
 import { useMantineReactTableFilters } from 'src/hooks/ui/useMantineReactTableFilters'
-import { IconStar } from '@tabler/icons'
+import { IconSend, IconStar } from '@tabler/icons'
 import {
   CustomMRTFilter,
   RowActionsMenu,
@@ -243,6 +244,8 @@ export default function DemoMantineReactTable() {
     [defaultPaginatedUserColumns],
   )
 
+  const [tableCalloutError, setTableCalloutError] = useState<string | null>(null)
+
   // allow overriding default columns for an entity
   const columns = useMemo<Column[]>(() => {
     const hiddenColumns: string[] = []
@@ -255,7 +258,6 @@ export default function DemoMantineReactTable() {
   }, [_columns])
 
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
   const [sorting, setSorting] = useState<MRT_SortingState>([{ id: 'createdAt', desc: true }])
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
@@ -359,25 +361,42 @@ export default function DemoMantineReactTable() {
       }
     })
 
-    searchQuery.cursors = sorting.flatMap((s) => {
-      const col = columns.find((col) => col.id === s.id)
+    const newCursors = sorting.flatMap((colSort) => {
+      const col = columns.find((col) => col.id === colSort.id)
       if (!col) return []
+
+      const shouldUseNextCursor =
+        searchQuery.cursors.findIndex((currentCursor) => {
+          const sameDirection = colSort.desc === (currentCursor.direction === 'desc')
+          const sameColumn = currentCursor.column === colSort.id
+          return sameColumn && sameDirection
+        }) !== -1
+
       return [
         {
-          column: s.id,
-          direction: s.desc ? 'desc' : 'asc',
+          column: colSort.id,
+          direction: colSort.desc ? 'desc' : 'asc',
           // for natural string sorting we need: CREATE COLLATION numeric (provider = icu, locale = 'en@colNumeric=yes')
           // used as SELECT email COLLATE numeric FROM users ORDER BY email DESC;
           // therefore indexes would need to be applied with COLLATE numeric
           // if null, backend will use 'Infinity' or '-Infinity' depending on order if col type is date/date-time or number,
           // else it will `select <col> ...order by <col> <dir> limit 1` scan to string and use that
-          value: nextCursor ?? null,
+
+          // FIXME: triggers call nextCursor somehow, nextCursor is not in deps but one of them might contain it?
+          ...(nextCursor && shouldUseNextCursor && { value: nextCursor }),
         } as PaginationCursor,
       ]
     })
 
-    setSearchQuery((v) => ({ ...v, items, role: role }))
-  }, [columnFilters, globalFilter, dynamicConfig?.filterModes, sorting])
+    if (newCursors.length === 0) {
+      setTableCalloutError('At least one column must be sorted')
+      return
+    } else {
+      setTableCalloutError(null)
+    }
+
+    setSearchQuery((v) => ({ ...v, items, cursors: newCursors, role: role }))
+  }, [columnFilters, dynamicConfig?.filterModes, sorting])
 
   useEffect(() => {
     console.log({ searchQuery })
@@ -445,8 +464,28 @@ export default function DemoMantineReactTable() {
     manualFiltering: true,
     manualPagination: true,
     manualSorting: true,
-    mantineToolbarAlertBannerProps: isError
-      ? {
+    // enableRowSelection: true,
+    positionToolbarAlertBanner: 'head-overlay',
+    // renderToolbarAlertBannerContent: ({ selectedAlert, table }) => (
+    //   <Flex justify="space-between">
+    //     <Flex gap="xl" p="6px">
+    //       <MRT_SelectCheckbox table={table} /> {selectedAlert}{' '}
+    //     </Flex>
+    //     <Flex gap="md">
+    //       <Button color="blue" leftSection={<IconSend />}>
+    //         Email Selected
+    //       </Button>
+    //       <Button color="red" leftSection={<IconTrash />}>
+    //         Remove Selected
+    //       </Button>
+    //     </Flex>
+    //   </Flex>
+    // ),
+    mantineToolbarAlertBannerProps:
+      tableCalloutError !== null ? (
+        <Title size={'xs'}>Error loading data: {tableCalloutError}</Title>
+      ) : isError ? (
+        {
           color: 'red',
           children: (
             <>
@@ -461,9 +500,8 @@ export default function DemoMantineReactTable() {
             </>
           ),
         }
-      : undefined,
+      ) : undefined,
     onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     enableColumnOrdering: true,
@@ -486,7 +524,6 @@ export default function DemoMantineReactTable() {
       columnOrder: staticConfig?.columnOrder ?? ['mrt-row-actions', 'fullName', 'email', 'role'],
       density: 'xs',
       columnFilters,
-      globalFilter,
       isLoading,
       pagination,
       showAlertBanner: isError,
@@ -566,10 +603,9 @@ export default function DemoMantineReactTable() {
               lang="json"
               code={JSON.stringify(
                 {
-                  cursor: `${usersData?.pages[0]?.page.nextCursor}`,
+                  searchQuery: searchQuery,
                   size: `${pagination.pageSize}`,
                   columnFilters,
-                  globalFilter: globalFilter ?? '',
                   sorting: sorting,
                 },
                 null,

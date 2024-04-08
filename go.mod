@@ -5,9 +5,9 @@ go 1.21
 replace (
 	// all 3 are branches named `custom`.
 	github.com/deepmap/oapi-codegen/v2 => github.com/danicc097/oapi-codegen/v2 v2.0.200000
-	// the fork should also use replace directory of upstream to ./
-	// and just change module name
-	github.com/oapi-codegen/runtime => github.com/danicc097/runtime v1.0.10003
+// the fork should also use replace directory of upstream to ./
+// and just change module name
+// github.com/oapi-codegen/runtime => github.com/danicc097/runtime v1.0.10003
 )
 
 require (

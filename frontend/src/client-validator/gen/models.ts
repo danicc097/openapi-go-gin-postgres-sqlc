@@ -638,7 +638,7 @@ export interface PaginationCursor {
   /**
    * represents a cursor value
    */
-  value: {}
+  value?: {}
   /**
    * represents the JSON name of the db column
    */
