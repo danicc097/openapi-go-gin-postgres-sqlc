@@ -62,6 +62,11 @@
       "db": "kanban_step_id",
       "nullable": false
     },
+    "metadata": {
+      "type": "object",
+      "db": "metadata",
+      "nullable": false
+    },
     "targetDate": {
       "type": "date-time",
       "db": "target_date",
@@ -127,6 +132,11 @@
     "line": {
       "type": "string",
       "db": "line",
+      "nullable": false
+    },
+    "metadata": {
+      "type": "object",
+      "db": "metadata",
       "nullable": false
     },
     "ref": {
@@ -306,6 +316,11 @@
       "db": "created_at",
       "nullable": false
     },
+    "labels": {
+      "type": "array",
+      "db": "labels",
+      "nullable": false
+    },
     "link": {
       "type": "string",
       "db": "link",
@@ -316,6 +331,16 @@
       "db": "notification_id",
       "nullable": false
     },
+    "receiver": {
+      "type": "string",
+      "db": "receiver",
+      "nullable": true
+    },
+    "sender": {
+      "type": "string",
+      "db": "sender",
+      "nullable": false
+    },
     "title": {
       "type": "string",
       "db": "title",
@@ -323,6 +348,11 @@
     }
   },
   "project": {
+    "boardConfig": {
+      "type": "object",
+      "db": "board_config",
+      "nullable": false
+    },
     "createdAt": {
       "type": "date-time",
       "db": "created_at",
@@ -412,6 +442,11 @@
       "db": "time_entry_id",
       "nullable": false
     },
+    "userID": {
+      "type": "string",
+      "db": "user_id",
+      "nullable": false
+    },
     "workItemID": {
       "type": "integer",
       "db": "work_item_id",
@@ -464,9 +499,19 @@
       "db": "last_name",
       "nullable": true
     },
+    "scopes": {
+      "type": "array",
+      "db": "scopes",
+      "nullable": false
+    },
     "updatedAt": {
       "type": "date-time",
       "db": "updated_at",
+      "nullable": false
+    },
+    "userID": {
+      "type": "string",
+      "db": "user_id",
       "nullable": false
     },
     "username": {
@@ -485,6 +530,11 @@
       "type": "date-time",
       "db": "expires_on",
       "nullable": false
+    },
+    "userID": {
+      "type": "string",
+      "db": "user_id",
+      "nullable": false
     }
   },
   "userNotification": {
@@ -498,6 +548,11 @@
       "db": "read",
       "nullable": false
     },
+    "userID": {
+      "type": "string",
+      "db": "user_id",
+      "nullable": false
+    },
     "userNotificationID": {
       "type": "integer",
       "db": "user_notification_id",
@@ -505,6 +560,11 @@
     }
   },
   "userProject": {
+    "member": {
+      "type": "string",
+      "db": "member",
+      "nullable": false
+    },
     "projectID": {
       "type": "integer",
       "db": "project_id",
@@ -512,6 +572,11 @@
     }
   },
   "userTeam": {
+    "member": {
+      "type": "string",
+      "db": "member",
+      "nullable": false
+    },
     "teamID": {
       "type": "integer",
       "db": "team_id",
@@ -542,6 +607,11 @@
     "kanbanStepID": {
       "type": "integer",
       "db": "kanban_step_id",
+      "nullable": false
+    },
+    "metadata": {
+      "type": "object",
+      "db": "metadata",
       "nullable": false
     },
     "targetDate": {
@@ -576,6 +646,11 @@
     }
   },
   "workItemAssignee": {
+    "assignee": {
+      "type": "string",
+      "db": "assignee",
+      "nullable": false
+    },
     "workItemID": {
       "type": "integer",
       "db": "work_item_id",
@@ -596,6 +671,11 @@
     "updatedAt": {
       "type": "date-time",
       "db": "updated_at",
+      "nullable": false
+    },
+    "userID": {
+      "type": "string",
+      "db": "user_id",
       "nullable": false
     },
     "workItemCommentID": {

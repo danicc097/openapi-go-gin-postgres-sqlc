@@ -1621,7 +1621,8 @@ type Filter struct {
 
 // can extend as required to prevent getting db info via reflection
 type DbField struct {
-	Db string `json:"db"`
+	Db   string `json:"db"`
+	Type string `json:"type"`
 }
 
 // Funcs is a set of template funcs.
@@ -2697,21 +2698,25 @@ func (f *Funcs) entities(schema string, tables Tables) string {
 	}
 	var b strings.Builder
 
-	ee := make([]string, len(tables))
+	tt := make([]Table, len(tables))
 	i := 0
 	for _, t := range tables {
-		ee[i] = t.GoName
+		tt[i] = t
 		i++
 	}
 
-	sort.Slice(ee, func(i, j int) bool {
-		return ee[i] < ee[j]
+	sort.Slice(tt, func(i, j int) bool {
+		return tt[i].GoName < tt[j].GoName
 	})
 
 	b.WriteString(fmt.Sprintf("type %sTableEntity string\n", camelExport(schema)))
 	b.WriteString("const (\n")
-	for _, e := range ee {
-		b.WriteString(fmt.Sprintf("%[1]sTableEntity%[2]s %[1]sTableEntity = %[3]q \n", camelExport(schema), camelExport(e), camel(e)))
+	for _, t := range tt {
+		tident := t.SQLName
+		if f.schemaPrefix != "" {
+			tident = f.schemaPrefix + "." + tident
+		}
+		b.WriteString(fmt.Sprintf("%[1]sTableEntity%[2]s %[1]sTableEntity = %[3]q \n", camelExport(schema), camelExport(t.GoName), tident))
 	}
 	b.WriteString(")")
 
@@ -2768,8 +2773,8 @@ func formatEntityFields(schema string, entityFields map[string]map[string]DbFiel
 		for _, fieldName := range fieldNames {
 			field := fields[fieldName]
 			buf.WriteString(
-				fmt.Sprintf("\t\t\"%s\": DbField{Db: \"%s\"},\n",
-					fieldName, field.Db,
+				fmt.Sprintf("\t\t\"%s\": DbField{Type: %s, Db: \"%s\"},\n",
+					fieldName, simpleTypeToTypeEnum(field.Type), field.Db,
 				))
 		}
 		buf.WriteString("\t},\n")
@@ -2828,8 +2833,8 @@ func formatEntityFilters(schema string, entityFilters map[string]map[string]Filt
 		buf.WriteString(fmt.Sprintf("\t%sTableEntity%s: {\n", camelExport(schema), camelExport(entityType)))
 		for _, fieldName := range fieldNames {
 			field := fields[fieldName]
-			buf.WriteString(fmt.Sprintf("\t\t\"%s\": Filter{Type: \"%s\", Db: \"%s\", Nullable: %t},\n",
-				fieldName, field.Type, field.Db, field.Nullable))
+			buf.WriteString(fmt.Sprintf("\t\t\"%s\": Filter{Type: %s, Db: \"%s\", Nullable: %t},\n",
+				fieldName, simpleTypeToTypeEnum(field.Type), field.Db, field.Nullable))
 		}
 		buf.WriteString("\t},\n")
 	}
@@ -2947,10 +2952,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 			return "ctx, sqlstr, append([]any{" + nn + "}, append(filterParams, havingParams...)...)..."
 		case CursorPagination:
 			names = append(names, f.params(x.Fields, false, nil))
-			nn := ""
-			if len(names[2:]) > 0 {
-				nn = strings.Join(names[2:], ", ")
-			}
+
 			return "ctx, sqlstr, append(filterParams, havingParams...)..."
 		default:
 			names = append(names, fmt.Sprintf("/* UNSUPPORTED TYPE 14 (%d): %T */", i, v))
@@ -3184,13 +3186,6 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables) string {
 	case Table:
 		var fields []string
 
-		var tableHasDeletedAt bool
-		for _, field := range x.Fields {
-			if field.SQLName == "deleted_at" {
-				tableHasDeletedAt = true
-			}
-		}
-
 		// build table fieldnames
 		for _, z := range x.Fields {
 			// add current table fields
@@ -3203,9 +3198,6 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables) string {
 
 		// all fields already selected in main table need to appear
 		groupbys = append(groupbys, mainGroupByFields(x, f, funcs)...)
-
-		var n int
-		var orderbys []string
 
 		lines := []string{
 			"SELECT ",
@@ -4276,7 +4268,8 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		}
 		if typ, err := goTypeToSimpleType(field.UnderlyingType); err == nil {
 			f.entityFields[entityName][camel(field.GoName)] = DbField{
-				Db: field.SQLName,
+				Db:   field.SQLName,
+				Type: typ,
 			}
 		}
 	}
@@ -4316,6 +4309,27 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	return fmt.Sprintf("\t%s %s%s // %s\n", goName, fieldType, tag, field.SQLName), nil
 }
 
+func simpleTypeToTypeEnum(simpleType string) string {
+	switch simpleType {
+	case "date-time":
+		return "ColumnSimpleTypeDateTime"
+	case "integer":
+		return "ColumnSimpleTypeInteger"
+	case "number":
+		return "ColumnSimpleTypeNumber"
+	case "string":
+		return "ColumnSimpleTypeString"
+	case "boolean":
+		return "ColumnSimpleTypeBoolean"
+	case "array":
+		return "ColumnSimpleTypeArray"
+	case "object":
+		return "ColumnSimpleTypeObject"
+	default:
+		return ""
+	}
+}
+
 func goTypeToSimpleType(goType string) (string, error) {
 	t := strings.TrimPrefix(goType, "*")
 	switch {
@@ -4325,10 +4339,14 @@ func goTypeToSimpleType(goType string) (string, error) {
 		return "integer", nil
 	case strings.HasPrefix(t, "float"):
 		return "number", nil
-	case t == "string":
+	case t == "string" || t == "uuid.UUID":
 		return "string", nil
 	case t == "bool":
 		return "boolean", nil
+	case strings.HasPrefix(t, "[]"):
+		return "array", nil
+	case strings.HasPrefix(t, "map["):
+		return "object", nil
 	default:
 		return "", fmt.Errorf("unsupported simple type: %v", t)
 	}

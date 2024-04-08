@@ -6838,7 +6838,8 @@
           "value",
           "column"
         ]
-      }
+      },
+      "maxLength": 1
     },
     "PaginationCursor": {
       "type": "object",
@@ -7006,7 +7007,8 @@
               "value",
               "column"
             ]
-          }
+          },
+          "maxLength": 1
         }
       },
       "required": [
@@ -14041,7 +14043,8 @@
           "value",
           "column"
         ]
-      }
+      },
+      "maxLength": 1
     },
     "PaginationCursor": {
       "type": "object",
@@ -14209,7 +14212,8 @@
               "value",
               "column"
             ]
-          }
+          },
+          "maxLength": 1
         }
       },
       "required": [

@@ -1,447 +1,644 @@
 {
   "activity": {
     "activityID": {
-      "db": "activity_id"
+      "db": "activity_id",
+      "type": "integer"
     },
     "deletedAt": {
-      "db": "deleted_at"
+      "db": "deleted_at",
+      "type": "date-time"
     },
     "description": {
-      "db": "description"
+      "db": "description",
+      "type": "string"
     },
     "isProductive": {
-      "db": "is_productive"
+      "db": "is_productive",
+      "type": "boolean"
     },
     "name": {
-      "db": "name"
+      "db": "name",
+      "type": "string"
     },
     "projectID": {
-      "db": "project_id"
+      "db": "project_id",
+      "type": "integer"
     }
   },
   "cacheDemoTwoWorkItem": {
     "closedAt": {
-      "db": "closed_at"
+      "db": "closed_at",
+      "type": "date-time"
     },
     "createdAt": {
-      "db": "created_at"
+      "db": "created_at",
+      "type": "date-time"
     },
     "customDateForProject2": {
-      "db": "custom_date_for_project_2"
+      "db": "custom_date_for_project_2",
+      "type": "date-time"
     },
     "deletedAt": {
-      "db": "deleted_at"
+      "db": "deleted_at",
+      "type": "date-time"
     },
     "description": {
-      "db": "description"
+      "db": "description",
+      "type": "string"
     },
     "kanbanStepID": {
-      "db": "kanban_step_id"
+      "db": "kanban_step_id",
+      "type": "integer"
+    },
+    "metadata": {
+      "db": "metadata",
+      "type": "object"
     },
     "targetDate": {
-      "db": "target_date"
+      "db": "target_date",
+      "type": "date-time"
     },
     "teamID": {
-      "db": "team_id"
+      "db": "team_id",
+      "type": "integer"
     },
     "title": {
-      "db": "title"
+      "db": "title",
+      "type": "string"
     },
     "updatedAt": {
-      "db": "updated_at"
+      "db": "updated_at",
+      "type": "date-time"
     },
     "workItemID": {
-      "db": "work_item_id"
+      "db": "work_item_id",
+      "type": "integer"
     },
     "workItemTypeID": {
-      "db": "work_item_type_id"
+      "db": "work_item_type_id",
+      "type": "integer"
     }
   },
   "cacheDemoWorkItem": {
     "closedAt": {
-      "db": "closed_at"
+      "db": "closed_at",
+      "type": "date-time"
     },
     "createdAt": {
-      "db": "created_at"
+      "db": "created_at",
+      "type": "date-time"
     },
     "deletedAt": {
-      "db": "deleted_at"
+      "db": "deleted_at",
+      "type": "date-time"
     },
     "description": {
-      "db": "description"
+      "db": "description",
+      "type": "string"
     },
     "kanbanStepID": {
-      "db": "kanban_step_id"
+      "db": "kanban_step_id",
+      "type": "integer"
     },
     "lastMessageAt": {
-      "db": "last_message_at"
+      "db": "last_message_at",
+      "type": "date-time"
     },
     "line": {
-      "db": "line"
+      "db": "line",
+      "type": "string"
+    },
+    "metadata": {
+      "db": "metadata",
+      "type": "object"
     },
     "ref": {
-      "db": "ref"
+      "db": "ref",
+      "type": "string"
     },
     "reopened": {
-      "db": "reopened"
+      "db": "reopened",
+      "type": "boolean"
     },
     "targetDate": {
-      "db": "target_date"
+      "db": "target_date",
+      "type": "date-time"
     },
     "teamID": {
-      "db": "team_id"
+      "db": "team_id",
+      "type": "integer"
     },
     "title": {
-      "db": "title"
+      "db": "title",
+      "type": "string"
     },
     "updatedAt": {
-      "db": "updated_at"
+      "db": "updated_at",
+      "type": "date-time"
     },
     "workItemID": {
-      "db": "work_item_id"
+      "db": "work_item_id",
+      "type": "integer"
     },
     "workItemTypeID": {
-      "db": "work_item_type_id"
+      "db": "work_item_type_id",
+      "type": "integer"
     }
   },
   "demoTwoWorkItem": {
     "customDateForProject2": {
-      "db": "custom_date_for_project_2"
+      "db": "custom_date_for_project_2",
+      "type": "date-time"
     },
     "workItemID": {
-      "db": "work_item_id"
+      "db": "work_item_id",
+      "type": "integer"
     }
   },
   "demoWorkItem": {
     "lastMessageAt": {
-      "db": "last_message_at"
+      "db": "last_message_at",
+      "type": "date-time"
     },
     "line": {
-      "db": "line"
+      "db": "line",
+      "type": "string"
     },
     "ref": {
-      "db": "ref"
+      "db": "ref",
+      "type": "string"
     },
     "reopened": {
-      "db": "reopened"
+      "db": "reopened",
+      "type": "boolean"
     },
     "workItemID": {
-      "db": "work_item_id"
+      "db": "work_item_id",
+      "type": "integer"
     }
   },
   "entityNotification": {
     "createdAt": {
-      "db": "created_at"
+      "db": "created_at",
+      "type": "date-time"
     },
     "entityNotificationID": {
-      "db": "entity_notification_id"
+      "db": "entity_notification_id",
+      "type": "integer"
     },
     "id": {
-      "db": "id"
+      "db": "id",
+      "type": "string"
     },
     "message": {
-      "db": "message"
+      "db": "message",
+      "type": "string"
     },
     "topic": {
-      "db": "topic"
+      "db": "topic",
+      "type": "string"
     }
   },
   "kanbanStep": {
     "color": {
-      "db": "color"
+      "db": "color",
+      "type": "string"
     },
     "description": {
-      "db": "description"
+      "db": "description",
+      "type": "string"
     },
     "kanbanStepID": {
-      "db": "kanban_step_id"
+      "db": "kanban_step_id",
+      "type": "integer"
     },
     "name": {
-      "db": "name"
+      "db": "name",
+      "type": "string"
     },
     "projectID": {
-      "db": "project_id"
+      "db": "project_id",
+      "type": "integer"
     },
     "stepOrder": {
-      "db": "step_order"
+      "db": "step_order",
+      "type": "integer"
     },
     "timeTrackable": {
-      "db": "time_trackable"
+      "db": "time_trackable",
+      "type": "boolean"
     }
   },
   "movie": {
     "movieID": {
-      "db": "movie_id"
+      "db": "movie_id",
+      "type": "integer"
     },
     "synopsis": {
-      "db": "synopsis"
+      "db": "synopsis",
+      "type": "string"
     },
     "title": {
-      "db": "title"
+      "db": "title",
+      "type": "string"
     },
     "year": {
-      "db": "year"
+      "db": "year",
+      "type": "integer"
     }
   },
   "notification": {
     "body": {
-      "db": "body"
+      "db": "body",
+      "type": "string"
     },
     "createdAt": {
-      "db": "created_at"
+      "db": "created_at",
+      "type": "date-time"
+    },
+    "labels": {
+      "db": "labels",
+      "type": "array"
     },
     "link": {
-      "db": "link"
+      "db": "link",
+      "type": "string"
     },
     "notificationID": {
-      "db": "notification_id"
+      "db": "notification_id",
+      "type": "integer"
+    },
+    "receiver": {
+      "db": "receiver",
+      "type": "string"
     },
     "receiverRank": {
-      "db": "receiver_rank"
+      "db": "receiver_rank",
+      "type": "integer"
+    },
+    "sender": {
+      "db": "sender",
+      "type": "string"
     },
     "title": {
-      "db": "title"
+      "db": "title",
+      "type": "string"
     }
   },
   "project": {
+    "boardConfig": {
+      "db": "board_config",
+      "type": "object"
+    },
     "createdAt": {
-      "db": "created_at"
+      "db": "created_at",
+      "type": "date-time"
     },
     "description": {
-      "db": "description"
+      "db": "description",
+      "type": "string"
     },
     "name": {
-      "db": "name"
+      "db": "name",
+      "type": "string"
     },
     "projectID": {
-      "db": "project_id"
+      "db": "project_id",
+      "type": "integer"
     },
     "updatedAt": {
-      "db": "updated_at"
+      "db": "updated_at",
+      "type": "date-time"
     },
     "workItemsTableName": {
-      "db": "work_items_table_name"
+      "db": "work_items_table_name",
+      "type": "string"
     }
   },
   "team": {
     "createdAt": {
-      "db": "created_at"
+      "db": "created_at",
+      "type": "date-time"
     },
     "description": {
-      "db": "description"
+      "db": "description",
+      "type": "string"
     },
     "name": {
-      "db": "name"
+      "db": "name",
+      "type": "string"
     },
     "projectID": {
-      "db": "project_id"
+      "db": "project_id",
+      "type": "integer"
     },
     "teamID": {
-      "db": "team_id"
+      "db": "team_id",
+      "type": "integer"
     },
     "updatedAt": {
-      "db": "updated_at"
+      "db": "updated_at",
+      "type": "date-time"
     }
   },
   "timeEntry": {
     "activityID": {
-      "db": "activity_id"
+      "db": "activity_id",
+      "type": "integer"
     },
     "comment": {
-      "db": "comment"
+      "db": "comment",
+      "type": "string"
     },
     "durationMinutes": {
-      "db": "duration_minutes"
+      "db": "duration_minutes",
+      "type": "integer"
     },
     "start": {
-      "db": "start"
+      "db": "start",
+      "type": "date-time"
     },
     "teamID": {
-      "db": "team_id"
+      "db": "team_id",
+      "type": "integer"
     },
     "timeEntryID": {
-      "db": "time_entry_id"
+      "db": "time_entry_id",
+      "type": "integer"
+    },
+    "userID": {
+      "db": "user_id",
+      "type": "string"
     },
     "workItemID": {
-      "db": "work_item_id"
+      "db": "work_item_id",
+      "type": "integer"
     }
   },
   "user": {
     "age": {
-      "db": "age"
+      "db": "age",
+      "type": "integer"
     },
     "apiKeyID": {
-      "db": "api_key_id"
+      "db": "api_key_id",
+      "type": "integer"
     },
     "createdAt": {
-      "db": "created_at"
+      "db": "created_at",
+      "type": "date-time"
     },
     "deletedAt": {
-      "db": "deleted_at"
+      "db": "deleted_at",
+      "type": "date-time"
     },
     "email": {
-      "db": "email"
+      "db": "email",
+      "type": "string"
     },
     "externalID": {
-      "db": "external_id"
+      "db": "external_id",
+      "type": "string"
     },
     "firstName": {
-      "db": "first_name"
+      "db": "first_name",
+      "type": "string"
     },
     "fullName": {
-      "db": "full_name"
+      "db": "full_name",
+      "type": "string"
     },
     "hasGlobalNotifications": {
-      "db": "has_global_notifications"
+      "db": "has_global_notifications",
+      "type": "boolean"
     },
     "hasPersonalNotifications": {
-      "db": "has_personal_notifications"
+      "db": "has_personal_notifications",
+      "type": "boolean"
     },
     "lastName": {
-      "db": "last_name"
+      "db": "last_name",
+      "type": "string"
     },
     "roleRank": {
-      "db": "role_rank"
+      "db": "role_rank",
+      "type": "integer"
+    },
+    "scopes": {
+      "db": "scopes",
+      "type": "array"
     },
     "updatedAt": {
-      "db": "updated_at"
+      "db": "updated_at",
+      "type": "date-time"
+    },
+    "userID": {
+      "db": "user_id",
+      "type": "string"
     },
     "username": {
-      "db": "username"
+      "db": "username",
+      "type": "string"
     }
   },
   "userAPIKey": {
     "apiKey": {
-      "db": "api_key"
+      "db": "api_key",
+      "type": "string"
     },
     "expiresOn": {
-      "db": "expires_on"
+      "db": "expires_on",
+      "type": "date-time"
     },
     "userAPIKeyID": {
-      "db": "user_api_key_id"
+      "db": "user_api_key_id",
+      "type": "integer"
+    },
+    "userID": {
+      "db": "user_id",
+      "type": "string"
     }
   },
   "userNotification": {
     "notificationID": {
-      "db": "notification_id"
+      "db": "notification_id",
+      "type": "integer"
     },
     "read": {
-      "db": "read"
+      "db": "read",
+      "type": "boolean"
+    },
+    "userID": {
+      "db": "user_id",
+      "type": "string"
     },
     "userNotificationID": {
-      "db": "user_notification_id"
+      "db": "user_notification_id",
+      "type": "integer"
     }
   },
   "userProject": {
+    "member": {
+      "db": "member",
+      "type": "string"
+    },
     "projectID": {
-      "db": "project_id"
+      "db": "project_id",
+      "type": "integer"
     }
   },
   "userTeam": {
+    "member": {
+      "db": "member",
+      "type": "string"
+    },
     "teamID": {
-      "db": "team_id"
+      "db": "team_id",
+      "type": "integer"
     }
   },
   "workItem": {
     "closedAt": {
-      "db": "closed_at"
+      "db": "closed_at",
+      "type": "date-time"
     },
     "createdAt": {
-      "db": "created_at"
+      "db": "created_at",
+      "type": "date-time"
     },
     "deletedAt": {
-      "db": "deleted_at"
+      "db": "deleted_at",
+      "type": "date-time"
     },
     "description": {
-      "db": "description"
+      "db": "description",
+      "type": "string"
     },
     "kanbanStepID": {
-      "db": "kanban_step_id"
+      "db": "kanban_step_id",
+      "type": "integer"
+    },
+    "metadata": {
+      "db": "metadata",
+      "type": "object"
     },
     "targetDate": {
-      "db": "target_date"
+      "db": "target_date",
+      "type": "date-time"
     },
     "teamID": {
-      "db": "team_id"
+      "db": "team_id",
+      "type": "integer"
     },
     "title": {
-      "db": "title"
+      "db": "title",
+      "type": "string"
     },
     "updatedAt": {
-      "db": "updated_at"
+      "db": "updated_at",
+      "type": "date-time"
     },
     "workItemID": {
-      "db": "work_item_id"
+      "db": "work_item_id",
+      "type": "integer"
     },
     "workItemTypeID": {
-      "db": "work_item_type_id"
+      "db": "work_item_type_id",
+      "type": "integer"
     }
   },
   "workItemAssignee": {
+    "assignee": {
+      "db": "assignee",
+      "type": "string"
+    },
     "workItemID": {
-      "db": "work_item_id"
+      "db": "work_item_id",
+      "type": "integer"
     }
   },
   "workItemComment": {
     "createdAt": {
-      "db": "created_at"
+      "db": "created_at",
+      "type": "date-time"
     },
     "message": {
-      "db": "message"
+      "db": "message",
+      "type": "string"
     },
     "updatedAt": {
-      "db": "updated_at"
+      "db": "updated_at",
+      "type": "date-time"
+    },
+    "userID": {
+      "db": "user_id",
+      "type": "string"
     },
     "workItemCommentID": {
-      "db": "work_item_comment_id"
+      "db": "work_item_comment_id",
+      "type": "integer"
     },
     "workItemID": {
-      "db": "work_item_id"
+      "db": "work_item_id",
+      "type": "integer"
     }
   },
   "workItemTag": {
     "color": {
-      "db": "color"
+      "db": "color",
+      "type": "string"
     },
     "deletedAt": {
-      "db": "deleted_at"
+      "db": "deleted_at",
+      "type": "date-time"
     },
     "description": {
-      "db": "description"
+      "db": "description",
+      "type": "string"
     },
     "name": {
-      "db": "name"
+      "db": "name",
+      "type": "string"
     },
     "projectID": {
-      "db": "project_id"
+      "db": "project_id",
+      "type": "integer"
     },
     "workItemTagID": {
-      "db": "work_item_tag_id"
+      "db": "work_item_tag_id",
+      "type": "integer"
     }
   },
   "workItemType": {
     "color": {
-      "db": "color"
+      "db": "color",
+      "type": "string"
     },
     "description": {
-      "db": "description"
+      "db": "description",
+      "type": "string"
     },
     "name": {
-      "db": "name"
+      "db": "name",
+      "type": "string"
     },
     "projectID": {
-      "db": "project_id"
+      "db": "project_id",
+      "type": "integer"
     },
     "workItemTypeID": {
-      "db": "work_item_type_id"
+      "db": "work_item_type_id",
+      "type": "integer"
     }
   },
   "workItemWorkItemTag": {
     "workItemID": {
-      "db": "work_item_id"
+      "db": "work_item_id",
+      "type": "integer"
     },
     "workItemTagID": {
-      "db": "work_item_tag_id"
+      "db": "work_item_tag_id",
+      "type": "integer"
     }
   }
 }

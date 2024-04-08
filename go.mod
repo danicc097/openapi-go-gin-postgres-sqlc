@@ -39,6 +39,7 @@ require (
 	github.com/kenshaw/snaker v0.2.0
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/oapi-codegen/testutil v1.1.0
+	github.com/pashagolub/pgxmock/v3 v3.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.19.0

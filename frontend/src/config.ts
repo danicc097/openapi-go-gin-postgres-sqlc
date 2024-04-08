@@ -13,7 +13,10 @@ import { JSONSchema4 } from 'json-schema'
 
 export const CONFIG = CONFIG_JSON
 
-export type EntityFilterType = 'string' | 'number' | 'integer' | 'boolean' | 'date-time'
+/*
+ to be kept in sync with xo gen
+ */
+export type EntityFilterType = 'string' | 'number' | 'integer' | 'boolean' | 'date-time' | 'array' | 'object'
 
 export type EntityFilter = {
   type: EntityFilterType

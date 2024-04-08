@@ -2529,7 +2529,8 @@
       "type": "array",
       "items": {
         "$ref": "#/definitions/PaginationCursor"
-      }
+      },
+      "maxLength": 1
     },
     "PaginationCursor": {
       "type": "object",

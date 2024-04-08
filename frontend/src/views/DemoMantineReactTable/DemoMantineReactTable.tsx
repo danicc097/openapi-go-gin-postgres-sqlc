@@ -37,6 +37,7 @@ import dayjs from 'dayjs'
 import {
   GetPaginatedUsersParams,
   GetPaginatedUsersQueryParameters,
+  PaginationCursor,
   PaginationFilterModes,
   PaginationItems,
   Role,
@@ -365,26 +366,13 @@ export default function DemoMantineReactTable() {
         {
           column: s.id,
           direction: s.desc ? 'desc' : 'asc',
-          // for natural sorting we need: CREATE COLLATION numeric (provider = icu, locale = 'en@colNumeric=yes')
+          // for natural string sorting we need: CREATE COLLATION numeric (provider = icu, locale = 'en@colNumeric=yes')
           // used as SELECT email COLLATE numeric FROM users ORDER BY email DESC;
           // therefore indexes would need to be applied with COLLATE numeric
-          // FIXME: these are defaults - use nextCursor if sorting hasnt changed
-          // TODO: nullable cursor value, and if nullable then in repo we query select <col> ...order by <col> limit 1
-          // scan to string and use that as cursor
-          value: String(
-            s.desc
-              ? col.filterVariant === 'date-range'
-                ? dayjs().toRFC3339NANO()
-                : col.filterVariant === 'text'
-                ? '\ufffd' // lower bound
-                : -Infinity
-              : col.filterVariant === 'date-range'
-              ? dayjs(0).toRFC3339NANO()
-              : col.filterVariant === 'text'
-              ? 'zzzzzzzzzzzzzzzzzz' // need querying select <col> from users order by <col> desc limit 1 for this one.
-              : Infinity,
-          ),
-        },
+          // if null, backend will use 'Infinity' or '-Infinity' depending on order if col type is date/date-time or number,
+          // else it will `select <col> ...order by <col> <dir> limit 1` scan to string and use that
+          value: nextCursor ?? null,
+        } as PaginationCursor,
       ]
     })
 
