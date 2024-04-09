@@ -63,6 +63,7 @@ import {
 } from 'src/utils/mantine-react-table.components'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
 import { useDeletedEntityFilter } from 'src/hooks/tables/useFilters'
+import ErrorCallout from 'src/components/Callout/ErrorCallout'
 
 type Column = MRT_ColumnDef<User>
 
@@ -416,8 +417,7 @@ export default function DemoMantineReactTable() {
         const { scrollHeight, scrollTop, clientHeight } = containerRefElement
         const hasMore = totalFetched >= pagination.pageSize
         if (scrollHeight - scrollTop - clientHeight < 200 && !isFetching && !isFetchingNextPage && hasMore) {
-          const nc = dayjs(nextCursor) // keep cursor date format
-          if (nc.isValid()) {
+          if (nextCursor !== null && nextCursor !== undefined) {
             console.log('Fetching more...')
             fetchNextPage()
           }
@@ -481,26 +481,6 @@ export default function DemoMantineReactTable() {
     //     </Flex>
     //   </Flex>
     // ),
-    mantineToolbarAlertBannerProps:
-      tableCalloutError !== null ? (
-        <Title size={'xs'}>Error loading data: {tableCalloutError}</Title>
-      ) : isError ? (
-        {
-          color: 'red',
-          children: (
-            <>
-              <Title size={'xs'}>Error loading data: {error.response?.data.detail}</Title>
-              {validationError && (
-                <List>
-                  {validationError.messages.map((m, i) => (
-                    <List.Item key={i}>{m}</List.Item>
-                  ))}
-                </List>
-              )}
-            </>
-          ),
-        }
-      ) : undefined,
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
@@ -621,8 +601,16 @@ export default function DemoMantineReactTable() {
           </Accordion.Panel>
         </Accordion.Item>
       </Accordion>
-      {/* when using hook, set all props there */}
       <Card p={8} radius={0}>
+        {tableCalloutError !== null ? (
+          <ErrorCallout title={tableCalloutError}></ErrorCallout>
+        ) : isError ? (
+          validationError ? (
+            <ErrorCallout title={'Validation error'} errors={validationError?.messages}></ErrorCallout>
+          ) : error?.response?.data ? (
+            <ErrorCallout title={'Error loading data'} errors={[error?.response?.data?.detail]}></ErrorCallout>
+          ) : undefined
+        ) : undefined}
         <MantineReactTable table={table} />
       </Card>
     </>
