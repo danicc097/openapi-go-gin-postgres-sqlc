@@ -12,13 +12,13 @@ import (
 
 func TestSetDefaultCursors(t *testing.T) {
 	tests := []struct {
-		name          string
-		wantQuery     string
-		queryResult   string
-		cursor        models.PaginationCursor
-		wantCursor    interface{}
-		entity        db.TableEntity
-		errorContains string
+		name            string
+		wantQuery       string
+		queryResult     string
+		cursor          models.PaginationCursor
+		wantCursorValue interface{}
+		entity          db.TableEntity
+		errorContains   string
 	}{
 		{
 			name: "infinity",
@@ -27,12 +27,12 @@ func TestSetDefaultCursors(t *testing.T) {
 				Direction: models.DirectionAsc,
 				Value:     nil,
 			},
-			wantCursor: "-Infinity",
-			entity:     db.TableEntityUser,
+			wantCursorValue: "-Infinity",
+			entity:          db.TableEntityUser,
 		},
 		{
-			name:       "cursor ignored if set",
-			wantCursor: "something",
+			name:            "cursor ignored if set",
+			wantCursorValue: "something",
 			cursor: models.PaginationCursor{
 				Column:    "fullName",
 				Direction: models.DirectionAsc,
@@ -41,10 +41,10 @@ func TestSetDefaultCursors(t *testing.T) {
 			entity: db.TableEntityUser,
 		},
 		{
-			name:        "find in query",
-			wantQuery:   "select full_name from users order by full_name asc limit 1",
-			queryResult: "my name",
-			wantCursor:  "my name",
+			name:            "find in query",
+			wantQuery:       "select full_name from users order by full_name asc limit 1",
+			queryResult:     "my name",
+			wantCursorValue: "my name",
 			cursor: models.PaginationCursor{
 				Column:    "fullName",
 				Direction: models.DirectionAsc,
@@ -80,7 +80,7 @@ func TestSetDefaultCursors(t *testing.T) {
 				mock.ExpectQuery(tt.wantQuery).WillReturnRows(rr)
 			}
 
-			newCursors, err := setDefaultCursors(mock, tt.entity, models.PaginationCursors{tt.cursor})
+			err = setDefaultCursor(mock, tt.entity, &tt.cursor)
 
 			if tt.errorContains != "" {
 				require.Error(t, err)
@@ -89,8 +89,7 @@ func TestSetDefaultCursors(t *testing.T) {
 				return
 			} else {
 				require.NoError(t, err)
-				require.Len(t, newCursors, 1)
-				require.EqualValues(t, tt.wantCursor, *newCursors[0].Value)
+				require.EqualValues(t, tt.wantCursorValue, *tt.cursor.Value)
 			}
 
 			err = mock.ExpectationsWereMet()

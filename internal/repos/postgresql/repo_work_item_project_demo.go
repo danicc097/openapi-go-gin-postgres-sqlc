@@ -8,6 +8,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 )
 
 // DemoWorkItem represents the repository used for interacting with DemoWorkItem records.
@@ -33,11 +34,9 @@ func (u *DemoWorkItem) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, op
 func (u *DemoWorkItem) Paginated(ctx context.Context, d db.DBTX, cursor db.WorkItemID, opts ...db.CacheDemoWorkItemSelectConfigOption) ([]db.CacheDemoWorkItem, error) {
 	extraOpts := []db.CacheDemoWorkItemSelectConfigOption{db.WithCacheDemoWorkItemJoin(db.CacheDemoWorkItemJoins{})}
 
-	var c interface{}
-	c = cursor
-	cursors := models.PaginationCursors{{Column: "workItemID", Value: &c, Direction: models.DirectionDesc}}
+	c := models.PaginationCursor{Column: "workItemID", Value: pointers.New[interface{}](cursor), Direction: models.DirectionDesc}
 
-	return db.CacheDemoWorkItemPaginated(ctx, d, cursors, (append(extraOpts, opts...))...)
+	return db.CacheDemoWorkItemPaginated(ctx, d, c, (append(extraOpts, opts...))...)
 }
 
 func (u *DemoWorkItem) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (*db.WorkItem, error) {

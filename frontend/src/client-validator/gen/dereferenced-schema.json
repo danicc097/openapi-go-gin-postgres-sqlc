@@ -6812,34 +6812,6 @@
         "x-use-server-type": true
       }
     },
-    "PaginationCursors": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "direction": {
-            "type": "string",
-            "enum": [
-              "asc",
-              "desc"
-            ]
-          },
-          "value": {
-            "description": "represents a cursor value"
-          },
-          "column": {
-            "description": "represents the JSON name of the db column",
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "direction",
-          "column"
-        ]
-      },
-      "maxLength": 1
-    },
     "PaginationCursor": {
       "type": "object",
       "properties": {
@@ -6979,37 +6951,33 @@
             "x-use-server-type": true
           }
         },
-        "cursors": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "direction": {
-                "type": "string",
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              },
-              "value": {
-                "description": "represents a cursor value"
-              },
-              "column": {
-                "description": "represents the JSON name of the db column",
-                "type": "string",
-                "minLength": 1
-              }
+        "cursor": {
+          "type": "object",
+          "properties": {
+            "direction": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
             },
-            "required": [
-              "direction",
-              "column"
-            ]
+            "value": {
+              "description": "represents a cursor value"
+            },
+            "column": {
+              "description": "represents the JSON name of the db column",
+              "type": "string",
+              "minLength": 1
+            }
           },
-          "maxLength": 1
+          "required": [
+            "direction",
+            "column"
+          ]
         }
       },
       "required": [
-        "cursors"
+        "cursor"
       ],
       "type": "object"
     },
@@ -14014,34 +13982,6 @@
         "x-use-server-type": true
       }
     },
-    "PaginationCursors": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "direction": {
-            "type": "string",
-            "enum": [
-              "asc",
-              "desc"
-            ]
-          },
-          "value": {
-            "description": "represents a cursor value"
-          },
-          "column": {
-            "description": "represents the JSON name of the db column",
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "direction",
-          "column"
-        ]
-      },
-      "maxLength": 1
-    },
     "PaginationCursor": {
       "type": "object",
       "properties": {
@@ -14181,37 +14121,33 @@
             "x-use-server-type": true
           }
         },
-        "cursors": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "direction": {
-                "type": "string",
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              },
-              "value": {
-                "description": "represents a cursor value"
-              },
-              "column": {
-                "description": "represents the JSON name of the db column",
-                "type": "string",
-                "minLength": 1
-              }
+        "cursor": {
+          "type": "object",
+          "properties": {
+            "direction": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
             },
-            "required": [
-              "direction",
-              "column"
-            ]
+            "value": {
+              "description": "represents a cursor value"
+            },
+            "column": {
+              "description": "represents the JSON name of the db column",
+              "type": "string",
+              "minLength": 1
+            }
           },
-          "maxLength": 1
+          "required": [
+            "direction",
+            "column"
+          ]
         }
       },
       "required": [
-        "cursors"
+        "cursor"
       ],
       "type": "object"
     },

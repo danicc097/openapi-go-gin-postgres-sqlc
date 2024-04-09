@@ -661,7 +661,7 @@ func (u *User) Restore(ctx context.Context, db DB) (*User, error) {
 
 // UserPaginated returns a cursor-paginated list of User.
 // At least one cursor is required.
-func UserPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...UserSelectConfigOption) ([]User, error) {
+func UserPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -672,23 +672,21 @@ func UserPaginated(ctx context.Context, db DB, cursors models.PaginationCursors,
 		o(c)
 	}
 
-	for _, cursor := range cursors {
-		if cursor.Value == nil {
+	if cursor.Value == nil {
 
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-		field, ok := EntityFields[TableEntityUser][cursor.Column]
-		if !ok {
-			return nil, logerror(fmt.Errorf("User/Paginated/cursor: %w", &XoError{Entity: "User", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
-
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("users.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
 	}
+	field, ok := EntityFields[TableEntityUser][cursor.Column]
+	if !ok {
+		return nil, logerror(fmt.Errorf("User/Paginated/cursor: %w", &XoError{Entity: "User", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+	}
+
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("users.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+	c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
 	paramStart := 0 // all filters will come from the user
 	nth := func() string {

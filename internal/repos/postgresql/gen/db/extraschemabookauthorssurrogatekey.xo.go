@@ -345,7 +345,7 @@ func (esbask *ExtraSchemaBookAuthorsSurrogateKey) Delete(ctx context.Context, db
 
 // ExtraSchemaBookAuthorsSurrogateKeyPaginated returns a cursor-paginated list of ExtraSchemaBookAuthorsSurrogateKey.
 // At least one cursor is required.
-func ExtraSchemaBookAuthorsSurrogateKeyPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
+func ExtraSchemaBookAuthorsSurrogateKeyPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...ExtraSchemaBookAuthorsSurrogateKeySelectConfigOption) ([]ExtraSchemaBookAuthorsSurrogateKey, error) {
 	c := &ExtraSchemaBookAuthorsSurrogateKeySelectConfig{joins: ExtraSchemaBookAuthorsSurrogateKeyJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -356,23 +356,21 @@ func ExtraSchemaBookAuthorsSurrogateKeyPaginated(ctx context.Context, db DB, cur
 		o(c)
 	}
 
-	for _, cursor := range cursors {
-		if cursor.Value == nil {
+	if cursor.Value == nil {
 
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaBookAuthorsSurrogateKey][cursor.Column]
-		if !ok {
-			return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/Paginated/cursor: %w", &XoError{Entity: "Book authors surrogate key", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
-
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("book_authors_surrogate_key.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
 	}
+	field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaBookAuthorsSurrogateKey][cursor.Column]
+	if !ok {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBookAuthorsSurrogateKey/Paginated/cursor: %w", &XoError{Entity: "Book authors surrogate key", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+	}
+
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("book_authors_surrogate_key.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+	c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
 	paramStart := 0 // all filters will come from the user
 	nth := func() string {

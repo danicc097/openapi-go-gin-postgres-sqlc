@@ -64,12 +64,11 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginat
 		opts = append(opts, db.WithUserLimit(params.Limit))
 	}
 
-	cc, err := setDefaultCursors(d, db.TableEntityUser, params.Cursors)
-	if err != nil {
+	if err := setDefaultCursor(d, db.TableEntityUser, &params.Cursor); err != nil {
 		return nil, fmt.Errorf("could not set default cursors: %w", ParseDBErrorDetail(err))
 	}
 
-	users, err := db.UserPaginated(ctx, d, cc, opts...)
+	users, err := db.UserPaginated(ctx, d, params.Cursor, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get paginated users: %w", ParseDBErrorDetail(err))
 	}

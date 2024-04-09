@@ -17,41 +17,37 @@ var infinityTypes = []db.ColumnSimpleType{
 	db.ColumnSimpleTypeInteger,
 }
 
-func setDefaultCursors(d db.DBTX, entity db.TableEntity, cursors models.PaginationCursors) (models.PaginationCursors, error) {
-	for i, v := range cursors {
-		if v.Value != nil {
-			continue
-		}
-		f, ok := db.EntityFields[entity][v.Column]
-		if !ok {
-			continue
-		}
-
-		if slices.Contains(infinityTypes, f.Type) {
-			var defaultCursor interface{}
-			if v.Direction == models.DirectionAsc {
-				defaultCursor = "-Infinity"
-			} else {
-				defaultCursor = "Infinity"
-			}
-			v.Value = &defaultCursor
-			cursors[i] = v
-
-			continue
-		}
-
-		query := fmt.Sprintf("select %s from %s order by %s %s limit 1", f.Db, entity, f.Db, v.Direction)
-		var defaultCursor interface{}
-		err := d.QueryRow(context.Background(), query).Scan(&defaultCursor)
-		if err == pgx.ErrNoRows {
-			return nil, internal.NewErrorf(models.ErrorCodeNotFound, "no items exist yet")
-		} else if err != nil {
-			return nil, err
-		}
-
-		v.Value = &defaultCursor
-		cursors[i] = v
+func setDefaultCursor(d db.DBTX, entity db.TableEntity, cursor *models.PaginationCursor) error {
+	if cursor.Value != nil {
+		return nil
+	}
+	f, ok := db.EntityFields[entity][cursor.Column]
+	if !ok {
+		return nil
 	}
 
-	return cursors, nil
+	if slices.Contains(infinityTypes, f.Type) {
+		var defaultCursor interface{}
+		if cursor.Direction == models.DirectionAsc {
+			defaultCursor = "-Infinity"
+		} else {
+			defaultCursor = "Infinity"
+		}
+		cursor.Value = &defaultCursor
+
+		return nil
+	}
+
+	query := fmt.Sprintf("select %s from %s order by %s %s limit 1", f.Db, entity, f.Db, cursor.Direction)
+	var defaultCursor interface{}
+	err := d.QueryRow(context.Background(), query).Scan(&defaultCursor)
+	if err == pgx.ErrNoRows {
+		return internal.NewErrorf(models.ErrorCodeNotFound, "no items exist yet")
+	} else if err != nil {
+		return err
+	}
+
+	cursor.Value = &defaultCursor
+
+	return nil
 }

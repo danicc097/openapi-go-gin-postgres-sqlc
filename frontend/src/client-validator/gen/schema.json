@@ -2525,13 +2525,6 @@
         "$ref": "#/definitions/Pagination"
       }
     },
-    "PaginationCursors": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/PaginationCursor"
-      },
-      "maxLength": 1
-    },
     "PaginationCursor": {
       "type": "object",
       "properties": {
@@ -2560,12 +2553,12 @@
         "items": {
           "$ref": "#/definitions/PaginationItems"
         },
-        "cursors": {
-          "$ref": "#/definitions/PaginationCursors"
+        "cursor": {
+          "$ref": "#/definitions/PaginationCursor"
         }
       },
       "required": [
-        "cursors"
+        "cursor"
       ],
       "type": "object"
     },
@@ -2960,9 +2953,6 @@
     },
     "PaginationItems": {
       "$ref": "#/definitions/PaginationItems"
-    },
-    "PaginationCursors": {
-      "$ref": "#/definitions/PaginationCursors"
     },
     "PaginationCursor": {
       "$ref": "#/definitions/PaginationCursor"

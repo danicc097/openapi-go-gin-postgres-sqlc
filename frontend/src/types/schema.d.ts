@@ -825,7 +825,6 @@ export interface components {
     PaginationItems: {
       [key: string]: components["schemas"]["Pagination"] | undefined;
     };
-    PaginationCursors: components["schemas"]["PaginationCursor"][];
     PaginationCursor: {
       direction: components["schemas"]["Direction"];
       /** @description represents a cursor value */
@@ -836,7 +835,7 @@ export interface components {
     GetPaginatedUsersQueryParameters: {
       role?: components["schemas"]["Role"];
       items?: components["schemas"]["PaginationItems"];
-      cursors: components["schemas"]["PaginationCursors"];
+      cursor: components["schemas"]["PaginationCursor"];
     };
     /** @enum {string} */
     PaginationFilterModes: "between" | "betweenInclusive" | "contains" | "empty" | "endsWith" | "equals" | "fuzzy" | "greaterThan" | "greaterThanOrEqualTo" | "lessThan" | "lessThanOrEqualTo" | "notEmpty" | "notEquals" | "startsWith";

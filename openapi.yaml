@@ -2960,12 +2960,9 @@ components:
       description: represents pagination data indexed by column id
       additionalProperties:
         $ref: '#/components/schemas/Pagination'
-    PaginationCursors:
-      type: array
-      items:
-        $ref: '#/components/schemas/PaginationCursor'
-      maxLength: 1
     PaginationCursor:
+      # only supporting single cursor now. if the need arises for multiple cursors,
+      # don't, and create a proper key.
       type: object
       properties:
         direction:
@@ -2985,10 +2982,10 @@ components:
           $ref: '#/components/schemas/Role'
         items:
           $ref: '#/components/schemas/PaginationItems'
-        cursors:
-          $ref: '#/components/schemas/PaginationCursors'
+        cursor:
+          $ref: '#/components/schemas/PaginationCursor'
       required:
-        - cursors
+        - cursor
       type: object
     PaginationFilterModes:
       enum:

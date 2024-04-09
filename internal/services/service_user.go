@@ -246,7 +246,7 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPagina
 	users, err := u.repos.User.Paginated(ctx, d, repos.GetPaginatedUsersParams{
 		Limit:     params.Limit,
 		Direction: params.Direction,
-		Cursors:   params.SearchQuery.Cursors,
+		Cursor:    params.SearchQuery.Cursor,
 		Items:     params.SearchQuery.Items,
 		RoleRank:  roleRank,
 	})

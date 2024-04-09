@@ -85,7 +85,6 @@ export * from './paginatedUsersResponse';
 export * from './pagination';
 export * from './paginationCursor';
 export * from './paginationCursorValue';
-export * from './paginationCursors';
 export * from './paginationFilter';
 export * from './paginationFilterArray';
 export * from './paginationFilterArrayFilterMode';

@@ -306,7 +306,7 @@ func (dwi *DemoWorkItem) Delete(ctx context.Context, db DB) error {
 
 // DemoWorkItemPaginated returns a cursor-paginated list of DemoWorkItem.
 // At least one cursor is required.
-func DemoWorkItemPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
+func DemoWorkItemPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...DemoWorkItemSelectConfigOption) ([]DemoWorkItem, error) {
 	c := &DemoWorkItemSelectConfig{joins: DemoWorkItemJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -317,23 +317,21 @@ func DemoWorkItemPaginated(ctx context.Context, db DB, cursors models.Pagination
 		o(c)
 	}
 
-	for _, cursor := range cursors {
-		if cursor.Value == nil {
+	if cursor.Value == nil {
 
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-		field, ok := EntityFields[TableEntityDemoWorkItem][cursor.Column]
-		if !ok {
-			return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/cursor: %w", &XoError{Entity: "Demo work item", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
-
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("demo_work_items.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
 	}
+	field, ok := EntityFields[TableEntityDemoWorkItem][cursor.Column]
+	if !ok {
+		return nil, logerror(fmt.Errorf("DemoWorkItem/Paginated/cursor: %w", &XoError{Entity: "Demo work item", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+	}
+
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("demo_work_items.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+	c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
 	paramStart := 0 // all filters will come from the user
 	nth := func() string {

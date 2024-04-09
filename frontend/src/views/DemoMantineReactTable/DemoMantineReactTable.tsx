@@ -267,13 +267,11 @@ export default function DemoMantineReactTable() {
 
   const [searchQuery, setSearchQuery] = useState<GetPaginatedUsersQueryParameters>(() => ({
     items: {},
-    cursors: [
-      {
-        column: 'createdAt',
-        direction: 'desc',
-        value: dayjs().toRFC3339NANO(),
-      },
-    ],
+    cursor: {
+      column: 'createdAt',
+      direction: 'desc',
+      value: dayjs().toRFC3339NANO(),
+    },
   }))
 
   const {
@@ -366,12 +364,9 @@ export default function DemoMantineReactTable() {
       const col = columns.find((col) => col.id === colSort.id)
       if (!col) return []
 
-      const shouldUseNextCursor =
-        searchQuery.cursors.findIndex((currentCursor) => {
-          const sameDirection = colSort.desc === (currentCursor.direction === 'desc')
-          const sameColumn = currentCursor.column === colSort.id
-          return sameColumn && sameDirection
-        }) !== -1
+      const sameDirection = colSort.desc === (searchQuery.cursor.direction === 'desc')
+      const sameColumn = searchQuery.cursor.column === colSort.id
+      const shouldUseNextCursor = sameColumn && sameDirection
 
       return [
         {
@@ -450,7 +445,7 @@ export default function DemoMantineReactTable() {
     }
   }, [deletedEntityFilterState])
 
-  const validationError = error?.response?.data.validationError
+  const validationError = error?.response?.data?.validationError
 
   const table = useMantineReactTable({
     enableBottomToolbar: false,
@@ -605,8 +600,12 @@ export default function DemoMantineReactTable() {
         {tableCalloutError !== null ? (
           <ErrorCallout title={tableCalloutError}></ErrorCallout>
         ) : isError ? (
+          // FIXME: should have callout extractor for AppError (may be validationError or regular httpError)
           validationError ? (
-            <ErrorCallout title={'Validation error'} errors={validationError?.messages}></ErrorCallout>
+            <ErrorCallout
+              title={'Validation error'}
+              errors={validationError?.detail?.map((e) => e?.msg)}
+            ></ErrorCallout>
           ) : error?.response?.data ? (
             <ErrorCallout title={'Error loading data'} errors={[error?.response?.data?.detail]}></ErrorCallout>
           ) : undefined

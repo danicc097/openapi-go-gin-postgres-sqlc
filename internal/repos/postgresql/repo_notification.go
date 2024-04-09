@@ -112,8 +112,8 @@ func (u *Notification) PaginatedUserNotifications(ctx context.Context, d db.DBTX
 
 	var c interface{}
 	c = userNotificationID
-	cursors := models.PaginationCursors{{Column: "userNotificationID", Value: &c, Direction: params.Direction}}
-	notifications, err := db.UserNotificationPaginated(ctx, d, cursors, opts...)
+	cursor := models.PaginationCursor{Column: "userNotificationID", Value: &c, Direction: params.Direction}
+	notifications, err := db.UserNotificationPaginated(ctx, d, cursor, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could get paginated notifications: %w", ParseDBErrorDetail(err))
 	}

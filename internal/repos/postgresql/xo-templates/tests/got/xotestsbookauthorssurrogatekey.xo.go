@@ -347,7 +347,7 @@ func (xtbask *XoTestsBookAuthorsSurrogateKey) Delete(ctx context.Context, db DB)
 
 // XoTestsBookAuthorsSurrogateKeyPaginated returns a cursor-paginated list of XoTestsBookAuthorsSurrogateKey.
 // At least one cursor is required.
-func XoTestsBookAuthorsSurrogateKeyPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsBookAuthorsSurrogateKeySelectConfigOption) ([]XoTestsBookAuthorsSurrogateKey, error) {
+func XoTestsBookAuthorsSurrogateKeyPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsBookAuthorsSurrogateKeySelectConfigOption) ([]XoTestsBookAuthorsSurrogateKey, error) {
 	c := &XoTestsBookAuthorsSurrogateKeySelectConfig{
 		joins:   XoTestsBookAuthorsSurrogateKeyJoins{},
 		filters: make(map[string][]any),
@@ -359,22 +359,20 @@ func XoTestsBookAuthorsSurrogateKeyPaginated(ctx context.Context, db DB, cursors
 		o(c)
 	}
 
-	for _, cursor := range cursors {
-		if cursor.Value == nil {
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-		field, ok := XoTestsEntityFields[XoTestsTableEntityXoTestsBookAuthorsSurrogateKey][cursor.Column]
-		if !ok {
-			return nil, logerror(fmt.Errorf("XoTestsBookAuthorsSurrogateKey/Paginated/cursor: %w", &XoError{Entity: "Book authors surrogate key", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
-
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("book_authors_surrogate_key.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	if cursor.Value == nil {
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
 	}
+	field, ok := XoTestsEntityFields[XoTestsTableEntityXoTestsBookAuthorsSurrogateKey][cursor.Column]
+	if !ok {
+		return nil, logerror(fmt.Errorf("XoTestsBookAuthorsSurrogateKey/Paginated/cursor: %w", &XoError{Entity: "Book authors surrogate key", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+	}
+
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("book_authors_surrogate_key.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+	c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
 	paramStart := 0 // all filters will come from the user
 	nth := func() string {

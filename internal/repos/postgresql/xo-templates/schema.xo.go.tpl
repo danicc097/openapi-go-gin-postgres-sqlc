@@ -457,35 +457,33 @@ func ({{ short $t }} *{{$t.GoName}}) SetUpdateParams(params *{{$t.GoName}}Update
 {{ $suffix := print "Paginated" }}
 // {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{$t.GoName}}.
 // At least one cursor is required.
-{{ func_context $t $suffix "" $t "cursors models.PaginationCursors" }} {
+{{ func_context $t $suffix "" $t "cursor models.PaginationCursor" }} {
 	{{ initial_opts $t }}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-  for _, cursor := range cursors {
-    if cursor.Value == nil {
-      {{/* last/first (desc/asc) element is meant to be queried automatically if cursor was nil, and set thereafter.
-      this is necessary when Infinity cannot be used, etc. */}}
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-    {{if not (eq $schema "public") -}}
-		field, ok := {{camel_export $schema}}EntityFields[{{camel_export $schema}}TableEntity{{$t.GoName}}][cursor.Column]
-    {{else -}}
-		field, ok := EntityFields[TableEntity{{$t.GoName}}][cursor.Column]
-    {{end -}}
-		if !ok {
-			return nil, logerror(fmt.Errorf("{{$t.GoName}}/Paginated/cursor: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
+  if cursor.Value == nil {
+    {{/* last/first (desc/asc) element is meant to be queried automatically if cursor was nil, and set thereafter.
+    this is necessary when Infinity cannot be used, etc. */}}
+    return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
+  }
+  {{if not (eq $schema "public") -}}
+  field, ok := {{camel_export $schema}}EntityFields[{{camel_export $schema}}TableEntity{{$t.GoName}}][cursor.Column]
+  {{else -}}
+  field, ok := EntityFields[TableEntity{{$t.GoName}}][cursor.Column]
+  {{end -}}
+  if !ok {
+    return nil, logerror(fmt.Errorf("{{$t.GoName}}/Paginated/cursor: %w", &XoError{Entity: "{{ sentence_case $t.SQLName }}", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+  }
 
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("{{$t.SQLName}}.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-    c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
-	}
+  op := "<"
+  if cursor.Direction == models.DirectionAsc {
+    op = ">"
+  }
+  c.filters[fmt.Sprintf("{{$t.SQLName}}.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+  c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
   paramStart := 0 // all filters will come from the user
 	nth := func ()  string {
