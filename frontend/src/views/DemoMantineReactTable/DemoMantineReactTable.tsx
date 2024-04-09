@@ -375,23 +375,22 @@ export default function DemoMantineReactTable() {
           // for natural string sorting we need: CREATE COLLATION numeric (provider = icu, locale = 'en@colNumeric=yes')
           // used as SELECT email COLLATE numeric FROM users ORDER BY email DESC;
           // therefore indexes would need to be applied with COLLATE numeric
-          // if null, backend will use 'Infinity' or '-Infinity' depending on order if col type is date/date-time or number,
-          // else it will `select <col> ...order by <col> <dir> limit 1` scan to string and use that
-
-          // FIXME: triggers call nextCursor somehow, nextCursor is not in deps but one of them might contain it?
+          // FIXME: nextCursor triggers more requests on itself now somehow. nextCursor is not in deps but one of them might contain it?
           ...(nextCursor && shouldUseNextCursor && { value: nextCursor }),
         } as PaginationCursor,
       ]
     })
 
-    if (newCursors.length === 0) {
-      setTableCalloutError('At least one column must be sorted')
+    if (newCursors.length !== 1 || !newCursors[0]) {
+      setTableCalloutError('Exactly one column must be sorted')
       return
     } else {
       setTableCalloutError(null)
     }
 
-    setSearchQuery((v) => ({ ...v, items, cursors: newCursors, role: role }))
+    const newCursor = newCursors[0]
+
+    setSearchQuery((v) => ({ ...v, items, cursor: newCursor, role: role }))
   }, [columnFilters, dynamicConfig?.filterModes, sorting])
 
   useEffect(() => {
