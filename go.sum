@@ -45,8 +45,8 @@ github.com/danicc097/oapi-codegen/v2 v2.0.200000 h1:JpGLI/sDuuHeP+ILoz0uWM2i1lAn
 github.com/danicc097/oapi-codegen/v2 v2.0.200000/go.mod h1:WTJv5Ke3mvJ0oWc9qgHE+v2NkuK61PlYgMihBuOcFAQ=
 github.com/danicc097/oidc-server/v3 v3.5.0 h1:aqNuzC6+Q8NFmDX2lXJip2oWGJTP8Epy/uBtu8nuQwA=
 github.com/danicc097/oidc-server/v3 v3.5.0/go.mod h1:dRbodhLy7B2hVEjtD2dnF8ZXj5QHfAP8QE4LtIfGvNk=
-github.com/danicc097/runtime v1.0.10003 h1:o4meZmSv4mW8ntXKyl5R83qUndv4iD9t/kDbl4pQZmw=
-github.com/danicc097/runtime v1.0.10003/go.mod h1:lX5Rywb5QMoY8KNXOqfOaXErhcJ8gJfMj9R3bkHKQgU=
+github.com/danicc097/runtime v1.0.10004 h1:Osu5zPRAKZnMV1dnwnNVp1UIm9i2uXkDN2Cbol54Bew=
+github.com/danicc097/runtime v1.0.10004/go.mod h1:lX5Rywb5QMoY8KNXOqfOaXErhcJ8gJfMj9R3bkHKQgU=
 github.com/danicc097/xo/v5 v5.6.0 h1:ctBxldyVIndMO60Ygvx5e2SHFYy2cPVdVJC5RS9ZcOw=
 github.com/danicc097/xo/v5 v5.6.0/go.mod h1:oU6s/elNFlD8CvhR7s5/pTTKnHAd8VJNBfAqwoq9xrA=
 github.com/dave/dst v0.27.3 h1:P1HPoMza3cMEquVf9kKy8yXsFirry4zEnWOdYPOoIzY=

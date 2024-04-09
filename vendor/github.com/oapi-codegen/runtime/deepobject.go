@@ -371,6 +371,10 @@ func assignPathValues(dst interface{}, pathValues fieldOrValue) error {
 	case reflect.String:
 		iv.SetString(pathValues.value)
 		return nil
+	case reflect.Interface:
+		v := reflect.ValueOf(pathValues.value)
+		iv.Set(v)
+		return nil
 	default:
 		return errors.New("unhandled type: " + it.String())
 	}
