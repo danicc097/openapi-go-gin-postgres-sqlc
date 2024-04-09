@@ -303,13 +303,28 @@ export default function DemoMantineReactTable() {
     },
     {
       query: {
+        // IMPORTANT: it sets a cursor=... but we cannot change searchQuery without
+        // triggering a new one that only fetches the next page.
+        // so must ditch PaginationCursor and get back to using
+        // those params directly in query:  direction, value,  column
+        // because orval creates query key from all params so
+        // useInfiniteQueryParam: 'cursor' ignores cursor,
+        // however a nested searchQuery.cursor wont work.
+        // also, multiple cursors are not supported.
+        // keep models.PaginationCursor as is, api will merge these
+        // to maintain logic and db, but abstract away
+        // x-paginationDirectionParameter
+        // x-paginationCursorParameter
+        // x-paginationColumnParameter
         getNextPageParam: (_lastGroup, groups) => {
-          const d = dayjs(_lastGroup.page.nextCursor)
+          const c = _lastGroup.page.nextCursor
+          // may not be date
+          const d = dayjs(c)
           if (d.isValid()) {
-            return d.toISOString()
+            return d.toRFC3339NANO()
           }
 
-          return
+          return c
         },
       },
     },
@@ -421,6 +436,7 @@ export default function DemoMantineReactTable() {
         if (scrollHeight - scrollTop - clientHeight < 200 && !isFetching && !isFetchingNextPage && hasMore) {
           if (nextCursor !== null && nextCursor !== undefined) {
             console.log('Fetching more...')
+
             fetchNextPage()
           }
         }
