@@ -100,7 +100,10 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 
 	nextCursor := ""
 	if len(users) > 0 {
-		nextCursor = users[len(users)-1].CreatedAt.Format(time.RFC3339Nano)
+		lastUser := users[len(users)-1]
+		// FIXME: dynamic cursors -> access by struct JSON tag based on request.Params.Cursor column and type
+		// nextCursorFor(st interface{}, db.TableEntityUser, request.Params.Cursor)
+		nextCursor = lastUser.CreatedAt.Format(time.RFC3339Nano)
 	}
 	items := make([]User, len(users))
 	for i, u := range users {

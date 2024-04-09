@@ -315,6 +315,14 @@ export default function DemoMantineReactTable() {
     },
   )
 
+  // useStopInfiniteRenders(60)
+
+  const fetchedUsers = useMemo(() => usersData?.pages.flatMap((page) => page.items ?? []) ?? [], [usersData])
+
+  const totalRowCount = Infinity
+  const totalFetched = fetchedUsers.length
+  const nextCursor = usersData?.pages.slice(-1)[0]?.page.nextCursor
+
   useEffect(() => {
     const items: PaginationItems = {}
     let role: Role
@@ -360,6 +368,10 @@ export default function DemoMantineReactTable() {
       }
     })
 
+    setSearchQuery((v) => ({ ...v, items, role: role }))
+  }, [columnFilters, dynamicConfig?.filterModes, sorting])
+
+  useEffect(() => {
     const newCursors = sorting.flatMap((colSort) => {
       const col = columns.find((col) => col.id === colSort.id)
       if (!col) return []
@@ -384,26 +396,22 @@ export default function DemoMantineReactTable() {
     if (newCursors.length !== 1 || !newCursors[0]) {
       setTableCalloutError('Exactly one column must be sorted')
       return
-    } else {
-      setTableCalloutError(null)
     }
+    setTableCalloutError(null)
 
     const newCursor = newCursors[0]
 
-    setSearchQuery((v) => ({ ...v, items, cursor: newCursor, role: role }))
-  }, [columnFilters, dynamicConfig?.filterModes, sorting])
+    if (_.isEqual(searchQuery.cursor, newCursor)) {
+      console.log('ignoring same cursor')
+      return
+    }
+
+    setSearchQuery((v) => ({ ...v, cursor: newCursor }))
+  }, [sorting]) // FIXME: have to update cursor when usersData changes, yet we get inf rerender
 
   useEffect(() => {
     console.log({ searchQuery })
   }, [searchQuery])
-
-  // useStopInfiniteRenders(60)
-
-  const fetchedUsers = useMemo(() => usersData?.pages.flatMap((page) => page.items ?? []) ?? [], [usersData])
-
-  const totalRowCount = Infinity
-  const totalFetched = fetchedUsers.length
-  const nextCursor = usersData?.pages.slice(-1)[0]?.page.nextCursor
 
   const fetchMoreOnBottomReached = useCallback(
     (containerRefElement?: HTMLDivElement | null) => {
