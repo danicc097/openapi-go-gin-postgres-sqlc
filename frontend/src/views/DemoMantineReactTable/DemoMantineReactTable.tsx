@@ -1,4 +1,4 @@
-import { ComponentProps, UIEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ComponentProps, MouseEventHandler, UIEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   MantineReactTable,
   useMantineReactTable,
@@ -25,6 +25,7 @@ import {
   Group,
   List,
   MenuItem,
+  Slider,
   Text,
   TextInput,
   Title,
@@ -421,23 +422,6 @@ export default function DemoMantineReactTable() {
 
   const { colorScheme } = useMantineColorScheme()
 
-  const { deletedEntityFilterState, getLabelText, toggleDeletedUsersFilter } = useDeletedEntityFilter('user')
-
-  useEffect(() => {
-    switch (deletedEntityFilterState) {
-      case true:
-        setFilterMode('deletedAt', PaginationFilterModes.notEmpty)
-        break
-      case false:
-        setFilterMode('deletedAt', PaginationFilterModes.empty)
-        break
-      case null:
-        removeFilterMode('deletedAt')
-      default:
-        break
-    }
-  }, [deletedEntityFilterState])
-
   const validationError = error?.response?.data?.validationError
 
   const table = useMantineReactTable({
@@ -516,15 +500,7 @@ export default function DemoMantineReactTable() {
           >
             Create user
           </Button>
-          {defaultPaginatedUserColumns.findIndex((c) => c.id === 'deletedAt') !== -1 && (
-            <Checkbox
-              checked={deletedEntityFilterState ?? true}
-              size="sm"
-              indeterminate={deletedEntityFilterState === null}
-              onChange={toggleDeletedUsersFilter}
-              label={getLabelText()}
-            />
-          )}
+          {defaultPaginatedUserColumns.findIndex((c) => c.id === 'deletedAt') !== -1 && <DeletedUserFilterSwitch />}
         </Group>
       </Flex>
     ),
@@ -555,6 +531,7 @@ export default function DemoMantineReactTable() {
 
   return (
     <>
+      <DeletedUserFilterSwitch />
       <Accordion
         styles={{
           content: { paddingRight: 0, paddingLeft: 0 },
@@ -617,4 +594,50 @@ function tryDate(value: unknown) {
     v = dateVal.toRFC3339NANO()
   }
   return v
+}
+
+function DeletedUserFilterSwitch() {
+  const { deletedEntityFilterState, getLabelText, toggleDeletedUsersFilter } = useDeletedEntityFilter('user')
+  const { dynamicConfig, staticConfig, setColumnOrder, setHiddenColumns, setFilterMode, removeFilterMode } =
+    useMantineReactTableFilters(TABLE_NAME)
+
+  const sliderStates = [0, 50, 100] as const
+  const [state, setState] = useState<number>(sliderStates[1])
+
+  useEffect(() => {
+    switch (deletedEntityFilterState) {
+      case true:
+        setFilterMode('deletedAt', PaginationFilterModes.notEmpty)
+        break
+      case false:
+        setFilterMode('deletedAt', PaginationFilterModes.empty)
+        break
+      case null:
+        removeFilterMode('deletedAt')
+      default:
+        break
+    }
+  }, [deletedEntityFilterState])
+
+  function onClickCapture(e: any) {
+    setState((v) => (v + 1) % sliderStates.length)
+    toggleDeletedUsersFilter()
+  }
+
+  return (
+    <Flex direction="row" align="center" gap={8}>
+      <Slider
+        value={sliderStates[state]}
+        onClickCapture={onClickCapture}
+        w={40}
+        min={0}
+        max={100}
+        step={50}
+        marks={[{ value: 0 }, { value: 50 }, { value: 100 }]}
+        showLabelOnHover={false}
+        label={null}
+      />
+      <Text size="sm">{getLabelText()}</Text>
+    </Flex>
+  )
 }
