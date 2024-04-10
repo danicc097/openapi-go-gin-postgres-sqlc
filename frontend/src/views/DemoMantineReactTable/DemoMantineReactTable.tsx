@@ -390,7 +390,7 @@ export default function DemoMantineReactTable() {
     setPaginationDirection(newCursor.direction)
     setPaginationColumn(newCursor.column)
     if (!shouldUseNextCursor) {
-      // cursor.current = null
+      tableContainerRef.current?.scrollTo({ top: Infinity }) // prevent fetching more automatically
     }
   }, [sorting, usersData, nextCursor])
 
