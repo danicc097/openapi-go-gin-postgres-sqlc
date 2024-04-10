@@ -306,8 +306,8 @@ export default function DemoMantineReactTable() {
   const fetchedUsers = useMemo(() => usersData?.pages.flatMap((page) => page.items ?? []) ?? [], [usersData])
 
   const totalRowCount = Infinity
-  const totalFetched =
-    (usersData?.pages ? usersData.pages[usersData.pages.length]?.items?.length : Infinity) ?? Infinity
+  const lastFetchedCount =
+    (usersData?.pages ? usersData.pages[usersData.pages.length - 1]?.items?.length : Infinity) ?? Infinity
   const nextCursor = usersData?.pages.slice(-1)[0]?.page.nextCursor
 
   useEffect(() => {
@@ -402,18 +402,17 @@ export default function DemoMantineReactTable() {
     (containerRefElement?: HTMLDivElement | null) => {
       if (containerRefElement) {
         const { scrollHeight, scrollTop, clientHeight } = containerRefElement
-        const hasMore = totalFetched >= pagination.pageSize
+        const hasMore = lastFetchedCount >= pagination.pageSize
         if (scrollHeight - scrollTop - clientHeight < 200 && !isFetching && !isFetchingNextPage && hasMore) {
           if (nextCursor /** empty string or null */) {
             console.log('Fetching more...')
-            // FIXME: fetching more when there should be no nextCursor
 
             fetchNextPage()
           }
         }
       }
     },
-    [fetchNextPage, isFetching, totalFetched, nextCursor, isFetchingNextPage, pagination.pageSize],
+    [fetchNextPage, isFetching, lastFetchedCount, nextCursor, isFetchingNextPage, pagination.pageSize],
   )
 
   useEffect(() => {
