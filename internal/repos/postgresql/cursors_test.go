@@ -31,6 +31,16 @@ func TestSetDefaultCursors(t *testing.T) {
 			entity:          db.TableEntityUser,
 		},
 		{
+			name: "infinity",
+			cursor: models.PaginationCursor{
+				Column:    "createdAt",
+				Direction: models.DirectionAsc,
+				Value:     pointers.New[interface{}](nil),
+			},
+			wantCursorValue: "-Infinity",
+			entity:          db.TableEntityUser,
+		},
+		{
 			name:            "cursor ignored if set",
 			wantCursorValue: "something",
 			cursor: models.PaginationCursor{

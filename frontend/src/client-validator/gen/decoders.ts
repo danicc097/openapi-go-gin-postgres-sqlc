@@ -96,6 +96,7 @@ import {
   WorkItemBase,
   PaginationFilterPrimitive,
   PaginationFilterArray,
+  AnyValue,
   PaginationFilter,
   Pagination,
   PaginationItems,
@@ -1168,6 +1169,18 @@ export const PaginationFilterArrayDecoder: Decoder<PaginationFilterArray> = {
       throw new Error(`Schema ${PaginationFilterArrayDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, PaginationFilterArrayDecoder.definitionName)
+  },
+}
+export const AnyValueDecoder: Decoder<AnyValue> = {
+  definitionName: 'AnyValue',
+  schemaRef: '#/definitions/AnyValue',
+
+  decode(json: unknown): AnyValue {
+    const schema = ajv.getSchema(AnyValueDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${AnyValueDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, AnyValueDecoder.definitionName)
   },
 }
 export const PaginationFilterDecoder: Decoder<PaginationFilter> = {

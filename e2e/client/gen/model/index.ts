@@ -7,6 +7,7 @@
  */
 
 export * from './activity'
+export * from './anyValue'
 export * from './createActivityRequest'
 export * from './createDemoTwoWorkItemRequest'
 export * from './createDemoTwoWorkItemRequestProjectName'
@@ -69,8 +70,6 @@ export * from './eventsParams'
 export * from './getCacheDemoWorkItemQueryParameters'
 export * from './getCurrentUserQueryParameters'
 export * from './getPaginatedNotificationsParams'
-export * from './getPaginatedUsersFilterObjectsItem'
-export * from './getPaginatedUsersNestedObj'
 export * from './getPaginatedUsersParams'
 export * from './getPaginatedUsersQueryParameters'
 export * from './getProjectWorkitemsParams'

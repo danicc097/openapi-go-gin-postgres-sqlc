@@ -18,7 +18,7 @@ var infinityTypes = []db.ColumnSimpleType{
 }
 
 func setDefaultCursor(d db.DBTX, entity db.TableEntity, cursor *models.PaginationCursor) error {
-	if cursor.Value != nil {
+	if cursor.Value != nil && *cursor.Value != nil {
 		return nil
 	}
 	f, ok := db.EntityFields[entity][cursor.Column]

@@ -243,12 +243,20 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params models.GetPagina
 		role := u.authzsvc.RoleByName(*r)
 		roleRank = &role.Rank
 	}
+	var c interface{}
+	if params.Cursor != nil {
+		c = *params.Cursor
+	}
 	users, err := u.repos.User.Paginated(ctx, d, repos.GetPaginatedUsersParams{
 		Limit:     params.Limit,
 		Direction: params.Direction,
-		Cursor:    params.SearchQuery.Cursor,
-		Items:     params.SearchQuery.Items,
-		RoleRank:  roleRank,
+		Cursor: models.PaginationCursor{
+			Column:    params.Column,
+			Direction: params.Direction,
+			Value:     &c,
+		},
+		Items:    params.SearchQuery.Items,
+		RoleRank: roleRank,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("repos.User.Paginated: %w", err)

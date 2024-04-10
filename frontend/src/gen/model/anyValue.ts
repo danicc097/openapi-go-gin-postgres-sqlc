@@ -7,6 +7,7 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * OpenAPI spec version: 2.0.0
  */
 
-export type GetPaginatedUsersNestedObj = {
-  nestedObj?: string;
-};
+/**
+ * represents any value, including `null`
+ */
+export type AnyValue = {} | null;

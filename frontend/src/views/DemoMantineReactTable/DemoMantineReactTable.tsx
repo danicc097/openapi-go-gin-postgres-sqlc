@@ -36,6 +36,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useGetPaginatedUsersInfinite } from 'src/gen/user/user'
 import dayjs from 'dayjs'
 import {
+  Direction,
   GetPaginatedUsersParams,
   GetPaginatedUsersQueryParameters,
   PaginationCursor,
@@ -245,6 +246,7 @@ export default function DemoMantineReactTable() {
     [defaultPaginatedUserColumns],
   )
 
+  // TODO: debounce to prevent instant callout
   const [tableCalloutError, setTableCalloutError] = useState<string | null>(null)
 
   // allow overriding default columns for an entity
@@ -264,16 +266,23 @@ export default function DemoMantineReactTable() {
     pageIndex: 0,
     pageSize: 15,
   })
+  const [paginationColumn, setPaginationColumn] = useState('createdAt')
+  const [cursor] = useState(null) // handled in backend
+  const [paginationDirection, setPaginationDirection] = useState<Direction>('desc')
 
   const [searchQuery, setSearchQuery] = useState<GetPaginatedUsersQueryParameters>(() => ({
     items: {},
-    cursor: {
-      column: 'createdAt',
-      direction: 'desc',
-      value: dayjs().toRFC3339NANO(),
-    },
   }))
 
+  const getPaginatedUsersParams: GetPaginatedUsersParams = {
+    direction: paginationDirection,
+    column: paginationColumn,
+    // cursor,
+    ...(cursor !== null && { cursor: cursor }),
+    limit: pagination.pageSize,
+    searchQuery,
+  }
+  const { cursor: __cursor, ...queryKeyParams } = getPaginatedUsersParams
   const {
     data: usersData,
     refetch,
@@ -284,58 +293,21 @@ export default function DemoMantineReactTable() {
     error,
     isLoading,
     // see https://v2.mantine-react-table.com/docs/examples/infinite-scrolling
-  } = useGetPaginatedUsersInfinite(
-    {
-      direction: 'desc',
-      cursor: '123', // must have something for react-query to work
-      limit: pagination.pageSize,
-      // deepmap needs to be updated for kin-openapi new Type struct
-      // filter: { post: ['fesefesf', '1'], bools: [true, false], objects: [{ nestedObj: 'something' }] },
-      // nested: { obj: { nestedObj: '1212' } },
-      // custom: {
-      //   // cursor: `${usersData?.page.nextCursor}`,
-      //   size: `${pagination.pageSize}`,
-      //   filters: columnFilters,
-      //   globalFilter: globalFilter ?? '',
-      //   sorting: sorting,
-      // },
-      searchQuery,
+  } = useGetPaginatedUsersInfinite(getPaginatedUsersParams, {
+    query: {
+      // IMPORTANT: must use cursor as its own param (orval/react-query requirement)
+      getNextPageParam: (_lastGroup, groups) => _lastGroup.page.nextCursor, // must use as is.
+      queryKey: [`/user/page`, ...(queryKeyParams ? [queryKeyParams] : [])],
     },
-    {
-      query: {
-        // IMPORTANT: it sets a cursor=... but we cannot change searchQuery without
-        // triggering a new one that only fetches the next page.
-        // so must ditch PaginationCursor and get back to using
-        // those params directly in query:  direction, value,  column
-        // because orval creates query key from all params so
-        // useInfiniteQueryParam: 'cursor' ignores cursor,
-        // however a nested searchQuery.cursor wont work.
-        // also, multiple cursors are not supported.
-        // keep models.PaginationCursor as is, api will merge these
-        // to maintain logic and db, but abstract away
-        // x-paginationDirectionParameter
-        // x-paginationCursorParameter
-        // x-paginationColumnParameter
-        getNextPageParam: (_lastGroup, groups) => {
-          const c = _lastGroup.page.nextCursor
-          // may not be date
-          const d = dayjs(c)
-          if (d.isValid()) {
-            return d.toRFC3339NANO()
-          }
-
-          return c
-        },
-      },
-    },
-  )
+  })
 
   // useStopInfiniteRenders(60)
 
   const fetchedUsers = useMemo(() => usersData?.pages.flatMap((page) => page.items ?? []) ?? [], [usersData])
 
   const totalRowCount = Infinity
-  const totalFetched = fetchedUsers.length
+  const totalFetched =
+    (usersData?.pages ? usersData.pages[usersData.pages.length]?.items?.length : Infinity) ?? Infinity
   const nextCursor = usersData?.pages.slice(-1)[0]?.page.nextCursor
 
   useEffect(() => {
@@ -387,13 +359,14 @@ export default function DemoMantineReactTable() {
   }, [columnFilters, dynamicConfig?.filterModes, sorting])
 
   useEffect(() => {
+    let shouldUseNextCursor = false
     const newCursors = sorting.flatMap((colSort) => {
       const col = columns.find((col) => col.id === colSort.id)
       if (!col) return []
 
-      const sameDirection = colSort.desc === (searchQuery.cursor.direction === 'desc')
-      const sameColumn = searchQuery.cursor.column === colSort.id
-      const shouldUseNextCursor = sameColumn && sameDirection
+      const sameDirection = colSort.desc === (paginationDirection === 'desc')
+      const sameColumn = paginationColumn === colSort.id
+      shouldUseNextCursor = sameColumn && sameDirection
 
       return [
         {
@@ -403,7 +376,6 @@ export default function DemoMantineReactTable() {
           // used as SELECT email COLLATE numeric FROM users ORDER BY email DESC;
           // therefore indexes would need to be applied with COLLATE numeric
           // FIXME: nextCursor triggers more requests on itself now somehow. nextCursor is not in deps but one of them might contain it?
-          ...(nextCursor && shouldUseNextCursor && { value: nextCursor }),
         } as PaginationCursor,
       ]
     })
@@ -415,14 +387,12 @@ export default function DemoMantineReactTable() {
     setTableCalloutError(null)
 
     const newCursor = newCursors[0]
-
-    if (_.isEqual(searchQuery.cursor, newCursor)) {
-      console.log('ignoring same cursor')
-      return
+    setPaginationDirection(newCursor.direction)
+    setPaginationColumn(newCursor.column)
+    if (!shouldUseNextCursor) {
+      // cursor.current = null
     }
-
-    setSearchQuery((v) => ({ ...v, cursor: newCursor }))
-  }, [sorting]) // FIXME: have to update cursor when usersData changes, yet we get inf rerender
+  }, [sorting, usersData, nextCursor])
 
   useEffect(() => {
     console.log({ searchQuery })
@@ -434,8 +404,9 @@ export default function DemoMantineReactTable() {
         const { scrollHeight, scrollTop, clientHeight } = containerRefElement
         const hasMore = totalFetched >= pagination.pageSize
         if (scrollHeight - scrollTop - clientHeight < 200 && !isFetching && !isFetchingNextPage && hasMore) {
-          if (nextCursor !== null && nextCursor !== undefined) {
+          if (nextCursor /** empty string or null */) {
             console.log('Fetching more...')
+            // FIXME: fetching more when there should be no nextCursor
 
             fetchNextPage()
           }

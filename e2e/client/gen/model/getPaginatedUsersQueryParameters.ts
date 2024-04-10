@@ -5,12 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { PaginationCursor } from './paginationCursor'
 import type { PaginationItems } from './paginationItems'
 import type { Role } from './role'
 
 export interface GetPaginatedUsersQueryParameters {
-  cursor: PaginationCursor
   items?: PaginationItems
   role?: Role
 }

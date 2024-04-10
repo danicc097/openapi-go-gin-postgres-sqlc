@@ -622,6 +622,10 @@ export interface PaginationFilterArray {
   filterMode: PaginationFilterModes
   value?: (string | null)[] | null
 }
+/**
+ * represents any value, including `null`
+ */
+export interface AnyValue {}
 export interface Pagination {
   filter?: PaginationFilter
   sort?: Direction
@@ -646,7 +650,6 @@ export interface PaginationCursor {
 export interface GetPaginatedUsersQueryParameters {
   role?: Role
   items?: PaginationItems
-  cursor: PaginationCursor
 }
 export interface DbCacheDemoWorkItemJoins {
   assignees: boolean

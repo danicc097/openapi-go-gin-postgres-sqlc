@@ -6,6 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 
-export type GetPaginatedUsersFilterObjectsItem = {
-  nestedObj?: string
-}
+/**
+ * represents any value, including `null`
+ */
+export type AnyValue = unknown | null

@@ -8,21 +8,11 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 import type { Direction } from './direction';
 import type { GetPaginatedUsersQueryParameters } from './getPaginatedUsersQueryParameters';
-import type { GetPaginatedUsersFilterObjectsItem } from './getPaginatedUsersFilterObjectsItem';
-import type { GetPaginatedUsersNestedObj } from './getPaginatedUsersNestedObj';
 
 export type GetPaginatedUsersParams = {
 limit: number;
 direction: Direction;
-cursor: string;
+cursor?: string | null;
+column: string;
 searchQuery?: GetPaginatedUsersQueryParameters;
-filter?: {
-  bools?: boolean[];
-  ints?: number[];
-  objects?: GetPaginatedUsersFilterObjectsItem[];
-  post?: string[];
-};
-nested?: {
-  obj?: GetPaginatedUsersNestedObj;
-};
 };

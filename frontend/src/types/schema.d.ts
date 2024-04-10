@@ -816,6 +816,8 @@ export interface components {
       filterMode: components["schemas"]["PaginationFilterModes"];
       value?: ((string | null)[]) | null;
     };
+    /** @description represents any value, including `null` */
+    AnyValue: Record<string, unknown> | null;
     PaginationFilter: components["schemas"]["PaginationFilterPrimitive"] | components["schemas"]["PaginationFilterArray"];
     Pagination: {
       filter?: components["schemas"]["PaginationFilter"];
@@ -835,7 +837,6 @@ export interface components {
     GetPaginatedUsersQueryParameters: {
       role?: components["schemas"]["Role"];
       items?: components["schemas"]["PaginationItems"];
-      cursor: components["schemas"]["PaginationCursor"];
     };
     /** @enum {string} */
     PaginationFilterModes: "between" | "betweenInclusive" | "contains" | "empty" | "endsWith" | "equals" | "fuzzy" | "greaterThan" | "greaterThanOrEqualTo" | "lessThan" | "lessThanOrEqualTo" | "notEmpty" | "notEquals" | "startsWith";
@@ -927,7 +928,7 @@ export interface operations {
       query: {
         limit: number;
         direction: components["schemas"]["Direction"];
-        cursor: string;
+        cursor?: string | null;
       };
     };
     responses: {
@@ -1613,21 +1614,9 @@ export interface operations {
       query: {
         limit: number;
         direction: components["schemas"]["Direction"];
-        cursor: string;
+        cursor?: string | null;
+        column: string;
         searchQuery?: components["schemas"]["GetPaginatedUsersQueryParameters"];
-        filter?: {
-          post?: string[];
-          bools?: boolean[];
-          ints?: number[];
-          objects?: {
-              nestedObj?: string;
-            }[];
-        };
-        nested?: {
-          obj?: {
-            nestedObj?: string;
-          };
-        };
       };
     };
     responses: {
