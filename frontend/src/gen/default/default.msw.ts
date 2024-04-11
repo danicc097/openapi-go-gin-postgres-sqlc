@@ -22,7 +22,7 @@ export const getOpenapiYamlGetResponseMock = (): Blob => (faker.word.sample())
 
 export const getPingMockHandler = () => {
   return http.get('*/ping', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(getPingResponseMock(),
       {
         status: 200,
@@ -36,7 +36,7 @@ export const getPingMockHandler = () => {
 
 export const getOpenapiYamlGetMockHandler = (overrideResponse?: Blob) => {
   return http.get('*/openapi.yaml', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getOpenapiYamlGetResponseMock()),
       {
         status: 200,

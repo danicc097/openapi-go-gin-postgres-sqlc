@@ -27,7 +27,7 @@ export const getUpdateWorkItemCommentResponseMock = (overrideResponse: any = {})
 
 export const getCreateWorkItemCommentMockHandler = (overrideResponse?: WorkItemComment) => {
   return http.post('*/work-item/:workItemID/comment/', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getCreateWorkItemCommentResponseMock()),
       {
         status: 200,
@@ -41,7 +41,7 @@ export const getCreateWorkItemCommentMockHandler = (overrideResponse?: WorkItemC
 
 export const getGetWorkItemCommentMockHandler = (overrideResponse?: WorkItemComment) => {
   return http.get('*/work-item/:workItemID/comment/:workItemCommentID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetWorkItemCommentResponseMock()),
       {
         status: 200,
@@ -55,7 +55,7 @@ export const getGetWorkItemCommentMockHandler = (overrideResponse?: WorkItemComm
 
 export const getUpdateWorkItemCommentMockHandler = (overrideResponse?: WorkItemComment) => {
   return http.patch('*/work-item/:workItemID/comment/:workItemCommentID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getUpdateWorkItemCommentResponseMock()),
       {
         status: 200,
@@ -69,7 +69,7 @@ export const getUpdateWorkItemCommentMockHandler = (overrideResponse?: WorkItemC
 
 export const getDeleteWorkItemCommentMockHandler = () => {
   return http.delete('*/work-item/:workItemID/comment/:workItemCommentID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(null,
       {
         status: 200,

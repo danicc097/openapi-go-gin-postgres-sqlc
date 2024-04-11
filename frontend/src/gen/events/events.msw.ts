@@ -20,7 +20,7 @@ export const getEventsResponseMock = (): string => (faker.word.sample())
 
 export const getEventsMockHandler = (overrideResponse?: string) => {
   return http.get('*/events', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getEventsResponseMock()),
       {
         status: 200,

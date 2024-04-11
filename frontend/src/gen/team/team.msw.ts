@@ -27,7 +27,7 @@ export const getUpdateTeamResponseMock = (overrideResponse: any = {}): Team => (
 
 export const getCreateTeamMockHandler = (overrideResponse?: Team) => {
   return http.post('*/project/:projectName/team/', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getCreateTeamResponseMock()),
       {
         status: 200,
@@ -41,7 +41,7 @@ export const getCreateTeamMockHandler = (overrideResponse?: Team) => {
 
 export const getGetTeamMockHandler = (overrideResponse?: Team) => {
   return http.get('*/team/:teamID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetTeamResponseMock()),
       {
         status: 200,
@@ -55,7 +55,7 @@ export const getGetTeamMockHandler = (overrideResponse?: Team) => {
 
 export const getUpdateTeamMockHandler = (overrideResponse?: Team) => {
   return http.patch('*/team/:teamID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getUpdateTeamResponseMock()),
       {
         status: 200,
@@ -69,7 +69,7 @@ export const getUpdateTeamMockHandler = (overrideResponse?: Team) => {
 
 export const getDeleteTeamMockHandler = () => {
   return http.delete('*/team/:teamID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(null,
       {
         status: 200,

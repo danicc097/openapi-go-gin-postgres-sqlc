@@ -27,6 +27,7 @@ export default defineConfig({
           useInfiniteQueryParam: 'cursor', // same param for all app paginated queries
         },
         mock: {
+          delay: 200,
           format: {
             date: () => faker.date.past(),
             'date-time': () => faker.date.past(),

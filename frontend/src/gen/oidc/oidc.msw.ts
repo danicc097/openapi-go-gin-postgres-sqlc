@@ -15,7 +15,7 @@ import {
 
 export const getMyProviderCallbackMockHandler = () => {
   return http.get('*/auth/myprovider/callback', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(null,
       {
         status: 200,
@@ -29,7 +29,7 @@ export const getMyProviderCallbackMockHandler = () => {
 
 export const getMyProviderLoginMockHandler = () => {
   return http.get('*/auth/myprovider/login', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(null,
       {
         status: 200,

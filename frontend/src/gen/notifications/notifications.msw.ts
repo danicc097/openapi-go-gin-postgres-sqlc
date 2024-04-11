@@ -26,7 +26,7 @@ export const getGetPaginatedNotificationsResponseMock = (overrideResponse: any =
 
 export const getGetPaginatedNotificationsMockHandler = (overrideResponse?: PaginatedNotificationsResponse) => {
   return http.get('*/notifications/user/page', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetPaginatedNotificationsResponseMock()),
       {
         status: 200,

@@ -20,7 +20,7 @@ export const getAdminPingResponseMock = (): string => (faker.word.sample())
 
 export const getAdminPingMockHandler = () => {
   return http.get('*/admin/ping', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(getAdminPingResponseMock(),
       {
         status: 200,

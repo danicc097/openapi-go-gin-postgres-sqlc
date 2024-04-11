@@ -27,7 +27,7 @@ export const getUpdateTimeEntryResponseMock = (overrideResponse: any = {}): Time
 
 export const getCreateTimeEntryMockHandler = (overrideResponse?: TimeEntry) => {
   return http.post('*/time-entry/', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getCreateTimeEntryResponseMock()),
       {
         status: 200,
@@ -41,7 +41,7 @@ export const getCreateTimeEntryMockHandler = (overrideResponse?: TimeEntry) => {
 
 export const getGetTimeEntryMockHandler = (overrideResponse?: TimeEntry) => {
   return http.get('*/time-entry/:timeEntryID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetTimeEntryResponseMock()),
       {
         status: 200,
@@ -55,7 +55,7 @@ export const getGetTimeEntryMockHandler = (overrideResponse?: TimeEntry) => {
 
 export const getUpdateTimeEntryMockHandler = (overrideResponse?: TimeEntry) => {
   return http.patch('*/time-entry/:timeEntryID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getUpdateTimeEntryResponseMock()),
       {
         status: 200,
@@ -69,7 +69,7 @@ export const getUpdateTimeEntryMockHandler = (overrideResponse?: TimeEntry) => {
 
 export const getDeleteTimeEntryMockHandler = () => {
   return http.delete('*/time-entry/:timeEntryID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(null,
       {
         status: 200,
