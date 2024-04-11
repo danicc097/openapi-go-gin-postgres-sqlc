@@ -305,6 +305,7 @@ export default function DemoMantineReactTable() {
   // useStopInfiniteRenders(60)
 
   const fetchedUsers = useMemo(() => usersData?.pages.flatMap((page) => page.items ?? []) ?? [], [usersData])
+  console.log({ fetchedUsers })
 
   const totalRowCount = Infinity
   const lastFetchedCount =

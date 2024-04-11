@@ -8,6 +8,15 @@ import matchers from '@testing-library/jest-dom/matchers'
 import '@testing-library/jest-dom'
 import '@testing-library/jest-dom/extend-expect'
 
+import AxiosInterceptors from 'src/utils/axios'
+import { AXIOS_INSTANCE } from 'src/api/mutator'
+
+// its set in hook with a token, so we have to set explicitly in tests
+AxiosInterceptors.setupAxiosInstance(AXIOS_INSTANCE, '')
+// some calls in App.tsx should be abstracted as init.ts or the like
+// so we just import that both in setupTests and App.tsx
+import 'src/utils/dayjs'
+
 declare module 'vitest' {
   interface Assertion<T = any> extends jest.Matchers<void, T>, TestingLibraryMatchers<T, void> {}
 }
