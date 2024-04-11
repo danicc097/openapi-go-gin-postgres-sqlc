@@ -22,19 +22,17 @@ type Cursor struct {
 	Direction models.Direction
 }
 
-type Filter struct {
+// DbField shows db column information.
+type DbField struct {
   // Type is one of: string, number, integer, boolean, date-time
   // Arrays and objects are ignored for default filter generation
   Type ColumnSimpleType `json:"type"`
   // Db is the corresponding db column name
   Db       string `json:"db"`
   Nullable bool   `json:"nullable"`
+  Public bool   `json:"public"`
 }
 
-type DbField struct{
-  Db       string `json:"db"`
-	Type     ColumnSimpleType `json:"type"`
-}
 
 func newPointer[T any](v T) *T {
 	return &v
@@ -58,8 +56,6 @@ func (err *XoError) Unwrap() error {
 
 
 {{entities $schema $tables}}
-
-{{ generate_entity_filters $schema $tables }}
 
 {{ generate_entity_fields $schema $tables }}
 

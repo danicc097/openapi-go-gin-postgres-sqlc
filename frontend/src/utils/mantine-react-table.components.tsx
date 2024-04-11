@@ -36,7 +36,7 @@ import {
   mrtFilterOptions,
 } from 'mantine-react-table'
 import { ComponentProps, RefObject, createElement, forwardRef, memo, useEffect, useRef, useState } from 'react'
-import { EntityFilter, EntityFilterType } from 'src/config'
+import { EntityFilter, EntityFieldType } from 'src/config'
 import { useMantineReactTableFilters } from 'src/hooks/ui/useMantineReactTableFilters'
 import { emptyModes, indexOneModes, indexZeroModes, rangeModes } from 'src/utils/mantine-react-table'
 import classes from './mantine-react-table.module.css'
@@ -73,7 +73,7 @@ type GenericColumnProps = {
 
 interface CustomMRTFilterProps {
   nullable: boolean
-  type: EntityFilterType
+  type: EntityFieldType
   tableName: string
   columnProps: GenericColumnProps
 }
@@ -166,7 +166,7 @@ export function CustomMRTFilter({ columnProps, nullable, type, tableName }: Cust
 type MRTNumberInputProps = {
   columnProps: GenericColumnProps
   props?: ComponentProps<typeof NumberInput>
-  type: EntityFilterType
+  type: EntityFieldType
 }
 
 export const MRTNumberInput = forwardRef(function MRTNumberInput(

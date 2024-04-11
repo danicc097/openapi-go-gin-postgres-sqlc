@@ -7,7 +7,7 @@ import type { Role, Scopes } from 'src/gen/model'
 import { operations } from 'src/types/schema'
 import ROLES_JSON from '../roles.json'
 import SCOPES_JSON from '../scopes.json'
-import ENTITY_FILTERS_JSON from '../entityFilters.gen.json'
+import ENTITY_FIELDS_JSON from '../entityFields.gen.json'
 import type { Scope } from 'src/gen/model'
 import { JSONSchema4 } from 'json-schema'
 
@@ -16,17 +16,18 @@ export const CONFIG = CONFIG_JSON
 /*
  to be kept in sync with xo gen
  */
-export type EntityFilterType = 'string' | 'number' | 'integer' | 'boolean' | 'date-time' | 'array' | 'object'
+export type EntityFieldType = 'string' | 'number' | 'integer' | 'boolean' | 'date-time' | 'array' | 'object'
 
 export type EntityFilter = {
-  type: EntityFilterType
+  type: EntityFieldType
   db: string
   nullable: boolean
+  public: boolean
 }
 
-export const ENTITY_FILTERS = ENTITY_FILTERS_JSON as unknown as {
-  [Key in keyof typeof ENTITY_FILTERS_JSON]: {
-    [InnerKey in keyof typeof ENTITY_FILTERS_JSON[Key]]: EntityFilter
+export const ENTITY_FIELDS = ENTITY_FIELDS_JSON as unknown as {
+  [Key in keyof typeof ENTITY_FIELDS_JSON]: {
+    [InnerKey in keyof typeof ENTITY_FIELDS_JSON[Key]]: EntityFilter
   }
 }
 

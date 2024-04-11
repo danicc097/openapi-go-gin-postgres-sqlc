@@ -1,644 +1,942 @@
 {
   "activity": {
     "activityID": {
+      "type": "integer",
       "db": "activity_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "deletedAt": {
+      "type": "date-time",
       "db": "deleted_at",
-      "type": "date-time"
+      "nullable": true,
+      "public": true
     },
     "description": {
+      "type": "string",
       "db": "description",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "isProductive": {
+      "type": "boolean",
       "db": "is_productive",
-      "type": "boolean"
+      "nullable": false,
+      "public": true
     },
     "name": {
+      "type": "string",
       "db": "name",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "projectID": {
+      "type": "integer",
       "db": "project_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "cacheDemoTwoWorkItem": {
     "closedAt": {
+      "type": "date-time",
       "db": "closed_at",
-      "type": "date-time"
+      "nullable": true,
+      "public": true
     },
     "createdAt": {
+      "type": "date-time",
       "db": "created_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "customDateForProject2": {
+      "type": "date-time",
       "db": "custom_date_for_project_2",
-      "type": "date-time"
+      "nullable": true,
+      "public": true
     },
     "deletedAt": {
+      "type": "date-time",
       "db": "deleted_at",
-      "type": "date-time"
+      "nullable": true,
+      "public": true
     },
     "description": {
+      "type": "string",
       "db": "description",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "kanbanStepID": {
+      "type": "integer",
       "db": "kanban_step_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "metadata": {
+      "type": "object",
       "db": "metadata",
-      "type": "object"
+      "nullable": false,
+      "public": true
     },
     "targetDate": {
+      "type": "date-time",
       "db": "target_date",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "teamID": {
+      "type": "integer",
       "db": "team_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "title": {
+      "type": "string",
       "db": "title",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "updatedAt": {
+      "type": "date-time",
       "db": "updated_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "workItemID": {
+      "type": "integer",
       "db": "work_item_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "workItemTypeID": {
+      "type": "integer",
       "db": "work_item_type_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "cacheDemoWorkItem": {
     "closedAt": {
+      "type": "date-time",
       "db": "closed_at",
-      "type": "date-time"
+      "nullable": true,
+      "public": true
     },
     "createdAt": {
+      "type": "date-time",
       "db": "created_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "deletedAt": {
+      "type": "date-time",
       "db": "deleted_at",
-      "type": "date-time"
+      "nullable": true,
+      "public": true
     },
     "description": {
+      "type": "string",
       "db": "description",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "kanbanStepID": {
+      "type": "integer",
       "db": "kanban_step_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "lastMessageAt": {
+      "type": "date-time",
       "db": "last_message_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "line": {
+      "type": "string",
       "db": "line",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "metadata": {
+      "type": "object",
       "db": "metadata",
-      "type": "object"
+      "nullable": false,
+      "public": true
     },
     "ref": {
+      "type": "string",
       "db": "ref",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "reopened": {
+      "type": "boolean",
       "db": "reopened",
-      "type": "boolean"
+      "nullable": false,
+      "public": true
     },
     "targetDate": {
+      "type": "date-time",
       "db": "target_date",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "teamID": {
+      "type": "integer",
       "db": "team_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "title": {
+      "type": "string",
       "db": "title",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "updatedAt": {
+      "type": "date-time",
       "db": "updated_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "workItemID": {
+      "type": "integer",
       "db": "work_item_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "workItemTypeID": {
+      "type": "integer",
       "db": "work_item_type_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "demoTwoWorkItem": {
     "customDateForProject2": {
+      "type": "date-time",
       "db": "custom_date_for_project_2",
-      "type": "date-time"
+      "nullable": true,
+      "public": true
     },
     "workItemID": {
+      "type": "integer",
       "db": "work_item_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "demoWorkItem": {
     "lastMessageAt": {
+      "type": "date-time",
       "db": "last_message_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "line": {
+      "type": "string",
       "db": "line",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "ref": {
+      "type": "string",
       "db": "ref",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "reopened": {
+      "type": "boolean",
       "db": "reopened",
-      "type": "boolean"
+      "nullable": false,
+      "public": true
     },
     "workItemID": {
+      "type": "integer",
       "db": "work_item_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "entityNotification": {
     "createdAt": {
+      "type": "date-time",
       "db": "created_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "entityNotificationID": {
+      "type": "integer",
       "db": "entity_notification_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "id": {
+      "type": "string",
       "db": "id",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "message": {
+      "type": "string",
       "db": "message",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "topic": {
+      "type": "string",
       "db": "topic",
-      "type": "string"
+      "nullable": false,
+      "public": true
     }
   },
   "kanbanStep": {
     "color": {
+      "type": "string",
       "db": "color",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "description": {
+      "type": "string",
       "db": "description",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "kanbanStepID": {
+      "type": "integer",
       "db": "kanban_step_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "name": {
+      "type": "string",
       "db": "name",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "projectID": {
+      "type": "integer",
       "db": "project_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "stepOrder": {
+      "type": "integer",
       "db": "step_order",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "timeTrackable": {
+      "type": "boolean",
       "db": "time_trackable",
-      "type": "boolean"
+      "nullable": false,
+      "public": true
     }
   },
   "movie": {
     "movieID": {
+      "type": "integer",
       "db": "movie_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "synopsis": {
+      "type": "string",
       "db": "synopsis",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "title": {
+      "type": "string",
       "db": "title",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "year": {
+      "type": "integer",
       "db": "year",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "notification": {
     "body": {
+      "type": "string",
       "db": "body",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "createdAt": {
+      "type": "date-time",
       "db": "created_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "labels": {
+      "type": "array",
       "db": "labels",
-      "type": "array"
+      "nullable": false,
+      "public": true
     },
     "link": {
+      "type": "string",
       "db": "link",
-      "type": "string"
+      "nullable": true,
+      "public": true
     },
     "notificationID": {
+      "type": "integer",
       "db": "notification_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "receiver": {
+      "type": "string",
       "db": "receiver",
-      "type": "string"
+      "nullable": true,
+      "public": true
     },
     "receiverRank": {
+      "type": "integer",
       "db": "receiver_rank",
-      "type": "integer"
+      "nullable": true,
+      "public": true
     },
     "sender": {
+      "type": "string",
       "db": "sender",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "title": {
+      "type": "string",
       "db": "title",
-      "type": "string"
+      "nullable": false,
+      "public": true
     }
   },
   "project": {
     "boardConfig": {
+      "type": "object",
       "db": "board_config",
-      "type": "object"
+      "nullable": false,
+      "public": true
     },
     "createdAt": {
+      "type": "date-time",
       "db": "created_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "description": {
+      "type": "string",
       "db": "description",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "name": {
+      "type": "string",
       "db": "name",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "projectID": {
+      "type": "integer",
       "db": "project_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "updatedAt": {
+      "type": "date-time",
       "db": "updated_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "workItemsTableName": {
+      "type": "string",
       "db": "work_items_table_name",
-      "type": "string"
+      "nullable": false,
+      "public": true
     }
   },
   "team": {
     "createdAt": {
+      "type": "date-time",
       "db": "created_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "description": {
+      "type": "string",
       "db": "description",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "name": {
+      "type": "string",
       "db": "name",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "projectID": {
+      "type": "integer",
       "db": "project_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "teamID": {
+      "type": "integer",
       "db": "team_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "updatedAt": {
+      "type": "date-time",
       "db": "updated_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     }
   },
   "timeEntry": {
     "activityID": {
+      "type": "integer",
       "db": "activity_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "comment": {
+      "type": "string",
       "db": "comment",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "durationMinutes": {
+      "type": "integer",
       "db": "duration_minutes",
-      "type": "integer"
+      "nullable": true,
+      "public": true
     },
     "start": {
+      "type": "date-time",
       "db": "start",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "teamID": {
+      "type": "integer",
       "db": "team_id",
-      "type": "integer"
+      "nullable": true,
+      "public": true
     },
     "timeEntryID": {
+      "type": "integer",
       "db": "time_entry_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "userID": {
+      "type": "string",
       "db": "user_id",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "workItemID": {
+      "type": "integer",
       "db": "work_item_id",
-      "type": "integer"
+      "nullable": true,
+      "public": true
     }
   },
   "user": {
     "age": {
+      "type": "integer",
       "db": "age",
-      "type": "integer"
+      "nullable": true,
+      "public": true
     },
     "apiKeyID": {
+      "type": "integer",
       "db": "api_key_id",
-      "type": "integer"
+      "nullable": true,
+      "public": true
     },
     "createdAt": {
+      "type": "date-time",
       "db": "created_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "deletedAt": {
+      "type": "date-time",
       "db": "deleted_at",
-      "type": "date-time"
+      "nullable": true,
+      "public": true
     },
     "email": {
+      "type": "string",
       "db": "email",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "externalID": {
+      "type": "string",
       "db": "external_id",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "firstName": {
+      "type": "string",
       "db": "first_name",
-      "type": "string"
+      "nullable": true,
+      "public": true
     },
     "fullName": {
+      "type": "string",
       "db": "full_name",
-      "type": "string"
+      "nullable": true,
+      "public": true
     },
     "hasGlobalNotifications": {
+      "type": "boolean",
       "db": "has_global_notifications",
-      "type": "boolean"
+      "nullable": false,
+      "public": true
     },
     "hasPersonalNotifications": {
+      "type": "boolean",
       "db": "has_personal_notifications",
-      "type": "boolean"
+      "nullable": false,
+      "public": true
     },
     "lastName": {
+      "type": "string",
       "db": "last_name",
-      "type": "string"
+      "nullable": true,
+      "public": true
     },
     "roleRank": {
+      "type": "integer",
       "db": "role_rank",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "scopes": {
+      "type": "array",
       "db": "scopes",
-      "type": "array"
+      "nullable": false,
+      "public": true
     },
     "updatedAt": {
+      "type": "date-time",
       "db": "updated_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "userID": {
+      "type": "string",
       "db": "user_id",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "username": {
+      "type": "string",
       "db": "username",
-      "type": "string"
+      "nullable": false,
+      "public": true
     }
   },
   "userAPIKey": {
     "apiKey": {
+      "type": "string",
       "db": "api_key",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "expiresOn": {
+      "type": "date-time",
       "db": "expires_on",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "userAPIKeyID": {
+      "type": "integer",
       "db": "user_api_key_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "userID": {
+      "type": "string",
       "db": "user_id",
-      "type": "string"
+      "nullable": false,
+      "public": true
     }
   },
   "userNotification": {
     "notificationID": {
+      "type": "integer",
       "db": "notification_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "read": {
+      "type": "boolean",
       "db": "read",
-      "type": "boolean"
+      "nullable": false,
+      "public": true
     },
     "userID": {
+      "type": "string",
       "db": "user_id",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "userNotificationID": {
+      "type": "integer",
       "db": "user_notification_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "userProject": {
     "member": {
+      "type": "string",
       "db": "member",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "projectID": {
+      "type": "integer",
       "db": "project_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "userTeam": {
     "member": {
+      "type": "string",
       "db": "member",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "teamID": {
+      "type": "integer",
       "db": "team_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "workItem": {
     "closedAt": {
+      "type": "date-time",
       "db": "closed_at",
-      "type": "date-time"
+      "nullable": true,
+      "public": true
     },
     "createdAt": {
+      "type": "date-time",
       "db": "created_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "deletedAt": {
+      "type": "date-time",
       "db": "deleted_at",
-      "type": "date-time"
+      "nullable": true,
+      "public": true
     },
     "description": {
+      "type": "string",
       "db": "description",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "kanbanStepID": {
+      "type": "integer",
       "db": "kanban_step_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "metadata": {
+      "type": "object",
       "db": "metadata",
-      "type": "object"
+      "nullable": false,
+      "public": true
     },
     "targetDate": {
+      "type": "date-time",
       "db": "target_date",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "teamID": {
+      "type": "integer",
       "db": "team_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "title": {
+      "type": "string",
       "db": "title",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "updatedAt": {
+      "type": "date-time",
       "db": "updated_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "workItemID": {
+      "type": "integer",
       "db": "work_item_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "workItemTypeID": {
+      "type": "integer",
       "db": "work_item_type_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "workItemAssignee": {
     "assignee": {
+      "type": "string",
       "db": "assignee",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "workItemID": {
+      "type": "integer",
       "db": "work_item_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "workItemComment": {
     "createdAt": {
+      "type": "date-time",
       "db": "created_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "message": {
+      "type": "string",
       "db": "message",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "updatedAt": {
+      "type": "date-time",
       "db": "updated_at",
-      "type": "date-time"
+      "nullable": false,
+      "public": true
     },
     "userID": {
+      "type": "string",
       "db": "user_id",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "workItemCommentID": {
+      "type": "integer",
       "db": "work_item_comment_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "workItemID": {
+      "type": "integer",
       "db": "work_item_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "workItemTag": {
     "color": {
+      "type": "string",
       "db": "color",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "deletedAt": {
+      "type": "date-time",
       "db": "deleted_at",
-      "type": "date-time"
+      "nullable": true,
+      "public": true
     },
     "description": {
+      "type": "string",
       "db": "description",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "name": {
+      "type": "string",
       "db": "name",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "projectID": {
+      "type": "integer",
       "db": "project_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "workItemTagID": {
+      "type": "integer",
       "db": "work_item_tag_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "workItemType": {
     "color": {
+      "type": "string",
       "db": "color",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "description": {
+      "type": "string",
       "db": "description",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "name": {
+      "type": "string",
       "db": "name",
-      "type": "string"
+      "nullable": false,
+      "public": true
     },
     "projectID": {
+      "type": "integer",
       "db": "project_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "workItemTypeID": {
+      "type": "integer",
       "db": "work_item_type_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   },
   "workItemWorkItemTag": {
     "workItemID": {
+      "type": "integer",
       "db": "work_item_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     },
     "workItemTagID": {
+      "type": "integer",
       "db": "work_item_tag_id",
-      "type": "integer"
+      "nullable": false,
+      "public": true
     }
   }
 }

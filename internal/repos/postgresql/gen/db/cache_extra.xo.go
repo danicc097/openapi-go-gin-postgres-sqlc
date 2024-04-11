@@ -4,6 +4,4 @@ package db
 
 type CacheTableEntity string
 
-var CacheEntityFilters = map[CacheTableEntity]map[string]Filter{}
-
 var CacheEntityFields = map[CacheTableEntity]map[string]DbField{}

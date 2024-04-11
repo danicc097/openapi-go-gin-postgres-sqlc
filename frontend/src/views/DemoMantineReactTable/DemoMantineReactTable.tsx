@@ -49,7 +49,7 @@ import {
 import { getContrastYIQ, scopeColor } from 'src/utils/colors'
 import _, { lowerCase } from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
-import { ENTITY_FILTERS, OPERATION_AUTH, ROLES } from 'src/config'
+import { ENTITY_FIELDS, OPERATION_AUTH, ROLES } from 'src/config'
 import { entries } from 'src/utils/object'
 import { sentenceCase } from 'src/utils/strings'
 import { arrModes, columnPropsByType, emptyModes } from 'src/utils/mantine-react-table'
@@ -69,7 +69,7 @@ import ErrorCallout from 'src/components/Callout/ErrorCallout'
 
 type Column = MRT_ColumnDef<User>
 
-type DefaultFilters = keyof typeof ENTITY_FILTERS.user
+type DefaultFilters = keyof typeof ENTITY_FIELDS.user
 
 const defaultExcludedColumns: Array<DefaultFilters> = ['firstName', 'lastName']
 // just btrees, or extension indexes if applicable https://www.postgresql.org/docs/16/indexes-ordering.html
@@ -98,7 +98,7 @@ export default function DemoMantineReactTable() {
   const [columnVisibility, setColumnVisibility] = useState<MRT_VisibilityState>({})
   const defaultPaginatedUserColumns = useMemo<Column[]>(
     () =>
-      entries(ENTITY_FILTERS.user)
+      entries(ENTITY_FIELDS.user)
         .filter(([id, c]) => !defaultExcludedColumns.includes(id))
         .map(([id, c]) => {
           let col = {
