@@ -38,8 +38,7 @@ jobs:
         run: |
           source .envrc
 
-          cd frontend && pnpm run test:no-watch -t mrt-table-tests-render && cd -
-          # project test.frontend
+          project test.frontend
 
       - name: Diff check
         run: |

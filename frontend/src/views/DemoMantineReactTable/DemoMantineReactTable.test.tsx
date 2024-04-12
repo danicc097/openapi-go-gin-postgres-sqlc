@@ -44,42 +44,25 @@ const secondPage: PaginatedUsersResponse = {
   },
 }
 
-console.log('debug 01')
 const server = setupServer()
-console.log('debug 02')
-// establish API mocking before all tests
+
 beforeAll(() => server.listen())
-console.log('debug 03')
-// reset any request handlers that are declared as a part of our tests
-// (i.e. for testing one-time error scenarios)
-console.log('debug 04')
-afterEach(() => server.resetHandlers())
-// clean up once the tests are done
-console.log('debug 05')
 afterAll(() => server.close())
-console.log('debug 0')
 
 test('mrt-table-tests-render', async () => {
-  render(<DemoMantineReactTable></DemoMantineReactTable>)
+  server.boundary(async () => {
+    render(<DemoMantineReactTable></DemoMantineReactTable>)
 
-  console.log('debug 1')
-  server.use(getGetPaginatedUsersMockHandler(firstPage))
+    server.use(getGetPaginatedUsersMockHandler(firstPage))
 
-  console.log('debug 2')
-  const p = apiPath()
-  console.log(p)
-  const res = await (await axios.get(`https://test.com/user/page`)).data
-  console.log({ res })
-  console.log({ handlers: server.listHandlers() })
-  console.log(document.body.innerHTML)
+    const el = await screen.findByText(firstPage.items![0]!.email, {}, { timeout: 5000 })
+    const allRows = screen.queryAllByRole('row')
+    const firstRow = allRows.filter((row) => row.getAttribute('data-index') === '0')
 
-  const el = await screen.findByText(firstPage.items![0]!.email, {}, { timeout: 5000 })
-  const allRows = screen.queryAllByRole('row')
-  const firstRow = allRows.filter((row) => row.getAttribute('data-index') === '0')
+    // TODO: scroll down container -Infinity
+    // we should generate pages of length > 10 so that testing scroll on end reached works.
 
-  // TODO: scroll down container -Infinity
-  // we should generate pages of length > 10 so that testing scroll on end reached works.
-
-  // TODO: should test it was called with cursor=next-cursor-1
-  server.use(getGetPaginatedUsersMockHandler(secondPage))
+    // TODO: should test it was called with cursor=next-cursor-1
+    server.use(getGetPaginatedUsersMockHandler(secondPage))
+  })
 })
