@@ -34,6 +34,13 @@ jobs:
 
           project lint
 
+      - name: Test frontend
+        run: |
+          source .envrc
+
+          cd frontend && pnpm run test:no-watch -t mrt-table-tests-render && cd -
+          # project test.frontend
+
       - name: Diff check
         run: |
           # debug gen: run with --x-force-regen
@@ -77,11 +84,6 @@ jobs:
         if: failure() # always()
         run: docker logs postgres_db_openapi-go-gin
 
-      - name: Test frontend
-        run: |
-          source .envrc
-
-          project test.frontend
 
       - name: Test E2E
         run: |
