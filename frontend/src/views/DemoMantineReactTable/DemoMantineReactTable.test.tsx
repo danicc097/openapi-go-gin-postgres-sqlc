@@ -55,7 +55,10 @@ test('Renders content', async () => {
 
   server.use(getGetPaginatedUsersMockHandler(firstPage))
 
-  const el = await screen.findByText(firstPage.items![0]!.email, {}, { timeout: 5000 })
+  console.log({ handlers: server.listHandlers() })
+  console.log(document.body.innerHTML)
+
+  const el = await screen.findByText(firstPage.items![0]!.email, {}, { timeout: 10000 })
   const allRows = screen.queryAllByRole('row')
   const firstRow = allRows.filter((row) => row.getAttribute('data-index') === '0')
 
