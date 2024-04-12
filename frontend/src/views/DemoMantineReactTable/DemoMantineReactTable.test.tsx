@@ -2,13 +2,15 @@ import { faker } from '@faker-js/faker'
 import axios from 'axios'
 import dayjs from 'dayjs'
 import { HttpResponse, http } from 'msw'
-import { setupServer } from 'msw/node'
 import { UserID } from 'src/gen/entity-ids'
 import { PaginatedUsersResponse, User } from 'src/gen/model'
 import { getGetPaginatedUsersMockHandler } from 'src/gen/user/user.msw'
 import { apiPath } from 'src/services/apiPaths'
 import { render, screen } from 'src/test-utils'
+import { setupMSW } from 'src/test-utils/msw'
 import DemoMantineReactTable from 'src/views/DemoMantineReactTable/DemoMantineReactTable'
+
+const server = setupMSW()
 
 function usersForPage(page: number): User[] {
   return [...Array(15)].map((x, i) => ({
@@ -22,8 +24,8 @@ function usersForPage(page: number): User[] {
     scopes: ['users:read'],
     hasPersonalNotifications: true,
     hasGlobalNotifications: true,
-    createdAt: dayjs('2024-04-07T11:10:48.123456+02:00').toDate(),
-    updatedAt: dayjs('2024-04-08T11:10:48.123456+02:00').toDate(),
+    createdAt: dayjs().add(i, 'day').toDate(),
+    updatedAt: dayjs().add(i, 'day').toDate(),
     deletedAt: null,
     role: 'user',
     teams: [],
@@ -43,11 +45,6 @@ const secondPage: PaginatedUsersResponse = {
     nextCursor: 'next-cursor-2',
   },
 }
-
-const server = setupServer()
-
-beforeAll(() => server.listen())
-afterAll(() => server.close())
 
 test('mrt-table-tests-render', async () => {
   server.boundary(async () => {

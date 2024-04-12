@@ -17,6 +17,12 @@ AxiosInterceptors.setupAxiosInstance(AXIOS_INSTANCE, '')
 // so we just import that both in setupTests and App.tsx
 import 'src/utils/dayjs'
 
+// runs a cleanup after each test case
+afterEach(() => {
+  cleanup() // clean jsdom
+})
+
+// types
 declare module 'vitest' {
   interface Assertion<T = any> extends jest.Matchers<void, T>, TestingLibraryMatchers<T, void> {}
 }
@@ -24,11 +30,6 @@ declare module 'vitest' {
 expect.extend(matchers)
 
 globalThis.indexedDB = indexeddb
-
-// runs a cleanup after each test case
-afterEach(() => {
-  cleanup() // clean jsdom
-})
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 window.URL.createObjectURL = (() => {}) as any
