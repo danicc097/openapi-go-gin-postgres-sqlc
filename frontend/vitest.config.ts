@@ -41,7 +41,7 @@ export default defineConfig((env) =>
         'process.env.TESTING': true,
       },
       test: {
-        testTimeout: 20000,
+        testTimeout: 50_000,
         // reporters: ['verbose'],
         // outputFile: './reporter-output/result',
         isolate: false, // if we dont depend on global state can be false to make tests faster

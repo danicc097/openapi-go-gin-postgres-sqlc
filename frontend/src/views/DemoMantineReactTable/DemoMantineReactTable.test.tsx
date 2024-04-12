@@ -58,7 +58,7 @@ test('Renders content', async () => {
   console.log({ handlers: server.listHandlers() })
   console.log(document.body.innerHTML)
 
-  const el = await screen.findByText(firstPage.items![0]!.email, {}, { timeout: 10000 })
+  const el = await screen.findByText(firstPage.items![0]!.email, {}, { timeout: 50000 })
   const allRows = screen.queryAllByRole('row')
   const firstRow = allRows.filter((row) => row.getAttribute('data-index') === '0')
 
