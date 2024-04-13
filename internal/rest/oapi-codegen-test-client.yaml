@@ -3,8 +3,6 @@ package: rest_test
 generate:
   client: true
 output: internal/rest/openapi_client_gen_test.go
-# TODO: if response has content == text/event-stream then generate test client method with extra
-# recorder ResponseRecorder param
 test-client: true
 additional-imports:
   - alias: .
