@@ -48,7 +48,7 @@ func TestSSEStream(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	srv, err := runTestServer(t, testPool,
+	srv, err := runTestServer(t, ctx, testPool,
 		func(c *gin.Context) {
 			c.Next()
 		},

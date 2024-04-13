@@ -21,7 +21,7 @@ func TestGetPaginatedNotificationsRoute(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	srv, err := runTestServer(t, testPool)
+	srv, err := runTestServer(t, context.Background(), testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 

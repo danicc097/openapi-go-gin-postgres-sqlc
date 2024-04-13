@@ -47,7 +47,7 @@ type EventServer struct {
 }
 
 // NewEventServer returns an SSE server and starts listening for messages.
-func NewEventServer(logger *zap.SugaredLogger) *EventServer {
+func NewEventServer(ctx context.Context, logger *zap.SugaredLogger) *EventServer {
 	es := &EventServer{
 		logger:         logger,
 		messages:       make(chan ClientMessage),
@@ -58,7 +58,7 @@ func NewEventServer(logger *zap.SugaredLogger) *EventServer {
 		clients:        make(Clients),
 	}
 
-	go es.listen()
+	go es.listen(ctx)
 
 	return es
 }
@@ -79,9 +79,11 @@ func (es *EventServer) Publish(message string, topic models.Topic) {
 	es.messages <- ClientMessage{Message: message, Topic: topic}
 }
 
-func (es *EventServer) listen() {
+func (es *EventServer) listen(ctx context.Context) {
 	for {
 		select {
+		case <-ctx.Done():
+			return
 		case client := <-es.newClients:
 			es.clients[client.Chan] = struct{}{}
 			es.subsMu.Lock()

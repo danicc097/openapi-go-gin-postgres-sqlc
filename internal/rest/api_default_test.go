@@ -12,7 +12,7 @@ import (
 func TestPingRoute(t *testing.T) {
 	t.Parallel()
 
-	srv, err := runTestServer(t, testPool)
+	srv, err := runTestServer(t, context.Background(), testPool)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 	srv.setupCleanup(t)
 

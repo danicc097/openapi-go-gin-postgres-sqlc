@@ -26,7 +26,7 @@ func TestTracing(t *testing.T) {
 	// as of now must run with count=1
 	t.Parallel()
 
-	srv, err := runTestServer(t, testPool)
+	srv, err := runTestServer(t, context.Background(), testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
