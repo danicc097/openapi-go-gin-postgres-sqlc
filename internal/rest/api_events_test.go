@@ -1,3 +1,4 @@
+// reading headers with -race fails
 //go:build !race
 
 package rest_test
@@ -99,8 +100,6 @@ func TestSSEStream(t *testing.T) {
 	}
 
 	cancel()
-	// handler should be stopped before reading body snapshot. to not have an arbitrary time sleep
-	// after events are sent before shutting handler down we're using Eventually and excluding -race flag.
 	stopCh <- true
 
 	assert.Contains(t, res.Result().Header.Get("Content-Type"), "text/event-stream")
