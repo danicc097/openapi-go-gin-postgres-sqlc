@@ -60,9 +60,6 @@ func TestSSEStream(t *testing.T) {
 	stopCh := make(chan bool)
 
 	go func() {
-		defer func() {
-			stopCh <- true
-		}()
 		for {
 			select {
 			case <-stopCh:
