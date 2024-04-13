@@ -6533,6 +6533,9 @@
         "filterMode"
       ]
     },
+    "AnyValue": {
+      "description": "represents any value, including `null`"
+    },
     "PaginationFilter": {
       "oneOf": [
         {
@@ -6812,34 +6815,6 @@
         "x-use-server-type": true
       }
     },
-    "PaginationCursors": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "direction": {
-            "type": "string",
-            "enum": [
-              "asc",
-              "desc"
-            ]
-          },
-          "value": {
-            "description": "represents a cursor value"
-          },
-          "column": {
-            "description": "represents the JSON name of the db column",
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "direction",
-          "value",
-          "column"
-        ]
-      }
-    },
     "PaginationCursor": {
       "type": "object",
       "properties": {
@@ -6861,7 +6836,6 @@
       },
       "required": [
         "direction",
-        "value",
         "column"
       ]
     },
@@ -6979,39 +6953,8 @@
             },
             "x-use-server-type": true
           }
-        },
-        "cursors": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "direction": {
-                "type": "string",
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              },
-              "value": {
-                "description": "represents a cursor value"
-              },
-              "column": {
-                "description": "represents the JSON name of the db column",
-                "type": "string",
-                "minLength": 1
-              }
-            },
-            "required": [
-              "direction",
-              "value",
-              "column"
-            ]
-          }
         }
       },
-      "required": [
-        "cursors"
-      ],
       "type": "object"
     },
     "PaginationFilterModes": {
@@ -13736,6 +13679,9 @@
         "filterMode"
       ]
     },
+    "AnyValue": {
+      "description": "represents any value, including `null`"
+    },
     "PaginationFilter": {
       "oneOf": [
         {
@@ -14015,34 +13961,6 @@
         "x-use-server-type": true
       }
     },
-    "PaginationCursors": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "direction": {
-            "type": "string",
-            "enum": [
-              "asc",
-              "desc"
-            ]
-          },
-          "value": {
-            "description": "represents a cursor value"
-          },
-          "column": {
-            "description": "represents the JSON name of the db column",
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "direction",
-          "value",
-          "column"
-        ]
-      }
-    },
     "PaginationCursor": {
       "type": "object",
       "properties": {
@@ -14064,7 +13982,6 @@
       },
       "required": [
         "direction",
-        "value",
         "column"
       ]
     },
@@ -14182,39 +14099,8 @@
             },
             "x-use-server-type": true
           }
-        },
-        "cursors": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "direction": {
-                "type": "string",
-                "enum": [
-                  "asc",
-                  "desc"
-                ]
-              },
-              "value": {
-                "description": "represents a cursor value"
-              },
-              "column": {
-                "description": "represents the JSON name of the db column",
-                "type": "string",
-                "minLength": 1
-              }
-            },
-            "required": [
-              "direction",
-              "value",
-              "column"
-            ]
-          }
         }
       },
-      "required": [
-        "cursors"
-      ],
       "type": "object"
     },
     "PaginationFilterModes": {

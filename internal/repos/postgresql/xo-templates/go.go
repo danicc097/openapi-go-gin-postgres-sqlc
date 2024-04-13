@@ -1610,18 +1610,15 @@ func camelExport(names ...string) string {
 
 const ext = ".xo.go"
 
-type Filter struct {
+// can extend as required to prevent getting db info via reflection
+type DbField struct {
 	// Type is one of: string, number, integer, boolean, date-time
 	// Arrays and objects are ignored for default filter generation
 	Type string `json:"type"`
 	// Db is the corresponding db column name
 	Db       string `json:"db"`
 	Nullable bool   `json:"nullable"`
-}
-
-// can extend as required to prevent getting db info via reflection
-type DbField struct {
-	Db string `json:"db"`
+	Public   bool   `json:"public"`
 }
 
 // Funcs is a set of template funcs.
@@ -1638,7 +1635,6 @@ type Funcs struct {
 	// joinTableDbTags map[string]map[string]string
 	tableConstraints map[string][]Constraint
 	// filters indexed by entity name and json field name.
-	entityFilters   map[string]map[string]Filter
 	entityFields    map[string]map[string]DbField
 	conflict        string
 	custom          string
@@ -1698,7 +1694,6 @@ func NewFuncs(ctx context.Context) (template.FuncMap, error) {
 	}
 	funcs := &Funcs{
 		tableConstraints: make(map[string][]Constraint),
-		entityFilters:    make(map[string]map[string]Filter),
 		entityFields:     make(map[string]map[string]DbField),
 		first:            first,
 		currentDatabase:  currentDatabase,
@@ -1761,26 +1756,25 @@ func (f *Funcs) FuncMap() template.FuncMap {
 		// func opts
 		"initial_opts": f.initial_opts,
 		// func and query
-		"func_name_context":       f.func_name_context,
-		"has_deleted_at":          f.has_deleted_at,
-		"func_name":               f.func_name_none,
-		"func_context":            f.func_context,
-		"extratypes":              f.extratypes,
-		"func":                    f.func_none,
-		"recv_context":            f.recv_context,
-		"recv":                    f.recv_none,
-		"foreign_key_context":     f.foreign_key_context,
-		"foreign_key":             f.foreign_key_none,
-		"db":                      f.db,
-		"db_prefix":               f.db_prefix,
-		"db_update":               f.db_update,
-		"db_named":                f.db_named,
-		"named":                   f.named,
-		"generate_entity_filters": f.generate_entity_filters,
-		"generate_entity_fields":  f.generate_entity_fields,
-		"logf":                    f.logf,
-		"logf_pkeys":              f.logf_pkeys,
-		"logf_update":             f.logf_update,
+		"func_name_context":      f.func_name_context,
+		"has_deleted_at":         f.has_deleted_at,
+		"func_name":              f.func_name_none,
+		"func_context":           f.func_context,
+		"extratypes":             f.extratypes,
+		"func":                   f.func_none,
+		"recv_context":           f.recv_context,
+		"recv":                   f.recv_none,
+		"foreign_key_context":    f.foreign_key_context,
+		"foreign_key":            f.foreign_key_none,
+		"db":                     f.db,
+		"db_prefix":              f.db_prefix,
+		"db_update":              f.db_update,
+		"db_named":               f.db_named,
+		"named":                  f.named,
+		"generate_entity_fields": f.generate_entity_fields,
+		"logf":                   f.logf,
+		"logf_pkeys":             f.logf_pkeys,
+		"logf_update":            f.logf_update,
 		// type
 		"initialize_constraints": f.initialize_constraints,
 		"names":                  f.names,
@@ -2697,21 +2691,25 @@ func (f *Funcs) entities(schema string, tables Tables) string {
 	}
 	var b strings.Builder
 
-	ee := make([]string, len(tables))
+	tt := make([]Table, len(tables))
 	i := 0
 	for _, t := range tables {
-		ee[i] = t.GoName
+		tt[i] = t
 		i++
 	}
 
-	sort.Slice(ee, func(i, j int) bool {
-		return ee[i] < ee[j]
+	sort.Slice(tt, func(i, j int) bool {
+		return tt[i].GoName < tt[j].GoName
 	})
 
 	b.WriteString(fmt.Sprintf("type %sTableEntity string\n", camelExport(schema)))
 	b.WriteString("const (\n")
-	for _, e := range ee {
-		b.WriteString(fmt.Sprintf("%[1]sTableEntity%[2]s %[1]sTableEntity = %[3]q \n", camelExport(schema), camelExport(e), camel(e)))
+	for _, t := range tt {
+		tident := t.SQLName
+		if f.schemaPrefix != "" {
+			tident = f.schemaPrefix + "." + tident
+		}
+		b.WriteString(fmt.Sprintf("%[1]sTableEntity%[2]s %[1]sTableEntity = %[3]q \n", camelExport(schema), camelExport(t.GoName), tident))
 	}
 	b.WriteString(")")
 
@@ -2768,68 +2766,9 @@ func formatEntityFields(schema string, entityFields map[string]map[string]DbFiel
 		for _, fieldName := range fieldNames {
 			field := fields[fieldName]
 			buf.WriteString(
-				fmt.Sprintf("\t\t\"%s\": DbField{Db: \"%s\"},\n",
-					fieldName, field.Db,
+				fmt.Sprintf("\t\t\"%s\": DbField{Type: %s, Db: \"%s\", Nullable: %t, Public: %t},\n",
+					fieldName, simpleTypeToTypeEnum(field.Type), field.Db, field.Nullable, field.Public,
 				))
-		}
-		buf.WriteString("\t},\n")
-	}
-	buf.WriteString("}\n")
-
-	return buf.String()
-}
-
-func (f *Funcs) generate_entity_filters(schema string, tables Tables) string {
-	if schema == "public" {
-		schema = ""
-	}
-	if f.currentDatabase != "gen_db" && f.currentDatabase != "xo_tests_db" {
-		return ""
-	}
-	for _, t := range tables {
-		for _, field := range t.Fields {
-			f.field(field, "EntityFilters", t)
-		}
-	}
-
-	content, err := json.MarshalIndent(f.entityFilters, "", "  ")
-	if err != nil {
-		panic("json.MarshalIndent: " + err.Error())
-	}
-	if schema == "" && f.currentDatabase == "gen_db" {
-		outputPath := "entityFilters.gen.json"
-		if err := os.WriteFile(outputPath, content, 0o644); err != nil {
-			panic("os.WriteFile: " + err.Error())
-		}
-	}
-
-	return fmt.Sprintf(formatEntityFilters(f.schemaPrefix, f.entityFilters))
-}
-
-func formatEntityFilters(schema string, entityFilters map[string]map[string]Filter) string {
-	var buf bytes.Buffer
-
-	var entityTypes []string
-	for entityType := range entityFilters {
-		entityTypes = append(entityTypes, entityType)
-	}
-	sort.Strings(entityTypes)
-
-	buf.WriteString(fmt.Sprintf("var %[1]sEntityFilters = map[%[1]sTableEntity]map[string]Filter {\n", camelExport(schema)))
-	for _, entityType := range entityTypes {
-		fields := entityFilters[entityType]
-
-		var fieldNames []string
-		for fieldName := range fields {
-			fieldNames = append(fieldNames, fieldName)
-		}
-		sort.Strings(fieldNames)
-
-		buf.WriteString(fmt.Sprintf("\t%sTableEntity%s: {\n", camelExport(schema), camelExport(entityType)))
-		for _, fieldName := range fieldNames {
-			field := fields[fieldName]
-			buf.WriteString(fmt.Sprintf("\t\t\"%s\": Filter{Type: \"%s\", Db: \"%s\", Nullable: %t},\n",
-				fieldName, field.Type, field.Db, field.Nullable))
 		}
 		buf.WriteString("\t},\n")
 	}
@@ -2947,10 +2886,7 @@ func (f *Funcs) namesfn(all bool, prefix string, z ...any) string {
 			return "ctx, sqlstr, append([]any{" + nn + "}, append(filterParams, havingParams...)...)..."
 		case CursorPagination:
 			names = append(names, f.params(x.Fields, false, nil))
-			nn := ""
-			if len(names[2:]) > 0 {
-				nn = strings.Join(names[2:], ", ")
-			}
+
 			return "ctx, sqlstr, append(filterParams, havingParams...)..."
 		default:
 			names = append(names, fmt.Sprintf("/* UNSUPPORTED TYPE 14 (%d): %T */", i, v))
@@ -3184,13 +3120,6 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables) string {
 	case Table:
 		var fields []string
 
-		var tableHasDeletedAt bool
-		for _, field := range x.Fields {
-			if field.SQLName == "deleted_at" {
-				tableHasDeletedAt = true
-			}
-		}
-
 		// build table fieldnames
 		for _, z := range x.Fields {
 			// add current table fields
@@ -3203,9 +3132,6 @@ func (f *Funcs) sqlstr_paginated(v any, tables Tables) string {
 
 		// all fields already selected in main table need to appear
 		groupbys = append(groupbys, mainGroupByFields(x, f, funcs)...)
-
-		var n int
-		var orderbys []string
 
 		lines := []string{
 			"SELECT ",
@@ -4252,23 +4178,7 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	}
 
 	// call initializer for all tables in extra.xo.go
-	if mode == "EntityFilters" && !ignoreJson {
-		// mantine react table EMPTY and NOT EMPTY special filterModes - ie, enabling those filters if nullable)
-		entityName := camel(table.GoName)
-		if _, ok := f.entityFilters[entityName]; !ok {
-			f.entityFilters[entityName] = make(map[string]Filter)
-		}
-		if typ, err := goTypeToSimpleType(field.UnderlyingType); err == nil {
-			f.entityFilters[entityName][camel(field.GoName)] = Filter{
-				Type:     typ,
-				Db:       field.SQLName,
-				Nullable: nullable,
-			}
-		}
-	}
-
-	// call initializer for all tables in extra.xo.go
-	if mode == "EntityFields" && !hidden {
+	if mode == "EntityFields" {
 		// mantine react table EMPTY and NOT EMPTY special filterModes - ie, enabling those Fields if nullable)
 		entityName := camel(table.GoName)
 		if _, ok := f.entityFields[entityName]; !ok {
@@ -4276,7 +4186,10 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 		}
 		if typ, err := goTypeToSimpleType(field.UnderlyingType); err == nil {
 			f.entityFields[entityName][camel(field.GoName)] = DbField{
-				Db: field.SQLName,
+				Db:       field.SQLName,
+				Type:     typ,
+				Nullable: nullable,
+				Public:   !hidden,
 			}
 		}
 	}
@@ -4316,6 +4229,27 @@ func (f *Funcs) field(field Field, mode string, table Table) (string, error) {
 	return fmt.Sprintf("\t%s %s%s // %s\n", goName, fieldType, tag, field.SQLName), nil
 }
 
+func simpleTypeToTypeEnum(simpleType string) string {
+	switch simpleType {
+	case "date-time":
+		return "ColumnSimpleTypeDateTime"
+	case "integer":
+		return "ColumnSimpleTypeInteger"
+	case "number":
+		return "ColumnSimpleTypeNumber"
+	case "string":
+		return "ColumnSimpleTypeString"
+	case "boolean":
+		return "ColumnSimpleTypeBoolean"
+	case "array":
+		return "ColumnSimpleTypeArray"
+	case "object":
+		return "ColumnSimpleTypeObject"
+	default:
+		return ""
+	}
+}
+
 func goTypeToSimpleType(goType string) (string, error) {
 	t := strings.TrimPrefix(goType, "*")
 	switch {
@@ -4325,10 +4259,14 @@ func goTypeToSimpleType(goType string) (string, error) {
 		return "integer", nil
 	case strings.HasPrefix(t, "float"):
 		return "number", nil
-	case t == "string":
+	case t == "string" || t == "uuid.UUID":
 		return "string", nil
 	case t == "bool":
 		return "boolean", nil
+	case strings.HasPrefix(t, "[]"):
+		return "array", nil
+	case strings.HasPrefix(t, "map["):
+		return "object", nil
 	default:
 		return "", fmt.Errorf("unsupported simple type: %v", t)
 	}

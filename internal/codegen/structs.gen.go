@@ -129,7 +129,6 @@ var PublicStructs = map[string]any{
 	"DbExtraSchemaWorkItemM2MAssigneeWIA":               new(db.ExtraSchemaWorkItemM2MAssigneeWIA),
 	"DbExtraSchemaWorkItemSelectConfig":                 new(db.ExtraSchemaWorkItemSelectConfig),
 	"DbExtraSchemaWorkItemUpdateParams":                 new(db.ExtraSchemaWorkItemUpdateParams),
-	"DbFilter":                                          new(db.Filter),
 	"DbGetExtraSchemaNotificationsParams":               new(db.GetExtraSchemaNotificationsParams),
 	"DbGetExtraSchemaNotificationsRow":                  new(db.GetExtraSchemaNotificationsRow),
 	"DbGetUserNotificationsParams":                      new(db.GetUserNotificationsParams),

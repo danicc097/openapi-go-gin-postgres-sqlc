@@ -33,7 +33,7 @@ export const getUpdateUserResponseMock = (overrideResponse: any = {}): User => (
 
 export const getGetPaginatedUsersMockHandler = (overrideResponse?: PaginatedUsersResponse) => {
   return http.get('*/user/page', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetPaginatedUsersResponseMock()),
       {
         status: 200,
@@ -47,7 +47,7 @@ export const getGetPaginatedUsersMockHandler = (overrideResponse?: PaginatedUser
 
 export const getGetCurrentUserMockHandler = (overrideResponse?: User) => {
   return http.get('*/user/me', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetCurrentUserResponseMock()),
       {
         status: 200,
@@ -61,7 +61,7 @@ export const getGetCurrentUserMockHandler = (overrideResponse?: User) => {
 
 export const getUpdateUserAuthorizationMockHandler = () => {
   return http.patch('*/user/:id/authorization', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(null,
       {
         status: 200,
@@ -75,7 +75,7 @@ export const getUpdateUserAuthorizationMockHandler = () => {
 
 export const getDeleteUserMockHandler = () => {
   return http.delete('*/user/:id', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(null,
       {
         status: 200,
@@ -89,7 +89,7 @@ export const getDeleteUserMockHandler = () => {
 
 export const getUpdateUserMockHandler = (overrideResponse?: User) => {
   return http.patch('*/user/:id', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getUpdateUserResponseMock()),
       {
         status: 200,

@@ -8,23 +8,33 @@ import (
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 )
 
+type ColumnSimpleType string
+
+const (
+	ColumnSimpleTypeDateTime ColumnSimpleType = "date-time"
+	ColumnSimpleTypeInteger  ColumnSimpleType = "integer"
+	ColumnSimpleTypeNumber   ColumnSimpleType = "number"
+	ColumnSimpleTypeString   ColumnSimpleType = "string"
+	ColumnSimpleTypeBoolean  ColumnSimpleType = "boolean"
+	ColumnSimpleTypeArray    ColumnSimpleType = "array"
+	ColumnSimpleTypeObject   ColumnSimpleType = "object"
+)
+
 type Cursor struct {
 	Column    string
 	Value     interface{}
 	Direction models.Direction
 }
 
-type Filter struct {
+// DbField shows db column information.
+type DbField struct {
 	// Type is one of: string, number, integer, boolean, date-time
 	// Arrays and objects are ignored for default filter generation
-	Type string `json:"type"`
+	Type ColumnSimpleType `json:"type"`
 	// Db is the corresponding db column name
 	Db       string `json:"db"`
 	Nullable bool   `json:"nullable"`
-}
-
-type DbField struct {
-	Db string `json:"db"`
+	Public   bool   `json:"public"`
 }
 
 func newPointer[T any](v T) *T {
@@ -49,385 +59,225 @@ func (err *XoError) Unwrap() error {
 type TableEntity string
 
 const (
-	TableEntityActivity             TableEntity = "activity"
-	TableEntityCacheDemoTwoWorkItem TableEntity = "cacheDemoTwoWorkItem"
-	TableEntityCacheDemoWorkItem    TableEntity = "cacheDemoWorkItem"
-	TableEntityDemoTwoWorkItem      TableEntity = "demoTwoWorkItem"
-	TableEntityDemoWorkItem         TableEntity = "demoWorkItem"
-	TableEntityEntityNotification   TableEntity = "entityNotification"
-	TableEntityKanbanStep           TableEntity = "kanbanStep"
-	TableEntityMovie                TableEntity = "movie"
-	TableEntityNotification         TableEntity = "notification"
-	TableEntityProject              TableEntity = "project"
-	TableEntityTeam                 TableEntity = "team"
-	TableEntityTimeEntry            TableEntity = "timeEntry"
-	TableEntityUser                 TableEntity = "user"
-	TableEntityUserAPIKey           TableEntity = "userAPIKey"
-	TableEntityUserNotification     TableEntity = "userNotification"
-	TableEntityUserProject          TableEntity = "userProject"
-	TableEntityUserTeam             TableEntity = "userTeam"
-	TableEntityWorkItem             TableEntity = "workItem"
-	TableEntityWorkItemAssignee     TableEntity = "workItemAssignee"
-	TableEntityWorkItemComment      TableEntity = "workItemComment"
-	TableEntityWorkItemTag          TableEntity = "workItemTag"
-	TableEntityWorkItemType         TableEntity = "workItemType"
-	TableEntityWorkItemWorkItemTag  TableEntity = "workItemWorkItemTag"
+	TableEntityActivity             TableEntity = "activities"
+	TableEntityCacheDemoTwoWorkItem TableEntity = "cache__demo_two_work_items"
+	TableEntityCacheDemoWorkItem    TableEntity = "cache__demo_work_items"
+	TableEntityDemoTwoWorkItem      TableEntity = "demo_two_work_items"
+	TableEntityDemoWorkItem         TableEntity = "demo_work_items"
+	TableEntityEntityNotification   TableEntity = "entity_notifications"
+	TableEntityKanbanStep           TableEntity = "kanban_steps"
+	TableEntityMovie                TableEntity = "movies"
+	TableEntityNotification         TableEntity = "notifications"
+	TableEntityProject              TableEntity = "projects"
+	TableEntityTeam                 TableEntity = "teams"
+	TableEntityTimeEntry            TableEntity = "time_entries"
+	TableEntityUser                 TableEntity = "users"
+	TableEntityUserAPIKey           TableEntity = "user_api_keys"
+	TableEntityUserNotification     TableEntity = "user_notifications"
+	TableEntityUserProject          TableEntity = "user_project"
+	TableEntityUserTeam             TableEntity = "user_team"
+	TableEntityWorkItem             TableEntity = "work_items"
+	TableEntityWorkItemAssignee     TableEntity = "work_item_assignee"
+	TableEntityWorkItemComment      TableEntity = "work_item_comments"
+	TableEntityWorkItemTag          TableEntity = "work_item_tags"
+	TableEntityWorkItemType         TableEntity = "work_item_types"
+	TableEntityWorkItemWorkItemTag  TableEntity = "work_item_work_item_tag"
 )
-
-var EntityFilters = map[TableEntity]map[string]Filter{
-	TableEntityActivity: {
-		"activityID":   Filter{Type: "integer", Db: "activity_id", Nullable: false},
-		"deletedAt":    Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
-		"description":  Filter{Type: "string", Db: "description", Nullable: false},
-		"isProductive": Filter{Type: "boolean", Db: "is_productive", Nullable: false},
-		"name":         Filter{Type: "string", Db: "name", Nullable: false},
-		"projectID":    Filter{Type: "integer", Db: "project_id", Nullable: false},
-	},
-	TableEntityCacheDemoTwoWorkItem: {
-		"closedAt":              Filter{Type: "date-time", Db: "closed_at", Nullable: true},
-		"createdAt":             Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"customDateForProject2": Filter{Type: "date-time", Db: "custom_date_for_project_2", Nullable: true},
-		"deletedAt":             Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
-		"description":           Filter{Type: "string", Db: "description", Nullable: false},
-		"kanbanStepID":          Filter{Type: "integer", Db: "kanban_step_id", Nullable: false},
-		"targetDate":            Filter{Type: "date-time", Db: "target_date", Nullable: false},
-		"teamID":                Filter{Type: "integer", Db: "team_id", Nullable: false},
-		"title":                 Filter{Type: "string", Db: "title", Nullable: false},
-		"updatedAt":             Filter{Type: "date-time", Db: "updated_at", Nullable: false},
-		"workItemID":            Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-		"workItemTypeID":        Filter{Type: "integer", Db: "work_item_type_id", Nullable: false},
-	},
-	TableEntityCacheDemoWorkItem: {
-		"closedAt":       Filter{Type: "date-time", Db: "closed_at", Nullable: true},
-		"createdAt":      Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"deletedAt":      Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
-		"description":    Filter{Type: "string", Db: "description", Nullable: false},
-		"kanbanStepID":   Filter{Type: "integer", Db: "kanban_step_id", Nullable: false},
-		"lastMessageAt":  Filter{Type: "date-time", Db: "last_message_at", Nullable: false},
-		"line":           Filter{Type: "string", Db: "line", Nullable: false},
-		"ref":            Filter{Type: "string", Db: "ref", Nullable: false},
-		"reopened":       Filter{Type: "boolean", Db: "reopened", Nullable: false},
-		"targetDate":     Filter{Type: "date-time", Db: "target_date", Nullable: false},
-		"teamID":         Filter{Type: "integer", Db: "team_id", Nullable: false},
-		"title":          Filter{Type: "string", Db: "title", Nullable: false},
-		"updatedAt":      Filter{Type: "date-time", Db: "updated_at", Nullable: false},
-		"workItemID":     Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-		"workItemTypeID": Filter{Type: "integer", Db: "work_item_type_id", Nullable: false},
-	},
-	TableEntityDemoTwoWorkItem: {
-		"customDateForProject2": Filter{Type: "date-time", Db: "custom_date_for_project_2", Nullable: true},
-		"workItemID":            Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-	},
-	TableEntityDemoWorkItem: {
-		"lastMessageAt": Filter{Type: "date-time", Db: "last_message_at", Nullable: false},
-		"line":          Filter{Type: "string", Db: "line", Nullable: false},
-		"ref":           Filter{Type: "string", Db: "ref", Nullable: false},
-		"reopened":      Filter{Type: "boolean", Db: "reopened", Nullable: false},
-		"workItemID":    Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-	},
-	TableEntityEntityNotification: {
-		"createdAt":            Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"entityNotificationID": Filter{Type: "integer", Db: "entity_notification_id", Nullable: false},
-		"id":                   Filter{Type: "string", Db: "id", Nullable: false},
-		"message":              Filter{Type: "string", Db: "message", Nullable: false},
-		"topic":                Filter{Type: "string", Db: "topic", Nullable: false},
-	},
-	TableEntityKanbanStep: {
-		"color":         Filter{Type: "string", Db: "color", Nullable: false},
-		"description":   Filter{Type: "string", Db: "description", Nullable: false},
-		"kanbanStepID":  Filter{Type: "integer", Db: "kanban_step_id", Nullable: false},
-		"name":          Filter{Type: "string", Db: "name", Nullable: false},
-		"projectID":     Filter{Type: "integer", Db: "project_id", Nullable: false},
-		"stepOrder":     Filter{Type: "integer", Db: "step_order", Nullable: false},
-		"timeTrackable": Filter{Type: "boolean", Db: "time_trackable", Nullable: false},
-	},
-	TableEntityMovie: {
-		"movieID":  Filter{Type: "integer", Db: "movie_id", Nullable: false},
-		"synopsis": Filter{Type: "string", Db: "synopsis", Nullable: false},
-		"title":    Filter{Type: "string", Db: "title", Nullable: false},
-		"year":     Filter{Type: "integer", Db: "year", Nullable: false},
-	},
-	TableEntityNotification: {
-		"body":           Filter{Type: "string", Db: "body", Nullable: false},
-		"createdAt":      Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"link":           Filter{Type: "string", Db: "link", Nullable: true},
-		"notificationID": Filter{Type: "integer", Db: "notification_id", Nullable: false},
-		"title":          Filter{Type: "string", Db: "title", Nullable: false},
-	},
-	TableEntityProject: {
-		"createdAt":   Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"description": Filter{Type: "string", Db: "description", Nullable: false},
-		"name":        Filter{Type: "string", Db: "name", Nullable: false},
-		"projectID":   Filter{Type: "integer", Db: "project_id", Nullable: false},
-		"updatedAt":   Filter{Type: "date-time", Db: "updated_at", Nullable: false},
-	},
-	TableEntityTeam: {
-		"createdAt":   Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"description": Filter{Type: "string", Db: "description", Nullable: false},
-		"name":        Filter{Type: "string", Db: "name", Nullable: false},
-		"projectID":   Filter{Type: "integer", Db: "project_id", Nullable: false},
-		"teamID":      Filter{Type: "integer", Db: "team_id", Nullable: false},
-		"updatedAt":   Filter{Type: "date-time", Db: "updated_at", Nullable: false},
-	},
-	TableEntityTimeEntry: {
-		"activityID":      Filter{Type: "integer", Db: "activity_id", Nullable: false},
-		"comment":         Filter{Type: "string", Db: "comment", Nullable: false},
-		"durationMinutes": Filter{Type: "integer", Db: "duration_minutes", Nullable: true},
-		"start":           Filter{Type: "date-time", Db: "start", Nullable: false},
-		"teamID":          Filter{Type: "integer", Db: "team_id", Nullable: true},
-		"timeEntryID":     Filter{Type: "integer", Db: "time_entry_id", Nullable: false},
-		"workItemID":      Filter{Type: "integer", Db: "work_item_id", Nullable: true},
-	},
-	TableEntityUser: {
-		"age":                      Filter{Type: "integer", Db: "age", Nullable: true},
-		"createdAt":                Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"deletedAt":                Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
-		"email":                    Filter{Type: "string", Db: "email", Nullable: false},
-		"firstName":                Filter{Type: "string", Db: "first_name", Nullable: true},
-		"fullName":                 Filter{Type: "string", Db: "full_name", Nullable: true},
-		"hasGlobalNotifications":   Filter{Type: "boolean", Db: "has_global_notifications", Nullable: false},
-		"hasPersonalNotifications": Filter{Type: "boolean", Db: "has_personal_notifications", Nullable: false},
-		"lastName":                 Filter{Type: "string", Db: "last_name", Nullable: true},
-		"updatedAt":                Filter{Type: "date-time", Db: "updated_at", Nullable: false},
-		"username":                 Filter{Type: "string", Db: "username", Nullable: false},
-	},
-	TableEntityUserAPIKey: {
-		"apiKey":    Filter{Type: "string", Db: "api_key", Nullable: false},
-		"expiresOn": Filter{Type: "date-time", Db: "expires_on", Nullable: false},
-	},
-	TableEntityUserNotification: {
-		"notificationID":     Filter{Type: "integer", Db: "notification_id", Nullable: false},
-		"read":               Filter{Type: "boolean", Db: "read", Nullable: false},
-		"userNotificationID": Filter{Type: "integer", Db: "user_notification_id", Nullable: false},
-	},
-	TableEntityUserProject: {
-		"projectID": Filter{Type: "integer", Db: "project_id", Nullable: false},
-	},
-	TableEntityUserTeam: {
-		"teamID": Filter{Type: "integer", Db: "team_id", Nullable: false},
-	},
-	TableEntityWorkItem: {
-		"closedAt":       Filter{Type: "date-time", Db: "closed_at", Nullable: true},
-		"createdAt":      Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"deletedAt":      Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
-		"description":    Filter{Type: "string", Db: "description", Nullable: false},
-		"kanbanStepID":   Filter{Type: "integer", Db: "kanban_step_id", Nullable: false},
-		"targetDate":     Filter{Type: "date-time", Db: "target_date", Nullable: false},
-		"teamID":         Filter{Type: "integer", Db: "team_id", Nullable: false},
-		"title":          Filter{Type: "string", Db: "title", Nullable: false},
-		"updatedAt":      Filter{Type: "date-time", Db: "updated_at", Nullable: false},
-		"workItemID":     Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-		"workItemTypeID": Filter{Type: "integer", Db: "work_item_type_id", Nullable: false},
-	},
-	TableEntityWorkItemAssignee: {
-		"workItemID": Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-	},
-	TableEntityWorkItemComment: {
-		"createdAt":         Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"message":           Filter{Type: "string", Db: "message", Nullable: false},
-		"updatedAt":         Filter{Type: "date-time", Db: "updated_at", Nullable: false},
-		"workItemCommentID": Filter{Type: "integer", Db: "work_item_comment_id", Nullable: false},
-		"workItemID":        Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-	},
-	TableEntityWorkItemTag: {
-		"color":         Filter{Type: "string", Db: "color", Nullable: false},
-		"deletedAt":     Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
-		"description":   Filter{Type: "string", Db: "description", Nullable: false},
-		"name":          Filter{Type: "string", Db: "name", Nullable: false},
-		"projectID":     Filter{Type: "integer", Db: "project_id", Nullable: false},
-		"workItemTagID": Filter{Type: "integer", Db: "work_item_tag_id", Nullable: false},
-	},
-	TableEntityWorkItemType: {
-		"color":          Filter{Type: "string", Db: "color", Nullable: false},
-		"description":    Filter{Type: "string", Db: "description", Nullable: false},
-		"name":           Filter{Type: "string", Db: "name", Nullable: false},
-		"projectID":      Filter{Type: "integer", Db: "project_id", Nullable: false},
-		"workItemTypeID": Filter{Type: "integer", Db: "work_item_type_id", Nullable: false},
-	},
-	TableEntityWorkItemWorkItemTag: {
-		"workItemID":    Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-		"workItemTagID": Filter{Type: "integer", Db: "work_item_tag_id", Nullable: false},
-	},
-}
 
 var EntityFields = map[TableEntity]map[string]DbField{
 	TableEntityActivity: {
-		"activityID":   DbField{Db: "activity_id"},
-		"deletedAt":    DbField{Db: "deleted_at"},
-		"description":  DbField{Db: "description"},
-		"isProductive": DbField{Db: "is_productive"},
-		"name":         DbField{Db: "name"},
-		"projectID":    DbField{Db: "project_id"},
+		"activityID":   DbField{Type: ColumnSimpleTypeInteger, Db: "activity_id", Nullable: false, Public: true},
+		"deletedAt":    DbField{Type: ColumnSimpleTypeDateTime, Db: "deleted_at", Nullable: true, Public: true},
+		"description":  DbField{Type: ColumnSimpleTypeString, Db: "description", Nullable: false, Public: true},
+		"isProductive": DbField{Type: ColumnSimpleTypeBoolean, Db: "is_productive", Nullable: false, Public: true},
+		"name":         DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: false, Public: true},
+		"projectID":    DbField{Type: ColumnSimpleTypeInteger, Db: "project_id", Nullable: false, Public: true},
 	},
 	TableEntityCacheDemoTwoWorkItem: {
-		"closedAt":              DbField{Db: "closed_at"},
-		"createdAt":             DbField{Db: "created_at"},
-		"customDateForProject2": DbField{Db: "custom_date_for_project_2"},
-		"deletedAt":             DbField{Db: "deleted_at"},
-		"description":           DbField{Db: "description"},
-		"kanbanStepID":          DbField{Db: "kanban_step_id"},
-		"targetDate":            DbField{Db: "target_date"},
-		"teamID":                DbField{Db: "team_id"},
-		"title":                 DbField{Db: "title"},
-		"updatedAt":             DbField{Db: "updated_at"},
-		"workItemID":            DbField{Db: "work_item_id"},
-		"workItemTypeID":        DbField{Db: "work_item_type_id"},
+		"closedAt":              DbField{Type: ColumnSimpleTypeDateTime, Db: "closed_at", Nullable: true, Public: true},
+		"createdAt":             DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"customDateForProject2": DbField{Type: ColumnSimpleTypeDateTime, Db: "custom_date_for_project_2", Nullable: true, Public: true},
+		"deletedAt":             DbField{Type: ColumnSimpleTypeDateTime, Db: "deleted_at", Nullable: true, Public: true},
+		"description":           DbField{Type: ColumnSimpleTypeString, Db: "description", Nullable: false, Public: true},
+		"kanbanStepID":          DbField{Type: ColumnSimpleTypeInteger, Db: "kanban_step_id", Nullable: false, Public: true},
+		"metadata":              DbField{Type: ColumnSimpleTypeObject, Db: "metadata", Nullable: false, Public: true},
+		"targetDate":            DbField{Type: ColumnSimpleTypeDateTime, Db: "target_date", Nullable: false, Public: true},
+		"teamID":                DbField{Type: ColumnSimpleTypeInteger, Db: "team_id", Nullable: false, Public: true},
+		"title":                 DbField{Type: ColumnSimpleTypeString, Db: "title", Nullable: false, Public: true},
+		"updatedAt":             DbField{Type: ColumnSimpleTypeDateTime, Db: "updated_at", Nullable: false, Public: true},
+		"workItemID":            DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
+		"workItemTypeID":        DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_type_id", Nullable: false, Public: true},
 	},
 	TableEntityCacheDemoWorkItem: {
-		"closedAt":       DbField{Db: "closed_at"},
-		"createdAt":      DbField{Db: "created_at"},
-		"deletedAt":      DbField{Db: "deleted_at"},
-		"description":    DbField{Db: "description"},
-		"kanbanStepID":   DbField{Db: "kanban_step_id"},
-		"lastMessageAt":  DbField{Db: "last_message_at"},
-		"line":           DbField{Db: "line"},
-		"ref":            DbField{Db: "ref"},
-		"reopened":       DbField{Db: "reopened"},
-		"targetDate":     DbField{Db: "target_date"},
-		"teamID":         DbField{Db: "team_id"},
-		"title":          DbField{Db: "title"},
-		"updatedAt":      DbField{Db: "updated_at"},
-		"workItemID":     DbField{Db: "work_item_id"},
-		"workItemTypeID": DbField{Db: "work_item_type_id"},
+		"closedAt":       DbField{Type: ColumnSimpleTypeDateTime, Db: "closed_at", Nullable: true, Public: true},
+		"createdAt":      DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"deletedAt":      DbField{Type: ColumnSimpleTypeDateTime, Db: "deleted_at", Nullable: true, Public: true},
+		"description":    DbField{Type: ColumnSimpleTypeString, Db: "description", Nullable: false, Public: true},
+		"kanbanStepID":   DbField{Type: ColumnSimpleTypeInteger, Db: "kanban_step_id", Nullable: false, Public: true},
+		"lastMessageAt":  DbField{Type: ColumnSimpleTypeDateTime, Db: "last_message_at", Nullable: false, Public: true},
+		"line":           DbField{Type: ColumnSimpleTypeString, Db: "line", Nullable: false, Public: true},
+		"metadata":       DbField{Type: ColumnSimpleTypeObject, Db: "metadata", Nullable: false, Public: true},
+		"ref":            DbField{Type: ColumnSimpleTypeString, Db: "ref", Nullable: false, Public: true},
+		"reopened":       DbField{Type: ColumnSimpleTypeBoolean, Db: "reopened", Nullable: false, Public: true},
+		"targetDate":     DbField{Type: ColumnSimpleTypeDateTime, Db: "target_date", Nullable: false, Public: true},
+		"teamID":         DbField{Type: ColumnSimpleTypeInteger, Db: "team_id", Nullable: false, Public: true},
+		"title":          DbField{Type: ColumnSimpleTypeString, Db: "title", Nullable: false, Public: true},
+		"updatedAt":      DbField{Type: ColumnSimpleTypeDateTime, Db: "updated_at", Nullable: false, Public: true},
+		"workItemID":     DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
+		"workItemTypeID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_type_id", Nullable: false, Public: true},
 	},
 	TableEntityDemoTwoWorkItem: {
-		"customDateForProject2": DbField{Db: "custom_date_for_project_2"},
-		"workItemID":            DbField{Db: "work_item_id"},
+		"customDateForProject2": DbField{Type: ColumnSimpleTypeDateTime, Db: "custom_date_for_project_2", Nullable: true, Public: true},
+		"workItemID":            DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
 	},
 	TableEntityDemoWorkItem: {
-		"lastMessageAt": DbField{Db: "last_message_at"},
-		"line":          DbField{Db: "line"},
-		"ref":           DbField{Db: "ref"},
-		"reopened":      DbField{Db: "reopened"},
-		"workItemID":    DbField{Db: "work_item_id"},
+		"lastMessageAt": DbField{Type: ColumnSimpleTypeDateTime, Db: "last_message_at", Nullable: false, Public: true},
+		"line":          DbField{Type: ColumnSimpleTypeString, Db: "line", Nullable: false, Public: true},
+		"ref":           DbField{Type: ColumnSimpleTypeString, Db: "ref", Nullable: false, Public: true},
+		"reopened":      DbField{Type: ColumnSimpleTypeBoolean, Db: "reopened", Nullable: false, Public: true},
+		"workItemID":    DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
 	},
 	TableEntityEntityNotification: {
-		"createdAt":            DbField{Db: "created_at"},
-		"entityNotificationID": DbField{Db: "entity_notification_id"},
-		"id":                   DbField{Db: "id"},
-		"message":              DbField{Db: "message"},
-		"topic":                DbField{Db: "topic"},
+		"createdAt":            DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"entityNotificationID": DbField{Type: ColumnSimpleTypeInteger, Db: "entity_notification_id", Nullable: false, Public: true},
+		"id":                   DbField{Type: ColumnSimpleTypeString, Db: "id", Nullable: false, Public: true},
+		"message":              DbField{Type: ColumnSimpleTypeString, Db: "message", Nullable: false, Public: true},
+		"topic":                DbField{Type: ColumnSimpleTypeString, Db: "topic", Nullable: false, Public: true},
 	},
 	TableEntityKanbanStep: {
-		"color":         DbField{Db: "color"},
-		"description":   DbField{Db: "description"},
-		"kanbanStepID":  DbField{Db: "kanban_step_id"},
-		"name":          DbField{Db: "name"},
-		"projectID":     DbField{Db: "project_id"},
-		"stepOrder":     DbField{Db: "step_order"},
-		"timeTrackable": DbField{Db: "time_trackable"},
+		"color":         DbField{Type: ColumnSimpleTypeString, Db: "color", Nullable: false, Public: true},
+		"description":   DbField{Type: ColumnSimpleTypeString, Db: "description", Nullable: false, Public: true},
+		"kanbanStepID":  DbField{Type: ColumnSimpleTypeInteger, Db: "kanban_step_id", Nullable: false, Public: true},
+		"name":          DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: false, Public: true},
+		"projectID":     DbField{Type: ColumnSimpleTypeInteger, Db: "project_id", Nullable: false, Public: true},
+		"stepOrder":     DbField{Type: ColumnSimpleTypeInteger, Db: "step_order", Nullable: false, Public: true},
+		"timeTrackable": DbField{Type: ColumnSimpleTypeBoolean, Db: "time_trackable", Nullable: false, Public: true},
 	},
 	TableEntityMovie: {
-		"movieID":  DbField{Db: "movie_id"},
-		"synopsis": DbField{Db: "synopsis"},
-		"title":    DbField{Db: "title"},
-		"year":     DbField{Db: "year"},
+		"movieID":  DbField{Type: ColumnSimpleTypeInteger, Db: "movie_id", Nullable: false, Public: true},
+		"synopsis": DbField{Type: ColumnSimpleTypeString, Db: "synopsis", Nullable: false, Public: true},
+		"title":    DbField{Type: ColumnSimpleTypeString, Db: "title", Nullable: false, Public: true},
+		"year":     DbField{Type: ColumnSimpleTypeInteger, Db: "year", Nullable: false, Public: true},
 	},
 	TableEntityNotification: {
-		"body":           DbField{Db: "body"},
-		"createdAt":      DbField{Db: "created_at"},
-		"link":           DbField{Db: "link"},
-		"notificationID": DbField{Db: "notification_id"},
-		"receiverRank":   DbField{Db: "receiver_rank"},
-		"title":          DbField{Db: "title"},
+		"body":           DbField{Type: ColumnSimpleTypeString, Db: "body", Nullable: false, Public: true},
+		"createdAt":      DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"labels":         DbField{Type: ColumnSimpleTypeArray, Db: "labels", Nullable: false, Public: true},
+		"link":           DbField{Type: ColumnSimpleTypeString, Db: "link", Nullable: true, Public: true},
+		"notificationID": DbField{Type: ColumnSimpleTypeInteger, Db: "notification_id", Nullable: false, Public: true},
+		"receiver":       DbField{Type: ColumnSimpleTypeString, Db: "receiver", Nullable: true, Public: true},
+		"receiverRank":   DbField{Type: ColumnSimpleTypeInteger, Db: "receiver_rank", Nullable: true, Public: true},
+		"sender":         DbField{Type: ColumnSimpleTypeString, Db: "sender", Nullable: false, Public: true},
+		"title":          DbField{Type: ColumnSimpleTypeString, Db: "title", Nullable: false, Public: true},
 	},
 	TableEntityProject: {
-		"createdAt":          DbField{Db: "created_at"},
-		"description":        DbField{Db: "description"},
-		"name":               DbField{Db: "name"},
-		"projectID":          DbField{Db: "project_id"},
-		"updatedAt":          DbField{Db: "updated_at"},
-		"workItemsTableName": DbField{Db: "work_items_table_name"},
+		"boardConfig":        DbField{Type: ColumnSimpleTypeObject, Db: "board_config", Nullable: false, Public: true},
+		"createdAt":          DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"description":        DbField{Type: ColumnSimpleTypeString, Db: "description", Nullable: false, Public: true},
+		"name":               DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: false, Public: true},
+		"projectID":          DbField{Type: ColumnSimpleTypeInteger, Db: "project_id", Nullable: false, Public: true},
+		"updatedAt":          DbField{Type: ColumnSimpleTypeDateTime, Db: "updated_at", Nullable: false, Public: true},
+		"workItemsTableName": DbField{Type: ColumnSimpleTypeString, Db: "work_items_table_name", Nullable: false, Public: true},
 	},
 	TableEntityTeam: {
-		"createdAt":   DbField{Db: "created_at"},
-		"description": DbField{Db: "description"},
-		"name":        DbField{Db: "name"},
-		"projectID":   DbField{Db: "project_id"},
-		"teamID":      DbField{Db: "team_id"},
-		"updatedAt":   DbField{Db: "updated_at"},
+		"createdAt":   DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"description": DbField{Type: ColumnSimpleTypeString, Db: "description", Nullable: false, Public: true},
+		"name":        DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: false, Public: true},
+		"projectID":   DbField{Type: ColumnSimpleTypeInteger, Db: "project_id", Nullable: false, Public: true},
+		"teamID":      DbField{Type: ColumnSimpleTypeInteger, Db: "team_id", Nullable: false, Public: true},
+		"updatedAt":   DbField{Type: ColumnSimpleTypeDateTime, Db: "updated_at", Nullable: false, Public: true},
 	},
 	TableEntityTimeEntry: {
-		"activityID":      DbField{Db: "activity_id"},
-		"comment":         DbField{Db: "comment"},
-		"durationMinutes": DbField{Db: "duration_minutes"},
-		"start":           DbField{Db: "start"},
-		"teamID":          DbField{Db: "team_id"},
-		"timeEntryID":     DbField{Db: "time_entry_id"},
-		"workItemID":      DbField{Db: "work_item_id"},
+		"activityID":      DbField{Type: ColumnSimpleTypeInteger, Db: "activity_id", Nullable: false, Public: true},
+		"comment":         DbField{Type: ColumnSimpleTypeString, Db: "comment", Nullable: false, Public: true},
+		"durationMinutes": DbField{Type: ColumnSimpleTypeInteger, Db: "duration_minutes", Nullable: true, Public: true},
+		"start":           DbField{Type: ColumnSimpleTypeDateTime, Db: "start", Nullable: false, Public: true},
+		"teamID":          DbField{Type: ColumnSimpleTypeInteger, Db: "team_id", Nullable: true, Public: true},
+		"timeEntryID":     DbField{Type: ColumnSimpleTypeInteger, Db: "time_entry_id", Nullable: false, Public: true},
+		"userID":          DbField{Type: ColumnSimpleTypeString, Db: "user_id", Nullable: false, Public: true},
+		"workItemID":      DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: true, Public: true},
 	},
 	TableEntityUser: {
-		"age":                      DbField{Db: "age"},
-		"apiKeyID":                 DbField{Db: "api_key_id"},
-		"createdAt":                DbField{Db: "created_at"},
-		"deletedAt":                DbField{Db: "deleted_at"},
-		"email":                    DbField{Db: "email"},
-		"externalID":               DbField{Db: "external_id"},
-		"firstName":                DbField{Db: "first_name"},
-		"fullName":                 DbField{Db: "full_name"},
-		"hasGlobalNotifications":   DbField{Db: "has_global_notifications"},
-		"hasPersonalNotifications": DbField{Db: "has_personal_notifications"},
-		"lastName":                 DbField{Db: "last_name"},
-		"roleRank":                 DbField{Db: "role_rank"},
-		"updatedAt":                DbField{Db: "updated_at"},
-		"username":                 DbField{Db: "username"},
+		"age":                      DbField{Type: ColumnSimpleTypeInteger, Db: "age", Nullable: true, Public: true},
+		"apiKeyID":                 DbField{Type: ColumnSimpleTypeInteger, Db: "api_key_id", Nullable: true, Public: true},
+		"createdAt":                DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"deletedAt":                DbField{Type: ColumnSimpleTypeDateTime, Db: "deleted_at", Nullable: true, Public: true},
+		"email":                    DbField{Type: ColumnSimpleTypeString, Db: "email", Nullable: false, Public: true},
+		"externalID":               DbField{Type: ColumnSimpleTypeString, Db: "external_id", Nullable: false, Public: true},
+		"firstName":                DbField{Type: ColumnSimpleTypeString, Db: "first_name", Nullable: true, Public: true},
+		"fullName":                 DbField{Type: ColumnSimpleTypeString, Db: "full_name", Nullable: true, Public: true},
+		"hasGlobalNotifications":   DbField{Type: ColumnSimpleTypeBoolean, Db: "has_global_notifications", Nullable: false, Public: true},
+		"hasPersonalNotifications": DbField{Type: ColumnSimpleTypeBoolean, Db: "has_personal_notifications", Nullable: false, Public: true},
+		"lastName":                 DbField{Type: ColumnSimpleTypeString, Db: "last_name", Nullable: true, Public: true},
+		"roleRank":                 DbField{Type: ColumnSimpleTypeInteger, Db: "role_rank", Nullable: false, Public: true},
+		"scopes":                   DbField{Type: ColumnSimpleTypeArray, Db: "scopes", Nullable: false, Public: true},
+		"updatedAt":                DbField{Type: ColumnSimpleTypeDateTime, Db: "updated_at", Nullable: false, Public: true},
+		"userID":                   DbField{Type: ColumnSimpleTypeString, Db: "user_id", Nullable: false, Public: true},
+		"username":                 DbField{Type: ColumnSimpleTypeString, Db: "username", Nullable: false, Public: true},
 	},
 	TableEntityUserAPIKey: {
-		"apiKey":       DbField{Db: "api_key"},
-		"expiresOn":    DbField{Db: "expires_on"},
-		"userAPIKeyID": DbField{Db: "user_api_key_id"},
+		"apiKey":       DbField{Type: ColumnSimpleTypeString, Db: "api_key", Nullable: false, Public: true},
+		"expiresOn":    DbField{Type: ColumnSimpleTypeDateTime, Db: "expires_on", Nullable: false, Public: true},
+		"userAPIKeyID": DbField{Type: ColumnSimpleTypeInteger, Db: "user_api_key_id", Nullable: false, Public: true},
+		"userID":       DbField{Type: ColumnSimpleTypeString, Db: "user_id", Nullable: false, Public: true},
 	},
 	TableEntityUserNotification: {
-		"notificationID":     DbField{Db: "notification_id"},
-		"read":               DbField{Db: "read"},
-		"userNotificationID": DbField{Db: "user_notification_id"},
+		"notificationID":     DbField{Type: ColumnSimpleTypeInteger, Db: "notification_id", Nullable: false, Public: true},
+		"read":               DbField{Type: ColumnSimpleTypeBoolean, Db: "read", Nullable: false, Public: true},
+		"userID":             DbField{Type: ColumnSimpleTypeString, Db: "user_id", Nullable: false, Public: true},
+		"userNotificationID": DbField{Type: ColumnSimpleTypeInteger, Db: "user_notification_id", Nullable: false, Public: true},
 	},
 	TableEntityUserProject: {
-		"projectID": DbField{Db: "project_id"},
+		"member":    DbField{Type: ColumnSimpleTypeString, Db: "member", Nullable: false, Public: true},
+		"projectID": DbField{Type: ColumnSimpleTypeInteger, Db: "project_id", Nullable: false, Public: true},
 	},
 	TableEntityUserTeam: {
-		"teamID": DbField{Db: "team_id"},
+		"member": DbField{Type: ColumnSimpleTypeString, Db: "member", Nullable: false, Public: true},
+		"teamID": DbField{Type: ColumnSimpleTypeInteger, Db: "team_id", Nullable: false, Public: true},
 	},
 	TableEntityWorkItem: {
-		"closedAt":       DbField{Db: "closed_at"},
-		"createdAt":      DbField{Db: "created_at"},
-		"deletedAt":      DbField{Db: "deleted_at"},
-		"description":    DbField{Db: "description"},
-		"kanbanStepID":   DbField{Db: "kanban_step_id"},
-		"targetDate":     DbField{Db: "target_date"},
-		"teamID":         DbField{Db: "team_id"},
-		"title":          DbField{Db: "title"},
-		"updatedAt":      DbField{Db: "updated_at"},
-		"workItemID":     DbField{Db: "work_item_id"},
-		"workItemTypeID": DbField{Db: "work_item_type_id"},
+		"closedAt":       DbField{Type: ColumnSimpleTypeDateTime, Db: "closed_at", Nullable: true, Public: true},
+		"createdAt":      DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"deletedAt":      DbField{Type: ColumnSimpleTypeDateTime, Db: "deleted_at", Nullable: true, Public: true},
+		"description":    DbField{Type: ColumnSimpleTypeString, Db: "description", Nullable: false, Public: true},
+		"kanbanStepID":   DbField{Type: ColumnSimpleTypeInteger, Db: "kanban_step_id", Nullable: false, Public: true},
+		"metadata":       DbField{Type: ColumnSimpleTypeObject, Db: "metadata", Nullable: false, Public: true},
+		"targetDate":     DbField{Type: ColumnSimpleTypeDateTime, Db: "target_date", Nullable: false, Public: true},
+		"teamID":         DbField{Type: ColumnSimpleTypeInteger, Db: "team_id", Nullable: false, Public: true},
+		"title":          DbField{Type: ColumnSimpleTypeString, Db: "title", Nullable: false, Public: true},
+		"updatedAt":      DbField{Type: ColumnSimpleTypeDateTime, Db: "updated_at", Nullable: false, Public: true},
+		"workItemID":     DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
+		"workItemTypeID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_type_id", Nullable: false, Public: true},
 	},
 	TableEntityWorkItemAssignee: {
-		"workItemID": DbField{Db: "work_item_id"},
+		"assignee":   DbField{Type: ColumnSimpleTypeString, Db: "assignee", Nullable: false, Public: true},
+		"workItemID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
 	},
 	TableEntityWorkItemComment: {
-		"createdAt":         DbField{Db: "created_at"},
-		"message":           DbField{Db: "message"},
-		"updatedAt":         DbField{Db: "updated_at"},
-		"workItemCommentID": DbField{Db: "work_item_comment_id"},
-		"workItemID":        DbField{Db: "work_item_id"},
+		"createdAt":         DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"message":           DbField{Type: ColumnSimpleTypeString, Db: "message", Nullable: false, Public: true},
+		"updatedAt":         DbField{Type: ColumnSimpleTypeDateTime, Db: "updated_at", Nullable: false, Public: true},
+		"userID":            DbField{Type: ColumnSimpleTypeString, Db: "user_id", Nullable: false, Public: true},
+		"workItemCommentID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_comment_id", Nullable: false, Public: true},
+		"workItemID":        DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
 	},
 	TableEntityWorkItemTag: {
-		"color":         DbField{Db: "color"},
-		"deletedAt":     DbField{Db: "deleted_at"},
-		"description":   DbField{Db: "description"},
-		"name":          DbField{Db: "name"},
-		"projectID":     DbField{Db: "project_id"},
-		"workItemTagID": DbField{Db: "work_item_tag_id"},
+		"color":         DbField{Type: ColumnSimpleTypeString, Db: "color", Nullable: false, Public: true},
+		"deletedAt":     DbField{Type: ColumnSimpleTypeDateTime, Db: "deleted_at", Nullable: true, Public: true},
+		"description":   DbField{Type: ColumnSimpleTypeString, Db: "description", Nullable: false, Public: true},
+		"name":          DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: false, Public: true},
+		"projectID":     DbField{Type: ColumnSimpleTypeInteger, Db: "project_id", Nullable: false, Public: true},
+		"workItemTagID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_tag_id", Nullable: false, Public: true},
 	},
 	TableEntityWorkItemType: {
-		"color":          DbField{Db: "color"},
-		"description":    DbField{Db: "description"},
-		"name":           DbField{Db: "name"},
-		"projectID":      DbField{Db: "project_id"},
-		"workItemTypeID": DbField{Db: "work_item_type_id"},
+		"color":          DbField{Type: ColumnSimpleTypeString, Db: "color", Nullable: false, Public: true},
+		"description":    DbField{Type: ColumnSimpleTypeString, Db: "description", Nullable: false, Public: true},
+		"name":           DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: false, Public: true},
+		"projectID":      DbField{Type: ColumnSimpleTypeInteger, Db: "project_id", Nullable: false, Public: true},
+		"workItemTypeID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_type_id", Nullable: false, Public: true},
 	},
 	TableEntityWorkItemWorkItemTag: {
-		"workItemID":    DbField{Db: "work_item_id"},
-		"workItemTagID": DbField{Db: "work_item_tag_id"},
+		"workItemID":    DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
+		"workItemTagID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_tag_id", Nullable: false, Public: true},
 	},
 }

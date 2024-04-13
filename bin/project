@@ -974,6 +974,7 @@ x.gen.frontend() {
     deps=(
       "$orval_config"
       "frontend/src/react-query.ts"
+      "frontend/src/react-query.default.ts"
       "frontend/scripts/"
       "frontend/package.json"
     )

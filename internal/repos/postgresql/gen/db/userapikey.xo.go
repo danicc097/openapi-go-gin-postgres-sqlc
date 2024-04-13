@@ -289,7 +289,7 @@ func (uak *UserAPIKey) Delete(ctx context.Context, db DB) error {
 
 // UserAPIKeyPaginated returns a cursor-paginated list of UserAPIKey.
 // At least one cursor is required.
-func UserAPIKeyPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
+func UserAPIKeyPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...UserAPIKeySelectConfigOption) ([]UserAPIKey, error) {
 	c := &UserAPIKeySelectConfig{joins: UserAPIKeyJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -300,23 +300,21 @@ func UserAPIKeyPaginated(ctx context.Context, db DB, cursors models.PaginationCu
 		o(c)
 	}
 
-	for _, cursor := range cursors {
-		if cursor.Value == nil {
+	if cursor.Value == nil {
 
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-		field, ok := EntityFields[TableEntityUserAPIKey][cursor.Column]
-		if !ok {
-			return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/cursor: %w", &XoError{Entity: "User api key", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
-
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("user_api_keys.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
 	}
+	field, ok := EntityFields[TableEntityUserAPIKey][cursor.Column]
+	if !ok {
+		return nil, logerror(fmt.Errorf("UserAPIKey/Paginated/cursor: %w", &XoError{Entity: "User api key", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+	}
+
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("user_api_keys.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+	c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
 	paramStart := 0 // all filters will come from the user
 	nth := func() string {

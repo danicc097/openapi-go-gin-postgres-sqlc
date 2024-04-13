@@ -27,7 +27,7 @@ export const getUpdateWorkItemTagResponseMock = (overrideResponse: any = {}): Wo
 
 export const getCreateWorkItemTagMockHandler = (overrideResponse?: WorkItemTag) => {
   return http.post('*/project/:projectName/work-item-tag/', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getCreateWorkItemTagResponseMock()),
       {
         status: 200,
@@ -41,7 +41,7 @@ export const getCreateWorkItemTagMockHandler = (overrideResponse?: WorkItemTag) 
 
 export const getGetWorkItemTagMockHandler = (overrideResponse?: WorkItemTag) => {
   return http.get('*/work-item-tag/:workItemTagID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetWorkItemTagResponseMock()),
       {
         status: 200,
@@ -55,7 +55,7 @@ export const getGetWorkItemTagMockHandler = (overrideResponse?: WorkItemTag) => 
 
 export const getUpdateWorkItemTagMockHandler = (overrideResponse?: WorkItemTag) => {
   return http.patch('*/work-item-tag/:workItemTagID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getUpdateWorkItemTagResponseMock()),
       {
         status: 200,
@@ -69,7 +69,7 @@ export const getUpdateWorkItemTagMockHandler = (overrideResponse?: WorkItemTag) 
 
 export const getDeleteWorkItemTagMockHandler = () => {
   return http.delete('*/work-item-tag/:workItemTagID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(null,
       {
         status: 200,

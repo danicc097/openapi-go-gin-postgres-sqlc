@@ -4,6 +4,4 @@ package got
 
 type XoTestsCacheTableEntity string
 
-var XoTestsCacheEntityFilters = map[XoTestsCacheTableEntity]map[string]Filter{}
-
 var XoTestsCacheEntityFields = map[XoTestsCacheTableEntity]map[string]DbField{}

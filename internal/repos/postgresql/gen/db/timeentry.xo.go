@@ -402,7 +402,7 @@ func (te *TimeEntry) Delete(ctx context.Context, db DB) error {
 
 // TimeEntryPaginated returns a cursor-paginated list of TimeEntry.
 // At least one cursor is required.
-func TimeEntryPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
+func TimeEntryPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...TimeEntrySelectConfigOption) ([]TimeEntry, error) {
 	c := &TimeEntrySelectConfig{joins: TimeEntryJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -413,23 +413,21 @@ func TimeEntryPaginated(ctx context.Context, db DB, cursors models.PaginationCur
 		o(c)
 	}
 
-	for _, cursor := range cursors {
-		if cursor.Value == nil {
+	if cursor.Value == nil {
 
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-		field, ok := EntityFields[TableEntityTimeEntry][cursor.Column]
-		if !ok {
-			return nil, logerror(fmt.Errorf("TimeEntry/Paginated/cursor: %w", &XoError{Entity: "Time entry", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
-
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("time_entries.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
 	}
+	field, ok := EntityFields[TableEntityTimeEntry][cursor.Column]
+	if !ok {
+		return nil, logerror(fmt.Errorf("TimeEntry/Paginated/cursor: %w", &XoError{Entity: "Time entry", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+	}
+
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("time_entries.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+	c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
 	paramStart := 0 // all filters will come from the user
 	nth := func() string {

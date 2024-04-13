@@ -13,5 +13,5 @@ export interface PaginationCursor {
   column: string
   direction: Direction
   /** represents a cursor value */
-  value: PaginationCursorValue
+  value?: PaginationCursorValue
 }

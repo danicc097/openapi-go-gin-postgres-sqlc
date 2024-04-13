@@ -96,10 +96,10 @@ import {
   WorkItemBase,
   PaginationFilterPrimitive,
   PaginationFilterArray,
+  AnyValue,
   PaginationFilter,
   Pagination,
   PaginationItems,
-  PaginationCursors,
   PaginationCursor,
   GetPaginatedUsersQueryParameters,
   PaginationFilterModes,
@@ -1171,6 +1171,18 @@ export const PaginationFilterArrayDecoder: Decoder<PaginationFilterArray> = {
     return validateJson(json, schema, PaginationFilterArrayDecoder.definitionName)
   },
 }
+export const AnyValueDecoder: Decoder<AnyValue> = {
+  definitionName: 'AnyValue',
+  schemaRef: '#/definitions/AnyValue',
+
+  decode(json: unknown): AnyValue {
+    const schema = ajv.getSchema(AnyValueDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${AnyValueDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, AnyValueDecoder.definitionName)
+  },
+}
 export const PaginationFilterDecoder: Decoder<PaginationFilter> = {
   definitionName: 'PaginationFilter',
   schemaRef: '#/definitions/PaginationFilter',
@@ -1205,18 +1217,6 @@ export const PaginationItemsDecoder: Decoder<PaginationItems> = {
       throw new Error(`Schema ${PaginationItemsDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, PaginationItemsDecoder.definitionName)
-  },
-}
-export const PaginationCursorsDecoder: Decoder<PaginationCursors> = {
-  definitionName: 'PaginationCursors',
-  schemaRef: '#/definitions/PaginationCursors',
-
-  decode(json: unknown): PaginationCursors {
-    const schema = ajv.getSchema(PaginationCursorsDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${PaginationCursorsDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, PaginationCursorsDecoder.definitionName)
   },
 }
 export const PaginationCursorDecoder: Decoder<PaginationCursor> = {

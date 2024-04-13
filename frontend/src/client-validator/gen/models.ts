@@ -127,7 +127,6 @@ export type PaginationFilterModes =
   | 'notEquals'
   | 'startsWith'
 export type PaginationFilter = PaginationFilterPrimitive | PaginationFilterArray
-export type PaginationCursors = PaginationCursor[]
 
 export interface Activity {
   activityID: number
@@ -623,6 +622,10 @@ export interface PaginationFilterArray {
   filterMode: PaginationFilterModes
   value?: (string | null)[] | null
 }
+/**
+ * represents any value, including `null`
+ */
+export interface AnyValue {}
 export interface Pagination {
   filter?: PaginationFilter
   sort?: Direction
@@ -638,7 +641,7 @@ export interface PaginationCursor {
   /**
    * represents a cursor value
    */
-  value: {}
+  value?: {}
   /**
    * represents the JSON name of the db column
    */
@@ -647,7 +650,6 @@ export interface PaginationCursor {
 export interface GetPaginatedUsersQueryParameters {
   role?: Role
   items?: PaginationItems
-  cursors: PaginationCursors
 }
 export interface DbCacheDemoWorkItemJoins {
   assignees: boolean

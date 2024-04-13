@@ -557,7 +557,7 @@ func (cdtwi *CacheDemoTwoWorkItem) Restore(ctx context.Context, db DB) (*CacheDe
 
 // CacheDemoTwoWorkItemPaginated returns a cursor-paginated list of CacheDemoTwoWorkItem.
 // At least one cursor is required.
-func CacheDemoTwoWorkItemPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...CacheDemoTwoWorkItemSelectConfigOption) ([]CacheDemoTwoWorkItem, error) {
+func CacheDemoTwoWorkItemPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...CacheDemoTwoWorkItemSelectConfigOption) ([]CacheDemoTwoWorkItem, error) {
 	c := &CacheDemoTwoWorkItemSelectConfig{deletedAt: " null ", joins: CacheDemoTwoWorkItemJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -568,23 +568,21 @@ func CacheDemoTwoWorkItemPaginated(ctx context.Context, db DB, cursors models.Pa
 		o(c)
 	}
 
-	for _, cursor := range cursors {
-		if cursor.Value == nil {
+	if cursor.Value == nil {
 
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-		field, ok := EntityFields[TableEntityCacheDemoTwoWorkItem][cursor.Column]
-		if !ok {
-			return nil, logerror(fmt.Errorf("CacheDemoTwoWorkItem/Paginated/cursor: %w", &XoError{Entity: "Cache  demo two work item", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
-
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("cache__demo_two_work_items.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
 	}
+	field, ok := EntityFields[TableEntityCacheDemoTwoWorkItem][cursor.Column]
+	if !ok {
+		return nil, logerror(fmt.Errorf("CacheDemoTwoWorkItem/Paginated/cursor: %w", &XoError{Entity: "Cache  demo two work item", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+	}
+
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("cache__demo_two_work_items.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+	c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
 	paramStart := 0 // all filters will come from the user
 	nth := func() string {

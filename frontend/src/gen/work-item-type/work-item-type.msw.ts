@@ -27,7 +27,7 @@ export const getUpdateWorkItemTypeResponseMock = (overrideResponse: any = {}): W
 
 export const getCreateWorkItemTypeMockHandler = (overrideResponse?: WorkItemType) => {
   return http.post('*/project/:projectName/work-item-type/', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getCreateWorkItemTypeResponseMock()),
       {
         status: 200,
@@ -41,7 +41,7 @@ export const getCreateWorkItemTypeMockHandler = (overrideResponse?: WorkItemType
 
 export const getGetWorkItemTypeMockHandler = (overrideResponse?: WorkItemType) => {
   return http.get('*/work-item-type/:workItemTypeID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetWorkItemTypeResponseMock()),
       {
         status: 200,
@@ -55,7 +55,7 @@ export const getGetWorkItemTypeMockHandler = (overrideResponse?: WorkItemType) =
 
 export const getUpdateWorkItemTypeMockHandler = (overrideResponse?: WorkItemType) => {
   return http.patch('*/work-item-type/:workItemTypeID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getUpdateWorkItemTypeResponseMock()),
       {
         status: 200,
@@ -69,7 +69,7 @@ export const getUpdateWorkItemTypeMockHandler = (overrideResponse?: WorkItemType
 
 export const getDeleteWorkItemTypeMockHandler = () => {
   return http.delete('*/work-item-type/:workItemTypeID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(null,
       {
         status: 200,

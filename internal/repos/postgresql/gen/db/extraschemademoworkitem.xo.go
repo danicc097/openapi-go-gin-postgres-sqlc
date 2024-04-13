@@ -254,7 +254,7 @@ func (esdwi *ExtraSchemaDemoWorkItem) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaDemoWorkItemPaginated returns a cursor-paginated list of ExtraSchemaDemoWorkItem.
 // At least one cursor is required.
-func ExtraSchemaDemoWorkItemPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaDemoWorkItemSelectConfigOption) ([]ExtraSchemaDemoWorkItem, error) {
+func ExtraSchemaDemoWorkItemPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...ExtraSchemaDemoWorkItemSelectConfigOption) ([]ExtraSchemaDemoWorkItem, error) {
 	c := &ExtraSchemaDemoWorkItemSelectConfig{joins: ExtraSchemaDemoWorkItemJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -265,23 +265,21 @@ func ExtraSchemaDemoWorkItemPaginated(ctx context.Context, db DB, cursors models
 		o(c)
 	}
 
-	for _, cursor := range cursors {
-		if cursor.Value == nil {
+	if cursor.Value == nil {
 
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaDemoWorkItem][cursor.Column]
-		if !ok {
-			return nil, logerror(fmt.Errorf("ExtraSchemaDemoWorkItem/Paginated/cursor: %w", &XoError{Entity: "Demo work item", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
-
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("demo_work_items.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
 	}
+	field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaDemoWorkItem][cursor.Column]
+	if !ok {
+		return nil, logerror(fmt.Errorf("ExtraSchemaDemoWorkItem/Paginated/cursor: %w", &XoError{Entity: "Demo work item", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+	}
+
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("demo_work_items.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+	c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
 	paramStart := 0 // all filters will come from the user
 	nth := func() string {

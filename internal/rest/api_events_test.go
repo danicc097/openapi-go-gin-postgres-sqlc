@@ -38,9 +38,6 @@ func NewStreamRecorder() *StreamRecorder {
 	}
 }
 
-// TODO revisit when multiple events (personal notif., global notif., etc.) are implemented.
-// / see https://github.com/search?q=%22req.Context%28%29.Done%28%29%22+sse&type=code
-// would need a way to stop streaming after N messages, etc.
 func TestSSEStream(t *testing.T) {
 	t.Parallel()
 
@@ -48,7 +45,7 @@ func TestSSEStream(t *testing.T) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	srv, err := runTestServer(t, testPool,
+	srv, err := runTestServer(t, ctx, testPool,
 		func(c *gin.Context) {
 			c.Next()
 		},
@@ -60,9 +57,6 @@ func TestSSEStream(t *testing.T) {
 	stopCh := make(chan bool)
 
 	go func() {
-		defer func() {
-			stopCh <- true
-		}()
 		for {
 			select {
 			case <-stopCh:
@@ -89,16 +83,18 @@ func TestSSEStream(t *testing.T) {
 		}
 	}()
 
-	// TODO all internal sse events tests should be done alongside handler tests that trigger them.
-	// could have generic test helpers as well.
-	// in this file we should just unit test with a random event, adhoc handlers...
-	if !assert.Eventually(t, func() bool {
+	eventReceived := func() bool {
 		if res.Body == nil {
 			return false
 		}
 		body := res.Body.String()
 		return strings.Count(body, "event:"+string(models.TopicGlobalAlerts)) >= 1 && strings.Count(body, "data:"+publishMsg) >= 1
-	}, 5*time.Second, 200*time.Millisecond) {
+	}
+
+	// TODO all internal sse events tests should be done alongside handler tests that trigger them.
+	// could have generic test helpers as well.
+	// in this file we should just unit test with a random event, adhoc handlers...
+	if !assert.Eventually(t, eventReceived, 5*time.Second, 200*time.Millisecond) {
 		t.Fatalf("did not receive event")
 	}
 

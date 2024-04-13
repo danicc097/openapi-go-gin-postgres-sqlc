@@ -41,7 +41,7 @@ export const getGetProjectWorkitemsResponseMock = (overrideResponse: any = {}): 
 
 export const getInitializeProjectMockHandler = () => {
   return http.post('*/project/:projectName/initialize', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(null,
       {
         status: 200,
@@ -55,7 +55,7 @@ export const getInitializeProjectMockHandler = () => {
 
 export const getGetProjectMockHandler = (overrideResponse?: DbProject) => {
   return http.get('*/project/:projectName/', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetProjectResponseMock()),
       {
         status: 200,
@@ -69,7 +69,7 @@ export const getGetProjectMockHandler = (overrideResponse?: DbProject) => {
 
 export const getGetProjectConfigMockHandler = (overrideResponse?: ProjectConfig) => {
   return http.get('*/project/:projectName/config', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetProjectConfigResponseMock()),
       {
         status: 200,
@@ -83,7 +83,7 @@ export const getGetProjectConfigMockHandler = (overrideResponse?: ProjectConfig)
 
 export const getUpdateProjectConfigMockHandler = () => {
   return http.put('*/project/:projectName/config', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(null,
       {
         status: 200,
@@ -97,7 +97,7 @@ export const getUpdateProjectConfigMockHandler = () => {
 
 export const getGetProjectBoardMockHandler = (overrideResponse?: ProjectBoard) => {
   return http.get('*/project/:projectName/board', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetProjectBoardResponseMock()),
       {
         status: 200,
@@ -111,7 +111,7 @@ export const getGetProjectBoardMockHandler = (overrideResponse?: ProjectBoard) =
 
 export const getGetProjectWorkitemsMockHandler = (overrideResponse?: WorkItem) => {
   return http.get('*/project/:projectName/workitems', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetProjectWorkitemsResponseMock()),
       {
         status: 200,

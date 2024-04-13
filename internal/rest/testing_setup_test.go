@@ -79,10 +79,9 @@ func (s *testServer) setupCleanup(t *testing.T) {
 // runTestServer returns a test server and client.
 // We will require different middlewares depending on the test case, so a shared global instance
 // is not possible.
-func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.HandlerFunc) (*testServer, error) {
+func runTestServer(t *testing.T, ctx context.Context, testPool *pgxpool.Pool, middlewares ...gin.HandlerFunc) (*testServer, error) {
 	t.Helper()
 
-	ctx := context.Background()
 	spanRecorder := tracetest.NewSpanRecorder()
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithBatcher(tracetest.NewInMemoryExporter()),
@@ -105,7 +104,7 @@ func runTestServer(t *testing.T, testPool *pgxpool.Pool, middlewares ...gin.Hand
 		panic(fmt.Sprintf("openapi3.NewLoader: %v", err))
 	}
 
-	srv, err := rest.NewServer(rest.Config{
+	srv, err := rest.NewServer(ctx, rest.Config{
 		// not necessary when using ServeHTTP. Won't actually listen.
 		// Address:         ":0", // random next available for each test server
 		Pool:           testPool,

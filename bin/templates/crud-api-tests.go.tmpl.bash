@@ -33,7 +33,7 @@ func TestHandlers_Delete${pascal_name}(t *testing.T) {
 $(test -n "$with_project" && echo "		pj := models.ProjectDemo
 		projectID := internal.ProjectIDByName[pj]")
 
-	srv, err := runTestServer(t, testPool)
+	srv, err := runTestServer(t, context.Background(), testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
@@ -85,7 +85,7 @@ func TestHandlers_Create${pascal_name}(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	srv, err := runTestServer(t, testPool)
+	srv, err := runTestServer(t, context.Background(), testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
@@ -130,7 +130,7 @@ func TestHandlers_Get${pascal_name}(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	srv, err := runTestServer(t, testPool)
+	srv, err := runTestServer(t, context.Background(), testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
@@ -181,7 +181,7 @@ func TestHandlers_Update${pascal_name}(t *testing.T) {
 $(test -n "$with_project" && echo "		pj := models.ProjectDemo
 		projectID := internal.ProjectIDByName[pj]")
 
-	srv, err := runTestServer(t, testPool)
+	srv, err := runTestServer(t, context.Background(), testPool)
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 

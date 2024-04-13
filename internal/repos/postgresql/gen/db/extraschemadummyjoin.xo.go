@@ -241,7 +241,7 @@ func (esdj *ExtraSchemaDummyJoin) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaDummyJoinPaginated returns a cursor-paginated list of ExtraSchemaDummyJoin.
 // At least one cursor is required.
-func ExtraSchemaDummyJoinPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaDummyJoinSelectConfigOption) ([]ExtraSchemaDummyJoin, error) {
+func ExtraSchemaDummyJoinPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...ExtraSchemaDummyJoinSelectConfigOption) ([]ExtraSchemaDummyJoin, error) {
 	c := &ExtraSchemaDummyJoinSelectConfig{joins: ExtraSchemaDummyJoinJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -252,23 +252,21 @@ func ExtraSchemaDummyJoinPaginated(ctx context.Context, db DB, cursors models.Pa
 		o(c)
 	}
 
-	for _, cursor := range cursors {
-		if cursor.Value == nil {
+	if cursor.Value == nil {
 
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaDummyJoin][cursor.Column]
-		if !ok {
-			return nil, logerror(fmt.Errorf("ExtraSchemaDummyJoin/Paginated/cursor: %w", &XoError{Entity: "Dummy join", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
-
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("dummy_join.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
 	}
+	field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaDummyJoin][cursor.Column]
+	if !ok {
+		return nil, logerror(fmt.Errorf("ExtraSchemaDummyJoin/Paginated/cursor: %w", &XoError{Entity: "Dummy join", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+	}
+
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("dummy_join.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+	c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
 	paramStart := 0 // all filters will come from the user
 	nth := func() string {

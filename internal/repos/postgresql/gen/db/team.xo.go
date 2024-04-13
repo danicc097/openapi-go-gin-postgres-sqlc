@@ -335,7 +335,7 @@ func (t *Team) Delete(ctx context.Context, db DB) error {
 
 // TeamPaginated returns a cursor-paginated list of Team.
 // At least one cursor is required.
-func TeamPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...TeamSelectConfigOption) ([]Team, error) {
+func TeamPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...TeamSelectConfigOption) ([]Team, error) {
 	c := &TeamSelectConfig{joins: TeamJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -346,23 +346,21 @@ func TeamPaginated(ctx context.Context, db DB, cursors models.PaginationCursors,
 		o(c)
 	}
 
-	for _, cursor := range cursors {
-		if cursor.Value == nil {
+	if cursor.Value == nil {
 
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-		field, ok := EntityFields[TableEntityTeam][cursor.Column]
-		if !ok {
-			return nil, logerror(fmt.Errorf("Team/Paginated/cursor: %w", &XoError{Entity: "Team", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
-
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("teams.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
 	}
+	field, ok := EntityFields[TableEntityTeam][cursor.Column]
+	if !ok {
+		return nil, logerror(fmt.Errorf("Team/Paginated/cursor: %w", &XoError{Entity: "Team", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+	}
+
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("teams.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+	c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
 	paramStart := 0 // all filters will come from the user
 	nth := func() string {

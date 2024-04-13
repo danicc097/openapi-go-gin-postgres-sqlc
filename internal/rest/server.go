@@ -132,7 +132,7 @@ func LogResponseMiddleware(out io.Writer) gin.HandlerFunc {
 }
 
 // NewServer returns a new http server.
-func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
+func NewServer(ctx context.Context, conf Config, opts ...ServerOption) (*Server, error) {
 	if err := conf.validate(); err != nil {
 		return nil, fmt.Errorf("server config validation: %w", err)
 	}
@@ -238,7 +238,7 @@ func NewServer(conf Config, opts ...ServerOption) (*Server, error) {
 	authmw := NewAuthMiddleware(conf.Logger, conf.Pool, svcs)
 	_ = authmw
 	_ = provider
-	event := NewEventServer(conf.Logger)
+	event := NewEventServer(ctx, conf.Logger)
 	handlers := NewStrictHandlers(
 		conf.Logger,
 		conf.Pool,
@@ -322,7 +322,7 @@ func Run(env, specPath string) (<-chan error, error) {
 		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "movieSvcConn")
 	}
 
-	srv, err := NewServer(Config{
+	srv, err := NewServer(ctx, Config{
 		Address:                ":" + strings.TrimPrefix(cfg.APIPort, ":"),
 		Pool:                   pool,
 		SQLPool:                sqlpool,

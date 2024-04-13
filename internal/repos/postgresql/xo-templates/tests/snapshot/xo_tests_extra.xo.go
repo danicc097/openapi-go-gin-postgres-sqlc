@@ -5,181 +5,113 @@ package got
 type XoTestsTableEntity string
 
 const (
-	XoTestsTableEntityXoTestsBook                    XoTestsTableEntity = "xoTestsBook"
-	XoTestsTableEntityXoTestsBookAuthor              XoTestsTableEntity = "xoTestsBookAuthor"
-	XoTestsTableEntityXoTestsBookAuthorsSurrogateKey XoTestsTableEntity = "xoTestsBookAuthorsSurrogateKey"
-	XoTestsTableEntityXoTestsBookReview              XoTestsTableEntity = "xoTestsBookReview"
-	XoTestsTableEntityXoTestsBookSeller              XoTestsTableEntity = "xoTestsBookSeller"
-	XoTestsTableEntityXoTestsCacheDemoWorkItem       XoTestsTableEntity = "xoTestsCacheDemoWorkItem"
-	XoTestsTableEntityXoTestsDemoWorkItem            XoTestsTableEntity = "xoTestsDemoWorkItem"
-	XoTestsTableEntityXoTestsDummyJoin               XoTestsTableEntity = "xoTestsDummyJoin"
-	XoTestsTableEntityXoTestsNotification            XoTestsTableEntity = "xoTestsNotification"
-	XoTestsTableEntityXoTestsPagElement              XoTestsTableEntity = "xoTestsPagElement"
-	XoTestsTableEntityXoTestsTeam                    XoTestsTableEntity = "xoTestsTeam"
-	XoTestsTableEntityXoTestsTimeEntry               XoTestsTableEntity = "xoTestsTimeEntry"
-	XoTestsTableEntityXoTestsUser                    XoTestsTableEntity = "xoTestsUser"
-	XoTestsTableEntityXoTestsUserAPIKey              XoTestsTableEntity = "xoTestsUserAPIKey"
-	XoTestsTableEntityXoTestsWorkItem                XoTestsTableEntity = "xoTestsWorkItem"
-	XoTestsTableEntityXoTestsWorkItemAssignee        XoTestsTableEntity = "xoTestsWorkItemAssignee"
-	XoTestsTableEntityXoTestsWorkItemComment         XoTestsTableEntity = "xoTestsWorkItemComment"
+	XoTestsTableEntityXoTestsBook                    XoTestsTableEntity = "xo_tests.books"
+	XoTestsTableEntityXoTestsBookAuthor              XoTestsTableEntity = "xo_tests.book_authors"
+	XoTestsTableEntityXoTestsBookAuthorsSurrogateKey XoTestsTableEntity = "xo_tests.book_authors_surrogate_key"
+	XoTestsTableEntityXoTestsBookReview              XoTestsTableEntity = "xo_tests.book_reviews"
+	XoTestsTableEntityXoTestsBookSeller              XoTestsTableEntity = "xo_tests.book_sellers"
+	XoTestsTableEntityXoTestsCacheDemoWorkItem       XoTestsTableEntity = "xo_tests.cache__demo_work_items"
+	XoTestsTableEntityXoTestsDemoWorkItem            XoTestsTableEntity = "xo_tests.demo_work_items"
+	XoTestsTableEntityXoTestsDummyJoin               XoTestsTableEntity = "xo_tests.dummy_join"
+	XoTestsTableEntityXoTestsNotification            XoTestsTableEntity = "xo_tests.notifications"
+	XoTestsTableEntityXoTestsPagElement              XoTestsTableEntity = "xo_tests.pag_element"
+	XoTestsTableEntityXoTestsTeam                    XoTestsTableEntity = "xo_tests.teams"
+	XoTestsTableEntityXoTestsTimeEntry               XoTestsTableEntity = "xo_tests.time_entries"
+	XoTestsTableEntityXoTestsUser                    XoTestsTableEntity = "xo_tests.users"
+	XoTestsTableEntityXoTestsUserAPIKey              XoTestsTableEntity = "xo_tests.user_api_keys"
+	XoTestsTableEntityXoTestsWorkItem                XoTestsTableEntity = "xo_tests.work_items"
+	XoTestsTableEntityXoTestsWorkItemAssignee        XoTestsTableEntity = "xo_tests.work_item_assignee"
+	XoTestsTableEntityXoTestsWorkItemComment         XoTestsTableEntity = "xo_tests.work_item_comments"
 )
-
-var XoTestsEntityFilters = map[XoTestsTableEntity]map[string]Filter{
-	XoTestsTableEntityXoTestsBook: {
-		"bookID": Filter{Type: "integer", Db: "book_id", Nullable: false},
-		"name":   Filter{Type: "string", Db: "name", Nullable: false},
-	},
-	XoTestsTableEntityXoTestsBookAuthor: {
-		"bookID":    Filter{Type: "integer", Db: "book_id", Nullable: false},
-		"pseudonym": Filter{Type: "string", Db: "pseudonym", Nullable: true},
-	},
-	XoTestsTableEntityXoTestsBookAuthorsSurrogateKey: {
-		"bookAuthorsSurrogateKeyID": Filter{Type: "integer", Db: "book_authors_surrogate_key_id", Nullable: false},
-		"bookID":                    Filter{Type: "integer", Db: "book_id", Nullable: false},
-		"pseudonym":                 Filter{Type: "string", Db: "pseudonym", Nullable: true},
-	},
-	XoTestsTableEntityXoTestsBookReview: {
-		"bookID":       Filter{Type: "integer", Db: "book_id", Nullable: false},
-		"bookReviewID": Filter{Type: "integer", Db: "book_review_id", Nullable: false},
-	},
-	XoTestsTableEntityXoTestsBookSeller: {
-		"bookID": Filter{Type: "integer", Db: "book_id", Nullable: false},
-	},
-	XoTestsTableEntityXoTestsCacheDemoWorkItem: {
-		"teamID":     Filter{Type: "integer", Db: "team_id", Nullable: false},
-		"title":      Filter{Type: "string", Db: "title", Nullable: true},
-		"workItemID": Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-	},
-	XoTestsTableEntityXoTestsDemoWorkItem: {
-		"checked":    Filter{Type: "boolean", Db: "checked", Nullable: false},
-		"workItemID": Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-	},
-	XoTestsTableEntityXoTestsDummyJoin: {
-		"dummyJoinID": Filter{Type: "integer", Db: "dummy_join_id", Nullable: false},
-		"name":        Filter{Type: "string", Db: "name", Nullable: true},
-	},
-	XoTestsTableEntityXoTestsNotification: {
-		"notificationID": Filter{Type: "integer", Db: "notification_id", Nullable: false},
-	},
-	XoTestsTableEntityXoTestsPagElement: {
-		"createdAt": Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"dummy":     Filter{Type: "integer", Db: "dummy", Nullable: true},
-		"name":      Filter{Type: "string", Db: "name", Nullable: false},
-	},
-	XoTestsTableEntityXoTestsTeam: {
-		"name":   Filter{Type: "string", Db: "name", Nullable: false},
-		"teamID": Filter{Type: "integer", Db: "team_id", Nullable: false},
-	},
-	XoTestsTableEntityXoTestsTimeEntry: {
-		"start":       Filter{Type: "date-time", Db: "start", Nullable: false},
-		"timeEntryID": Filter{Type: "integer", Db: "time_entry_id", Nullable: false},
-		"workItemID":  Filter{Type: "integer", Db: "work_item_id", Nullable: true},
-	},
-	XoTestsTableEntityXoTestsUser: {
-		"apiKeyID":  Filter{Type: "integer", Db: "api_key_id", Nullable: true},
-		"createdAt": Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"deletedAt": Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
-		"name":      Filter{Type: "string", Db: "name", Nullable: false},
-	},
-	XoTestsTableEntityXoTestsUserAPIKey: {
-		"apiKey":    Filter{Type: "string", Db: "api_key", Nullable: false},
-		"expiresOn": Filter{Type: "date-time", Db: "expires_on", Nullable: false},
-	},
-	XoTestsTableEntityXoTestsWorkItem: {
-		"description": Filter{Type: "string", Db: "description", Nullable: true},
-		"teamID":      Filter{Type: "integer", Db: "team_id", Nullable: false},
-		"title":       Filter{Type: "string", Db: "title", Nullable: true},
-		"workItemID":  Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-	},
-	XoTestsTableEntityXoTestsWorkItemAssignee: {
-		"workItemID": Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-	},
-	XoTestsTableEntityXoTestsWorkItemComment: {
-		"createdAt":         Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"message":           Filter{Type: "string", Db: "message", Nullable: false},
-		"updatedAt":         Filter{Type: "date-time", Db: "updated_at", Nullable: false},
-		"workItemCommentID": Filter{Type: "integer", Db: "work_item_comment_id", Nullable: false},
-		"workItemID":        Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-	},
-}
 
 var XoTestsEntityFields = map[XoTestsTableEntity]map[string]DbField{
 	XoTestsTableEntityXoTestsBook: {
-		"bookID": DbField{Db: "book_id"},
-		"name":   DbField{Db: "name"},
+		"bookID": DbField{Type: ColumnSimpleTypeInteger, Db: "book_id", Nullable: false, Public: true},
+		"name":   DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: false, Public: true},
 	},
 	XoTestsTableEntityXoTestsBookAuthor: {
-		"bookID":    DbField{Db: "book_id"},
-		"pseudonym": DbField{Db: "pseudonym"},
+		"authorID":  DbField{Type: ColumnSimpleTypeString, Db: "author_id", Nullable: false, Public: true},
+		"bookID":    DbField{Type: ColumnSimpleTypeInteger, Db: "book_id", Nullable: false, Public: true},
+		"pseudonym": DbField{Type: ColumnSimpleTypeString, Db: "pseudonym", Nullable: true, Public: true},
 	},
 	XoTestsTableEntityXoTestsBookAuthorsSurrogateKey: {
-		"bookAuthorsSurrogateKeyID": DbField{Db: "book_authors_surrogate_key_id"},
-		"bookID":                    DbField{Db: "book_id"},
-		"pseudonym":                 DbField{Db: "pseudonym"},
+		"authorID":                  DbField{Type: ColumnSimpleTypeString, Db: "author_id", Nullable: false, Public: true},
+		"bookAuthorsSurrogateKeyID": DbField{Type: ColumnSimpleTypeInteger, Db: "book_authors_surrogate_key_id", Nullable: false, Public: true},
+		"bookID":                    DbField{Type: ColumnSimpleTypeInteger, Db: "book_id", Nullable: false, Public: true},
+		"pseudonym":                 DbField{Type: ColumnSimpleTypeString, Db: "pseudonym", Nullable: true, Public: true},
 	},
 	XoTestsTableEntityXoTestsBookReview: {
-		"bookID":       DbField{Db: "book_id"},
-		"bookReviewID": DbField{Db: "book_review_id"},
+		"bookID":       DbField{Type: ColumnSimpleTypeInteger, Db: "book_id", Nullable: false, Public: true},
+		"bookReviewID": DbField{Type: ColumnSimpleTypeInteger, Db: "book_review_id", Nullable: false, Public: true},
+		"reviewer":     DbField{Type: ColumnSimpleTypeString, Db: "reviewer", Nullable: false, Public: true},
 	},
 	XoTestsTableEntityXoTestsBookSeller: {
-		"bookID": DbField{Db: "book_id"},
+		"bookID": DbField{Type: ColumnSimpleTypeInteger, Db: "book_id", Nullable: false, Public: true},
+		"seller": DbField{Type: ColumnSimpleTypeString, Db: "seller", Nullable: false, Public: true},
 	},
 	XoTestsTableEntityXoTestsCacheDemoWorkItem: {
-		"teamID":     DbField{Db: "team_id"},
-		"title":      DbField{Db: "title"},
-		"workItemID": DbField{Db: "work_item_id"},
+		"teamID":     DbField{Type: ColumnSimpleTypeInteger, Db: "team_id", Nullable: false, Public: true},
+		"title":      DbField{Type: ColumnSimpleTypeString, Db: "title", Nullable: true, Public: true},
+		"workItemID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
 	},
 	XoTestsTableEntityXoTestsDemoWorkItem: {
-		"checked":    DbField{Db: "checked"},
-		"workItemID": DbField{Db: "work_item_id"},
+		"checked":    DbField{Type: ColumnSimpleTypeBoolean, Db: "checked", Nullable: false, Public: true},
+		"workItemID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
 	},
 	XoTestsTableEntityXoTestsDummyJoin: {
-		"dummyJoinID": DbField{Db: "dummy_join_id"},
-		"name":        DbField{Db: "name"},
+		"dummyJoinID": DbField{Type: ColumnSimpleTypeInteger, Db: "dummy_join_id", Nullable: false, Public: true},
+		"name":        DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: true, Public: true},
 	},
 	XoTestsTableEntityXoTestsNotification: {
-		"body":           DbField{Db: "body"},
-		"notificationID": DbField{Db: "notification_id"},
+		"body":           DbField{Type: ColumnSimpleTypeString, Db: "body", Nullable: false, Public: true},
+		"notificationID": DbField{Type: ColumnSimpleTypeInteger, Db: "notification_id", Nullable: false, Public: true},
+		"receiver":       DbField{Type: ColumnSimpleTypeString, Db: "receiver", Nullable: true, Public: true},
+		"sender":         DbField{Type: ColumnSimpleTypeString, Db: "sender", Nullable: false, Public: true},
 	},
 	XoTestsTableEntityXoTestsPagElement: {
-		"createdAt": DbField{Db: "created_at"},
-		"dummy":     DbField{Db: "dummy"},
-		"name":      DbField{Db: "name"},
+		"createdAt":          DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"dummy":              DbField{Type: ColumnSimpleTypeInteger, Db: "dummy", Nullable: true, Public: true},
+		"name":               DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: false, Public: true},
+		"paginatedElementID": DbField{Type: ColumnSimpleTypeString, Db: "paginated_element_id", Nullable: false, Public: true},
 	},
 	XoTestsTableEntityXoTestsTeam: {
-		"name":   DbField{Db: "name"},
-		"teamID": DbField{Db: "team_id"},
+		"name":   DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: false, Public: true},
+		"teamID": DbField{Type: ColumnSimpleTypeInteger, Db: "team_id", Nullable: false, Public: true},
 	},
 	XoTestsTableEntityXoTestsTimeEntry: {
-		"start":       DbField{Db: "start"},
-		"timeEntryID": DbField{Db: "time_entry_id"},
-		"workItemID":  DbField{Db: "work_item_id"},
+		"start":       DbField{Type: ColumnSimpleTypeDateTime, Db: "start", Nullable: false, Public: true},
+		"timeEntryID": DbField{Type: ColumnSimpleTypeInteger, Db: "time_entry_id", Nullable: false, Public: true},
+		"workItemID":  DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: true, Public: true},
 	},
 	XoTestsTableEntityXoTestsUser: {
-		"apiKeyID":  DbField{Db: "api_key_id"},
-		"createdAt": DbField{Db: "created_at"},
-		"deletedAt": DbField{Db: "deleted_at"},
-		"name":      DbField{Db: "name"},
+		"apiKeyID":  DbField{Type: ColumnSimpleTypeInteger, Db: "api_key_id", Nullable: true, Public: true},
+		"createdAt": DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"deletedAt": DbField{Type: ColumnSimpleTypeDateTime, Db: "deleted_at", Nullable: true, Public: true},
+		"name":      DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: false, Public: true},
+		"userID":    DbField{Type: ColumnSimpleTypeString, Db: "user_id", Nullable: false, Public: true},
 	},
 	XoTestsTableEntityXoTestsUserAPIKey: {
-		"apiKey":       DbField{Db: "api_key"},
-		"expiresOn":    DbField{Db: "expires_on"},
-		"userAPIKeyID": DbField{Db: "user_api_key_id"},
+		"apiKey":       DbField{Type: ColumnSimpleTypeString, Db: "api_key", Nullable: false, Public: true},
+		"expiresOn":    DbField{Type: ColumnSimpleTypeDateTime, Db: "expires_on", Nullable: false, Public: true},
+		"userAPIKeyID": DbField{Type: ColumnSimpleTypeInteger, Db: "user_api_key_id", Nullable: false, Public: true},
+		"userID":       DbField{Type: ColumnSimpleTypeString, Db: "user_id", Nullable: false, Public: true},
 	},
 	XoTestsTableEntityXoTestsWorkItem: {
-		"description": DbField{Db: "description"},
-		"teamID":      DbField{Db: "team_id"},
-		"title":       DbField{Db: "title"},
-		"workItemID":  DbField{Db: "work_item_id"},
+		"description": DbField{Type: ColumnSimpleTypeString, Db: "description", Nullable: true, Public: true},
+		"teamID":      DbField{Type: ColumnSimpleTypeInteger, Db: "team_id", Nullable: false, Public: true},
+		"title":       DbField{Type: ColumnSimpleTypeString, Db: "title", Nullable: true, Public: true},
+		"workItemID":  DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
 	},
 	XoTestsTableEntityXoTestsWorkItemAssignee: {
-		"workItemID": DbField{Db: "work_item_id"},
+		"assignee":   DbField{Type: ColumnSimpleTypeString, Db: "assignee", Nullable: false, Public: true},
+		"workItemID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
 	},
 	XoTestsTableEntityXoTestsWorkItemComment: {
-		"createdAt":         DbField{Db: "created_at"},
-		"message":           DbField{Db: "message"},
-		"updatedAt":         DbField{Db: "updated_at"},
-		"workItemCommentID": DbField{Db: "work_item_comment_id"},
-		"workItemID":        DbField{Db: "work_item_id"},
+		"createdAt":         DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"message":           DbField{Type: ColumnSimpleTypeString, Db: "message", Nullable: false, Public: true},
+		"updatedAt":         DbField{Type: ColumnSimpleTypeDateTime, Db: "updated_at", Nullable: false, Public: true},
+		"userID":            DbField{Type: ColumnSimpleTypeString, Db: "user_id", Nullable: false, Public: true},
+		"workItemCommentID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_comment_id", Nullable: false, Public: true},
+		"workItemID":        DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
 	},
 }

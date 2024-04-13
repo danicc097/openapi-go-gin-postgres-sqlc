@@ -306,7 +306,7 @@ func (xtwic *XoTestsWorkItemComment) Delete(ctx context.Context, db DB) error {
 
 // XoTestsWorkItemCommentPaginated returns a cursor-paginated list of XoTestsWorkItemComment.
 // At least one cursor is required.
-func XoTestsWorkItemCommentPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...XoTestsWorkItemCommentSelectConfigOption) ([]XoTestsWorkItemComment, error) {
+func XoTestsWorkItemCommentPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsWorkItemCommentSelectConfigOption) ([]XoTestsWorkItemComment, error) {
 	c := &XoTestsWorkItemCommentSelectConfig{
 		joins:   XoTestsWorkItemCommentJoins{},
 		filters: make(map[string][]any),
@@ -318,22 +318,20 @@ func XoTestsWorkItemCommentPaginated(ctx context.Context, db DB, cursors models.
 		o(c)
 	}
 
-	for _, cursor := range cursors {
-		if cursor.Value == nil {
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-		field, ok := XoTestsEntityFields[XoTestsTableEntityXoTestsWorkItemComment][cursor.Column]
-		if !ok {
-			return nil, logerror(fmt.Errorf("XoTestsWorkItemComment/Paginated/cursor: %w", &XoError{Entity: "Work item comment", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
-
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("work_item_comments.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+	if cursor.Value == nil {
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
 	}
+	field, ok := XoTestsEntityFields[XoTestsTableEntityXoTestsWorkItemComment][cursor.Column]
+	if !ok {
+		return nil, logerror(fmt.Errorf("XoTestsWorkItemComment/Paginated/cursor: %w", &XoError{Entity: "Work item comment", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+	}
+
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("work_item_comments.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+	c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
 	paramStart := 0 // all filters will come from the user
 	nth := func() string {

@@ -353,7 +353,7 @@ func (esb *ExtraSchemaBook) Delete(ctx context.Context, db DB) error {
 
 // ExtraSchemaBookPaginated returns a cursor-paginated list of ExtraSchemaBook.
 // At least one cursor is required.
-func ExtraSchemaBookPaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...ExtraSchemaBookSelectConfigOption) ([]ExtraSchemaBook, error) {
+func ExtraSchemaBookPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...ExtraSchemaBookSelectConfigOption) ([]ExtraSchemaBook, error) {
 	c := &ExtraSchemaBookSelectConfig{joins: ExtraSchemaBookJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -364,23 +364,21 @@ func ExtraSchemaBookPaginated(ctx context.Context, db DB, cursors models.Paginat
 		o(c)
 	}
 
-	for _, cursor := range cursors {
-		if cursor.Value == nil {
+	if cursor.Value == nil {
 
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-		field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaBook][cursor.Column]
-		if !ok {
-			return nil, logerror(fmt.Errorf("ExtraSchemaBook/Paginated/cursor: %w", &XoError{Entity: "Book", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
-
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("books.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
 	}
+	field, ok := ExtraSchemaEntityFields[ExtraSchemaTableEntityExtraSchemaBook][cursor.Column]
+	if !ok {
+		return nil, logerror(fmt.Errorf("ExtraSchemaBook/Paginated/cursor: %w", &XoError{Entity: "Book", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+	}
+
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("books.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+	c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
 	paramStart := 0 // all filters will come from the user
 	nth := func() string {

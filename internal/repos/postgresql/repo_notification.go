@@ -3,12 +3,11 @@ package postgresql
 import (
 	"context"
 	"fmt"
-	"strconv"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 )
 
 // Notification represents the repository used for interacting with Notification records.
@@ -95,11 +94,6 @@ func (u *Notification) Create(ctx context.Context, d db.DBTX, params *db.Notific
 }
 
 func (u *Notification) PaginatedUserNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) ([]db.UserNotification, error) {
-	userNotificationID, err := strconv.Atoi(params.Cursor)
-	if err != nil {
-		return nil, internal.NewErrorf(models.ErrorCodeInvalidArgument, "invalid cursor for paginated notifications: %s", params.Cursor)
-	}
-
 	opts := []db.UserNotificationSelectConfigOption{
 		db.WithUserNotificationFilters(map[string][]any{
 			"user_id = $i": {userID}, // further restrictions as desired
@@ -110,10 +104,8 @@ func (u *Notification) PaginatedUserNotifications(ctx context.Context, d db.DBTX
 		opts = append(opts, db.WithUserNotificationLimit(params.Limit))
 	}
 
-	var c interface{}
-	c = userNotificationID
-	cursors := models.PaginationCursors{{Column: "userNotificationID", Value: &c, Direction: params.Direction}}
-	notifications, err := db.UserNotificationPaginated(ctx, d, cursors, opts...)
+	cursor := models.PaginationCursor{Column: "userNotificationID", Value: pointers.New[interface{}](params.Cursor), Direction: params.Direction}
+	notifications, err := db.UserNotificationPaginated(ctx, d, cursor, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could get paginated notifications: %w", ParseDBErrorDetail(err))
 	}

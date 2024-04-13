@@ -5,140 +5,91 @@ package db
 type ExtraSchemaTableEntity string
 
 const (
-	ExtraSchemaTableEntityExtraSchemaBook                    ExtraSchemaTableEntity = "extraSchemaBook"
-	ExtraSchemaTableEntityExtraSchemaBookAuthor              ExtraSchemaTableEntity = "extraSchemaBookAuthor"
-	ExtraSchemaTableEntityExtraSchemaBookAuthorsSurrogateKey ExtraSchemaTableEntity = "extraSchemaBookAuthorsSurrogateKey"
-	ExtraSchemaTableEntityExtraSchemaBookReview              ExtraSchemaTableEntity = "extraSchemaBookReview"
-	ExtraSchemaTableEntityExtraSchemaBookSeller              ExtraSchemaTableEntity = "extraSchemaBookSeller"
-	ExtraSchemaTableEntityExtraSchemaDemoWorkItem            ExtraSchemaTableEntity = "extraSchemaDemoWorkItem"
-	ExtraSchemaTableEntityExtraSchemaDummyJoin               ExtraSchemaTableEntity = "extraSchemaDummyJoin"
-	ExtraSchemaTableEntityExtraSchemaNotification            ExtraSchemaTableEntity = "extraSchemaNotification"
-	ExtraSchemaTableEntityExtraSchemaPagElement              ExtraSchemaTableEntity = "extraSchemaPagElement"
-	ExtraSchemaTableEntityExtraSchemaUser                    ExtraSchemaTableEntity = "extraSchemaUser"
-	ExtraSchemaTableEntityExtraSchemaUserAPIKey              ExtraSchemaTableEntity = "extraSchemaUserAPIKey"
-	ExtraSchemaTableEntityExtraSchemaWorkItem                ExtraSchemaTableEntity = "extraSchemaWorkItem"
-	ExtraSchemaTableEntityExtraSchemaWorkItemAdmin           ExtraSchemaTableEntity = "extraSchemaWorkItemAdmin"
-	ExtraSchemaTableEntityExtraSchemaWorkItemAssignee        ExtraSchemaTableEntity = "extraSchemaWorkItemAssignee"
+	ExtraSchemaTableEntityExtraSchemaBook                    ExtraSchemaTableEntity = "extra_schema.books"
+	ExtraSchemaTableEntityExtraSchemaBookAuthor              ExtraSchemaTableEntity = "extra_schema.book_authors"
+	ExtraSchemaTableEntityExtraSchemaBookAuthorsSurrogateKey ExtraSchemaTableEntity = "extra_schema.book_authors_surrogate_key"
+	ExtraSchemaTableEntityExtraSchemaBookReview              ExtraSchemaTableEntity = "extra_schema.book_reviews"
+	ExtraSchemaTableEntityExtraSchemaBookSeller              ExtraSchemaTableEntity = "extra_schema.book_sellers"
+	ExtraSchemaTableEntityExtraSchemaDemoWorkItem            ExtraSchemaTableEntity = "extra_schema.demo_work_items"
+	ExtraSchemaTableEntityExtraSchemaDummyJoin               ExtraSchemaTableEntity = "extra_schema.dummy_join"
+	ExtraSchemaTableEntityExtraSchemaNotification            ExtraSchemaTableEntity = "extra_schema.notifications"
+	ExtraSchemaTableEntityExtraSchemaPagElement              ExtraSchemaTableEntity = "extra_schema.pag_element"
+	ExtraSchemaTableEntityExtraSchemaUser                    ExtraSchemaTableEntity = "extra_schema.users"
+	ExtraSchemaTableEntityExtraSchemaUserAPIKey              ExtraSchemaTableEntity = "extra_schema.user_api_keys"
+	ExtraSchemaTableEntityExtraSchemaWorkItem                ExtraSchemaTableEntity = "extra_schema.work_items"
+	ExtraSchemaTableEntityExtraSchemaWorkItemAdmin           ExtraSchemaTableEntity = "extra_schema.work_item_admin"
+	ExtraSchemaTableEntityExtraSchemaWorkItemAssignee        ExtraSchemaTableEntity = "extra_schema.work_item_assignee"
 )
-
-var ExtraSchemaEntityFilters = map[ExtraSchemaTableEntity]map[string]Filter{
-	ExtraSchemaTableEntityExtraSchemaBook: {
-		"bookID": Filter{Type: "integer", Db: "book_id", Nullable: false},
-		"name":   Filter{Type: "string", Db: "name", Nullable: false},
-	},
-	ExtraSchemaTableEntityExtraSchemaBookAuthor: {
-		"bookID":    Filter{Type: "integer", Db: "book_id", Nullable: false},
-		"pseudonym": Filter{Type: "string", Db: "pseudonym", Nullable: true},
-	},
-	ExtraSchemaTableEntityExtraSchemaBookAuthorsSurrogateKey: {
-		"bookAuthorsSurrogateKeyID": Filter{Type: "integer", Db: "book_authors_surrogate_key_id", Nullable: false},
-		"bookID":                    Filter{Type: "integer", Db: "book_id", Nullable: false},
-		"pseudonym":                 Filter{Type: "string", Db: "pseudonym", Nullable: true},
-	},
-	ExtraSchemaTableEntityExtraSchemaBookReview: {
-		"bookID":       Filter{Type: "integer", Db: "book_id", Nullable: false},
-		"bookReviewID": Filter{Type: "integer", Db: "book_review_id", Nullable: false},
-	},
-	ExtraSchemaTableEntityExtraSchemaBookSeller: {
-		"bookID": Filter{Type: "integer", Db: "book_id", Nullable: false},
-	},
-	ExtraSchemaTableEntityExtraSchemaDemoWorkItem: {
-		"checked":    Filter{Type: "boolean", Db: "checked", Nullable: false},
-		"workItemID": Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-	},
-	ExtraSchemaTableEntityExtraSchemaDummyJoin: {
-		"dummyJoinID": Filter{Type: "integer", Db: "dummy_join_id", Nullable: false},
-		"name":        Filter{Type: "string", Db: "name", Nullable: true},
-	},
-	ExtraSchemaTableEntityExtraSchemaNotification: {
-		"notificationID": Filter{Type: "integer", Db: "notification_id", Nullable: false},
-	},
-	ExtraSchemaTableEntityExtraSchemaPagElement: {
-		"createdAt": Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"dummy":     Filter{Type: "integer", Db: "dummy", Nullable: true},
-		"name":      Filter{Type: "string", Db: "name", Nullable: false},
-	},
-	ExtraSchemaTableEntityExtraSchemaUser: {
-		"apiKeyID":  Filter{Type: "integer", Db: "api_key_id", Nullable: true},
-		"createdAt": Filter{Type: "date-time", Db: "created_at", Nullable: false},
-		"deletedAt": Filter{Type: "date-time", Db: "deleted_at", Nullable: true},
-		"name":      Filter{Type: "string", Db: "name", Nullable: false},
-	},
-	ExtraSchemaTableEntityExtraSchemaUserAPIKey: {
-		"apiKey":    Filter{Type: "string", Db: "api_key", Nullable: false},
-		"expiresOn": Filter{Type: "date-time", Db: "expires_on", Nullable: false},
-	},
-	ExtraSchemaTableEntityExtraSchemaWorkItem: {
-		"description": Filter{Type: "string", Db: "description", Nullable: true},
-		"title":       Filter{Type: "string", Db: "title", Nullable: true},
-		"workItemID":  Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-	},
-	ExtraSchemaTableEntityExtraSchemaWorkItemAdmin: {
-		"workItemID": Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-	},
-	ExtraSchemaTableEntityExtraSchemaWorkItemAssignee: {
-		"workItemID": Filter{Type: "integer", Db: "work_item_id", Nullable: false},
-	},
-}
 
 var ExtraSchemaEntityFields = map[ExtraSchemaTableEntity]map[string]DbField{
 	ExtraSchemaTableEntityExtraSchemaBook: {
-		"bookID": DbField{Db: "book_id"},
-		"name":   DbField{Db: "name"},
+		"bookID": DbField{Type: ColumnSimpleTypeInteger, Db: "book_id", Nullable: false, Public: true},
+		"name":   DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: false, Public: true},
 	},
 	ExtraSchemaTableEntityExtraSchemaBookAuthor: {
-		"bookID":    DbField{Db: "book_id"},
-		"pseudonym": DbField{Db: "pseudonym"},
+		"authorID":  DbField{Type: ColumnSimpleTypeString, Db: "author_id", Nullable: false, Public: true},
+		"bookID":    DbField{Type: ColumnSimpleTypeInteger, Db: "book_id", Nullable: false, Public: true},
+		"pseudonym": DbField{Type: ColumnSimpleTypeString, Db: "pseudonym", Nullable: true, Public: true},
 	},
 	ExtraSchemaTableEntityExtraSchemaBookAuthorsSurrogateKey: {
-		"bookAuthorsSurrogateKeyID": DbField{Db: "book_authors_surrogate_key_id"},
-		"bookID":                    DbField{Db: "book_id"},
-		"pseudonym":                 DbField{Db: "pseudonym"},
+		"authorID":                  DbField{Type: ColumnSimpleTypeString, Db: "author_id", Nullable: false, Public: true},
+		"bookAuthorsSurrogateKeyID": DbField{Type: ColumnSimpleTypeInteger, Db: "book_authors_surrogate_key_id", Nullable: false, Public: true},
+		"bookID":                    DbField{Type: ColumnSimpleTypeInteger, Db: "book_id", Nullable: false, Public: true},
+		"pseudonym":                 DbField{Type: ColumnSimpleTypeString, Db: "pseudonym", Nullable: true, Public: true},
 	},
 	ExtraSchemaTableEntityExtraSchemaBookReview: {
-		"bookID":       DbField{Db: "book_id"},
-		"bookReviewID": DbField{Db: "book_review_id"},
+		"bookID":       DbField{Type: ColumnSimpleTypeInteger, Db: "book_id", Nullable: false, Public: true},
+		"bookReviewID": DbField{Type: ColumnSimpleTypeInteger, Db: "book_review_id", Nullable: false, Public: true},
+		"reviewer":     DbField{Type: ColumnSimpleTypeString, Db: "reviewer", Nullable: false, Public: true},
 	},
 	ExtraSchemaTableEntityExtraSchemaBookSeller: {
-		"bookID": DbField{Db: "book_id"},
+		"bookID": DbField{Type: ColumnSimpleTypeInteger, Db: "book_id", Nullable: false, Public: true},
+		"seller": DbField{Type: ColumnSimpleTypeString, Db: "seller", Nullable: false, Public: true},
 	},
 	ExtraSchemaTableEntityExtraSchemaDemoWorkItem: {
-		"checked":    DbField{Db: "checked"},
-		"workItemID": DbField{Db: "work_item_id"},
+		"checked":    DbField{Type: ColumnSimpleTypeBoolean, Db: "checked", Nullable: false, Public: true},
+		"workItemID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
 	},
 	ExtraSchemaTableEntityExtraSchemaDummyJoin: {
-		"dummyJoinID": DbField{Db: "dummy_join_id"},
-		"name":        DbField{Db: "name"},
+		"dummyJoinID": DbField{Type: ColumnSimpleTypeInteger, Db: "dummy_join_id", Nullable: false, Public: true},
+		"name":        DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: true, Public: true},
 	},
 	ExtraSchemaTableEntityExtraSchemaNotification: {
-		"body":           DbField{Db: "body"},
-		"notificationID": DbField{Db: "notification_id"},
+		"body":           DbField{Type: ColumnSimpleTypeString, Db: "body", Nullable: false, Public: true},
+		"notificationID": DbField{Type: ColumnSimpleTypeInteger, Db: "notification_id", Nullable: false, Public: true},
+		"receiver":       DbField{Type: ColumnSimpleTypeString, Db: "receiver", Nullable: true, Public: true},
+		"sender":         DbField{Type: ColumnSimpleTypeString, Db: "sender", Nullable: false, Public: true},
 	},
 	ExtraSchemaTableEntityExtraSchemaPagElement: {
-		"createdAt": DbField{Db: "created_at"},
-		"dummy":     DbField{Db: "dummy"},
-		"name":      DbField{Db: "name"},
+		"createdAt":          DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"dummy":              DbField{Type: ColumnSimpleTypeInteger, Db: "dummy", Nullable: true, Public: true},
+		"name":               DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: false, Public: true},
+		"paginatedElementID": DbField{Type: ColumnSimpleTypeString, Db: "paginated_element_id", Nullable: false, Public: true},
 	},
 	ExtraSchemaTableEntityExtraSchemaUser: {
-		"apiKeyID":  DbField{Db: "api_key_id"},
-		"createdAt": DbField{Db: "created_at"},
-		"deletedAt": DbField{Db: "deleted_at"},
-		"name":      DbField{Db: "name"},
+		"apiKeyID":  DbField{Type: ColumnSimpleTypeInteger, Db: "api_key_id", Nullable: true, Public: true},
+		"createdAt": DbField{Type: ColumnSimpleTypeDateTime, Db: "created_at", Nullable: false, Public: true},
+		"deletedAt": DbField{Type: ColumnSimpleTypeDateTime, Db: "deleted_at", Nullable: true, Public: true},
+		"name":      DbField{Type: ColumnSimpleTypeString, Db: "name", Nullable: false, Public: true},
+		"userID":    DbField{Type: ColumnSimpleTypeString, Db: "user_id", Nullable: false, Public: true},
 	},
 	ExtraSchemaTableEntityExtraSchemaUserAPIKey: {
-		"apiKey":       DbField{Db: "api_key"},
-		"expiresOn":    DbField{Db: "expires_on"},
-		"userAPIKeyID": DbField{Db: "user_api_key_id"},
+		"apiKey":       DbField{Type: ColumnSimpleTypeString, Db: "api_key", Nullable: false, Public: true},
+		"expiresOn":    DbField{Type: ColumnSimpleTypeDateTime, Db: "expires_on", Nullable: false, Public: true},
+		"userAPIKeyID": DbField{Type: ColumnSimpleTypeInteger, Db: "user_api_key_id", Nullable: false, Public: true},
+		"userID":       DbField{Type: ColumnSimpleTypeString, Db: "user_id", Nullable: false, Public: true},
 	},
 	ExtraSchemaTableEntityExtraSchemaWorkItem: {
-		"description": DbField{Db: "description"},
-		"title":       DbField{Db: "title"},
-		"workItemID":  DbField{Db: "work_item_id"},
+		"description": DbField{Type: ColumnSimpleTypeString, Db: "description", Nullable: true, Public: true},
+		"title":       DbField{Type: ColumnSimpleTypeString, Db: "title", Nullable: true, Public: true},
+		"workItemID":  DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
 	},
 	ExtraSchemaTableEntityExtraSchemaWorkItemAdmin: {
-		"workItemID": DbField{Db: "work_item_id"},
+		"admin":      DbField{Type: ColumnSimpleTypeString, Db: "admin", Nullable: false, Public: true},
+		"workItemID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
 	},
 	ExtraSchemaTableEntityExtraSchemaWorkItemAssignee: {
-		"workItemID": DbField{Db: "work_item_id"},
+		"assignee":   DbField{Type: ColumnSimpleTypeString, Db: "assignee", Nullable: false, Public: true},
+		"workItemID": DbField{Type: ColumnSimpleTypeInteger, Db: "work_item_id", Nullable: false, Public: true},
 	},
 }

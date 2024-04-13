@@ -1,4 +1,4 @@
-import { ComponentProps, UIEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ComponentProps, MouseEventHandler, UIEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   MantineReactTable,
   useMantineReactTable,
@@ -11,6 +11,7 @@ import {
   mrtFilterOptions,
   MRT_Column,
   MRT_VisibilityState,
+  MRT_SelectCheckbox,
 } from 'mantine-react-table'
 import {
   Accordion,
@@ -24,6 +25,7 @@ import {
   Group,
   List,
   MenuItem,
+  Slider,
   Text,
   TextInput,
   Title,
@@ -35,8 +37,10 @@ import { useQuery } from '@tanstack/react-query'
 import { useGetPaginatedUsersInfinite } from 'src/gen/user/user'
 import dayjs from 'dayjs'
 import {
+  Direction,
   GetPaginatedUsersParams,
   GetPaginatedUsersQueryParameters,
+  PaginationCursor,
   PaginationFilterModes,
   PaginationItems,
   Role,
@@ -45,7 +49,7 @@ import {
 import { getContrastYIQ, scopeColor } from 'src/utils/colors'
 import _, { lowerCase } from 'lodash'
 import { CodeHighlight } from '@mantine/code-highlight'
-import { ENTITY_FILTERS, OPERATION_AUTH, ROLES } from 'src/config'
+import { ENTITY_FIELDS, OPERATION_AUTH, ROLES } from 'src/config'
 import { entries } from 'src/utils/object'
 import { sentenceCase } from 'src/utils/strings'
 import { arrModes, columnPropsByType, emptyModes } from 'src/utils/mantine-react-table'
@@ -53,7 +57,7 @@ import { DateInput } from '@mantine/dates'
 import { useDebouncedValue } from '@mantine/hooks'
 
 import { useMantineReactTableFilters } from 'src/hooks/ui/useMantineReactTableFilters'
-import { IconStar } from '@tabler/icons'
+import { IconSend, IconStar } from '@tabler/icons'
 import {
   CustomMRTFilter,
   RowActionsMenu,
@@ -61,10 +65,11 @@ import {
 } from 'src/utils/mantine-react-table.components'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
 import { useDeletedEntityFilter } from 'src/hooks/tables/useFilters'
+import ErrorCallout from 'src/components/Callout/ErrorCallout'
 
 type Column = MRT_ColumnDef<User>
 
-type DefaultFilters = keyof typeof ENTITY_FILTERS.user
+type DefaultFilters = keyof typeof ENTITY_FIELDS.user
 
 const defaultExcludedColumns: Array<DefaultFilters> = ['firstName', 'lastName']
 // just btrees, or extension indexes if applicable https://www.postgresql.org/docs/16/indexes-ordering.html
@@ -93,7 +98,7 @@ export default function DemoMantineReactTable() {
   const [columnVisibility, setColumnVisibility] = useState<MRT_VisibilityState>({})
   const defaultPaginatedUserColumns = useMemo<Column[]>(
     () =>
-      entries(ENTITY_FILTERS.user)
+      entries(ENTITY_FIELDS.user)
         .filter(([id, c]) => !defaultExcludedColumns.includes(id))
         .map(([id, c]) => {
           let col = {
@@ -242,6 +247,9 @@ export default function DemoMantineReactTable() {
     [defaultPaginatedUserColumns],
   )
 
+  // TODO: debounce to prevent instant callout
+  const [tableCalloutError, setTableCalloutError] = useState<string | null>(null)
+
   // allow overriding default columns for an entity
   const columns = useMemo<Column[]>(() => {
     const hiddenColumns: string[] = []
@@ -254,24 +262,28 @@ export default function DemoMantineReactTable() {
   }, [_columns])
 
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
   const [sorting, setSorting] = useState<MRT_SortingState>([{ id: 'createdAt', desc: true }])
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
     pageSize: 15,
   })
+  const [paginationColumn, setPaginationColumn] = useState('createdAt')
+  const [cursor] = useState(null) // handled in backend
+  const [paginationDirection, setPaginationDirection] = useState<Direction>('desc')
 
   const [searchQuery, setSearchQuery] = useState<GetPaginatedUsersQueryParameters>(() => ({
     items: {},
-    cursors: [
-      {
-        column: 'createdAt',
-        direction: 'desc',
-        value: dayjs().toRFC3339NANO(),
-      },
-    ],
   }))
 
+  const getPaginatedUsersParams: GetPaginatedUsersParams = {
+    direction: paginationDirection,
+    column: paginationColumn,
+    // cursor,
+    ...(cursor !== null && { cursor: cursor }),
+    limit: pagination.pageSize,
+    searchQuery,
+  }
+  const { cursor: __cursor, ...queryKeyParams } = getPaginatedUsersParams
   const {
     data: usersData,
     refetch,
@@ -282,36 +294,22 @@ export default function DemoMantineReactTable() {
     error,
     isLoading,
     // see https://v2.mantine-react-table.com/docs/examples/infinite-scrolling
-  } = useGetPaginatedUsersInfinite(
-    {
-      direction: 'desc',
-      cursor: '123', // must have something for react-query to work
-      limit: pagination.pageSize,
-      // deepmap needs to be updated for kin-openapi new Type struct
-      // filter: { post: ['fesefesf', '1'], bools: [true, false], objects: [{ nestedObj: 'something' }] },
-      // nested: { obj: { nestedObj: '1212' } },
-      // custom: {
-      //   // cursor: `${usersData?.page.nextCursor}`,
-      //   size: `${pagination.pageSize}`,
-      //   filters: columnFilters,
-      //   globalFilter: globalFilter ?? '',
-      //   sorting: sorting,
-      // },
-      searchQuery,
+  } = useGetPaginatedUsersInfinite(getPaginatedUsersParams, {
+    query: {
+      // IMPORTANT: must use cursor as its own param (orval/react-query requirement)
+      getNextPageParam: (_lastGroup, groups) => _lastGroup.page.nextCursor, // must use as is.
+      queryKey: [`/user/page`, ...(queryKeyParams ? [queryKeyParams] : [])],
     },
-    {
-      query: {
-        getNextPageParam: (_lastGroup, groups) => {
-          const d = dayjs(_lastGroup.page.nextCursor)
-          if (d.isValid()) {
-            return d.toISOString()
-          }
+  })
 
-          return
-        },
-      },
-    },
-  )
+  // useStopInfiniteRenders(60)
+
+  const fetchedUsers = useMemo(() => usersData?.pages.flatMap((page) => page.items ?? []) ?? [], [usersData])
+
+  const totalRowCount = Infinity
+  const lastFetchedCount =
+    (usersData?.pages ? usersData.pages[usersData.pages.length - 1]?.items?.length : Infinity) ?? Infinity
+  const nextCursor = usersData?.pages.slice(-1)[0]?.page.nextCursor
 
   useEffect(() => {
     const items: PaginationItems = {}
@@ -358,66 +356,64 @@ export default function DemoMantineReactTable() {
       }
     })
 
-    searchQuery.cursors = sorting.flatMap((s) => {
-      const col = columns.find((col) => col.id === s.id)
+    setSearchQuery((v) => ({ ...v, items, role: role }))
+  }, [columnFilters, dynamicConfig?.filterModes, sorting])
+
+  useEffect(() => {
+    let shouldUseNextCursor = false
+    const newCursors = sorting.flatMap((colSort) => {
+      const col = columns.find((col) => col.id === colSort.id)
       if (!col) return []
+
+      const sameDirection = colSort.desc === (paginationDirection === 'desc')
+      const sameColumn = paginationColumn === colSort.id
+      shouldUseNextCursor = sameColumn && sameDirection
+
       return [
         {
-          column: s.id,
-          direction: s.desc ? 'desc' : 'asc',
-          // for natural sorting we need: CREATE COLLATION numeric (provider = icu, locale = 'en@colNumeric=yes')
+          column: colSort.id,
+          direction: colSort.desc ? 'desc' : 'asc',
+          // for natural string sorting we need: CREATE COLLATION numeric (provider = icu, locale = 'en@colNumeric=yes')
           // used as SELECT email COLLATE numeric FROM users ORDER BY email DESC;
           // therefore indexes would need to be applied with COLLATE numeric
-          // FIXME: these are defaults - use nextCursor if sorting hasnt changed
-          // TODO: nullable cursor value, and if nullable then in repo we query select <col> ...order by <col> limit 1
-          // scan to string and use that as cursor
-          value: String(
-            s.desc
-              ? col.filterVariant === 'date-range'
-                ? dayjs().toRFC3339NANO()
-                : col.filterVariant === 'text'
-                ? '\ufffd' // lower bound
-                : -Infinity
-              : col.filterVariant === 'date-range'
-              ? dayjs(0).toRFC3339NANO()
-              : col.filterVariant === 'text'
-              ? 'zzzzzzzzzzzzzzzzzz' // need querying select <col> from users order by <col> desc limit 1 for this one.
-              : Infinity,
-          ),
-        },
+          // FIXME: nextCursor triggers more requests on itself now somehow. nextCursor is not in deps but one of them might contain it?
+        } as PaginationCursor,
       ]
     })
 
-    setSearchQuery((v) => ({ ...v, items, role: role }))
-  }, [columnFilters, globalFilter, dynamicConfig?.filterModes, sorting])
+    if (newCursors.length !== 1 || !newCursors[0]) {
+      setTableCalloutError('Exactly one column must be sorted')
+      return
+    }
+    setTableCalloutError(null)
+
+    const newCursor = newCursors[0]
+    setPaginationDirection(newCursor.direction)
+    setPaginationColumn(newCursor.column)
+    if (!shouldUseNextCursor) {
+      tableContainerRef.current?.scrollTo({ top: Infinity }) // prevent fetching more automatically
+    }
+  }, [sorting, usersData, nextCursor])
 
   useEffect(() => {
     console.log({ searchQuery })
   }, [searchQuery])
 
-  // useStopInfiniteRenders(60)
-
-  const fetchedUsers = useMemo(() => usersData?.pages.flatMap((page) => page.items ?? []) ?? [], [usersData])
-
-  const totalRowCount = Infinity
-  const totalFetched = fetchedUsers.length
-  const nextCursor = usersData?.pages.slice(-1)[0]?.page.nextCursor
-
   const fetchMoreOnBottomReached = useCallback(
     (containerRefElement?: HTMLDivElement | null) => {
       if (containerRefElement) {
         const { scrollHeight, scrollTop, clientHeight } = containerRefElement
-        const hasMore = totalFetched >= pagination.pageSize
+        const hasMore = lastFetchedCount >= pagination.pageSize
         if (scrollHeight - scrollTop - clientHeight < 200 && !isFetching && !isFetchingNextPage && hasMore) {
-          const nc = dayjs(nextCursor) // keep cursor date format
-          if (nc.isValid()) {
+          if (nextCursor /** empty string or null */) {
             console.log('Fetching more...')
+
             fetchNextPage()
           }
         }
       }
     },
-    [fetchNextPage, isFetching, totalFetched, nextCursor, isFetchingNextPage, pagination.pageSize],
+    [fetchNextPage, isFetching, lastFetchedCount, nextCursor, isFetchingNextPage, pagination.pageSize],
   )
 
   useEffect(() => {
@@ -426,24 +422,7 @@ export default function DemoMantineReactTable() {
 
   const { colorScheme } = useMantineColorScheme()
 
-  const { deletedEntityFilterState, getLabelText, toggleDeletedUsersFilter } = useDeletedEntityFilter('user')
-
-  useEffect(() => {
-    switch (deletedEntityFilterState) {
-      case true:
-        setFilterMode('deletedAt', PaginationFilterModes.notEmpty)
-        break
-      case false:
-        setFilterMode('deletedAt', PaginationFilterModes.empty)
-        break
-      case null:
-        removeFilterMode('deletedAt')
-      default:
-        break
-    }
-  }, [deletedEntityFilterState])
-
-  const validationError = error?.response?.data.validationError
+  const validationError = error?.response?.data?.validationError
 
   const table = useMantineReactTable({
     enableBottomToolbar: false,
@@ -457,25 +436,24 @@ export default function DemoMantineReactTable() {
     manualFiltering: true,
     manualPagination: true,
     manualSorting: true,
-    mantineToolbarAlertBannerProps: isError
-      ? {
-          color: 'red',
-          children: (
-            <>
-              <Title size={'xs'}>Error loading data: {error.response?.data.detail}</Title>
-              {validationError && (
-                <List>
-                  {validationError.messages.map((m, i) => (
-                    <List.Item key={i}>{m}</List.Item>
-                  ))}
-                </List>
-              )}
-            </>
-          ),
-        }
-      : undefined,
+    // enableRowSelection: true,
+    positionToolbarAlertBanner: 'head-overlay',
+    // renderToolbarAlertBannerContent: ({ selectedAlert, table }) => (
+    //   <Flex justify="space-between">
+    //     <Flex gap="xl" p="6px">
+    //       <MRT_SelectCheckbox table={table} /> {selectedAlert}{' '}
+    //     </Flex>
+    //     <Flex gap="md">
+    //       <Button color="blue" leftSection={<IconSend />}>
+    //         Email Selected
+    //       </Button>
+    //       <Button color="red" leftSection={<IconTrash />}>
+    //         Remove Selected
+    //       </Button>
+    //     </Flex>
+    //   </Flex>
+    // ),
     onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
     onPaginationChange: setPagination,
     onSortingChange: setSorting,
     enableColumnOrdering: true,
@@ -498,7 +476,6 @@ export default function DemoMantineReactTable() {
       columnOrder: staticConfig?.columnOrder ?? ['mrt-row-actions', 'fullName', 'email', 'role'],
       density: 'xs',
       columnFilters,
-      globalFilter,
       isLoading,
       pagination,
       showAlertBanner: isError,
@@ -523,15 +500,7 @@ export default function DemoMantineReactTable() {
           >
             Create user
           </Button>
-          {defaultPaginatedUserColumns.findIndex((c) => c.id === 'deletedAt') !== -1 && (
-            <Checkbox
-              checked={deletedEntityFilterState ?? true}
-              size="sm"
-              indeterminate={deletedEntityFilterState === null}
-              onChange={toggleDeletedUsersFilter}
-              label={getLabelText()}
-            />
-          )}
+          {defaultPaginatedUserColumns.findIndex((c) => c.id === 'deletedAt') !== -1 && <DeletedUserFilterSwitch />}
         </Group>
       </Flex>
     ),
@@ -562,6 +531,7 @@ export default function DemoMantineReactTable() {
 
   return (
     <>
+      <DeletedUserFilterSwitch />
       <Accordion
         styles={{
           content: { paddingRight: 0, paddingLeft: 0 },
@@ -578,10 +548,9 @@ export default function DemoMantineReactTable() {
               lang="json"
               code={JSON.stringify(
                 {
-                  cursor: `${usersData?.pages[0]?.page.nextCursor}`,
+                  searchQuery: searchQuery,
                   size: `${pagination.pageSize}`,
                   columnFilters,
-                  globalFilter: globalFilter ?? '',
                   sorting: sorting,
                 },
                 null,
@@ -597,8 +566,20 @@ export default function DemoMantineReactTable() {
           </Accordion.Panel>
         </Accordion.Item>
       </Accordion>
-      {/* when using hook, set all props there */}
       <Card p={8} radius={0}>
+        {tableCalloutError !== null ? (
+          <ErrorCallout title={tableCalloutError}></ErrorCallout>
+        ) : isError ? (
+          // FIXME: should have callout extractor for AppError (may be validationError or regular httpError)
+          validationError ? (
+            <ErrorCallout
+              title={'Validation error'}
+              errors={validationError?.detail?.map((e) => e?.msg)}
+            ></ErrorCallout>
+          ) : error?.response?.data ? (
+            <ErrorCallout title={'Error loading data'} errors={[error?.response?.data?.detail]}></ErrorCallout>
+          ) : undefined
+        ) : undefined}
         <MantineReactTable table={table} />
       </Card>
     </>
@@ -613,4 +594,50 @@ function tryDate(value: unknown) {
     v = dateVal.toRFC3339NANO()
   }
   return v
+}
+
+function DeletedUserFilterSwitch() {
+  const { deletedEntityFilterState, getLabelText, toggleDeletedUsersFilter } = useDeletedEntityFilter('user')
+  const { dynamicConfig, staticConfig, setColumnOrder, setHiddenColumns, setFilterMode, removeFilterMode } =
+    useMantineReactTableFilters(TABLE_NAME)
+
+  const sliderStates = [0, 50, 100] as const
+  const [state, setState] = useState<number>(sliderStates[1])
+
+  useEffect(() => {
+    switch (deletedEntityFilterState) {
+      case true:
+        setFilterMode('deletedAt', PaginationFilterModes.notEmpty)
+        break
+      case false:
+        setFilterMode('deletedAt', PaginationFilterModes.empty)
+        break
+      case null:
+        removeFilterMode('deletedAt')
+      default:
+        break
+    }
+  }, [deletedEntityFilterState])
+
+  function onClickCapture(e: any) {
+    setState((v) => (v + 1) % sliderStates.length)
+    toggleDeletedUsersFilter()
+  }
+
+  return (
+    <Flex direction="row" align="center" gap={8}>
+      <Slider
+        value={sliderStates[state]}
+        onClickCapture={onClickCapture}
+        w={40}
+        min={0}
+        max={100}
+        step={50}
+        marks={[{ value: 0 }, { value: 50 }, { value: 100 }]}
+        showLabelOnHover={false}
+        label={null}
+      />
+      <Text size="sm">{getLabelText()}</Text>
+    </Flex>
+  )
 }

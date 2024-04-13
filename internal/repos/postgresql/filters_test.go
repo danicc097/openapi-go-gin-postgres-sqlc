@@ -52,12 +52,13 @@ func primitiveFilter(s string, mode models.PaginationFilterModes) *models.Pagina
 
 func TestGenerateFilters(t *testing.T) {
 	const testEntity db.TableEntity = "testEntity"
-	db.EntityFilters[testEntity] = map[string]db.Filter{
-		"createdAt": {Type: "date-time", Db: "created_at", Nullable: false},
-		"fullName":  {Type: "string", Db: "full_name", Nullable: true},
-		"count":     {Type: "integer", Db: "db_count", Nullable: false},
-		"countF":    {Type: "float", Db: "db_countf", Nullable: false},
-		"bool":      {Type: "boolean", Db: "db_bool", Nullable: false},
+	db.EntityFields[testEntity] = map[string]db.DbField{
+		"createdAt": {Type: "date-time", Db: "created_at", Nullable: false, Public: true},
+		"private":   {Type: "string", Db: "private", Nullable: false, Public: false},
+		"fullName":  {Type: "string", Db: "full_name", Nullable: true, Public: true},
+		"count":     {Type: "integer", Db: "db_count", Nullable: false, Public: true},
+		"countF":    {Type: "float", Db: "db_countf", Nullable: false, Public: true},
+		"bool":      {Type: "boolean", Db: "db_bool", Nullable: false, Public: true},
 	}
 
 	tests := []struct {
@@ -66,6 +67,15 @@ func TestGenerateFilters(t *testing.T) {
 		expected    map[string][]interface{}
 		errContains string
 	}{
+		{
+			name: "hidden column - no json tag - ignored",
+			pagParams: models.PaginationItems{
+				"private": {
+					Filter: primitiveFilter("abc", models.PaginationFilterModesEquals),
+				},
+			},
+			expected: map[string][]interface{}{},
+		},
 		{
 			name: "unknown column ignored",
 			pagParams: models.PaginationItems{

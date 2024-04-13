@@ -33,13 +33,13 @@ const (
 func GenerateDefaultFilters(entity db.TableEntity, paginationParams models.PaginationItems) (map[string][]interface{}, error) {
 	filters := make(map[string][]interface{})
 
-	if _, ok := db.EntityFilters[entity]; !ok {
+	if _, ok := db.EntityFields[entity]; !ok {
 		return nil, fmt.Errorf("invalid entity: %v", entity)
 	}
 
 	for id, pag := range paginationParams {
-		dbfilter, ok := db.EntityFilters[entity][id]
-		if !ok {
+		dbfilter, ok := db.EntityFields[entity][id]
+		if !ok || !dbfilter.Public {
 			continue
 		}
 		if pag.Filter == nil {

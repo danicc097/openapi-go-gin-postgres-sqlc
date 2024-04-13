@@ -8,23 +8,33 @@ import (
 	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 )
 
+type ColumnSimpleType string
+
+const (
+	ColumnSimpleTypeDateTime ColumnSimpleType = "date-time"
+	ColumnSimpleTypeInteger  ColumnSimpleType = "integer"
+	ColumnSimpleTypeNumber   ColumnSimpleType = "number"
+	ColumnSimpleTypeString   ColumnSimpleType = "string"
+	ColumnSimpleTypeBoolean  ColumnSimpleType = "boolean"
+	ColumnSimpleTypeArray    ColumnSimpleType = "array"
+	ColumnSimpleTypeObject   ColumnSimpleType = "object"
+)
+
 type Cursor struct {
 	Column    string
 	Value     interface{}
 	Direction models.Direction
 }
 
-type Filter struct {
+// DbField shows db column information.
+type DbField struct {
 	// Type is one of: string, number, integer, boolean, date-time
 	// Arrays and objects are ignored for default filter generation
-	Type string `json:"type"`
+	Type ColumnSimpleType `json:"type"`
 	// Db is the corresponding db column name
 	Db       string `json:"db"`
 	Nullable bool   `json:"nullable"`
-}
-
-type DbField struct {
-	Db string `json:"db"`
+	Public   bool   `json:"public"`
 }
 
 func newPointer[T any](v T) *T {
@@ -47,7 +57,5 @@ func (err *XoError) Unwrap() error {
 }
 
 type TableEntity string
-
-var EntityFilters = map[TableEntity]map[string]Filter{}
 
 var EntityFields = map[TableEntity]map[string]DbField{}

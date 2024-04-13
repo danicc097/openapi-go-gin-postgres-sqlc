@@ -27,7 +27,7 @@ export const getUpdateActivityResponseMock = (overrideResponse: any = {}): Activ
 
 export const getCreateActivityMockHandler = (overrideResponse?: Activity) => {
   return http.post('*/project/:projectName/activity/', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getCreateActivityResponseMock()),
       {
         status: 200,
@@ -41,7 +41,7 @@ export const getCreateActivityMockHandler = (overrideResponse?: Activity) => {
 
 export const getGetActivityMockHandler = (overrideResponse?: Activity) => {
   return http.get('*/activity/:activityID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetActivityResponseMock()),
       {
         status: 200,
@@ -55,7 +55,7 @@ export const getGetActivityMockHandler = (overrideResponse?: Activity) => {
 
 export const getUpdateActivityMockHandler = (overrideResponse?: Activity) => {
   return http.patch('*/activity/:activityID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getUpdateActivityResponseMock()),
       {
         status: 200,
@@ -69,7 +69,7 @@ export const getUpdateActivityMockHandler = (overrideResponse?: Activity) => {
 
 export const getDeleteActivityMockHandler = () => {
   return http.delete('*/activity/:activityID', async () => {
-    await delay(1000);
+    await delay(200);
     return new HttpResponse(null,
       {
         status: 200,

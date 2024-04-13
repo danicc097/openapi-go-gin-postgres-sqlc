@@ -11,5 +11,5 @@ import type { Direction } from './direction';
 export type GetPaginatedNotificationsParams = {
 limit: number;
 direction: Direction;
-cursor: string;
+cursor?: string | null;
 };

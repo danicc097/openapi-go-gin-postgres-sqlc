@@ -2495,6 +2495,9 @@
         "filterMode"
       ]
     },
+    "AnyValue": {
+      "description": "represents any value, including `null`"
+    },
     "PaginationFilter": {
       "oneOf": [
         {
@@ -2525,12 +2528,6 @@
         "$ref": "#/definitions/Pagination"
       }
     },
-    "PaginationCursors": {
-      "type": "array",
-      "items": {
-        "$ref": "#/definitions/PaginationCursor"
-      }
-    },
     "PaginationCursor": {
       "type": "object",
       "properties": {
@@ -2548,7 +2545,6 @@
       },
       "required": [
         "direction",
-        "value",
         "column"
       ]
     },
@@ -2559,14 +2555,8 @@
         },
         "items": {
           "$ref": "#/definitions/PaginationItems"
-        },
-        "cursors": {
-          "$ref": "#/definitions/PaginationCursors"
         }
       },
-      "required": [
-        "cursors"
-      ],
       "type": "object"
     },
     "PaginationFilterModes": {
@@ -2952,6 +2942,9 @@
     "PaginationFilterArray": {
       "$ref": "#/definitions/PaginationFilterArray"
     },
+    "AnyValue": {
+      "$ref": "#/definitions/AnyValue"
+    },
     "PaginationFilter": {
       "$ref": "#/definitions/PaginationFilter"
     },
@@ -2960,9 +2953,6 @@
     },
     "PaginationItems": {
       "$ref": "#/definitions/PaginationItems"
-    },
-    "PaginationCursors": {
-      "$ref": "#/definitions/PaginationCursors"
     },
     "PaginationCursor": {
       "$ref": "#/definitions/PaginationCursor"

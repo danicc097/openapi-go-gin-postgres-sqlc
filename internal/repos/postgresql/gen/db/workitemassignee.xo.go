@@ -339,7 +339,7 @@ func (wia *WorkItemAssignee) Delete(ctx context.Context, db DB) error {
 
 // WorkItemAssigneePaginated returns a cursor-paginated list of WorkItemAssignee.
 // At least one cursor is required.
-func WorkItemAssigneePaginated(ctx context.Context, db DB, cursors models.PaginationCursors, opts ...WorkItemAssigneeSelectConfigOption) ([]WorkItemAssignee, error) {
+func WorkItemAssigneePaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...WorkItemAssigneeSelectConfigOption) ([]WorkItemAssignee, error) {
 	c := &WorkItemAssigneeSelectConfig{joins: WorkItemAssigneeJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
@@ -350,23 +350,21 @@ func WorkItemAssigneePaginated(ctx context.Context, db DB, cursors models.Pagina
 		o(c)
 	}
 
-	for _, cursor := range cursors {
-		if cursor.Value == nil {
+	if cursor.Value == nil {
 
-			return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
-		}
-		field, ok := EntityFields[TableEntityWorkItemAssignee][cursor.Column]
-		if !ok {
-			return nil, logerror(fmt.Errorf("WorkItemAssignee/Paginated/cursor: %w", &XoError{Entity: "Work item assignee", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
-		}
-
-		op := "<"
-		if cursor.Direction == models.DirectionAsc {
-			op = ">"
-		}
-		c.filters[fmt.Sprintf("work_item_assignee.%s %s $i", field.Db, op)] = []any{*cursor.Value}
-		c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
+		return nil, logerror(fmt.Errorf("XoTestsUser/Paginated/cursorValue: %w", &XoError{Entity: "User", Err: fmt.Errorf("no cursor value for column: %s", cursor.Column)}))
 	}
+	field, ok := EntityFields[TableEntityWorkItemAssignee][cursor.Column]
+	if !ok {
+		return nil, logerror(fmt.Errorf("WorkItemAssignee/Paginated/cursor: %w", &XoError{Entity: "Work item assignee", Err: fmt.Errorf("invalid cursor column: %s", cursor.Column)}))
+	}
+
+	op := "<"
+	if cursor.Direction == models.DirectionAsc {
+		op = ">"
+	}
+	c.filters[fmt.Sprintf("work_item_assignee.%s %s $i", field.Db, op)] = []any{*cursor.Value}
+	c.orderBy[field.Db] = cursor.Direction // no need to duplicate opts
 
 	paramStart := 0 // all filters will come from the user
 	nth := func() string {
