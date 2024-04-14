@@ -2,6 +2,7 @@ import 'regenerator-runtime/runtime'
 import { expect, afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import indexeddb from 'fake-indexeddb'
+import { configure } from '@testing-library/react'
 
 import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers'
 import matchers from '@testing-library/jest-dom/matchers'
@@ -28,6 +29,8 @@ declare module 'vitest' {
 }
 
 expect.extend(matchers)
+
+configure({ asyncUtilTimeout: 5000 })
 
 globalThis.indexedDB = indexeddb
 

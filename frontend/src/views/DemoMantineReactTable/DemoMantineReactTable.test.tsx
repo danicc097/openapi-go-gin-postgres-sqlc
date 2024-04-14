@@ -58,7 +58,7 @@ test('mrt-table-tests-render', async () => {
   // don't intercept until scroll mock is set up (let it retry network error - doesn't affect request spy calls)
   server.use(getGetPaginatedUsersMockHandler(firstPage))
 
-  await screen.findByText(firstPage.items![0]!.email, {}, { timeout: 5000 })
+  await screen.findByText(firstPage.items![0]!.email)
   expect(requestSpy.mock.calls).toHaveLength(1)
   const firstPageUrl = new URL(requestSpy.mock.calls[0][0]['request']['url'])
 
@@ -71,9 +71,11 @@ test('mrt-table-tests-render', async () => {
   vitest.spyOn(table, 'scrollTop', 'get').mockImplementation(() => 500)
   fireEvent.scroll(table, { target: { scrollY: 100 } })
   vitest.spyOn(table, 'scrollHeight', 'get').mockImplementation(() => 2200) // as if next page was loaded. prevents infinite fetching more
-  await screen.findByText(secondPage.items![0]!.email, {}, { timeout: 5000 })
+  await screen.findByText(secondPage.items![0]!.email)
 
   expect(requestSpy.mock.calls).toHaveLength(2)
   const secondPageUrl = new URL(requestSpy.mock.calls[1][0]['request']['url'])
   expect(secondPageUrl.searchParams.get('cursor')).toBe(firstPage.page.nextCursor)
+
+  const filter = await screen.findByPlaceholderText(/filter by email/i)
 })
