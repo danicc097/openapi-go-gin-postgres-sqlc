@@ -395,32 +395,21 @@ export default function DemoMantineReactTable() {
     }
   }, [sorting, usersData, nextCursor])
 
-  const [triggerFetchMore, setTriggerFetchMore] = useState(false)
-
   const fetchMoreOnBottomReached = useCallback(
     (containerRefElement?: HTMLDivElement | null) => {
       if (containerRefElement) {
         const { scrollHeight, scrollTop, clientHeight } = containerRefElement
         const hasMore = lastFetchedCount >= pagination.pageSize
         const reachedEnd = scrollHeight - scrollTop - clientHeight < 200
-        if ((reachedEnd && !isFetching && !isFetchingNextPage && hasMore) || triggerFetchMore) {
-          if (nextCursor /** empty string or null */) {
+        if (reachedEnd && !isFetching && !isFetchingNextPage && hasMore) {
+          if (nextCursor) {
             console.log('Fetching more...')
             fetchNextPage()
-            setTriggerFetchMore(false)
           }
         }
       }
     },
-    [
-      fetchNextPage,
-      isFetching,
-      lastFetchedCount,
-      nextCursor,
-      isFetchingNextPage,
-      pagination.pageSize,
-      triggerFetchMore,
-    ],
+    [fetchNextPage, isFetching, lastFetchedCount, nextCursor, isFetchingNextPage, pagination.pageSize],
   )
 
   useEffect(() => {

@@ -1685,17 +1685,17 @@ func UserByUserID(ctx context.Context, db DB, userID UserID, opts ...UserSelectC
 	return &u, nil
 }
 
-// UsersByUpdatedAt retrieves a row from 'public.users' as a User.
+// UsersByRoleRankAge retrieves a row from 'public.users' as a User.
 //
-// Generated from index 'users_updated_at_idx'.
-func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...UserSelectConfigOption) ([]User, error) {
+// Generated from index 'users_role_rank_age_username_email_full_name_idx'.
+func UsersByRoleRankAge(ctx context.Context, db DB, roleRank int, age *int, opts ...UserSelectConfigOption) ([]User, error) {
 	c := &UserSelectConfig{deletedAt: " null ", joins: UserJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {
 		o(c)
 	}
 
-	paramStart := 1
+	paramStart := 2
 	nth := func() string {
 		paramStart++
 		return strconv.Itoa(paramStart)
@@ -1831,26 +1831,26 @@ func UsersByUpdatedAt(ctx context.Context, db DB, updatedAt time.Time, opts ...U
 	users.user_id,
 	users.username %s 
 	 FROM public.users %s 
-	 WHERE users.updated_at = $1
+	 WHERE users.role_rank = $1 AND users.age = $2
 	 %s   AND users.deleted_at is %s  %s 
   %s 
 `, selects, joins, filters, c.deletedAt, groupByClause, havingClause)
 	sqlstr += orderBy
 	sqlstr += c.limit
-	sqlstr = "/* UsersByUpdatedAt */\n" + sqlstr
+	sqlstr = "/* UsersByRoleRankAge */\n" + sqlstr
 
 	// run
-	// logf(sqlstr, updatedAt)
-	rows, err := db.Query(ctx, sqlstr, append([]any{updatedAt}, append(filterParams, havingParams...)...)...)
+	// logf(sqlstr, roleRank, age)
+	rows, err := db.Query(ctx, sqlstr, append([]any{roleRank, age}, append(filterParams, havingParams...)...)...)
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/UsersByUpdatedAt/Query: %w", &XoError{Entity: "User", Err: err}))
+		return nil, logerror(fmt.Errorf("User/UsersByRoleRankAgeUsernameEmailFullName/Query: %w", &XoError{Entity: "User", Err: err}))
 	}
 	defer rows.Close()
 	// process
 
 	res, err := pgx.CollectRows(rows, pgx.RowToStructByNameLax[User])
 	if err != nil {
-		return nil, logerror(fmt.Errorf("User/UsersByUpdatedAt/pgx.CollectRows: %w", &XoError{Entity: "User", Err: err}))
+		return nil, logerror(fmt.Errorf("User/UsersByRoleRankAgeUsernameEmailFullName/pgx.CollectRows: %w", &XoError{Entity: "User", Err: err}))
 	}
 	return res, nil
 }
