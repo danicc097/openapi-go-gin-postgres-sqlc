@@ -136,7 +136,7 @@ const useFormSlice = create<FormState>()(
     },
     // { version: 3, name: FORM_SLICE_PERSIST_KEY },
     // ),
-    { enabled: true },
+    { enabled: import.meta.env.TESTING !== 'true' },
   ),
 )
 

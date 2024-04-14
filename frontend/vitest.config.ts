@@ -41,6 +41,9 @@ export default defineConfig((env) =>
         'process.env.TESTING': true,
       },
       test: {
+        env: {
+          TESTING: 'true',
+        },
         testTimeout: 50_000,
         // reporters: ['verbose'],
         // outputFile: './reporter-output/result',

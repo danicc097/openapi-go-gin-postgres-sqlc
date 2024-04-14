@@ -9,8 +9,7 @@ import { apiPath } from 'src/services/apiPaths'
 import { render, screen } from 'src/test-utils'
 import { setupMSW } from 'src/test-utils/msw'
 import DemoMantineReactTable from 'src/views/DemoMantineReactTable/DemoMantineReactTable'
-
-const server = setupMSW()
+import { vitest } from 'vitest'
 
 function usersForPage(page: number): User[] {
   return [...Array(15)].map((x, i) => ({
@@ -45,21 +44,27 @@ const secondPage: PaginatedUsersResponse = {
     nextCursor: 'next-cursor-2',
   },
 }
+const server = setupMSW()
 
 test('mrt-table-tests-render', async () => {
-  server.boundary(async () => {
-    render(<DemoMantineReactTable></DemoMantineReactTable>)
+  const requestSpy = vitest.fn()
+  server.events.on('request:start', requestSpy)
 
-    server.use(getGetPaginatedUsersMockHandler(firstPage))
+  server.use(getGetPaginatedUsersMockHandler(firstPage))
 
-    const el = await screen.findByText(firstPage.items![0]!.email, {}, { timeout: 5000 })
-    const allRows = screen.queryAllByRole('row')
-    const firstRow = allRows.filter((row) => row.getAttribute('data-index') === '0')
+  render(<DemoMantineReactTable></DemoMantineReactTable>)
 
-    // TODO: scroll down container -Infinity
-    // we should generate pages of length > 10 so that testing scroll on end reached works.
+  const el = await screen.findByText(firstPage.items![0]!.email, {}, { timeout: 5000 })
+  const url = new URL(requestSpy.mock.lastCall[0]['request']['url'])
 
-    // TODO: should test it was called with cursor=next-cursor-1
-    server.use(getGetPaginatedUsersMockHandler(secondPage))
-  })
+  //FIXME: has actually fetched more (logging Fetching more...)
+  expect(url.searchParams.get('cursor')).toBe('next-cursor-1')
+  const allRows = screen.queryAllByRole('row')
+  const firstRow = allRows.filter((row) => row.getAttribute('data-index') === '0')
+
+  // TODO: scroll down container -Infinity
+  // we should generate pages of length > 10 so that testing scroll on end reached works.
+
+  // TODO: should test it was called with cursor=next-cursor-1
+  server.use(getGetPaginatedUsersMockHandler(secondPage))
 })
