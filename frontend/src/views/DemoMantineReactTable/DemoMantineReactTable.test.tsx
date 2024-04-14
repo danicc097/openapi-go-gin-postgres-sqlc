@@ -53,9 +53,9 @@ test('mrt-table-tests-render', async () => {
   render(<DemoMantineReactTable></DemoMantineReactTable>)
 
   const table = document.getElementById('users-table')!
-  vitest.spyOn(table, 'scrollHeight', 'get').mockImplementation(() => 1147)
+  vitest.spyOn(table, 'scrollHeight', 'get').mockImplementation(() => 1150) // as if next page was loaded
   vitest.spyOn(table, 'clientHeight', 'get').mockImplementation(() => 585)
-  // don't intercept until bounding rect mock is set up (let it retry network error - doesn't affect request spy calls)
+  // don't intercept until scroll mock is set up (let it retry network error - doesn't affect request spy calls)
   server.use(getGetPaginatedUsersMockHandler(firstPage))
 
   await screen.findByText(firstPage.items![0]!.email, {}, { timeout: 5000 })
@@ -65,13 +65,15 @@ test('mrt-table-tests-render', async () => {
   expect(firstPageUrl.searchParams.get('cursor')).toBe(null)
   const allRows = screen.queryAllByRole('row')
   const firstRow = allRows.filter((row) => row.getAttribute('data-index') === '0')
-  // TODO: maybe should test rendering
+  // TODO: maybe should test row rendering
 
   server.use(getGetPaginatedUsersMockHandler(secondPage))
   vitest.spyOn(table, 'scrollTop', 'get').mockImplementation(() => 500)
   fireEvent.scroll(table, { target: { scrollY: 100 } })
+  vitest.spyOn(table, 'scrollHeight', 'get').mockImplementation(() => 2200) // as if next page was loaded. prevents infinite fetching more
   await screen.findByText(secondPage.items![0]!.email, {}, { timeout: 5000 })
 
+  expect(requestSpy.mock.calls).toHaveLength(2)
   const secondPageUrl = new URL(requestSpy.mock.calls[1][0]['request']['url'])
-  expect(secondPageUrl.searchParams.get('cursor')).toBe('next-cursor-1')
+  expect(secondPageUrl.searchParams.get('cursor')).toBe(firstPage.page.nextCursor)
 })
