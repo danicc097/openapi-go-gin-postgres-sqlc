@@ -395,17 +395,12 @@ export default function DemoMantineReactTable() {
     }
   }, [sorting, usersData, nextCursor])
 
-  useEffect(() => {
-    console.log({ searchQuery })
-  }, [searchQuery])
-
   const [triggerFetchMore, setTriggerFetchMore] = useState(false)
 
   const fetchMoreOnBottomReached = useCallback(
     (containerRefElement?: HTMLDivElement | null) => {
       if (containerRefElement) {
         const { scrollHeight, scrollTop, clientHeight } = containerRefElement
-        console.log({ scrollHeight, scrollTop, clientHeight })
         const hasMore = lastFetchedCount >= pagination.pageSize
         const reachedEnd = scrollHeight - scrollTop - clientHeight < 200
         if ((reachedEnd && !isFetching && !isFetchingNextPage && hasMore) || triggerFetchMore) {
