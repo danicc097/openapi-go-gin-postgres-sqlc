@@ -6,7 +6,7 @@ import { UserID } from 'src/gen/entity-ids'
 import { PaginatedUsersResponse, User } from 'src/gen/model'
 import { getGetPaginatedUsersMockHandler } from 'src/gen/user/user.msw'
 import { apiPath } from 'src/services/apiPaths'
-import { fireEvent, render, screen } from 'src/test-utils'
+import { act, fireEvent, render, screen, userEvent, waitFor } from 'src/test-utils'
 import { setupMSW } from 'src/test-utils/msw'
 import DemoMantineReactTable from 'src/views/DemoMantineReactTable/DemoMantineReactTable'
 import { vitest } from 'vitest'
@@ -83,4 +83,17 @@ test('mrt-table-tests-render', async () => {
   const ageMaxFilter = await screen.findByTestId('input-filter--age-max')
   const createdAtMinFilter = await screen.findByTestId('input-filter--createdAt-min')
   const createdAtMaxFilter = await screen.findByTestId('input-filter--createdAt-max')
+
+  await waitFor(async () => await userEvent.click(hasGlobalNotificationsFilter))
+  await waitFor(async () => await userEvent.type(emailFilter, 'email'))
+  await waitFor(async () => await userEvent.type(ageMaxFilter, '123'))
+  // 2 oct even after changing mantine format wehn using input text
+  await waitFor(async () => await userEvent.type(createdAtMinFilter, '10/02/2024'))
+
+  expect(requestSpy.mock.calls).toHaveLength(3)
+  const lastSearchQueryUrl = new URL(requestSpy.mock.calls[2][0]['request']['url'])
+  // FIXME: direction=desc&column=createdAt&limit=15&
+  // searchQuery[items][email][filter][value]=email&searchQuery[items][email][filter][filterMode]=contains
+  // without rest of filters
+  console.log({ lastSearchQueryUrl: lastSearchQueryUrl.toString() })
 })
