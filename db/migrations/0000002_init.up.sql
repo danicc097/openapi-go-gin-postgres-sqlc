@@ -5,6 +5,10 @@ create schema if not exists "cache";
 
 create extension if not exists pg_stat_statements schema extensions;
 
+create extension if not exists hypopg schema extensions;
+
+create extension if not exists index_advisor schema extensions;
+
 create extension if not exists pg_trgm schema extensions;
 
 create extension if not exists btree_gin schema extensions;
@@ -316,21 +320,13 @@ alter table user_api_keys
 
 comment on column user_api_keys.user_api_key_id is '"properties":private';
 
--- -- pg13 alt for CONSTRAINT uq_external_id UNIQUE NULLS NOT DISTINCT (external_id)
--- create unique index on users (user_id , external_id)
--- where
---   external_id is not null;
--- create unique index on users (user_id)
--- where
---   external_id is null;
--- composite on id, deleted_at, email, deleted_at, etc. will not improve speed
 -- create unique index on users (user_id) where deleted_at is null; -- helps if you have much more deleted rows only
 -- create index on users (deleted_at);  - not worth the extra overhead.
--- for finding all deleted users exclusively
+-- does get used when filtering deleted users exclusively and there's few of them
 create index on users (deleted_at)
 where (deleted_at is not null);
 
-create index on users (updated_at);
+create index on users using gin (role_rank , age , username gin_trgm_ops , email gin_trgm_ops , full_name gin_trgm_ops);
 
 -- notification_types are append-only
 create type notification_type as ENUM (
