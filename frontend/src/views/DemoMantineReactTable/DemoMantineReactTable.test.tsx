@@ -77,5 +77,10 @@ test('mrt-table-tests-render', async () => {
   const secondPageUrl = new URL(requestSpy.mock.calls[1][0]['request']['url'])
   expect(secondPageUrl.searchParams.get('cursor')).toBe(firstPage.page.nextCursor)
 
-  const filter = await screen.findByPlaceholderText(/filter by email/i)
+  const hasGlobalNotificationsFilter = await screen.findByTestId('input-filter--hasGlobalNotifications')
+  const emailFilter = await screen.findByTestId('input-filter--email')
+  const ageMinFilter = await screen.findByTestId('input-filter--age-min')
+  const ageMaxFilter = await screen.findByTestId('input-filter--age-max')
+  const createdAtMinFilter = await screen.findByTestId('input-filter--createdAt-min')
+  const createdAtMaxFilter = await screen.findByTestId('input-filter--createdAt-max')
 })
