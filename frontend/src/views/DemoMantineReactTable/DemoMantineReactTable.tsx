@@ -405,6 +405,7 @@ export default function DemoMantineReactTable() {
     (containerRefElement?: HTMLDivElement | null) => {
       if (containerRefElement) {
         const { scrollHeight, scrollTop, clientHeight } = containerRefElement
+        console.log({ scrollHeight, scrollTop, clientHeight })
         const hasMore = lastFetchedCount >= pagination.pageSize
         const reachedEnd = scrollHeight - scrollTop - clientHeight < 200
         if ((reachedEnd && !isFetching && !isFetchingNextPage && hasMore) || triggerFetchMore) {
