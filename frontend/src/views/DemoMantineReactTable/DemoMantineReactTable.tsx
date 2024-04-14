@@ -399,21 +399,32 @@ export default function DemoMantineReactTable() {
     console.log({ searchQuery })
   }, [searchQuery])
 
+  const [triggerFetchMore, setTriggerFetchMore] = useState(false)
+
   const fetchMoreOnBottomReached = useCallback(
     (containerRefElement?: HTMLDivElement | null) => {
       if (containerRefElement) {
         const { scrollHeight, scrollTop, clientHeight } = containerRefElement
         const hasMore = lastFetchedCount >= pagination.pageSize
-        if (scrollHeight - scrollTop - clientHeight < 200 && !isFetching && !isFetchingNextPage && hasMore) {
+        const reachedEnd = scrollHeight - scrollTop - clientHeight < 200
+        if ((reachedEnd && !isFetching && !isFetchingNextPage && hasMore) || triggerFetchMore) {
           if (nextCursor /** empty string or null */) {
             console.log('Fetching more...')
-
             fetchNextPage()
+            setTriggerFetchMore(false)
           }
         }
       }
     },
-    [fetchNextPage, isFetching, lastFetchedCount, nextCursor, isFetchingNextPage, pagination.pageSize],
+    [
+      fetchNextPage,
+      isFetching,
+      lastFetchedCount,
+      nextCursor,
+      isFetchingNextPage,
+      pagination.pageSize,
+      triggerFetchMore,
+    ],
   )
 
   useEffect(() => {
@@ -461,6 +472,7 @@ export default function DemoMantineReactTable() {
     onColumnVisibilityChange: setColumnVisibility, // doesn't update state like onColumnOrderChange for some reason
     onColumnOrderChange: setColumnOrder,
     mantineTableContainerProps: {
+      id: 'users-table',
       ref: tableContainerRef, //get access to the table container element
       style: { maxHeight: '600px' }, //give the table a max height
       onScroll: (
@@ -531,7 +543,6 @@ export default function DemoMantineReactTable() {
 
   return (
     <>
-      <DeletedUserFilterSwitch />
       <Accordion
         styles={{
           content: { paddingRight: 0, paddingLeft: 0 },
@@ -602,7 +613,7 @@ function DeletedUserFilterSwitch() {
     useMantineReactTableFilters(TABLE_NAME)
 
   const sliderStates = [0, 50, 100] as const
-  const [state, setState] = useState<number>(sliderStates[1])
+  const [state, setState] = useState<number>(0)
 
   useEffect(() => {
     switch (deletedEntityFilterState) {

@@ -55,15 +55,14 @@ test('mrt-table-tests-render', async () => {
   render(<DemoMantineReactTable></DemoMantineReactTable>)
 
   const el = await screen.findByText(firstPage.items![0]!.email, {}, { timeout: 5000 })
-  const url = new URL(requestSpy.mock.lastCall[0]['request']['url'])
+  const firstPageUrl = new URL(requestSpy.mock.calls[0][0]['request']['url'])
+  const secondPageUrl = new URL(requestSpy.mock.calls[1][0]['request']['url'])
 
-  //FIXME: has actually fetched more (logging Fetching more...)
-  expect(url.searchParams.get('cursor')).toBe('next-cursor-1')
+  expect(firstPageUrl.searchParams.get('cursor')).toBe(null)
+  // FIXME: it has reached end so it fetches more without scrolling (also broken when vitest uses css)
+  expect(secondPageUrl.searchParams.get('cursor')).toBe('next-cursor-1')
   const allRows = screen.queryAllByRole('row')
   const firstRow = allRows.filter((row) => row.getAttribute('data-index') === '0')
-
-  // TODO: scroll down container -Infinity
-  // we should generate pages of length > 10 so that testing scroll on end reached works.
 
   // TODO: should test it was called with cursor=next-cursor-1
   server.use(getGetPaginatedUsersMockHandler(secondPage))
