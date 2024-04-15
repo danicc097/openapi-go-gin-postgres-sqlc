@@ -49,7 +49,7 @@ require (
 	github.com/swaggest/jsonschema-go v0.3.70
 	github.com/swaggest/openapi-go v0.2.50
 	github.com/zitadel/oidc/v2 v2.12.0
-	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.49.0
+	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.50.0
 	go.opentelemetry.io/contrib/propagators/jaeger v1.25.0
 	go.opentelemetry.io/otel v1.25.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.17.0
