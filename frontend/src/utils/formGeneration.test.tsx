@@ -28,7 +28,7 @@ import { VirtuosoMockContext } from 'react-virtuoso'
 import UserComboboxOption from 'src/components/Combobox/UserComboboxOption'
 import { User } from 'src/gen/model'
 import { schema, refPattern, schemaFields } from 'src/utils/jsonSchema.test'
-import { render } from 'src/test-utils/render'
+import { setup } from 'src/test-utils/render'
 
 const dataTestIds = [
   'demoWorkItemCreateForm',
@@ -160,7 +160,7 @@ describe('form generation', () => {
     const mockSubmit = vitest.fn()
     const mockSubmitWithErrors = vitest.fn()
 
-    render(
+    setup(
       <FormProvider {...form.current}>
         <DynamicForm<TestTypes.DemoWorkItemCreateRequest, 'base.metadata' | 'demoProject'>
           onSubmit={(e) => {

@@ -6,7 +6,7 @@ import { UserID } from 'src/gen/entity-ids'
 import { PaginatedUsersResponse, User } from 'src/gen/model'
 import { getGetPaginatedUsersMockHandler } from 'src/gen/user/user.msw'
 import { apiPath } from 'src/services/apiPaths'
-import { act, fireEvent, render, screen, userEvent, waitFor } from 'src/test-utils'
+import { act, fireEvent, render, screen, waitFor } from 'src/test-utils'
 import { setupMSW } from 'src/test-utils/msw'
 import DemoMantineReactTable from 'src/views/DemoMantineReactTable/DemoMantineReactTable'
 import { vitest } from 'vitest'
@@ -50,7 +50,7 @@ test('mrt-table-tests-render', async () => {
   const requestSpy = vitest.fn()
   server.events.on('request:start', requestSpy)
 
-  render(<DemoMantineReactTable></DemoMantineReactTable>)
+  const { user } = render(<DemoMantineReactTable></DemoMantineReactTable>)
 
   const table = document.getElementById('users-table')!
   vitest.spyOn(table, 'scrollHeight', 'get').mockImplementation(() => 1150) // as if next page was loaded
@@ -84,12 +84,26 @@ test('mrt-table-tests-render', async () => {
   const createdAtMinFilter = await screen.findByTestId('input-filter--createdAt-min')
   const createdAtMaxFilter = await screen.findByTestId('input-filter--createdAt-max')
 
-  await act(async () => await userEvent.click(hasGlobalNotificationsFilter))
-  await act(async () => await userEvent.type(emailFilter, 'email'))
-  await act(async () => await userEvent.type(ageMaxFilter, '123'))
+  await waitFor(async () => {
+    await user.click(hasGlobalNotificationsFilter)
+  }) // FIXME: not triggering
+  await waitFor(async () => {
+    await user.type(emailFilter, 'email')
+  })
+  await waitFor(async () => {
+    await user.type(ageMaxFilter, '123')
+  })
   // 2 oct even after changing mantine format wehn using input text
-  await act(async () => await userEvent.type(createdAtMinFilter, '10/02/2024'))
+  await waitFor(async () => {
+    await user.type(createdAtMinFilter, '10/02/2024')
+  })
 
+  vitest.spyOn(table, 'scrollTop', 'get').mockImplementation(() => 500)
+  fireEvent.scroll(table, { target: { scrollY: 100 } })
+  vitest.spyOn(table, 'scrollHeight', 'get').mockImplementation(() => 2200) // as if next page was loaded. prevents infinite fetching more
+  await waitFor(async () => {
+    await user.type(createdAtMinFilter, '10/02/2024')
+  })
   // FIXME: act should have waited for all searchQuery changes, but it hasnt.
   // do not rely on length due to debouncing
   const lastSearchQueryUrl = new URL(requestSpy.mock.calls[2][0]['request']['url'])

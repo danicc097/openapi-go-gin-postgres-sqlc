@@ -48,6 +48,12 @@ window.matchMedia = (query) => ({
   dispatchEvent: vi.fn(),
 })
 
+vitest.mock('react-transition-group', () => {
+  const FakeTransition = vitest.fn(({ children }) => children)
+  const FakeCSSTransition = vitest.fn((props) => (props.in ? <FakeTransition>{props.children}</FakeTransition> : null))
+  return { CSSTransition: FakeCSSTransition, Transition: FakeTransition }
+})
+
 // usage per test: window.resizeTo(...)
 beforeAll(() => {
   window.resizeTo = function resizeTo(width, height) {
@@ -103,6 +109,7 @@ export class PointerEvent extends Event {
 window.PointerEvent = PointerEvent as any
 
 import * as ResizeObserverModule from 'resize-observer-polyfill'
+import { vitest } from 'vitest'
 ;(global as any).ResizeObserver = ResizeObserverModule.default
 ;(global as any).DOMRect = {
   fromRect: () => ({ top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0 }),
