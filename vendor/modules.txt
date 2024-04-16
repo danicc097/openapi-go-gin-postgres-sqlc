@@ -227,6 +227,9 @@ github.com/gorilla/schema
 # github.com/gorilla/securecookie v1.1.2
 ## explicit; go 1.20
 github.com/gorilla/securecookie
+# github.com/gzuidhof/tygo v0.2.14
+## explicit; go 1.18
+github.com/gzuidhof/tygo/tygo
 # github.com/hashicorp/errwrap v1.1.0
 ## explicit
 github.com/hashicorp/errwrap

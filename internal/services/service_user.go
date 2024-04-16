@@ -28,13 +28,13 @@ type User struct {
 // Repo should not be aware of models Role and Scope, its conversion or its default values. That's all
 // for upper layers convenience. e.g roles: entity uses rank internally. Repo should not care about mappings to user-friendly names.
 type UserRegisterParams struct {
-	Username   string
-	Email      string
-	FirstName  *string
-	LastName   *string
-	ExternalID string
-	Scopes     []models.Scope
-	Role       models.Role
+	Username   string         `json:"username"`
+	Email      string         `json:"email"`
+	FirstName  *string        `json:"firstName"`
+	LastName   *string        `json:"lastName"`
+	ExternalID string         `json:"externalID"`
+	Scopes     []models.Scope `json:"scopes"`
+	Role       models.Role    `json:"role"`
 }
 
 // NewUser returns a new User service.

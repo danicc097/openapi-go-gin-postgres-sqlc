@@ -395,6 +395,10 @@ export default function DemoMantineReactTable() {
     }
   }, [sorting, usersData, nextCursor])
 
+  useEffect(() => {
+    console.log({ searchQuery })
+  }, [searchQuery])
+
   const fetchMoreOnBottomReached = useCallback(
     (containerRefElement?: HTMLDivElement | null) => {
       if (containerRefElement) {

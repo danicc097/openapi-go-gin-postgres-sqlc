@@ -20,6 +20,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
+	"github.com/gzuidhof/tygo/tygo"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
 )
@@ -35,6 +36,13 @@ const (
 	month = 30 * day
 )
 
+/**
+ * TODO: for env = E2E marshal objects at the end to e2e/testdata json file
+ * which includes useful e2e static info that doesn't change between this cli's runs (ie no ids or random data)
+ * We can generate typescript types from these go structs as well if its somehow needed (since they won't be the same as openapi types).
+ * We have library mode with https://github.com/gzuidhof/tygo so this is trivial and more than enough for E2E
+ *
+ */
 func main() {
 	var err error
 	var env, scopePolicyPath, rolePolicyPath string
@@ -56,7 +64,6 @@ func main() {
 
 	repositories := services.CreateRepos()
 
-	// TODO: services.Create(logger, repositories, pool)
 	svc := services.New(logger, repositories, pool)
 
 	ctx := context.Background()
@@ -429,6 +436,29 @@ func main() {
 	// handleError(err)
 	// fmt.Printf("wis len: %v - First workitem found:\n", len(wis))
 	// format.PrintJSONByTag(wis[0], "db")
+
+	if cfg.AppEnv == internal.AppEnvE2E {
+		println("Generating E2E fixtures")
+		config := &tygo.Config{
+			Packages: []*tygo.PackageConfig{
+				{
+					Path: "github.com/danicc097/openapi-go-gin-postgres-sqlc/cmd/initial-data/e2e",
+					TypeMappings: map[string]string{
+						"time.Time":     "string /* RFC3339Nano */",
+						"uuid.UUID":     "string /* uuid */",
+						"uuid.NullUUID": "null | string /* uuid */",
+					},
+					// to import actual values from models package, do it explicitly
+					Frontmatter: `import type * as models from "client/gen/model";`,
+					OutputPath:  "initial-data.ts",
+				},
+			},
+		}
+		gen := tygo.New(config)
+		handleError(gen.Generate())
+
+		handleError(os.Rename("initial-data.ts", "e2e/__tests__/data/initial-data.ts"))
+	}
 }
 
 func errAndExit(out []byte, err error) {
