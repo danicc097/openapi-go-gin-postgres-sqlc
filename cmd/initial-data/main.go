@@ -2,15 +2,18 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
 	"math/rand"
 	"os"
+	"path"
 	"strconv"
 	"sync"
 	"time"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/cmd/initial-data/e2e"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
@@ -18,7 +21,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/gzuidhof/tygo/tygo"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -36,12 +38,14 @@ const (
 	month = 30 * day
 )
 
+const e2eTestDataDir = "e2e/__tests__/data"
+
 /**
  * TODO: for env = E2E marshal objects at the end to e2e/testdata json file
  * which includes useful e2e static info that doesn't change between this cli's runs (ie no ids or random data)
  * We can generate typescript types from these go structs as well if its somehow needed (since they won't be the same as openapi types).
  * We have library mode with https://github.com/gzuidhof/tygo so this is trivial and more than enough for E2E
- *
+ *.
  */
 func main() {
 	var err error
@@ -115,8 +119,8 @@ func main() {
 	for i := 0; i < 50; i++ {
 		u, err := svc.User.Register(ctx, pool, services.UserRegisterParams{
 			Username:   "user_" + strconv.Itoa(i),
-			FirstName:  pointers.New(testutil.RandomFirstName()),
-			LastName:   pointers.New(testutil.RandomLastName()),
+			FirstName:  pointers.New("First name " + fmt.Sprintf("%v", i)),
+			LastName:   pointers.New("Last name " + fmt.Sprintf("%v", i)),
 			Email:      "user_" + strconv.Itoa(i) + "@mail.com",
 			ExternalID: "external_id_user_" + strconv.Itoa(i),
 			// Scopes: []models.Scope{models.}, // TODO:
@@ -450,15 +454,29 @@ func main() {
 					},
 					// to import actual values from models package, do it explicitly
 					Frontmatter: `import type * as models from "client/gen/model";`,
-					OutputPath:  "initial-data.ts",
+					OutputPath:  path.Join(e2eTestDataDir, "initial-data.ts"),
 				},
 			},
 		}
 		gen := tygo.New(config)
 		handleError(gen.Generate())
-
-		handleError(os.Rename("initial-data.ts", "e2e/__tests__/data/initial-data.ts"))
 	}
+	uu := make(map[string]e2e.User)
+	for _, u := range users {
+		role, _ := svc.Authorization.RoleByRank(u.RoleRank)
+		uu[u.Email] = e2e.User{
+			Username:  u.Username,
+			Email:     u.Email,
+			FirstName: u.FirstName,
+			LastName:  u.LastName,
+			Role:      role.Name,
+			Scopes:    u.Scopes,
+		}
+	}
+
+	uuj, err := json.MarshalIndent(uu, "", "  ")
+	handleError(err)
+	handleError(os.WriteFile(path.Join(e2eTestDataDir, "users.json"), uuj, 0o644))
 }
 
 func errAndExit(out []byte, err error) {

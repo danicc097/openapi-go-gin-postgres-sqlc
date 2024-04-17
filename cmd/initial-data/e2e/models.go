@@ -8,11 +8,10 @@ import "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 */
 
 type User struct {
-	Username   string        `json:"username"`
-	Email      string        `json:"email"`
-	FirstName  *string       `json:"firstName"`
-	LastName   *string       `json:"lastName"`
-	ExternalID string        `json:"externalID"`
-	Scopes     models.Scopes `json:"scopes"     tstype:"models.Scopes"`
-	Role       models.Role   `json:"role"       tstype:"models.Role"`
+	Username  string        `json:"username"`
+	Email     string        `json:"email"`
+	FirstName *string       `json:"firstName"`
+	LastName  *string       `json:"lastName"`
+	Scopes    models.Scopes `json:"scopes"    tstype:"models.Scopes"`
+	Role      models.Role   `json:"role"      tstype:"models.Role"`
 }

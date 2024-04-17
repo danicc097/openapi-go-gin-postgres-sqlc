@@ -8,7 +8,6 @@ export interface User {
   email: string;
   firstName?: string;
   lastName?: string;
-  externalID: string;
   scopes: models.Scopes;
   role: models.Role;
 }
