@@ -79,7 +79,7 @@ const useTableConfigSlice = create<TableConfigState>()(
         },
       },
     ),
-    { enabled: true },
+    { enabled: import.meta.env.TESTING !== 'true' },
   ),
 )
 

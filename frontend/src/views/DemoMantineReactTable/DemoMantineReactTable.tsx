@@ -404,10 +404,10 @@ export default function DemoMantineReactTable() {
       if (containerRefElement) {
         const { scrollHeight, scrollTop, clientHeight } = containerRefElement
         const hasMore = lastFetchedCount >= pagination.pageSize
-        if (scrollHeight - scrollTop - clientHeight < 200 && !isFetching && !isFetchingNextPage && hasMore) {
-          if (nextCursor /** empty string or null */) {
+        const reachedEnd = scrollHeight - scrollTop - clientHeight < 200
+        if (reachedEnd && !isFetching && !isFetchingNextPage && hasMore) {
+          if (nextCursor) {
             console.log('Fetching more...')
-
             fetchNextPage()
           }
         }
@@ -461,6 +461,7 @@ export default function DemoMantineReactTable() {
     onColumnVisibilityChange: setColumnVisibility, // doesn't update state like onColumnOrderChange for some reason
     onColumnOrderChange: setColumnOrder,
     mantineTableContainerProps: {
+      id: 'users-table',
       ref: tableContainerRef, //get access to the table container element
       style: { maxHeight: '600px' }, //give the table a max height
       onScroll: (
@@ -531,7 +532,6 @@ export default function DemoMantineReactTable() {
 
   return (
     <>
-      <DeletedUserFilterSwitch />
       <Accordion
         styles={{
           content: { paddingRight: 0, paddingLeft: 0 },
@@ -602,7 +602,7 @@ function DeletedUserFilterSwitch() {
     useMantineReactTableFilters(TABLE_NAME)
 
   const sliderStates = [0, 50, 100] as const
-  const [state, setState] = useState<number>(sliderStates[1])
+  const [state, setState] = useState<number>(0)
 
   useEffect(() => {
     switch (deletedEntityFilterState) {

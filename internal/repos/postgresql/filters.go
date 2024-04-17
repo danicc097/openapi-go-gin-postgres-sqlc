@@ -26,7 +26,7 @@ const (
 	// e.g. find documents with the given refs, which the user enters in the combobox separated by ;
 	// and we generate all combobox options (separator customizable)
 	// this can't be done with default text filtering.
-	// not to be confused with filtering on array columns which isn't implemented at the moment
+	// not to be confused with filtering on array columns which isn't implemented at the moment.
 )
 
 // GenerateDefaultFilters generates SQL where clauses for a given set of pagination params.

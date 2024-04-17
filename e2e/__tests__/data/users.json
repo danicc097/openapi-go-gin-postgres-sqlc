@@ -1,0 +1,516 @@
+{
+  "manager_1@mail.com": {
+    "username": "manager_1",
+    "email": "manager_1@mail.com",
+    "firstName": "MrManager",
+    "lastName": null,
+    "scopes": [
+      "users:read",
+      "work-item:review",
+      "work-item-tag:create",
+      "work-item-tag:delete",
+      "work-item-tag:edit"
+    ],
+    "role": "manager"
+  },
+  "user_0@mail.com": {
+    "username": "user_0",
+    "email": "user_0@mail.com",
+    "firstName": "First name 0",
+    "lastName": "Last name 0",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_10@mail.com": {
+    "username": "user_10",
+    "email": "user_10@mail.com",
+    "firstName": "First name 10",
+    "lastName": "Last name 10",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_11@mail.com": {
+    "username": "user_11",
+    "email": "user_11@mail.com",
+    "firstName": "First name 11",
+    "lastName": "Last name 11",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_12@mail.com": {
+    "username": "user_12",
+    "email": "user_12@mail.com",
+    "firstName": "First name 12",
+    "lastName": "Last name 12",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_13@mail.com": {
+    "username": "user_13",
+    "email": "user_13@mail.com",
+    "firstName": "First name 13",
+    "lastName": "Last name 13",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_14@mail.com": {
+    "username": "user_14",
+    "email": "user_14@mail.com",
+    "firstName": "First name 14",
+    "lastName": "Last name 14",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_15@mail.com": {
+    "username": "user_15",
+    "email": "user_15@mail.com",
+    "firstName": "First name 15",
+    "lastName": "Last name 15",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_16@mail.com": {
+    "username": "user_16",
+    "email": "user_16@mail.com",
+    "firstName": "First name 16",
+    "lastName": "Last name 16",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_17@mail.com": {
+    "username": "user_17",
+    "email": "user_17@mail.com",
+    "firstName": "First name 17",
+    "lastName": "Last name 17",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_18@mail.com": {
+    "username": "user_18",
+    "email": "user_18@mail.com",
+    "firstName": "First name 18",
+    "lastName": "Last name 18",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_19@mail.com": {
+    "username": "user_19",
+    "email": "user_19@mail.com",
+    "firstName": "First name 19",
+    "lastName": "Last name 19",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_1@mail.com": {
+    "username": "user_1",
+    "email": "user_1@mail.com",
+    "firstName": "First name 1",
+    "lastName": "Last name 1",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_20@mail.com": {
+    "username": "user_20",
+    "email": "user_20@mail.com",
+    "firstName": "First name 20",
+    "lastName": "Last name 20",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_21@mail.com": {
+    "username": "user_21",
+    "email": "user_21@mail.com",
+    "firstName": "First name 21",
+    "lastName": "Last name 21",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_22@mail.com": {
+    "username": "user_22",
+    "email": "user_22@mail.com",
+    "firstName": "First name 22",
+    "lastName": "Last name 22",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_23@mail.com": {
+    "username": "user_23",
+    "email": "user_23@mail.com",
+    "firstName": "First name 23",
+    "lastName": "Last name 23",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_24@mail.com": {
+    "username": "user_24",
+    "email": "user_24@mail.com",
+    "firstName": "First name 24",
+    "lastName": "Last name 24",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_25@mail.com": {
+    "username": "user_25",
+    "email": "user_25@mail.com",
+    "firstName": "First name 25",
+    "lastName": "Last name 25",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_26@mail.com": {
+    "username": "user_26",
+    "email": "user_26@mail.com",
+    "firstName": "First name 26",
+    "lastName": "Last name 26",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_27@mail.com": {
+    "username": "user_27",
+    "email": "user_27@mail.com",
+    "firstName": "First name 27",
+    "lastName": "Last name 27",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_28@mail.com": {
+    "username": "user_28",
+    "email": "user_28@mail.com",
+    "firstName": "First name 28",
+    "lastName": "Last name 28",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_29@mail.com": {
+    "username": "user_29",
+    "email": "user_29@mail.com",
+    "firstName": "First name 29",
+    "lastName": "Last name 29",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_2@mail.com": {
+    "username": "user_2",
+    "email": "user_2@mail.com",
+    "firstName": "First name 2",
+    "lastName": "Last name 2",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_30@mail.com": {
+    "username": "user_30",
+    "email": "user_30@mail.com",
+    "firstName": "First name 30",
+    "lastName": "Last name 30",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_31@mail.com": {
+    "username": "user_31",
+    "email": "user_31@mail.com",
+    "firstName": "First name 31",
+    "lastName": "Last name 31",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_32@mail.com": {
+    "username": "user_32",
+    "email": "user_32@mail.com",
+    "firstName": "First name 32",
+    "lastName": "Last name 32",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_33@mail.com": {
+    "username": "user_33",
+    "email": "user_33@mail.com",
+    "firstName": "First name 33",
+    "lastName": "Last name 33",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_34@mail.com": {
+    "username": "user_34",
+    "email": "user_34@mail.com",
+    "firstName": "First name 34",
+    "lastName": "Last name 34",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_35@mail.com": {
+    "username": "user_35",
+    "email": "user_35@mail.com",
+    "firstName": "First name 35",
+    "lastName": "Last name 35",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_36@mail.com": {
+    "username": "user_36",
+    "email": "user_36@mail.com",
+    "firstName": "First name 36",
+    "lastName": "Last name 36",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_37@mail.com": {
+    "username": "user_37",
+    "email": "user_37@mail.com",
+    "firstName": "First name 37",
+    "lastName": "Last name 37",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_38@mail.com": {
+    "username": "user_38",
+    "email": "user_38@mail.com",
+    "firstName": "First name 38",
+    "lastName": "Last name 38",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_39@mail.com": {
+    "username": "user_39",
+    "email": "user_39@mail.com",
+    "firstName": "First name 39",
+    "lastName": "Last name 39",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_3@mail.com": {
+    "username": "user_3",
+    "email": "user_3@mail.com",
+    "firstName": "First name 3",
+    "lastName": "Last name 3",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_40@mail.com": {
+    "username": "user_40",
+    "email": "user_40@mail.com",
+    "firstName": "First name 40",
+    "lastName": "Last name 40",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_41@mail.com": {
+    "username": "user_41",
+    "email": "user_41@mail.com",
+    "firstName": "First name 41",
+    "lastName": "Last name 41",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_42@mail.com": {
+    "username": "user_42",
+    "email": "user_42@mail.com",
+    "firstName": "First name 42",
+    "lastName": "Last name 42",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_43@mail.com": {
+    "username": "user_43",
+    "email": "user_43@mail.com",
+    "firstName": "First name 43",
+    "lastName": "Last name 43",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_44@mail.com": {
+    "username": "user_44",
+    "email": "user_44@mail.com",
+    "firstName": "First name 44",
+    "lastName": "Last name 44",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_45@mail.com": {
+    "username": "user_45",
+    "email": "user_45@mail.com",
+    "firstName": "First name 45",
+    "lastName": "Last name 45",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_46@mail.com": {
+    "username": "user_46",
+    "email": "user_46@mail.com",
+    "firstName": "First name 46",
+    "lastName": "Last name 46",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_47@mail.com": {
+    "username": "user_47",
+    "email": "user_47@mail.com",
+    "firstName": "First name 47",
+    "lastName": "Last name 47",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_48@mail.com": {
+    "username": "user_48",
+    "email": "user_48@mail.com",
+    "firstName": "First name 48",
+    "lastName": "Last name 48",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_49@mail.com": {
+    "username": "user_49",
+    "email": "user_49@mail.com",
+    "firstName": "First name 49",
+    "lastName": "Last name 49",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_4@mail.com": {
+    "username": "user_4",
+    "email": "user_4@mail.com",
+    "firstName": "First name 4",
+    "lastName": "Last name 4",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_5@mail.com": {
+    "username": "user_5",
+    "email": "user_5@mail.com",
+    "firstName": "First name 5",
+    "lastName": "Last name 5",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_6@mail.com": {
+    "username": "user_6",
+    "email": "user_6@mail.com",
+    "firstName": "First name 6",
+    "lastName": "Last name 6",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_7@mail.com": {
+    "username": "user_7",
+    "email": "user_7@mail.com",
+    "firstName": "First name 7",
+    "lastName": "Last name 7",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_8@mail.com": {
+    "username": "user_8",
+    "email": "user_8@mail.com",
+    "firstName": "First name 8",
+    "lastName": "Last name 8",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  },
+  "user_9@mail.com": {
+    "username": "user_9",
+    "email": "user_9@mail.com",
+    "firstName": "First name 9",
+    "lastName": "Last name 9",
+    "scopes": [
+      "users:read"
+    ],
+    "role": "user"
+  }
+}

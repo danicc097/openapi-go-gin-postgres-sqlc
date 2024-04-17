@@ -41,6 +41,9 @@ export default defineConfig((env) =>
         'process.env.TESTING': true,
       },
       test: {
+        env: {
+          TESTING: 'true',
+        },
         testTimeout: 50_000,
         // reporters: ['verbose'],
         // outputFile: './reporter-output/result',
@@ -70,11 +73,11 @@ export default defineConfig((env) =>
           },
         },
         environment: 'jsdom',
-        setupFiles: './src/setupTests.ts',
+        setupFiles: './src/setupTests.tsx',
         coverage: {
           provider: 'v8',
           reporter: ['text', 'html'],
-          exclude: ['node_modules/', 'src/setupTests.ts'],
+          exclude: ['node_modules/', 'src/setupTests.tsx'],
         },
         // `vitest typecheck`, not run in watch (https://github.com/vitest-dev/vitest/issues/2299)
         typecheck: {

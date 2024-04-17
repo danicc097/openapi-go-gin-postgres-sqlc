@@ -73,6 +73,7 @@
       ],
       "rules": {
         "testing-library/no-node-access": "off"
+        // "testing-library/no-unnecessary-act": "off"
       }
     }
   ],

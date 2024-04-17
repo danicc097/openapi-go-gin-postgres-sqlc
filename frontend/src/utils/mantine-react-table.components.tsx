@@ -42,7 +42,6 @@ import { emptyModes, indexOneModes, indexZeroModes, rangeModes } from 'src/utils
 import classes from './mantine-react-table.module.css'
 import { DateInput } from '@mantine/dates'
 import { sentenceCase } from 'src/utils/strings'
-import { c } from 'vitest/dist/reporters-MmQN-57K'
 import _, { lowerCase } from 'lodash'
 import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mjs'
 import dayjs from 'dayjs'
@@ -227,6 +226,7 @@ export const MRTNumberInput = forwardRef(function MRTNumberInput(
       <NumberInput
         {...props}
         placeholder={rangeFilterIndex === 0 ? 'Min' : 'Max'}
+        data-testid={`input-filter--${column.id}-${rangeFilterIndex === 0 ? 'min' : 'max'}`}
         value={filterValue}
         allowDecimal={type === 'number'}
         onChange={(event) => {
@@ -303,6 +303,7 @@ export const MRTDateInput = forwardRef(function MRTDateInput(
     <Flex ref={ref as any} gap={4} direction={'row'} pt={20} align="flex-start" justify="center">
       <DateInput
         {...props}
+        data-testid={`input-filter--${column.id}-${rangeFilterIndex === 0 ? 'min' : 'max'}`}
         placeholder={`${rangeFilterIndex === 0 ? 'Min' : 'Max'} date`}
         value={filterValue ? dayjs(filterValue).toDate() : null}
         onChange={(event) => {
@@ -406,9 +407,12 @@ export const MRTCheckboxInput = forwardRef(function MRTCheckboxInput(
   return (
     <Checkbox
       {...props}
+      data-testid={`input-filter--${column.id}`}
       ref={ref as any}
       checked={value === 'true'}
+      data-checked={value === 'true'}
       indeterminate={value === undefined}
+      data-indeterminate={value === undefined}
       size="xs"
       onChange={(event) => {
         const newValue =
@@ -476,6 +480,7 @@ export const MRTTextInput = forwardRef(function MRTTextInput(
   return (
     <TextInput
       {...props}
+      data-testid={`input-filter--${column.id}`}
       ref={ref as any}
       value={filterValue}
       size="xs"

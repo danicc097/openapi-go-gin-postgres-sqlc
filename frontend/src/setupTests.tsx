@@ -2,6 +2,7 @@ import 'regenerator-runtime/runtime'
 import { expect, afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 import indexeddb from 'fake-indexeddb'
+import { configure } from '@testing-library/react'
 
 import type { TestingLibraryMatchers } from '@testing-library/jest-dom/matchers'
 import matchers from '@testing-library/jest-dom/matchers'
@@ -29,6 +30,8 @@ declare module 'vitest' {
 
 expect.extend(matchers)
 
+configure({ asyncUtilTimeout: 5000 })
+
 globalThis.indexedDB = indexeddb
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -43,6 +46,24 @@ window.matchMedia = (query) => ({
   addEventListener: vi.fn(),
   removeEventListener: vi.fn(),
   dispatchEvent: vi.fn(),
+})
+
+vitest.mock('react-transition-group', () => {
+  const FakeTransition = vitest.fn(({ children }) => children)
+  const FakeCSSTransition = vitest.fn((props) => (props.in ? <FakeTransition>{props.children}</FakeTransition> : null))
+  return { CSSTransition: FakeCSSTransition, Transition: FakeTransition }
+})
+
+// usage per test: window.resizeTo(...)
+beforeAll(() => {
+  window.resizeTo = function resizeTo(width, height) {
+    Object.assign(this, {
+      innerWidth: width,
+      innerHeight: height,
+      outerWidth: width,
+      outerHeight: height,
+    }).dispatchEvent(new this.Event('resize'))
+  }
 })
 
 export default class EventSourceSetup {
@@ -88,6 +109,7 @@ export class PointerEvent extends Event {
 window.PointerEvent = PointerEvent as any
 
 import * as ResizeObserverModule from 'resize-observer-polyfill'
+import { vitest } from 'vitest'
 ;(global as any).ResizeObserver = ResizeObserverModule.default
 ;(global as any).DOMRect = {
   fromRect: () => ({ top: 0, left: 0, bottom: 0, right: 0, width: 0, height: 0 }),

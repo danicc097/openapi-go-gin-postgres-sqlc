@@ -1,5 +1,9 @@
 # https://github.com/MarioCarrion/todo-api-microservice-example/blob/main/.golangci.yml
-
+run:
+  skip-files: # ignore yaml error...
+    - ".*\\.xo\\.go$"
+    - ".*\\.gen\\.go$"
+    - ".*\\.pb\\.go$"
 linters:
   enable-all: true
   disable:

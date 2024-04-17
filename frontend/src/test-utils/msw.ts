@@ -4,8 +4,21 @@ import { setupServer } from 'msw/node'
 export function setupMSW() {
   const server = setupServer()
 
-  beforeAll(() => server.listen())
-  afterAll(() => server.close())
+  beforeAll(() => {
+    // Start the interception.
+    server.listen()
+  })
+
+  afterEach(() => {
+    // Remove any handlers you may have added
+    // in individual tests (runtime handlers).
+    server.resetHandlers()
+  })
+
+  afterAll(() => {
+    // Disable request interception and clean up.
+    server.close()
+  })
 
   return server
 }

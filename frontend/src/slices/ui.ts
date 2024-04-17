@@ -45,7 +45,7 @@ const useUISlice = create<UIState>()(
         },
       },
     ),
-    { enabled: true },
+    { enabled: import.meta.env.TESTING !== 'true' },
   ),
 )
 
