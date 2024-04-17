@@ -15,3 +15,8 @@ type User struct {
 	Scopes    models.Scopes `json:"scopes"    tstype:"models.Scopes"`
 	Role      models.Role   `json:"role"      tstype:"models.Role"`
 }
+
+type Team struct {
+	Name        string             `json:"name"`
+	ProjectName models.ProjectName `json:"projectName" tstype:"models.Project"`
+}

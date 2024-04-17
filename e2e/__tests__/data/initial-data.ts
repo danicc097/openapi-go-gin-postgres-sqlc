@@ -11,3 +11,7 @@ export interface User {
   scopes: models.Scopes;
   role: models.Role;
 }
+export interface Team {
+  name: string;
+  projectName: models.Project;
+}

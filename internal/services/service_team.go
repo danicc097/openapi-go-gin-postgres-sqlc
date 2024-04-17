@@ -12,6 +12,9 @@ import (
 type Team struct {
 	logger *zap.SugaredLogger
 	repos  *repos.Repos
+	// sharedDBOpts represents shared db select options for all team entities
+	// for returned values
+	getSharedDBOpts func() []db.TeamSelectConfigOption
 }
 
 // NewTeam returns a new Team service.
@@ -19,6 +22,9 @@ func NewTeam(logger *zap.SugaredLogger, repos *repos.Repos) *Team {
 	return &Team{
 		logger: logger,
 		repos:  repos,
+		getSharedDBOpts: func() []db.TeamSelectConfigOption {
+			return []db.TeamSelectConfigOption{db.WithTeamJoin(db.TeamJoins{Project: true})}
+		},
 	}
 }
 
@@ -26,7 +32,7 @@ func NewTeam(logger *zap.SugaredLogger, repos *repos.Repos) *Team {
 func (t *Team) ByID(ctx context.Context, d db.DBTX, id db.TeamID) (*db.Team, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	team, err := t.repos.Team.ByID(ctx, d, id)
+	team, err := t.repos.Team.ByID(ctx, d, id, t.getSharedDBOpts()...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.Team.ByID: %w", err)
 	}
@@ -38,7 +44,7 @@ func (t *Team) ByID(ctx context.Context, d db.DBTX, id db.TeamID) (*db.Team, err
 func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID) (*db.Team, error) {
 	defer newOTelSpan().Build(ctx).End()
 
-	team, err := t.repos.Team.ByName(ctx, d, name, projectID)
+	team, err := t.repos.Team.ByName(ctx, d, name, projectID, t.getSharedDBOpts()...)
 	if err != nil {
 		return nil, fmt.Errorf("repos.Team.ByName: %w", err)
 	}
@@ -55,6 +61,11 @@ func (t *Team) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParam
 		return nil, fmt.Errorf("repos.Team.Create: %w", err)
 	}
 
+	team, err = t.repos.Team.ByID(ctx, d, team.TeamID, t.getSharedDBOpts()...)
+	if err != nil {
+		return nil, fmt.Errorf("repos.Team.ByID: %w", err)
+	}
+
 	return team, nil
 }
 
@@ -65,6 +76,11 @@ func (t *Team) Update(ctx context.Context, d db.DBTX, id db.TeamID, params *db.T
 	team, err := t.repos.Team.Update(ctx, d, id, params)
 	if err != nil {
 		return nil, fmt.Errorf("repos.Team.Update: %w", err)
+	}
+
+	team, err = t.repos.Team.ByID(ctx, d, team.TeamID, t.getSharedDBOpts()...)
+	if err != nil {
+		return nil, fmt.Errorf("repos.Team.ByID: %w", err)
 	}
 
 	return team, nil

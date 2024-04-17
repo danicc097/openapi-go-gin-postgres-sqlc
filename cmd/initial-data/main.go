@@ -152,6 +152,7 @@ func main() {
 	 *
 	 **/
 	logger.Info("Creating teams...")
+	var teams []*db.Team
 
 	teamDemo, err := svc.Team.Create(ctx, pool, &db.TeamCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
@@ -159,18 +160,23 @@ func main() {
 		Description: "Team 1 description",
 	})
 	handleError(err, teamDemo)
+	teams = append(teams, teamDemo)
+
 	teamDemo2, err := svc.Team.Create(ctx, pool, &db.TeamCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
 		Name:        "Team 2-1",
 		Description: "Team 2-1 description",
 	})
 	handleError(err, teamDemo2)
+	teams = append(teams, teamDemo2)
+
 	team2Demo2, err := svc.Team.Create(ctx, pool, &db.TeamCreateParams{
 		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
 		Name:        "Team 2-2",
 		Description: "Team 2-2 description",
 	})
 	handleError(err, team2Demo2)
+	teams = append(teams, team2Demo2)
 
 	for i, u := range users {
 		users[i], err = svc.User.AssignTeam(ctx, pool, u.UserID, teamDemo.TeamID)
@@ -477,6 +483,17 @@ func main() {
 	uuj, err := json.MarshalIndent(uu, "", "  ")
 	handleError(err)
 	handleError(os.WriteFile(path.Join(e2eTestDataDir, "users.json"), uuj, 0o644))
+
+	tt := make([]e2e.Team, len(teams))
+	for i, t := range teams {
+		tt[i] = e2e.Team{
+			Name:        t.Name,
+			ProjectName: t.ProjectJoin.Name,
+		}
+	}
+	ttj, err := json.MarshalIndent(tt, "", "  ")
+	handleError(err)
+	handleError(os.WriteFile(path.Join(e2eTestDataDir, "teams.json"), ttj, 0o644))
 }
 
 func errAndExit(out []byte, err error) {
