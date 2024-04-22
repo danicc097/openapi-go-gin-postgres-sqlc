@@ -351,7 +351,7 @@ github.com/oapi-codegen/runtime/types
 # github.com/oapi-codegen/testutil v1.1.0
 ## explicit; go 1.20
 github.com/oapi-codegen/testutil
-# github.com/pashagolub/pgxmock/v3 v3.3.0
+# github.com/pashagolub/pgxmock/v3 v3.4.0
 ## explicit; go 1.21
 github.com/pashagolub/pgxmock/v3
 # github.com/patrickmn/go-cache v2.1.0+incompatible
