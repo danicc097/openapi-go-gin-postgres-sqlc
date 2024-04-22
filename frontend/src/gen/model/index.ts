@@ -9,6 +9,8 @@ import type * as EntityIDs from 'src/gen/entity-ids'
 
 export * from './activity';
 export * from './anyValue';
+export * from './cacheDemoWorkItem';
+export * from './cacheDemoWorkItemMetadata';
 export * from './createActivityRequest';
 export * from './createDemoTwoWorkItemRequest';
 export * from './createDemoTwoWorkItemRequestProjectName';
@@ -73,12 +75,14 @@ export * from './getCurrentUserQueryParameters';
 export * from './getPaginatedNotificationsParams';
 export * from './getPaginatedUsersParams';
 export * from './getPaginatedUsersQueryParameters';
+export * from './getPaginatedWorkItemParams';
 export * from './getProjectWorkitemsParams';
 export * from './hTTPError';
 export * from './hTTPValidationError';
 export * from './myProviderLoginParams';
 export * from './notification';
 export * from './notificationType';
+export * from './paginatedDemoWorkItemsResponse';
 export * from './paginatedNotificationsResponse';
 export * from './paginatedUsersResponse';
 export * from './pagination';

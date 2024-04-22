@@ -6,6 +6,8 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { CreateWorkItemRequest } from '../model/createWorkItemRequest'
+import type { GetPaginatedWorkItemParams } from '../model/getPaginatedWorkItemParams'
+import type { PaginatedDemoWorkItemsResponse } from '../model/paginatedDemoWorkItemsResponse'
 import type { WorkItem } from '../model/workItem'
 import { customInstance } from '../../api/mutator'
 
@@ -47,7 +49,17 @@ export const updateWorkitem = (workItemID: number, options?: SecondParameter<typ
 export const deleteWorkitem = (workItemID: number, options?: SecondParameter<typeof customInstance>) => {
   return customInstance<void>({ url: `/work-item/${workItemID}/`, method: 'DELETE' }, options)
 }
+/**
+ * @summary Get paginated user work-item
+ */
+export const getPaginatedWorkItem = (
+  params: GetPaginatedWorkItemParams,
+  options?: SecondParameter<typeof customInstance>,
+) => {
+  return customInstance<PaginatedDemoWorkItemsResponse>({ url: `/work-item/page`, method: 'GET', params }, options)
+}
 export type CreateWorkitemResult = NonNullable<Awaited<ReturnType<typeof createWorkitem>>>
 export type GetWorkItemResult = NonNullable<Awaited<ReturnType<typeof getWorkItem>>>
 export type UpdateWorkitemResult = NonNullable<Awaited<ReturnType<typeof updateWorkitem>>>
 export type DeleteWorkitemResult = NonNullable<Awaited<ReturnType<typeof deleteWorkitem>>>
+export type GetPaginatedWorkItemResult = NonNullable<Awaited<ReturnType<typeof getPaginatedWorkItem>>>

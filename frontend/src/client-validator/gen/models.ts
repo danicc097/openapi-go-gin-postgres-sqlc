@@ -671,6 +671,28 @@ export interface DbUserJoins {
   userNotifications: boolean
   workItemComments: boolean
 }
+export interface PaginatedDemoWorkItemsResponse {
+  items: CacheDemoWorkItem[] | null
+  page: PaginationPage
+}
+export interface CacheDemoWorkItem {
+  closedAt?: string | null
+  createdAt: string
+  deletedAt?: string | null
+  description: string
+  kanbanStepID: number
+  lastMessageAt: string
+  line: string
+  metadata: {}
+  ref: string
+  reopened: boolean
+  targetDate: string
+  teamID: number
+  title: string
+  updatedAt: string
+  workItemID: number
+  workItemTypeID: number
+}
 export interface GetCacheDemoWorkItemQueryParameters {
   joins?: DbCacheDemoWorkItemJoins
 }

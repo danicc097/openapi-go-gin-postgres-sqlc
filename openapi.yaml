@@ -1160,6 +1160,34 @@ paths:
           description: Success.
       tags:
         - workItem
+  /work-item/page:
+    get:
+      description: ""
+      summary: Get paginated user work-item
+      operationId: GetPaginatedWorkItem
+      parameters:
+        - *x-paginationLimitParameter
+        - *x-paginationDirectionParameter
+        - *x-paginationCursorParameter
+        - in: query
+          name: searchQuery
+          style: deepObject
+          explode: true
+          allowReserved: true
+          schema:
+            # $ref: '#/components/schemas/GetPaginatedWorkItemQueryParameters'
+            $ref: '#/components/schemas/GetCacheDemoWorkItemQueryParameters'
+      tags:
+        - workItem
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDemoWorkItemsResponse'
+        !!merge <<: *x-error-response
+      !!merge <<: *x-require-authenticated
   /work-item/{workItemID}/comment/:
     post:
       summary: create work item comment.
@@ -3017,6 +3045,21 @@ components:
         - assigneeWorkItems
         - workItemComments
       type: object
+    PaginatedDemoWorkItemsResponse:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/CacheDemoWorkItem'
+          nullable: true
+          type: array
+        page:
+          $ref: '#/components/schemas/PaginationPage'
+      required:
+        - page
+        - items
+      type: object
+      x-gen-struct: PaginatedDemoWorkItemsResponse
+      x-is-generated: true
     GetCacheDemoWorkItemQueryParameters: # Generated schema. DO NOT EDIT.
       properties:
         joins:
@@ -3030,6 +3073,68 @@ components:
           $ref: '#/components/schemas/DbUserJoins'
       type: object
       x-gen-struct: GetCurrentUserQueryParameters
+      x-is-generated: true
+    CacheDemoWorkItem: # Generated schema. DO NOT EDIT.
+      properties:
+        closedAt:
+          format: date-time
+          nullable: true
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        description:
+          type: string
+        kanbanStepID:
+          type: integer
+        lastMessageAt:
+          format: date-time
+          type: string
+        line:
+          type: string
+        metadata:
+          additionalProperties: {}
+          type: object
+        ref:
+          pattern: ^[0-9]{8}$
+          type: string
+        reopened:
+          type: boolean
+        targetDate:
+          format: date-time
+          type: string
+        teamID:
+          type: integer
+        title:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        workItemID:
+          type: integer
+        workItemTypeID:
+          type: integer
+      required:
+        - ref
+        - line
+        - lastMessageAt
+        - reopened
+        - workItemID
+        - title
+        - description
+        - workItemTypeID
+        - metadata
+        - teamID
+        - kanbanStepID
+        - targetDate
+        - createdAt
+        - updatedAt
+      type: object
+      x-gen-struct: CacheDemoWorkItem
       x-is-generated: true
   examples: # Generated from internal structs. DO NOT EDIT.
     User:

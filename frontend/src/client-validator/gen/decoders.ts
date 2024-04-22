@@ -105,8 +105,10 @@ import {
   PaginationFilterModes,
   DbCacheDemoWorkItemJoins,
   DbUserJoins,
+  PaginatedDemoWorkItemsResponse,
   GetCacheDemoWorkItemQueryParameters,
   GetCurrentUserQueryParameters,
+  CacheDemoWorkItem,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -1279,6 +1281,18 @@ export const DbUserJoinsDecoder: Decoder<DbUserJoins> = {
     return validateJson(json, schema, DbUserJoinsDecoder.definitionName)
   },
 }
+export const PaginatedDemoWorkItemsResponseDecoder: Decoder<PaginatedDemoWorkItemsResponse> = {
+  definitionName: 'PaginatedDemoWorkItemsResponse',
+  schemaRef: '#/definitions/PaginatedDemoWorkItemsResponse',
+
+  decode(json: unknown): PaginatedDemoWorkItemsResponse {
+    const schema = ajv.getSchema(PaginatedDemoWorkItemsResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${PaginatedDemoWorkItemsResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, PaginatedDemoWorkItemsResponseDecoder.definitionName)
+  },
+}
 export const GetCacheDemoWorkItemQueryParametersDecoder: Decoder<GetCacheDemoWorkItemQueryParameters> = {
   definitionName: 'GetCacheDemoWorkItemQueryParameters',
   schemaRef: '#/definitions/GetCacheDemoWorkItemQueryParameters',
@@ -1301,5 +1315,17 @@ export const GetCurrentUserQueryParametersDecoder: Decoder<GetCurrentUserQueryPa
       throw new Error(`Schema ${GetCurrentUserQueryParametersDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, GetCurrentUserQueryParametersDecoder.definitionName)
+  },
+}
+export const CacheDemoWorkItemDecoder: Decoder<CacheDemoWorkItem> = {
+  definitionName: 'CacheDemoWorkItem',
+  schemaRef: '#/definitions/CacheDemoWorkItem',
+
+  decode(json: unknown): CacheDemoWorkItem {
+    const schema = ajv.getSchema(CacheDemoWorkItemDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${CacheDemoWorkItemDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, CacheDemoWorkItemDecoder.definitionName)
   },
 }

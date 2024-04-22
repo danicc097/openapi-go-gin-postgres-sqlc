@@ -148,6 +148,10 @@ export interface paths {
     /** update workitem */
     patch: operations["UpdateWorkitem"];
   };
+  "/work-item/page": {
+    /** Get paginated user work-item */
+    get: operations["GetPaginatedWorkItem"];
+  };
   [path: `/work-item/${number}/comment/`]: {
     /** create work item comment. */
     post: operations["CreateWorkItemComment"];
@@ -860,11 +864,41 @@ export interface components {
       userNotifications: boolean;
       workItemComments: boolean;
     };
+    PaginatedDemoWorkItemsResponse: {
+      items: components["schemas"]["CacheDemoWorkItem"][] | null;
+      page: components["schemas"]["PaginationPage"];
+    };
     GetCacheDemoWorkItemQueryParameters: {
       joins?: components["schemas"]["DbCacheDemoWorkItemJoins"];
     };
     GetCurrentUserQueryParameters: {
       joins?: components["schemas"]["DbUserJoins"];
+    };
+    CacheDemoWorkItem: {
+      /** Format: date-time */
+      closedAt?: string | null;
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      description: string;
+      kanbanStepID: number;
+      /** Format: date-time */
+      lastMessageAt: string;
+      line: string;
+      metadata: {
+        [key: string]: unknown;
+      };
+      ref: string;
+      reopened: boolean;
+      /** Format: date-time */
+      targetDate: string;
+      teamID: number;
+      title: string;
+      /** Format: date-time */
+      updatedAt: string;
+      workItemID: number;
+      workItemTypeID: number;
     };
   };
   responses: never;
@@ -1893,6 +1927,35 @@ export interface operations {
       200: {
         content: {
           "application/json": components["schemas"]["WorkItem"];
+        };
+      };
+    };
+  };
+  /** Get paginated user work-item */
+  GetPaginatedWorkItem: {
+    parameters: {
+      query: {
+        limit: number;
+        direction: components["schemas"]["Direction"];
+        cursor?: string | null;
+        searchQuery?: components["schemas"]["GetCacheDemoWorkItemQueryParameters"];
+      };
+    };
+    responses: {
+      /** @description OK */
+      200: {
+        content: {
+          "application/json": components["schemas"]["PaginatedDemoWorkItemsResponse"];
+        };
+      };
+      /** @description Unauthenticated */
+      401: never;
+      /** @description Unauthorized */
+      403: never;
+      /** @description Error response */
+      "4XX": {
+        content: {
+          "application/json": components["schemas"]["HTTPError"];
         };
       };
     };

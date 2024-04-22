@@ -233,6 +233,7 @@ var PublicStructs = map[string]any{
 	//
 
 	"Activity":                            new(rest.Activity),
+	"CacheDemoWorkItem":                   new(rest.CacheDemoWorkItem),
 	"CreateActivityRequest":               new(rest.CreateActivityRequest),
 	"CreateDemoTwoWorkItemRequest":        new(rest.CreateDemoTwoWorkItemRequest),
 	"CreateDemoWorkItemRequest":           new(rest.CreateDemoWorkItemRequest),
@@ -247,6 +248,7 @@ var PublicStructs = map[string]any{
 	"GetCacheDemoWorkItemQueryParameters": new(rest.GetCacheDemoWorkItemQueryParameters),
 	"GetCurrentUserQueryParameters":       new(rest.GetCurrentUserQueryParameters),
 	"Notification":                        new(rest.Notification),
+	"PaginatedDemoWorkItemsResponse":      new(rest.PaginatedDemoWorkItemsResponse),
 	"PaginatedNotificationsResponse":      new(rest.PaginatedNotificationsResponse),
 	"PaginatedUsersResponse":              new(rest.PaginatedUsersResponse),
 	"PaginationPage":                      new(rest.PaginationPage),

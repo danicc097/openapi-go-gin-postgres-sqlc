@@ -221,6 +221,11 @@
     "role": null,
     "requiresAuthentication": true
   },
+  "GetPaginatedWorkItem": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
   "CreateWorkItemComment": {
     "scopes": [
       "work-item-comment:create"
