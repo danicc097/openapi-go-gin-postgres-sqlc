@@ -86,3 +86,16 @@ func (a *Activity) Delete(ctx context.Context, d db.DBTX, id db.ActivityID) (*db
 
 	return activity, err
 }
+
+func (a *Activity) Restore(ctx context.Context, d db.DBTX, id db.ActivityID) error {
+	activity := &db.Activity{
+		ActivityID: id,
+	}
+
+	_, err := activity.Restore(ctx, d)
+	if err != nil {
+		return fmt.Errorf("could not restore activity: %w", ParseDBErrorDetail(err))
+	}
+
+	return err
+}

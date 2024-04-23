@@ -108,6 +108,20 @@ func (_d ActivityWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.Ac
 	return _d.base.Delete(ctx, d, id)
 }
 
+// Restore implements repos.Activity
+func (_d ActivityWithPrometheus) Restore(ctx context.Context, d db.DBTX, id db.ActivityID) (err error) {
+	_since := time.Now()
+	defer func() {
+		result := "ok"
+		if err != nil {
+			result = "error"
+		}
+
+		activityDurationSummaryVec.WithLabelValues(_d.instanceName, "Restore", result).Observe(time.Since(_since).Seconds())
+	}()
+	return _d.base.Restore(ctx, d, id)
+}
+
 // Update implements repos.Activity
 func (_d ActivityWithPrometheus) Update(ctx context.Context, d db.DBTX, id db.ActivityID, params *db.ActivityUpdateParams) (ap1 *db.Activity, err error) {
 	_since := time.Now()

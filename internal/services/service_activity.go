@@ -97,3 +97,13 @@ func (a *Activity) Delete(ctx context.Context, d db.DBTX, id db.ActivityID) (*db
 
 	return activity, nil
 }
+
+func (a *Activity) Restore(ctx context.Context, d db.DBTX, id db.ActivityID) error {
+	defer newOTelSpan().Build(ctx).End()
+
+	if err := a.repos.Activity.Restore(ctx, d, id); err != nil {
+		return fmt.Errorf("repos.Activity.Restore: %w", err)
+	}
+
+	return nil
+}

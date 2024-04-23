@@ -159,6 +159,29 @@ func (_d ActivityWithTracing) Delete(ctx context.Context, d db.DBTX, id db.Activ
 	return _d.Activity.Delete(ctx, d, id)
 }
 
+// Restore implements repos.Activity
+func (_d ActivityWithTracing) Restore(ctx context.Context, d db.DBTX, id db.ActivityID) (err error) {
+	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.Restore")
+	defer func() {
+		if _d._spanDecorator != nil {
+			_d._spanDecorator(_span, map[string]interface{}{
+				"ctx": ctx,
+				"d":   d,
+				"id":  id}, map[string]interface{}{
+				"err": err})
+		} else if err != nil {
+			_span.RecordError(err)
+			_span.SetAttributes(
+				attribute.String("event", "error"),
+				attribute.String("message", err.Error()),
+			)
+		}
+
+		_span.End()
+	}()
+	return _d.Activity.Restore(ctx, d, id)
+}
+
 // Update implements repos.Activity
 func (_d ActivityWithTracing) Update(ctx context.Context, d db.DBTX, id db.ActivityID, params *db.ActivityUpdateParams) (ap1 *db.Activity, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Activity.Update")

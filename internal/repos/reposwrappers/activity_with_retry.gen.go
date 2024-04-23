@@ -233,6 +233,46 @@ func (_d ActivityWithRetry) Delete(ctx context.Context, d db.DBTX, id db.Activit
 	return
 }
 
+// Restore implements repos.Activity
+func (_d ActivityWithRetry) Restore(ctx context.Context, d db.DBTX, id db.ActivityID) (err error) {
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "SAVEPOINT ActivityWithRetryRestore")
+		if err != nil {
+			err = fmt.Errorf("could not store savepoint: %w", err)
+			return
+		}
+	}
+	err = _d.Activity.Restore(ctx, d, id)
+	if err == nil || _d._retryCount < 1 {
+		if tx, ok := d.(pgx.Tx); ok {
+			_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryRestore")
+		}
+		return
+	}
+	_ticker := time.NewTicker(_d._retryInterval)
+	defer _ticker.Stop()
+	for _i := 0; _i < _d._retryCount && err != nil; _i++ {
+		_d.logger.Debugf("retry %d/%d: %s", _i+1, _d._retryCount, err)
+		select {
+		case <-ctx.Done():
+			return
+		case <-_ticker.C:
+		}
+		if tx, ok := d.(pgx.Tx); ok {
+			if _, err = tx.Exec(ctx, "ROLLBACK to ActivityWithRetryRestore"); err != nil {
+				err = fmt.Errorf("could not rollback to savepoint: %w", err)
+				return
+			}
+		}
+
+		err = _d.Activity.Restore(ctx, d, id)
+	}
+	if tx, ok := d.(pgx.Tx); ok {
+		_, err = tx.Exec(ctx, "RELEASE SAVEPOINT ActivityWithRetryRestore")
+	}
+	return
+}
+
 // Update implements repos.Activity
 func (_d ActivityWithRetry) Update(ctx context.Context, d db.DBTX, id db.ActivityID, params *db.ActivityUpdateParams) (ap1 *db.Activity, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
