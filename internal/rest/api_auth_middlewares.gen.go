@@ -22,6 +22,7 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthenticated(),
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
+					MinimumRole: models.Role("manager"),
 					RequiredScopes: models.Scopes{
 						models.Scope("activity:create"),
 					},
@@ -69,6 +70,7 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthenticated(),
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
+					MinimumRole: models.Role("manager"),
 					RequiredScopes: models.Scopes{
 						models.Scope("activity:delete"),
 					},
@@ -202,6 +204,7 @@ func (h *StrictHandlers) authMiddlewares(opID OperationID) []gin.HandlerFunc {
 			h.authmw.EnsureAuthenticated(),
 			h.authmw.EnsureAuthorized(
 				AuthRestriction{
+					MinimumRole: models.Role("manager"),
 					RequiredScopes: models.Scopes{
 						models.Scope("activity:edit"),
 					},

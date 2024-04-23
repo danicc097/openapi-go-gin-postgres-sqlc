@@ -602,6 +602,7 @@ paths:
         - $ref: '#/components/parameters/ProjectName'
       x-required-scopes:
         - activity:create
+      x-required-role: manager
       requestBody:
         content:
           application/json:
@@ -713,6 +714,7 @@ paths:
       operationId: UpdateActivity
       x-required-scopes:
         - activity:edit
+      x-required-role: manager
       parameters:
         - *x-activityIDParameter
       requestBody:
@@ -737,6 +739,7 @@ paths:
       operationId: DeleteActivity
       x-required-scopes:
         - activity:delete
+      x-required-role: manager
       parameters:
         - *x-activityIDParameter
       responses:

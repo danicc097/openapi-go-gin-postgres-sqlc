@@ -1,31 +1,48 @@
 package rest
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 )
 
 func (h *StrictHandlers) CreateActivity(c *gin.Context, request CreateActivityRequestObject) (CreateActivityResponseObject, error) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	activity, err := h.svc.Activity.Create(c.Request.Context(), h.pool, request.ProjectName, &request.Body.ActivityCreateParams)
+	if err != nil {
+		renderErrorResponse(c, "could not create activity", err)
 
-	return nil, nil
+		return nil, nil
+	}
+
+	return CreateActivity201JSONResponse{Activity: *activity}, nil
 }
 
 func (h *StrictHandlers) DeleteActivity(c *gin.Context, request DeleteActivityRequestObject) (DeleteActivityResponseObject, error) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	if _, err := h.svc.Activity.Delete(c.Request.Context(), h.pool, request.ActivityID); err != nil {
+		renderErrorResponse(c, "could not delete activity", err)
 
-	return nil, nil
+		return nil, nil
+	}
+
+	return DeleteActivity204Response{}, nil
 }
 
 func (h *StrictHandlers) GetActivity(c *gin.Context, request GetActivityRequestObject) (GetActivityResponseObject, error) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	activity, err := h.svc.Activity.ByID(c.Request.Context(), h.pool, request.ActivityID)
+	if err != nil {
+		renderErrorResponse(c, "could not get activity", err)
 
-	return nil, nil
+		return nil, nil
+	}
+
+	return GetActivity200JSONResponse{Activity: *activity}, nil
 }
 
 func (h *StrictHandlers) UpdateActivity(c *gin.Context, request UpdateActivityRequestObject) (UpdateActivityResponseObject, error) {
-	c.JSON(http.StatusNotImplemented, "not implemented")
+	activity, err := h.svc.Activity.Update(c.Request.Context(), h.pool, request.ActivityID, &request.Body.ActivityUpdateParams)
+	if err != nil {
+		renderErrorResponse(c, "could not update activity", err)
 
-	return nil, nil
+		return nil, nil
+	}
+
+	return UpdateActivity200JSONResponse{Activity: *activity}, nil
 }
