@@ -82,12 +82,13 @@ x-paginationCursorParameter: &x-paginationCursorParameter
     nullable: true
   required: false
   in: query
+# forces either an app token or api key to be set
 x-require-authenticated: &x-require-authenticated
   security:
     - bearer_auth: []
     - api_key: []
 # 403 and 401 will have precedence over 4XX, else we
-# get response validation failure (500) on a 403 and 401
+# get response validation failure (400) on a 403 and 401
 # since we don't use HTTPError schema
 x-error-response: &x-error-response
   403:
