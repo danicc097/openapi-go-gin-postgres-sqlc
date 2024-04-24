@@ -2902,7 +2902,7 @@ if [[ -n "$1" ]]; then
       err_code=$?
 
       if test -f "$failed_tool_build_marker"; then
-        echo "${YELLOW}[WARNING] At least one gen tool build failed. A gen rerun may be required"
+        err "At least one gen tool build failed. A gen rerun may be required"
       fi
 
       exit $err_code # do not quote

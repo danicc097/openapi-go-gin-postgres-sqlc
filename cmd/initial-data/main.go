@@ -200,21 +200,18 @@ func main() {
 	 **/
 	logger.Info("Creating activities...")
 
-	activity1, err := svc.Activity.Create(ctx, pool, &db.ActivityCreateParams{
-		ProjectID:    internal.ProjectIDByName[models.ProjectDemo],
+	activity1, err := svc.Activity.Create(ctx, pool, models.ProjectDemo, &db.ActivityCreateParams{
 		Name:         "Activity 1",
 		Description:  "Activity 1 description",
 		IsProductive: true,
 	})
 	handleError(err, activity1)
-	activity2, err := svc.Activity.Create(ctx, pool, &db.ActivityCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
+	activity2, err := svc.Activity.Create(ctx, pool, models.ProjectDemo, &db.ActivityCreateParams{
 		Name:        "Activity 2",
 		Description: "Activity 2 description",
 	})
 	handleError(err, activity2)
-	activity3, err := svc.Activity.Create(ctx, pool, &db.ActivityCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
+	activity3, err := svc.Activity.Create(ctx, pool, models.ProjectDemo, &db.ActivityCreateParams{
 		Name:        "Activity 3",
 		Description: "Activity 3 description",
 	})
