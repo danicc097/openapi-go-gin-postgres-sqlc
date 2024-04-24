@@ -456,8 +456,10 @@ func main() {
 						"uuid.NullUUID": "null | string /* uuid */",
 					},
 					// to import actual values from models package, do it explicitly
-					Frontmatter: `import type * as models from "client/gen/model";`,
-					OutputPath:  path.Join(e2eTestDataDir, "initial-data.ts"),
+					Frontmatter: `import type * as models from "client/gen/model";
+import type * as EntityIDs from "./entity-ids";
+`,
+					OutputPath: path.Join(e2eTestDataDir, "initial-data.ts"),
 				},
 			},
 		}
@@ -484,6 +486,7 @@ func main() {
 	tt := make([]e2e.Team, len(teams))
 	for i, t := range teams {
 		tt[i] = e2e.Team{
+			TeamID:      t.TeamID,
 			Name:        t.Name,
 			ProjectName: t.ProjectJoin.Name,
 		}
