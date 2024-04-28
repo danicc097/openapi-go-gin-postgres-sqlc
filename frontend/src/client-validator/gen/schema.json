@@ -5,7 +5,12 @@
     "Activity": {
       "properties": {
         "activityID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ActivityID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "deletedAt": {
           "format": "date-time",
@@ -25,7 +30,12 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ProjectID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -81,7 +91,12 @@
         },
         "tagIDs": {
           "items": {
-            "type": "integer"
+            "type": "integer",
+            "x-go-type": "db.WorkItemTagID",
+            "x-go-type-import": {
+              "name": "db",
+              "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+            }
           },
           "type": "array"
         }
@@ -116,7 +131,12 @@
         },
         "tagIDs": {
           "items": {
-            "type": "integer"
+            "type": "integer",
+            "x-go-type": "db.WorkItemTagID",
+            "x-go-type-import": {
+              "name": "db",
+              "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+            }
           },
           "type": "array"
         }
@@ -186,7 +206,12 @@
           "$ref": "#/definitions/DbUserID"
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -257,13 +282,23 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
         "workItemID"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "db.DemoTwoWorkItem",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbDemoTwoWorkItemCreateParams": {
       "properties": {
@@ -274,7 +309,12 @@
           ]
         }
       },
-      "type": "object"
+      "type": "object",
+      "x-go-type": "db.DemoTwoWorkItemCreateParams",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbDemoWorkItem": {
       "properties": {
@@ -297,7 +337,12 @@
           "type": "boolean"
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -309,7 +354,12 @@
       ],
       "type": "object",
       "x-gen-struct": "DbDemoWorkItem",
-      "x-is-generated": true
+      "x-is-generated": true,
+      "x-go-type": "db.DemoWorkItem",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbDemoWorkItemCreateParams": {
       "properties": {
@@ -338,7 +388,12 @@
         "ref",
         "reopened"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "db.DemoWorkItemCreateParams",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbKanbanStep": {
       "properties": {
@@ -352,14 +407,24 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.KanbanStepID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "name": {
           "type": "string",
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ProjectID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "stepOrder": {
           "type": "integer"
@@ -379,7 +444,12 @@
       ],
       "type": "object",
       "x-gen-struct": "DbKanbanStep",
-      "x-is-generated": true
+      "x-is-generated": true,
+      "x-go-type": "db.KanbanStep",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbNotification": {
       "properties": {
@@ -407,7 +477,12 @@
           ]
         },
         "notificationID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.NotificationID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "notificationType": {
           "$ref": "#/definitions/NotificationType"
@@ -432,7 +507,12 @@
         "sender",
         "notificationType"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "db.Notification",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbProject": {
       "properties": {
@@ -453,7 +533,12 @@
           "$ref": "#/definitions/Project"
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ProjectID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "updatedAt": {
           "format": "date-time",
@@ -472,7 +557,12 @@
       ],
       "type": "object",
       "x-gen-struct": "DbProject",
-      "x-is-generated": true
+      "x-is-generated": true,
+      "x-go-type": "db.Project",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbTeam": {
       "properties": {
@@ -491,10 +581,20 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ProjectID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "teamID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.TeamID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "updatedAt": {
           "format": "date-time",
@@ -511,7 +611,12 @@
         "createdAt",
         "updatedAt"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "db.Team",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbTeamCreateParams": {
       "properties": {
@@ -528,12 +633,22 @@
         "description",
         "name"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "db.TeamCreateParams",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbTimeEntry": {
       "properties": {
         "activityID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ActivityID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "comment": {
           "type": "string",
@@ -555,10 +670,20 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "db.TeamID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "timeEntryID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.TimeEntryID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "userID": {
           "$ref": "#/definitions/DbUserID"
@@ -567,7 +692,12 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -579,7 +709,12 @@
       ],
       "type": "object",
       "x-gen-struct": "DbTimeEntry",
-      "x-is-generated": true
+      "x-is-generated": true,
+      "x-go-type": "db.TimeEntry",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbUser": {
       "properties": {
@@ -658,7 +793,12 @@
       ],
       "type": "object",
       "x-gen-struct": "DbUser",
-      "x-is-generated": true
+      "x-is-generated": true,
+      "x-go-type": "db.User",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbUserAPIKey": {
       "properties": {
@@ -683,15 +823,20 @@
       ],
       "type": "object",
       "x-gen-struct": "DbUserAPIKey",
-      "x-is-generated": true
+      "x-is-generated": true,
+      "x-go-type": "db.UserAPIKey",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbUserID": {
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
       "type": "string",
-      "x-go-type": "uuid.UUID",
+      "x-go-type": "db.UserID",
       "x-go-type-import": {
-        "name": "uuid",
-        "path": "github.com/google/uuid"
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
       },
       "x-is-generated": true
     },
@@ -735,7 +880,12 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.KanbanStepID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "metadata": {
           "additionalProperties": {},
@@ -748,7 +898,12 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.TeamID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "title": {
           "type": "string",
@@ -761,10 +916,20 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemTypeID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -781,7 +946,12 @@
       ],
       "type": "object",
       "x-gen-struct": "DbWorkItem",
-      "x-is-generated": true
+      "x-is-generated": true,
+      "x-go-type": "db.WorkItem",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbWorkItemComment": {
       "properties": {
@@ -805,10 +975,20 @@
           "$ref": "#/definitions/DbUserID"
         },
         "workItemCommentID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemCommentID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -821,7 +1001,12 @@
       ],
       "type": "object",
       "x-gen-struct": "DbWorkItemComment",
-      "x-is-generated": true
+      "x-is-generated": true,
+      "x-go-type": "db.WorkItemComment",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbWorkItemCreateParams": {
       "properties": {
@@ -836,7 +1021,12 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.KanbanStepID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "metadata": {
           "additionalProperties": {},
@@ -849,14 +1039,24 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.TeamID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "title": {
           "type": "string",
           "minLength": 1
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemTypeID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -868,7 +1068,12 @@
         "title",
         "workItemTypeID"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "db.WorkItemCreateParams",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbWorkItemTag": {
       "properties": {
@@ -892,10 +1097,20 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ProjectID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "workItemTagID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemTagID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -907,7 +1122,12 @@
       ],
       "type": "object",
       "x-gen-struct": "DbWorkItemTag",
-      "x-is-generated": true
+      "x-is-generated": true,
+      "x-go-type": "db.WorkItemTag",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbWorkItemTagCreateParams": {
       "properties": {
@@ -930,7 +1150,12 @@
         "description",
         "name"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "db.WorkItemTagCreateParams",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbWorkItemType": {
       "properties": {
@@ -948,10 +1173,20 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ProjectID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemTypeID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -963,7 +1198,12 @@
       ],
       "type": "object",
       "x-gen-struct": "DbWorkItemType",
-      "x-is-generated": true
+      "x-is-generated": true,
+      "x-go-type": "db.WorkItemType",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "Notification": {
       "properties": {
@@ -971,7 +1211,12 @@
           "$ref": "#/definitions/DbNotification"
         },
         "notificationID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.NotificationID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "read": {
           "type": "boolean"
@@ -980,7 +1225,12 @@
           "$ref": "#/definitions/DbUserID"
         },
         "userNotificationID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.UserNotificationID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -1141,10 +1391,20 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ProjectID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "teamID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.TeamID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "updatedAt": {
           "format": "date-time",
@@ -1203,7 +1463,12 @@
           "$ref": "#/definitions/DbUserID"
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "type": "object",
@@ -1370,10 +1635,20 @@
           "$ref": "#/definitions/DbUserID"
         },
         "workItemCommentID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemCommentID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -1410,10 +1685,20 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ProjectID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "workItemTagID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemTagID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -1443,10 +1728,20 @@
           "minLength": 1
         },
         "projectID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ProjectID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemTypeID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -1944,12 +2239,22 @@
         "user",
         "role"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "db.WorkItemM2MAssigneeWIA",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "CreateTimeEntryRequest": {
       "properties": {
         "activityID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ActivityID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "comment": {
           "type": "string",
@@ -1971,7 +2276,12 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "db.TeamID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "userID": {
           "$ref": "#/definitions/DbUserID"
@@ -1980,7 +2290,12 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -1996,7 +2311,12 @@
     "TimeEntry": {
       "properties": {
         "activityID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ActivityID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "comment": {
           "type": "string",
@@ -2018,10 +2338,20 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "db.TeamID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "timeEntryID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.TimeEntryID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "userID": {
           "$ref": "#/definitions/DbUserID"
@@ -2030,7 +2360,12 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -2047,7 +2382,12 @@
     "UpdateTimeEntryRequest": {
       "properties": {
         "activityID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.ActivityID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "comment": {
           "type": "string"
@@ -2112,7 +2452,12 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.KanbanStepID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "members": {
           "items": {
@@ -2140,7 +2485,12 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "db.TeamID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "timeEntries": {
           "items": {
@@ -2171,7 +2521,12 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "workItemTags": {
           "items": {
@@ -2186,7 +2541,12 @@
           "$ref": "#/definitions/DbWorkItemType"
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemTypeID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -2235,7 +2595,12 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.KanbanStepID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "members": {
           "items": {
@@ -2263,7 +2628,12 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "db.TeamID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "timeEntries": {
           "items": {
@@ -2294,7 +2664,12 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "workItemTags": {
           "items": {
@@ -2309,7 +2684,12 @@
           "$ref": "#/definitions/DbWorkItemType"
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemTypeID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -2355,7 +2735,12 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.KanbanStepID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "members": {
           "items": {
@@ -2383,7 +2768,12 @@
           "type": [
             "integer",
             "null"
-          ]
+          ],
+          "x-go-type": "db.TeamID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "timeEntries": {
           "items": {
@@ -2414,7 +2804,12 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "workItemTags": {
           "items": {
@@ -2429,7 +2824,12 @@
           "$ref": "#/definitions/DbWorkItemType"
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemTypeID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [
@@ -2611,7 +3011,12 @@
         "workItemComments",
         "workItemTags"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "db.CacheDemoWorkItemJoins",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "DbUserJoins": {
       "properties": {
@@ -2654,7 +3059,12 @@
         "assigneeWorkItems",
         "workItemComments"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "db.UserJoins",
+      "x-go-type-import": {
+        "name": "db",
+        "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+      }
     },
     "PaginatedDemoWorkItemsResponse": {
       "properties": {
@@ -2724,7 +3134,12 @@
           "minLength": 1
         },
         "kanbanStepID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.KanbanStepID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "lastMessageAt": {
           "format": "date-time",
@@ -2755,7 +3170,12 @@
           ]
         },
         "teamID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.TeamID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "title": {
           "type": "string",
@@ -2768,10 +3188,20 @@
           ]
         },
         "workItemID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         },
         "workItemTypeID": {
-          "type": "integer"
+          "type": "integer",
+          "x-go-type": "db.WorkItemTypeID",
+          "x-go-type-import": {
+            "name": "db",
+            "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+          }
         }
       },
       "required": [

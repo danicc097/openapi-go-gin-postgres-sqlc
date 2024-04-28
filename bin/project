@@ -862,6 +862,7 @@ x.gen.client-server() {
 
     wait_without_error
 
+    # TODO: remove once x-go-type in use for all db types
     sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_server.gen.go
     sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_client_gen_test.go
     # db already imports models pkg
@@ -2473,6 +2474,18 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
     err "The following non-generated schemas would have been overridden by internal/rest/models.go structs. Please rename or delete:
 $(join_by $'\n' "${clashes[@]}")"
   fi
+
+  schema_keys=$(yq eval '.components.schemas | keys | .[]' "$gen_schema_spec_path")
+
+  for schema_key in $schema_keys; do
+    if [[ $schema_key =~ ^Db[A-Z].*$ ]]; then
+      go_type="db.${schema_key#Db}"
+
+      yq eval -i \
+        '.components.schemas."'$schema_key'" += {"x-go-type": "'$go_type'", "x-go-type-import": {"name": "db", "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"}}' \
+        "$gen_schema_spec_path"
+    fi
+  done
 
   # only keep schemas not outputted by gen. User should have been warned on clashes.
   # NOTE: must use shallow merge to replace every single schema, else indirect generations are out of date.

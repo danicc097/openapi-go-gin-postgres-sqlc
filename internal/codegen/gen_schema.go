@@ -155,7 +155,7 @@ func newSpecReflector() *openapi3.Reflector {
 			}
 
 			// duplicate from gen itself
-			if strings.HasSuffix(params.Schema.ReflectType.PkgPath(), "internal/models") {
+			if strings.HasSuffix(t.PkgPath(), "internal/models") {
 				if t.Kind() == reflect.Struct {
 					// will generate duplicate models otherwise
 					params.Schema.ExtraProperties = map[string]any{
@@ -163,6 +163,20 @@ func newSpecReflector() *openapi3.Reflector {
 					}
 
 					return true, nil
+				}
+			}
+
+			// PkgPath is empty for top level struct instance via struct{} (see docs)
+			// therefore we cannot append vendor extensions via gen_schema.
+			// for top level schemas we must check for Db([A-Z])* and append
+			isDbType := strings.HasSuffix(t.PkgPath(), "/db")
+			if n := t.Name(); isDbType {
+				params.Schema.ExtraProperties = map[string]any{
+					"x-go-type": "db." + strings.TrimPrefix(n, "Db"),
+					"x-go-type-import": map[string]any{
+						"name": "db",
+						"path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db",
+					},
 				}
 			}
 
