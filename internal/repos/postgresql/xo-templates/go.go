@@ -352,8 +352,6 @@ func Init(ctx context.Context, f func(xo.TemplateType)) error {
 				Default: `json:"{{ if or (.ignoreJSON) (.hidden) }}-{{ else }}{{ camel .field.GoName }}{{end}}"
 {{- if not .skipExtraTags }} db:"{{ .field.SQLName -}}"
 {{- end }}
-{{- if .hidden }} openapi-go:"ignore"
-{{- end }}
 {{- if and (.required) (not .hidden)}} required:"true"
 {{- end }}
 {{- if and (not .nullable) (not .hidden) }} nullable:"false"
@@ -4402,7 +4400,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 	// 		lookupName := tfk.RefTable
 	// 		goName = camelExport(singularize(strings.TrimSuffix(tfk.FieldNames[0], "_id")))
 	// 		typ = camelExport(singularize(lookupName))
-	// 		tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", lookupName)
+	// 		tag = fmt.Sprintf("`json:\"-\" db:\"%s\"`", lookupName)
 	// 		buf.WriteString(fmt.Sprintf("\t%sJoin *%s %s // %s field FK \n", goName, typ, tag, goName))
 	// 	}
 	// }
@@ -4457,7 +4455,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 				}
 			}
 			goName += "Join"
-			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
+			tag = fmt.Sprintf("`json:\"-\" db:\"%s\"`", joinName)
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 		case M2O:
 			if c.RefTableName != t.SQLName {
@@ -4484,7 +4482,7 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 
 			typ = camelExport(f.schemaPrefix) + typ
 
-			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
+			tag = fmt.Sprintf("`json:\"-\" db:\"%s\"`", joinName)
 			buf.WriteString(fmt.Sprintf("\t%s *[]%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 		case O2O:
 			if c.TableName != t.SQLName {
@@ -4516,14 +4514,14 @@ func (f *Funcs) join_fields(t Table, constraints []Constraint, tables Tables) (s
 			goName += "Join"
 			typ = camelExport(f.schemaPrefix) + typ
 
-			tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", joinName)
+			tag = fmt.Sprintf("`json:\"-\" db:\"%s\"`", joinName)
 			buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, string(c.Cardinality)+notes))
 			// dummy created automatically to avoid this duplication
 			// if c.RefTableName == t.SQLName {
 			// 	goName = camelExport(singularize(c.TableName))
 			// 	typ = goName
 			// 	goName = goName + "Join"
-			// 	tag = fmt.Sprintf("`json:\"-\" db:\"%s\" openapi-go:\"ignore\"`", singularize(c.TableName))
+			// 	tag = fmt.Sprintf("`json:\"-\" db:\"%s\"`", singularize(c.TableName))
 			// 	buf.WriteString(fmt.Sprintf("\t%s *%s %s // %s\n", goName, typ, tag, c.Cardinality))
 			// }
 		default:

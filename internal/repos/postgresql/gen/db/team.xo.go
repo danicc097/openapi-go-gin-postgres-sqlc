@@ -38,9 +38,9 @@ type Team struct {
 	CreatedAt   time.Time `json:"createdAt" db:"created_at" required:"true" nullable:"false"`    // created_at
 	UpdatedAt   time.Time `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`    // updated_at
 
-	ProjectJoin     *Project     `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
-	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries" openapi-go:"ignore"`       // M2O teams
-	MembersJoin     *[]User      `json:"-" db:"user_team_members" openapi-go:"ignore"`  // M2M user_team
+	ProjectJoin     *Project     `json:"-" db:"project_project_id"` // O2O projects (generated from M2O)
+	TimeEntriesJoin *[]TimeEntry `json:"-" db:"time_entries"`       // M2O teams
+	MembersJoin     *[]User      `json:"-" db:"user_team_members"`  // M2M user_team
 
 }
 
@@ -48,7 +48,7 @@ type Team struct {
 type TeamCreateParams struct {
 	Description string    `json:"description" required:"true" nullable:"false"` // description
 	Name        string    `json:"name" required:"true" nullable:"false"`        // name
-	ProjectID   ProjectID `json:"-" openapi-go:"ignore"`                        // project_id
+	ProjectID   ProjectID `json:"-"`                                            // project_id
 }
 
 // TeamParams represents common params for both insert and update of 'public.teams'.
@@ -233,7 +233,7 @@ const teamTableMembersGroupBySQL = `teams.team_id, teams.team_id`
 type TeamUpdateParams struct {
 	Description *string    `json:"description" nullable:"false"` // description
 	Name        *string    `json:"name" nullable:"false"`        // name
-	ProjectID   *ProjectID `json:"-" openapi-go:"ignore"`        // project_id
+	ProjectID   *ProjectID `json:"-"`                            // project_id
 }
 
 // SetUpdateParams updates public.teams struct fields with the specified params.

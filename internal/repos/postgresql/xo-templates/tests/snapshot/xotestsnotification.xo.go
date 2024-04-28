@@ -35,8 +35,8 @@ type XoTestsNotification struct {
 	Sender         XoTestsUserID         `json:"sender" db:"sender" required:"true" nullable:"false"`                  // sender
 	Receiver       *XoTestsUserID        `json:"receiver" db:"receiver"`                                               // receiver
 
-	UserReceiverJoin *XoTestsUser `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
-	UserSenderJoin   *XoTestsUser `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
+	UserReceiverJoin *XoTestsUser `json:"-" db:"user_receiver"` // O2O users (generated from M2O)
+	UserSenderJoin   *XoTestsUser `json:"-" db:"user_sender"`   // O2O users (generated from M2O)
 }
 
 // XoTestsNotificationCreateParams represents insert params for 'xo_tests.notifications'.

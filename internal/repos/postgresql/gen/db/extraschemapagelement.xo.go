@@ -38,7 +38,7 @@ type ExtraSchemaPagElement struct {
 	CreatedAt          time.Time               `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                    // created_at
 	Dummy              *ExtraSchemaDummyJoinID `json:"dummy" db:"dummy"`                                                              // dummy
 
-	DummyJoinJoin *ExtraSchemaDummyJoin `json:"-" db:"dummy_join_dummy" openapi-go:"ignore"` // O2O dummy_join (inferred)
+	DummyJoinJoin *ExtraSchemaDummyJoin `json:"-" db:"dummy_join_dummy"` // O2O dummy_join (inferred)
 
 }
 

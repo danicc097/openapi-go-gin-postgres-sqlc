@@ -35,8 +35,8 @@ type ExtraSchemaBookAuthorsSurrogateKey struct {
 	AuthorID                  ExtraSchemaUserID                    `json:"authorID" db:"author_id" required:"true" nullable:"false"`                                      // author_id
 	Pseudonym                 *string                              `json:"pseudonym" db:"pseudonym"`                                                                      // pseudonym
 
-	BooksJoin   *[]ExtraSchemaBookAuthorsSurrogateKeyM2MBookBASK   `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"`   // M2M book_authors_surrogate_key
-	AuthorsJoin *[]ExtraSchemaBookAuthorsSurrogateKeyM2MAuthorBASK `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
+	BooksJoin   *[]ExtraSchemaBookAuthorsSurrogateKeyM2MBookBASK   `json:"-" db:"book_authors_surrogate_key_books"`   // M2M book_authors_surrogate_key
+	AuthorsJoin *[]ExtraSchemaBookAuthorsSurrogateKeyM2MAuthorBASK `json:"-" db:"book_authors_surrogate_key_authors"` // M2M book_authors_surrogate_key
 
 }
 

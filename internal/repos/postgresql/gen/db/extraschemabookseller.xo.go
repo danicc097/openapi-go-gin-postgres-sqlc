@@ -30,8 +30,8 @@ type ExtraSchemaBookSeller struct {
 	BookID ExtraSchemaBookID `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
 	Seller ExtraSchemaUserID `json:"seller" db:"seller" required:"true" nullable:"false"`  // seller
 
-	SellersJoin *[]ExtraSchemaUser `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"` // M2M book_sellers
-	BooksJoin   *[]ExtraSchemaBook `json:"-" db:"book_sellers_books" openapi-go:"ignore"`   // M2M book_sellers
+	SellersJoin *[]ExtraSchemaUser `json:"-" db:"book_sellers_sellers"` // M2M book_sellers
+	BooksJoin   *[]ExtraSchemaBook `json:"-" db:"book_sellers_books"`   // M2M book_sellers
 
 }
 

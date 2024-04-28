@@ -35,7 +35,7 @@ type XoTestsTimeEntry struct {
 	WorkItemID  *XoTestsWorkItemID `json:"workItemID" db:"work_item_id"`                                    // work_item_id
 	Start       time.Time          `json:"start" db:"start" required:"true" nullable:"false"`               // start
 
-	WorkItemJoin *XoTestsWorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (generated from M2O)
+	WorkItemJoin *XoTestsWorkItem `json:"-" db:"work_item_work_item_id"` // O2O work_items (generated from M2O)
 }
 
 // XoTestsTimeEntryCreateParams represents insert params for 'xo_tests.time_entries'.

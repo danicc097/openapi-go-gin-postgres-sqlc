@@ -33,7 +33,7 @@ type ExtraSchemaDemoWorkItem struct {
 	WorkItemID ExtraSchemaWorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
 	Checked    bool                  `json:"checked" db:"checked" required:"true" nullable:"false"`         // checked
 
-	WorkItemJoin *ExtraSchemaWorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
+	WorkItemJoin *ExtraSchemaWorkItem `json:"-" db:"work_item_work_item_id"` // O2O work_items (inferred)
 
 }
 

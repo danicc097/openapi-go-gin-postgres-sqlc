@@ -35,8 +35,8 @@ type UserNotification struct {
 	Read               bool               `json:"read" db:"read" required:"true" nullable:"false"`                               // read
 	UserID             UserID             `json:"userID" db:"user_id" required:"true" nullable:"false"`                          // user_id
 
-	NotificationJoin *Notification `json:"-" db:"notification_notification_id" openapi-go:"ignore"` // O2O notifications (generated from M2O)
-	UserJoin         *User         `json:"-" db:"user_user_id" openapi-go:"ignore"`                 // O2O users (generated from M2O)
+	NotificationJoin *Notification `json:"-" db:"notification_notification_id"` // O2O notifications (generated from M2O)
+	UserJoin         *User         `json:"-" db:"user_user_id"`                 // O2O users (generated from M2O)
 
 }
 

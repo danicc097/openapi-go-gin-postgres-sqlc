@@ -33,7 +33,7 @@ type XoTestsDemoWorkItem struct {
 	WorkItemID XoTestsWorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
 	Checked    bool              `json:"checked" db:"checked" required:"true" nullable:"false"`         // checked
 
-	WorkItemJoin *XoTestsWorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
+	WorkItemJoin *XoTestsWorkItem `json:"-" db:"work_item_work_item_id"` // O2O work_items (inferred)
 }
 
 // XoTestsDemoWorkItemCreateParams represents insert params for 'xo_tests.demo_work_items'.

@@ -38,8 +38,8 @@ type XoTestsWorkItemComment struct {
 	CreatedAt         time.Time                `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                   // created_at
 	UpdatedAt         time.Time                `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                   // updated_at
 
-	UserJoin     *XoTestsUser     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O users (generated from M2O)
-	WorkItemJoin *XoTestsWorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (generated from M2O)
+	UserJoin     *XoTestsUser     `json:"-" db:"user_user_id"`           // O2O users (generated from M2O)
+	WorkItemJoin *XoTestsWorkItem `json:"-" db:"work_item_work_item_id"` // O2O work_items (generated from M2O)
 }
 
 // XoTestsWorkItemCommentCreateParams represents insert params for 'xo_tests.work_item_comments'.

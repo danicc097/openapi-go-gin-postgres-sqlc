@@ -33,10 +33,10 @@ type ExtraSchemaBook struct {
 	BookID ExtraSchemaBookID `json:"bookID" db:"book_id" required:"true" nullable:"false"` // book_id
 	Name   string            `json:"name" db:"name" required:"true" nullable:"false"`      // name
 
-	AuthorsJoin     *[]ExtraSchemaBookM2MAuthorBA   `json:"-" db:"book_authors_authors" openapi-go:"ignore"`               // M2M book_authors
-	AuthorsBASKJoin *[]ExtraSchemaBookM2MAuthorBASK `json:"-" db:"book_authors_surrogate_key_authors" openapi-go:"ignore"` // M2M book_authors_surrogate_key
-	BookReviewsJoin *[]ExtraSchemaBookReview        `json:"-" db:"book_reviews" openapi-go:"ignore"`                       // M2O books
-	SellersJoin     *[]ExtraSchemaUser              `json:"-" db:"book_sellers_sellers" openapi-go:"ignore"`               // M2M book_sellers
+	AuthorsJoin     *[]ExtraSchemaBookM2MAuthorBA   `json:"-" db:"book_authors_authors"`               // M2M book_authors
+	AuthorsBASKJoin *[]ExtraSchemaBookM2MAuthorBASK `json:"-" db:"book_authors_surrogate_key_authors"` // M2M book_authors_surrogate_key
+	BookReviewsJoin *[]ExtraSchemaBookReview        `json:"-" db:"book_reviews"`                       // M2O books
+	SellersJoin     *[]ExtraSchemaUser              `json:"-" db:"book_sellers_sellers"`               // M2M book_sellers
 
 }
 

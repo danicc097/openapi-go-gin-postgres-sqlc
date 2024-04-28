@@ -111,10 +111,6 @@ func newSpecReflector() *openapi3.Reflector {
 			return schemaName
 		}),
 		jsonschema.InterceptProp(func(params jsonschema.InterceptPropParams) error {
-			if params.Field.Tag.Get("openapi-go") == "ignore" { // does not ignore completely, it still sets as required. Probably a bug
-				return jsonschema.ErrSkipProperty
-			}
-
 			if params.PropertySchema != nil {
 				if params.PropertySchema.ExtraProperties == nil {
 					params.PropertySchema.ExtraProperties = map[string]any{}
@@ -167,17 +163,6 @@ func newSpecReflector() *openapi3.Reflector {
 					}
 
 					return true, nil
-				}
-			}
-
-			if t.Kind() == reflect.Struct {
-				for i := 0; i < t.NumField(); i++ {
-					field := t.Field(i)
-					openapiGoTag := field.Tag.Get("openapi-go")
-					if openapiGoTag == "ignore" {
-						tag := reflect.StructTag(`openapi-go:"ignore"`)
-						field.Tag = tag
-					}
 				}
 			}
 
