@@ -28,7 +28,7 @@ func TestTracing(t *testing.T) {
 
 	srv, err := runTestServer(t, context.Background(), testPool)
 	srv.setupCleanup(t)
-	require.NoError(t, err, "Couldn't run test server: %s\n")
+	require.NoErrorf(t, err, "Couldn't run test server\n")
 
 	otel.SetTracerProvider(srv.tp) // IMPORTANT: leaks into other tests.
 
