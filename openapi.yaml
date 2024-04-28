@@ -82,12 +82,13 @@ x-paginationCursorParameter: &x-paginationCursorParameter
     nullable: true
   required: false
   in: query
+# forces either an app token or api key to be set
 x-require-authenticated: &x-require-authenticated
   security:
     - bearer_auth: []
     - api_key: []
 # 403 and 401 will have precedence over 4XX, else we
-# get response validation failure (500) on a 403 and 401
+# get response validation failure (400) on a 403 and 401
 # since we don't use HTTPError schema
 x-error-response: &x-error-response
   403:
@@ -601,6 +602,7 @@ paths:
         - $ref: '#/components/parameters/ProjectName'
       x-required-scopes:
         - activity:create
+      x-required-role: manager
       requestBody:
         content:
           application/json:
@@ -712,6 +714,7 @@ paths:
       operationId: UpdateActivity
       x-required-scopes:
         - activity:edit
+      x-required-role: manager
       parameters:
         - *x-activityIDParameter
       requestBody:
@@ -736,6 +739,7 @@ paths:
       operationId: DeleteActivity
       x-required-scopes:
         - activity:delete
+      x-required-role: manager
       parameters:
         - *x-activityIDParameter
       responses:
@@ -1160,6 +1164,34 @@ paths:
           description: Success.
       tags:
         - workItem
+  /work-item/page:
+    get:
+      description: ""
+      summary: Get paginated user work-item
+      operationId: GetPaginatedWorkItem
+      parameters:
+        - *x-paginationLimitParameter
+        - *x-paginationDirectionParameter
+        - *x-paginationCursorParameter
+        - in: query
+          name: searchQuery
+          style: deepObject
+          explode: true
+          allowReserved: true
+          schema:
+            # $ref: '#/components/schemas/GetPaginatedWorkItemQueryParameters'
+            $ref: '#/components/schemas/GetCacheDemoWorkItemQueryParameters'
+      tags:
+        - workItem
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedDemoWorkItemsResponse'
+        !!merge <<: *x-error-response
+      !!merge <<: *x-require-authenticated
   /work-item/{workItemID}/comment/:
     post:
       summary: create work item comment.
@@ -3017,6 +3049,21 @@ components:
         - assigneeWorkItems
         - workItemComments
       type: object
+    PaginatedDemoWorkItemsResponse:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/CacheDemoWorkItem'
+          nullable: true
+          type: array
+        page:
+          $ref: '#/components/schemas/PaginationPage'
+      required:
+        - page
+        - items
+      type: object
+      x-gen-struct: PaginatedDemoWorkItemsResponse
+      x-is-generated: true
     GetCacheDemoWorkItemQueryParameters: # Generated schema. DO NOT EDIT.
       properties:
         joins:
@@ -3030,6 +3077,68 @@ components:
           $ref: '#/components/schemas/DbUserJoins'
       type: object
       x-gen-struct: GetCurrentUserQueryParameters
+      x-is-generated: true
+    CacheDemoWorkItem: # Generated schema. DO NOT EDIT.
+      properties:
+        closedAt:
+          format: date-time
+          nullable: true
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        description:
+          type: string
+        kanbanStepID:
+          type: integer
+        lastMessageAt:
+          format: date-time
+          type: string
+        line:
+          type: string
+        metadata:
+          additionalProperties: {}
+          type: object
+        ref:
+          pattern: ^[0-9]{8}$
+          type: string
+        reopened:
+          type: boolean
+        targetDate:
+          format: date-time
+          type: string
+        teamID:
+          type: integer
+        title:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        workItemID:
+          type: integer
+        workItemTypeID:
+          type: integer
+      required:
+        - ref
+        - line
+        - lastMessageAt
+        - reopened
+        - workItemID
+        - title
+        - description
+        - workItemTypeID
+        - metadata
+        - teamID
+        - kanbanStepID
+        - targetDate
+        - createdAt
+        - updatedAt
+      type: object
+      x-gen-struct: CacheDemoWorkItem
       x-is-generated: true
   examples: # Generated from internal structs. DO NOT EDIT.
     User:

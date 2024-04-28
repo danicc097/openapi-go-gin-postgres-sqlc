@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.uber.org/zap"
@@ -59,8 +61,10 @@ func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID db.Proj
 }
 
 // Create creates a new activity.
-func (a *Activity) Create(ctx context.Context, d db.DBTX, params *db.ActivityCreateParams) (*db.Activity, error) {
+func (a *Activity) Create(ctx context.Context, d db.DBTX, projectName models.Project, params *db.ActivityCreateParams) (*db.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
+
+	params.ProjectID = internal.ProjectIDByName[projectName]
 
 	activity, err := a.repos.Activity.Create(ctx, d, params)
 	if err != nil {
@@ -92,4 +96,14 @@ func (a *Activity) Delete(ctx context.Context, d db.DBTX, id db.ActivityID) (*db
 	}
 
 	return activity, nil
+}
+
+func (a *Activity) Restore(ctx context.Context, d db.DBTX, id db.ActivityID) error {
+	defer newOTelSpan().Build(ctx).End()
+
+	if err := a.repos.Activity.Restore(ctx, d, id); err != nil {
+		return fmt.Errorf("repos.Activity.Restore: %w", err)
+	}
+
+	return nil
 }

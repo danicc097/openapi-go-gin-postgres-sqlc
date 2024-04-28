@@ -23,6 +23,9 @@ import type {
 } from '@tanstack/react-query'
 import type {
   CreateWorkItemRequest,
+  GetPaginatedWorkItemParams,
+  HTTPError,
+  PaginatedDemoWorkItemsResponse,
   WorkItem
 } from '.././model'
 import { customInstance } from '../../api/mutator';
@@ -285,4 +288,105 @@ export const useDeleteWorkitem = <TError = ErrorType<unknown>,
 
       return useMutation(mutationOptions);
     }
+    /**
+ * @summary Get paginated user work-item
+ */
+export const getPaginatedWorkItem = (
+    params: GetPaginatedWorkItemParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+      
+      
+      return customInstance<PaginatedDemoWorkItemsResponse>(
+      {url: `/work-item/page`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+  
+
+export const getGetPaginatedWorkItemQueryKey = (params: GetPaginatedWorkItemParams,) => {
+    return [`/work-item/page`, ...(params ? [params]: [])] as const;
+    }
+
     
+export const getGetPaginatedWorkItemInfiniteQueryOptions = <TData = Awaited<ReturnType<typeof getPaginatedWorkItem>>, TError = ErrorType<void | HTTPError>>(params: GetPaginatedWorkItemParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedWorkItem>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPaginatedWorkItemQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaginatedWorkItem>>> = ({ signal, pageParam }) => getPaginatedWorkItem({...params, cursor: pageParam || params?.['cursor']}, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   cacheTime: 2000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedWorkItem>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPaginatedWorkItemInfiniteQueryResult = NonNullable<Awaited<ReturnType<typeof getPaginatedWorkItem>>>
+export type GetPaginatedWorkItemInfiniteQueryError = ErrorType<void | HTTPError>
+
+/**
+ * @summary Get paginated user work-item
+ */
+export const useGetPaginatedWorkItemInfinite = <TData = Awaited<ReturnType<typeof getPaginatedWorkItem>>, TError = ErrorType<void | HTTPError>>(
+ params: GetPaginatedWorkItemParams, options?: { query?:UseInfiniteQueryOptions<Awaited<ReturnType<typeof getPaginatedWorkItem>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+
+  ):  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey } => {
+
+  const queryOptions = getGetPaginatedWorkItemInfiniteQueryOptions(params,options)
+
+  const query = useInfiniteQuery(queryOptions) as  UseInfiniteQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+export const getGetPaginatedWorkItemQueryOptions = <TData = Awaited<ReturnType<typeof getPaginatedWorkItem>>, TError = ErrorType<void | HTTPError>>(params: GetPaginatedWorkItemParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPaginatedWorkItem>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPaginatedWorkItemQueryKey(params);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPaginatedWorkItem>>> = ({ signal }) => getPaginatedWorkItem(params, requestOptions, signal);
+
+      
+
+      
+
+   return  { queryKey, queryFn,   cacheTime: 2000, refetchOnWindowFocus: false, refetchOnMount: false, retryOnMount: false, staleTime: Infinity, keepPreviousData: true,  ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPaginatedWorkItem>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPaginatedWorkItemQueryResult = NonNullable<Awaited<ReturnType<typeof getPaginatedWorkItem>>>
+export type GetPaginatedWorkItemQueryError = ErrorType<void | HTTPError>
+
+/**
+ * @summary Get paginated user work-item
+ */
+export const useGetPaginatedWorkItem = <TData = Awaited<ReturnType<typeof getPaginatedWorkItem>>, TError = ErrorType<void | HTTPError>>(
+ params: GetPaginatedWorkItemParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPaginatedWorkItem>>, TError, TData>, request?: SecondParameter<typeof customInstance>}
+
+  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } => {
+
+  const queryOptions = getGetPaginatedWorkItemQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+

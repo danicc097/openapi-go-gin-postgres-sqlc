@@ -65,7 +65,7 @@
     "scopes": [
       "activity:create"
     ],
-    "role": null,
+    "role": "manager",
     "requiresAuthentication": true
   },
   "CreateTimeEntry": {
@@ -97,14 +97,14 @@
     "scopes": [
       "activity:edit"
     ],
-    "role": null,
+    "role": "manager",
     "requiresAuthentication": true
   },
   "DeleteActivity": {
     "scopes": [
       "activity:delete"
     ],
-    "role": null,
+    "role": "manager",
     "requiresAuthentication": true
   },
   "GetWorkItemTag": {
@@ -217,6 +217,11 @@
     "requiresAuthentication": true
   },
   "DeleteWorkitem": {
+    "scopes": null,
+    "role": null,
+    "requiresAuthentication": true
+  },
+  "GetPaginatedWorkItem": {
     "scopes": null,
     "role": null,
     "requiresAuthentication": true

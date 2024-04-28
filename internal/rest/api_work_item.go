@@ -106,3 +106,9 @@ func fillBaseWorkItemResponse(workItem *db.WorkItem) WorkItemBase {
 		},
 	}
 }
+
+func (h *StrictHandlers) GetPaginatedWorkItem(c *gin.Context, request GetPaginatedWorkItemRequestObject) (GetPaginatedWorkItemResponseObject, error) {
+	c.JSON(http.StatusNotImplemented, "not implemented")
+
+	return nil, nil
+}

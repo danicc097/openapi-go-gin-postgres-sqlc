@@ -101,8 +101,10 @@ import {
   PaginationFilterModes,
   DbCacheDemoWorkItemJoins,
   DbUserJoins,
+  PaginatedDemoWorkItemsResponse,
   GetCacheDemoWorkItemQueryParameters,
   GetCurrentUserQueryParameters,
+  CacheDemoWorkItem,
 } from './models'
 
 export const schemaDefinitions = {
@@ -269,6 +271,10 @@ export const schemaDefinitions = {
     '#/definitions/DbCacheDemoWorkItemJoins',
   ),
   DbUserJoins: info<DbUserJoins>('DbUserJoins', '#/definitions/DbUserJoins'),
+  PaginatedDemoWorkItemsResponse: info<PaginatedDemoWorkItemsResponse>(
+    'PaginatedDemoWorkItemsResponse',
+    '#/definitions/PaginatedDemoWorkItemsResponse',
+  ),
   GetCacheDemoWorkItemQueryParameters: info<GetCacheDemoWorkItemQueryParameters>(
     'GetCacheDemoWorkItemQueryParameters',
     '#/definitions/GetCacheDemoWorkItemQueryParameters',
@@ -277,6 +283,7 @@ export const schemaDefinitions = {
     'GetCurrentUserQueryParameters',
     '#/definitions/GetCurrentUserQueryParameters',
   ),
+  CacheDemoWorkItem: info<CacheDemoWorkItem>('CacheDemoWorkItem', '#/definitions/CacheDemoWorkItem'),
 }
 
 export interface SchemaInfo<T> {

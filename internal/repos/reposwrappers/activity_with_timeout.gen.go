@@ -29,6 +29,8 @@ type ActivityWithTimeoutConfig struct {
 
 	DeleteTimeout time.Duration
 
+	RestoreTimeout time.Duration
+
 	UpdateTimeout time.Duration
 }
 
@@ -88,6 +90,16 @@ func (_d ActivityWithTimeout) Delete(ctx context.Context, d db.DBTX, id db.Activ
 		defer cancelFunc()
 	}
 	return _d.Activity.Delete(ctx, d, id)
+}
+
+// Restore implements repos.Activity
+func (_d ActivityWithTimeout) Restore(ctx context.Context, d db.DBTX, id db.ActivityID) (err error) {
+	var cancelFunc func()
+	if _d.config.RestoreTimeout > 0 {
+		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.RestoreTimeout)
+		defer cancelFunc()
+	}
+	return _d.Activity.Restore(ctx, d, id)
 }
 
 // Update implements repos.Activity

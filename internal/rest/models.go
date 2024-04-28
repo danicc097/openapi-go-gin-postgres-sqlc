@@ -29,9 +29,15 @@ type PaginationBaseResponse[T any] struct {
 
 type PaginatedNotificationsResponse = PaginationBaseResponse[Notification]
 
+type PaginatedDemoWorkItemsResponse = PaginationBaseResponse[CacheDemoWorkItem]
+
 /**
  *
  */
+
+type CacheDemoWorkItem struct {
+	db.CacheDemoWorkItem
+}
 
 type Notification struct {
 	db.UserNotification

@@ -2656,6 +2656,29 @@
       ],
       "type": "object"
     },
+    "PaginatedDemoWorkItemsResponse": {
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/definitions/CacheDemoWorkItem"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "page": {
+          "$ref": "#/definitions/PaginationPage"
+        }
+      },
+      "required": [
+        "page",
+        "items"
+      ],
+      "type": "object",
+      "x-gen-struct": "PaginatedDemoWorkItemsResponse",
+      "x-is-generated": true
+    },
     "GetCacheDemoWorkItemQueryParameters": {
       "properties": {
         "joins": {
@@ -2674,6 +2697,101 @@
       },
       "type": "object",
       "x-gen-struct": "GetCurrentUserQueryParameters",
+      "x-is-generated": true
+    },
+    "CacheDemoWorkItem": {
+      "properties": {
+        "closedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kanbanStepID": {
+          "type": "integer"
+        },
+        "lastMessageAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "line": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metadata": {
+          "additionalProperties": {},
+          "type": "object"
+        },
+        "ref": {
+          "pattern": "^[0-9]{8}$",
+          "type": "string",
+          "minLength": 1
+        },
+        "reopened": {
+          "type": "boolean"
+        },
+        "targetDate": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "workItemID": {
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ref",
+        "line",
+        "lastMessageAt",
+        "reopened",
+        "workItemID",
+        "title",
+        "description",
+        "workItemTypeID",
+        "metadata",
+        "teamID",
+        "kanbanStepID",
+        "targetDate",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-gen-struct": "CacheDemoWorkItem",
       "x-is-generated": true
     }
   },
@@ -2969,11 +3087,17 @@
     "DbUserJoins": {
       "$ref": "#/definitions/DbUserJoins"
     },
+    "PaginatedDemoWorkItemsResponse": {
+      "$ref": "#/definitions/PaginatedDemoWorkItemsResponse"
+    },
     "GetCacheDemoWorkItemQueryParameters": {
       "$ref": "#/definitions/GetCacheDemoWorkItemQueryParameters"
     },
     "GetCurrentUserQueryParameters": {
       "$ref": "#/definitions/GetCurrentUserQueryParameters"
+    },
+    "CacheDemoWorkItem": {
+      "$ref": "#/definitions/CacheDemoWorkItem"
     }
   }
 }

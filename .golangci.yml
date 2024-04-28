@@ -40,6 +40,8 @@ linters:
     - structcheck
     - unparam
     - wastedassign
+    # broken --fix for generated code
+    - tagalign
 
 linters-settings:
   errcheck:

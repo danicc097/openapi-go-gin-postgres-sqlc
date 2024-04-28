@@ -1866,8 +1866,7 @@ x.dev-utils.api-keys() {
 # to ease further updates to comments in migrations.
 x.dev-utils.show-column-comments() {
   local query="SELECT DISTINCT
-  c.relname as table,
-  a.attname::varchar AS column,
+  c.relname || '.' || a.attname AS column,
   COALESCE(col_description(format('%s.%s', n.nspname, c.relname)::regclass::oid, isc.ordinal_position), '') as column_comment
 FROM pg_attribute a
   JOIN ONLY pg_class c ON c.oid = a.attrelid
@@ -2903,7 +2902,7 @@ if [[ -n "$1" ]]; then
       err_code=$?
 
       if test -f "$failed_tool_build_marker"; then
-        echo "${YELLOW}[WARNING] At least one gen tool build failed. A gen rerun may be required"
+        err "At least one gen tool build failed. A gen rerun may be required"
       fi
 
       exit $err_code # do not quote

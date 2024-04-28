@@ -1,12 +1,17 @@
 package e2e
 
-import "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+import (
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+)
 
 /*
  NOTE: tygo just looks the ast from the current package.
  All spec models available in tstype as `models` namespace
 */
 
+// User ids are uuids, therefore we can use any unique column for
+// e2e identifiers, which is also easier to reason about.
 type User struct {
 	Username  string        `json:"username"`
 	Email     string        `json:"email"`
@@ -16,7 +21,10 @@ type User struct {
 	Role      models.Role   `json:"role"      tstype:"models.Role"`
 }
 
+// TODO: should include ids for the rest of entities with serial ids,
+// given that e2e data will not be created concurrently.
 type Team struct {
+	TeamID      db.TeamID          `json:"teamID" tstype:"EntityIDs.TeamID"`
 	Name        string             `json:"name"`
 	ProjectName models.ProjectName `json:"projectName" tstype:"models.Project"`
 }

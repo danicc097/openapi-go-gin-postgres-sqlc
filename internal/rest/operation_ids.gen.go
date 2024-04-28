@@ -56,10 +56,11 @@ const (
 	UpdateUserAuthorization OperationID = "UpdateUserAuthorization"
 
 	// Operation IDs for the 'workItem' tag.
-	CreateWorkitem OperationID = "CreateWorkitem"
-	DeleteWorkitem OperationID = "DeleteWorkitem"
-	GetWorkItem    OperationID = "GetWorkItem"
-	UpdateWorkitem OperationID = "UpdateWorkitem"
+	CreateWorkitem       OperationID = "CreateWorkitem"
+	DeleteWorkitem       OperationID = "DeleteWorkitem"
+	GetPaginatedWorkItem OperationID = "GetPaginatedWorkItem"
+	GetWorkItem          OperationID = "GetWorkItem"
+	UpdateWorkitem       OperationID = "UpdateWorkitem"
 
 	// Operation IDs for the 'workItemComment' tag.
 	CreateWorkItemComment OperationID = "CreateWorkItemComment"
