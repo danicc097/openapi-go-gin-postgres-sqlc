@@ -30,8 +30,8 @@ type WorkItemWorkItemTag struct {
 	WorkItemTagID WorkItemTagID `json:"workItemTagID" db:"work_item_tag_id" required:"true" nullable:"false"` // work_item_tag_id
 	WorkItemID    WorkItemID    `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`        // work_item_id
 
-	WorkItemTagsJoin *[]WorkItemTag `json:"-" db:"work_item_work_item_tag_work_item_tags" openapi-go:"ignore"` // M2M work_item_work_item_tag
-	WorkItemsJoin    *[]WorkItem    `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"`     // M2M work_item_work_item_tag
+	WorkItemTagsJoin *[]WorkItemTag `json:"-" db:"work_item_work_item_tag_work_item_tags"` // M2M work_item_work_item_tag
+	WorkItemsJoin    *[]WorkItem    `json:"-" db:"work_item_work_item_tag_work_items"`     // M2M work_item_work_item_tag
 
 }
 

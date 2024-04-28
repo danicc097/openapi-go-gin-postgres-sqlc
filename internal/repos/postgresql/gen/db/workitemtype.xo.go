@@ -36,7 +36,7 @@ type WorkItemType struct {
 	Description    string         `json:"description" db:"description" required:"true" nullable:"false"`                                  // description
 	Color          string         `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 
-	ProjectJoin *Project `json:"-" db:"project_project_id" openapi-go:"ignore"` // O2O projects (generated from M2O)
+	ProjectJoin *Project `json:"-" db:"project_project_id"` // O2O projects (generated from M2O)
 
 }
 
@@ -45,7 +45,7 @@ type WorkItemTypeCreateParams struct {
 	Color       string    `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	Description string    `json:"description" required:"true" nullable:"false"`                                        // description
 	Name        string    `json:"name" required:"true" nullable:"false"`                                               // name
-	ProjectID   ProjectID `json:"-" openapi-go:"ignore"`                                                               // project_id
+	ProjectID   ProjectID `json:"-"`                                                                                   // project_id
 }
 
 // WorkItemTypeParams represents common params for both insert and update of 'public.work_item_types'.
@@ -199,7 +199,7 @@ type WorkItemTypeUpdateParams struct {
 	Color       *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	Description *string    `json:"description" nullable:"false"`                                        // description
 	Name        *string    `json:"name" nullable:"false"`                                               // name
-	ProjectID   *ProjectID `json:"-" openapi-go:"ignore"`                                               // project_id
+	ProjectID   *ProjectID `json:"-"`                                                                   // project_id
 }
 
 // SetUpdateParams updates public.work_item_types struct fields with the specified params.

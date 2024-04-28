@@ -34,8 +34,8 @@ type ExtraSchemaWorkItemAssignee struct {
 	Assignee        ExtraSchemaUserID        `json:"assignee" db:"assignee" required:"true" nullable:"false"`                                 // assignee
 	ExtraSchemaRole *ExtraSchemaWorkItemRole `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 
-	WorkItemsJoin *[]ExtraSchemaWorkItemAssigneeM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"` // M2M work_item_assignee
-	AssigneesJoin *[]ExtraSchemaWorkItemAssigneeM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"`  // M2M work_item_assignee
+	WorkItemsJoin *[]ExtraSchemaWorkItemAssigneeM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items"` // M2M work_item_assignee
+	AssigneesJoin *[]ExtraSchemaWorkItemAssigneeM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees"`  // M2M work_item_assignee
 
 }
 

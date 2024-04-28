@@ -39,15 +39,15 @@ type ExtraSchemaUser struct {
 	CreatedAt time.Time                `json:"createdAt" db:"created_at" required:"true" nullable:"false"` // created_at
 	DeletedAt *time.Time               `json:"deletedAt" db:"deleted_at"`                                  // deleted_at
 
-	AuthorBooksJoin           *[]ExtraSchemaUserM2MBookBA      `json:"-" db:"book_authors_books" openapi-go:"ignore"`               // M2M book_authors
-	AuthorBooksBASKJoin       *[]ExtraSchemaUserM2MBookBASK    `json:"-" db:"book_authors_surrogate_key_books" openapi-go:"ignore"` // M2M book_authors_surrogate_key
-	BookReviewsJoin           *[]ExtraSchemaBookReview         `json:"-" db:"book_reviews" openapi-go:"ignore"`                     // M2O users
-	SellerBooksJoin           *[]ExtraSchemaBook               `json:"-" db:"book_sellers_books" openapi-go:"ignore"`               // M2M book_sellers
-	ReceiverNotificationsJoin *[]ExtraSchemaNotification       `json:"-" db:"notifications_receiver" openapi-go:"ignore"`           // M2O users
-	SenderNotificationsJoin   *[]ExtraSchemaNotification       `json:"-" db:"notifications_sender" openapi-go:"ignore"`             // M2O users
-	UserAPIKeyJoin            *ExtraSchemaUserAPIKey           `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`          // O2O user_api_keys (inferred)
-	AdminWorkItemsJoin        *[]ExtraSchemaWorkItem           `json:"-" db:"work_item_admin_work_items" openapi-go:"ignore"`       // M2M work_item_admin
-	AssigneeWorkItemsJoin     *[]ExtraSchemaUserM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"`    // M2M work_item_assignee
+	AuthorBooksJoin           *[]ExtraSchemaUserM2MBookBA      `json:"-" db:"book_authors_books"`               // M2M book_authors
+	AuthorBooksBASKJoin       *[]ExtraSchemaUserM2MBookBASK    `json:"-" db:"book_authors_surrogate_key_books"` // M2M book_authors_surrogate_key
+	BookReviewsJoin           *[]ExtraSchemaBookReview         `json:"-" db:"book_reviews"`                     // M2O users
+	SellerBooksJoin           *[]ExtraSchemaBook               `json:"-" db:"book_sellers_books"`               // M2M book_sellers
+	ReceiverNotificationsJoin *[]ExtraSchemaNotification       `json:"-" db:"notifications_receiver"`           // M2O users
+	SenderNotificationsJoin   *[]ExtraSchemaNotification       `json:"-" db:"notifications_sender"`             // M2O users
+	UserAPIKeyJoin            *ExtraSchemaUserAPIKey           `json:"-" db:"user_api_key_api_key_id"`          // O2O user_api_keys (inferred)
+	AdminWorkItemsJoin        *[]ExtraSchemaWorkItem           `json:"-" db:"work_item_admin_work_items"`       // M2M work_item_admin
+	AssigneeWorkItemsJoin     *[]ExtraSchemaUserM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items"`    // M2M work_item_assignee
 
 }
 

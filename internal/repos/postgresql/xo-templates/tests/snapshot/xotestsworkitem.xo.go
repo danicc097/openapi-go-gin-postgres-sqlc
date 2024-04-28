@@ -35,11 +35,11 @@ type XoTestsWorkItem struct {
 	Description *string           `json:"description" db:"description"`                                  // description
 	TeamID      XoTestsTeamID     `json:"teamID" db:"team_id" required:"true" nullable:"false"`          // team_id
 
-	DemoWorkItemJoin     *XoTestsDemoWorkItem             `json:"-" db:"demo_work_item_work_item_id" openapi-go:"ignore"`  // O2O demo_work_items (inferred)
-	TimeEntriesJoin      *[]XoTestsTimeEntry              `json:"-" db:"time_entries" openapi-go:"ignore"`                 // M2O work_items
-	AssigneesJoin        *[]XoTestsWorkItemM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"` // M2M work_item_assignee
-	WorkItemCommentsJoin *[]XoTestsWorkItemComment        `json:"-" db:"work_item_comments" openapi-go:"ignore"`           // M2O work_items
-	TeamJoin             *XoTestsTeam                     `json:"-" db:"team_team_id" openapi-go:"ignore"`                 // O2O teams (inferred)
+	DemoWorkItemJoin     *XoTestsDemoWorkItem             `json:"-" db:"demo_work_item_work_item_id"`  // O2O demo_work_items (inferred)
+	TimeEntriesJoin      *[]XoTestsTimeEntry              `json:"-" db:"time_entries"`                 // M2O work_items
+	AssigneesJoin        *[]XoTestsWorkItemM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees"` // M2M work_item_assignee
+	WorkItemCommentsJoin *[]XoTestsWorkItemComment        `json:"-" db:"work_item_comments"`           // M2O work_items
+	TeamJoin             *XoTestsTeam                     `json:"-" db:"team_team_id"`                 // O2O teams (inferred)
 }
 
 // XoTestsWorkItemCreateParams represents insert params for 'xo_tests.work_items'.

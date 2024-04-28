@@ -36,7 +36,7 @@ type ExtraSchemaUserAPIKey struct {
 	ExpiresOn    time.Time               `json:"expiresOn" db:"expires_on" required:"true" nullable:"false"` // expires_on
 	UserID       ExtraSchemaUserID       `json:"userID" db:"user_id" required:"true" nullable:"false"`       // user_id
 
-	UserJoin *ExtraSchemaUser `json:"-" db:"user_user_id" openapi-go:"ignore"` // O2O users (inferred)
+	UserJoin *ExtraSchemaUser `json:"-" db:"user_user_id"` // O2O users (inferred)
 
 }
 

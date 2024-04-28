@@ -34,8 +34,8 @@ type ExtraSchemaBookReview struct {
 	BookID       ExtraSchemaBookID       `json:"bookID" db:"book_id" required:"true" nullable:"false"`              // book_id
 	Reviewer     ExtraSchemaUserID       `json:"reviewer" db:"reviewer" required:"true" nullable:"false"`           // reviewer
 
-	BookJoin *ExtraSchemaBook `json:"-" db:"book_book_id" openapi-go:"ignore"`  // O2O books (generated from M2O)
-	UserJoin *ExtraSchemaUser `json:"-" db:"user_reviewer" openapi-go:"ignore"` // O2O users (generated from M2O)
+	BookJoin *ExtraSchemaBook `json:"-" db:"book_book_id"`  // O2O books (generated from M2O)
+	UserJoin *ExtraSchemaUser `json:"-" db:"user_reviewer"` // O2O users (generated from M2O)
 
 }
 

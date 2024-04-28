@@ -50,15 +50,15 @@ type User struct {
 	UpdatedAt                time.Time     `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                                // updated_at
 	DeletedAt                *time.Time    `json:"deletedAt" db:"deleted_at"`                                                                 // deleted_at
 
-	ReceiverNotificationsJoin *[]Notification       `json:"-" db:"notifications_receiver" openapi-go:"ignore"`        // M2O users
-	SenderNotificationsJoin   *[]Notification       `json:"-" db:"notifications_sender" openapi-go:"ignore"`          // M2O users
-	TimeEntriesJoin           *[]TimeEntry          `json:"-" db:"time_entries" openapi-go:"ignore"`                  // M2O users
-	UserNotificationsJoin     *[]UserNotification   `json:"-" db:"user_notifications" openapi-go:"ignore"`            // M2O users
-	MemberProjectsJoin        *[]Project            `json:"-" db:"user_project_projects" openapi-go:"ignore"`         // M2M user_project
-	MemberTeamsJoin           *[]Team               `json:"-" db:"user_team_teams" openapi-go:"ignore"`               // M2M user_team
-	UserAPIKeyJoin            *UserAPIKey           `json:"-" db:"user_api_key_api_key_id" openapi-go:"ignore"`       // O2O user_api_keys (inferred)
-	AssigneeWorkItemsJoin     *[]UserM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"` // M2M work_item_assignee
-	WorkItemCommentsJoin      *[]WorkItemComment    `json:"-" db:"work_item_comments" openapi-go:"ignore"`            // M2O users
+	ReceiverNotificationsJoin *[]Notification       `json:"-" db:"notifications_receiver"`        // M2O users
+	SenderNotificationsJoin   *[]Notification       `json:"-" db:"notifications_sender"`          // M2O users
+	TimeEntriesJoin           *[]TimeEntry          `json:"-" db:"time_entries"`                  // M2O users
+	UserNotificationsJoin     *[]UserNotification   `json:"-" db:"user_notifications"`            // M2O users
+	MemberProjectsJoin        *[]Project            `json:"-" db:"user_project_projects"`         // M2M user_project
+	MemberTeamsJoin           *[]Team               `json:"-" db:"user_team_teams"`               // M2M user_team
+	UserAPIKeyJoin            *UserAPIKey           `json:"-" db:"user_api_key_api_key_id"`       // O2O user_api_keys (inferred)
+	AssigneeWorkItemsJoin     *[]UserM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items"` // M2M work_item_assignee
+	WorkItemCommentsJoin      *[]WorkItemComment    `json:"-" db:"work_item_comments"`            // M2O users
 
 }
 

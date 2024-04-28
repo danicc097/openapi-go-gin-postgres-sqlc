@@ -38,8 +38,8 @@ type WorkItemTag struct {
 	Color         string        `json:"color" db:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	DeletedAt     *time.Time    `json:"deletedAt" db:"deleted_at"`                                                                      // deleted_at
 
-	ProjectJoin   *Project    `json:"-" db:"project_project_id" openapi-go:"ignore"`                 // O2O projects (generated from M2O)
-	WorkItemsJoin *[]WorkItem `json:"-" db:"work_item_work_item_tag_work_items" openapi-go:"ignore"` // M2M work_item_work_item_tag
+	ProjectJoin   *Project    `json:"-" db:"project_project_id"`                 // O2O projects (generated from M2O)
+	WorkItemsJoin *[]WorkItem `json:"-" db:"work_item_work_item_tag_work_items"` // M2M work_item_work_item_tag
 
 }
 
@@ -48,7 +48,7 @@ type WorkItemTagCreateParams struct {
 	Color       string    `json:"color" required:"true" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	Description string    `json:"description" required:"true" nullable:"false"`                                        // description
 	Name        string    `json:"name" required:"true" nullable:"false"`                                               // name
-	ProjectID   ProjectID `json:"-" openapi-go:"ignore"`                                                               // project_id
+	ProjectID   ProjectID `json:"-"`                                                                                   // project_id
 }
 
 // WorkItemTagParams represents common params for both insert and update of 'public.work_item_tags'.
@@ -235,7 +235,7 @@ type WorkItemTagUpdateParams struct {
 	Color       *string    `json:"color" nullable:"false" pattern:"^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"` // color
 	Description *string    `json:"description" nullable:"false"`                                        // description
 	Name        *string    `json:"name" nullable:"false"`                                               // name
-	ProjectID   *ProjectID `json:"-" openapi-go:"ignore"`                                               // project_id
+	ProjectID   *ProjectID `json:"-"`                                                                   // project_id
 }
 
 // SetUpdateParams updates public.work_item_tags struct fields with the specified params.

@@ -38,8 +38,8 @@ type WorkItemComment struct {
 	CreatedAt         time.Time         `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                   // created_at
 	UpdatedAt         time.Time         `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                   // updated_at
 
-	UserJoin     *User     `json:"-" db:"user_user_id" openapi-go:"ignore"`           // O2O users (generated from M2O)
-	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (generated from M2O)
+	UserJoin     *User     `json:"-" db:"user_user_id"`           // O2O users (generated from M2O)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id"` // O2O work_items (generated from M2O)
 
 }
 

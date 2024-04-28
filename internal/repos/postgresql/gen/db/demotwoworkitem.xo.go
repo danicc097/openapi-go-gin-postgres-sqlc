@@ -34,7 +34,7 @@ type DemoTwoWorkItem struct {
 	WorkItemID            WorkItemID `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"` // work_item_id
 	CustomDateForProject2 *time.Time `json:"customDateForProject2" db:"custom_date_for_project_2"`          // custom_date_for_project_2
 
-	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id" openapi-go:"ignore"` // O2O work_items (inferred)
+	WorkItemJoin *WorkItem `json:"-" db:"work_item_work_item_id"` // O2O work_items (inferred)
 
 }
 

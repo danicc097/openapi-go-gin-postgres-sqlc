@@ -34,8 +34,8 @@ type XoTestsWorkItemAssignee struct {
 	Assignee    XoTestsUserID        `json:"assignee" db:"assignee" required:"true" nullable:"false"`                                 // assignee
 	XoTestsRole *XoTestsWorkItemRole `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 
-	WorkItemsJoin *[]XoTestsWorkItemAssigneeM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items" openapi-go:"ignore"` // M2M work_item_assignee
-	AssigneesJoin *[]XoTestsWorkItemAssigneeM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees" openapi-go:"ignore"`  // M2M work_item_assignee
+	WorkItemsJoin *[]XoTestsWorkItemAssigneeM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items"` // M2M work_item_assignee
+	AssigneesJoin *[]XoTestsWorkItemAssigneeM2MAssigneeWIA `json:"-" db:"work_item_assignee_assignees"`  // M2M work_item_assignee
 }
 
 // XoTestsWorkItemAssigneeCreateParams represents insert params for 'xo_tests.work_item_assignee'.

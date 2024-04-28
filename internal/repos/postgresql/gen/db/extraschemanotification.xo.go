@@ -36,8 +36,8 @@ type ExtraSchemaNotification struct {
 	Receiver                    *ExtraSchemaUserID          `json:"receiver" db:"receiver"`                                                                                               // receiver
 	ExtraSchemaNotificationType ExtraSchemaNotificationType `json:"notificationType" db:"notification_type" required:"true" nullable:"false" ref:"#/components/schemas/NotificationType"` // notification_type
 
-	UserReceiverJoin *ExtraSchemaUser `json:"-" db:"user_receiver" openapi-go:"ignore"` // O2O users (generated from M2O)
-	UserSenderJoin   *ExtraSchemaUser `json:"-" db:"user_sender" openapi-go:"ignore"`   // O2O users (generated from M2O)
+	UserReceiverJoin *ExtraSchemaUser `json:"-" db:"user_receiver"` // O2O users (generated from M2O)
+	UserSenderJoin   *ExtraSchemaUser `json:"-" db:"user_sender"`   // O2O users (generated from M2O)
 
 }
 

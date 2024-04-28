@@ -38,7 +38,7 @@ type XoTestsPagElement struct {
 	CreatedAt          time.Time           `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                    // created_at
 	Dummy              *XoTestsDummyJoinID `json:"dummy" db:"dummy"`                                                              // dummy
 
-	DummyJoinJoin *XoTestsDummyJoin `json:"-" db:"dummy_join_dummy" openapi-go:"ignore"` // O2O dummy_join (inferred)
+	DummyJoinJoin *XoTestsDummyJoin `json:"-" db:"dummy_join_dummy"` // O2O dummy_join (inferred)
 }
 
 // XoTestsPagElementCreateParams represents insert params for 'xo_tests.pag_element'.
