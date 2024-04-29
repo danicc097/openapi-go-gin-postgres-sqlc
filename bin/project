@@ -854,7 +854,7 @@ x.gen.client-server() {
     # yq e 'del(.components)' -i "$paths_file" # dont delete since recent oapi-codegen does some checks even if we are not generating types
     go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || mark_failed_tool_build # templates are embedded, required rebuild
 
-    oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed types generation"
+    oapi-codegen --config internal/models/oapi-codegen-types.yaml --types "$types_list" "$SPEC_PATH" || err "Failed types generation"
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models --server-types "$server_types_list" --types "$types_list" "$paths_file" || err "Failed server generation"
     oapi-codegen --config internal/rest/oapi-codegen-test-client.yaml "$SPEC_PATH" || err "Failed client generation"
     # not used now. may be useful for a cli at some point
@@ -863,8 +863,8 @@ x.gen.client-server() {
     wait_without_error
 
     # TODO: remove once x-go-type in use for all db types
-    sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_server.gen.go
-    sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_client_gen_test.go
+    # sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_server.gen.go
+    # sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_client_gen_test.go
     # db already imports models pkg
     # sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/models/openapi_types.gen.go
 
@@ -2461,18 +2461,31 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
     with_entries(select(.key == "components"))' \
     >$gen_schema_spec_path || mark_failed_tool_build
 
-  local clashes=()
+  local clashes=() services_prefix_clashes=() db_prefix_clashes=()
   for custom_schema in $(yq ".components.schemas[] | select((.x-is-generated == true) | not) | key" $SPEC_PATH); do
     if [[ " ${rest_structs[*]} " =~ " ${custom_schema} " ]]; then
       line_number=$(yq ".components.schemas.$custom_schema | line" $SPEC_PATH)
       clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
     fi
-    # don't bother checking any Db*
+    if [[ $custom_schema =~ ^Services[A-Z].*$ ]]; then
+      services_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
+    fi
+    if [[ $custom_schema =~ ^Db[A-Z].*$ ]]; then
+      db_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
+    fi
   done
 
   if [[ ${#clashes[@]} -gt 0 ]]; then
     err "The following non-generated schemas would have been overridden by internal/rest/models.go structs. Please rename or delete:
 $(join_by $'\n' "${clashes[@]}")"
+  fi
+  if [[ ${#services_prefix_clashes[@]} -gt 0 ]]; then
+    err "Services prefix is restricted to generated structs. Please rename or delete:
+$(join_by $'\n' "${services_prefix_clashes[@]}")"
+  fi
+  if [[ ${#db_prefix_clashes[@]} -gt 0 ]]; then
+    err "Db prefix is restricted to generated structs. Please rename or delete:
+$(join_by $'\n' "${db_prefix_clashes[@]}")"
   fi
 
   schema_keys=$(yq eval '.components.schemas | keys | .[]' "$gen_schema_spec_path")

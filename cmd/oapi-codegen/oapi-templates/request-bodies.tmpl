@@ -5,8 +5,12 @@
 {{with .TypeDef $opid}}
 
 {{- /* cannot import rest in types gen package, circ. {{if is_rest_type .Schema.TypeDecl}}rest.{{end}} */}}
+{{ if and ((should_exclude_type .Schema.TypeDecl))  -}}
+/* Ignoring body for existing struct (rest/models.go) {{.Schema.TypeDecl}} */
+{{else}}
 // {{.TypeName}} defines body for {{$opid}} for {{$contentType}} ContentType.
 type {{.TypeName}} {{if .IsAlias}}={{end}}{{if (exclude_rest_types)}}{{rest_type .Schema.TypeDecl}}{{else}}{{.Schema.TypeDecl}}{{end}}
+{{end}}
 {{end}}
 {{end}}
 {{end}}

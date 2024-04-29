@@ -8,15 +8,11 @@ import (
 	"compress/gzip"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 	"path"
 	"strings"
-	"time"
 
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/openapi"
 	"github.com/getkin/kin-openapi/openapi3"
 	uuid "github.com/google/uuid"
 )
@@ -300,97 +296,26 @@ func AllWorkItemRoleValues() []WorkItemRole {
 	}
 }
 
-// Activity defines the model for Activity.
-type Activity struct {
-	ActivityID   db.ActivityID `json:"activityID"`
-	DeletedAt    *time.Time    `json:"deletedAt"`
-	Description  string        `json:"description"`
-	IsProductive bool          `json:"isProductive"`
-	Name         string        `json:"name"`
-	ProjectID    db.ProjectID  `json:"projectID"`
-}
+/* Ignoring existing struct (rest/models.go) Activity */
 
 // AnyValue represents any value, including `null`
 type AnyValue = interface{}
 
-// CacheDemoWorkItem defines the model for CacheDemoWorkItem.
-type CacheDemoWorkItem struct {
-	ClosedAt       *time.Time             `json:"closedAt"`
-	CreatedAt      time.Time              `json:"createdAt"`
-	DeletedAt      *time.Time             `json:"deletedAt"`
-	Description    string                 `json:"description"`
-	KanbanStepID   db.KanbanStepID        `json:"kanbanStepID"`
-	LastMessageAt  time.Time              `json:"lastMessageAt"`
-	Line           string                 `json:"line"`
-	Metadata       map[string]interface{} `json:"metadata"`
-	Ref            string                 `json:"ref"`
-	Reopened       bool                   `json:"reopened"`
-	TargetDate     time.Time              `json:"targetDate"`
-	TeamID         db.TeamID              `json:"teamID"`
-	Title          string                 `json:"title"`
-	UpdatedAt      time.Time              `json:"updatedAt"`
-	WorkItemID     db.WorkItemID          `json:"workItemID"`
-	WorkItemTypeID db.WorkItemTypeID      `json:"workItemTypeID"`
-}
+/* Ignoring existing struct (rest/models.go) CacheDemoWorkItem */
 
-// CreateActivityRequest defines the model for CreateActivityRequest.
-type CreateActivityRequest struct {
-	Description  string `json:"description"`
-	IsProductive bool   `json:"isProductive"`
-	Name         string `json:"name"`
-}
+/* Ignoring existing struct (rest/models.go) CreateActivityRequest */
 
-// CreateDemoTwoWorkItemRequest defines the model for CreateDemoTwoWorkItemRequest.
-type CreateDemoTwoWorkItemRequest struct {
-	Base           DbWorkItemCreateParams        `json:"base"`
-	DemoTwoProject DbDemoTwoWorkItemCreateParams `json:"demoTwoProject"`
-	Members        []ServicesMember              `json:"members"`
+/* Ignoring existing struct (rest/models.go) CreateDemoTwoWorkItemRequest */
 
-	// ProjectName is generated from projects table.
-	ProjectName Project            `json:"projectName"`
-	TagIDs      []db.WorkItemTagID `json:"tagIDs"`
-}
+/* Ignoring existing struct (rest/models.go) CreateDemoWorkItemRequest */
 
-// CreateDemoWorkItemRequest defines the model for CreateDemoWorkItemRequest.
-type CreateDemoWorkItemRequest struct {
-	Base        DbWorkItemCreateParams     `json:"base"`
-	DemoProject DbDemoWorkItemCreateParams `json:"demoProject"`
-	Members     []ServicesMember           `json:"members"`
+/* Ignoring existing struct (rest/models.go) CreateProjectBoardRequest */
 
-	// ProjectName is generated from projects table.
-	ProjectName Project            `json:"projectName"`
-	TagIDs      []db.WorkItemTagID `json:"tagIDs"`
-}
+/* Ignoring existing struct (rest/models.go) CreateTeamRequest */
 
-// CreateProjectBoardRequest defines the model for CreateProjectBoardRequest.
-type CreateProjectBoardRequest struct {
-	Tags  *[]DbWorkItemTagCreateParams `json:"tags"`
-	Teams *[]DbTeamCreateParams        `json:"teams"`
-}
+/* Ignoring existing struct (rest/models.go) CreateTimeEntryRequest */
 
-// CreateTeamRequest defines the model for CreateTeamRequest.
-type CreateTeamRequest struct {
-	Description string `json:"description"`
-	Name        string `json:"name"`
-}
-
-// CreateTimeEntryRequest defines the model for CreateTimeEntryRequest.
-type CreateTimeEntryRequest struct {
-	ActivityID      db.ActivityID  `json:"activityID"`
-	Comment         string         `json:"comment"`
-	DurationMinutes *int           `json:"durationMinutes"`
-	Start           time.Time      `json:"start"`
-	TeamID          *db.TeamID     `json:"teamID"`
-	UserID          DbUserID       `json:"userID"`
-	WorkItemID      *db.WorkItemID `json:"workItemID"`
-}
-
-// CreateWorkItemCommentRequest defines the model for CreateWorkItemCommentRequest.
-type CreateWorkItemCommentRequest struct {
-	Message    string        `json:"message"`
-	UserID     DbUserID      `json:"userID"`
-	WorkItemID db.WorkItemID `json:"workItemID"`
-}
+/* Ignoring existing struct (rest/models.go) CreateWorkItemCommentRequest */
 
 // CreateWorkItemRequest defines the model for CreateWorkItemRequest.
 type CreateWorkItemRequest struct {
@@ -398,139 +323,73 @@ type CreateWorkItemRequest struct {
 	FromQueryParams bool
 }
 
-// CreateWorkItemTagRequest defines the model for CreateWorkItemTagRequest.
-type CreateWorkItemTagRequest struct {
-	Color       string `json:"color"`
-	Description string `json:"description"`
-	Name        string `json:"name"`
-}
+/* Ignoring existing struct (rest/models.go) CreateWorkItemTagRequest */
 
-// CreateWorkItemTypeRequest defines the model for CreateWorkItemTypeRequest.
-type CreateWorkItemTypeRequest struct {
-	Color       string `json:"color"`
-	Description string `json:"description"`
-	Name        string `json:"name"`
-}
+/* Ignoring existing struct (rest/models.go) CreateWorkItemTypeRequest */
 
-// DbActivity defines the model for DbActivity.
-type DbActivity struct {
-	ActivityID   int    `json:"activityID"`
-	Description  string `json:"description"`
-	IsProductive bool   `json:"isProductive"`
-	Name         string `json:"name"`
-	ProjectID    int    `json:"projectID"`
-}
+/* Skipping definition of db struct DbActivity */
 
-// DbActivityCreateParams defines the model for DbActivityCreateParams.
-type DbActivityCreateParams struct {
-	Description  string `json:"description"`
-	IsProductive bool   `json:"isProductive"`
-	Name         string `json:"name"`
-	ProjectID    *int   `json:"projectID,omitempty"`
-}
+/* Skipping definition of db struct DbActivityCreateParams */
 
-// DbCacheDemoWorkItemJoins defines the model for DbCacheDemoWorkItemJoins.
-type DbCacheDemoWorkItemJoins = db.CacheDemoWorkItemJoins
+/* Skipping definition of db struct DbCacheDemoWorkItemJoins */
 
-// DbDemoTwoWorkItem defines the model for DbDemoTwoWorkItem.
-type DbDemoTwoWorkItem = db.DemoTwoWorkItem
+/* Skipping definition of db struct DbDemoTwoWorkItem */
 
-// DbDemoTwoWorkItemCreateParams defines the model for DbDemoTwoWorkItemCreateParams.
-type DbDemoTwoWorkItemCreateParams = db.DemoTwoWorkItemCreateParams
+/* Skipping definition of db struct DbDemoTwoWorkItemCreateParams */
 
-// DbDemoWorkItem defines the model for DbDemoWorkItem.
-type DbDemoWorkItem = db.DemoWorkItem
+/* Skipping definition of db struct DbDemoWorkItem */
 
-// DbDemoWorkItemCreateParams defines the model for DbDemoWorkItemCreateParams.
-type DbDemoWorkItemCreateParams = db.DemoWorkItemCreateParams
+/* Skipping definition of db struct DbDemoWorkItemCreateParams */
 
-// DbKanbanStep defines the model for DbKanbanStep.
-type DbKanbanStep = db.KanbanStep
+/* Skipping definition of db struct DbKanbanStep */
 
-// DbNotification defines the model for DbNotification.
-type DbNotification = db.Notification
+/* Skipping definition of db struct DbNotification */
 
-// DbNotificationID defines the model for DbNotificationID.
-type DbNotificationID = interface{}
+/* Skipping definition of db struct DbNotificationID */
 
-// DbProject defines the model for DbProject.
-type DbProject = db.Project
+/* Skipping definition of db struct DbProject */
 
-// DbProjectID defines the model for DbProjectID.
-type DbProjectID = interface{}
+/* Skipping definition of db struct DbProjectID */
 
-// DbTeam defines the model for DbTeam.
-type DbTeam = db.Team
+/* Skipping definition of db struct DbTeam */
 
-// DbTeamCreateParams defines the model for DbTeamCreateParams.
-type DbTeamCreateParams = db.TeamCreateParams
+/* Skipping definition of db struct DbTeamCreateParams */
 
-// DbTimeEntry defines the model for DbTimeEntry.
-type DbTimeEntry = db.TimeEntry
+/* Skipping definition of db struct DbTimeEntry */
 
-// DbUser defines the model for DbUser.
-type DbUser = db.User
+/* Skipping definition of db struct DbUser */
 
-// DbUserAPIKey defines the model for DbUserAPIKey.
-type DbUserAPIKey = db.UserAPIKey
+/* Skipping definition of db struct DbUserAPIKey */
 
-// DbUserID defines the model for DbUserID.
-type DbUserID = db.UserID
+/* Skipping definition of db struct DbUserID */
 
-// DbUserJoins defines the model for DbUserJoins.
-type DbUserJoins = db.UserJoins
+/* Skipping definition of db struct DbUserJoins */
 
-// DbUserNotification defines the model for DbUserNotification.
-type DbUserNotification struct {
-	NotificationID     int      `json:"notificationID"`
-	Read               bool     `json:"read"`
-	UserID             DbUserID `json:"userID"`
-	UserNotificationID int      `json:"userNotificationID"`
-}
+/* Skipping definition of db struct DbUserNotification */
 
-// DbUserWIAUWorkItem defines the model for DbUserWIAUWorkItem.
-type DbUserWIAUWorkItem struct {
-	// Role is generated from database enum 'work_item_role'.
-	Role WorkItemRole `json:"role"`
-	User DbUser       `json:"user"`
-}
+/* Skipping definition of db struct DbUserWIAUWorkItem */
 
-// DbUserWIAWorkItem defines the model for DbUserWIAWorkItem.
-type DbUserWIAWorkItem struct {
-	// Role is generated from database enum 'work_item_role'.
-	Role WorkItemRole `json:"role"`
-	User DbUser       `json:"user"`
-}
+/* Skipping definition of db struct DbUserWIAWorkItem */
 
-// DbWorkItem defines the model for DbWorkItem.
-type DbWorkItem = db.WorkItem
+/* Skipping definition of db struct DbWorkItem */
 
-// DbWorkItemComment defines the model for DbWorkItemComment.
-type DbWorkItemComment = db.WorkItemComment
+/* Skipping definition of db struct DbWorkItemComment */
 
-// DbWorkItemCreateParams defines the model for DbWorkItemCreateParams.
-type DbWorkItemCreateParams = db.WorkItemCreateParams
+/* Skipping definition of db struct DbWorkItemCreateParams */
 
-// DbWorkItemID defines the model for DbWorkItemID.
-type DbWorkItemID = interface{}
+/* Skipping definition of db struct DbWorkItemID */
 
-// DbWorkItemM2MAssigneeWIA defines the model for DbWorkItemM2MAssigneeWIA.
-type DbWorkItemM2MAssigneeWIA = db.WorkItemM2MAssigneeWIA
+/* Skipping definition of db struct DbWorkItemM2MAssigneeWIA */
 
-// DbWorkItemRole defines the model for DbWorkItemRole.
-type DbWorkItemRole = string
+/* Skipping definition of db struct DbWorkItemRole */
 
-// DbWorkItemTag defines the model for DbWorkItemTag.
-type DbWorkItemTag = db.WorkItemTag
+/* Skipping definition of db struct DbWorkItemTag */
 
-// DbWorkItemTagCreateParams defines the model for DbWorkItemTagCreateParams.
-type DbWorkItemTagCreateParams = db.WorkItemTagCreateParams
+/* Skipping definition of db struct DbWorkItemTagCreateParams */
 
-// DbWorkItemType defines the model for DbWorkItemType.
-type DbWorkItemType = db.WorkItemType
+/* Skipping definition of db struct DbWorkItemType */
 
-// DbWorkItemTypeID defines the model for DbWorkItemTypeID.
-type DbWorkItemTypeID = interface{}
+/* Skipping definition of db struct DbWorkItemTypeID */
 
 // DemoKanbanSteps is generated from kanban_steps table.
 type DemoKanbanSteps string
@@ -538,58 +397,12 @@ type DemoKanbanSteps string
 // DemoTwoKanbanSteps is generated from kanban_steps table.
 type DemoTwoKanbanSteps string
 
-// DemoTwoWorkItem defines the model for DemoTwoWorkItem.
-type DemoTwoWorkItem struct {
-	ClosedAt        *time.Time                  `json:"closedAt"`
-	CreatedAt       time.Time                   `json:"createdAt"`
-	DeletedAt       *time.Time                  `json:"deletedAt"`
-	DemoTwoWorkItem DbDemoTwoWorkItem           `json:"demoTwoWorkItem"`
-	Description     string                      `json:"description"`
-	KanbanStepID    db.KanbanStepID             `json:"kanbanStepID"`
-	Members         *[]DbWorkItemM2MAssigneeWIA `json:"members"`
-	Metadata        map[string]interface{}      `json:"metadata"`
-
-	// ProjectName is generated from projects table.
-	ProjectName      Project              `json:"projectName"`
-	TargetDate       time.Time            `json:"targetDate"`
-	TeamID           *db.TeamID           `json:"teamID"`
-	TimeEntries      *[]DbTimeEntry       `json:"timeEntries"`
-	Title            string               `json:"title"`
-	UpdatedAt        time.Time            `json:"updatedAt"`
-	WorkItemComments *[]DbWorkItemComment `json:"workItemComments"`
-	WorkItemID       db.WorkItemID        `json:"workItemID"`
-	WorkItemTags     *[]DbWorkItemTag     `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType      `json:"workItemType,omitempty"`
-	WorkItemTypeID   db.WorkItemTypeID    `json:"workItemTypeID"`
-}
+/* Ignoring existing struct (rest/models.go) DemoTwoWorkItem */
 
 // DemoTwoWorkItemTypes is generated from work_item_types table.
 type DemoTwoWorkItemTypes string
 
-// DemoWorkItem defines the model for DemoWorkItem.
-type DemoWorkItem struct {
-	ClosedAt     *time.Time                  `json:"closedAt"`
-	CreatedAt    time.Time                   `json:"createdAt"`
-	DeletedAt    *time.Time                  `json:"deletedAt"`
-	DemoWorkItem DbDemoWorkItem              `json:"demoWorkItem"`
-	Description  string                      `json:"description"`
-	KanbanStepID db.KanbanStepID             `json:"kanbanStepID"`
-	Members      *[]DbWorkItemM2MAssigneeWIA `json:"members"`
-	Metadata     map[string]interface{}      `json:"metadata"`
-
-	// ProjectName is generated from projects table.
-	ProjectName      Project              `json:"projectName"`
-	TargetDate       time.Time            `json:"targetDate"`
-	TeamID           *db.TeamID           `json:"teamID"`
-	TimeEntries      *[]DbTimeEntry       `json:"timeEntries"`
-	Title            string               `json:"title"`
-	UpdatedAt        time.Time            `json:"updatedAt"`
-	WorkItemComments *[]DbWorkItemComment `json:"workItemComments"`
-	WorkItemID       db.WorkItemID        `json:"workItemID"`
-	WorkItemTags     *[]DbWorkItemTag     `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType      `json:"workItemType,omitempty"`
-	WorkItemTypeID   db.WorkItemTypeID    `json:"workItemTypeID"`
-}
+/* Ignoring existing struct (rest/models.go) DemoWorkItem */
 
 // DemoWorkItemTypes is generated from work_item_types table.
 type DemoWorkItemTypes string
@@ -602,15 +415,9 @@ type Direction string
 // - 'Private' marks an error to be hidden in response.
 type ErrorCode string
 
-// GetCacheDemoWorkItemQueryParameters defines the model for GetCacheDemoWorkItemQueryParameters.
-type GetCacheDemoWorkItemQueryParameters struct {
-	Joins *DbCacheDemoWorkItemJoins `json:"joins,omitempty"`
-}
+/* Ignoring existing struct (rest/models.go) GetCacheDemoWorkItemQueryParameters */
 
-// GetCurrentUserQueryParameters defines the model for GetCurrentUserQueryParameters.
-type GetCurrentUserQueryParameters struct {
-	Joins *DbUserJoins `json:"joins,omitempty"`
-}
+/* Ignoring existing struct (rest/models.go) GetCurrentUserQueryParameters */
 
 // GetPaginatedUsersQueryParameters defines the model for GetPaginatedUsersQueryParameters.
 type GetPaginatedUsersQueryParameters struct {
@@ -647,35 +454,16 @@ type HTTPValidationError struct {
 	Messages []string `json:"messages"`
 }
 
-// Notification defines the model for Notification.
-type Notification struct {
-	Notification       DbNotification        `json:"notification"`
-	NotificationID     db.NotificationID     `json:"notificationID"`
-	Read               bool                  `json:"read"`
-	UserID             DbUserID              `json:"userID"`
-	UserNotificationID db.UserNotificationID `json:"userNotificationID"`
-}
+/* Ignoring existing struct (rest/models.go) Notification */
 
 // NotificationType is generated from database enum 'notification_type'.
 type NotificationType string
 
-// PaginatedDemoWorkItemsResponse defines the model for PaginatedDemoWorkItemsResponse.
-type PaginatedDemoWorkItemsResponse struct {
-	Items *[]CacheDemoWorkItem `json:"items"`
-	Page  PaginationPage       `json:"page"`
-}
+/* Ignoring existing struct (rest/models.go) PaginatedDemoWorkItemsResponse */
 
-// PaginatedNotificationsResponse defines the model for PaginatedNotificationsResponse.
-type PaginatedNotificationsResponse struct {
-	Items *[]Notification `json:"items"`
-	Page  PaginationPage  `json:"page"`
-}
+/* Ignoring existing struct (rest/models.go) PaginatedNotificationsResponse */
 
-// PaginatedUsersResponse defines the model for PaginatedUsersResponse.
-type PaginatedUsersResponse struct {
-	Items *[]User        `json:"items"`
-	Page  PaginationPage `json:"page"`
-}
+/* Ignoring existing struct (rest/models.go) PaginatedUsersResponse */
 
 // Pagination defines the model for Pagination.
 type Pagination struct {
@@ -718,19 +506,12 @@ type PaginationFilterPrimitive struct {
 // PaginationItems represents pagination data indexed by column id
 type PaginationItems map[string]Pagination
 
-// PaginationPage defines the model for PaginationPage.
-type PaginationPage struct {
-	NextCursor *string `json:"nextCursor,omitempty"`
-}
+/* Ignoring existing struct (rest/models.go) PaginationPage */
 
 // Project is generated from projects table.
 type Project string
 
-// ProjectBoard defines the model for ProjectBoard.
-type ProjectBoard struct {
-	// ProjectName is generated from projects table.
-	ProjectName Project `json:"projectName"`
-}
+/* Ignoring existing struct (rest/models.go) ProjectBoard */
 
 // ProjectConfig defines the model for ProjectConfig.
 type ProjectConfig struct {
@@ -757,43 +538,13 @@ type Scope string
 // Scopes defines the model for Scopes.
 type Scopes = []Scope
 
-// ServicesMember defines the model for ServicesMember.
-type ServicesMember struct {
-	// Role is generated from database enum 'work_item_role'.
-	Role   WorkItemRole `json:"role"`
-	UserID DbUserID     `json:"userID"`
-}
+/* Ignoring existing struct (rest/models.go) ServicesMember */
 
-// SharedWorkItemJoins defines the model for SharedWorkItemJoins.
-type SharedWorkItemJoins struct {
-	Members          *[]DbWorkItemM2MAssigneeWIA `json:"members"`
-	TimeEntries      *[]DbTimeEntry              `json:"timeEntries"`
-	WorkItemComments *[]DbWorkItemComment        `json:"workItemComments"`
-	WorkItemTags     *[]DbWorkItemTag            `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType             `json:"workItemType,omitempty"`
-}
+/* Ignoring existing struct (rest/models.go) SharedWorkItemJoins */
 
-// Team defines the model for Team.
-type Team struct {
-	CreatedAt   time.Time    `json:"createdAt"`
-	Description string       `json:"description"`
-	Name        string       `json:"name"`
-	ProjectID   db.ProjectID `json:"projectID"`
-	TeamID      db.TeamID    `json:"teamID"`
-	UpdatedAt   time.Time    `json:"updatedAt"`
-}
+/* Ignoring existing struct (rest/models.go) Team */
 
-// TimeEntry defines the model for TimeEntry.
-type TimeEntry struct {
-	ActivityID      db.ActivityID  `json:"activityID"`
-	Comment         string         `json:"comment"`
-	DurationMinutes *int           `json:"durationMinutes"`
-	Start           time.Time      `json:"start"`
-	TeamID          *db.TeamID     `json:"teamID"`
-	TimeEntryID     db.TimeEntryID `json:"timeEntryID"`
-	UserID          DbUserID       `json:"userID"`
-	WorkItemID      *db.WorkItemID `json:"workItemID"`
-}
+/* Ignoring existing struct (rest/models.go) TimeEntry */
 
 // Topic string identifiers for SSE event listeners.
 type Topic string
@@ -801,29 +552,11 @@ type Topic string
 // Topics defines the model for Topics.
 type Topics = []Topic
 
-// UpdateActivityRequest defines the model for UpdateActivityRequest.
-type UpdateActivityRequest struct {
-	Description  *string `json:"description,omitempty"`
-	IsProductive *bool   `json:"isProductive,omitempty"`
-	Name         *string `json:"name,omitempty"`
-}
+/* Ignoring existing struct (rest/models.go) UpdateActivityRequest */
 
-// UpdateTeamRequest defines the model for UpdateTeamRequest.
-type UpdateTeamRequest struct {
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-}
+/* Ignoring existing struct (rest/models.go) UpdateTeamRequest */
 
-// UpdateTimeEntryRequest defines the model for UpdateTimeEntryRequest.
-type UpdateTimeEntryRequest struct {
-	ActivityID      *db.ActivityID `json:"activityID,omitempty"`
-	Comment         *string        `json:"comment,omitempty"`
-	DurationMinutes *int           `json:"durationMinutes"`
-	Start           *time.Time     `json:"start,omitempty"`
-	TeamID          *int           `json:"teamID"`
-	UserID          *DbUserID      `json:"userID,omitempty"`
-	WorkItemID      *int           `json:"workItemID"`
-}
+/* Ignoring existing struct (rest/models.go) UpdateTimeEntryRequest */
 
 // UpdateUserAuthRequest represents User authorization data to update
 type UpdateUserAuthRequest struct {
@@ -841,49 +574,13 @@ type UpdateUserRequest struct {
 	LastName *string `json:"lastName,omitempty"`
 }
 
-// UpdateWorkItemCommentRequest defines the model for UpdateWorkItemCommentRequest.
-type UpdateWorkItemCommentRequest struct {
-	Message    *string        `json:"message,omitempty"`
-	UserID     *DbUserID      `json:"userID,omitempty"`
-	WorkItemID *db.WorkItemID `json:"workItemID,omitempty"`
-}
+/* Ignoring existing struct (rest/models.go) UpdateWorkItemCommentRequest */
 
-// UpdateWorkItemTagRequest defines the model for UpdateWorkItemTagRequest.
-type UpdateWorkItemTagRequest struct {
-	Color       *string `json:"color,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-}
+/* Ignoring existing struct (rest/models.go) UpdateWorkItemTagRequest */
 
-// UpdateWorkItemTypeRequest defines the model for UpdateWorkItemTypeRequest.
-type UpdateWorkItemTypeRequest struct {
-	Color       *string `json:"color,omitempty"`
-	Description *string `json:"description,omitempty"`
-	Name        *string `json:"name,omitempty"`
-}
+/* Ignoring existing struct (rest/models.go) UpdateWorkItemTypeRequest */
 
-// User defines the model for User.
-type User struct {
-	Age                      *int          `json:"age"`
-	ApiKey                   *DbUserAPIKey `json:"apiKey,omitempty"`
-	CreatedAt                time.Time     `json:"createdAt"`
-	DeletedAt                *time.Time    `json:"deletedAt"`
-	Email                    string        `json:"email"`
-	FirstName                *string       `json:"firstName"`
-	FullName                 *string       `json:"fullName"`
-	HasGlobalNotifications   bool          `json:"hasGlobalNotifications"`
-	HasPersonalNotifications bool          `json:"hasPersonalNotifications"`
-	LastName                 *string       `json:"lastName"`
-	Projects                 *[]DbProject  `json:"projects"`
-
-	// Role is generated from roles.json keys.
-	Role      Role      `json:"role"`
-	Scopes    Scopes    `json:"scopes"`
-	Teams     *[]DbTeam `json:"teams"`
-	UpdatedAt time.Time `json:"updatedAt"`
-	UserID    DbUserID  `json:"userID"`
-	Username  string    `json:"username"`
-}
+/* Ignoring existing struct (rest/models.go) User */
 
 // UuidUUID defines the model for UuidUUID.
 type UuidUUID = uuid.UUID
@@ -911,61 +608,16 @@ type WorkItem struct {
 	FromQueryParams bool
 }
 
-// WorkItemBase defines the model for WorkItemBase.
-type WorkItemBase struct {
-	ClosedAt     *time.Time                  `json:"closedAt"`
-	CreatedAt    time.Time                   `json:"createdAt"`
-	DeletedAt    *time.Time                  `json:"deletedAt"`
-	Description  string                      `json:"description"`
-	KanbanStepID db.KanbanStepID             `json:"kanbanStepID"`
-	Members      *[]DbWorkItemM2MAssigneeWIA `json:"members"`
-	Metadata     map[string]interface{}      `json:"metadata"`
+/* Ignoring existing struct (rest/models.go) WorkItemBase */
 
-	// ProjectName is generated from projects table.
-	ProjectName      Project              `json:"projectName"`
-	TargetDate       time.Time            `json:"targetDate"`
-	TeamID           *db.TeamID           `json:"teamID"`
-	TimeEntries      *[]DbTimeEntry       `json:"timeEntries"`
-	Title            string               `json:"title"`
-	UpdatedAt        time.Time            `json:"updatedAt"`
-	WorkItemComments *[]DbWorkItemComment `json:"workItemComments"`
-	WorkItemID       db.WorkItemID        `json:"workItemID"`
-	WorkItemTags     *[]DbWorkItemTag     `json:"workItemTags"`
-	WorkItemType     *DbWorkItemType      `json:"workItemType,omitempty"`
-	WorkItemTypeID   db.WorkItemTypeID    `json:"workItemTypeID"`
-}
-
-// WorkItemComment defines the model for WorkItemComment.
-type WorkItemComment struct {
-	CreatedAt         time.Time            `json:"createdAt"`
-	Message           string               `json:"message"`
-	UpdatedAt         time.Time            `json:"updatedAt"`
-	UserID            DbUserID             `json:"userID"`
-	WorkItemCommentID db.WorkItemCommentID `json:"workItemCommentID"`
-	WorkItemID        db.WorkItemID        `json:"workItemID"`
-}
+/* Ignoring existing struct (rest/models.go) WorkItemComment */
 
 // WorkItemRole is generated from database enum 'work_item_role'.
 type WorkItemRole string
 
-// WorkItemTag defines the model for WorkItemTag.
-type WorkItemTag struct {
-	Color         string           `json:"color"`
-	DeletedAt     *time.Time       `json:"deletedAt"`
-	Description   string           `json:"description"`
-	Name          string           `json:"name"`
-	ProjectID     db.ProjectID     `json:"projectID"`
-	WorkItemTagID db.WorkItemTagID `json:"workItemTagID"`
-}
+/* Ignoring existing struct (rest/models.go) WorkItemTag */
 
-// WorkItemType defines the model for WorkItemType.
-type WorkItemType struct {
-	Color          string            `json:"color"`
-	Description    string            `json:"description"`
-	Name           string            `json:"name"`
-	ProjectID      db.ProjectID      `json:"projectID"`
-	WorkItemTypeID db.WorkItemTypeID `json:"workItemTypeID"`
-}
+/* Ignoring existing struct (rest/models.go) WorkItemType */
 
 // ProjectName is generated from projects table.
 type ProjectName = Project
@@ -973,76 +625,38 @@ type ProjectName = Project
 // UUID defines the model for UUID.
 type UUID = uuid.UUID
 
-// MyProviderLoginParams defines parameters for MyProviderLogin.
-type MyProviderLoginParams struct {
-	AuthRedirectUri string `form:"auth-redirect-uri" json:"auth-redirect-uri"`
-}
+// Ignoring parameter definition for MyProviderLoginParams.
 
-// EventsParams defines parameters for Events.
-type EventsParams struct {
-	ProjectName Project `form:"projectName" json:"projectName"`
-	Topics      Topics  `form:"topics" json:"topics"`
-}
+// Ignoring parameter definition for EventsParams.
 
-// GetPaginatedNotificationsParams defines parameters for GetPaginatedNotifications.
-type GetPaginatedNotificationsParams struct {
-	Limit     int       `form:"limit" json:"limit"`
-	Direction Direction `form:"direction" json:"direction"`
-	Cursor    *string   `form:"cursor,omitempty" json:"cursor,omitempty"`
-}
+// Ignoring parameter definition for GetPaginatedNotificationsParams.
 
-// GetProjectWorkitemsParams defines parameters for GetProjectWorkitems.
-type GetProjectWorkitemsParams struct {
-	Open    *bool `form:"open,omitempty" json:"open,omitempty"`
-	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
-}
+// Ignoring parameter definition for GetProjectWorkitemsParams.
 
-// GetPaginatedUsersParams defines parameters for GetPaginatedUsers.
-type GetPaginatedUsersParams struct {
-	Limit       int                               `form:"limit" json:"limit"`
-	Direction   Direction                         `form:"direction" json:"direction"`
-	Cursor      *string                           `form:"cursor,omitempty" json:"cursor,omitempty"`
-	Column      string                            `form:"column" json:"column"`
-	SearchQuery *GetPaginatedUsersQueryParameters `json:"searchQuery,omitempty"`
-}
+// Ignoring parameter definition for GetPaginatedUsersParams.
 
-// GetPaginatedWorkItemParams defines parameters for GetPaginatedWorkItem.
-type GetPaginatedWorkItemParams struct {
-	Limit       int                                  `form:"limit" json:"limit"`
-	Direction   Direction                            `form:"direction" json:"direction"`
-	Cursor      *string                              `form:"cursor,omitempty" json:"cursor,omitempty"`
-	SearchQuery *GetCacheDemoWorkItemQueryParameters `json:"searchQuery,omitempty"`
-}
+// Ignoring parameter definition for GetPaginatedWorkItemParams.
 
-// UpdateActivityJSONRequestBody defines body for UpdateActivity for application/json ContentType.
-type UpdateActivityJSONRequestBody = UpdateActivityRequest
+/* Ignoring body for existing struct (rest/models.go) UpdateActivityRequest */
 
-// CreateActivityJSONRequestBody defines body for CreateActivity for application/json ContentType.
-type CreateActivityJSONRequestBody = CreateActivityRequest
+/* Ignoring body for existing struct (rest/models.go) CreateActivityRequest */
 
 // UpdateProjectConfigJSONRequestBody defines body for UpdateProjectConfig for application/json ContentType.
 type UpdateProjectConfigJSONRequestBody = ProjectConfig
 
-// InitializeProjectJSONRequestBody defines body for InitializeProject for application/json ContentType.
-type InitializeProjectJSONRequestBody = CreateProjectBoardRequest
+/* Ignoring body for existing struct (rest/models.go) CreateProjectBoardRequest */
 
-// CreateTeamJSONRequestBody defines body for CreateTeam for application/json ContentType.
-type CreateTeamJSONRequestBody = CreateTeamRequest
+/* Ignoring body for existing struct (rest/models.go) CreateTeamRequest */
 
-// CreateWorkItemTagJSONRequestBody defines body for CreateWorkItemTag for application/json ContentType.
-type CreateWorkItemTagJSONRequestBody = CreateWorkItemTagRequest
+/* Ignoring body for existing struct (rest/models.go) CreateWorkItemTagRequest */
 
-// CreateWorkItemTypeJSONRequestBody defines body for CreateWorkItemType for application/json ContentType.
-type CreateWorkItemTypeJSONRequestBody = CreateWorkItemTypeRequest
+/* Ignoring body for existing struct (rest/models.go) CreateWorkItemTypeRequest */
 
-// UpdateTeamJSONRequestBody defines body for UpdateTeam for application/json ContentType.
-type UpdateTeamJSONRequestBody = UpdateTeamRequest
+/* Ignoring body for existing struct (rest/models.go) UpdateTeamRequest */
 
-// CreateTimeEntryJSONRequestBody defines body for CreateTimeEntry for application/json ContentType.
-type CreateTimeEntryJSONRequestBody = CreateTimeEntryRequest
+/* Ignoring body for existing struct (rest/models.go) CreateTimeEntryRequest */
 
-// UpdateTimeEntryJSONRequestBody defines body for UpdateTimeEntry for application/json ContentType.
-type UpdateTimeEntryJSONRequestBody = UpdateTimeEntryRequest
+/* Ignoring body for existing struct (rest/models.go) UpdateTimeEntryRequest */
 
 // UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
 type UpdateUserJSONRequestBody = UpdateUserRequest
@@ -1050,341 +664,16 @@ type UpdateUserJSONRequestBody = UpdateUserRequest
 // UpdateUserAuthorizationJSONRequestBody defines body for UpdateUserAuthorization for application/json ContentType.
 type UpdateUserAuthorizationJSONRequestBody = UpdateUserAuthRequest
 
-// UpdateWorkItemTagJSONRequestBody defines body for UpdateWorkItemTag for application/json ContentType.
-type UpdateWorkItemTagJSONRequestBody = UpdateWorkItemTagRequest
+/* Ignoring body for existing struct (rest/models.go) UpdateWorkItemTagRequest */
 
-// UpdateWorkItemTypeJSONRequestBody defines body for UpdateWorkItemType for application/json ContentType.
-type UpdateWorkItemTypeJSONRequestBody = UpdateWorkItemTypeRequest
+/* Ignoring body for existing struct (rest/models.go) UpdateWorkItemTypeRequest */
 
 // CreateWorkitemJSONRequestBody defines body for CreateWorkitem for application/json ContentType.
 type CreateWorkitemJSONRequestBody = CreateWorkItemRequest
 
-// CreateWorkItemCommentJSONRequestBody defines body for CreateWorkItemComment for application/json ContentType.
-type CreateWorkItemCommentJSONRequestBody = CreateWorkItemCommentRequest
+/* Ignoring body for existing struct (rest/models.go) CreateWorkItemCommentRequest */
 
-// UpdateWorkItemCommentJSONRequestBody defines body for UpdateWorkItemComment for application/json ContentType.
-type UpdateWorkItemCommentJSONRequestBody = UpdateWorkItemCommentRequest
-
-// AsCreateDemoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoWorkItemRequest
-func (t CreateWorkItemRequest) AsCreateDemoWorkItemRequest() (CreateDemoWorkItemRequest, error) {
-	var body CreateDemoWorkItemRequest
-	if !t.FromQueryParams {
-		err := json.Unmarshal(t.union, &body)
-		return body, err
-	}
-	// arrays are passed as maps, so reconstruct json properly
-	var unionm map[string]interface{}
-	err := json.Unmarshal(t.union, &unionm)
-	if err != nil {
-		return CreateDemoWorkItemRequest{}, err
-	}
-
-	s := "CreateWorkItemRequest"
-	discriminatorSchema := "CreateDemoWorkItemRequest"
-	fp, ok := spec.Components.Schemas[s]
-	if !ok {
-		return CreateDemoWorkItemRequest{}, fmt.Errorf("schema %s not found", s)
-	}
-	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
-	if err != nil {
-		return CreateDemoWorkItemRequest{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
-	}
-	jsonUnion, err := json.Marshal(union)
-	if err != nil {
-		return CreateDemoWorkItemRequest{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
-	}
-	err = json.Unmarshal(jsonUnion, &body)
-
-	return body, err
-}
-
-// AsCreateDemoTwoWorkItemRequest returns the union data inside the CreateWorkItemRequest as a CreateDemoTwoWorkItemRequest
-func (t CreateWorkItemRequest) AsCreateDemoTwoWorkItemRequest() (CreateDemoTwoWorkItemRequest, error) {
-	var body CreateDemoTwoWorkItemRequest
-	if !t.FromQueryParams {
-		err := json.Unmarshal(t.union, &body)
-		return body, err
-	}
-	// arrays are passed as maps, so reconstruct json properly
-	var unionm map[string]interface{}
-	err := json.Unmarshal(t.union, &unionm)
-	if err != nil {
-		return CreateDemoTwoWorkItemRequest{}, err
-	}
-
-	s := "CreateWorkItemRequest"
-	discriminatorSchema := "CreateDemoTwoWorkItemRequest"
-	fp, ok := spec.Components.Schemas[s]
-	if !ok {
-		return CreateDemoTwoWorkItemRequest{}, fmt.Errorf("schema %s not found", s)
-	}
-	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
-	if err != nil {
-		return CreateDemoTwoWorkItemRequest{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
-	}
-	jsonUnion, err := json.Marshal(union)
-	if err != nil {
-		return CreateDemoTwoWorkItemRequest{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
-	}
-	err = json.Unmarshal(jsonUnion, &body)
-
-	return body, err
-}
-
-func (t CreateWorkItemRequest) Discriminator() (string, error) {
-	var discriminator struct {
-		Discriminator string `json:"projectName"`
-	}
-	err := json.Unmarshal(t.union, &discriminator)
-	return discriminator.Discriminator, err
-}
-
-func (t CreateWorkItemRequest) ValueByDiscriminator() (interface{}, error) {
-	discriminator, err := t.Discriminator()
-	if err != nil {
-		return nil, err
-	}
-	switch discriminator {
-	case "demo":
-		return t.AsCreateDemoWorkItemRequest()
-	case "demo_two":
-		return t.AsCreateDemoTwoWorkItemRequest()
-	default:
-		return nil, errors.New("unknown discriminator value: " + discriminator)
-	}
-}
-
-func (t CreateWorkItemRequest) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *CreateWorkItemRequest) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsPaginationFilterPrimitive returns the union data inside the PaginationFilter as a PaginationFilterPrimitive
-func (t PaginationFilter) AsPaginationFilterPrimitive() (PaginationFilterPrimitive, error) {
-	var body PaginationFilterPrimitive
-	if !t.FromQueryParams {
-		err := json.Unmarshal(t.union, &body)
-		return body, err
-	}
-	// arrays are passed as maps, so reconstruct json properly
-	var unionm map[string]interface{}
-	err := json.Unmarshal(t.union, &unionm)
-	if err != nil {
-		return PaginationFilterPrimitive{}, err
-	}
-
-	s := "PaginationFilter"
-	discriminatorSchema := "PaginationFilterPrimitive"
-	fp, ok := spec.Components.Schemas[s]
-	if !ok {
-		return PaginationFilterPrimitive{}, fmt.Errorf("schema %s not found", s)
-	}
-	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
-	if err != nil {
-		return PaginationFilterPrimitive{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
-	}
-	jsonUnion, err := json.Marshal(union)
-	if err != nil {
-		return PaginationFilterPrimitive{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
-	}
-	err = json.Unmarshal(jsonUnion, &body)
-
-	return body, err
-}
-
-// AsPaginationFilterArray returns the union data inside the PaginationFilter as a PaginationFilterArray
-func (t PaginationFilter) AsPaginationFilterArray() (PaginationFilterArray, error) {
-	var body PaginationFilterArray
-	if !t.FromQueryParams {
-		err := json.Unmarshal(t.union, &body)
-		return body, err
-	}
-	// arrays are passed as maps, so reconstruct json properly
-	var unionm map[string]interface{}
-	err := json.Unmarshal(t.union, &unionm)
-	if err != nil {
-		return PaginationFilterArray{}, err
-	}
-
-	s := "PaginationFilter"
-	discriminatorSchema := "PaginationFilterArray"
-	fp, ok := spec.Components.Schemas[s]
-	if !ok {
-		return PaginationFilterArray{}, fmt.Errorf("schema %s not found", s)
-	}
-	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
-	if err != nil {
-		return PaginationFilterArray{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
-	}
-	jsonUnion, err := json.Marshal(union)
-	if err != nil {
-		return PaginationFilterArray{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
-	}
-	err = json.Unmarshal(jsonUnion, &body)
-
-	return body, err
-}
-
-func (t PaginationFilter) Discriminator() (string, error) {
-	var discriminator struct {
-		Discriminator string `json:"filterMode"`
-	}
-	err := json.Unmarshal(t.union, &discriminator)
-	return discriminator.Discriminator, err
-}
-
-func (t PaginationFilter) ValueByDiscriminator() (interface{}, error) {
-	discriminator, err := t.Discriminator()
-	if err != nil {
-		return nil, err
-	}
-	switch discriminator {
-	case "between":
-		return t.AsPaginationFilterArray()
-	case "betweenInclusive":
-		return t.AsPaginationFilterArray()
-	case "contains":
-		return t.AsPaginationFilterPrimitive()
-	case "empty":
-		return t.AsPaginationFilterPrimitive()
-	case "endsWith":
-		return t.AsPaginationFilterPrimitive()
-	case "equals":
-		return t.AsPaginationFilterPrimitive()
-	case "fuzzy":
-		return t.AsPaginationFilterPrimitive()
-	case "greaterThan":
-		return t.AsPaginationFilterPrimitive()
-	case "greaterThanOrEqualTo":
-		return t.AsPaginationFilterPrimitive()
-	case "lessThan":
-		return t.AsPaginationFilterPrimitive()
-	case "lessThanOrEqualTo":
-		return t.AsPaginationFilterPrimitive()
-	case "notEmpty":
-		return t.AsPaginationFilterPrimitive()
-	case "notEquals":
-		return t.AsPaginationFilterPrimitive()
-	case "startsWith":
-		return t.AsPaginationFilterPrimitive()
-	default:
-		return nil, errors.New("unknown discriminator value: " + discriminator)
-	}
-}
-
-func (t PaginationFilter) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *PaginationFilter) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsDemoWorkItem returns the union data inside the WorkItem as a DemoWorkItem
-func (t WorkItem) AsDemoWorkItem() (DemoWorkItem, error) {
-	var body DemoWorkItem
-	if !t.FromQueryParams {
-		err := json.Unmarshal(t.union, &body)
-		return body, err
-	}
-	// arrays are passed as maps, so reconstruct json properly
-	var unionm map[string]interface{}
-	err := json.Unmarshal(t.union, &unionm)
-	if err != nil {
-		return DemoWorkItem{}, err
-	}
-
-	s := "WorkItem"
-	discriminatorSchema := "DemoWorkItem"
-	fp, ok := spec.Components.Schemas[s]
-	if !ok {
-		return DemoWorkItem{}, fmt.Errorf("schema %s not found", s)
-	}
-	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
-	if err != nil {
-		return DemoWorkItem{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
-	}
-	jsonUnion, err := json.Marshal(union)
-	if err != nil {
-		return DemoWorkItem{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
-	}
-	err = json.Unmarshal(jsonUnion, &body)
-
-	return body, err
-}
-
-// AsDemoTwoWorkItem returns the union data inside the WorkItem as a DemoTwoWorkItem
-func (t WorkItem) AsDemoTwoWorkItem() (DemoTwoWorkItem, error) {
-	var body DemoTwoWorkItem
-	if !t.FromQueryParams {
-		err := json.Unmarshal(t.union, &body)
-		return body, err
-	}
-	// arrays are passed as maps, so reconstruct json properly
-	var unionm map[string]interface{}
-	err := json.Unmarshal(t.union, &unionm)
-	if err != nil {
-		return DemoTwoWorkItem{}, err
-	}
-
-	s := "WorkItem"
-	discriminatorSchema := "DemoTwoWorkItem"
-	fp, ok := spec.Components.Schemas[s]
-	if !ok {
-		return DemoTwoWorkItem{}, fmt.Errorf("schema %s not found", s)
-	}
-	union, err := openapi.ReconstructQueryParamsValues(fp.Value, unionm, discriminatorSchema)
-	if err != nil {
-		return DemoTwoWorkItem{}, fmt.Errorf("could not reconstruct query params for schema %s: %v", discriminatorSchema, err)
-	}
-	jsonUnion, err := json.Marshal(union)
-	if err != nil {
-		return DemoTwoWorkItem{}, fmt.Errorf("reconstructed params are not valid json: %v", err)
-	}
-	err = json.Unmarshal(jsonUnion, &body)
-
-	return body, err
-}
-
-func (t WorkItem) Discriminator() (string, error) {
-	var discriminator struct {
-		Discriminator string `json:"projectName"`
-	}
-	err := json.Unmarshal(t.union, &discriminator)
-	return discriminator.Discriminator, err
-}
-
-func (t WorkItem) ValueByDiscriminator() (interface{}, error) {
-	discriminator, err := t.Discriminator()
-	if err != nil {
-		return nil, err
-	}
-	switch discriminator {
-	case "demo":
-		return t.AsDemoWorkItem()
-	case "demo_two":
-		return t.AsDemoTwoWorkItem()
-	default:
-		return nil, errors.New("unknown discriminator value: " + discriminator)
-	}
-}
-
-func (t WorkItem) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *WorkItem) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
+/* Ignoring body for existing struct (rest/models.go) UpdateWorkItemCommentRequest */
 
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
