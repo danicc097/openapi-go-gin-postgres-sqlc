@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/xo-templates/tests/got"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"

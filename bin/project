@@ -382,7 +382,8 @@ x.gen.pregen() {
     }" -i "$SPEC_PATH"
 
     codegen validate-spec -env=".env.$X_ENV"
-    ast-parser verify-no-import --imports "$GOMOD_PKG/internal/models" "$REST_MODELS" || err Please use generated rest package OpenAPI types instead.
+    # no longer meaningful since we are merging models with db
+    # ast-parser verify-no-import --imports "$GOMOD_PKG/internal/repos/postgresql/gen/models" "$REST_MODELS" || err Please use generated rest package OpenAPI types instead.
 
     sync_spec_with_db
 
@@ -504,7 +505,7 @@ sync_spec_with_db() {
   mapfile -t db_projects < <(docker.postgres.psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
 
   [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
-  replace_enum_in_spec "Project" db_projects "projects table"
+  replace_enum_in_spec "ProjectName" db_projects "projects table"
 
   for project in ${db_projects[@]}; do
     ### kanban steps
@@ -569,15 +570,14 @@ generate_models_mappings() {
 package internal
 
 import (
-  "$GOMOD_PKG/internal/models"
-  db "$GOMOD_PKG/$PG_REPO_GEN/db"
+  db "$GOMOD_PKG/$PG_REPO_GEN/models"
 )
 
 
 EOF
 
   mapfile -t projects_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "select project_id,name from projects;" 2>/dev/null)
-  generate_model_mappings_dicts Project db.ProjectID projects_rows
+  generate_model_mappings_dicts ProjectName models.ProjectID projects_rows
 
   for project in ${db_projects[@]}; do
     mapfile -t kanban_steps_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
@@ -586,7 +586,7 @@ EOF
             );" 2>/dev/null)
     [[ ${#kanban_steps_rows[@]} -gt 0 ]] || continue
     prefix="$(to_pascal "$project")KanbanSteps"
-    generate_model_mappings_dicts $prefix db.KanbanStepID kanban_steps_rows
+    generate_model_mappings_dicts $prefix models.KanbanStepID kanban_steps_rows
 
     kanban_steps_rows=()
     mapfile -t kanban_steps_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
@@ -596,7 +596,7 @@ EOF
     [[ ${#kanban_steps_rows[@]} -gt 0 ]] || continue
     prefix="$(to_pascal "$project")KanbanSteps"
     echo "var (
-    ${prefix}StepOrderByID = map[db.KanbanStepID]int{
+    ${prefix}StepOrderByID = map[models.KanbanStepID]int{
   " >>$model_mappings_path
     for row in "${kanban_steps_rows[@]}"; do
       first=$(cut_first "$row" "|") # always safe
@@ -615,7 +615,7 @@ EOF
             );" 2>/dev/null)
     [[ ${#work_item_types_rows[@]} -gt 0 ]] || continue
     prefix="$(to_pascal "$project")WorkItemTypes"
-    generate_model_mappings_dicts $prefix db.WorkItemTypeID work_item_types_rows
+    generate_model_mappings_dicts $prefix models.WorkItemTypeID work_item_types_rows
   done
 
   gofumpt -w $model_mappings_path
@@ -691,14 +691,14 @@ x.gen.sqlc() {
   { { {
     echo "Running generation"
     x.db.gen.export-schema
-    rm -f "$PG_REPO_GEN"/db/*.sqlc.go
+    rm -f "$PG_REPO_GEN"/models/*.sqlc.go
     x.lint.sql
     sqlc generate --experimental -f "$PG_REPO_DIR"/sqlc.yaml || err "Failed sqlc generation"
-    rm -f "$PG_REPO_GEN"/db/models.go                            # sqlc enums
-    sed -i 's/\bdb DBTX\b/d DBTX/g' "$PG_REPO_GEN"/db/querier.go # consistent with repo gowrap gen so we can use reposwrappers
+    rm -f "$PG_REPO_GEN"/models/models.go                            # sqlc enums
+    sed -i 's/\bdb DBTX\b/d DBTX/g' "$PG_REPO_GEN"/models/querier.go # consistent with repo gowrap gen so we can use reposwrappers
     gowrap gen \
       -g \
-      -p "$GOMOD_PKG/$PG_REPO_GEN/db" \
+      -p "$GOMOD_PKG/$PG_REPO_GEN/models" \
       -i Querier \
       -t "$GOWRAP_TEMPLATES_DIR/sqlc.tmpl" \
       -o "$PG_REPO_DIR/sqlc_querier_wrapper.gen.go"
@@ -716,28 +716,28 @@ x.gen.xo() {
 
     echo "Running generation"
 
-    rm -rf "$PG_REPO_GEN"/db/*.xo.go
+    rm -rf "$PG_REPO_GEN"/models/*.xo.go
 
-    mkdir -p "$PG_REPO_GEN"/db
-    xo_schema -o "$PG_REPO_GEN"/db --debug \
+    mkdir -p "$PG_REPO_GEN"/models
+    xo_schema -o "$PG_REPO_GEN"/models --debug \
       --schema public \
       --ignore "*.created_at" \
       --ignore "*.updated_at" || err "Failed xo public schema generation" &
 
-    xo_schema -o "$PG_REPO_GEN"/db --debug \
+    xo_schema -o "$PG_REPO_GEN"/models --debug \
       --schema extra_schema \
       --ignore "*.created_at" \
       --ignore "*.updated_at" ||
       err "Failed xo extra_schema schema generation" &
 
-    mkdir -p "$PG_REPO_GEN"/db
-    xo_schema -o "$PG_REPO_GEN"/db \
+    mkdir -p "$PG_REPO_GEN"/models
+    xo_schema -o "$PG_REPO_GEN"/models \
       --schema cache ||
       err "Failed xo cache schema generation" &
 
     wait_without_error
 
-    files=$(find "$PG_REPO_GEN/db" \
+    files=$(find "$PG_REPO_GEN/models" \
       -name "*.go")
     goimports -w $files
 
@@ -836,6 +836,7 @@ x.gen.gowrap() {
 # Generate Go client and server from spec.
 x.gen.client-server() {
   xsetup.build-tools
+  xsetup.backup
   { { {
     echo "Running generation"
     paths_file=".openapi.paths.yaml"
@@ -854,7 +855,31 @@ x.gen.client-server() {
     # yq e 'del(.components)' -i "$paths_file" # dont delete since recent oapi-codegen does some checks even if we are not generating types
     go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || mark_failed_tool_build # templates are embedded, required rebuild
 
-    oapi-codegen --config internal/models/oapi-codegen-types.yaml --types "$types_list" "$SPEC_PATH" || err "Failed types generation"
+    mapfile -t exclude_schemas_arr < <(yq e '.components.schemas[] | select(.x-oapi-ignore == true) | key' $SPEC_PATH)
+    exclude_schemas=$(printf ",\"%s\"" "${exclude_schemas_arr[@]}")
+    exclude_schemas="[${exclude_schemas:1}]"
+
+    local models_config=$(
+      cat <<EOF
+package: models
+generate:
+  models: true
+mode: models
+output: internal/repos/postgresql/gen/models/openapi_types.gen.go
+compatibility:
+  always-prefix-enum-values: true
+output-options:
+  skip-prune: true
+  # ideally this yaml should be generated in project script,
+  # so we get the exclude-schemas list from existing enums
+  # automatically
+  exclude-schemas: $exclude_schemas
+EOF
+    )
+
+    echo "models_config: $models_config"
+
+    oapi-codegen --config <(echo "$models_config") --types "$types_list" "$SPEC_PATH" || err "Failed types generation"
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models --server-types "$server_types_list" --types "$types_list" "$paths_file" || err "Failed server generation"
     oapi-codegen --config internal/rest/oapi-codegen-test-client.yaml "$SPEC_PATH" || err "Failed client generation"
     # not used now. may be useful for a cli at some point
@@ -886,6 +911,7 @@ x.gen.client-server() {
     goimports -w $files
     gofumpt -w $files
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  xsetup.backup.cleanup
 }
 
 # Generate mocks for specified interfaces.
@@ -1150,12 +1176,12 @@ linters-settings:
     include:
       - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest\.DemoWorkItems$'
       # internal/rest may need to run this, alongside all services structs
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*'
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\..*'
       # these are all adapters from service to db, so make sure they're always updated
       - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos\..*$'
     exclude:
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*UpdateParams$'
-      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db\..*Joins$'
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\..*UpdateParams$'
+      - 'github\.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models\..*Joins$'
 # in case we want to run a linter on test files only
 # issues:
 #   exclude-rules:
@@ -1525,7 +1551,7 @@ orval_frontend_branded_types() {
   local replace_commands=()
 
   local int_ids=()
-  go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/db"
+  go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/models"
   for entity in "${int_ids[@]}"; do
     local camel=$(to_camel "$entity")
     local pascal=$(to_pascal "$entity")
@@ -1537,7 +1563,7 @@ orval_frontend_branded_types() {
   done
 
   local uuid_ids=()
-  go-utils.find_db_ids_uuid uuid_ids "$PG_REPO_GEN/db"
+  go-utils.find_db_ids_uuid uuid_ids "$PG_REPO_GEN/models"
   for entity in "${uuid_ids[@]}"; do
     local camel=$(to_camel "$entity")
     local pascal=$(to_pascal "$entity")
@@ -1741,18 +1767,18 @@ load_exported_crud_gen_vars() {
   export snake_name="$(to_snake $name)"
   export lower_name="$(to_lower $name)"
   _db_struct_fields=()
-  go-utils.struct_fields "$pascal_name" "$PG_REPO_GEN/db/$lower_name.xo.go" _db_struct_fields
+  go-utils.struct_fields "$pascal_name" "$PG_REPO_GEN/models/$lower_name.xo.go" _db_struct_fields
   if [[ " ${_db_struct_fields[*]} " =~ " DeletedAt " ]]; then
     export has_deleted_at=1
   fi
   db_struct_fields="${_db_struct_fields[*]}"
   export db_struct_fields
   _db_create_params_struct_fields=()
-  go-utils.struct_fields "${pascal_name}CreateParams" "$PG_REPO_GEN/db/$lower_name.xo.go" _db_create_params_struct_fields
+  go-utils.struct_fields "${pascal_name}CreateParams" "$PG_REPO_GEN/models/$lower_name.xo.go" _db_create_params_struct_fields
   db_create_params_struct_fields="${_db_create_params_struct_fields[*]}"
   export db_create_params_struct_fields
   _db_update_params_struct_fields=()
-  go-utils.struct_fields "${pascal_name}UpdateParams" "$PG_REPO_GEN/db/$lower_name.xo.go" _db_update_params_struct_fields
+  go-utils.struct_fields "${pascal_name}UpdateParams" "$PG_REPO_GEN/models/$lower_name.xo.go" _db_update_params_struct_fields
   db_update_params_struct_fields="${_db_update_params_struct_fields[*]}"
   export db_update_params_struct_fields
 }
@@ -2220,7 +2246,7 @@ run_shared_services() {
 xo_generate_spec_helpers() {
   local int_ids=()
   local anchors=()
-  go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/db"
+  go-utils.find_db_ids_int int_ids "$PG_REPO_GEN/models"
   for entity in ${int_ids[@]}; do
     camel=$(to_camel $entity)
     pascal=$(to_pascal $entity)
@@ -2232,12 +2258,12 @@ xo_generate_spec_helpers() {
     x-go-type: db.${pascal}
     x-go-type-import:
       name: db
-      path: $GOMOD_PKG/internal/repos/postgresql/gen/db
+      path: $GOMOD_PKG/internal/repos/postgresql/gen/models
   name: ${camel}
 ")
   done
   local uuid_ids=()
-  go-utils.find_db_ids_uuid uuid_ids "$PG_REPO_GEN/db"
+  go-utils.find_db_ids_uuid uuid_ids "$PG_REPO_GEN/models"
   for entity in "${uuid_ids[@]}"; do
     camel=$(to_camel $entity)
     anchors+=("x-${camel}Parameter: &x-${camel}Parameter
@@ -2248,7 +2274,7 @@ xo_generate_spec_helpers() {
     x-go-type: db.${pascal}
     x-go-type-import:
       name: db
-      path: $GOMOD_PKG/internal/repos/postgresql/gen/db
+      path: $GOMOD_PKG/internal/repos/postgresql/gen/models
   name: ${camel}
 ")
   done
@@ -2274,7 +2300,7 @@ generate_structs_map() {
   # cached most of the time. building here since it must be called before tools build
   go build -o $BUILD_DIR/ast-parser cmd/ast-parser/main.go
 
-  local path="$PG_REPO_GEN/db"
+  local path="$PG_REPO_GEN/models"
   local structs=()
   go-utils.find_structs structs "$path"
   for struct in "${structs[@]}"; do
@@ -2321,7 +2347,7 @@ generate_structs_map() {
 package codegen
 
 import (
-  db "$GOMOD_PKG/$PG_REPO_GEN/db"
+  db "$GOMOD_PKG/$PG_REPO_GEN/models"
 	rest "$GOMOD_PKG/internal/rest"
   )
     var PublicStructs = map[string]any{
@@ -2360,7 +2386,8 @@ sync_db_enums_with_spec() {
     fi
 
     src_comment="database enum '$db_enum_name'"
-    replace_enum_in_spec "$schema_name" enum_values "$src_comment"
+    # must ignore these since we are merging db and models
+    replace_enum_in_spec "$schema_name" enum_values "$src_comment" "1"
   done
 }
 
@@ -2382,6 +2409,7 @@ replace_enum_in_spec() {
   local enum="$1"
   local -n __arr="$2"
   local src_comment="$3"
+  local ignore="$4"
 
   local schema_path=".components.schemas.$enum"
 
@@ -2393,6 +2421,7 @@ replace_enum_in_spec() {
   __enums=$__enums yq e "
     $schema_path.type = \"string\" |
     $schema_path.enum = env(__enums) |
+    $(if test -n "$ignore"; then echo "$schema_path.x-oapi-ignore = true |"; fi)
     $schema_path.x-is-generated = true |
     $schema_path.description = \"is generated from $src_comment.\" |
     ($schema_path | key) line_comment=\"Generated from $src_comment. DO NOT EDIT.\"" -i $SPEC_PATH
@@ -2440,7 +2469,7 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
   # Only implement the above if there are cases where we cant have compilable state when
   # building gen-schema at this step, or the workaround is too tedious
   local existing_structs=()
-  go-utils.find_structs existing_structs "$PG_REPO_GEN/db"
+  go-utils.find_structs existing_structs "$PG_REPO_GEN/models"
   mapfile -t existing_structs < <(array.add_prefix "Db" "${existing_structs[@]}")
   go-utils.find_structs existing_structs "$REST_MODELS"
 
@@ -2467,12 +2496,13 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
       line_number=$(yq ".components.schemas.$custom_schema | line" $SPEC_PATH)
       clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
     fi
-    if [[ $custom_schema =~ ^Services[A-Z].*$ ]]; then
-      services_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
-    fi
-    if [[ $custom_schema =~ ^Db[A-Z].*$ ]]; then
-      db_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
-    fi
+    # TODO: bring back when gen_schema can be compiled
+    # if [[ $custom_schema =~ ^Services[A-Z].*$ ]]; then
+    #   services_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
+    # fi
+    # if [[ $custom_schema =~ ^Db[A-Z].*$ ]]; then
+    #   db_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
+    # fi
   done
 
   if [[ ${#clashes[@]} -gt 0 ]]; then
@@ -2495,7 +2525,7 @@ $(join_by $'\n' "${db_prefix_clashes[@]}")"
       go_type="db.${schema_key#Db}"
 
       yq eval -i \
-        '.components.schemas."'$schema_key'" += {"x-go-type": "'$go_type'", "x-go-type-import": {"name": "db", "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"}}' \
+        '.components.schemas."'$schema_key'" += {"x-go-type": "'$go_type'", "x-go-type-import": {"name": "db", "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"}}' \
         "$gen_schema_spec_path"
     fi
   done
@@ -2509,6 +2539,7 @@ $(join_by $'\n' "${db_prefix_clashes[@]}")"
           select(fi == 1).components.schemas
         ) as \$generated_schemas
         | (\$generated_schemas.* | key) line_comment=\"Generated schema. DO NOT EDIT.\"
+        | \$generated_schemas.* |= . + {\"x-is-generated\": true}
         | select(fi == 0)
         | .components.schemas += \$generated_schemas
         " "$SPEC_PATH" "$gen_schema_spec_path" | sponge "$SPEC_PATH"

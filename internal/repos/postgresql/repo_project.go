@@ -4,26 +4,25 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // Project represents the repository used for interacting with Project records.
 type Project struct {
-	q db.Querier
+	q models.Querier
 }
 
 // NewProject instantiates the Project repository.
 func NewProject() *Project {
 	return &Project{
-		q: NewQuerierWrapper(db.New()),
+		q: NewQuerierWrapper(models.New()),
 	}
 }
 
 var _ repos.Project = (*Project)(nil)
 
-func (u *Project) IsTeamInProject(ctx context.Context, d db.DBTX, arg db.IsTeamInProjectParams) (bool, error) {
+func (u *Project) IsTeamInProject(ctx context.Context, d models.DBTX, arg models.IsTeamInProjectParams) (bool, error) {
 	r, err := u.q.IsTeamInProject(ctx, d, arg)
 	if err != nil {
 		return false, fmt.Errorf("q.IsTeamInProject: %w", ParseDBErrorDetail(err))
@@ -32,8 +31,8 @@ func (u *Project) IsTeamInProject(ctx context.Context, d db.DBTX, arg db.IsTeamI
 	return r, nil
 }
 
-func (u *Project) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (*db.Project, error) {
-	project, err := db.ProjectByProjectID(ctx, d, id, opts...)
+func (u *Project) ByID(ctx context.Context, d models.DBTX, id models.ProjectID, opts ...models.ProjectSelectConfigOption) (*models.Project, error) {
+	project, err := models.ProjectByProjectID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get project: %w", ParseDBErrorDetail(err))
 	}
@@ -41,8 +40,8 @@ func (u *Project) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...
 	return project, nil
 }
 
-func (u *Project) ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (*db.Project, error) {
-	project, err := db.ProjectByName(ctx, d, name, opts...)
+func (u *Project) ByName(ctx context.Context, d models.DBTX, name models.ProjectName, opts ...models.ProjectSelectConfigOption) (*models.Project, error) {
+	project, err := models.ProjectByName(ctx, d, name, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get project: %w", ParseDBErrorDetail(err))
 	}
@@ -50,7 +49,7 @@ func (u *Project) ByName(ctx context.Context, d db.DBTX, name models.Project, op
 	return project, nil
 }
 
-func (u *Project) UpdateBoardConfig(ctx context.Context, d db.DBTX, projectID db.ProjectID, paths []string, obj any) error {
+func (u *Project) UpdateBoardConfig(ctx context.Context, d models.DBTX, projectID models.ProjectID, paths []string, obj any) error {
 	sqlstr := `
 	UPDATE public.projects
 	SET board_config = jsonb_set_deep(board_config, $1, $2)

@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	models1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/stretchr/testify/assert"
@@ -18,16 +18,16 @@ import (
 func TestWorkItemComment_Update(t *testing.T) {
 	t.Parallel()
 
-	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectDemo)
+	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectNameDemo)
 
 	type args struct {
-		id     db.WorkItemCommentID
-		params db.WorkItemCommentUpdateParams
+		id     models1.WorkItemCommentID
+		params models1.WorkItemCommentUpdateParams
 	}
 	type params struct {
 		name        string
 		args        args
-		want        *db.WorkItemComment
+		want        *models1.WorkItemComment
 		errContains string
 	}
 
@@ -36,11 +36,11 @@ func TestWorkItemComment_Update(t *testing.T) {
 			name: "updated",
 			args: args{
 				id:     workitemcomment.WorkItemCommentID,
-				params: db.WorkItemCommentUpdateParams{
+				params: models1.WorkItemCommentUpdateParams{
 					// TODO: set fields to update as in crud-api-tests.go.tmpl.bash
 				},
 			},
-			want: func() *db.WorkItemComment {
+			want: func() *models1.WorkItemComment {
 				u := *workitemcomment
 				// TODO: set updated fields to expected values as in crud-api-tests.go.tmpl.bash
 
@@ -82,10 +82,10 @@ func TestWorkItemComment_Update(t *testing.T) {
 func TestWorkItemComment_Delete(t *testing.T) {
 	t.Parallel()
 
-	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectDemo)
+	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectNameDemo)
 
 	type args struct {
-		id db.WorkItemCommentID
+		id models1.WorkItemCommentID
 	}
 	type params struct {
 		name        string
@@ -124,16 +124,16 @@ func TestWorkItemComment_Delete(t *testing.T) {
 func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
-	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectDemo)
+	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectNameDemo)
 	logger := testutil.NewLogger(t)
 
 	workItemCommentRepo := reposwrappers.NewWorkItemCommentWithRetry(postgresql.NewWorkItemComment(), logger, 10, 65*time.Millisecond)
 
-	uniqueCallback := func(t *testing.T, res *db.WorkItemComment) {
+	uniqueCallback := func(t *testing.T, res *models1.WorkItemComment) {
 		assert.Equal(t, res.WorkItemCommentID, workitemcomment.WorkItemCommentID)
 	}
 
-	uniqueTestCases := []filterTestCase[*db.WorkItemComment]{
+	uniqueTestCases := []filterTestCase[*models1.WorkItemComment]{
 		{
 			name:       "id",
 			filter:     workitemcomment.WorkItemCommentID,
@@ -152,16 +152,16 @@ func TestWorkItemComment_Create(t *testing.T) {
 
 	type want struct {
 		// NOTE: include db-generated fields here to test equality as well
-		db.WorkItemCommentCreateParams
+		models1.WorkItemCommentCreateParams
 	}
 
 	type args struct {
-		params db.WorkItemCommentCreateParams
+		params models1.WorkItemCommentCreateParams
 	}
 
 	t.Run("correct_workItemComment", func(t *testing.T) {
 		t.Parallel()
 
-		newRandomWorkItemComment(t, testPool, models.ProjectDemo)
+		newRandomWorkItemComment(t, testPool, models.ProjectNameDemo)
 	})
 }

@@ -3,17 +3,17 @@ package repostesting
 import (
 	"sync"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/google/uuid"
 )
 
 type fakeUserStore struct {
-	users map[uuid.UUID]db.User
+	users map[uuid.UUID]models.User
 
 	mu sync.Mutex
 }
 
-func (f *fakeUserStore) get(id uuid.UUID) (db.User, bool) {
+func (f *fakeUserStore) get(id uuid.UUID) (models.User, bool) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -22,7 +22,7 @@ func (f *fakeUserStore) get(id uuid.UUID) (db.User, bool) {
 	return user, ok
 }
 
-func (f *fakeUserStore) set(id uuid.UUID, user *db.User) {
+func (f *fakeUserStore) set(id uuid.UUID, user *models.User) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 

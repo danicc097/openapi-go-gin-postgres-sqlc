@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	models1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.uber.org/zap"
 )
 
@@ -29,7 +29,7 @@ func NewWorkItemComment(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItem
 }
 
 // ByID gets a work item comment by ID.
-func (t *WorkItemComment) ByID(ctx context.Context, d db.DBTX, id db.WorkItemCommentID) (*db.WorkItemComment, error) {
+func (t *WorkItemComment) ByID(ctx context.Context, d models1.DBTX, id models1.WorkItemCommentID) (*models1.WorkItemComment, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	workItemComment, err := t.repos.WorkItemComment.ByID(ctx, d, id)
@@ -41,7 +41,7 @@ func (t *WorkItemComment) ByID(ctx context.Context, d db.DBTX, id db.WorkItemCom
 }
 
 // Create creates a new work item comment.
-func (t *WorkItemComment) Create(ctx context.Context, d db.DBTX, params *db.WorkItemCommentCreateParams) (*db.WorkItemComment, error) {
+func (t *WorkItemComment) Create(ctx context.Context, d models1.DBTX, params *models1.WorkItemCommentCreateParams) (*models1.WorkItemComment, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	workItemComment, err := t.repos.WorkItemComment.Create(ctx, d, params)
@@ -53,7 +53,7 @@ func (t *WorkItemComment) Create(ctx context.Context, d db.DBTX, params *db.Work
 }
 
 // Update updates an existing work item comment.
-func (t *WorkItemComment) Update(ctx context.Context, d db.DBTX, caller CtxUser, id db.WorkItemCommentID, params *db.WorkItemCommentUpdateParams) (*db.WorkItemComment, error) {
+func (t *WorkItemComment) Update(ctx context.Context, d models1.DBTX, caller CtxUser, id models1.WorkItemCommentID, params *models1.WorkItemCommentUpdateParams) (*models1.WorkItemComment, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	workItemComment, err := t.repos.WorkItemComment.Update(ctx, d, id, params)
@@ -65,7 +65,7 @@ func (t *WorkItemComment) Update(ctx context.Context, d db.DBTX, caller CtxUser,
 }
 
 // Delete deletes an existing work item comment.
-func (t *WorkItemComment) Delete(ctx context.Context, d db.DBTX, caller CtxUser, id db.WorkItemCommentID) (*db.WorkItemComment, error) {
+func (t *WorkItemComment) Delete(ctx context.Context, d models1.DBTX, caller CtxUser, id models1.WorkItemCommentID) (*models1.WorkItemComment, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	workItemComment, err := t.repos.WorkItemComment.ByID(ctx, d, id)

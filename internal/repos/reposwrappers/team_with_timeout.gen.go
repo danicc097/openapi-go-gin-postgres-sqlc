@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // TeamWithTimeout implements repos.Team interface instrumented with timeouts

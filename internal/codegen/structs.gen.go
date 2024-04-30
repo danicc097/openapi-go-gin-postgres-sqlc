@@ -3,7 +3,7 @@
 package codegen
 
 import (
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	rest "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )
 
@@ -25,6 +25,7 @@ var PublicStructs = map[string]any{
 	"DbCacheDemoWorkItemM2MAssigneeWIA":                 new(db.CacheDemoWorkItemM2MAssigneeWIA),
 	"DbCacheDemoWorkItemSelectConfig":                   new(db.CacheDemoWorkItemSelectConfig),
 	"DbCacheDemoWorkItemUpdateParams":                   new(db.CacheDemoWorkItemUpdateParams),
+	"DbCreateWorkItemRequest":                           new(db.CreateWorkItemRequest),
 	"DbCursor":                                          new(db.Cursor),
 	"DbDbField":                                         new(db.DbField),
 	"DbDemoTwoWorkItem":                                 new(db.DemoTwoWorkItem),
@@ -131,10 +132,14 @@ var PublicStructs = map[string]any{
 	"DbExtraSchemaWorkItemUpdateParams":                 new(db.ExtraSchemaWorkItemUpdateParams),
 	"DbGetExtraSchemaNotificationsParams":               new(db.GetExtraSchemaNotificationsParams),
 	"DbGetExtraSchemaNotificationsRow":                  new(db.GetExtraSchemaNotificationsRow),
+	"DbGetPaginatedNotificationsParams":                 new(db.GetPaginatedNotificationsParams),
+	"DbGetPaginatedUsersQueryParameters":                new(db.GetPaginatedUsersQueryParameters),
 	"DbGetUserNotificationsParams":                      new(db.GetUserNotificationsParams),
 	"DbGetUserNotificationsRow":                         new(db.GetUserNotificationsRow),
 	"DbGetUserParams":                                   new(db.GetUserParams),
 	"DbGetUserRow":                                      new(db.GetUserRow),
+	"DbHTTPError":                                       new(db.HTTPError),
+	"DbHTTPValidationError":                             new(db.HTTPValidationError),
 	"DbIsTeamInProjectParams":                           new(db.IsTeamInProjectParams),
 	"DbKanbanStep":                                      new(db.KanbanStep),
 	"DbKanbanStepCreateParams":                          new(db.KanbanStepCreateParams),
@@ -151,12 +156,20 @@ var PublicStructs = map[string]any{
 	"DbNotificationJoins":                               new(db.NotificationJoins),
 	"DbNotificationSelectConfig":                        new(db.NotificationSelectConfig),
 	"DbNotificationUpdateParams":                        new(db.NotificationUpdateParams),
+	"DbPagination":                                      new(db.Pagination),
+	"DbPaginationCursor":                                new(db.PaginationCursor),
+	"DbPaginationFilter":                                new(db.PaginationFilter),
+	"DbPaginationFilterArray":                           new(db.PaginationFilterArray),
+	"DbPaginationFilterPrimitive":                       new(db.PaginationFilterPrimitive),
 	"DbProject":                                         new(db.Project),
+	"DbProjectConfig":                                   new(db.ProjectConfig),
+	"DbProjectConfigField":                              new(db.ProjectConfigField),
 	"DbProjectCreateParams":                             new(db.ProjectCreateParams),
 	"DbProjectJoins":                                    new(db.ProjectJoins),
 	"DbProjectSelectConfig":                             new(db.ProjectSelectConfig),
 	"DbProjectUpdateParams":                             new(db.ProjectUpdateParams),
 	"DbQueries":                                         new(db.Queries),
+	"DbScopes":                                          new(db.Scopes),
 	"DbTeam":                                            new(db.Team),
 	"DbTeamCreateParams":                                new(db.TeamCreateParams),
 	"DbTeamJoins":                                       new(db.TeamJoins),
@@ -167,7 +180,10 @@ var PublicStructs = map[string]any{
 	"DbTimeEntryJoins":                                  new(db.TimeEntryJoins),
 	"DbTimeEntrySelectConfig":                           new(db.TimeEntrySelectConfig),
 	"DbTimeEntryUpdateParams":                           new(db.TimeEntryUpdateParams),
+	"DbTopics":                                          new(db.Topics),
 	"DbTrigger":                                         new(db.Trigger),
+	"DbUpdateUserAuthRequest":                           new(db.UpdateUserAuthRequest),
+	"DbUpdateUserRequest":                               new(db.UpdateUserRequest),
 	"DbUser":                                            new(db.User),
 	"DbUserAPIKey":                                      new(db.UserAPIKey),
 	"DbUserAPIKeyCreateParams":                          new(db.UserAPIKeyCreateParams),
@@ -195,6 +211,7 @@ var PublicStructs = map[string]any{
 	"DbUserTeamSelectConfig":                            new(db.UserTeamSelectConfig),
 	"DbUserTeamUpdateParams":                            new(db.UserTeamUpdateParams),
 	"DbUserUpdateParams":                                new(db.UserUpdateParams),
+	"DbValidationError":                                 new(db.ValidationError),
 	"DbWorkItem":                                        new(db.WorkItem),
 	"DbWorkItemAssignee":                                new(db.WorkItemAssignee),
 	"DbWorkItemAssigneeCreateParams":                    new(db.WorkItemAssigneeCreateParams),

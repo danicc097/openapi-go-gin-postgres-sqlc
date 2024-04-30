@@ -16,10 +16,9 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/cmd/initial-data/e2e"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/gzuidhof/tygo/tygo"
@@ -78,7 +77,7 @@ func main() {
 	 *
 	 **/
 
-	var users []*db.User
+	var users []*models.User
 
 	cfg := internal.Config
 
@@ -152,26 +151,26 @@ func main() {
 	 *
 	 **/
 	logger.Info("Creating teams...")
-	var teams []*db.Team
+	var teams []*models.Team
 
-	teamDemo, err := svc.Team.Create(ctx, pool, &db.TeamCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
+	teamDemo, err := svc.Team.Create(ctx, pool, &models.TeamCreateParams{
+		ProjectID:   internal.ProjectIDByName[models.ProjectNameDemo],
 		Name:        "Team 1",
 		Description: "Team 1 description",
 	})
 	handleError(err, teamDemo)
 	teams = append(teams, teamDemo)
 
-	teamDemo2, err := svc.Team.Create(ctx, pool, &db.TeamCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
+	teamDemo2, err := svc.Team.Create(ctx, pool, &models.TeamCreateParams{
+		ProjectID:   internal.ProjectIDByName[models.ProjectNameDemoTwo],
 		Name:        "Team 2-1",
 		Description: "Team 2-1 description",
 	})
 	handleError(err, teamDemo2)
 	teams = append(teams, teamDemo2)
 
-	team2Demo2, err := svc.Team.Create(ctx, pool, &db.TeamCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
+	team2Demo2, err := svc.Team.Create(ctx, pool, &models.TeamCreateParams{
+		ProjectID:   internal.ProjectIDByName[models.ProjectNameDemoTwo],
 		Name:        "Team 2-2",
 		Description: "Team 2-2 description",
 	})
@@ -200,18 +199,18 @@ func main() {
 	 **/
 	logger.Info("Creating activities...")
 
-	activity1, err := svc.Activity.Create(ctx, pool, models.ProjectDemo, &db.ActivityCreateParams{
+	activity1, err := svc.Activity.Create(ctx, pool, models.ProjectNameDemo, &models.ActivityCreateParams{
 		Name:         "Activity 1",
 		Description:  "Activity 1 description",
 		IsProductive: true,
 	})
 	handleError(err, activity1)
-	activity2, err := svc.Activity.Create(ctx, pool, models.ProjectDemo, &db.ActivityCreateParams{
+	activity2, err := svc.Activity.Create(ctx, pool, models.ProjectNameDemo, &models.ActivityCreateParams{
 		Name:        "Activity 2",
 		Description: "Activity 2 description",
 	})
 	handleError(err, activity2)
-	activity3, err := svc.Activity.Create(ctx, pool, models.ProjectDemo, &db.ActivityCreateParams{
+	activity3, err := svc.Activity.Create(ctx, pool, models.ProjectNameDemo, &models.ActivityCreateParams{
 		Name:        "Activity 3",
 		Description: "Activity 3 description",
 	})
@@ -223,24 +222,24 @@ func main() {
 	 *
 	 **/
 	logger.Info("Creating workitem tags...")
-	wiTag1, err := svc.WorkItemTag.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
+	wiTag1, err := svc.WorkItemTag.Create(ctx, pool, superAdminCaller, &models.WorkItemTagCreateParams{
+		ProjectID:   internal.ProjectIDByName[models.ProjectNameDemo],
 		Name:        "Tag 1",
 		Description: "Tag 1 description",
 		Color:       "#be6cc4",
 	})
 	handleError(err, wiTag1)
 
-	wiTag2, err := svc.WorkItemTag.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
+	wiTag2, err := svc.WorkItemTag.Create(ctx, pool, superAdminCaller, &models.WorkItemTagCreateParams{
+		ProjectID:   internal.ProjectIDByName[models.ProjectNameDemo],
 		Name:        "Tag 2",
 		Description: "Tag 2 description",
 		Color:       "#29b8db",
 	})
 	handleError(err, wiTag2)
 
-	wiTagDemo2_1, err := svc.WorkItemTag.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
+	wiTagDemo2_1, err := svc.WorkItemTag.Create(ctx, pool, superAdminCaller, &models.WorkItemTagCreateParams{
+		ProjectID:   internal.ProjectIDByName[models.ProjectNameDemoTwo],
 		Name:        "Tag 1",
 		Description: "Tag 1 description",
 		Color:       "#be6cc4",
@@ -254,7 +253,7 @@ func main() {
 	 **/
 	logger.Info("Creating workitems...")
 
-	demoWorkItems := []*db.WorkItem{}
+	demoWorkItems := []*models.WorkItem{}
 	var wg sync.WaitGroup
 	semaphore := make(chan struct{}, 2000)
 	for i := 1; i <= 1000; i++ {
@@ -266,7 +265,7 @@ func main() {
 
 			demowi, err := svc.DemoWorkItem.Create(ctx, pool, superAdminCaller, services.DemoWorkItemCreateParams{
 				DemoWorkItemCreateParams: repos.DemoWorkItemCreateParams{
-					Base: db.WorkItemCreateParams{
+					Base: models.WorkItemCreateParams{
 						TeamID:         teamDemo.TeamID,
 						Title:          fmt.Sprintf("A new work item (%d)", i),
 						Description:    fmt.Sprintf("Description for a new work item (%d)", i),
@@ -277,12 +276,12 @@ func main() {
 						TargetDate:   time.Now().Add(time.Duration(i) * day),
 						Metadata:     map[string]any{"key": true},
 					},
-					DemoProject: db.DemoWorkItemCreateParams{
+					DemoProject: models.DemoWorkItemCreateParams{
 						LastMessageAt: time.Now().Add(time.Duration(-i) * day),
 					},
 				},
 				WorkItemCreateParams: services.WorkItemCreateParams{
-					TagIDs: []db.WorkItemTagID{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
+					TagIDs: []models.WorkItemTagID{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
 					Members: []services.Member{
 						{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
 						{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
@@ -299,7 +298,7 @@ func main() {
 	wg.Wait()
 
 	svc.DemoWorkItem.Update(ctx, pool, superAdminCaller, demoWorkItems[0].WorkItemID, repos.DemoWorkItemUpdateParams{
-		Base: &db.WorkItemUpdateParams{
+		Base: &models.WorkItemUpdateParams{
 			KanbanStepID: pointers.New(internal.DemoKanbanStepsIDByName[models.DemoKanbanStepsUnderReview]),
 		},
 	})
@@ -309,7 +308,7 @@ func main() {
 	 * DEMO TWO WORK ITEMS
 	 *
 	 **/
-	demoTwoWorkItems := []*db.WorkItem{}
+	demoTwoWorkItems := []*models.WorkItem{}
 	for i := 1; i <= 20; i++ {
 		semaphore <- struct{}{} // acquire
 		wg.Add(1)
@@ -319,7 +318,7 @@ func main() {
 
 			demoTwowi, err := svc.DemoTwoWorkItem.Create(ctx, pool, superAdminCaller, services.DemoTwoWorkItemCreateParams{
 				DemoTwoWorkItemCreateParams: repos.DemoTwoWorkItemCreateParams{
-					Base: db.WorkItemCreateParams{
+					Base: models.WorkItemCreateParams{
 						TeamID:         teamDemo.TeamID,
 						Title:          fmt.Sprintf("A new work item (%d)", i),
 						Description:    fmt.Sprintf("Description for a new work item (%d)", i),
@@ -330,12 +329,12 @@ func main() {
 						TargetDate:   time.Now().Add(time.Duration(i) * day),
 						Metadata:     map[string]any{"key": true},
 					},
-					DemoTwoProject: db.DemoTwoWorkItemCreateParams{
+					DemoTwoProject: models.DemoTwoWorkItemCreateParams{
 						CustomDateForProject2: pointers.New(time.Now().Add(time.Duration(i) * day)),
 					},
 				},
 				WorkItemCreateParams: services.WorkItemCreateParams{
-					TagIDs: []db.WorkItemTagID{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
+					TagIDs: []models.WorkItemTagID{wiTag1.WorkItemTagID, wiTag2.WorkItemTagID},
 					Members: []services.Member{
 						{UserID: users[0].UserID, Role: models.WorkItemRolePreparer},
 						{UserID: users[1].UserID, Role: models.WorkItemRoleReviewer},
@@ -363,7 +362,7 @@ func main() {
 		Teams:    *users[0].MemberTeamsJoin,
 		Projects: *users[0].MemberProjectsJoin,
 	}
-	te1, err := svc.TimeEntry.Create(ctx, pool, ucaller, &db.TimeEntryCreateParams{
+	te1, err := svc.TimeEntry.Create(ctx, pool, ucaller, &models.TimeEntryCreateParams{
 		WorkItemID:      &demoWorkItems[0].WorkItemID,
 		ActivityID:      activity1.ActivityID,
 		UserID:          users[0].UserID,
@@ -373,7 +372,7 @@ func main() {
 	})
 	handleError(err, te1)
 
-	te2, err := svc.TimeEntry.Create(ctx, pool, ucaller, &db.TimeEntryCreateParams{
+	te2, err := svc.TimeEntry.Create(ctx, pool, ucaller, &models.TimeEntryCreateParams{
 		ActivityID:      activity2.ActivityID,
 		UserID:          users[0].UserID,
 		TeamID:          &teamDemo.TeamID,
@@ -384,7 +383,7 @@ func main() {
 	handleError(err, te2)
 
 	for _, u := range users {
-		_, err := svc.TimeEntry.Create(ctx, pool, services.CtxUser{User: u, Teams: *u.MemberTeamsJoin}, &db.TimeEntryCreateParams{
+		_, err := svc.TimeEntry.Create(ctx, pool, services.CtxUser{User: u, Teams: *u.MemberTeamsJoin}, &models.TimeEntryCreateParams{
 			ActivityID: activity2.ActivityID,
 			UserID:     u.UserID,
 			TeamID:     &teamDemo.TeamID,
@@ -402,27 +401,27 @@ func main() {
 
 	for _, u := range users {
 		_, err := svc.Notification.CreateNotification(ctx, pool, &services.NotificationCreateParams{
-			NotificationCreateParams: db.NotificationCreateParams{
+			NotificationCreateParams: models.NotificationCreateParams{
 				Body:             "Notification for " + u.Email,
 				Labels:           []string{"label 1", "label 2"},
 				Link:             pointers.New("https://somelink"),
 				Title:            "Important title",
 				Sender:           superAdmin.UserID,
 				Receiver:         &u.UserID,
-				NotificationType: db.NotificationTypePersonal,
+				NotificationType: models.NotificationTypePersonal,
 			},
 		})
 		handleError(err)
 	}
 
 	_, err = svc.Notification.CreateNotification(ctx, pool, &services.NotificationCreateParams{
-		NotificationCreateParams: db.NotificationCreateParams{
+		NotificationCreateParams: models.NotificationCreateParams{
 			Body:             "Global notification for all users",
 			Labels:           []string{"label 4"},
 			Link:             pointers.New("https://somelink"),
 			Title:            "Important title",
 			Sender:           superAdmin.UserID,
-			NotificationType: db.NotificationTypeGlobal,
+			NotificationType: models.NotificationTypeGlobal,
 		},
 		ReceiverRole: pointers.New(models.RoleUser),
 	})

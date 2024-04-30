@@ -6,8 +6,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -28,7 +27,7 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	requiredProject := models.ProjectDemo
+	requiredProject := models.ProjectNameDemo
 
 	tests := []struct {
 		name   string
@@ -52,7 +51,7 @@ func TestHandlers_CreateWorkItemTag(t *testing.T) {
 				Role:       tc.role,
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
-				TeamIDs:    []db.TeamID{teamf.TeamID},
+				TeamIDs:    []models.TeamID{teamf.TeamID},
 			})
 			require.NoError(t, err)
 

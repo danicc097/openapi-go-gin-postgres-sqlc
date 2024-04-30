@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/gin-gonic/gin"

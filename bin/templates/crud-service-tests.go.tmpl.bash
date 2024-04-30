@@ -11,8 +11,8 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -28,7 +28,7 @@ func Test${pascal_name}_Update(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	requiredProject := models.ProjectDemo
+	requiredProject := models.ProjectNameDemo
 
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
@@ -42,7 +42,7 @@ func Test${pascal_name}_Update(t *testing.T) {
 	creator.User, err = svc.User.AssignTeam(context.Background(), testPool, creator.UserID, team.TeamID)
 	require.NoError(t, err)
 
-$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectNameDemo]")
 
 	${camel_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams($create_args)
 	${lower_name}, err := svc.${pascal_name}.Create(context.Background(), testPool, ${camel_name}CreateParams)

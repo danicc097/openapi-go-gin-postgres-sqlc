@@ -12,16 +12,15 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/stretchr/testify/require"
 )
 
-func newRandomActivity(t *testing.T, d db.DBTX, project models.Project) *db.Activity {
+func newRandomActivity(t *testing.T, d models.DBTX, project models.ProjectName) *models.Activity {
 	t.Helper()
 
 	activityRepo := postgresql.NewActivity()
@@ -35,12 +34,12 @@ func newRandomActivity(t *testing.T, d db.DBTX, project models.Project) *db.Acti
 	return activity
 }
 
-func newRandomDemoWorkItem(t *testing.T, d db.DBTX) *db.WorkItem {
+func newRandomDemoWorkItem(t *testing.T, d models.DBTX) *models.WorkItem {
 	t.Helper()
 
 	dpwiRepo := postgresql.NewDemoWorkItem()
-	// project-specific workitem. for other randomized entities will accept models.Project
-	team := newRandomTeam(t, d, internal.ProjectIDByName[models.ProjectDemo])
+	// project-specific workitem. for other randomized entities will accept models.ProjectName
+	team := newRandomTeam(t, d, internal.ProjectIDByName[models.ProjectNameDemo])
 
 	kanbanStepID := internal.DemoKanbanStepsIDByName[testutil.RandomFrom(models.AllDemoKanbanStepsValues())]
 	workItemTypeID := internal.DemoWorkItemTypesIDByName[testutil.RandomFrom(models.AllDemoWorkItemTypesValues())]
@@ -51,7 +50,7 @@ func newRandomDemoWorkItem(t *testing.T, d db.DBTX) *db.WorkItem {
 	return dpwi
 }
 
-func newRandomWorkItemTag(t *testing.T, d db.DBTX, projectID db.ProjectID) *db.WorkItemTag {
+func newRandomWorkItemTag(t *testing.T, d models.DBTX, projectID models.ProjectID) *models.WorkItemTag {
 	t.Helper()
 
 	witRepo := postgresql.NewWorkItemTag()
@@ -64,7 +63,7 @@ func newRandomWorkItemTag(t *testing.T, d db.DBTX, projectID db.ProjectID) *db.W
 	return wit
 }
 
-func newRandomTeam(t *testing.T, d db.DBTX, projectID db.ProjectID) *db.Team {
+func newRandomTeam(t *testing.T, d models.DBTX, projectID models.ProjectID) *models.Team {
 	t.Helper()
 
 	teamRepo := reposwrappers.NewTeamWithRetry(postgresql.NewTeam(), testutil.NewLogger(t), 3, 200*time.Millisecond)
@@ -77,12 +76,12 @@ func newRandomTeam(t *testing.T, d db.DBTX, projectID db.ProjectID) *db.Team {
 	return team
 }
 
-func newRandomDemoTwoWorkItem(t *testing.T, d db.DBTX) *db.WorkItem {
+func newRandomDemoTwoWorkItem(t *testing.T, d models.DBTX) *models.WorkItem {
 	t.Helper()
 
 	dpwiRepo := postgresql.NewDemoTwoWorkItem()
-	// project-specific workitem. for other randomized entities will accept models.Project
-	team := newRandomTeam(t, d, internal.ProjectIDByName[models.ProjectDemoTwo])
+	// project-specific workitem. for other randomized entities will accept models.ProjectName
+	team := newRandomTeam(t, d, internal.ProjectIDByName[models.ProjectNameDemoTwo])
 
 	kanbanStepID := internal.DemoTwoKanbanStepsIDByName[testutil.RandomFrom(models.AllDemoTwoKanbanStepsValues())]
 	workItemTypeID := internal.DemoTwoWorkItemTypesIDByName[testutil.RandomFrom(models.AllDemoTwoWorkItemTypesValues())]
@@ -93,7 +92,7 @@ func newRandomDemoTwoWorkItem(t *testing.T, d db.DBTX) *db.WorkItem {
 	return dpwi
 }
 
-func newRandomUser(t *testing.T, d db.DBTX) *db.User {
+func newRandomUser(t *testing.T, d models.DBTX) *models.User {
 	t.Helper()
 
 	logger := testutil.NewLogger(t)
@@ -108,7 +107,7 @@ func newRandomUser(t *testing.T, d db.DBTX) *db.User {
 	return user
 }
 
-func newRandomTimeEntry(t *testing.T, d db.DBTX, activityID db.ActivityID, userID db.UserID, workItemID *db.WorkItemID, teamID *db.TeamID) *db.TimeEntry {
+func newRandomTimeEntry(t *testing.T, d models.DBTX, activityID models.ActivityID, userID models.UserID, workItemID *models.WorkItemID, teamID *models.TeamID) *models.TimeEntry {
 	t.Helper()
 
 	teRepo := reposwrappers.NewTimeEntryWithRetry(postgresql.NewTimeEntry(), testutil.NewLogger(t), 5, 65*time.Millisecond)
@@ -121,16 +120,16 @@ func newRandomTimeEntry(t *testing.T, d db.DBTX, activityID db.ActivityID, userI
 	return te
 }
 
-func newRandomWorkItemComment(t *testing.T, d db.DBTX, project models.Project) *db.WorkItemComment {
+func newRandomWorkItemComment(t *testing.T, d models.DBTX, project models.ProjectName) *models.WorkItemComment {
 	t.Helper()
 
 	workItemCommentRepo := reposwrappers.NewWorkItemCommentWithRetry(postgresql.NewWorkItemComment(), testutil.NewLogger(t), 3, 200*time.Millisecond)
 
-	var workItemID db.WorkItemID
+	var workItemID models.WorkItemID
 	switch project {
-	case models.ProjectDemo:
+	case models.ProjectNameDemo:
 		workItemID = newRandomDemoWorkItem(t, d).WorkItemID
-	case models.ProjectDemoTwo:
+	case models.ProjectNameDemoTwo:
 		workItemID = newRandomDemoTwoWorkItem(t, d).WorkItemID
 	}
 

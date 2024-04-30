@@ -6,7 +6,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,13 +17,13 @@ func TestDemoWorkItem_Update(t *testing.T) {
 	demoWorkItem := newRandomDemoWorkItem(t, testPool)
 
 	type args struct {
-		id     db.WorkItemID
+		id     models.WorkItemID
 		params repos.DemoWorkItemUpdateParams
 	}
 	type params struct {
 		name    string
 		args    args
-		want    *db.WorkItem
+		want    *models.WorkItem
 		wantErr bool
 	}
 	tests := []params{
@@ -32,11 +32,11 @@ func TestDemoWorkItem_Update(t *testing.T) {
 			args: args{
 				id: demoWorkItem.WorkItemID,
 				params: repos.DemoWorkItemUpdateParams{
-					Base:        &db.WorkItemUpdateParams{Description: pointers.New("new description")},
-					DemoProject: &db.DemoWorkItemUpdateParams{Line: pointers.New("new line")},
+					Base:        &models.WorkItemUpdateParams{Description: pointers.New("new description")},
+					DemoProject: &models.DemoWorkItemUpdateParams{Line: pointers.New("new line")},
 				},
 			},
-			want: func() *db.WorkItem {
+			want: func() *models.WorkItem {
 				u := *demoWorkItem // copy
 				u.Description = "new description"
 				u.DemoWorkItemJoin.Line = "new line"

@@ -4,8 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/stretchr/testify/require"
@@ -17,12 +16,12 @@ type CreateUserParams struct {
 	Scopes     models.Scopes
 	WithToken  bool // if true, an access token is created and returned
 	WithAPIKey bool // if true, an api key is created and returned
-	TeamIDs    []db.TeamID
+	TeamIDs    []models.TeamID
 }
 
 type CreateUserFixture struct {
-	*db.User
-	APIKey *db.UserAPIKey
+	*models.User
+	APIKey *models.UserAPIKey
 	Token  string
 }
 
@@ -49,7 +48,7 @@ func (ff *FixtureFactory) CreateUser(ctx context.Context, params CreateUserParam
 	}
 
 	var accessToken string
-	var apiKey *db.UserAPIKey
+	var apiKey *models.UserAPIKey
 
 	if params.WithAPIKey {
 		apiKey, err = ff.svc.Authentication.CreateAPIKeyForUser(ctx, user)

@@ -31,9 +31,9 @@ import (
 
 	internal "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	v1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/redis"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/static"

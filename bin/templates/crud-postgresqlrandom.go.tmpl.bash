@@ -7,7 +7,7 @@ cat <<EOF
 package postgresqlrandom
 
 import (
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // NOTE: FKs should always be passed explicitly.

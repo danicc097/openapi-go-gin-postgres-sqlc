@@ -175,8 +175,9 @@ func newSpecReflector() *openapi3.Reflector {
 					"x-go-type": "db." + strings.TrimPrefix(n, "Db"),
 					"x-go-type-import": map[string]any{
 						"name": "db",
-						"path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db",
+						"path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models",
 					},
+					"x-is-generated": true,
 				}
 			}
 

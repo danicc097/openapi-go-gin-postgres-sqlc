@@ -7,7 +7,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // Error represents an error that could be wrapping another error,

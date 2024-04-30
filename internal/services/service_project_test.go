@@ -9,7 +9,7 @@ package services_test
 // 	t.Parallel()
 
 // 	proj := &db.Project{
-// 		Name: models.ProjectDemo,
+// 		Name: models.ProjectNameDemo,
 // 		BoardConfig: models.ProjectConfig{
 // 			Header: []string{"demoProject.ref", "workItemType"},
 // 			Fields: []models.ProjectConfigField{
@@ -89,7 +89,7 @@ package services_test
 // 		t.Run(tc.name, func(t *testing.T) {
 // 			t.Parallel()
 
-// 			got, err := p.MergeConfigFields(context.Background(), &pgxpool.Pool{}, models.ProjectDemo, tc.args.update)
+// 			got, err := p.MergeConfigFields(context.Background(), &pgxpool.Pool{}, models.ProjectNameDemo, tc.args.update)
 // 			if (err != nil) && tc.error == "" {
 // 				t.Fatalf("unexpected error = %v", err)
 // 			}

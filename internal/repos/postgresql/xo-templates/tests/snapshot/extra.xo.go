@@ -7,7 +7,7 @@ package got
 import (
 	"fmt"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 type ColumnSimpleType string

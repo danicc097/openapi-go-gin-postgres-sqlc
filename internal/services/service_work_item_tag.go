@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	models1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.uber.org/zap"
 	"golang.org/x/exp/slices"
 )
@@ -30,7 +30,7 @@ func NewWorkItemTag(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItemTag 
 }
 
 // ByID gets a work item tag by ID.
-func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTagID) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) ByID(ctx context.Context, d models1.DBTX, id models1.WorkItemTagID) (*models1.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	witObj, err := wit.repos.WorkItemTag.ByID(ctx, d, id)
@@ -42,7 +42,7 @@ func (wit *WorkItemTag) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTagID
 }
 
 // ByName gets a work item tag by name.
-func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) ByName(ctx context.Context, d models1.DBTX, name string, projectID models1.ProjectID) (*models1.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	witObj, err := wit.repos.WorkItemTag.ByName(ctx, d, name, projectID)
@@ -54,7 +54,7 @@ func (wit *WorkItemTag) ByName(ctx context.Context, d db.DBTX, name string, proj
 }
 
 // Create creates a new work item tag.
-func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller CtxUser, params *db.WorkItemTagCreateParams) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Create(ctx context.Context, d models1.DBTX, caller CtxUser, params *models1.WorkItemTagCreateParams) (*models1.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	if err := wit.validateCreateParams(d, caller, params); err != nil {
@@ -70,7 +70,7 @@ func (wit *WorkItemTag) Create(ctx context.Context, d db.DBTX, caller CtxUser, p
 }
 
 // Update updates an existing work item tag.
-func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller CtxUser, id db.WorkItemTagID, params *db.WorkItemTagUpdateParams) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Update(ctx context.Context, d models1.DBTX, caller CtxUser, id models1.WorkItemTagID, params *models1.WorkItemTagUpdateParams) (*models1.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	if err := wit.validateUpdateParams(d, caller, id, params); err != nil {
@@ -86,7 +86,7 @@ func (wit *WorkItemTag) Update(ctx context.Context, d db.DBTX, caller CtxUser, i
 }
 
 // Delete deletes a work item tag by ID.
-func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, caller CtxUser, id db.WorkItemTagID) (*db.WorkItemTag, error) {
+func (wit *WorkItemTag) Delete(ctx context.Context, d models1.DBTX, caller CtxUser, id models1.WorkItemTagID) (*models1.WorkItemTag, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	witObj, err := wit.repos.WorkItemTag.Delete(ctx, d, id)
@@ -97,7 +97,7 @@ func (wit *WorkItemTag) Delete(ctx context.Context, d db.DBTX, caller CtxUser, i
 	return witObj, nil
 }
 
-func (wit *WorkItemTag) validateCreateParams(d db.DBTX, caller CtxUser, params *db.WorkItemTagCreateParams) error {
+func (wit *WorkItemTag) validateCreateParams(d models1.DBTX, caller CtxUser, params *models1.WorkItemTagCreateParams) error {
 	if err := wit.validateBaseParams(validateModeCreate, d, caller, nil, params); err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func (wit *WorkItemTag) validateCreateParams(d db.DBTX, caller CtxUser, params *
 	return nil
 }
 
-func (wit *WorkItemTag) validateUpdateParams(d db.DBTX, caller CtxUser, id db.WorkItemTagID, params *db.WorkItemTagUpdateParams) error {
+func (wit *WorkItemTag) validateUpdateParams(d models1.DBTX, caller CtxUser, id models1.WorkItemTagID, params *models1.WorkItemTagUpdateParams) error {
 	if err := wit.validateBaseParams(validateModeUpdate, d, caller, &id, params); err != nil {
 		return err
 	}
@@ -113,8 +113,8 @@ func (wit *WorkItemTag) validateUpdateParams(d db.DBTX, caller CtxUser, id db.Wo
 	return nil
 }
 
-func (wit *WorkItemTag) validateBaseParams(mode validateMode, d db.DBTX, caller CtxUser, id *db.WorkItemTagID, params db.WorkItemTagParams) error {
-	var projectID db.ProjectID
+func (wit *WorkItemTag) validateBaseParams(mode validateMode, d models1.DBTX, caller CtxUser, id *models1.WorkItemTagID, params models1.WorkItemTagParams) error {
+	var projectID models1.ProjectID
 
 	switch {
 	case params.GetProjectID() != nil:
@@ -129,7 +129,7 @@ func (wit *WorkItemTag) validateBaseParams(mode validateMode, d db.DBTX, caller 
 		return internal.NewErrorf(models.ErrorCodeInvalidArgument, "missing project parameter")
 	}
 
-	userProjects := make([]db.ProjectID, len(caller.Projects))
+	userProjects := make([]models1.ProjectID, len(caller.Projects))
 	for i, p := range caller.Projects {
 		userProjects[i] = p.ProjectID
 	}

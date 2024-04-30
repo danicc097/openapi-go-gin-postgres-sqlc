@@ -127,7 +127,7 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 			return config.IsRestServerGen
 		},
 		"skip_discriminator_utils": func() bool {
-			return config.SkipDiscriminatorUtils || config.Mode == "models"
+			return config.SkipDiscriminatorUtils
 		},
 		"is_test_client": func() bool {
 			return config.TestClient
@@ -144,7 +144,7 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 		"should_exclude_type": func(t string) bool {
 			stName := strings.TrimPrefix(t, "externalRef0.")
 
-			if config.Mode == "models" && strings.HasPrefix(stName, "Services") {
+			if config.Mode == "models" && (strings.HasPrefix(stName, "Services") || slices.Contains(serverTypes, stName)) {
 				return true
 			}
 			if config.Mode != "models" && slices.Contains(serverTypes, stName) {

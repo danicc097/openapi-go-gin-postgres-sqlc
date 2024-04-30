@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	models1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/slices"
 	"github.com/google/uuid"
@@ -17,22 +17,22 @@ import (
 
 // User represents the repository used for interacting with User records.
 type User struct {
-	q      db.Querier
+	q      models1.Querier
 	logger *zap.SugaredLogger
 }
 
 // NewUser instantiates the User repository.
 func NewUser() *User {
 	return &User{
-		q: NewQuerierWrapper(db.New()),
+		q: NewQuerierWrapper(models1.New()),
 	}
 }
 
 var _ repos.User = (*User)(nil)
 
-func (u *User) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParams) (*db.User, error) {
+func (u *User) Create(ctx context.Context, d models1.DBTX, params *models1.UserCreateParams) (*models1.User, error) {
 	params.Scopes = slices.Unique(params.Scopes)
-	user, err := db.CreateUser(ctx, d, params)
+	user, err := models1.CreateUser(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("could not create user: %w", ParseDBErrorDetail(err))
 	}
@@ -40,11 +40,11 @@ func (u *User) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParam
 	return user, nil
 }
 
-func (u *User) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginatedUsersParams) ([]db.User, error) {
+func (u *User) Paginated(ctx context.Context, d models1.DBTX, params repos.GetPaginatedUsersParams) ([]models1.User, error) {
 	var err error
 	filters := make(map[string][]interface{})
 	if ii := params.Items; ii != nil {
-		filters, err = GenerateDefaultFilters(db.TableEntityUser, *ii)
+		filters, err = GenerateDefaultFilters(models1.TableEntityUser, *ii)
 		if err != nil {
 			return nil, internal.WrapErrorf(err, models.ErrorCodeInvalidArgument, "invalid default filters")
 		}
@@ -56,19 +56,19 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginat
 		filters["role_rank = $i"] = []interface{}{r}
 	}
 
-	opts := []db.UserSelectConfigOption{
-		db.WithUserFilters(filters),
-		db.WithUserJoin(db.UserJoins{MemberTeams: true, MemberProjects: true}),
+	opts := []models1.UserSelectConfigOption{
+		models1.WithUserFilters(filters),
+		models1.WithUserJoin(models1.UserJoins{MemberTeams: true, MemberProjects: true}),
 	}
 	if params.Limit > 0 { // for users, allow 0 or less to fetch all
-		opts = append(opts, db.WithUserLimit(params.Limit))
+		opts = append(opts, models1.WithUserLimit(params.Limit))
 	}
 
-	if err := setDefaultCursor(d, db.TableEntityUser, &params.Cursor); err != nil {
+	if err := setDefaultCursor(d, models1.TableEntityUser, &params.Cursor); err != nil {
 		return nil, fmt.Errorf("could not set default cursors: %w", ParseDBErrorDetail(err))
 	}
 
-	users, err := db.UserPaginated(ctx, d, params.Cursor, opts...)
+	users, err := models1.UserPaginated(ctx, d, params.Cursor, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get paginated users: %w", ParseDBErrorDetail(err))
 	}
@@ -76,7 +76,7 @@ func (u *User) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginat
 	return users, nil
 }
 
-func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (*db.User, error) {
+func (u *User) Update(ctx context.Context, d models1.DBTX, id models1.UserID, params *models1.UserUpdateParams) (*models1.User, error) {
 	user, err := u.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user by id: %w", ParseDBErrorDetail(err))
@@ -96,8 +96,8 @@ func (u *User) Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.U
 	return user, err
 }
 
-func (u *User) Delete(ctx context.Context, d db.DBTX, id db.UserID) (*db.User, error) {
-	user := &db.User{
+func (u *User) Delete(ctx context.Context, d models1.DBTX, id models1.UserID) (*models1.User, error) {
+	user := &models1.User{
 		UserID: id,
 	}
 
@@ -108,8 +108,8 @@ func (u *User) Delete(ctx context.Context, d db.DBTX, id db.UserID) (*db.User, e
 	return user, nil
 }
 
-func (u *User) ByExternalID(ctx context.Context, d db.DBTX, extID string, opts ...db.UserSelectConfigOption) (*db.User, error) {
-	user, err := db.UserByExternalID(ctx, d, extID, opts...)
+func (u *User) ByExternalID(ctx context.Context, d models1.DBTX, extID string, opts ...models1.UserSelectConfigOption) (*models1.User, error) {
+	user, err := models1.UserByExternalID(ctx, d, extID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user by external id: %w", ParseDBErrorDetail(err))
 	}
@@ -117,8 +117,8 @@ func (u *User) ByExternalID(ctx context.Context, d db.DBTX, extID string, opts .
 	return user, nil
 }
 
-func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.UserSelectConfigOption) (*db.User, error) {
-	user, err := db.UserByEmail(ctx, d, email, opts...)
+func (u *User) ByEmail(ctx context.Context, d models1.DBTX, email string, opts ...models1.UserSelectConfigOption) (*models1.User, error) {
+	user, err := models1.UserByEmail(ctx, d, email, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user by email: %w", ParseDBErrorDetail(err))
 	}
@@ -126,26 +126,26 @@ func (u *User) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.
 	return user, nil
 }
 
-func (u *User) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamID) ([]db.User, error) {
-	team, err := db.TeamByTeamID(ctx, d, teamID, db.WithTeamJoin(db.TeamJoins{Members: true}))
+func (u *User) ByTeam(ctx context.Context, d models1.DBTX, teamID models1.TeamID) ([]models1.User, error) {
+	team, err := models1.TeamByTeamID(ctx, d, teamID, models1.WithTeamJoin(models1.TeamJoins{Members: true}))
 	if err != nil {
-		return []db.User{}, fmt.Errorf("could not get users by team: %w", ParseDBErrorDetail(err))
+		return []models1.User{}, fmt.Errorf("could not get users by team: %w", ParseDBErrorDetail(err))
 	}
 
 	return *team.MembersJoin, nil
 }
 
-func (u *User) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID) ([]db.User, error) {
-	teams, err := db.TeamsByProjectID(ctx, d, projectID)
+func (u *User) ByProject(ctx context.Context, d models1.DBTX, projectID models1.ProjectID) ([]models1.User, error) {
+	teams, err := models1.TeamsByProjectID(ctx, d, projectID)
 	if err != nil {
-		return []db.User{}, fmt.Errorf("could not get teams in project: %w", ParseDBErrorDetail(err))
+		return []models1.User{}, fmt.Errorf("could not get teams in project: %w", ParseDBErrorDetail(err))
 	}
 
-	var users []db.User
+	var users []models1.User
 	for _, t := range teams {
 		uu, err := u.ByTeam(ctx, d, t.TeamID)
 		if err != nil {
-			return []db.User{}, fmt.Errorf("u.ByTeam: %w", ParseDBErrorDetail(err))
+			return []models1.User{}, fmt.Errorf("u.ByTeam: %w", ParseDBErrorDetail(err))
 		}
 		users = append(users, uu...)
 	}
@@ -153,8 +153,8 @@ func (u *User) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID)
 	return users, nil
 }
 
-func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (*db.User, error) {
-	user, err := db.UserByUsername(ctx, d, username, opts...)
+func (u *User) ByUsername(ctx context.Context, d models1.DBTX, username string, opts ...models1.UserSelectConfigOption) (*models1.User, error) {
+	user, err := models1.UserByUsername(ctx, d, username, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user by username: %w", ParseDBErrorDetail(err))
 	}
@@ -162,8 +162,8 @@ func (u *User) ByUsername(ctx context.Context, d db.DBTX, username string, opts 
 	return user, nil
 }
 
-func (u *User) ByID(ctx context.Context, d db.DBTX, id db.UserID, opts ...db.UserSelectConfigOption) (*db.User, error) {
-	user, err := db.UserByUserID(ctx, d, id, opts...)
+func (u *User) ByID(ctx context.Context, d models1.DBTX, id models1.UserID, opts ...models1.UserSelectConfigOption) (*models1.User, error) {
+	user, err := models1.UserByUserID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get user: %w", ParseDBErrorDetail(err))
 	}
@@ -171,8 +171,8 @@ func (u *User) ByID(ctx context.Context, d db.DBTX, id db.UserID, opts ...db.Use
 	return user, nil
 }
 
-func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User, error) {
-	uak, err := db.UserAPIKeyByAPIKey(ctx, d, apiKey, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
+func (u *User) ByAPIKey(ctx context.Context, d models1.DBTX, apiKey string) (*models1.User, error) {
+	uak, err := models1.UserAPIKeyByAPIKey(ctx, d, apiKey, models1.WithUserAPIKeyJoin(models1.UserAPIKeyJoins{User: true}))
 	if err != nil {
 		return nil, fmt.Errorf("could not get api key: %w", ParseDBErrorDetail(err))
 	}
@@ -184,8 +184,8 @@ func (u *User) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.User
 	return uak.UserJoin, nil
 }
 
-func (u *User) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.UserAPIKey, error) {
-	uak, err := db.UserAPIKeyByAPIKey(ctx, d, apiKey)
+func (u *User) DeleteAPIKey(ctx context.Context, d models1.DBTX, apiKey string) (*models1.UserAPIKey, error) {
+	uak, err := models1.UserAPIKeyByAPIKey(ctx, d, apiKey)
 	if err != nil {
 		return nil, fmt.Errorf("could not get api key: %w", ParseDBErrorDetail(err))
 	}
@@ -198,8 +198,8 @@ func (u *User) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey string) (*db.
 	return uak, nil
 }
 
-func (u *User) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (*db.UserAPIKey, error) {
-	uak := &db.UserAPIKey{
+func (u *User) CreateAPIKey(ctx context.Context, d models1.DBTX, user *models1.User) (*models1.UserAPIKey, error) {
+	uak := &models1.UserAPIKey{
 		APIKey:    uuid.NewString(),
 		ExpiresOn: time.Now().AddDate(1, 0, 0),
 		UserID:    user.UserID,

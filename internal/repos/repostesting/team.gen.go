@@ -6,101 +6,101 @@ import (
 	"sync"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 type FakeTeam struct {
-	ByIDStub        func(context.Context, db.DBTX, db.TeamID, ...db.TeamSelectConfigOption) (*db.Team, error)
+	ByIDStub        func(context.Context, models.DBTX, models.TeamID, ...models.TeamSelectConfigOption) (*models.Team, error)
 	byIDMutex       sync.RWMutex
 	byIDArgsForCall []struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 db.TeamID
-		arg4 []db.TeamSelectConfigOption
+		arg2 models.DBTX
+		arg3 models.TeamID
+		arg4 []models.TeamSelectConfigOption
 	}
 	byIDReturns struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}
 	byIDReturnsOnCall map[int]struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}
-	ByNameStub        func(context.Context, db.DBTX, string, db.ProjectID, ...db.TeamSelectConfigOption) (*db.Team, error)
+	ByNameStub        func(context.Context, models.DBTX, string, models.ProjectID, ...models.TeamSelectConfigOption) (*models.Team, error)
 	byNameMutex       sync.RWMutex
 	byNameArgsForCall []struct {
 		arg1 context.Context
-		arg2 db.DBTX
+		arg2 models.DBTX
 		arg3 string
-		arg4 db.ProjectID
-		arg5 []db.TeamSelectConfigOption
+		arg4 models.ProjectID
+		arg5 []models.TeamSelectConfigOption
 	}
 	byNameReturns struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}
 	byNameReturnsOnCall map[int]struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}
-	CreateStub        func(context.Context, db.DBTX, *db.TeamCreateParams) (*db.Team, error)
+	CreateStub        func(context.Context, models.DBTX, *models.TeamCreateParams) (*models.Team, error)
 	createMutex       sync.RWMutex
 	createArgsForCall []struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 *db.TeamCreateParams
+		arg2 models.DBTX
+		arg3 *models.TeamCreateParams
 	}
 	createReturns struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}
 	createReturnsOnCall map[int]struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}
-	DeleteStub        func(context.Context, db.DBTX, db.TeamID) (*db.Team, error)
+	DeleteStub        func(context.Context, models.DBTX, models.TeamID) (*models.Team, error)
 	deleteMutex       sync.RWMutex
 	deleteArgsForCall []struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 db.TeamID
+		arg2 models.DBTX
+		arg3 models.TeamID
 	}
 	deleteReturns struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}
 	deleteReturnsOnCall map[int]struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}
-	UpdateStub        func(context.Context, db.DBTX, db.TeamID, *db.TeamUpdateParams) (*db.Team, error)
+	UpdateStub        func(context.Context, models.DBTX, models.TeamID, *models.TeamUpdateParams) (*models.Team, error)
 	updateMutex       sync.RWMutex
 	updateArgsForCall []struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 db.TeamID
-		arg4 *db.TeamUpdateParams
+		arg2 models.DBTX
+		arg3 models.TeamID
+		arg4 *models.TeamUpdateParams
 	}
 	updateReturns struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}
 	updateReturnsOnCall map[int]struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeTeam) ByID(arg1 context.Context, arg2 db.DBTX, arg3 db.TeamID, arg4 ...db.TeamSelectConfigOption) (*db.Team, error) {
+func (fake *FakeTeam) ByID(arg1 context.Context, arg2 models.DBTX, arg3 models.TeamID, arg4 ...models.TeamSelectConfigOption) (*models.Team, error) {
 	fake.byIDMutex.Lock()
 	ret, specificReturn := fake.byIDReturnsOnCall[len(fake.byIDArgsForCall)]
 	fake.byIDArgsForCall = append(fake.byIDArgsForCall, struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 db.TeamID
-		arg4 []db.TeamSelectConfigOption
+		arg2 models.DBTX
+		arg3 models.TeamID
+		arg4 []models.TeamSelectConfigOption
 	}{arg1, arg2, arg3, arg4})
 	stub := fake.ByIDStub
 	fakeReturns := fake.byIDReturns
@@ -121,54 +121,54 @@ func (fake *FakeTeam) ByIDCallCount() int {
 	return len(fake.byIDArgsForCall)
 }
 
-func (fake *FakeTeam) ByIDCalls(stub func(context.Context, db.DBTX, db.TeamID, ...db.TeamSelectConfigOption) (*db.Team, error)) {
+func (fake *FakeTeam) ByIDCalls(stub func(context.Context, models.DBTX, models.TeamID, ...models.TeamSelectConfigOption) (*models.Team, error)) {
 	fake.byIDMutex.Lock()
 	defer fake.byIDMutex.Unlock()
 	fake.ByIDStub = stub
 }
 
-func (fake *FakeTeam) ByIDArgsForCall(i int) (context.Context, db.DBTX, db.TeamID, []db.TeamSelectConfigOption) {
+func (fake *FakeTeam) ByIDArgsForCall(i int) (context.Context, models.DBTX, models.TeamID, []models.TeamSelectConfigOption) {
 	fake.byIDMutex.RLock()
 	defer fake.byIDMutex.RUnlock()
 	argsForCall := fake.byIDArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
-func (fake *FakeTeam) ByIDReturns(result1 *db.Team, result2 error) {
+func (fake *FakeTeam) ByIDReturns(result1 *models.Team, result2 error) {
 	fake.byIDMutex.Lock()
 	defer fake.byIDMutex.Unlock()
 	fake.ByIDStub = nil
 	fake.byIDReturns = struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeTeam) ByIDReturnsOnCall(i int, result1 *db.Team, result2 error) {
+func (fake *FakeTeam) ByIDReturnsOnCall(i int, result1 *models.Team, result2 error) {
 	fake.byIDMutex.Lock()
 	defer fake.byIDMutex.Unlock()
 	fake.ByIDStub = nil
 	if fake.byIDReturnsOnCall == nil {
 		fake.byIDReturnsOnCall = make(map[int]struct {
-			result1 *db.Team
+			result1 *models.Team
 			result2 error
 		})
 	}
 	fake.byIDReturnsOnCall[i] = struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeTeam) ByName(arg1 context.Context, arg2 db.DBTX, arg3 string, arg4 db.ProjectID, arg5 ...db.TeamSelectConfigOption) (*db.Team, error) {
+func (fake *FakeTeam) ByName(arg1 context.Context, arg2 models.DBTX, arg3 string, arg4 models.ProjectID, arg5 ...models.TeamSelectConfigOption) (*models.Team, error) {
 	fake.byNameMutex.Lock()
 	ret, specificReturn := fake.byNameReturnsOnCall[len(fake.byNameArgsForCall)]
 	fake.byNameArgsForCall = append(fake.byNameArgsForCall, struct {
 		arg1 context.Context
-		arg2 db.DBTX
+		arg2 models.DBTX
 		arg3 string
-		arg4 db.ProjectID
-		arg5 []db.TeamSelectConfigOption
+		arg4 models.ProjectID
+		arg5 []models.TeamSelectConfigOption
 	}{arg1, arg2, arg3, arg4, arg5})
 	stub := fake.ByNameStub
 	fakeReturns := fake.byNameReturns
@@ -189,52 +189,52 @@ func (fake *FakeTeam) ByNameCallCount() int {
 	return len(fake.byNameArgsForCall)
 }
 
-func (fake *FakeTeam) ByNameCalls(stub func(context.Context, db.DBTX, string, db.ProjectID, ...db.TeamSelectConfigOption) (*db.Team, error)) {
+func (fake *FakeTeam) ByNameCalls(stub func(context.Context, models.DBTX, string, models.ProjectID, ...models.TeamSelectConfigOption) (*models.Team, error)) {
 	fake.byNameMutex.Lock()
 	defer fake.byNameMutex.Unlock()
 	fake.ByNameStub = stub
 }
 
-func (fake *FakeTeam) ByNameArgsForCall(i int) (context.Context, db.DBTX, string, db.ProjectID, []db.TeamSelectConfigOption) {
+func (fake *FakeTeam) ByNameArgsForCall(i int) (context.Context, models.DBTX, string, models.ProjectID, []models.TeamSelectConfigOption) {
 	fake.byNameMutex.RLock()
 	defer fake.byNameMutex.RUnlock()
 	argsForCall := fake.byNameArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4, argsForCall.arg5
 }
 
-func (fake *FakeTeam) ByNameReturns(result1 *db.Team, result2 error) {
+func (fake *FakeTeam) ByNameReturns(result1 *models.Team, result2 error) {
 	fake.byNameMutex.Lock()
 	defer fake.byNameMutex.Unlock()
 	fake.ByNameStub = nil
 	fake.byNameReturns = struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeTeam) ByNameReturnsOnCall(i int, result1 *db.Team, result2 error) {
+func (fake *FakeTeam) ByNameReturnsOnCall(i int, result1 *models.Team, result2 error) {
 	fake.byNameMutex.Lock()
 	defer fake.byNameMutex.Unlock()
 	fake.ByNameStub = nil
 	if fake.byNameReturnsOnCall == nil {
 		fake.byNameReturnsOnCall = make(map[int]struct {
-			result1 *db.Team
+			result1 *models.Team
 			result2 error
 		})
 	}
 	fake.byNameReturnsOnCall[i] = struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeTeam) Create(arg1 context.Context, arg2 db.DBTX, arg3 *db.TeamCreateParams) (*db.Team, error) {
+func (fake *FakeTeam) Create(arg1 context.Context, arg2 models.DBTX, arg3 *models.TeamCreateParams) (*models.Team, error) {
 	fake.createMutex.Lock()
 	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
 	fake.createArgsForCall = append(fake.createArgsForCall, struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 *db.TeamCreateParams
+		arg2 models.DBTX
+		arg3 *models.TeamCreateParams
 	}{arg1, arg2, arg3})
 	stub := fake.CreateStub
 	fakeReturns := fake.createReturns
@@ -255,52 +255,52 @@ func (fake *FakeTeam) CreateCallCount() int {
 	return len(fake.createArgsForCall)
 }
 
-func (fake *FakeTeam) CreateCalls(stub func(context.Context, db.DBTX, *db.TeamCreateParams) (*db.Team, error)) {
+func (fake *FakeTeam) CreateCalls(stub func(context.Context, models.DBTX, *models.TeamCreateParams) (*models.Team, error)) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = stub
 }
 
-func (fake *FakeTeam) CreateArgsForCall(i int) (context.Context, db.DBTX, *db.TeamCreateParams) {
+func (fake *FakeTeam) CreateArgsForCall(i int) (context.Context, models.DBTX, *models.TeamCreateParams) {
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
 	argsForCall := fake.createArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeTeam) CreateReturns(result1 *db.Team, result2 error) {
+func (fake *FakeTeam) CreateReturns(result1 *models.Team, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	fake.createReturns = struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeTeam) CreateReturnsOnCall(i int, result1 *db.Team, result2 error) {
+func (fake *FakeTeam) CreateReturnsOnCall(i int, result1 *models.Team, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	if fake.createReturnsOnCall == nil {
 		fake.createReturnsOnCall = make(map[int]struct {
-			result1 *db.Team
+			result1 *models.Team
 			result2 error
 		})
 	}
 	fake.createReturnsOnCall[i] = struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeTeam) Delete(arg1 context.Context, arg2 db.DBTX, arg3 db.TeamID) (*db.Team, error) {
+func (fake *FakeTeam) Delete(arg1 context.Context, arg2 models.DBTX, arg3 models.TeamID) (*models.Team, error) {
 	fake.deleteMutex.Lock()
 	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
 	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 db.TeamID
+		arg2 models.DBTX
+		arg3 models.TeamID
 	}{arg1, arg2, arg3})
 	stub := fake.DeleteStub
 	fakeReturns := fake.deleteReturns
@@ -321,53 +321,53 @@ func (fake *FakeTeam) DeleteCallCount() int {
 	return len(fake.deleteArgsForCall)
 }
 
-func (fake *FakeTeam) DeleteCalls(stub func(context.Context, db.DBTX, db.TeamID) (*db.Team, error)) {
+func (fake *FakeTeam) DeleteCalls(stub func(context.Context, models.DBTX, models.TeamID) (*models.Team, error)) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = stub
 }
 
-func (fake *FakeTeam) DeleteArgsForCall(i int) (context.Context, db.DBTX, db.TeamID) {
+func (fake *FakeTeam) DeleteArgsForCall(i int) (context.Context, models.DBTX, models.TeamID) {
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
 	argsForCall := fake.deleteArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeTeam) DeleteReturns(result1 *db.Team, result2 error) {
+func (fake *FakeTeam) DeleteReturns(result1 *models.Team, result2 error) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = nil
 	fake.deleteReturns = struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeTeam) DeleteReturnsOnCall(i int, result1 *db.Team, result2 error) {
+func (fake *FakeTeam) DeleteReturnsOnCall(i int, result1 *models.Team, result2 error) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = nil
 	if fake.deleteReturnsOnCall == nil {
 		fake.deleteReturnsOnCall = make(map[int]struct {
-			result1 *db.Team
+			result1 *models.Team
 			result2 error
 		})
 	}
 	fake.deleteReturnsOnCall[i] = struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeTeam) Update(arg1 context.Context, arg2 db.DBTX, arg3 db.TeamID, arg4 *db.TeamUpdateParams) (*db.Team, error) {
+func (fake *FakeTeam) Update(arg1 context.Context, arg2 models.DBTX, arg3 models.TeamID, arg4 *models.TeamUpdateParams) (*models.Team, error) {
 	fake.updateMutex.Lock()
 	ret, specificReturn := fake.updateReturnsOnCall[len(fake.updateArgsForCall)]
 	fake.updateArgsForCall = append(fake.updateArgsForCall, struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 db.TeamID
-		arg4 *db.TeamUpdateParams
+		arg2 models.DBTX
+		arg3 models.TeamID
+		arg4 *models.TeamUpdateParams
 	}{arg1, arg2, arg3, arg4})
 	stub := fake.UpdateStub
 	fakeReturns := fake.updateReturns
@@ -388,41 +388,41 @@ func (fake *FakeTeam) UpdateCallCount() int {
 	return len(fake.updateArgsForCall)
 }
 
-func (fake *FakeTeam) UpdateCalls(stub func(context.Context, db.DBTX, db.TeamID, *db.TeamUpdateParams) (*db.Team, error)) {
+func (fake *FakeTeam) UpdateCalls(stub func(context.Context, models.DBTX, models.TeamID, *models.TeamUpdateParams) (*models.Team, error)) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = stub
 }
 
-func (fake *FakeTeam) UpdateArgsForCall(i int) (context.Context, db.DBTX, db.TeamID, *db.TeamUpdateParams) {
+func (fake *FakeTeam) UpdateArgsForCall(i int) (context.Context, models.DBTX, models.TeamID, *models.TeamUpdateParams) {
 	fake.updateMutex.RLock()
 	defer fake.updateMutex.RUnlock()
 	argsForCall := fake.updateArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
-func (fake *FakeTeam) UpdateReturns(result1 *db.Team, result2 error) {
+func (fake *FakeTeam) UpdateReturns(result1 *models.Team, result2 error) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = nil
 	fake.updateReturns = struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeTeam) UpdateReturnsOnCall(i int, result1 *db.Team, result2 error) {
+func (fake *FakeTeam) UpdateReturnsOnCall(i int, result1 *models.Team, result2 error) {
 	fake.updateMutex.Lock()
 	defer fake.updateMutex.Unlock()
 	fake.UpdateStub = nil
 	if fake.updateReturnsOnCall == nil {
 		fake.updateReturnsOnCall = make(map[int]struct {
-			result1 *db.Team
+			result1 *models.Team
 			result2 error
 		})
 	}
 	fake.updateReturnsOnCall[i] = struct {
-		result1 *db.Team
+		result1 *models.Team
 		result2 error
 	}{result1, result2}
 }

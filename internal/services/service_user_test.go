@@ -4,8 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
@@ -27,7 +26,7 @@ func TestUser_UpdateUser(t *testing.T) {
 
 	type args struct {
 		params *models.UpdateUserRequest
-		id     db.UserID
+		id     models.UserID
 		caller services.CtxUser
 	}
 	type want struct {
@@ -131,7 +130,7 @@ func TestUser_UpdateUserAuthorization(t *testing.T) {
 
 	type args struct {
 		params *models.UpdateUserAuthRequest
-		id     db.UserID
+		id     models.UserID
 		caller services.CtxUser
 	}
 	type want struct {

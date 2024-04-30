@@ -17,6 +17,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	. "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	uuid "github.com/google/uuid"
 	"github.com/oapi-codegen/runtime"

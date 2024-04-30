@@ -94,7 +94,7 @@ const (
 	// that gets converted to the db field internally
 	propertyOpenAPIHidden = "hidden"
 
-	// example: "properties":private,another-property && "type":models.Project && "tags":pattern: ^[\.a-zA-Z0-9_-]+$
+	// example: "properties":private,another-property && "type":models.ProjectName && "tags":pattern: ^[\.a-zA-Z0-9_-]+$
 )
 
 // to not have to analyze everything for convertConstraints

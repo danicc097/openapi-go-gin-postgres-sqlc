@@ -6,7 +6,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5"
@@ -64,7 +64,7 @@ func GetUserCallerFromCtx(c *gin.Context) (services.CtxUser, error) {
 	return user, nil
 }
 
-func CtxWithUserCaller(c *gin.Context, user *db.User) {
+func CtxWithUserCaller(c *gin.Context, user *models.User) {
 	c.Set(userCtxKey, services.CtxUser{
 		User:     user,
 		Teams:    *user.MemberTeamsJoin,

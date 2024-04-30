@@ -8,9 +8,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 )
 
 // ProjectWithTimeout implements repos.Project interface instrumented with timeouts
@@ -36,7 +35,7 @@ func NewProjectWithTimeout(base repos.Project, config ProjectWithTimeoutConfig) 
 }
 
 // ByID implements repos.Project
-func (_d ProjectWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.ProjectID, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -46,7 +45,7 @@ func (_d ProjectWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.ProjectI
 }
 
 // ByName implements repos.Project
-func (_d ProjectWithTimeout) ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithTimeout) ByName(ctx context.Context, d models.DBTX, name models.ProjectName, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
 	var cancelFunc func()
 	if _d.config.ByNameTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByNameTimeout)
@@ -56,7 +55,7 @@ func (_d ProjectWithTimeout) ByName(ctx context.Context, d db.DBTX, name models.
 }
 
 // IsTeamInProject implements repos.Project
-func (_d ProjectWithTimeout) IsTeamInProject(ctx context.Context, d db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
+func (_d ProjectWithTimeout) IsTeamInProject(ctx context.Context, d models.DBTX, arg models.IsTeamInProjectParams) (b1 bool, err error) {
 	var cancelFunc func()
 	if _d.config.IsTeamInProjectTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.IsTeamInProjectTimeout)

@@ -16,7 +16,7 @@ import (
 $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models\"")
 $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal\"")
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
@@ -27,7 +27,7 @@ $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgr
 func Test${pascal_name}_Update(t *testing.T) {
 	t.Parallel()
 
-$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectNameDemo]")
 	${lower_name} := newRandom${pascal_name}(t, testPool $create_args)
 
 	type args struct {
@@ -92,7 +92,7 @@ $(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models
 func Test${pascal_name}_${delete_method}(t *testing.T) {
 	t.Parallel()
 
-	$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+	$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectNameDemo]")
 	${lower_name} := newRandom${pascal_name}(t, testPool $create_args)
 
 	type args struct {
@@ -135,7 +135,7 @@ func Test${pascal_name}_${delete_method}(t *testing.T) {
 func Test${pascal_name}_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
-	$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+	$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectNameDemo]")
 	${lower_name} := newRandom${pascal_name}(t, testPool $create_args)
 
 	logger := testutil.NewLogger(t)
@@ -179,7 +179,7 @@ func Test${pascal_name}_Create(t *testing.T) {
 	t.Run("correct_${camel_name}", func(t *testing.T) {
 		t.Parallel()
 
-$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectNameDemo]")
 		${camel_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(${create_args#,})
 
 		want := want{
@@ -203,7 +203,7 @@ done)
 		t.Skip("not implemented")
 		t.Parallel()
 
-$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectDemo]")
+$(test -n "$with_project" && echo "	projectID := internal.ProjectIDByName[models.ProjectNameDemo]")
 		${camel_name}CreateParams := postgresqlrandom.${pascal_name}CreateParams(${create_args#,})
 		// NOTE: update params to trigger check error
 

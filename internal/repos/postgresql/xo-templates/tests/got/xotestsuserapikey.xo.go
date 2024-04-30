@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"

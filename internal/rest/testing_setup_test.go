@@ -11,8 +11,8 @@ import (
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	redis "github.com/go-redis/redis/v8"

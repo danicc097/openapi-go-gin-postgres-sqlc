@@ -7,9 +7,8 @@ package reposwrappers
 import (
 	"context"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -37,7 +36,7 @@ func NewProjectWithTracing(base repos.Project, instance string, spanDecorator ..
 }
 
 // ByID implements repos.Project
-func (_d ProjectWithTracing) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithTracing) ByID(ctx context.Context, d models.DBTX, id models.ProjectID, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Project.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -62,7 +61,7 @@ func (_d ProjectWithTracing) ByID(ctx context.Context, d db.DBTX, id db.ProjectI
 }
 
 // ByName implements repos.Project
-func (_d ProjectWithTracing) ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithTracing) ByName(ctx context.Context, d models.DBTX, name models.ProjectName, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Project.ByName")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -87,7 +86,7 @@ func (_d ProjectWithTracing) ByName(ctx context.Context, d db.DBTX, name models.
 }
 
 // IsTeamInProject implements repos.Project
-func (_d ProjectWithTracing) IsTeamInProject(ctx context.Context, d db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
+func (_d ProjectWithTracing) IsTeamInProject(ctx context.Context, d models.DBTX, arg models.IsTeamInProjectParams) (b1 bool, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.Project.IsTeamInProject")
 	defer func() {
 		if _d._spanDecorator != nil {

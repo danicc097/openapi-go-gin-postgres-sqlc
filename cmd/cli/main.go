@@ -16,9 +16,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/envvar"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/format"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/google/uuid"
@@ -28,6 +26,7 @@ import (
 	// dot import is not mandatory.
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/jet/public/model"
 	. "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/jet/public/table"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	. "github.com/go-jet/jet/v2/postgres"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -91,14 +90,14 @@ func main() {
 	username := "user_1"
 	// username := "doesntexist" // User should be nil
 	// username := "superadmin"
-	user, err := db.UserByUsername(context.Background(), pool, username,
-		db.WithUserJoin(db.UserJoins{
+	user, err := models.UserByUsername(context.Background(), pool, username,
+		models.WithUserJoin(models.UserJoins{
 			TimeEntries:       true,
 			AssigneeWorkItems: true,
 			MemberTeams:       true,
 			UserAPIKey:        true,
 		}),
-		db.WithUserOrderBy(map[string]*models.Direction{
+		models.WithUserOrderBy(map[string]*models.Direction{
 			"created_at": pointers.New(models.DirectionDesc),
 		}))
 	if err != nil {
@@ -123,7 +122,7 @@ func main() {
 	fmt.Printf("user: %+v\n", user)
 	// test correct queries
 	key := user.UserAPIKeyJoin.APIKey
-	uak, err := db.UserAPIKeyByAPIKey(context.Background(), pool, key, db.WithUserAPIKeyJoin(db.UserAPIKeyJoins{User: true}))
+	uak, err := models.UserAPIKeyByAPIKey(context.Background(), pool, key, models.WithUserAPIKeyJoin(models.UserAPIKeyJoins{User: true}))
 	if err != nil {
 		log.Fatalf("UserAPIKeyByAPIKey: %v", err)
 	}
@@ -169,8 +168,8 @@ func main() {
 	// fmt.Printf("dest: %#v\n", dest)
 	// format.PrintJSON(dest)
 
-	q := postgresql.NewQuerierWrapper(db.New())
-	nn, err := q.GetUserNotifications(context.Background(), pool, db.GetUserNotificationsParams{UserID: user.UserID.UUID, Lim: pointers.New[int32](6), NotificationType: db.NotificationTypePersonal})
+	q := postgresql.NewQuerierWrapper(models.New())
+	nn, err := q.GetUserNotifications(context.Background(), pool, models.GetUserNotificationsParams{UserID: user.UserID.UUID, Lim: pointers.New[int32](6), NotificationType: models.NotificationTypePersonal})
 	if err != nil {
 		log.Fatal(err.Error())
 	}

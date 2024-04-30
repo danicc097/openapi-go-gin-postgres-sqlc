@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	models1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/repostesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -22,33 +22,33 @@ func TestWorkItemComment_Update(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	requiredProject := models.ProjectDemo
+	requiredProject := models.ProjectNameDemo
 
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
 	type args struct {
-		params            *db.WorkItemCommentUpdateParams
+		params            *models1.WorkItemCommentUpdateParams
 		withUserInProject bool
 	}
 
-	wantParams := postgresqlrandom.WorkItemCommentCreateParams(db.UserID{UUID: uuid.UUID{}}, db.WorkItemID(-1))
+	wantParams := postgresqlrandom.WorkItemCommentCreateParams(models1.UserID{UUID: uuid.UUID{}}, models1.WorkItemID(-1))
 
 	tests := []struct {
 		name          string
 		args          args
-		want          db.WorkItemCommentUpdateParams
+		want          models1.WorkItemCommentUpdateParams
 		errorContains []string
 	}{
 		{
 			name: "updated correctly",
 			args: args{
-				params: &db.WorkItemCommentUpdateParams{
+				params: &models1.WorkItemCommentUpdateParams{
 					Message: &wantParams.Message,
 				},
 				withUserInProject: false, //
 			},
-			want: db.WorkItemCommentUpdateParams{
+			want: models1.WorkItemCommentUpdateParams{
 				// generating fields based on randomized createparams since it's a superset of updateparams.
 				Message: &wantParams.Message,
 			},
@@ -80,7 +80,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 
 			creator := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 				WithAPIKey: true,
-				TeamIDs:    []db.TeamID{teamf.TeamID},
+				TeamIDs:    []models1.TeamID{teamf.TeamID},
 			})
 
 			demoWorkItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(creator.User), teamf.TeamID)

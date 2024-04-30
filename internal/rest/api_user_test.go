@@ -7,8 +7,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
@@ -87,14 +86,14 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 		role := models.RoleAdvancedUser
 		scopes := models.Scopes{models.ScopeProjectSettingsWrite}
 
-		p := models.ProjectDemo
+		p := models.ProjectNameDemo
 		team1f := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: p})
 		team2f := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: p})
 		ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
 			Role:       role,
 			WithAPIKey: true,
 			Scopes:     scopes,
-			TeamIDs:    []db.TeamID{team1f.TeamID, team2f.TeamID},
+			TeamIDs:    []models.TeamID{team1f.TeamID, team2f.TeamID},
 		})
 
 		res, err := srv.client.GetCurrentUserWithResponse(context.Background(), ReqWithAPIKey(ufixture.APIKey.APIKey))

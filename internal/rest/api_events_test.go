@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -75,7 +75,7 @@ func TestSSEStream(t *testing.T) {
 			case <-stopCh:
 				return
 			default:
-				res, err := srv.client.Events(ctx, res, &rest.EventsParams{Topics: []models.Topic{models.TopicGlobalAlerts}, ProjectName: models.ProjectDemo})
+				res, err := srv.client.Events(ctx, res, &rest.EventsParams{Topics: []models.Topic{models.TopicGlobalAlerts}, ProjectName: models.ProjectNameDemo})
 				require.NoError(t, err)
 				resb, err := io.ReadAll(res.Body)
 				require.NoError(t, err)

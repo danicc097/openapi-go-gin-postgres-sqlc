@@ -6,7 +6,7 @@ import (
 	"time"
 
 	tfidf "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/metadata"
 )
@@ -21,12 +21,12 @@ Among the most gruesome horror movies of 2022, The Sadness lives up to its name 
 type movie struct {
 	moviec tfidf.MovieGenreClient
 	logger *zap.SugaredLogger
-	d      db.DBTX
+	d      models.DBTX
 }
 
 // NewMovie returns a new movie service.
 // This is a sample service to showcase grpc + opentelemetry.
-func NewMovie(d db.DBTX, logger *zap.SugaredLogger, moviec tfidf.MovieGenreClient) *movie {
+func NewMovie(d models.DBTX, logger *zap.SugaredLogger, moviec tfidf.MovieGenreClient) *movie {
 	return &movie{
 		d:      d,
 		moviec: moviec,
@@ -34,7 +34,7 @@ func NewMovie(d db.DBTX, logger *zap.SugaredLogger, moviec tfidf.MovieGenreClien
 	}
 }
 
-func (m *movie) Create(ctx context.Context, movie *db.Movie) error {
+func (m *movie) Create(ctx context.Context, movie *models.Movie) error {
 	predictions, _ := m.PredictGenre(ctx, synopsis)
 	m.logger.Infof("Movie predictions: %v", predictions)
 

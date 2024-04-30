@@ -5,9 +5,8 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"go.uber.org/zap"
 )
@@ -20,7 +19,7 @@ type Notification struct {
 }
 
 type NotificationCreateParams struct {
-	db.NotificationCreateParams
+	models.NotificationCreateParams
 	ReceiverRole *models.Role `json:"receiverRole"`
 }
 
@@ -38,7 +37,7 @@ func NewNotification(logger *zap.SugaredLogger, repos *repos.Repos) *Notificatio
 }
 
 // LatestNotifications gets user notifications ordered by creation date.
-func (n *Notification) LatestNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
+func (n *Notification) LatestNotifications(ctx context.Context, d models.DBTX, params *models.GetUserNotificationsParams) ([]models.GetUserNotificationsRow, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	notification, err := n.repos.Notification.LatestNotifications(ctx, d, params)
@@ -50,7 +49,7 @@ func (n *Notification) LatestNotifications(ctx context.Context, d db.DBTX, param
 }
 
 // PaginatedUserNotifications gets user notifications by cursor.
-func (n *Notification) PaginatedUserNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) ([]db.UserNotification, error) {
+func (n *Notification) PaginatedUserNotifications(ctx context.Context, d models.DBTX, userID models.UserID, params models.GetPaginatedNotificationsParams) ([]models.UserNotification, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	notifications, err := n.repos.Notification.PaginatedUserNotifications(ctx, d, userID, params)
@@ -62,17 +61,17 @@ func (n *Notification) PaginatedUserNotifications(ctx context.Context, d db.DBTX
 }
 
 // Create creates a new notification. In case of global notifications returns a single one from the fan out.
-func (n *Notification) CreateNotification(ctx context.Context, d db.DBTX, params *NotificationCreateParams) (*db.UserNotification, error) {
+func (n *Notification) CreateNotification(ctx context.Context, d models.DBTX, params *NotificationCreateParams) (*models.UserNotification, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	switch params.NotificationType {
-	case db.NotificationTypeGlobal:
+	case models.NotificationTypeGlobal:
 		if params.ReceiverRole == nil {
 			return nil, internal.NewErrorWithLocf(models.ErrorCodeInvalidArgument, []string{"receiverRole"}, "minimum receiver role is not set")
 		}
 		params.NotificationCreateParams.ReceiverRank = pointers.New(n.authzsvc.RoleByName(*params.ReceiverRole).Rank)
 		// let sender be whatever was set, no need to be superadmin
-	case db.NotificationTypePersonal:
+	case models.NotificationTypePersonal:
 		if params.Receiver == nil {
 			return nil, internal.NewErrorWithLocf(models.ErrorCodeInvalidArgument, []string{"receiver"}, "receiver is not set")
 		}

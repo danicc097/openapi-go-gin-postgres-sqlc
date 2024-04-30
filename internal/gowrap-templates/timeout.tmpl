@@ -1,9 +1,8 @@
 import (
   "context"
   "time"
-  internalmodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	repomodels "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/models"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 {{ $decorator := (or .Vars.DecoratorName (printf "%sWithTimeout" .Interface.Name)) }}

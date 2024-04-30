@@ -1,10 +1,7 @@
 {{range .}}{{$opid := .OperationId}}
 {{range .TypeDefinitions}}
-{{if eq (gen_mode) ("models")}}
 // Ignoring parameter definition for {{.TypeName}}.
-{{else}}
 // {{.TypeName}} defines parameters for {{$opid}}.
 type {{.TypeName}} {{if .IsAlias}}={{end}} {{.Schema.TypeDecl}}
-{{end}}
 {{end}}
 {{end}}

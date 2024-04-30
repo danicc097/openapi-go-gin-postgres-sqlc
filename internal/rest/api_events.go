@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )

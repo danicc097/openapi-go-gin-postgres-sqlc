@@ -24,5 +24,5 @@ export interface User {
 export interface Team {
   teamID: EntityIDs.TeamID;
   name: string;
-  projectName: models.Project;
+  projectName: models.ProjectName;
 }

@@ -13,8 +13,8 @@ import (
 	"testing"
 
 $(test -n "$with_project" && echo "	\"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal\"")
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -30,7 +30,7 @@ func TestHandlers_Delete${pascal_name}(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+$(test -n "$with_project" && echo "		pj := models.ProjectNameDemo
 		projectID := internal.ProjectIDByName[pj]")
 
 	srv, err := runTestServer(t, context.Background(), testPool)
@@ -92,7 +92,7 @@ func TestHandlers_Create${pascal_name}(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+$(test -n "$with_project" && echo "		pj := models.ProjectNameDemo
 		projectID := internal.ProjectIDByName[pj]")
 
 	t.Run("authenticated_user", func(t *testing.T) {
@@ -134,7 +134,7 @@ func TestHandlers_Get${pascal_name}(t *testing.T) {
 	srv.setupCleanup(t)
 	require.NoError(t, err, "Couldn't run test server: %s\n")
 
-$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+$(test -n "$with_project" && echo "		pj := models.ProjectNameDemo
 		projectID := internal.ProjectIDByName[pj]")
 
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
@@ -178,7 +178,7 @@ func TestHandlers_Update${pascal_name}(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-$(test -n "$with_project" && echo "		pj := models.ProjectDemo
+$(test -n "$with_project" && echo "		pj := models.ProjectNameDemo
 		projectID := internal.ProjectIDByName[pj]")
 
 	srv, err := runTestServer(t, context.Background(), testPool)

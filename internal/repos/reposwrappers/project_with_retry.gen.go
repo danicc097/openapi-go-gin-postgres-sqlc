@@ -9,9 +9,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
@@ -35,7 +34,7 @@ func NewProjectWithRetry(base repos.Project, logger *zap.SugaredLogger, retryCou
 }
 
 // ByID implements repos.Project
-func (_d ProjectWithRetry) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithRetry) ByID(ctx context.Context, d models.DBTX, id models.ProjectID, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT ProjectWithRetryByID")
 		if err != nil {
@@ -75,7 +74,7 @@ func (_d ProjectWithRetry) ByID(ctx context.Context, d db.DBTX, id db.ProjectID,
 }
 
 // ByName implements repos.Project
-func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithRetry) ByName(ctx context.Context, d models.DBTX, name models.ProjectName, opts ...models.ProjectSelectConfigOption) (pp1 *models.Project, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT ProjectWithRetryByName")
 		if err != nil {
@@ -115,7 +114,7 @@ func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name models.Pr
 }
 
 // IsTeamInProject implements repos.Project
-func (_d ProjectWithRetry) IsTeamInProject(ctx context.Context, d db.DBTX, arg db.IsTeamInProjectParams) (b1 bool, err error) {
+func (_d ProjectWithRetry) IsTeamInProject(ctx context.Context, d models.DBTX, arg models.IsTeamInProjectParams) (b1 bool, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT ProjectWithRetryIsTeamInProject")
 		if err != nil {
