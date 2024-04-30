@@ -21,6 +21,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const configModeModels = "models"
+
 type configuration struct {
 	codegen.Configuration `yaml:",inline"`
 
@@ -144,15 +146,17 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 		"should_exclude_type": func(t string) bool {
 			stName := strings.TrimPrefix(t, "externalRef0.")
 
-			if config.Mode == "models" && (strings.HasPrefix(stName, "Services") || slices.Contains(serverTypes, stName)) {
+			if config.Mode == configModeModels && (strings.HasPrefix(stName, "Services") || slices.Contains(serverTypes, stName)) {
 				return true
 			}
-			if config.Mode != "models" && slices.Contains(serverTypes, stName) {
+			if config.Mode != configModeModels && slices.Contains(serverTypes, stName) {
 				return false
 			}
-			for _, typ := range types {
-				if stName == typ {
-					return true
+			if config.Mode != configModeModels {
+				for _, typ := range types {
+					if stName == typ {
+						return true
+					}
 				}
 			}
 			// TODO: return false if in x-models-type: true

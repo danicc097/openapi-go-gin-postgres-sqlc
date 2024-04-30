@@ -168,7 +168,7 @@ func newSpecReflector() *openapi3.Reflector {
 
 			// PkgPath is empty for top level struct instance via struct{} (see docs)
 			// therefore we cannot append vendor extensions via gen_schema.
-			// for top level schemas we must check for Db([A-Z])* and append
+			// for top level schemas we must check for Db[A-Z]* and append
 			isDbType := strings.HasSuffix(t.PkgPath(), "/db")
 			if n := t.Name(); isDbType {
 				params.Schema.ExtraProperties = map[string]any{
@@ -178,6 +178,13 @@ func newSpecReflector() *openapi3.Reflector {
 						"path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models",
 					},
 					"x-is-generated": true,
+				}
+			}
+			// same reasoning as above, must be checked in project script
+			isRestType := strings.HasSuffix(t.PkgPath(), "/rest")
+			if n := t.Name(); isRestType {
+				params.Schema.ExtraProperties = map[string]any{
+					"x-go-name": strings.TrimPrefix(n, "Rest") + "Public",
 				}
 			}
 

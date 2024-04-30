@@ -570,7 +570,7 @@ generate_models_mappings() {
 package internal
 
 import (
-  db "$GOMOD_PKG/$PG_REPO_GEN/models"
+  "$GOMOD_PKG/$PG_REPO_GEN/models"
 )
 
 
@@ -878,6 +878,11 @@ EOF
     )
 
     echo "models_config: $models_config"
+
+    #  TODO: x-go-name for rest models created for gen/models should have suffix Public
+    # (will need gen in both gen_schema and outside, since struct instances dont have PkgPath in reflection)
+    # this will only affect oapi-codegen. however it will mess server gen up
+    # see https://github.com/deepmap/oapi-codegen?tab=readme-ov-file#openapi-extensions
 
     oapi-codegen --config <(echo "$models_config") --types "$types_list" "$SPEC_PATH" || err "Failed types generation"
     oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models --server-types "$server_types_list" --types "$types_list" "$paths_file" || err "Failed server generation"
@@ -2520,12 +2525,20 @@ $(join_by $'\n' "${db_prefix_clashes[@]}")"
 
   schema_keys=$(yq eval '.components.schemas | keys | .[]' "$gen_schema_spec_path")
 
+  # see gen_schema.go for extensions to append
   for schema_key in $schema_keys; do
     if [[ $schema_key =~ ^Db[A-Z].*$ ]]; then
       go_type="db.${schema_key#Db}"
 
       yq eval -i \
         '.components.schemas."'$schema_key'" += {"x-go-type": "'$go_type'", "x-go-type-import": {"name": "db", "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"}}' \
+        "$gen_schema_spec_path"
+    fi
+    if [[ $schema_key =~ ^Rest[A-Z].*$ ]]; then
+      go_name="${schema_key#Rest}Public"
+
+      yq eval -i \
+        '.components.schemas."'$schema_key'" += {"x-go-name": "'$go_name'"}' \
         "$gen_schema_spec_path"
     fi
   done

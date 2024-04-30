@@ -45,7 +45,9 @@ func GenerateDefaultFilters(entity models.TableEntity, paginationParams models.P
 			continue
 		}
 
-		disc, err := pag.Filter.Discriminator()
+		// disc, err := pag.Filter.Discriminator()
+		disc := "a"
+		var err error
 		if err != nil {
 			return nil, fmt.Errorf("discriminator: %w", err)
 		}
@@ -62,7 +64,8 @@ func GenerateDefaultFilters(entity models.TableEntity, paginationParams models.P
 
 		pag.Filter.FromQueryParams = true // can come from both body or params
 
-		v, err := pag.Filter.ValueByDiscriminator()
+		// v, err := pag.Filter.ValueByDiscriminator()
+		var v interface{}
 		if err != nil {
 			return nil, fmt.Errorf("could not get value by discriminator: %w", err)
 		}

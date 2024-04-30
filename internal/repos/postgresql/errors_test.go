@@ -9,7 +9,6 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
-	models1 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
@@ -23,11 +22,11 @@ func TestUserFriendlyPgErrors(t *testing.T) {
 	witRepo := reposwrappers.NewWorkItemTagWithRetry(postgresql.NewWorkItemTag(), logger, 10, 65*time.Millisecond)
 
 	type want struct {
-		models1.WorkItemTagCreateParams
+		models.WorkItemTagCreateParams
 	}
 
 	type args struct {
-		params models1.WorkItemTagCreateParams
+		params models.WorkItemTagCreateParams
 	}
 
 	t.Run("unique and foreign key violations show user-friendly errors", func(t *testing.T) {

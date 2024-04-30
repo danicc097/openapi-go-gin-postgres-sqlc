@@ -109,7 +109,7 @@ type SharedWorkItemJoins struct {
 type WorkItemBase struct {
 	models.WorkItem
 	SharedWorkItemJoins
-	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
+	ProjectName ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
 }
 
 type DemoWorkItem struct {
@@ -124,7 +124,7 @@ type DemoTwoWorkItem struct {
 }
 
 type ProjectBoard struct {
-	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
+	ProjectName ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
 }
 
 type CreateProjectBoardRequest struct {
@@ -194,12 +194,12 @@ type UpdateTimeEntryRequest struct {
 }
 
 type CreateDemoWorkItemRequest struct {
-	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
+	ProjectName ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
 	services.DemoWorkItemCreateParams
 }
 
 type CreateDemoTwoWorkItemRequest struct {
-	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
+	ProjectName ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
 	services.DemoTwoWorkItemCreateParams
 }
 

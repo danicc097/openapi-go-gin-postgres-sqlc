@@ -16,8 +16,7 @@ import (
 	"path"
 	"strings"
 
-	externalRef0 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	externalRef0 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/openapi"
 	"github.com/getkin/kin-openapi/openapi3"
@@ -552,7 +551,7 @@ type Scopes = []externalRef0.Scope
 type ServicesMember struct {
 	// Role is generated from database enum 'work_item_role'.
 	Role   externalRef0.WorkItemRole `json:"role"`
-	UserID externalRef0.DbUserID     `json:"userID"`
+	UserID externalRef0.UserID     `json:"userID"`
 }
 
 /* Ignoring existing struct (rest/models.go) SharedWorkItemJoins */
@@ -2823,7 +2822,7 @@ type GetProjectResponseObject interface {
 	VisitGetProjectResponse(w http.ResponseWriter) error
 }
 
-type GetProject200JSONResponse externalRef0.DbProject
+type GetProject200JSONResponse externalRef0.Project
 
 func (response GetProject200JSONResponse) VisitGetProjectResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -2928,7 +2927,7 @@ func (response UpdateProjectConfig204Response) VisitUpdateProjectConfigResponse(
 
 type InitializeProjectRequestObject struct {
 	ProjectName externalRef0.ProjectName `json:"projectName"`
-	Body        *externalRef0.InitializeProjectJSONRequestBody
+	// Body        *externalRef0.InitializeProjectJSONRequestBody
 }
 
 type InitializeProjectResponseObject interface {
@@ -4664,13 +4663,13 @@ func (sh *strictHandlers) InitializeProject(ctx *gin.Context, projectName extern
 	request.ProjectName = projectName
 
 	// InitializeProjectRequest
-	var body externalRef0.InitializeProjectJSONRequestBody
+	var body any
 	if err := ctx.ShouldBind(&body); err != nil {
 		ctx.Status(http.StatusBadRequest)
 		ctx.Error(err)
 		return
 	}
-	request.Body = &body
+	// request.Body = &body
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.InitializeProject(ctx, request.(InitializeProjectRequestObject))
