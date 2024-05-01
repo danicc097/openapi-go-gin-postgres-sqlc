@@ -457,7 +457,7 @@ func ({{ short $t }} *{{$t.GoName}}) SetUpdateParams(params *{{$t.GoName}}Update
 {{ $suffix := print "Paginated" }}
 // {{ func_name_context $t $suffix }} returns a cursor-paginated list of {{$t.GoName}}.
 // At least one cursor is required.
-{{ func_context $t $suffix "" $t "cursor models.PaginationCursor" }} {
+{{ func_context $t $suffix "" $t "cursor PaginationCursor" }} {
 	{{ initial_opts $t }}
 
 	for _, o := range opts {
@@ -479,7 +479,7 @@ func ({{ short $t }} *{{$t.GoName}}) SetUpdateParams(params *{{$t.GoName}}Update
   }
 
   op := "<"
-  if cursor.Direction == models.DirectionAsc {
+  if cursor.Direction == DirectionAsc {
     op = ">"
   }
   c.filters[fmt.Sprintf("{{$t.SQLName}}.%s %s $i", field.Db, op)] = []any{*cursor.Value}

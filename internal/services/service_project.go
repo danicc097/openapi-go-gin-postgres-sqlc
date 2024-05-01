@@ -7,9 +7,8 @@ import (
 	"strings"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.uber.org/zap"
 )
 
@@ -26,7 +25,7 @@ func NewProject(logger *zap.SugaredLogger, repos *repos.Repos) *Project {
 	}
 }
 
-func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID db.ProjectID) (*db.Project, error) {
+func (p *Project) ByID(ctx context.Context, d models.DBTX, projectID models.ProjectID) (*models.Project, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	project, err := p.repos.Project.ByID(ctx, d, projectID)
@@ -37,7 +36,7 @@ func (p *Project) ByID(ctx context.Context, d db.DBTX, projectID db.ProjectID) (
 	return project, nil
 }
 
-func (p *Project) ByName(ctx context.Context, d db.DBTX, name models.ProjectName) (*db.Project, error) {
+func (p *Project) ByName(ctx context.Context, d models.DBTX, name models.ProjectName) (*models.Project, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	project, err := p.repos.Project.ByName(ctx, d, name)

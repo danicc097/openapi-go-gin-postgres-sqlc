@@ -6,9 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	"github.com/stretchr/testify/assert"
@@ -21,13 +20,13 @@ func TestWorkItemComment_Update(t *testing.T) {
 	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectNameDemo)
 
 	type args struct {
-		id     db.WorkItemCommentID
-		params db.WorkItemCommentUpdateParams
+		id     models.WorkItemCommentID
+		params models.WorkItemCommentUpdateParams
 	}
 	type params struct {
 		name        string
 		args        args
-		want        *db.WorkItemComment
+		want        *models.WorkItemComment
 		errContains string
 	}
 
@@ -36,11 +35,11 @@ func TestWorkItemComment_Update(t *testing.T) {
 			name: "updated",
 			args: args{
 				id:     workitemcomment.WorkItemCommentID,
-				params: db.WorkItemCommentUpdateParams{
+				params: models.WorkItemCommentUpdateParams{
 					// TODO: set fields to update as in crud-api-tests.go.tmpl.bash
 				},
 			},
-			want: func() *db.WorkItemComment {
+			want: func() *models.WorkItemComment {
 				u := *workitemcomment
 				// TODO: set updated fields to expected values as in crud-api-tests.go.tmpl.bash
 
@@ -85,7 +84,7 @@ func TestWorkItemComment_Delete(t *testing.T) {
 	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectNameDemo)
 
 	type args struct {
-		id db.WorkItemCommentID
+		id models.WorkItemCommentID
 	}
 	type params struct {
 		name        string
@@ -129,11 +128,11 @@ func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 
 	workItemCommentRepo := reposwrappers.NewWorkItemCommentWithRetry(postgresql.NewWorkItemComment(), logger, 10, 65*time.Millisecond)
 
-	uniqueCallback := func(t *testing.T, res *db.WorkItemComment) {
+	uniqueCallback := func(t *testing.T, res *models.WorkItemComment) {
 		assert.Equal(t, res.WorkItemCommentID, workitemcomment.WorkItemCommentID)
 	}
 
-	uniqueTestCases := []filterTestCase[*db.WorkItemComment]{
+	uniqueTestCases := []filterTestCase[*models.WorkItemComment]{
 		{
 			name:       "id",
 			filter:     workitemcomment.WorkItemCommentID,
@@ -152,11 +151,11 @@ func TestWorkItemComment_Create(t *testing.T) {
 
 	type want struct {
 		// NOTE: include db-generated fields here to test equality as well
-		db.WorkItemCommentCreateParams
+		models.WorkItemCommentCreateParams
 	}
 
 	type args struct {
-		params db.WorkItemCommentCreateParams
+		params models.WorkItemCommentCreateParams
 	}
 
 	t.Run("correct_workItemComment", func(t *testing.T) {

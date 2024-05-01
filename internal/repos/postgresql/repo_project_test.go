@@ -7,9 +7,8 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/google/go-cmp/cmp"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
@@ -21,12 +20,12 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 
 	projectRepo := postgresql.NewProject()
 
-	uniqueTestCases := []filterTestCase[*db.Project]{
+	uniqueTestCases := []filterTestCase[*models.Project]{
 		{
 			name:       "id",
 			filter:     internal.ProjectIDByName[models.ProjectNameDemo],
 			repoMethod: reflect.ValueOf(projectRepo.ByID),
-			callback: func(t *testing.T, res *db.Project) {
+			callback: func(t *testing.T, res *models.Project) {
 				assert.Equal(t, res.ProjectID, internal.ProjectIDByName[models.ProjectNameDemo])
 			},
 		},
@@ -34,7 +33,7 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 			name:       "name",
 			filter:     models.ProjectNameDemo,
 			repoMethod: reflect.ValueOf(projectRepo.ByName),
-			callback: func(t *testing.T, res *db.Project) {
+			callback: func(t *testing.T, res *models.Project) {
 				assert.Equal(t, res.ProjectID, internal.ProjectIDByName[models.ProjectNameDemo])
 			},
 		},

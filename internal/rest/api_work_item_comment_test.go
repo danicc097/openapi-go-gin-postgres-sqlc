@@ -6,8 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
@@ -95,15 +94,13 @@ func TestHandlers_CreateWorkItemComment(t *testing.T) {
 			Role:       role,
 			WithAPIKey: true,
 			Scopes:     scopes,
-			TeamIDs:    []db.TeamID{teamf.TeamID},
+			TeamIDs:    []models.TeamID{teamf.TeamID},
 		})
 		demoWorkItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(ufixture.User), teamf.TeamID)
 		require.NoError(t, err)
 
 		randomWorkItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(ufixture.UserID, demoWorkItemf.WorkItemID)
-		body := rest.CreateWorkItemCommentRequest{
-			WorkItemCommentCreateParams: *randomWorkItemCommentCreateParams,
-		}
+		body := models.CreateWorkItemCommentRequest(*randomWorkItemCommentCreateParams)
 
 		res, err := srv.client.CreateWorkItemCommentWithResponse(context.Background(), int(demoWorkItemf.WorkItemID), body, ReqWithAPIKey(ufixture.APIKey.APIKey))
 
@@ -186,21 +183,19 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 	tests := []struct {
 		name                    string
 		status                  int
-		body                    rest.UpdateWorkItemCommentRequest
+		body                    models.UpdateWorkItemCommentRequest
 		validationErrorContains []string
 	}{
 		{
 			name:   "valid work item comment update",
 			status: http.StatusOK,
-			body: func() rest.UpdateWorkItemCommentRequest {
+			body: func() models.UpdateWorkItemCommentRequest {
 				randomWorkItemCommentCreateParams := postgresqlrandom.WorkItemCommentCreateParams(ufixture.UserID, demoWorkItemf.WorkItemID)
 
-				return rest.UpdateWorkItemCommentRequest{
-					WorkItemCommentUpdateParams: db.WorkItemCommentUpdateParams{
-						Message:    pointers.New(randomWorkItemCommentCreateParams.Message),
-						UserID:     pointers.New(randomWorkItemCommentCreateParams.UserID),
-						WorkItemID: pointers.New(randomWorkItemCommentCreateParams.WorkItemID),
-					},
+				return models.UpdateWorkItemCommentRequest{
+					Message:    pointers.New(randomWorkItemCommentCreateParams.Message),
+					UserID:     pointers.New(randomWorkItemCommentCreateParams.UserID),
+					WorkItemID: pointers.New(randomWorkItemCommentCreateParams.WorkItemID),
 				}
 			}(),
 		},

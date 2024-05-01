@@ -5,25 +5,25 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // TimeEntry represents the repository used for interacting with TimeEntry records.
 type TimeEntry struct {
-	q db.Querier
+	q models.Querier
 }
 
 // NewTimeEntry instantiates the TimeEntry repository.
 func NewTimeEntry() *TimeEntry {
 	return &TimeEntry{
-		q: NewQuerierWrapper(db.New()),
+		q: NewQuerierWrapper(models.New()),
 	}
 }
 
 var _ repos.TimeEntry = (*TimeEntry)(nil)
 
-func (wit *TimeEntry) Create(ctx context.Context, d db.DBTX, params *db.TimeEntryCreateParams) (*db.TimeEntry, error) {
-	timeEntry, err := db.CreateTimeEntry(ctx, d, params)
+func (wit *TimeEntry) Create(ctx context.Context, d models.DBTX, params *models.TimeEntryCreateParams) (*models.TimeEntry, error) {
+	timeEntry, err := models.CreateTimeEntry(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("could not create time entry: %w", ParseDBErrorDetail(err))
 	}
@@ -31,7 +31,7 @@ func (wit *TimeEntry) Create(ctx context.Context, d db.DBTX, params *db.TimeEntr
 	return timeEntry, nil
 }
 
-func (wit *TimeEntry) Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (*db.TimeEntry, error) {
+func (wit *TimeEntry) Update(ctx context.Context, d models.DBTX, id models.TimeEntryID, params *models.TimeEntryUpdateParams) (*models.TimeEntry, error) {
 	timeEntry, err := wit.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get timeEntry by id %w", ParseDBErrorDetail(err))
@@ -47,8 +47,8 @@ func (wit *TimeEntry) Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, 
 	return timeEntry, err
 }
 
-func (wit *TimeEntry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID, opts ...db.TimeEntrySelectConfigOption) (*db.TimeEntry, error) {
-	timeEntry, err := db.TimeEntryByTimeEntryID(ctx, d, id, opts...)
+func (wit *TimeEntry) ByID(ctx context.Context, d models.DBTX, id models.TimeEntryID, opts ...models.TimeEntrySelectConfigOption) (*models.TimeEntry, error) {
+	timeEntry, err := models.TimeEntryByTimeEntryID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get timeEntry: %w", ParseDBErrorDetail(err))
 	}
@@ -56,8 +56,8 @@ func (wit *TimeEntry) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID, op
 	return timeEntry, nil
 }
 
-func (wit *TimeEntry) Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (*db.TimeEntry, error) {
-	timeEntry := &db.TimeEntry{
+func (wit *TimeEntry) Delete(ctx context.Context, d models.DBTX, id models.TimeEntryID) (*models.TimeEntry, error) {
+	timeEntry := &models.TimeEntry{
 		TimeEntryID: id,
 	}
 

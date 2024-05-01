@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -66,7 +65,7 @@ func CreateXoTestsTeam(ctx context.Context, db DB, params *XoTestsTeamCreatePara
 
 type XoTestsTeamSelectConfig struct {
 	limit   string
-	orderBy map[string]models.Direction
+	orderBy map[string]Direction
 	joins   XoTestsTeamJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -84,7 +83,7 @@ func WithXoTestsTeamLimit(limit int) XoTestsTeamSelectConfigOption {
 
 // WithXoTestsTeamOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func WithXoTestsTeamOrderBy(rows map[string]*models.Direction) XoTestsTeamSelectConfigOption {
+func WithXoTestsTeamOrderBy(rows map[string]*Direction) XoTestsTeamSelectConfigOption {
 	return func(s *XoTestsTeamSelectConfig) {
 		te := XoTestsEntityFields[XoTestsTableEntityXoTestsTeam]
 		for dbcol, dir := range rows {
@@ -240,12 +239,12 @@ func (xtt *XoTestsTeam) Delete(ctx context.Context, db DB) error {
 
 // XoTestsTeamPaginated returns a cursor-paginated list of XoTestsTeam.
 // At least one cursor is required.
-func XoTestsTeamPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsTeamSelectConfigOption) ([]XoTestsTeam, error) {
+func XoTestsTeamPaginated(ctx context.Context, db DB, cursor PaginationCursor, opts ...XoTestsTeamSelectConfigOption) ([]XoTestsTeam, error) {
 	c := &XoTestsTeamSelectConfig{
 		joins:   XoTestsTeamJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 	}
 
 	for _, o := range opts {
@@ -261,7 +260,7 @@ func XoTestsTeamPaginated(ctx context.Context, db DB, cursor models.PaginationCu
 	}
 
 	op := "<"
-	if cursor.Direction == models.DirectionAsc {
+	if cursor.Direction == DirectionAsc {
 		op = ">"
 	}
 	c.filters[fmt.Sprintf("teams.%s %s $i", field.Db, op)] = []any{*cursor.Value}

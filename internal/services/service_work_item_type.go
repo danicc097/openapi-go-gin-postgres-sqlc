@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.uber.org/zap"
 )
 
@@ -23,7 +23,7 @@ func NewWorkItemType(logger *zap.SugaredLogger, repos *repos.Repos) *WorkItemTyp
 }
 
 // ByID gets a work item type by ID.
-func (wit *WorkItemType) ByID(ctx context.Context, d db.DBTX, id db.WorkItemTypeID) (*db.WorkItemType, error) {
+func (wit *WorkItemType) ByID(ctx context.Context, d models.DBTX, id models.WorkItemTypeID) (*models.WorkItemType, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	witObj, err := wit.repos.WorkItemType.ByID(ctx, d, id)

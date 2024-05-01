@@ -6,9 +6,8 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -43,7 +42,7 @@ func NewAuthentication(logger *zap.SugaredLogger, repos *repos.Repos, pool *pgxp
 }
 
 // GetUserFromAccessToken returns a user from a token.
-func (a *Authentication) GetUserFromAccessToken(ctx context.Context, token string) (*db.User, error) {
+func (a *Authentication) GetUserFromAccessToken(ctx context.Context, token string) (*models.User, error) {
 	claims, err := a.ParseToken(ctx, token)
 	if err != nil {
 		return nil, fmt.Errorf("invalid token: %w", err)
@@ -58,7 +57,7 @@ func (a *Authentication) GetUserFromAccessToken(ctx context.Context, token strin
 }
 
 // GetUserFromAPIKey returns a user from an api key.
-func (a *Authentication) GetUserFromAPIKey(ctx context.Context, apiKey string) (*db.User, error) {
+func (a *Authentication) GetUserFromAPIKey(ctx context.Context, apiKey string) (*models.User, error) {
 	u, err := a.usvc.ByAPIKey(ctx, a.pool, apiKey)
 	if err != nil {
 		return nil, internal.WrapErrorf(err, models.ErrorCodeNotFound, "user from api key not found")
@@ -74,7 +73,7 @@ func (a *Authentication) GetUserFromAPIKey(ctx context.Context, apiKey string) (
 }
 
 // GetOrRegisterUserFromUserInfo returns a user from user info.
-func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, userinfo oidc.UserInfo) (*db.User, error) {
+func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, userinfo oidc.UserInfo) (*models.User, error) {
 	u, _ := a.usvc.ByExternalID(ctx, a.pool, userinfo.Subject)
 	role := models.RoleUser
 
@@ -90,7 +89,7 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 	// superAdmin is registered without id since an account needs to exist beforehand (created via initial-data, for any env)
 	if userinfo.Email == cfg.SuperAdmin.DefaultEmail && superAdmin.ExternalID == "" {
 		// external ID is not editable via services.
-		superAdmin, err = a.repos.User.Update(ctx, a.pool, superAdmin.UserID, &db.UserUpdateParams{
+		superAdmin, err = a.repos.User.Update(ctx, a.pool, superAdmin.UserID, &models.UserUpdateParams{
 			ExternalID: pointers.New(userinfo.Subject),
 		})
 		if err != nil {
@@ -151,7 +150,7 @@ func (a *Authentication) GetOrRegisterUserFromUserInfo(ctx context.Context, user
 }
 
 // CreateAccessTokenForUser creates a new token for a user.
-func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.User) (string, error) {
+func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *models.User) (string, error) {
 	cfg := internal.Config
 	claims := AppClaims{
 		Email:    user.Email,
@@ -177,7 +176,7 @@ func (a *Authentication) CreateAccessTokenForUser(ctx context.Context, user *db.
 }
 
 // CreateAPIKeyForUser creates a new API key for a user.
-func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *db.User) (*db.UserAPIKey, error) {
+func (a *Authentication) CreateAPIKeyForUser(ctx context.Context, user *models.User) (*models.UserAPIKey, error) {
 	uak, err := a.usvc.CreateAPIKey(ctx, a.pool, user)
 	if err != nil {
 		return nil, fmt.Errorf("usvc.CreateAPIKey: %w", err)

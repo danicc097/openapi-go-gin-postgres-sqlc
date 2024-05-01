@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -71,7 +70,7 @@ func CreateXoTestsBook(ctx context.Context, db DB, params *XoTestsBookCreatePara
 
 type XoTestsBookSelectConfig struct {
 	limit   string
-	orderBy map[string]models.Direction
+	orderBy map[string]Direction
 	joins   XoTestsBookJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -89,7 +88,7 @@ func WithXoTestsBookLimit(limit int) XoTestsBookSelectConfigOption {
 
 // WithXoTestsBookOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func WithXoTestsBookOrderBy(rows map[string]*models.Direction) XoTestsBookSelectConfigOption {
+func WithXoTestsBookOrderBy(rows map[string]*Direction) XoTestsBookSelectConfigOption {
 	return func(s *XoTestsBookSelectConfig) {
 		te := XoTestsEntityFields[XoTestsTableEntityXoTestsBook]
 		for dbcol, dir := range rows {
@@ -355,12 +354,12 @@ func (xtb *XoTestsBook) Delete(ctx context.Context, db DB) error {
 
 // XoTestsBookPaginated returns a cursor-paginated list of XoTestsBook.
 // At least one cursor is required.
-func XoTestsBookPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsBookSelectConfigOption) ([]XoTestsBook, error) {
+func XoTestsBookPaginated(ctx context.Context, db DB, cursor PaginationCursor, opts ...XoTestsBookSelectConfigOption) ([]XoTestsBook, error) {
 	c := &XoTestsBookSelectConfig{
 		joins:   XoTestsBookJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 	}
 
 	for _, o := range opts {
@@ -376,7 +375,7 @@ func XoTestsBookPaginated(ctx context.Context, db DB, cursor models.PaginationCu
 	}
 
 	op := "<"
-	if cursor.Direction == models.DirectionAsc {
+	if cursor.Direction == DirectionAsc {
 		op = ">"
 	}
 	c.filters[fmt.Sprintf("books.%s %s $i", field.Db, op)] = []any{*cursor.Value}

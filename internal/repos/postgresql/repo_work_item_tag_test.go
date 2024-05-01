@@ -5,9 +5,8 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +16,7 @@ func TestWorkItemTag_ByIndexedQueries(t *testing.T) {
 	workItemTagRepo := postgresql.NewWorkItemTag()
 	workItemTag := newRandomWorkItemTag(t, testPool, internal.ProjectIDByName[models.ProjectNameDemo])
 
-	uniqueTestCases := []filterTestCase[*db.WorkItemTag]{
+	uniqueTestCases := []filterTestCase[*models.WorkItemTag]{
 		{
 			name: "name",
 			filter: []any{
@@ -25,14 +24,14 @@ func TestWorkItemTag_ByIndexedQueries(t *testing.T) {
 				internal.ProjectIDByName[models.ProjectNameDemo],
 			},
 			repoMethod: reflect.ValueOf(workItemTagRepo.ByName),
-			callback: func(t *testing.T, res *db.WorkItemTag) {
+			callback: func(t *testing.T, res *models.WorkItemTag) {
 				assert.Equal(t, res.WorkItemTagID, workItemTag.WorkItemTagID)
 			},
 		}, {
 			name:       "id",
 			filter:     workItemTag.WorkItemTagID,
 			repoMethod: reflect.ValueOf(workItemTagRepo.ByID),
-			callback: func(t *testing.T, res *db.WorkItemTag) {
+			callback: func(t *testing.T, res *models.WorkItemTag) {
 				assert.Equal(t, res.WorkItemTagID, workItemTag.WorkItemTagID)
 			},
 		},

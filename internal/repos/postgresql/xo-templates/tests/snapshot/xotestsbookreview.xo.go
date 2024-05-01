@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -82,7 +81,7 @@ func CreateXoTestsBookReview(ctx context.Context, db DB, params *XoTestsBookRevi
 
 type XoTestsBookReviewSelectConfig struct {
 	limit   string
-	orderBy map[string]models.Direction
+	orderBy map[string]Direction
 	joins   XoTestsBookReviewJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -100,7 +99,7 @@ func WithXoTestsBookReviewLimit(limit int) XoTestsBookReviewSelectConfigOption {
 
 // WithXoTestsBookReviewOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func WithXoTestsBookReviewOrderBy(rows map[string]*models.Direction) XoTestsBookReviewSelectConfigOption {
+func WithXoTestsBookReviewOrderBy(rows map[string]*Direction) XoTestsBookReviewSelectConfigOption {
 	return func(s *XoTestsBookReviewSelectConfig) {
 		te := XoTestsEntityFields[XoTestsTableEntityXoTestsBookReview]
 		for dbcol, dir := range rows {
@@ -287,12 +286,12 @@ func (xtbr *XoTestsBookReview) Delete(ctx context.Context, db DB) error {
 
 // XoTestsBookReviewPaginated returns a cursor-paginated list of XoTestsBookReview.
 // At least one cursor is required.
-func XoTestsBookReviewPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsBookReviewSelectConfigOption) ([]XoTestsBookReview, error) {
+func XoTestsBookReviewPaginated(ctx context.Context, db DB, cursor PaginationCursor, opts ...XoTestsBookReviewSelectConfigOption) ([]XoTestsBookReview, error) {
 	c := &XoTestsBookReviewSelectConfig{
 		joins:   XoTestsBookReviewJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 	}
 
 	for _, o := range opts {
@@ -308,7 +307,7 @@ func XoTestsBookReviewPaginated(ctx context.Context, db DB, cursor models.Pagina
 	}
 
 	op := "<"
-	if cursor.Direction == models.DirectionAsc {
+	if cursor.Direction == DirectionAsc {
 		op = ">"
 	}
 	c.filters[fmt.Sprintf("book_reviews.%s %s $i", field.Db, op)] = []any{*cursor.Value}

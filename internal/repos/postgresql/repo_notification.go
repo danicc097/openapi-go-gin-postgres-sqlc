@@ -4,21 +4,20 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 )
 
 // Notification represents the repository used for interacting with Notification records.
 type Notification struct {
-	q db.Querier
+	q models.Querier
 }
 
 // NewNotification instantiates the Notification repository.
 func NewNotification() *Notification {
 	return &Notification{
-		q: NewQuerierWrapper(db.New()),
+		q: NewQuerierWrapper(models.New()),
 	}
 }
 
@@ -69,7 +68,7 @@ var _ repos.Notification = (*Notification)(nil)
 // 	return nn, nil
 // }
 
-func (u *Notification) LatestNotifications(ctx context.Context, d db.DBTX, params *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
+func (u *Notification) LatestNotifications(ctx context.Context, d models.DBTX, params *models.GetUserNotificationsParams) ([]models.GetUserNotificationsRow, error) {
 	nn, err := u.q.GetUserNotifications(ctx, d, *params)
 	if err != nil {
 		return nil, fmt.Errorf("could not get notifications for user: %w", ParseDBErrorDetail(err))
@@ -78,14 +77,14 @@ func (u *Notification) LatestNotifications(ctx context.Context, d db.DBTX, param
 	return nn, nil
 }
 
-func (u *Notification) Create(ctx context.Context, d db.DBTX, params *db.NotificationCreateParams) (*db.UserNotification, error) {
-	notification, err := db.CreateNotification(ctx, d, params)
+func (u *Notification) Create(ctx context.Context, d models.DBTX, params *models.NotificationCreateParams) (*models.UserNotification, error) {
+	notification, err := models.CreateNotification(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("could not create notification: %w", ParseDBErrorDetail(err))
 	}
 
 	// only retrieve 1 user notification at most
-	nn, err := db.UserNotificationsByNotificationID(ctx, d, notification.NotificationID, db.WithUserNotificationLimit(1))
+	nn, err := models.UserNotificationsByNotificationID(ctx, d, notification.NotificationID, models.WithUserNotificationLimit(1))
 	if len(nn) == 0 {
 		return nil, fmt.Errorf("could not create notification fan out: %w", ParseDBErrorDetail(err))
 	}
@@ -93,19 +92,19 @@ func (u *Notification) Create(ctx context.Context, d db.DBTX, params *db.Notific
 	return &nn[0], nil
 }
 
-func (u *Notification) PaginatedUserNotifications(ctx context.Context, d db.DBTX, userID db.UserID, params models.GetPaginatedNotificationsParams) ([]db.UserNotification, error) {
-	opts := []db.UserNotificationSelectConfigOption{
-		db.WithUserNotificationFilters(map[string][]any{
+func (u *Notification) PaginatedUserNotifications(ctx context.Context, d models.DBTX, userID models.UserID, params models.GetPaginatedNotificationsParams) ([]models.UserNotification, error) {
+	opts := []models.UserNotificationSelectConfigOption{
+		models.WithUserNotificationFilters(map[string][]any{
 			"user_id = $i": {userID}, // further restrictions as desired
 		}),
-		db.WithUserNotificationJoin(db.UserNotificationJoins{Notification: true}),
+		models.WithUserNotificationJoin(models.UserNotificationJoins{Notification: true}),
 	}
 	if params.Limit > 0 {
-		opts = append(opts, db.WithUserNotificationLimit(params.Limit))
+		opts = append(opts, models.WithUserNotificationLimit(params.Limit))
 	}
 
 	cursor := models.PaginationCursor{Column: "userNotificationID", Value: pointers.New[interface{}](params.Cursor), Direction: params.Direction}
-	notifications, err := db.UserNotificationPaginated(ctx, d, cursor, opts...)
+	notifications, err := models.UserNotificationPaginated(ctx, d, cursor, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could get paginated notifications: %w", ParseDBErrorDetail(err))
 	}
@@ -113,8 +112,8 @@ func (u *Notification) PaginatedUserNotifications(ctx context.Context, d db.DBTX
 	return notifications, nil
 }
 
-func (u *Notification) Delete(ctx context.Context, d db.DBTX, id db.NotificationID) (*db.Notification, error) {
-	notification := &db.Notification{
+func (u *Notification) Delete(ctx context.Context, d models.DBTX, id models.NotificationID) (*models.Notification, error) {
+	notification := &models.Notification{
 		NotificationID: id,
 	}
 

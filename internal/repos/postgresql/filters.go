@@ -5,8 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 const (
@@ -30,15 +29,15 @@ const (
 )
 
 // GenerateDefaultFilters generates SQL where clauses for a given set of pagination params.
-func GenerateDefaultFilters(entity db.TableEntity, paginationParams models.PaginationItems) (map[string][]interface{}, error) {
+func GenerateDefaultFilters(entity models.TableEntity, paginationParams models.PaginationItems) (map[string][]interface{}, error) {
 	filters := make(map[string][]interface{})
 
-	if _, ok := db.EntityFields[entity]; !ok {
+	if _, ok := models.EntityFields[entity]; !ok {
 		return nil, fmt.Errorf("invalid entity: %v", entity)
 	}
 
 	for id, pag := range paginationParams {
-		dbfilter, ok := db.EntityFields[entity][id]
+		dbfilter, ok := models.EntityFields[entity][id]
 		if !ok || !dbfilter.Public {
 			continue
 		}

@@ -5,25 +5,25 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // Team represents the repository used for interacting with Team records.
 type Team struct {
-	q db.Querier
+	q models.Querier
 }
 
 // NewTeam instantiates the Team repository.
 func NewTeam() *Team {
 	return &Team{
-		q: NewQuerierWrapper(db.New()),
+		q: NewQuerierWrapper(models.New()),
 	}
 }
 
 var _ repos.Team = (*Team)(nil)
 
-func (t *Team) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParams) (*db.Team, error) {
-	team, err := db.CreateTeam(ctx, d, params)
+func (t *Team) Create(ctx context.Context, d models.DBTX, params *models.TeamCreateParams) (*models.Team, error) {
+	team, err := models.CreateTeam(ctx, d, params)
 	if err != nil {
 		return nil, fmt.Errorf("could not create team: %w", ParseDBErrorDetail(err))
 	}
@@ -31,7 +31,7 @@ func (t *Team) Create(ctx context.Context, d db.DBTX, params *db.TeamCreateParam
 	return team, nil
 }
 
-func (t *Team) Update(ctx context.Context, d db.DBTX, id db.TeamID, params *db.TeamUpdateParams) (*db.Team, error) {
+func (t *Team) Update(ctx context.Context, d models.DBTX, id models.TeamID, params *models.TeamUpdateParams) (*models.Team, error) {
 	team, err := t.ByID(ctx, d, id)
 	if err != nil {
 		return nil, fmt.Errorf("could not get team by id %w", ParseDBErrorDetail(err))
@@ -47,8 +47,8 @@ func (t *Team) Update(ctx context.Context, d db.DBTX, id db.TeamID, params *db.T
 	return team, err
 }
 
-func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID db.ProjectID, opts ...db.TeamSelectConfigOption) (*db.Team, error) {
-	team, err := db.TeamByNameProjectID(ctx, d, name, projectID, opts...)
+func (t *Team) ByName(ctx context.Context, d models.DBTX, name string, projectID models.ProjectID, opts ...models.TeamSelectConfigOption) (*models.Team, error) {
+	team, err := models.TeamByNameProjectID(ctx, d, name, projectID, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get team: %w", ParseDBErrorDetail(err))
 	}
@@ -56,8 +56,8 @@ func (t *Team) ByName(ctx context.Context, d db.DBTX, name string, projectID db.
 	return team, nil
 }
 
-func (t *Team) ByID(ctx context.Context, d db.DBTX, id db.TeamID, opts ...db.TeamSelectConfigOption) (*db.Team, error) {
-	team, err := db.TeamByTeamID(ctx, d, id, opts...)
+func (t *Team) ByID(ctx context.Context, d models.DBTX, id models.TeamID, opts ...models.TeamSelectConfigOption) (*models.Team, error) {
+	team, err := models.TeamByTeamID(ctx, d, id, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get team: %w", ParseDBErrorDetail(err))
 	}
@@ -65,8 +65,8 @@ func (t *Team) ByID(ctx context.Context, d db.DBTX, id db.TeamID, opts ...db.Tea
 	return team, nil
 }
 
-func (t *Team) Delete(ctx context.Context, d db.DBTX, id db.TeamID) (*db.Team, error) {
-	team := &db.Team{
+func (t *Team) Delete(ctx context.Context, d models.DBTX, id models.TeamID) (*models.Team, error) {
+	team := &models.Team{
 		TeamID: id,
 	}
 

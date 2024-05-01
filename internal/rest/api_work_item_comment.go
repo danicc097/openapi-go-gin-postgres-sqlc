@@ -1,7 +1,7 @@
 package rest
 
 import (
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -49,7 +49,7 @@ func (h *StrictHandlers) UpdateWorkItemComment(c *gin.Context, request UpdateWor
 
 	params := request.Body.WorkItemCommentUpdateParams
 
-	workItemComment, err := h.svc.WorkItemComment.Update(c, tx, caller, db.WorkItemCommentID(request.WorkItemCommentID), &params)
+	workItemComment, err := h.svc.WorkItemComment.Update(c, tx, caller, models.WorkItemCommentID(request.WorkItemCommentID), &params)
 	if err != nil {
 		renderErrorResponse(c, "Could not update work item comment", err)
 
@@ -68,7 +68,7 @@ func (h *StrictHandlers) DeleteWorkItemComment(c *gin.Context, request DeleteWor
 	tx := GetTxFromCtx(c)
 	caller, _ := GetUserCallerFromCtx(c)
 
-	_, err := h.svc.WorkItemComment.Delete(c, tx, caller, db.WorkItemCommentID(request.WorkItemCommentID))
+	_, err := h.svc.WorkItemComment.Delete(c, tx, caller, models.WorkItemCommentID(request.WorkItemCommentID))
 	if err != nil {
 		renderErrorResponse(c, "Could not delete work item comment", err)
 

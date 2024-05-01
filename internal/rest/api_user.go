@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,7 +20,7 @@ func (h *StrictHandlers) UpdateUser(c *gin.Context, request UpdateUserRequestObj
 
 	tx := GetTxFromCtx(c)
 
-	user, err := h.svc.User.Update(c, tx, db.UserID{UUID: request.Id}, caller, request.Body)
+	user, err := h.svc.User.Update(c, tx, models.UserID{UUID: request.Id}, caller, request.Body)
 	if err != nil {
 		renderErrorResponse(c, "Could not update user", err)
 
@@ -42,7 +42,7 @@ func (h *StrictHandlers) UpdateUser(c *gin.Context, request UpdateUserRequestObj
 func (h *StrictHandlers) DeleteUser(c *gin.Context, request DeleteUserRequestObject) (DeleteUserResponseObject, error) {
 	tx := GetTxFromCtx(c)
 
-	_, err := h.svc.User.Delete(c, tx, db.NewUserID(request.Id))
+	_, err := h.svc.User.Delete(c, tx, models.NewUserID(request.Id))
 	if err != nil {
 		renderErrorResponse(c, "Could not delete user", err)
 
@@ -82,7 +82,7 @@ func (h *StrictHandlers) UpdateUserAuthorization(c *gin.Context, request UpdateU
 
 	tx := GetTxFromCtx(c)
 
-	if _, err := h.svc.User.UpdateUserAuthorization(c, tx, db.UserID{UUID: request.Id}, caller, request.Body); err != nil {
+	if _, err := h.svc.User.UpdateUserAuthorization(c, tx, models.UserID{UUID: request.Id}, caller, request.Body); err != nil {
 		renderErrorResponse(c, "Error updating user authorization", err)
 
 		return nil, nil
@@ -104,12 +104,12 @@ func formatCursorValue(value interface{}) (string, error) {
 	}
 }
 
-func getNextCursor(entity interface{}, jsonFieldName string, tableEntity db.TableEntity) (string, error) {
+func getNextCursor(entity interface{}, jsonFieldName string, tableEntity models.TableEntity) (string, error) {
 	if entity == nil {
 		return "", fmt.Errorf("no entity given")
 	}
 
-	if _, ok := db.EntityFields[tableEntity]; !ok {
+	if _, ok := models.EntityFields[tableEntity]; !ok {
 		return "", fmt.Errorf("no entity found")
 	}
 
@@ -139,7 +139,7 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 	nextCursor := ""
 	if len(users) > 0 {
 		lastUser := users[len(users)-1]
-		nextCursor, err = getNextCursor(lastUser, request.Params.Column, db.TableEntityUser)
+		nextCursor, err = getNextCursor(lastUser, request.Params.Column, models.TableEntityUser)
 		if err != nil {
 			renderErrorResponse(c, "Could not define next cursor", err)
 

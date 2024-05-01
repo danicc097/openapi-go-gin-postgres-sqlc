@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/jackc/pgx/v5"
@@ -25,7 +25,7 @@ func TestNotification_Create(t *testing.T) {
 
 		receiver := newRandomUser(t, testPool)
 
-		ncp := postgresqlrandom.NotificationCreateParams(nil, sender.UserID, pointers.New(receiver.UserID), db.NotificationTypePersonal)
+		ncp := postgresqlrandom.NotificationCreateParams(nil, sender.UserID, pointers.New(receiver.UserID), models.NotificationTypePersonal)
 
 		ctx := context.Background()
 		// prevent fan out trigger from affecting other tests
@@ -36,7 +36,7 @@ func TestNotification_Create(t *testing.T) {
 		_, err = notificationRepo.Create(context.Background(), tx, ncp)
 		require.NoError(t, err)
 
-		params := db.GetUserNotificationsParams{UserID: receiver.UserID.UUID, NotificationType: db.NotificationTypePersonal}
+		params := models.GetUserNotificationsParams{UserID: receiver.UserID.UUID, NotificationType: models.NotificationTypePersonal}
 		nn, err := notificationRepo.LatestNotifications(context.Background(), tx, &params)
 		require.NoError(t, err)
 
@@ -62,7 +62,7 @@ func TestNotification_Create(t *testing.T) {
 
 		receiverRank := pointers.New(3)
 
-		ncp := postgresqlrandom.NotificationCreateParams(receiverRank, sender.UserID, nil, db.NotificationTypeGlobal)
+		ncp := postgresqlrandom.NotificationCreateParams(receiverRank, sender.UserID, nil, models.NotificationTypeGlobal)
 
 		ctx := context.Background()
 		tx, err := testPool.BeginTx(ctx, pgx.TxOptions{}) // prevent fan out trigger from affecting other tests
@@ -72,13 +72,13 @@ func TestNotification_Create(t *testing.T) {
 		_, err = notificationRepo.Create(context.Background(), tx, ncp)
 		require.NoError(t, err)
 
-		notificationCount := map[db.UserID]int{
+		notificationCount := map[models.UserID]int{
 			receiverRank1.UserID: 0,
 			receiverRank3.UserID: 1,
 		}
 
 		for userID, count := range notificationCount {
-			params := db.GetUserNotificationsParams{UserID: userID.UUID, NotificationType: db.NotificationTypeGlobal}
+			params := models.GetUserNotificationsParams{UserID: userID.UUID, NotificationType: models.NotificationTypeGlobal}
 			nn, err := notificationRepo.LatestNotifications(context.Background(), tx, &params)
 			require.NoError(t, err)
 
@@ -89,7 +89,7 @@ func TestNotification_Create(t *testing.T) {
 	t.Run("error_with_no_receiver_with_personal_notification", func(t *testing.T) {
 		t.Parallel()
 
-		ncp := postgresqlrandom.NotificationCreateParams(nil, sender.UserID, nil, db.NotificationTypePersonal)
+		ncp := postgresqlrandom.NotificationCreateParams(nil, sender.UserID, nil, models.NotificationTypePersonal)
 
 		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
 		require.ErrorContains(t, err, errViolatesCheckConstraint)
@@ -98,7 +98,7 @@ func TestNotification_Create(t *testing.T) {
 	t.Run("error_with_no_rank_with_global_notification", func(t *testing.T) {
 		t.Parallel()
 
-		ncp := postgresqlrandom.NotificationCreateParams(nil, sender.UserID, nil, db.NotificationTypeGlobal)
+		ncp := postgresqlrandom.NotificationCreateParams(nil, sender.UserID, nil, models.NotificationTypeGlobal)
 
 		_, err := notificationRepo.Create(context.Background(), testPool, ncp)
 		require.ErrorContains(t, err, errViolatesCheckConstraint)

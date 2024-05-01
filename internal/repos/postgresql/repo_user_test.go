@@ -6,9 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/reposwrappers"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
@@ -24,13 +23,13 @@ func TestUser_Update(t *testing.T) {
 	user := newRandomUser(t, testPool)
 
 	type args struct {
-		id     db.UserID
-		params db.UserUpdateParams
+		id     models.UserID
+		params models.UserUpdateParams
 	}
 	type params struct {
 		name        string
 		args        args
-		want        *db.User
+		want        *models.User
 		errContains string
 	}
 	tests := []params{
@@ -38,12 +37,12 @@ func TestUser_Update(t *testing.T) {
 			name: "updated",
 			args: args{
 				id: user.UserID,
-				params: db.UserUpdateParams{
+				params: models.UserUpdateParams{
 					RoleRank: pointers.New(10),
 					Scopes:   &models.Scopes{"test", "test", "test"},
 				},
 			},
-			want: func() *db.User {
+			want: func() *models.User {
 				u := *user
 				u.RoleRank = 10
 				u.Scopes = models.Scopes{"test"}
@@ -93,7 +92,7 @@ func TestUser_SoftDelete(t *testing.T) {
 	user := newRandomUser(t, testPool)
 
 	type args struct {
-		id db.UserID
+		id models.UserID
 	}
 	type params struct {
 		name        string
@@ -156,17 +155,17 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	team := newRandomTeam(t, testPool, project.ProjectID)
 	user := newRandomUser(t, testPool)
 
-	_, err = db.CreateUserTeam(ctx, testPool, &db.UserTeamCreateParams{Member: user.UserID, TeamID: team.TeamID})
+	_, err = models.CreateUserTeam(ctx, testPool, &models.UserTeamCreateParams{Member: user.UserID, TeamID: team.TeamID})
 	require.NoError(t, err)
 
-	team, err = teamRepo.ByID(ctx, testPool, team.TeamID, db.WithTeamJoin(db.TeamJoins{Members: true, Project: true}))
+	team, err = teamRepo.ByID(ctx, testPool, team.TeamID, models.WithTeamJoin(models.TeamJoins{Members: true, Project: true}))
 	require.NoError(t, err)
 
-	uniqueCallback := func(t *testing.T, res *db.User) {
+	uniqueCallback := func(t *testing.T, res *models.User) {
 		assert.Equal(t, res.UserID, user.UserID)
 	}
 
-	uniqueTestCases := []filterTestCase[*db.User]{
+	uniqueTestCases := []filterTestCase[*models.User]{
 		{
 			name:       "external_id",
 			filter:     user.ExternalID,
@@ -197,12 +196,12 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 		runGenericFilterTests(t, tc)
 	}
 
-	nonUniqueTestCases := []filterTestCase[[]db.User]{
+	nonUniqueTestCases := []filterTestCase[[]models.User]{
 		{
 			name:       "team_id",
 			filter:     team.TeamID,
 			repoMethod: reflect.ValueOf(userRepo.ByTeam),
-			callback: func(t *testing.T, res []db.User) {
+			callback: func(t *testing.T, res []models.User) {
 				assert.Len(t, res, 1)
 				assert.Equal(t, res[0].UserID, user.UserID)
 				assert.Equal(t, (*team.MembersJoin)[0].UserID, user.UserID)
@@ -213,7 +212,7 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 			name:       "project_id",
 			filter:     project.ProjectID,
 			repoMethod: reflect.ValueOf(userRepo.ByProject),
-			callback: func(t *testing.T, res []db.User) {
+			callback: func(t *testing.T, res []models.User) {
 				assert.GreaterOrEqual(t, len(res), 1)
 				found := false
 				// projects and some related entities are hardcoded. Repos could have RandomProjectCreate regardless
@@ -256,7 +255,7 @@ func TestUser_UserAPIKeys(t *testing.T) {
 
 		errContains := "could not save api key"
 
-		_, err := userRepo.CreateAPIKey(context.Background(), testPool, &db.User{UserID: db.NewUserID(uuid.New())})
+		_, err := userRepo.CreateAPIKey(context.Background(), testPool, &models.User{UserID: models.NewUserID(uuid.New())})
 
 		require.ErrorContains(t, err, errContains)
 	})
@@ -310,11 +309,11 @@ func TestUser_Create(t *testing.T) {
 
 	type want struct {
 		FullName *string
-		db.UserCreateParams
+		models.UserCreateParams
 	}
 
 	type args struct {
-		params db.UserCreateParams
+		params models.UserCreateParams
 	}
 
 	t.Run("correct_user", func(t *testing.T) {

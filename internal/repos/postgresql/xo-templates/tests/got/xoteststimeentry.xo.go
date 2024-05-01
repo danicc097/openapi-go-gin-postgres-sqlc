@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -84,7 +83,7 @@ func CreateXoTestsTimeEntry(ctx context.Context, db DB, params *XoTestsTimeEntry
 
 type XoTestsTimeEntrySelectConfig struct {
 	limit   string
-	orderBy map[string]models.Direction
+	orderBy map[string]Direction
 	joins   XoTestsTimeEntryJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -102,7 +101,7 @@ func WithXoTestsTimeEntryLimit(limit int) XoTestsTimeEntrySelectConfigOption {
 
 // WithXoTestsTimeEntryOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func WithXoTestsTimeEntryOrderBy(rows map[string]*models.Direction) XoTestsTimeEntrySelectConfigOption {
+func WithXoTestsTimeEntryOrderBy(rows map[string]*Direction) XoTestsTimeEntrySelectConfigOption {
 	return func(s *XoTestsTimeEntrySelectConfig) {
 		te := XoTestsEntityFields[XoTestsTableEntityXoTestsTimeEntry]
 		for dbcol, dir := range rows {
@@ -277,12 +276,12 @@ func (xtte *XoTestsTimeEntry) Delete(ctx context.Context, db DB) error {
 
 // XoTestsTimeEntryPaginated returns a cursor-paginated list of XoTestsTimeEntry.
 // At least one cursor is required.
-func XoTestsTimeEntryPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsTimeEntrySelectConfigOption) ([]XoTestsTimeEntry, error) {
+func XoTestsTimeEntryPaginated(ctx context.Context, db DB, cursor PaginationCursor, opts ...XoTestsTimeEntrySelectConfigOption) ([]XoTestsTimeEntry, error) {
 	c := &XoTestsTimeEntrySelectConfig{
 		joins:   XoTestsTimeEntryJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 	}
 
 	for _, o := range opts {
@@ -298,7 +297,7 @@ func XoTestsTimeEntryPaginated(ctx context.Context, db DB, cursor models.Paginat
 	}
 
 	op := "<"
-	if cursor.Direction == models.DirectionAsc {
+	if cursor.Direction == DirectionAsc {
 		op = ">"
 	}
 	c.filters[fmt.Sprintf("time_entries.%s %s $i", field.Db, op)] = []any{*cursor.Value}

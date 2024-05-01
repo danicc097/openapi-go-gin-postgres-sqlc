@@ -10,7 +10,7 @@ package rest
  */
 
 import (
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 )
 
@@ -36,29 +36,29 @@ type PaginatedDemoWorkItemsResponse = PaginationBaseResponse[CacheDemoWorkItemRe
  */
 
 type CacheDemoWorkItemResponse struct {
-	db.CacheDemoWorkItem
+	models.CacheDemoWorkItem
 }
 
 type NotificationResponse struct {
-	db.UserNotification
-	Notification db.Notification `json:"notification" required:"true"` // notification_id clash
+	models.UserNotification
+	Notification models.Notification `json:"notification" required:"true"` // notification_id clash
 }
 
 // UserResponse represents an OpenAPI schema response for a UserResponse.
 type UserResponse struct {
-	*db.User
+	*models.User
 	// Role replaces db RoleRank
 	Role Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 
-	APIKey   *db.UserAPIKey `json:"apiKey,omitempty"`
-	Teams    *[]db.Team     `json:"teams"`
-	Projects *[]db.Project  `json:"projects"`
+	APIKey   *models.UserAPIKey `json:"apiKey,omitempty"`
+	Teams    *[]models.Team     `json:"teams"`
+	Projects *[]models.Project  `json:"projects"`
 }
 
 type GetCurrentUserQueryParameters struct {
 	// if need arises somehow, exclude some joins from json via a new SQL comment annotation.
 	// joins only accumulate with the ones previously set.
-	Joins db.UserJoins `json:"joins"`
+	Joins models.UserJoins `json:"joins"`
 }
 
 // type GetPaginatedUsersQueryParameters struct {
@@ -81,7 +81,7 @@ type GetCurrentUserQueryParameters struct {
 type GetCacheDemoWorkItemQueryParameters struct {
 	// if need arises, exclude some joins from json via a new SQL comment annotation.
 	// joins only accumulate with the ones previously set.
-	Joins db.CacheDemoWorkItemJoins `json:"joins"`
+	Joins models.CacheDemoWorkItemJoins `json:"joins"`
 	// TODO: Filters. easier to generate a default Filter struct via xo
 	// since we know the types (see mantine-react-table filters json gen and define struct accordingly)
 	// then xo filters (where or having) get automatically built. see excalidraw
@@ -99,15 +99,15 @@ type PaginatedUsersResponse = PaginationBaseResponse[UserResponse]
 
 // NOTE: keep in sync with base workitem getSharedDBOpts.
 type SharedWorkItemJoins struct {
-	TimeEntries      *[]db.TimeEntry              `json:"timeEntries"`
-	WorkItemComments *[]db.WorkItemComment        `json:"workItemComments"`
-	Members          *[]db.WorkItemM2MAssigneeWIA `json:"members"`
-	WorkItemTags     *[]db.WorkItemTag            `json:"workItemTags"`
-	WorkItemType     *db.WorkItemType             `json:"workItemType"`
+	TimeEntries      *[]models.TimeEntry              `json:"timeEntries"`
+	WorkItemComments *[]models.WorkItemComment        `json:"workItemComments"`
+	Members          *[]models.WorkItemM2MAssigneeWIA `json:"members"`
+	WorkItemTags     *[]models.WorkItemTag            `json:"workItemTags"`
+	WorkItemType     *models.WorkItemType             `json:"workItemType"`
 }
 
 type WorkItemBase struct {
-	db.WorkItem
+	models.WorkItem
 	SharedWorkItemJoins
 	ProjectName ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
 }
@@ -115,12 +115,12 @@ type WorkItemBase struct {
 type DemoWorkItemResponse struct {
 	WorkItemBase
 
-	DemoWorkItem db.DemoWorkItem `json:"demoWorkItem" required:"true"`
+	DemoWorkItem models.DemoWorkItem `json:"demoWorkItem" required:"true"`
 }
 type DemoTwoWorkItemResponse struct {
 	WorkItemBase
 
-	DemoTwoWorkItem db.DemoTwoWorkItem `json:"demoTwoWorkItem" required:"true"`
+	DemoTwoWorkItem models.DemoTwoWorkItem `json:"demoTwoWorkItem" required:"true"`
 }
 
 type ProjectBoard struct {
@@ -131,66 +131,66 @@ type CreateProjectBoardRequest struct {
 	// services models not needed yet, projectId is trivial to include in every request...
 	// if services use db CreateParams as is we can also have specific per-project logic
 	// anyway
-	Teams *[]db.TeamCreateParams        `json:"teams"`
-	Tags  *[]db.WorkItemTagCreateParams `json:"tags"`
+	Teams *[]models.TeamCreateParams        `json:"teams"`
+	Tags  *[]models.WorkItemTagCreateParams `json:"tags"`
 }
 
 type CreateWorkItemTagRequest struct {
-	db.WorkItemTagCreateParams
+	models.WorkItemTagCreateParams
 }
 type UpdateWorkItemTagRequest struct {
-	db.WorkItemTagUpdateParams
+	models.WorkItemTagUpdateParams
 }
 type WorkItemTagResponse struct {
-	db.WorkItemTag
+	models.WorkItemTag
 	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
 type CreateWorkItemTypeRequest struct {
-	db.WorkItemTypeCreateParams
+	models.WorkItemTypeCreateParams
 }
 type UpdateWorkItemTypeRequest struct {
-	db.WorkItemTypeUpdateParams
+	models.WorkItemTypeUpdateParams
 }
 type WorkItemTypeResponse struct {
-	db.WorkItemType
+	models.WorkItemType
 }
 
 type TeamResponse struct {
-	db.Team
+	models.Team
 	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
 
 type CreateTeamRequest struct {
-	db.TeamCreateParams
+	models.TeamCreateParams
 }
 
 type UpdateTeamRequest struct {
-	db.TeamUpdateParams
+	models.TeamUpdateParams
 }
 
 type ActivityResponse struct {
-	db.Activity
+	models.Activity
 	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
 
 type CreateActivityRequest struct {
-	db.ActivityCreateParams
+	models.ActivityCreateParams
 }
 
 type UpdateActivityRequest struct {
-	db.ActivityUpdateParams
+	models.ActivityUpdateParams
 }
 
 type TimeEntryResponse struct {
-	db.TimeEntry
+	models.TimeEntry
 }
 
 type CreateTimeEntryRequest struct {
-	db.TimeEntryCreateParams
+	models.TimeEntryCreateParams
 }
 
 type UpdateTimeEntryRequest struct {
-	db.TimeEntryUpdateParams
+	models.TimeEntryUpdateParams
 }
 
 type CreateDemoWorkItemRequest struct {
@@ -204,13 +204,13 @@ type CreateDemoTwoWorkItemRequest struct {
 }
 
 type WorkItemCommentResponse struct {
-	db.WorkItemComment
+	models.WorkItemComment
 }
 
 type CreateWorkItemCommentRequest struct {
-	db.WorkItemCommentCreateParams
+	models.WorkItemCommentCreateParams
 }
 
 type UpdateWorkItemCommentRequest struct {
-	db.WorkItemCommentUpdateParams
+	models.WorkItemCommentUpdateParams
 }

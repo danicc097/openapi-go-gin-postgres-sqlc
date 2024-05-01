@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -94,7 +93,7 @@ func CreateXoTestsWorkItemAssignee(ctx context.Context, db DB, params *XoTestsWo
 
 type XoTestsWorkItemAssigneeSelectConfig struct {
 	limit   string
-	orderBy map[string]models.Direction
+	orderBy map[string]Direction
 	joins   XoTestsWorkItemAssigneeJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -112,7 +111,7 @@ func WithXoTestsWorkItemAssigneeLimit(limit int) XoTestsWorkItemAssigneeSelectCo
 
 // WithXoTestsWorkItemAssigneeOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func WithXoTestsWorkItemAssigneeOrderBy(rows map[string]*models.Direction) XoTestsWorkItemAssigneeSelectConfigOption {
+func WithXoTestsWorkItemAssigneeOrderBy(rows map[string]*Direction) XoTestsWorkItemAssigneeSelectConfigOption {
 	return func(s *XoTestsWorkItemAssigneeSelectConfig) {
 		te := XoTestsEntityFields[XoTestsTableEntityXoTestsWorkItemAssignee]
 		for dbcol, dir := range rows {
@@ -345,12 +344,12 @@ func (xtwia *XoTestsWorkItemAssignee) Delete(ctx context.Context, db DB) error {
 
 // XoTestsWorkItemAssigneePaginated returns a cursor-paginated list of XoTestsWorkItemAssignee.
 // At least one cursor is required.
-func XoTestsWorkItemAssigneePaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsWorkItemAssigneeSelectConfigOption) ([]XoTestsWorkItemAssignee, error) {
+func XoTestsWorkItemAssigneePaginated(ctx context.Context, db DB, cursor PaginationCursor, opts ...XoTestsWorkItemAssigneeSelectConfigOption) ([]XoTestsWorkItemAssignee, error) {
 	c := &XoTestsWorkItemAssigneeSelectConfig{
 		joins:   XoTestsWorkItemAssigneeJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 	}
 
 	for _, o := range opts {
@@ -366,7 +365,7 @@ func XoTestsWorkItemAssigneePaginated(ctx context.Context, db DB, cursor models.
 	}
 
 	op := "<"
-	if cursor.Direction == models.DirectionAsc {
+	if cursor.Direction == DirectionAsc {
 		op = ">"
 	}
 	c.filters[fmt.Sprintf("work_item_assignee.%s %s $i", field.Db, op)] = []any{*cursor.Value}

@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -94,7 +93,7 @@ func CreateXoTestsBookAuthor(ctx context.Context, db DB, params *XoTestsBookAuth
 
 type XoTestsBookAuthorSelectConfig struct {
 	limit   string
-	orderBy map[string]models.Direction
+	orderBy map[string]Direction
 	joins   XoTestsBookAuthorJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -112,7 +111,7 @@ func WithXoTestsBookAuthorLimit(limit int) XoTestsBookAuthorSelectConfigOption {
 
 // WithXoTestsBookAuthorOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func WithXoTestsBookAuthorOrderBy(rows map[string]*models.Direction) XoTestsBookAuthorSelectConfigOption {
+func WithXoTestsBookAuthorOrderBy(rows map[string]*Direction) XoTestsBookAuthorSelectConfigOption {
 	return func(s *XoTestsBookAuthorSelectConfig) {
 		te := XoTestsEntityFields[XoTestsTableEntityXoTestsBookAuthor]
 		for dbcol, dir := range rows {
@@ -345,12 +344,12 @@ func (xtba *XoTestsBookAuthor) Delete(ctx context.Context, db DB) error {
 
 // XoTestsBookAuthorPaginated returns a cursor-paginated list of XoTestsBookAuthor.
 // At least one cursor is required.
-func XoTestsBookAuthorPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsBookAuthorSelectConfigOption) ([]XoTestsBookAuthor, error) {
+func XoTestsBookAuthorPaginated(ctx context.Context, db DB, cursor PaginationCursor, opts ...XoTestsBookAuthorSelectConfigOption) ([]XoTestsBookAuthor, error) {
 	c := &XoTestsBookAuthorSelectConfig{
 		joins:   XoTestsBookAuthorJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 	}
 
 	for _, o := range opts {
@@ -366,7 +365,7 @@ func XoTestsBookAuthorPaginated(ctx context.Context, db DB, cursor models.Pagina
 	}
 
 	op := "<"
-	if cursor.Direction == models.DirectionAsc {
+	if cursor.Direction == DirectionAsc {
 		op = ">"
 	}
 	c.filters[fmt.Sprintf("book_authors.%s %s $i", field.Db, op)] = []any{*cursor.Value}

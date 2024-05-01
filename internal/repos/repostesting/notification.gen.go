@@ -5,84 +5,84 @@ import (
 	"context"
 	"sync"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 type FakeNotification struct {
-	CreateStub        func(context.Context, db.DBTX, *db.NotificationCreateParams) (*db.UserNotification, error)
+	CreateStub        func(context.Context, models.DBTX, *models.NotificationCreateParams) (*models.UserNotification, error)
 	createMutex       sync.RWMutex
 	createArgsForCall []struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 *db.NotificationCreateParams
+		arg2 models.DBTX
+		arg3 *models.NotificationCreateParams
 	}
 	createReturns struct {
-		result1 *db.UserNotification
+		result1 *models.UserNotification
 		result2 error
 	}
 	createReturnsOnCall map[int]struct {
-		result1 *db.UserNotification
+		result1 *models.UserNotification
 		result2 error
 	}
-	DeleteStub        func(context.Context, db.DBTX, db.NotificationID) (*db.Notification, error)
+	DeleteStub        func(context.Context, models.DBTX, models.NotificationID) (*models.Notification, error)
 	deleteMutex       sync.RWMutex
 	deleteArgsForCall []struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 db.NotificationID
+		arg2 models.DBTX
+		arg3 models.NotificationID
 	}
 	deleteReturns struct {
-		result1 *db.Notification
+		result1 *models.Notification
 		result2 error
 	}
 	deleteReturnsOnCall map[int]struct {
-		result1 *db.Notification
+		result1 *models.Notification
 		result2 error
 	}
-	LatestNotificationsStub        func(context.Context, db.DBTX, *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)
+	LatestNotificationsStub        func(context.Context, models.DBTX, *models.GetUserNotificationsParams) ([]models.GetUserNotificationsRow, error)
 	latestNotificationsMutex       sync.RWMutex
 	latestNotificationsArgsForCall []struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 *db.GetUserNotificationsParams
+		arg2 models.DBTX
+		arg3 *models.GetUserNotificationsParams
 	}
 	latestNotificationsReturns struct {
-		result1 []db.GetUserNotificationsRow
+		result1 []models.GetUserNotificationsRow
 		result2 error
 	}
 	latestNotificationsReturnsOnCall map[int]struct {
-		result1 []db.GetUserNotificationsRow
+		result1 []models.GetUserNotificationsRow
 		result2 error
 	}
-	PaginatedUserNotificationsStub        func(context.Context, db.DBTX, db.UserID, models.GetPaginatedNotificationsParams) ([]db.UserNotification, error)
+	PaginatedUserNotificationsStub        func(context.Context, models.DBTX, models.UserID, models.GetPaginatedNotificationsParams) ([]models.UserNotification, error)
 	paginatedUserNotificationsMutex       sync.RWMutex
 	paginatedUserNotificationsArgsForCall []struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 db.UserID
+		arg2 models.DBTX
+		arg3 models.UserID
 		arg4 models.GetPaginatedNotificationsParams
 	}
 	paginatedUserNotificationsReturns struct {
-		result1 []db.UserNotification
+		result1 []models.UserNotification
 		result2 error
 	}
 	paginatedUserNotificationsReturnsOnCall map[int]struct {
-		result1 []db.UserNotification
+		result1 []models.UserNotification
 		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeNotification) Create(arg1 context.Context, arg2 db.DBTX, arg3 *db.NotificationCreateParams) (*db.UserNotification, error) {
+func (fake *FakeNotification) Create(arg1 context.Context, arg2 models.DBTX, arg3 *models.NotificationCreateParams) (*models.UserNotification, error) {
 	fake.createMutex.Lock()
 	ret, specificReturn := fake.createReturnsOnCall[len(fake.createArgsForCall)]
 	fake.createArgsForCall = append(fake.createArgsForCall, struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 *db.NotificationCreateParams
+		arg2 models.DBTX
+		arg3 *models.NotificationCreateParams
 	}{arg1, arg2, arg3})
 	stub := fake.CreateStub
 	fakeReturns := fake.createReturns
@@ -103,52 +103,52 @@ func (fake *FakeNotification) CreateCallCount() int {
 	return len(fake.createArgsForCall)
 }
 
-func (fake *FakeNotification) CreateCalls(stub func(context.Context, db.DBTX, *db.NotificationCreateParams) (*db.UserNotification, error)) {
+func (fake *FakeNotification) CreateCalls(stub func(context.Context, models.DBTX, *models.NotificationCreateParams) (*models.UserNotification, error)) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = stub
 }
 
-func (fake *FakeNotification) CreateArgsForCall(i int) (context.Context, db.DBTX, *db.NotificationCreateParams) {
+func (fake *FakeNotification) CreateArgsForCall(i int) (context.Context, models.DBTX, *models.NotificationCreateParams) {
 	fake.createMutex.RLock()
 	defer fake.createMutex.RUnlock()
 	argsForCall := fake.createArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeNotification) CreateReturns(result1 *db.UserNotification, result2 error) {
+func (fake *FakeNotification) CreateReturns(result1 *models.UserNotification, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	fake.createReturns = struct {
-		result1 *db.UserNotification
+		result1 *models.UserNotification
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeNotification) CreateReturnsOnCall(i int, result1 *db.UserNotification, result2 error) {
+func (fake *FakeNotification) CreateReturnsOnCall(i int, result1 *models.UserNotification, result2 error) {
 	fake.createMutex.Lock()
 	defer fake.createMutex.Unlock()
 	fake.CreateStub = nil
 	if fake.createReturnsOnCall == nil {
 		fake.createReturnsOnCall = make(map[int]struct {
-			result1 *db.UserNotification
+			result1 *models.UserNotification
 			result2 error
 		})
 	}
 	fake.createReturnsOnCall[i] = struct {
-		result1 *db.UserNotification
+		result1 *models.UserNotification
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeNotification) Delete(arg1 context.Context, arg2 db.DBTX, arg3 db.NotificationID) (*db.Notification, error) {
+func (fake *FakeNotification) Delete(arg1 context.Context, arg2 models.DBTX, arg3 models.NotificationID) (*models.Notification, error) {
 	fake.deleteMutex.Lock()
 	ret, specificReturn := fake.deleteReturnsOnCall[len(fake.deleteArgsForCall)]
 	fake.deleteArgsForCall = append(fake.deleteArgsForCall, struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 db.NotificationID
+		arg2 models.DBTX
+		arg3 models.NotificationID
 	}{arg1, arg2, arg3})
 	stub := fake.DeleteStub
 	fakeReturns := fake.deleteReturns
@@ -169,52 +169,52 @@ func (fake *FakeNotification) DeleteCallCount() int {
 	return len(fake.deleteArgsForCall)
 }
 
-func (fake *FakeNotification) DeleteCalls(stub func(context.Context, db.DBTX, db.NotificationID) (*db.Notification, error)) {
+func (fake *FakeNotification) DeleteCalls(stub func(context.Context, models.DBTX, models.NotificationID) (*models.Notification, error)) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = stub
 }
 
-func (fake *FakeNotification) DeleteArgsForCall(i int) (context.Context, db.DBTX, db.NotificationID) {
+func (fake *FakeNotification) DeleteArgsForCall(i int) (context.Context, models.DBTX, models.NotificationID) {
 	fake.deleteMutex.RLock()
 	defer fake.deleteMutex.RUnlock()
 	argsForCall := fake.deleteArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeNotification) DeleteReturns(result1 *db.Notification, result2 error) {
+func (fake *FakeNotification) DeleteReturns(result1 *models.Notification, result2 error) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = nil
 	fake.deleteReturns = struct {
-		result1 *db.Notification
+		result1 *models.Notification
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeNotification) DeleteReturnsOnCall(i int, result1 *db.Notification, result2 error) {
+func (fake *FakeNotification) DeleteReturnsOnCall(i int, result1 *models.Notification, result2 error) {
 	fake.deleteMutex.Lock()
 	defer fake.deleteMutex.Unlock()
 	fake.DeleteStub = nil
 	if fake.deleteReturnsOnCall == nil {
 		fake.deleteReturnsOnCall = make(map[int]struct {
-			result1 *db.Notification
+			result1 *models.Notification
 			result2 error
 		})
 	}
 	fake.deleteReturnsOnCall[i] = struct {
-		result1 *db.Notification
+		result1 *models.Notification
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeNotification) LatestNotifications(arg1 context.Context, arg2 db.DBTX, arg3 *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error) {
+func (fake *FakeNotification) LatestNotifications(arg1 context.Context, arg2 models.DBTX, arg3 *models.GetUserNotificationsParams) ([]models.GetUserNotificationsRow, error) {
 	fake.latestNotificationsMutex.Lock()
 	ret, specificReturn := fake.latestNotificationsReturnsOnCall[len(fake.latestNotificationsArgsForCall)]
 	fake.latestNotificationsArgsForCall = append(fake.latestNotificationsArgsForCall, struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 *db.GetUserNotificationsParams
+		arg2 models.DBTX
+		arg3 *models.GetUserNotificationsParams
 	}{arg1, arg2, arg3})
 	stub := fake.LatestNotificationsStub
 	fakeReturns := fake.latestNotificationsReturns
@@ -235,52 +235,52 @@ func (fake *FakeNotification) LatestNotificationsCallCount() int {
 	return len(fake.latestNotificationsArgsForCall)
 }
 
-func (fake *FakeNotification) LatestNotificationsCalls(stub func(context.Context, db.DBTX, *db.GetUserNotificationsParams) ([]db.GetUserNotificationsRow, error)) {
+func (fake *FakeNotification) LatestNotificationsCalls(stub func(context.Context, models.DBTX, *models.GetUserNotificationsParams) ([]models.GetUserNotificationsRow, error)) {
 	fake.latestNotificationsMutex.Lock()
 	defer fake.latestNotificationsMutex.Unlock()
 	fake.LatestNotificationsStub = stub
 }
 
-func (fake *FakeNotification) LatestNotificationsArgsForCall(i int) (context.Context, db.DBTX, *db.GetUserNotificationsParams) {
+func (fake *FakeNotification) LatestNotificationsArgsForCall(i int) (context.Context, models.DBTX, *models.GetUserNotificationsParams) {
 	fake.latestNotificationsMutex.RLock()
 	defer fake.latestNotificationsMutex.RUnlock()
 	argsForCall := fake.latestNotificationsArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3
 }
 
-func (fake *FakeNotification) LatestNotificationsReturns(result1 []db.GetUserNotificationsRow, result2 error) {
+func (fake *FakeNotification) LatestNotificationsReturns(result1 []models.GetUserNotificationsRow, result2 error) {
 	fake.latestNotificationsMutex.Lock()
 	defer fake.latestNotificationsMutex.Unlock()
 	fake.LatestNotificationsStub = nil
 	fake.latestNotificationsReturns = struct {
-		result1 []db.GetUserNotificationsRow
+		result1 []models.GetUserNotificationsRow
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeNotification) LatestNotificationsReturnsOnCall(i int, result1 []db.GetUserNotificationsRow, result2 error) {
+func (fake *FakeNotification) LatestNotificationsReturnsOnCall(i int, result1 []models.GetUserNotificationsRow, result2 error) {
 	fake.latestNotificationsMutex.Lock()
 	defer fake.latestNotificationsMutex.Unlock()
 	fake.LatestNotificationsStub = nil
 	if fake.latestNotificationsReturnsOnCall == nil {
 		fake.latestNotificationsReturnsOnCall = make(map[int]struct {
-			result1 []db.GetUserNotificationsRow
+			result1 []models.GetUserNotificationsRow
 			result2 error
 		})
 	}
 	fake.latestNotificationsReturnsOnCall[i] = struct {
-		result1 []db.GetUserNotificationsRow
+		result1 []models.GetUserNotificationsRow
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeNotification) PaginatedUserNotifications(arg1 context.Context, arg2 db.DBTX, arg3 db.UserID, arg4 models.GetPaginatedNotificationsParams) ([]db.UserNotification, error) {
+func (fake *FakeNotification) PaginatedUserNotifications(arg1 context.Context, arg2 models.DBTX, arg3 models.UserID, arg4 models.GetPaginatedNotificationsParams) ([]models.UserNotification, error) {
 	fake.paginatedUserNotificationsMutex.Lock()
 	ret, specificReturn := fake.paginatedUserNotificationsReturnsOnCall[len(fake.paginatedUserNotificationsArgsForCall)]
 	fake.paginatedUserNotificationsArgsForCall = append(fake.paginatedUserNotificationsArgsForCall, struct {
 		arg1 context.Context
-		arg2 db.DBTX
-		arg3 db.UserID
+		arg2 models.DBTX
+		arg3 models.UserID
 		arg4 models.GetPaginatedNotificationsParams
 	}{arg1, arg2, arg3, arg4})
 	stub := fake.PaginatedUserNotificationsStub
@@ -302,41 +302,41 @@ func (fake *FakeNotification) PaginatedUserNotificationsCallCount() int {
 	return len(fake.paginatedUserNotificationsArgsForCall)
 }
 
-func (fake *FakeNotification) PaginatedUserNotificationsCalls(stub func(context.Context, db.DBTX, db.UserID, models.GetPaginatedNotificationsParams) ([]db.UserNotification, error)) {
+func (fake *FakeNotification) PaginatedUserNotificationsCalls(stub func(context.Context, models.DBTX, models.UserID, models.GetPaginatedNotificationsParams) ([]models.UserNotification, error)) {
 	fake.paginatedUserNotificationsMutex.Lock()
 	defer fake.paginatedUserNotificationsMutex.Unlock()
 	fake.PaginatedUserNotificationsStub = stub
 }
 
-func (fake *FakeNotification) PaginatedUserNotificationsArgsForCall(i int) (context.Context, db.DBTX, db.UserID, models.GetPaginatedNotificationsParams) {
+func (fake *FakeNotification) PaginatedUserNotificationsArgsForCall(i int) (context.Context, models.DBTX, models.UserID, models.GetPaginatedNotificationsParams) {
 	fake.paginatedUserNotificationsMutex.RLock()
 	defer fake.paginatedUserNotificationsMutex.RUnlock()
 	argsForCall := fake.paginatedUserNotificationsArgsForCall[i]
 	return argsForCall.arg1, argsForCall.arg2, argsForCall.arg3, argsForCall.arg4
 }
 
-func (fake *FakeNotification) PaginatedUserNotificationsReturns(result1 []db.UserNotification, result2 error) {
+func (fake *FakeNotification) PaginatedUserNotificationsReturns(result1 []models.UserNotification, result2 error) {
 	fake.paginatedUserNotificationsMutex.Lock()
 	defer fake.paginatedUserNotificationsMutex.Unlock()
 	fake.PaginatedUserNotificationsStub = nil
 	fake.paginatedUserNotificationsReturns = struct {
-		result1 []db.UserNotification
+		result1 []models.UserNotification
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeNotification) PaginatedUserNotificationsReturnsOnCall(i int, result1 []db.UserNotification, result2 error) {
+func (fake *FakeNotification) PaginatedUserNotificationsReturnsOnCall(i int, result1 []models.UserNotification, result2 error) {
 	fake.paginatedUserNotificationsMutex.Lock()
 	defer fake.paginatedUserNotificationsMutex.Unlock()
 	fake.PaginatedUserNotificationsStub = nil
 	if fake.paginatedUserNotificationsReturnsOnCall == nil {
 		fake.paginatedUserNotificationsReturnsOnCall = make(map[int]struct {
-			result1 []db.UserNotification
+			result1 []models.UserNotification
 			result2 error
 		})
 	}
 	fake.paginatedUserNotificationsReturnsOnCall[i] = struct {
-		result1 []db.UserNotification
+		result1 []models.UserNotification
 		result2 error
 	}{result1, result2}
 }

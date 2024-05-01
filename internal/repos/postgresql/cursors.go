@@ -6,22 +6,21 @@ import (
 	"slices"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 )
 
-var infinityTypes = []db.ColumnSimpleType{
-	db.ColumnSimpleTypeDateTime,
-	db.ColumnSimpleTypeNumber,
-	db.ColumnSimpleTypeInteger,
+var infinityTypes = []models.ColumnSimpleType{
+	models.ColumnSimpleTypeDateTime,
+	models.ColumnSimpleTypeNumber,
+	models.ColumnSimpleTypeInteger,
 }
 
-func setDefaultCursor(d db.DBTX, entity db.TableEntity, cursor *models.PaginationCursor) error {
+func setDefaultCursor(d models.DBTX, entity models.TableEntity, cursor *models.PaginationCursor) error {
 	if cursor.Value != nil && *cursor.Value != nil {
 		return nil
 	}
-	f, ok := db.EntityFields[entity][cursor.Column]
+	f, ok := models.EntityFields[entity][cursor.Column]
 	if !ok {
 		return nil
 	}

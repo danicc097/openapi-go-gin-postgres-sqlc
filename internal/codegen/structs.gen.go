@@ -3,7 +3,7 @@
 package codegen
 
 import (
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	rest "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
 )
 

@@ -4,12 +4,11 @@ import (
 	"fmt"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 )
 
-func KanbanStepID(project models.ProjectName) db.KanbanStepID {
+func KanbanStepID(project models.ProjectName) models.KanbanStepID {
 	switch project {
 	case models.ProjectNameDemo:
 		return internal.DemoKanbanStepsIDByName[testutil.RandomFrom(models.AllDemoKanbanStepsValues())]
@@ -20,7 +19,7 @@ func KanbanStepID(project models.ProjectName) db.KanbanStepID {
 	}
 }
 
-func WorkItemTypeID(project models.ProjectName) db.WorkItemTypeID {
+func WorkItemTypeID(project models.ProjectName) models.WorkItemTypeID {
 	switch project {
 	case models.ProjectNameDemo:
 		return internal.DemoWorkItemTypesIDByName[testutil.RandomFrom(models.AllDemoWorkItemTypesValues())]

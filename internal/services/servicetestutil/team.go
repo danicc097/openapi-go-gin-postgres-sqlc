@@ -4,8 +4,7 @@ import (
 	"context"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/stretchr/testify/require"
 )
@@ -15,7 +14,7 @@ type CreateTeamParams struct {
 }
 
 type CreateTeamFixture struct {
-	*db.Team
+	*models.Team
 }
 
 // CreateTeam creates a new random work item comment with the given configuration.

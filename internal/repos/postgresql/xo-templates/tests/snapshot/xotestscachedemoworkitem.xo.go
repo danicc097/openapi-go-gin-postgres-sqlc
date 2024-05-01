@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -86,7 +85,7 @@ func CreateXoTestsCacheDemoWorkItem(ctx context.Context, db DB, params *XoTestsC
 
 type XoTestsCacheDemoWorkItemSelectConfig struct {
 	limit   string
-	orderBy map[string]models.Direction
+	orderBy map[string]Direction
 	joins   XoTestsCacheDemoWorkItemJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -104,7 +103,7 @@ func WithXoTestsCacheDemoWorkItemLimit(limit int) XoTestsCacheDemoWorkItemSelect
 
 // WithXoTestsCacheDemoWorkItemOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func WithXoTestsCacheDemoWorkItemOrderBy(rows map[string]*models.Direction) XoTestsCacheDemoWorkItemSelectConfigOption {
+func WithXoTestsCacheDemoWorkItemOrderBy(rows map[string]*Direction) XoTestsCacheDemoWorkItemSelectConfigOption {
 	return func(s *XoTestsCacheDemoWorkItemSelectConfig) {
 		te := XoTestsEntityFields[XoTestsTableEntityXoTestsCacheDemoWorkItem]
 		for dbcol, dir := range rows {
@@ -348,12 +347,12 @@ func (xtcdwi *XoTestsCacheDemoWorkItem) Delete(ctx context.Context, db DB) error
 
 // XoTestsCacheDemoWorkItemPaginated returns a cursor-paginated list of XoTestsCacheDemoWorkItem.
 // At least one cursor is required.
-func XoTestsCacheDemoWorkItemPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsCacheDemoWorkItemSelectConfigOption) ([]XoTestsCacheDemoWorkItem, error) {
+func XoTestsCacheDemoWorkItemPaginated(ctx context.Context, db DB, cursor PaginationCursor, opts ...XoTestsCacheDemoWorkItemSelectConfigOption) ([]XoTestsCacheDemoWorkItem, error) {
 	c := &XoTestsCacheDemoWorkItemSelectConfig{
 		joins:   XoTestsCacheDemoWorkItemJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 	}
 
 	for _, o := range opts {
@@ -369,7 +368,7 @@ func XoTestsCacheDemoWorkItemPaginated(ctx context.Context, db DB, cursor models
 	}
 
 	op := "<"
-	if cursor.Direction == models.DirectionAsc {
+	if cursor.Direction == DirectionAsc {
 		op = ">"
 	}
 	c.filters[fmt.Sprintf("cache__demo_work_items.%s %s $i", field.Db, op)] = []any{*cursor.Value}

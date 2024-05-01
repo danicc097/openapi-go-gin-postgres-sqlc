@@ -6,8 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/services/servicetestutil"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
@@ -38,7 +37,7 @@ func TestGetPaginatedNotificationsRoute(t *testing.T) {
 
 		notification := ff.CreatePersonalNotification(context.Background(), servicetestutil.CreateNotificationParams{Receiver: &ufixture.UserID})
 
-		p := &rest.GetPaginatedNotificationsParams{Limit: 5, Direction: models.DirectionAsc, Cursor: pointers.New("0")}
+		p := &models.GetPaginatedNotificationsParams{Limit: 5, Direction: models.DirectionAsc, Cursor: pointers.New("0")}
 		nres, err := srv.client.GetPaginatedNotificationsWithResponse(context.Background(), p, ReqWithAPIKey(ufixture.APIKey.APIKey))
 		require.NoError(t, err)
 		assert.Equal(t, http.StatusOK, nres.StatusCode())
@@ -49,6 +48,6 @@ func TestGetPaginatedNotificationsRoute(t *testing.T) {
 		assert.Equal(t, fmt.Sprint(notification.UserNotificationID), body.Page.NextCursor)
 		// this would actually be a duplicated test
 		assert.Len(t, body.Items, 1)
-		assert.True(t, body.Items[0].UserID == ufixture.UserID)
+		assert.True(t, (*body.Items)[0].UserID == ufixture.UserID)
 	})
 }

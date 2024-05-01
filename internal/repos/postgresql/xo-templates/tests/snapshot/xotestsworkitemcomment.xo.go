@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -98,7 +97,7 @@ func CreateXoTestsWorkItemComment(ctx context.Context, db DB, params *XoTestsWor
 
 type XoTestsWorkItemCommentSelectConfig struct {
 	limit   string
-	orderBy map[string]models.Direction
+	orderBy map[string]Direction
 	joins   XoTestsWorkItemCommentJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -116,7 +115,7 @@ func WithXoTestsWorkItemCommentLimit(limit int) XoTestsWorkItemCommentSelectConf
 
 // WithXoTestsWorkItemCommentOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func WithXoTestsWorkItemCommentOrderBy(rows map[string]*models.Direction) XoTestsWorkItemCommentSelectConfigOption {
+func WithXoTestsWorkItemCommentOrderBy(rows map[string]*Direction) XoTestsWorkItemCommentSelectConfigOption {
 	return func(s *XoTestsWorkItemCommentSelectConfig) {
 		te := XoTestsEntityFields[XoTestsTableEntityXoTestsWorkItemComment]
 		for dbcol, dir := range rows {
@@ -308,12 +307,12 @@ func (xtwic *XoTestsWorkItemComment) Delete(ctx context.Context, db DB) error {
 
 // XoTestsWorkItemCommentPaginated returns a cursor-paginated list of XoTestsWorkItemComment.
 // At least one cursor is required.
-func XoTestsWorkItemCommentPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsWorkItemCommentSelectConfigOption) ([]XoTestsWorkItemComment, error) {
+func XoTestsWorkItemCommentPaginated(ctx context.Context, db DB, cursor PaginationCursor, opts ...XoTestsWorkItemCommentSelectConfigOption) ([]XoTestsWorkItemComment, error) {
 	c := &XoTestsWorkItemCommentSelectConfig{
 		joins:   XoTestsWorkItemCommentJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 	}
 
 	for _, o := range opts {
@@ -329,7 +328,7 @@ func XoTestsWorkItemCommentPaginated(ctx context.Context, db DB, cursor models.P
 	}
 
 	op := "<"
-	if cursor.Direction == models.DirectionAsc {
+	if cursor.Direction == DirectionAsc {
 		op = ">"
 	}
 	c.filters[fmt.Sprintf("work_item_comments.%s %s $i", field.Db, op)] = []any{*cursor.Value}

@@ -6,8 +6,7 @@ import (
 	"net/http"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/tracing"
 	"github.com/gin-gonic/gin"
 )
@@ -94,7 +93,7 @@ func (h *StrictHandlers) GetWorkItem(c *gin.Context, request GetWorkItemRequestO
 	return nil, nil
 }
 
-func fillBaseWorkItemResponse(workItem *db.WorkItem) WorkItemBase {
+func fillBaseWorkItemResponse(workItem *models.WorkItem) WorkItemBase {
 	return WorkItemBase{
 		WorkItem: *workItem,
 		SharedWorkItemJoins: SharedWorkItemJoins{

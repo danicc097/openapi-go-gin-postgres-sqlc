@@ -7,7 +7,7 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/pointers"
 	"github.com/stretchr/testify/assert"
 )
@@ -18,13 +18,13 @@ func TestDemoTwoWorkItem_Update(t *testing.T) {
 	demoWorkItem := newRandomDemoTwoWorkItem(t, testPool)
 
 	type args struct {
-		id     db.WorkItemID
+		id     models.WorkItemID
 		params repos.DemoTwoWorkItemUpdateParams
 	}
 	type params struct {
 		name    string
 		args    args
-		want    *db.WorkItem
+		want    *models.WorkItem
 		wantErr bool
 	}
 	d := pointers.New(pointers.New(time.Now().Truncate(time.Microsecond)))
@@ -35,11 +35,11 @@ func TestDemoTwoWorkItem_Update(t *testing.T) {
 			args: args{
 				id: demoWorkItem.WorkItemID,
 				params: repos.DemoTwoWorkItemUpdateParams{
-					Base:           &db.WorkItemUpdateParams{Description: pointers.New("new description")},
-					DemoTwoProject: &db.DemoTwoWorkItemUpdateParams{CustomDateForProject2: d},
+					Base:           &models.WorkItemUpdateParams{Description: pointers.New("new description")},
+					DemoTwoProject: &models.DemoTwoWorkItemUpdateParams{CustomDateForProject2: d},
 				},
 			},
-			want: func() *db.WorkItem {
+			want: func() *models.WorkItem {
 				u := *demoWorkItem
 				u.Description = "new description"
 				u.DemoTwoWorkItemJoin.CustomDateForProject2 = *d

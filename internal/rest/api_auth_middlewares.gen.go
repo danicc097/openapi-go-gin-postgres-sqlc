@@ -3,7 +3,7 @@
 package rest
 
 import (
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/gin-gonic/gin"
 )
 

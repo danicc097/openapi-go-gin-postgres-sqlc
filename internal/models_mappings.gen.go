@@ -3,8 +3,8 @@
 package internal
 
 import (
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 var (

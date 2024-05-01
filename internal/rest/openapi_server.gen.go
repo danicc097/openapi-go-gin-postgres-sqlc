@@ -15,8 +15,8 @@ import (
 	"path"
 	"strings"
 
-	externalRef0 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	externalRef0 "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/utils/openapi"
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/gin-gonic/gin"

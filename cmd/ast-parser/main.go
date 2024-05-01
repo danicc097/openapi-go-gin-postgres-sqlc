@@ -75,7 +75,7 @@ var (
 	typesCmd          = flag.NewFlagSet(string(findTypesFlagSet), flag.ExitOnError)
 	interfacesCmd     = flag.NewFlagSet(string(findInterfacesFlagSet), flag.ExitOnError)
 	findRedeclaredCmd = flag.NewFlagSet(string(findRedeclaredFlagSet), flag.ExitOnError) // ast-parser find-redeclared internal/rest/models.go [--delete]
-	verifyNoImportCmd = flag.NewFlagSet(string(verifyNoImportFlagSet), flag.ExitOnError) // ast-parser verify-no-import --imports "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models" internal/rest/models.go
+	verifyNoImportCmd = flag.NewFlagSet(string(verifyNoImportFlagSet), flag.ExitOnError) // ast-parser verify-no-import --imports "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models" internal/rest/models.go
 
 	subcommands = map[string]*flag.FlagSet{
 		typesCmd.Name():          typesCmd,

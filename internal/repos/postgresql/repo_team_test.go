@@ -6,9 +6,8 @@ import (
 	"testing"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/postgresqlrandom"
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/assert"
@@ -31,12 +30,12 @@ func TestTeam_ByIndexedQueries(t *testing.T) {
 	team, err := teamRepo.Create(ctx, testPool, tcp)
 	require.NoError(t, err)
 
-	uniqueTestCases := []filterTestCase[*db.Team]{
+	uniqueTestCases := []filterTestCase[*models.Team]{
 		{
 			name:       "name",
 			filter:     []any{team.Name, project.ProjectID},
 			repoMethod: reflect.ValueOf(teamRepo.ByName),
-			callback: func(t *testing.T, res *db.Team) {
+			callback: func(t *testing.T, res *models.Team) {
 				assert.Equal(t, res.Name, team.Name)
 			},
 		},
@@ -44,7 +43,7 @@ func TestTeam_ByIndexedQueries(t *testing.T) {
 			name:       "id",
 			filter:     team.TeamID,
 			repoMethod: reflect.ValueOf(teamRepo.ByID),
-			callback: func(t *testing.T, res *db.Team) {
+			callback: func(t *testing.T, res *models.Team) {
 				assert.Equal(t, res.TeamID, team.TeamID)
 			},
 		},
@@ -72,13 +71,13 @@ func TestTriggers_sync_user_projects(t *testing.T) {
 		user := newRandomUser(t, tx)
 		team := newRandomTeam(t, tx, projectID)
 
-		_, err = db.CreateUserTeam(ctx, tx, &db.UserTeamCreateParams{
+		_, err = models.CreateUserTeam(ctx, tx, &models.UserTeamCreateParams{
 			Member: user.UserID,
 			TeamID: team.TeamID,
 		})
 		require.NoError(t, err)
 
-		_, err = db.UserProjectByMemberProjectID(ctx, tx, user.UserID, projectID) // created by trigger
+		_, err = models.UserProjectByMemberProjectID(ctx, tx, user.UserID, projectID) // created by trigger
 		require.NoError(t, err)
 	})
 }
@@ -145,7 +144,7 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 			}
 
 			previousTeam := newRandomTeam(t, tx, projectID)
-			_, err = db.CreateUserTeam(ctx, tx, &db.UserTeamCreateParams{
+			_, err = models.CreateUserTeam(ctx, tx, &models.UserTeamCreateParams{
 				Member: user.UserID,
 				TeamID: previousTeam.TeamID,
 			})
@@ -155,10 +154,10 @@ func TestTriggers_sync_user_teams(t *testing.T) {
 
 			team := newRandomTeam(t, tx, projectID) // may trigger user_team update for existing user that is already in project
 
-			_, err = db.UserTeamByMemberTeamID(ctx, tx, user.UserID, previousTeam.TeamID)
+			_, err = models.UserTeamByMemberTeamID(ctx, tx, user.UserID, previousTeam.TeamID)
 			require.NoError(t, err) // was created manually first time to trigger user_project creation
 
-			_, err = db.UserTeamByMemberTeamID(ctx, tx, user.UserID, team.TeamID)
+			_, err = models.UserTeamByMemberTeamID(ctx, tx, user.UserID, team.TeamID)
 			if tc.withScope {
 				require.NoError(t, err)
 			} else {

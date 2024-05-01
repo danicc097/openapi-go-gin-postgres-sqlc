@@ -12,12 +12,10 @@ import (
 	"strings"
 	"time"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/google/uuid"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
-
-	"github.com/google/uuid"
 )
 
 // XoTestsPagElement represents a row from 'xo_tests.pag_element'.
@@ -95,7 +93,7 @@ func CreateXoTestsPagElement(ctx context.Context, db DB, params *XoTestsPagEleme
 
 type XoTestsPagElementSelectConfig struct {
 	limit   string
-	orderBy map[string]models.Direction
+	orderBy map[string]Direction
 	joins   XoTestsPagElementJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -113,7 +111,7 @@ func WithXoTestsPagElementLimit(limit int) XoTestsPagElementSelectConfigOption {
 
 // WithXoTestsPagElementOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func WithXoTestsPagElementOrderBy(rows map[string]*models.Direction) XoTestsPagElementSelectConfigOption {
+func WithXoTestsPagElementOrderBy(rows map[string]*Direction) XoTestsPagElementSelectConfigOption {
 	return func(s *XoTestsPagElementSelectConfig) {
 		te := XoTestsEntityFields[XoTestsTableEntityXoTestsPagElement]
 		for dbcol, dir := range rows {
@@ -288,12 +286,12 @@ func (xtpe *XoTestsPagElement) Delete(ctx context.Context, db DB) error {
 
 // XoTestsPagElementPaginated returns a cursor-paginated list of XoTestsPagElement.
 // At least one cursor is required.
-func XoTestsPagElementPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsPagElementSelectConfigOption) ([]XoTestsPagElement, error) {
+func XoTestsPagElementPaginated(ctx context.Context, db DB, cursor PaginationCursor, opts ...XoTestsPagElementSelectConfigOption) ([]XoTestsPagElement, error) {
 	c := &XoTestsPagElementSelectConfig{
 		joins:   XoTestsPagElementJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 	}
 
 	for _, o := range opts {
@@ -309,7 +307,7 @@ func XoTestsPagElementPaginated(ctx context.Context, db DB, cursor models.Pagina
 	}
 
 	op := "<"
-	if cursor.Direction == models.DirectionAsc {
+	if cursor.Direction == DirectionAsc {
 		op = ">"
 	}
 	c.filters[fmt.Sprintf("pag_element.%s %s $i", field.Db, op)] = []any{*cursor.Value}

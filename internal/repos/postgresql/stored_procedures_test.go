@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 func TestNormalizeIndexDef(t *testing.T) {
@@ -27,7 +27,7 @@ func TestNormalizeIndexDef(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := db.NormalizeIndexDef(context.Background(), testPool, tt.inputString)
+			got, err := models.NormalizeIndexDef(context.Background(), testPool, tt.inputString)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NormalizeIndexDef() error = %v, wantErr %v", err, tt.wantErr)
 				return

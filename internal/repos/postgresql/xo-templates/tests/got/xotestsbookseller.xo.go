@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"strings"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -76,7 +75,7 @@ func CreateXoTestsBookSeller(ctx context.Context, db DB, params *XoTestsBookSell
 
 type XoTestsBookSellerSelectConfig struct {
 	limit   string
-	orderBy map[string]models.Direction
+	orderBy map[string]Direction
 	joins   XoTestsBookSellerJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -94,7 +93,7 @@ func WithXoTestsBookSellerLimit(limit int) XoTestsBookSellerSelectConfigOption {
 
 // WithXoTestsBookSellerOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func WithXoTestsBookSellerOrderBy(rows map[string]*models.Direction) XoTestsBookSellerSelectConfigOption {
+func WithXoTestsBookSellerOrderBy(rows map[string]*Direction) XoTestsBookSellerSelectConfigOption {
 	return func(s *XoTestsBookSellerSelectConfig) {
 		te := XoTestsEntityFields[XoTestsTableEntityXoTestsBookSeller]
 		for dbcol, dir := range rows {
@@ -258,12 +257,12 @@ func (xtbs *XoTestsBookSeller) Delete(ctx context.Context, db DB) error {
 
 // XoTestsBookSellerPaginated returns a cursor-paginated list of XoTestsBookSeller.
 // At least one cursor is required.
-func XoTestsBookSellerPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsBookSellerSelectConfigOption) ([]XoTestsBookSeller, error) {
+func XoTestsBookSellerPaginated(ctx context.Context, db DB, cursor PaginationCursor, opts ...XoTestsBookSellerSelectConfigOption) ([]XoTestsBookSeller, error) {
 	c := &XoTestsBookSellerSelectConfig{
 		joins:   XoTestsBookSellerJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 	}
 
 	for _, o := range opts {
@@ -279,7 +278,7 @@ func XoTestsBookSellerPaginated(ctx context.Context, db DB, cursor models.Pagina
 	}
 
 	op := "<"
-	if cursor.Direction == models.DirectionAsc {
+	if cursor.Direction == DirectionAsc {
 		op = ">"
 	}
 	c.filters[fmt.Sprintf("book_sellers.%s %s $i", field.Db, op)] = []any{*cursor.Value}

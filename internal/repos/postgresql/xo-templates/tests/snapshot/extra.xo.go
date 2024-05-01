@@ -6,8 +6,6 @@ package got
 
 import (
 	"fmt"
-
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 )
 
 type ColumnSimpleType string
@@ -25,7 +23,7 @@ const (
 type Cursor struct {
 	Column    string
 	Value     interface{}
-	Direction models.Direction
+	Direction Direction
 }
 
 // DbField shows db column information.

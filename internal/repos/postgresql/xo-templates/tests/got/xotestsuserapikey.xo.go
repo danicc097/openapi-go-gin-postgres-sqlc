@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	models "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -95,7 +94,7 @@ func CreateXoTestsUserAPIKey(ctx context.Context, db DB, params *XoTestsUserAPIK
 
 type XoTestsUserAPIKeySelectConfig struct {
 	limit   string
-	orderBy map[string]models.Direction
+	orderBy map[string]Direction
 	joins   XoTestsUserAPIKeyJoins
 	filters map[string][]any
 	having  map[string][]any
@@ -113,7 +112,7 @@ func WithXoTestsUserAPIKeyLimit(limit int) XoTestsUserAPIKeySelectConfigOption {
 
 // WithXoTestsUserAPIKeyOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func WithXoTestsUserAPIKeyOrderBy(rows map[string]*models.Direction) XoTestsUserAPIKeySelectConfigOption {
+func WithXoTestsUserAPIKeyOrderBy(rows map[string]*Direction) XoTestsUserAPIKeySelectConfigOption {
 	return func(s *XoTestsUserAPIKeySelectConfig) {
 		te := XoTestsEntityFields[XoTestsTableEntityXoTestsUserAPIKey]
 		for dbcol, dir := range rows {
@@ -293,12 +292,12 @@ func (xtuak *XoTestsUserAPIKey) Delete(ctx context.Context, db DB) error {
 
 // XoTestsUserAPIKeyPaginated returns a cursor-paginated list of XoTestsUserAPIKey.
 // At least one cursor is required.
-func XoTestsUserAPIKeyPaginated(ctx context.Context, db DB, cursor models.PaginationCursor, opts ...XoTestsUserAPIKeySelectConfigOption) ([]XoTestsUserAPIKey, error) {
+func XoTestsUserAPIKeyPaginated(ctx context.Context, db DB, cursor PaginationCursor, opts ...XoTestsUserAPIKeySelectConfigOption) ([]XoTestsUserAPIKey, error) {
 	c := &XoTestsUserAPIKeySelectConfig{
 		joins:   XoTestsUserAPIKeyJoins{},
 		filters: make(map[string][]any),
 		having:  make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 	}
 
 	for _, o := range opts {
@@ -314,7 +313,7 @@ func XoTestsUserAPIKeyPaginated(ctx context.Context, db DB, cursor models.Pagina
 	}
 
 	op := "<"
-	if cursor.Direction == models.DirectionAsc {
+	if cursor.Direction == DirectionAsc {
 		op = ">"
 	}
 	c.filters[fmt.Sprintf("user_api_keys.%s %s $i", field.Db, op)] = []any{*cursor.Value}

@@ -94,7 +94,7 @@ const (
 	// that gets converted to the db field internally
 	propertyOpenAPIHidden = "hidden"
 
-	// example: "properties":private,another-property && "type":models.ProjectName && "tags":pattern: ^[\.a-zA-Z0-9_-]+$
+	// example: "properties":private,another-property && "type":ProjectName && "tags":pattern: ^[\.a-zA-Z0-9_-]+$
 )
 
 // to not have to analyze everything for convertConstraints
@@ -2139,7 +2139,7 @@ func (f *Funcs) initial_opts(v any) string {
 		buf.WriteString(`
 		filters: make(map[string][]any), 
 		having: make(map[string][]any),
-		orderBy: make(map[string]models.Direction),
+		orderBy: make(map[string]Direction),
 }`)
 	case Index:
 		for _, field := range x.Table.Fields { // table fields, not index fields
@@ -2207,7 +2207,7 @@ func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constra
 	buf.WriteString(fmt.Sprintf(`
 	type %[1]sSelectConfig struct {
 		limit       string
-		orderBy     map[string]models.Direction
+		orderBy     map[string]Direction
 		joins       %[1]sJoins
 		filters     map[string][]any
 		having     map[string][]any
@@ -2243,7 +2243,7 @@ func (f *Funcs) extratypes(tGoName string, sqlname string, constraints []Constra
 	buf.WriteString(fmt.Sprintf(`
 // With%[1]sOrderBy accumulates orders results by the given columns.
 // A nil entry removes the existing column sort, if any.
-func With%[1]sOrderBy(rows map[string]*models.Direction) %[1]sSelectConfigOption {
+func With%[1]sOrderBy(rows map[string]*Direction) %[1]sSelectConfigOption {
 	return func(s *%[1]sSelectConfig) {
 		te := %[2]sEntityFields[%[2]sTableEntity%[1]s]
 		for dbcol, dir := range rows {

@@ -9,7 +9,7 @@ import (
 	redis "github.com/go-redis/redis/v8"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
-	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // New instantiates the Redis client using configuration defined in environment variables.
