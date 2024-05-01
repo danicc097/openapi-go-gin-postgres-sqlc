@@ -837,13 +837,14 @@ x.gen.gowrap() {
 # Generate Go client and server from spec.
 x.gen.client-server() {
   xsetup.build-tools
+  xsetup.backup
   { { {
     echo "Running generation"
     paths_file=".openapi.paths.yaml"
 
     local all_types=()
     mapfile -t all_types < <(ast-parser find-types --exclude-generics --public-only "$REST_MODELS")
-    types_list=$(join_by "," ${all_types[*]})
+    rest_types_list=$(join_by "," ${all_types[*]})
 
     # TODO should work for references that are not used in, e.g. Topics
     mapfile -t server_types < <(yq e '.components.schemas[] | select(.x-use-server-type == true) | key' $SPEC_PATH)
@@ -855,29 +856,79 @@ x.gen.client-server() {
     # yq e 'del(.components)' -i "$paths_file" # dont delete since recent oapi-codegen does some checks even if we are not generating types
     go build -o $BUILD_DIR/oapi-codegen cmd/oapi-codegen/main.go || mark_failed_tool_build # templates are embedded, required rebuild
 
-    oapi-codegen --config internal/models/oapi-codegen-types.yaml "$SPEC_PATH" || err "Failed types generation"
-    oapi-codegen --config internal/rest/oapi-codegen-server.yaml --models-pkg models --server-types "$server_types_list" --types "$types_list" "$paths_file" || err "Failed server generation"
-    oapi-codegen --config internal/rest/oapi-codegen-test-client.yaml "$SPEC_PATH" || err "Failed client generation"
+    mapfile -t exclude_schemas_arr < <(yq e '.components.schemas[] | select(.x-oapi-ignore == true) | key' $SPEC_PATH)
+    exclude_schemas=$(printf ",\"%s\"" "${exclude_schemas_arr[@]}")
+    exclude_schemas="[${exclude_schemas:1}]"
+
+    echo "exclude_schemas:${exclude_schemas[*]}"
+    local models_config=$(
+      cat <<EOF
+package: db
+generate:
+  models: true
+mode: models
+output: internal/repos/postgresql/gen/db/openapi_types.gen.go
+compatibility:
+  always-prefix-enum-values: true
+output-options:
+  skip-prune: true
+  exclude-schemas: $exclude_schemas
+EOF
+    )
+    local server_config=$(
+      cat <<EOF
+package: rest
+generate:
+  gin-server: true
+  strict-server: true
+  models: true
+  embedded-spec: true
+output: internal/rest/openapi_server.gen.go
+mode: server
+exclude-rest-types: true
+skip-discriminator-utils: true
+is-rest-server-gen: true
+import-mapping:
+  "openapi.yaml": github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models
+# additional-imports:
+#   - alias: .
+#     package: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models
+output-options:
+  skip-prune: true
+compatibility:
+  always-prefix-enum-values: true
+EOF
+    )
+    local test_client_config=$(
+      cat <<EOF
+package: rest_test
+generate:
+  client: true
+output: internal/rest/openapi_client_gen_test.go
+test-client: true
+additional-imports:
+  - alias: .
+    package: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest
+EOF
+    )
+    #  TODO: x-go-name for rest models created for gen/models should have suffix Public
+    # (will need gen in both gen_schema and outside, since struct instances dont have PkgPath in reflection)
+    # this will only affect oapi-codegen. however it will mess server gen up
+    # see https://github.com/deepmap/oapi-codegen?tab=readme-ov-file#openapi-extensions
+
+    oapi-codegen --config <(echo "$models_config") --types "$rest_types_list" "$SPEC_PATH" || err "Failed types generation"
+    oapi-codegen --config <(echo "$server_config") --models-pkg models --server-types "$server_types_list" --types "$rest_types_list" "$paths_file" || err "Failed server generation"
+    oapi-codegen --config <(echo "$test_client_config") "$SPEC_PATH" || err "Failed client generation"
     # not used now. may be useful for a cli at some point
     # oapi-codegen --config internal/client/oapi-codegen-client.yaml "$SPEC_PATH" || err "Failed client generation" &
 
     wait_without_error
 
-    sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_server.gen.go
-    sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_client_gen_test.go
+    # TODO: remove once x-go-type in use for all db types.
+    # sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_server.gen.go
+    # sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_client_gen_test.go
     # db already imports models pkg
     # sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/models/openapi_types.gen.go
-
-    # local configs=(
-    #   "internal/models/oapi-codegen-types.yaml"
-    #   "internal/rest/oapi-codegen-server.yaml"
-    #   "internal/rest/oapi-codegen-test-client.yaml"
-    #   "internal/client/oapi-codegen-client.yaml"
-    # )
-    # for config in ${configs[@]}; do
-    #   local file_path=$(yq e ".output" $config)
-    #   sed -Ei 's/union([[:space:]])json.RawMessage/Union\1json.RawMessage/g' "$file_path"
-    # done
 
     ast-parser find-redeclared --delete "$REST_MODELS" # for duplicates in rest. depends on oapi-codegen output
     codegen implement-server                           # depends on oapi-codegen output
@@ -886,8 +937,8 @@ x.gen.client-server() {
     goimports -w $files
     gofumpt -w $files
   } 2>&4 | xlog >&3; } 4>&1 | xerr >&3; } 3>&1
+  xsetup.backup.cleanup
 }
-
 # Generate mocks for specified interfaces.
 x.gen.counterfeiter() {
   # This shouldn't pose any problems, the interface is the only input to counterfeiter.
@@ -2360,7 +2411,7 @@ sync_db_enums_with_spec() {
     fi
 
     src_comment="database enum '$db_enum_name'"
-    replace_enum_in_spec "$schema_name" enum_values "$src_comment"
+    replace_enum_in_spec "$schema_name" enum_values "$src_comment" "1"
   done
 }
 
@@ -2382,6 +2433,7 @@ replace_enum_in_spec() {
   local enum="$1"
   local -n __arr="$2"
   local src_comment="$3"
+  local ignore=$4
 
   local schema_path=".components.schemas.$enum"
 
@@ -2393,9 +2445,11 @@ replace_enum_in_spec() {
   __enums=$__enums yq e "
     $schema_path.type = \"string\" |
     $schema_path.enum = env(__enums) |
+    $(if test -n "$ignore"; then echo "$schema_path.x-oapi-ignore = true |"; fi)
     $schema_path.x-is-generated = true |
     $schema_path.description = \"is generated from $src_comment.\" |
     ($schema_path | key) line_comment=\"Generated from $src_comment. DO NOT EDIT.\"" -i $SPEC_PATH
+
 }
 
 find_deleted_pkg_schemas() {
@@ -2463,19 +2517,52 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
     with_entries(select(.key == "components"))' \
     >$gen_schema_spec_path || mark_failed_tool_build
 
-  local clashes=()
+  local clashes=() services_prefix_clashes=() db_prefix_clashes=()
   for custom_schema in $(yq ".components.schemas[] | select((.x-is-generated == true) | not) | key" $SPEC_PATH); do
     if [[ " ${rest_structs[*]} " =~ " ${custom_schema} " ]]; then
       line_number=$(yq ".components.schemas.$custom_schema | line" $SPEC_PATH)
       clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
     fi
-    # don't bother checking any Db*
+    # TODO: bring back when gen_schema can be compiled
+    # if [[ $custom_schema =~ ^Services[A-Z].*$ ]]; then
+    #   services_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
+    # fi
+    # if [[ $custom_schema =~ ^Db[A-Z].*$ ]]; then
+    #   db_prefix_clashes+=("	$custom_schema (${SPEC_PATH}:${line_number})")
+    # fi
   done
 
   if [[ ${#clashes[@]} -gt 0 ]]; then
     err "The following non-generated schemas would have been overridden by internal/rest/models.go structs. Please rename or delete:
 $(join_by $'\n' "${clashes[@]}")"
   fi
+  if [[ ${#services_prefix_clashes[@]} -gt 0 ]]; then
+    err "Services prefix is restricted to generated structs. Please rename or delete:
+$(join_by $'\n' "${services_prefix_clashes[@]}")"
+  fi
+  if [[ ${#db_prefix_clashes[@]} -gt 0 ]]; then
+    err "Db prefix is restricted to generated structs. Please rename or delete:
+$(join_by $'\n' "${db_prefix_clashes[@]}")"
+  fi
+
+  schema_keys=$(yq eval '.components.schemas | keys | .[]' "$gen_schema_spec_path")
+
+  # see gen_schema.go for extensions to append
+  for schema_key in $schema_keys; do
+    if [[ $schema_key =~ ^Db[A-Z].*$ ]]; then
+      go_type="${schema_key#Db}"
+
+      # db models are ignored in rest gen
+      # "x-go-type-import": {"name": "db", "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"}
+      # "x-go-type": "'$go_type'",
+      yq eval -i \
+        '.components.schemas."'$schema_key'" += {
+          "x-go-type":"'$go_type'"
+          }
+        ' \
+        "$gen_schema_spec_path"
+    fi
+  done
 
   # only keep schemas not outputted by gen. User should have been warned on clashes.
   # NOTE: must use shallow merge to replace every single schema, else indirect generations are out of date.
@@ -2486,6 +2573,7 @@ $(join_by $'\n' "${clashes[@]}")"
           select(fi == 1).components.schemas
         ) as \$generated_schemas
         | (\$generated_schemas.* | key) line_comment=\"Generated schema. DO NOT EDIT.\"
+        | \$generated_schemas.* |= . + {\"x-is-generated\": true}
         | select(fi == 0)
         | .components.schemas += \$generated_schemas
         " "$SPEC_PATH" "$gen_schema_spec_path" | sponge "$SPEC_PATH"

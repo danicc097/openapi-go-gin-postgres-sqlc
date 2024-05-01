@@ -1320,6 +1320,8 @@ components:
         tagIDs:
           items:
             type: integer
+            x-go-type: WorkItemTagID
+            x-is-generated: true
           type: array
       required:
         - projectName
@@ -1345,6 +1347,8 @@ components:
         tagIDs:
           items:
             type: integer
+            x-go-type: WorkItemTagID
+            x-is-generated: true
           type: array
       required:
         - projectName
@@ -1390,6 +1394,8 @@ components:
           $ref: '#/components/schemas/DbUserID'
         workItemID:
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
       required:
         - message
         - userID
@@ -1437,9 +1443,13 @@ components:
           type: string
         workItemID:
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
       required:
         - workItemID
       type: object
+      x-go-type: DemoTwoWorkItem
+      x-is-generated: true
     DbDemoTwoWorkItemCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         customDateForProject2:
@@ -1447,6 +1457,8 @@ components:
           nullable: true
           type: string
       type: object
+      x-go-type: DemoTwoWorkItemCreateParams
+      x-is-generated: true
     DbDemoWorkItem: # Generated schema. DO NOT EDIT.
       properties:
         lastMessageAt:
@@ -1461,6 +1473,8 @@ components:
           type: boolean
         workItemID:
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
       required:
         - workItemID
         - ref
@@ -1470,6 +1484,7 @@ components:
       type: object
       x-gen-struct: DbDemoWorkItem
       x-is-generated: true
+      x-go-type: DemoWorkItem
     DbDemoWorkItemCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         lastMessageAt:
@@ -1488,6 +1503,8 @@ components:
         - ref
         - reopened
       type: object
+      x-go-type: DemoWorkItemCreateParams
+      x-is-generated: true
     DbKanbanStep: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -1497,10 +1514,14 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
+          x-is-generated: true
         name:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
+          x-is-generated: true
         stepOrder:
           type: integer
         timeTrackable:
@@ -1516,6 +1537,7 @@ components:
       type: object
       x-gen-struct: DbKanbanStep
       x-is-generated: true
+      x-go-type: KanbanStep
     DbNotification: # Generated schema. DO NOT EDIT.
       properties:
         body:
@@ -1532,6 +1554,8 @@ components:
           type: string
         notificationID:
           type: integer
+          x-go-type: NotificationID
+          x-is-generated: true
         notificationType:
           $ref: '#/components/schemas/NotificationType'
         receiver:
@@ -1549,6 +1573,8 @@ components:
         - sender
         - notificationType
       type: object
+      x-go-type: Notification
+      x-is-generated: true
     DbProject: # Generated schema. DO NOT EDIT.
       properties:
         boardConfig:
@@ -1562,6 +1588,8 @@ components:
           $ref: '#/components/schemas/ProjectName'
         projectID:
           type: integer
+          x-go-type: ProjectID
+          x-is-generated: true
         updatedAt:
           format: date-time
           type: string
@@ -1575,6 +1603,7 @@ components:
       type: object
       x-gen-struct: DbProject
       x-is-generated: true
+      x-go-type: Project
     DbTeam: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
@@ -1586,8 +1615,12 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
+          x-is-generated: true
         teamID:
           type: integer
+          x-go-type: TeamID
+          x-is-generated: true
         updatedAt:
           format: date-time
           type: string
@@ -1599,6 +1632,8 @@ components:
         - createdAt
         - updatedAt
       type: object
+      x-go-type: Team
+      x-is-generated: true
     DbTeamCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         description:
@@ -1609,10 +1644,14 @@ components:
         - description
         - name
       type: object
+      x-go-type: TeamCreateParams
+      x-is-generated: true
     DbTimeEntry: # Generated schema. DO NOT EDIT.
       properties:
         activityID:
           type: integer
+          x-go-type: ActivityID
+          x-is-generated: true
         comment:
           type: string
         durationMinutes:
@@ -1624,13 +1663,19 @@ components:
         teamID:
           nullable: true
           type: integer
+          x-go-type: TeamID
+          x-is-generated: true
         timeEntryID:
           type: integer
+          x-go-type: TimeEntryID
+          x-is-generated: true
         userID:
           $ref: '#/components/schemas/DbUserID'
         workItemID:
           nullable: true
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
       required:
         - timeEntryID
         - activityID
@@ -1640,6 +1685,7 @@ components:
       type: object
       x-gen-struct: DbTimeEntry
       x-is-generated: true
+      x-go-type: TimeEntry
     DbUser: # Generated schema. DO NOT EDIT.
       properties:
         age:
@@ -1688,6 +1734,7 @@ components:
       type: object
       x-gen-struct: DbUser
       x-is-generated: true
+      x-go-type: User
     DbUserAPIKey: # Generated schema. DO NOT EDIT.
       properties:
         apiKey:
@@ -1704,11 +1751,12 @@ components:
       type: object
       x-gen-struct: DbUserAPIKey
       x-is-generated: true
+      x-go-type: UserAPIKey
     DbUserID: # Generated schema. DO NOT EDIT.
       example: cdb15f83-1c5d-4727-98d1-8924ccd1fc01
       pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
       type: string
-      x-go-type: uuid.UUID
+      x-go-type: UserID
       x-go-type-import:
         name: uuid
         path: github.com/google/uuid
@@ -1740,6 +1788,8 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
+          x-is-generated: true
         metadata:
           additionalProperties: {}
           type: object
@@ -1748,6 +1798,8 @@ components:
           type: string
         teamID:
           type: integer
+          x-go-type: TeamID
+          x-is-generated: true
         title:
           type: string
         updatedAt:
@@ -1755,8 +1807,12 @@ components:
           type: string
         workItemID:
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
+          x-is-generated: true
       required:
         - workItemID
         - title
@@ -1771,6 +1827,7 @@ components:
       type: object
       x-gen-struct: DbWorkItem
       x-is-generated: true
+      x-go-type: WorkItem
     DbWorkItemComment: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
@@ -1785,8 +1842,12 @@ components:
           $ref: '#/components/schemas/DbUserID'
         workItemCommentID:
           type: integer
+          x-go-type: WorkItemCommentID
+          x-is-generated: true
         workItemID:
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
       required:
         - workItemCommentID
         - workItemID
@@ -1797,6 +1858,7 @@ components:
       type: object
       x-gen-struct: DbWorkItemComment
       x-is-generated: true
+      x-go-type: WorkItemComment
     DbWorkItemCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         closedAt:
@@ -1807,6 +1869,8 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
+          x-is-generated: true
         metadata:
           additionalProperties: {}
           type: object
@@ -1815,10 +1879,14 @@ components:
           type: string
         teamID:
           type: integer
+          x-go-type: TeamID
+          x-is-generated: true
         title:
           type: string
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
+          x-is-generated: true
       required:
         - description
         - kanbanStepID
@@ -1828,6 +1896,8 @@ components:
         - title
         - workItemTypeID
       type: object
+      x-go-type: WorkItemCreateParams
+      x-is-generated: true
     DbWorkItemTag: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -1843,8 +1913,12 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
+          x-is-generated: true
         workItemTagID:
           type: integer
+          x-go-type: WorkItemTagID
+          x-is-generated: true
       required:
         - workItemTagID
         - projectID
@@ -1854,6 +1928,7 @@ components:
       type: object
       x-gen-struct: DbWorkItemTag
       x-is-generated: true
+      x-go-type: WorkItemTag
     DbWorkItemTagCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -1868,6 +1943,8 @@ components:
         - description
         - name
       type: object
+      x-go-type: WorkItemTagCreateParams
+      x-is-generated: true
     DbWorkItemType: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -1879,8 +1956,12 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
+          x-is-generated: true
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
+          x-is-generated: true
       required:
         - workItemTypeID
         - projectID
@@ -1890,6 +1971,7 @@ components:
       type: object
       x-gen-struct: DbWorkItemType
       x-is-generated: true
+      x-go-type: WorkItemType
     PaginatedNotificationsResponse: # Generated schema. DO NOT EDIT.
       properties:
         items:
@@ -1946,6 +2028,7 @@ components:
         - role
         - userID
       type: object
+      x-is-generated: true
     SharedWorkItemJoins: # Generated schema. DO NOT EDIT.
       properties:
         members:
@@ -2001,6 +2084,8 @@ components:
           $ref: '#/components/schemas/DbUserID'
         workItemID:
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
       type: object
       x-gen-struct: UpdateWorkItemCommentRequest
       x-is-generated: true
@@ -2191,6 +2276,7 @@ components:
       x-is-generated: true
       enum: ["preparer", "reviewer"]
       description: is generated from database enum 'work_item_role'.
+      x-oapi-ignore: true
     UpdateUserRequest:
       description: represents User data to update
       example:
@@ -2300,6 +2386,7 @@ components:
       type: string
       x-is-generated: true
       enum: ["personal", "global"]
+      x-oapi-ignore: true
     DemoTwoWorkItemTypes: # Generated from work_item_types table. DO NOT EDIT.
       type: string
       enum: ["Type 1", "Type 2", "Another type"]
@@ -2360,10 +2447,14 @@ components:
         - user
         - role
       type: object
+      x-go-type: WorkItemM2MAssigneeWIA
+      x-is-generated: true
     CreateTimeEntryRequest:
       properties:
         activityID:
           type: integer
+          x-go-type: ActivityID
+          x-is-generated: true
         comment:
           type: string
         durationMinutes:
@@ -2375,11 +2466,15 @@ components:
         teamID:
           nullable: true
           type: integer
+          x-go-type: TeamID
+          x-is-generated: true
         userID:
           $ref: '#/components/schemas/DbUserID'
         workItemID:
           nullable: true
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
       required:
         - activityID
         - comment
@@ -2392,6 +2487,8 @@ components:
       properties:
         activityID:
           type: integer
+          x-go-type: ActivityID
+          x-is-generated: true
         comment:
           type: string
         durationMinutes:
@@ -2430,6 +2527,8 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
+          x-is-generated: true
         members:
           items:
             $ref: '#/components/schemas/DbWorkItemM2MAssigneeWIA'
@@ -2446,6 +2545,8 @@ components:
         teamID:
           nullable: true
           type: integer
+          x-go-type: TeamID
+          x-is-generated: true
         timeEntries:
           items:
             $ref: '#/components/schemas/DbTimeEntry'
@@ -2463,6 +2564,8 @@ components:
           type: array
         workItemID:
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
         workItemTags:
           items:
             $ref: '#/components/schemas/DbWorkItemTag'
@@ -2472,6 +2575,8 @@ components:
           $ref: '#/components/schemas/DbWorkItemType'
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
+          x-is-generated: true
       required:
         - workItemID
         - title
@@ -2507,6 +2612,8 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
+          x-is-generated: true
         members:
           items:
             $ref: '#/components/schemas/DbWorkItemM2MAssigneeWIA'
@@ -2523,6 +2630,8 @@ components:
         teamID:
           nullable: true
           type: integer
+          x-go-type: TeamID
+          x-is-generated: true
         timeEntries:
           items:
             $ref: '#/components/schemas/DbTimeEntry'
@@ -2540,6 +2649,8 @@ components:
           type: array
         workItemID:
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
         workItemTags:
           items:
             $ref: '#/components/schemas/DbWorkItemTag'
@@ -2549,6 +2660,8 @@ components:
           $ref: '#/components/schemas/DbWorkItemType'
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
+          x-is-generated: true
       required:
         - workItemID
         - title
@@ -2582,6 +2695,8 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
+          x-is-generated: true
         members:
           items:
             $ref: '#/components/schemas/DbWorkItemM2MAssigneeWIA'
@@ -2598,6 +2713,8 @@ components:
         teamID:
           nullable: true
           type: integer
+          x-go-type: TeamID
+          x-is-generated: true
         timeEntries:
           items:
             $ref: '#/components/schemas/DbTimeEntry'
@@ -2615,6 +2732,8 @@ components:
           type: array
         workItemID:
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
         workItemTags:
           items:
             $ref: '#/components/schemas/DbWorkItemTag'
@@ -2624,6 +2743,8 @@ components:
           $ref: '#/components/schemas/DbWorkItemType'
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
+          x-is-generated: true
       required:
         - workItemID
         - title
@@ -2773,6 +2894,8 @@ components:
         - workItemComments
         - workItemTags
       type: object
+      x-go-type: CacheDemoWorkItemJoins
+      x-is-generated: true
     DbUserJoins: # Generated schema. DO NOT EDIT.
       properties:
         assigneeWorkItems:
@@ -2804,6 +2927,8 @@ components:
         - assigneeWorkItems
         - workItemComments
       type: object
+      x-go-type: UserJoins
+      x-is-generated: true
     PaginatedDemoWorkItemsResponse:
       properties:
         items:
@@ -2842,6 +2967,8 @@ components:
       properties:
         activityID:
           type: integer
+          x-go-type: ActivityID
+          x-is-generated: true
         deletedAt:
           format: date-time
           nullable: true
@@ -2854,6 +2981,8 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
+          x-is-generated: true
       required:
         - activityID
         - projectID
@@ -2874,8 +3003,12 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
+          x-is-generated: true
         teamID:
           type: integer
+          x-go-type: TeamID
+          x-is-generated: true
         updatedAt:
           format: date-time
           type: string
@@ -2966,8 +3099,12 @@ components:
           $ref: '#/components/schemas/DbUserID'
         workItemCommentID:
           type: integer
+          x-go-type: WorkItemCommentID
+          x-is-generated: true
         workItemID:
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
       required:
         - workItemCommentID
         - workItemID
@@ -2993,8 +3130,12 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
+          x-is-generated: true
         workItemTagID:
           type: integer
+          x-go-type: WorkItemTagID
+          x-is-generated: true
       required:
         - workItemTagID
         - projectID
@@ -3008,6 +3149,8 @@ components:
       properties:
         activityID:
           type: integer
+          x-go-type: ActivityID
+          x-is-generated: true
         comment:
           type: string
         durationMinutes:
@@ -3019,13 +3162,19 @@ components:
         teamID:
           nullable: true
           type: integer
+          x-go-type: TeamID
+          x-is-generated: true
         timeEntryID:
           type: integer
+          x-go-type: TimeEntryID
+          x-is-generated: true
         userID:
           $ref: '#/components/schemas/DbUserID'
         workItemID:
           nullable: true
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
       required:
         - timeEntryID
         - activityID
@@ -3052,6 +3201,8 @@ components:
           type: string
         kanbanStepID:
           type: integer
+          x-go-type: KanbanStepID
+          x-is-generated: true
         lastMessageAt:
           format: date-time
           type: string
@@ -3070,6 +3221,8 @@ components:
           type: string
         teamID:
           type: integer
+          x-go-type: TeamID
+          x-is-generated: true
         title:
           type: string
         updatedAt:
@@ -3077,8 +3230,12 @@ components:
           type: string
         workItemID:
           type: integer
+          x-go-type: WorkItemID
+          x-is-generated: true
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
+          x-is-generated: true
       required:
         - ref
         - line
@@ -3103,12 +3260,16 @@ components:
           $ref: '#/components/schemas/DbNotification'
         notificationID:
           type: integer
+          x-go-type: NotificationID
+          x-is-generated: true
         read:
           type: boolean
         userID:
           $ref: '#/components/schemas/DbUserID'
         userNotificationID:
           type: integer
+          x-go-type: UserNotificationID
+          x-is-generated: true
       required:
         - userNotificationID
         - notificationID
@@ -3129,8 +3290,12 @@ components:
           type: string
         projectID:
           type: integer
+          x-go-type: ProjectID
+          x-is-generated: true
         workItemTypeID:
           type: integer
+          x-go-type: WorkItemTypeID
+          x-is-generated: true
       required:
         - workItemTypeID
         - projectID

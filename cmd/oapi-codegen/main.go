@@ -26,6 +26,7 @@ type configuration struct {
 
 	// OutputFile is the filename to output.
 	OutputFile       string `yaml:"output,omitempty"`
+	Mode             string `yaml:"mode,omitempty"`
 	ExcludeRestTypes bool   `yaml:"exclude-rest-types,omitempty"`
 	// TestClient defines whether the generated code is a client for testing purposes.
 	TestClient             bool `yaml:"test-client,omitempty"`
@@ -162,6 +163,9 @@ func generate(spec *openapi3.T, config configuration, templates embed.FS, models
 			}
 
 			return false
+		},
+		"gen_mode": func() string {
+			return config.Mode
 		},
 		"rest_type": func(s string) string {
 			return strings.TrimPrefix(strings.ReplaceAll(s, "ExternalRef0", ""), "externalRef0.")
