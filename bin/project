@@ -866,6 +866,7 @@ x.gen.client-server() {
 package: db
 generate:
   models: true
+  embedded-spec: true
 mode: models
 output: internal/repos/postgresql/gen/db/openapi_types.gen.go
 compatibility:
@@ -925,13 +926,14 @@ EOF
     wait_without_error
 
     # TODO: remove once x-go-type in use for all db types.
+    # models gen cannot be done if we have x-go-type...
     # sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_server.gen.go
-    # sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_client_gen_test.go
+    sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_client_gen_test.go
     # db already imports models pkg
     # sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/models/openapi_types.gen.go
 
-    ast-parser find-redeclared --delete "$REST_MODELS" # for duplicates in rest. depends on oapi-codegen output
-    codegen implement-server                           # depends on oapi-codegen output
+    # ast-parser find-redeclared --delete "$REST_MODELS" # for duplicates in rest. depends on oapi-codegen output
+    codegen implement-server # depends on oapi-codegen output
 
     files=$(find "internal/rest/" -name "*.go")
     goimports -w $files
