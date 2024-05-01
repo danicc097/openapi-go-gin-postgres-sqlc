@@ -861,11 +861,19 @@ x.gen.client-server() {
 
     local models_config=$(
       cat <<EOF
+<<<<<<< Updated upstream
 package: models
 generate:
   models: true
 mode: models
 output: internal/repos/postgresql/gen/models/openapi_types.gen.go
+=======
+package: db
+generate:
+  models: true
+mode: models
+output: internal/repos/postgresql/gen/db/openapi_types.gen.go
+>>>>>>> Stashed changes
 compatibility:
   always-prefix-enum-values: true
 output-options:
@@ -877,8 +885,11 @@ output-options:
 EOF
     )
 
+<<<<<<< Updated upstream
     echo "models_config: $models_config"
 
+=======
+>>>>>>> Stashed changes
     #  TODO: x-go-name for rest models created for gen/models should have suffix Public
     # (will need gen in both gen_schema and outside, since struct instances dont have PkgPath in reflection)
     # this will only affect oapi-codegen. however it will mess server gen up
@@ -2391,7 +2402,10 @@ sync_db_enums_with_spec() {
     fi
 
     src_comment="database enum '$db_enum_name'"
+<<<<<<< Updated upstream
     # must ignore these since we are merging db and models
+=======
+>>>>>>> Stashed changes
     replace_enum_in_spec "$schema_name" enum_values "$src_comment" "1"
   done
 }
@@ -2414,7 +2428,11 @@ replace_enum_in_spec() {
   local enum="$1"
   local -n __arr="$2"
   local src_comment="$3"
+<<<<<<< Updated upstream
   local ignore="$4"
+=======
+  local ignore=$4
+>>>>>>> Stashed changes
 
   local schema_path=".components.schemas.$enum"
 
@@ -2430,6 +2448,7 @@ replace_enum_in_spec() {
     $schema_path.x-is-generated = true |
     $schema_path.description = \"is generated from $src_comment.\" |
     ($schema_path | key) line_comment=\"Generated from $src_comment. DO NOT EDIT.\"" -i $SPEC_PATH
+
 }
 
 find_deleted_pkg_schemas() {
@@ -2482,7 +2501,9 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
     if ! [[ " ${existing_structs[*]} " =~ " $struct " ]]; then
       echo "Schema with x-gen-struct: $struct no longer exists. Deleting..."
       yq e "del(.components.schemas.$struct)" -i "$SPEC_PATH"
-      structs_to_generate=("${structs_to_generate[@]/$struct/}")
+      # this removes prefixes from all items...
+      # structs_to_generate=("${structs_to_generate[@]/$struct/}")
+      array.remove_element structs_to_generate "$struct"
     fi
   done
 
@@ -2529,6 +2550,7 @@ $(join_by $'\n' "${db_prefix_clashes[@]}")"
   for schema_key in $schema_keys; do
     if [[ $schema_key =~ ^Db[A-Z].*$ ]]; then
       go_type="db.${schema_key#Db}"
+<<<<<<< Updated upstream
 
       yq eval -i \
         '.components.schemas."'$schema_key'" += {"x-go-type": "'$go_type'", "x-go-type-import": {"name": "db", "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"}}' \
@@ -2541,6 +2563,22 @@ $(join_by $'\n' "${db_prefix_clashes[@]}")"
         '.components.schemas."'$schema_key'" += {"x-go-name": "'$go_name'"}' \
         "$gen_schema_spec_path"
     fi
+=======
+      go_name="${schema_key#Db}"
+
+      # db models are ignored in rest gen
+      yq eval -i \
+        '.components.schemas."'$schema_key'" += {"x-go-type": "'$go_type'", "x-go-name":"'$go_name'", "x-go-type-import": {"name": "db", "path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db"}}' \
+        "$gen_schema_spec_path"
+    fi
+    # if [[ $schema_key =~ .*(Request|Response)$ ]]; then
+    #   go_name="${schema_key}"
+
+    #   yq eval -i \
+    #     '.components.schemas."'$schema_key'" += {"x-go-name": "'$go_name'"}' \
+    #     "$gen_schema_spec_path"
+    # fi
+>>>>>>> Stashed changes
   done
 
   # only keep schemas not outputted by gen. User should have been warned on clashes.

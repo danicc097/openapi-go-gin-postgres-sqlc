@@ -27,7 +27,7 @@ import type {
   PaginatedUsersResponse,
   UpdateUserAuthRequest,
   UpdateUserRequest,
-  User
+  UserResponse
 } from '.././model'
 import { customInstance } from '../../api/mutator';
 import type { ErrorType } from '../../api/mutator';
@@ -147,7 +147,7 @@ export const getCurrentUser = (
 ) => {
       
       
-      return customInstance<User>(
+      return customInstance<UserResponse>(
       {url: `/user/me`, method: 'GET', signal
     },
       options);
@@ -351,7 +351,7 @@ export const updateUser = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<User>(
+      return customInstance<UserResponse>(
       {url: `/user/${id}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateUserRequest

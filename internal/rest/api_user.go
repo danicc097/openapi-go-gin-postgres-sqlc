@@ -34,7 +34,7 @@ func (h *StrictHandlers) UpdateUser(c *gin.Context, request UpdateUserRequestObj
 		return nil, nil
 	}
 
-	res := User{User: user, Role: Role(role.Name)}
+	res := UserResponse{User: user, Role: Role(role.Name)}
 
 	return UpdateUser200JSONResponse(res), nil
 }
@@ -63,7 +63,7 @@ func (h *StrictHandlers) GetCurrentUser(c *gin.Context, request GetCurrentUserRe
 		return nil, nil
 	}
 
-	res := User{
+	res := UserResponse{
 		User:     caller.User,
 		Role:     Role(role.Name),
 		Teams:    &caller.Teams,
@@ -146,11 +146,11 @@ func (h *StrictHandlers) GetPaginatedUsers(c *gin.Context, request GetPaginatedU
 			return nil, nil
 		}
 	}
-	items := make([]User, len(users))
+	items := make([]UserResponse, len(users))
 	for i, u := range users {
 		u := u
 		role, _ := h.svc.Authorization.RoleByRank(u.RoleRank)
-		items[i] = User{
+		items[i] = UserResponse{
 			User:     &u,
 			Role:     Role(role.Name),
 			Teams:    u.MemberTeamsJoin,

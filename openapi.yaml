@@ -512,7 +512,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Team'
+                $ref: '#/components/schemas/TeamResponse'
         !!merge <<: *x-error-response
       tags:
         - team
@@ -529,7 +529,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Team'
+                $ref: '#/components/schemas/TeamResponse'
         !!merge <<: *x-error-response
       tags:
         - team
@@ -551,7 +551,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Team'
+                $ref: '#/components/schemas/TeamResponse'
         !!merge <<: *x-error-response
       tags:
         - team
@@ -589,7 +589,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemTag'
+                $ref: '#/components/schemas/WorkItemTagResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemTag
@@ -615,7 +615,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Activity'
+                $ref: '#/components/schemas/ActivityResponse'
         !!merge <<: *x-error-response
       tags:
         - activity
@@ -636,7 +636,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TimeEntry'
+                $ref: '#/components/schemas/TimeEntryResponse'
         !!merge <<: *x-error-response
       tags:
         - timeEntry
@@ -653,7 +653,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TimeEntry'
+                $ref: '#/components/schemas/TimeEntryResponse'
         !!merge <<: *x-error-response
       tags:
         - timeEntry
@@ -675,7 +675,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TimeEntry'
+                $ref: '#/components/schemas/TimeEntryResponse'
         !!merge <<: *x-error-response
       tags:
         - timeEntry
@@ -704,7 +704,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Activity'
+                $ref: '#/components/schemas/ActivityResponse'
         !!merge <<: *x-error-response
       tags:
         - activity
@@ -729,7 +729,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Activity'
+                $ref: '#/components/schemas/ActivityResponse'
         !!merge <<: *x-error-response
       tags:
         - activity
@@ -761,7 +761,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemTag'
+                $ref: '#/components/schemas/WorkItemTagResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemTag
@@ -783,7 +783,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemTag'
+                $ref: '#/components/schemas/WorkItemTagResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemTag
@@ -818,7 +818,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemType'
+                $ref: '#/components/schemas/WorkItemTypeResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemType
@@ -835,7 +835,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemType'
+                $ref: '#/components/schemas/WorkItemTypeResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemType
@@ -857,7 +857,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemType'
+                $ref: '#/components/schemas/WorkItemTypeResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemType
@@ -911,7 +911,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserResponse'
           description: ok
       tags:
         - user
@@ -971,7 +971,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserResponse'
           description: ok
       tags:
         - user
@@ -1060,7 +1060,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProjectBoard'
+                $ref: '#/components/schemas/ProjectBoardResponse'
       tags:
         - project
   # https://stackoverflow.com/a/32820784/11995537
@@ -1099,7 +1099,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItem'
+                $ref: '#/components/schemas/WorkItemResponse'
       tags:
         - project
   /work-item/:
@@ -1119,7 +1119,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItem'
+                $ref: '#/components/schemas/WorkItemResponse'
       tags:
         - workItem
   /work-item/{workItemID}/:
@@ -1135,7 +1135,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItem'
+                $ref: '#/components/schemas/WorkItemResponse'
       tags:
         - workItem
     patch:
@@ -1150,7 +1150,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItem'
+                $ref: '#/components/schemas/WorkItemResponse'
       tags:
         - workItem
     delete:
@@ -1214,7 +1214,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemComment'
+                $ref: '#/components/schemas/WorkItemCommentResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemComment
@@ -1232,7 +1232,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemComment'
+                $ref: '#/components/schemas/WorkItemCommentResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemComment
@@ -1257,7 +1257,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemComment'
+                $ref: '#/components/schemas/WorkItemCommentResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemComment
@@ -1290,7 +1290,7 @@ components:
       style: simple
     UUID: *x-uuidParameter
   schemas:
-    Activity: # Generated schema. DO NOT EDIT.
+    ActivityResponse: # Generated schema. DO NOT EDIT.
       properties:
         activityID:
           type: integer
@@ -1298,6 +1298,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         deletedAt:
           format: date-time
           nullable: true
@@ -1314,6 +1315,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - activityID
         - projectID
@@ -1321,7 +1323,7 @@ components:
         - description
         - isProductive
       type: object
-      x-gen-struct: Activity
+      x-gen-struct: ActivityResponse
       x-is-generated: true
     CreateActivityRequest: # Generated schema. DO NOT EDIT.
       properties:
@@ -1357,6 +1359,7 @@ components:
             x-go-type-import:
               name: db
               path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+            x-is-generated: true
           type: array
       required:
         - projectName
@@ -1386,6 +1389,7 @@ components:
             x-go-type-import:
               name: db
               path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+            x-is-generated: true
           type: array
       required:
         - projectName
@@ -1435,6 +1439,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - message
         - userID
@@ -1486,14 +1491,16 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - workItemID
       type: object
       x-go-type: db.DemoTwoWorkItem
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
       x-is-generated: true
+      x-go-name: DemoTwoWorkItem
     DbDemoTwoWorkItemCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         customDateForProject2:
@@ -1504,8 +1511,9 @@ components:
       x-go-type: db.DemoTwoWorkItemCreateParams
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
       x-is-generated: true
+      x-go-name: DemoTwoWorkItemCreateParams
     DbDemoWorkItem: # Generated schema. DO NOT EDIT.
       properties:
         lastMessageAt:
@@ -1524,6 +1532,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - workItemID
         - ref
@@ -1534,9 +1543,10 @@ components:
       x-gen-struct: DbDemoWorkItem
       x-is-generated: true
       x-go-type: db.DemoWorkItem
+      x-go-name: DemoWorkItem
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
     DbDemoWorkItemCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         lastMessageAt:
@@ -1558,8 +1568,9 @@ components:
       x-go-type: db.DemoWorkItemCreateParams
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
       x-is-generated: true
+      x-go-name: DemoWorkItemCreateParams
     DbKanbanStep: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -1573,6 +1584,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         name:
           type: string
         projectID:
@@ -1581,6 +1593,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         stepOrder:
           type: integer
         timeTrackable:
@@ -1597,9 +1610,10 @@ components:
       x-gen-struct: DbKanbanStep
       x-is-generated: true
       x-go-type: db.KanbanStep
+      x-go-name: KanbanStep
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
     DbNotification: # Generated schema. DO NOT EDIT.
       properties:
         body:
@@ -1620,6 +1634,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         notificationType:
           $ref: '#/components/schemas/NotificationType'
         receiver:
@@ -1640,14 +1655,9 @@ components:
       x-go-type: db.Notification
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
       x-is-generated: true
-
-    ProjectName: # Generated from projects table. DO NOT EDIT.
-      enum: ["demo", "demo_two"]
-      type: string
-      x-is-generated: true
-      description: is generated from projects table.
+      x-go-name: Notification
     DbProject: # Generated schema. DO NOT EDIT.
       properties:
         boardConfig:
@@ -1665,6 +1675,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         updatedAt:
           format: date-time
           type: string
@@ -1679,9 +1690,10 @@ components:
       x-gen-struct: DbProject
       x-is-generated: true
       x-go-type: db.Project
+      x-go-name: Project
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
     DbTeam: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
@@ -1697,12 +1709,14 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         teamID:
           type: integer
           x-go-type: db.TeamID
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         updatedAt:
           format: date-time
           type: string
@@ -1717,8 +1731,9 @@ components:
       x-go-type: db.Team
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
       x-is-generated: true
+      x-go-name: Team
     DbTeamCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         description:
@@ -1732,8 +1747,9 @@ components:
       x-go-type: db.TeamCreateParams
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
       x-is-generated: true
+      x-go-name: TeamCreateParams
     DbTimeEntry: # Generated schema. DO NOT EDIT.
       properties:
         activityID:
@@ -1742,6 +1758,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         comment:
           type: string
         durationMinutes:
@@ -1757,12 +1774,14 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         timeEntryID:
           type: integer
           x-go-type: db.TimeEntryID
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         userID:
           $ref: '#/components/schemas/DbUserID'
         workItemID:
@@ -1772,6 +1791,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - timeEntryID
         - activityID
@@ -1782,9 +1802,10 @@ components:
       x-gen-struct: DbTimeEntry
       x-is-generated: true
       x-go-type: db.TimeEntry
+      x-go-name: TimeEntry
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
     DbUser: # Generated schema. DO NOT EDIT.
       properties:
         age:
@@ -1834,9 +1855,10 @@ components:
       x-gen-struct: DbUser
       x-is-generated: true
       x-go-type: db.User
+      x-go-name: User
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
     DbUserAPIKey: # Generated schema. DO NOT EDIT.
       properties:
         apiKey:
@@ -1854,9 +1876,10 @@ components:
       x-gen-struct: DbUserAPIKey
       x-is-generated: true
       x-go-type: db.UserAPIKey
+      x-go-name: UserAPIKey
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
     DbUserID: # Generated schema. DO NOT EDIT.
       example: cdb15f83-1c5d-4727-98d1-8924ccd1fc01
       pattern: ^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}
@@ -1864,8 +1887,9 @@ components:
       x-go-type: db.UserID
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
       x-is-generated: true
+      x-go-name: UserID
     DbUserWIAUWorkItem: # Generated schema. DO NOT EDIT.
       properties:
         role:
@@ -1897,6 +1921,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         metadata:
           additionalProperties: {}
           type: object
@@ -1909,6 +1934,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         title:
           type: string
         updatedAt:
@@ -1920,12 +1946,14 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         workItemTypeID:
           type: integer
           x-go-type: db.WorkItemTypeID
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - workItemID
         - title
@@ -1941,9 +1969,10 @@ components:
       x-gen-struct: DbWorkItem
       x-is-generated: true
       x-go-type: db.WorkItem
+      x-go-name: WorkItem
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
     DbWorkItemComment: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
@@ -1962,12 +1991,14 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         workItemID:
           type: integer
           x-go-type: db.WorkItemID
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - workItemCommentID
         - workItemID
@@ -1979,9 +2010,10 @@ components:
       x-gen-struct: DbWorkItemComment
       x-is-generated: true
       x-go-type: db.WorkItemComment
+      x-go-name: WorkItemComment
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
     DbWorkItemCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         closedAt:
@@ -1996,6 +2028,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         metadata:
           additionalProperties: {}
           type: object
@@ -2008,6 +2041,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         title:
           type: string
         workItemTypeID:
@@ -2016,6 +2050,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - description
         - kanbanStepID
@@ -2028,8 +2063,9 @@ components:
       x-go-type: db.WorkItemCreateParams
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
       x-is-generated: true
+      x-go-name: WorkItemCreateParams
     DbWorkItemTag: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -2049,12 +2085,14 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         workItemTagID:
           type: integer
           x-go-type: db.WorkItemTagID
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - workItemTagID
         - projectID
@@ -2065,9 +2103,10 @@ components:
       x-gen-struct: DbWorkItemTag
       x-is-generated: true
       x-go-type: db.WorkItemTag
+      x-go-name: WorkItemTag
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
     DbWorkItemTagCreateParams: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -2085,8 +2124,9 @@ components:
       x-go-type: db.WorkItemTagCreateParams
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
       x-is-generated: true
+      x-go-name: WorkItemTagCreateParams
     DbWorkItemType: # Generated schema. DO NOT EDIT.
       properties:
         color:
@@ -2102,12 +2142,14 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         workItemTypeID:
           type: integer
           x-go-type: db.WorkItemTypeID
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - workItemTypeID
         - projectID
@@ -2118,10 +2160,11 @@ components:
       x-gen-struct: DbWorkItemType
       x-is-generated: true
       x-go-type: db.WorkItemType
+      x-go-name: WorkItemType
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
-    Notification: # Generated schema. DO NOT EDIT.
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+    NotificationResponse: # Generated schema. DO NOT EDIT.
       properties:
         notification:
           $ref: '#/components/schemas/DbNotification'
@@ -2131,6 +2174,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         read:
           type: boolean
         userID:
@@ -2141,6 +2185,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - userNotificationID
         - notificationID
@@ -2148,13 +2193,13 @@ components:
         - userID
         - notification
       type: object
-      x-gen-struct: Notification
+      x-gen-struct: NotificationResponse
       x-is-generated: true
     PaginatedNotificationsResponse: # Generated schema. DO NOT EDIT.
       properties:
         items:
           items:
-            $ref: '#/components/schemas/Notification'
+            $ref: '#/components/schemas/NotificationResponse'
           nullable: true
           type: array
         page:
@@ -2169,7 +2214,7 @@ components:
       properties:
         items:
           items:
-            $ref: '#/components/schemas/User'
+            $ref: '#/components/schemas/UserResponse'
           nullable: true
           type: array
         page:
@@ -2187,14 +2232,14 @@ components:
       type: object
       x-gen-struct: PaginationPage
       x-is-generated: true
-    ProjectBoard: # Generated schema. DO NOT EDIT.
+    ProjectBoardResponse: # Generated schema. DO NOT EDIT.
       properties:
         projectName:
           $ref: '#/components/schemas/ProjectName'
       required:
         - projectName
       type: object
-      x-gen-struct: ProjectBoard
+      x-gen-struct: ProjectBoardResponse
       x-is-generated: true
     ServicesMember: # Generated schema. DO NOT EDIT.
       properties:
@@ -2234,7 +2279,7 @@ components:
       type: object
       x-gen-struct: SharedWorkItemJoins
       x-is-generated: true
-    Team: # Generated schema. DO NOT EDIT.
+    TeamResponse: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
           format: date-time
@@ -2249,12 +2294,14 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         teamID:
           type: integer
           x-go-type: db.TeamID
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         updatedAt:
           format: date-time
           type: string
@@ -2266,7 +2313,7 @@ components:
         - createdAt
         - updatedAt
       type: object
-      x-gen-struct: Team
+      x-gen-struct: TeamResponse
       x-is-generated: true
     UpdateActivityRequest: # Generated schema. DO NOT EDIT.
       properties:
@@ -2300,6 +2347,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       type: object
       x-gen-struct: UpdateWorkItemCommentRequest
       x-is-generated: true
@@ -2327,7 +2375,7 @@ components:
       type: object
       x-gen-struct: UpdateWorkItemTypeRequest
       x-is-generated: true
-    User: # Generated schema. DO NOT EDIT.
+    UserResponse: # Generated schema. DO NOT EDIT.
       properties:
         age:
           nullable: true
@@ -2388,9 +2436,9 @@ components:
         - updatedAt
         - role
       type: object
-      x-gen-struct: User
+      x-gen-struct: UserResponse
       x-is-generated: true
-    WorkItemComment: # Generated schema. DO NOT EDIT.
+    WorkItemCommentResponse: # Generated schema. DO NOT EDIT.
       properties:
         createdAt:
           format: date-time
@@ -2408,12 +2456,14 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         workItemID:
           type: integer
           x-go-type: db.WorkItemID
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - workItemCommentID
         - workItemID
@@ -2422,9 +2472,9 @@ components:
         - createdAt
         - updatedAt
       type: object
-      x-gen-struct: WorkItemComment
+      x-gen-struct: WorkItemCommentResponse
       x-is-generated: true
-    WorkItemTag: # Generated schema. DO NOT EDIT.
+    WorkItemTagResponse: # Generated schema. DO NOT EDIT.
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
@@ -2443,12 +2493,14 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         workItemTagID:
           type: integer
           x-go-type: db.WorkItemTagID
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - workItemTagID
         - projectID
@@ -2456,9 +2508,9 @@ components:
         - description
         - color
       type: object
-      x-gen-struct: WorkItemTag
+      x-gen-struct: WorkItemTagResponse
       x-is-generated: true
-    WorkItemType: # Generated schema. DO NOT EDIT.
+    WorkItemTypeResponse: # Generated schema. DO NOT EDIT.
       properties:
         color:
           pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
@@ -2473,12 +2525,14 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         workItemTypeID:
           type: integer
           x-go-type: db.WorkItemTypeID
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - workItemTypeID
         - projectID
@@ -2486,7 +2540,7 @@ components:
         - description
         - color
       type: object
-      x-gen-struct: WorkItemType
+      x-gen-struct: WorkItemTypeResponse
       x-is-generated: true
     Direction:
       type: string
@@ -2720,15 +2774,15 @@ components:
       x-go-type-import:
         name: uuid
         path: github.com/google/uuid
-    WorkItem:
+    WorkItemResponse:
       oneOf:
-        - $ref: '#/components/schemas/DemoWorkItem'
-        - $ref: '#/components/schemas/DemoTwoWorkItem'
+        - $ref: '#/components/schemas/DemoWorkItemResponse'
+        - $ref: '#/components/schemas/DemoTwoWorkItemResponse'
       discriminator:
         propertyName: projectName
         mapping:
-          demo: '#/components/schemas/DemoWorkItem'
-          demo_two: '#/components/schemas/DemoTwoWorkItem'
+          demo: '#/components/schemas/DemoWorkItemResponse'
+          demo_two: '#/components/schemas/DemoTwoWorkItemResponse'
       x-use-server-type: true
     CreateWorkItemRequest:
       oneOf:
@@ -2826,8 +2880,9 @@ components:
       x-go-type: db.WorkItemM2MAssigneeWIA
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
       x-is-generated: true
+      x-go-name: WorkItemM2MAssigneeWIA
     CreateTimeEntryRequest:
       properties:
         activityID:
@@ -2836,6 +2891,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         comment:
           type: string
         durationMinutes:
@@ -2851,6 +2907,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         userID:
           $ref: '#/components/schemas/DbUserID'
         workItemID:
@@ -2860,6 +2917,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - activityID
         - comment
@@ -2868,7 +2926,7 @@ components:
       type: object
       x-gen-struct: CreateTimeEntryRequest
       x-is-generated: true
-    TimeEntry:
+    TimeEntryResponse:
       properties:
         activityID:
           type: integer
@@ -2876,6 +2934,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         comment:
           type: string
         durationMinutes:
@@ -2891,12 +2950,14 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         timeEntryID:
           type: integer
           x-go-type: db.TimeEntryID
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         userID:
           $ref: '#/components/schemas/DbUserID'
         workItemID:
@@ -2906,6 +2967,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - timeEntryID
         - activityID
@@ -2913,7 +2975,7 @@ components:
         - comment
         - start
       type: object
-      x-gen-struct: TimeEntry
+      x-gen-struct: TimeEntryResponse
       x-is-generated: true
     UpdateTimeEntryRequest:
       properties:
@@ -2923,6 +2985,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         comment:
           type: string
         durationMinutes:
@@ -2942,7 +3005,7 @@ components:
       type: object
       x-gen-struct: UpdateTimeEntryRequest
       x-is-generated: true
-    DemoTwoWorkItem:
+    DemoTwoWorkItemResponse:
       properties:
         closedAt:
           format: date-time
@@ -2965,6 +3028,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         members:
           items:
             $ref: '#/components/schemas/DbWorkItemM2MAssigneeWIA'
@@ -2985,6 +3049,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         timeEntries:
           items:
             $ref: '#/components/schemas/DbTimeEntry'
@@ -3006,6 +3071,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         workItemTags:
           items:
             $ref: '#/components/schemas/DbWorkItemTag'
@@ -3019,6 +3085,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - workItemID
         - title
@@ -3033,9 +3100,9 @@ components:
         - projectName
         - demoTwoWorkItem
       type: object
-      x-gen-struct: DemoTwoWorkItem
+      x-gen-struct: DemoTwoWorkItemResponse
       x-is-generated: true
-    DemoWorkItem:
+    DemoWorkItemResponse:
       properties:
         closedAt:
           format: date-time
@@ -3058,6 +3125,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         members:
           items:
             $ref: '#/components/schemas/DbWorkItemM2MAssigneeWIA'
@@ -3078,6 +3146,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         timeEntries:
           items:
             $ref: '#/components/schemas/DbTimeEntry'
@@ -3099,6 +3168,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         workItemTags:
           items:
             $ref: '#/components/schemas/DbWorkItemTag'
@@ -3112,6 +3182,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - workItemID
         - title
@@ -3126,7 +3197,7 @@ components:
         - projectName
         - demoWorkItem
       type: object
-      x-gen-struct: DemoWorkItem
+      x-gen-struct: DemoWorkItemResponse
       x-is-generated: true
     WorkItemBase: # Generated schema. DO NOT EDIT.
       properties:
@@ -3149,6 +3220,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         members:
           items:
             $ref: '#/components/schemas/DbWorkItemM2MAssigneeWIA'
@@ -3169,6 +3241,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         timeEntries:
           items:
             $ref: '#/components/schemas/DbTimeEntry'
@@ -3190,6 +3263,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         workItemTags:
           items:
             $ref: '#/components/schemas/DbWorkItemTag'
@@ -3203,6 +3277,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - workItemID
         - title
@@ -3355,8 +3430,9 @@ components:
       x-go-type: db.CacheDemoWorkItemJoins
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
       x-is-generated: true
+      x-go-name: CacheDemoWorkItemJoins
     DbUserJoins: # Generated schema. DO NOT EDIT.
       properties:
         assigneeWorkItems:
@@ -3391,13 +3467,14 @@ components:
       x-go-type: db.UserJoins
       x-go-type-import:
         name: db
-        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models
+        path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
       x-is-generated: true
+      x-go-name: UserJoins
     PaginatedDemoWorkItemsResponse:
       properties:
         items:
           items:
-            $ref: '#/components/schemas/CacheDemoWorkItem'
+            $ref: '#/components/schemas/CacheDemoWorkItemResponse'
           nullable: true
           type: array
         page:
@@ -3422,7 +3499,7 @@ components:
       type: object
       x-gen-struct: GetCurrentUserQueryParameters
       x-is-generated: true
-    CacheDemoWorkItem: # Generated schema. DO NOT EDIT.
+    CacheDemoWorkItemResponse: # Generated schema. DO NOT EDIT.
       properties:
         closedAt:
           format: date-time
@@ -3443,6 +3520,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         lastMessageAt:
           format: date-time
           type: string
@@ -3465,6 +3543,7 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         title:
           type: string
         updatedAt:
@@ -3476,12 +3555,14 @@ components:
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
         workItemTypeID:
           type: integer
           x-go-type: db.WorkItemTypeID
           x-go-type-import:
             name: db
             path: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+          x-is-generated: true
       required:
         - ref
         - line
@@ -3498,14 +3579,13 @@ components:
         - createdAt
         - updatedAt
       type: object
-      x-gen-struct: CacheDemoWorkItem
+      x-gen-struct: CacheDemoWorkItemResponse
       x-is-generated: true
-  examples: # Generated from internal structs. DO NOT EDIT.
-    User:
-      value:
-        username: username
-        email: email@email.com
-        password: password
+    ProjectName: # Generated from projects table. DO NOT EDIT.
+      type: string
+      enum: ["demo", "demo_two"]
+      x-is-generated: true
+      description: is generated from projects table.
   securitySchemes:
     api_key:
       in: header

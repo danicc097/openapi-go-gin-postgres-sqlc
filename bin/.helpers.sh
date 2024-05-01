@@ -189,6 +189,22 @@ array.add_suffix() {
   printf "%s\n" "${@/%/$suffix}"
 }
 
+# modifies in place
+array.remove_element() {
+  local -n array=$1
+  local value=$2
+  local temp_array=()
+
+  # Loop through the array and keep only elements that are not equal to the value
+  for element in "${array[@]}"; do
+    if [ "$element" != "$value" ]; then
+      temp_array+=("$element")
+    fi
+  done
+
+  # Assign the modified array back to the original array
+  array=("${temp_array[@]}")
+}
 # breaks when separator has spaces, e.g. " | "
 # join_by() {
 #   [ "$#" -ge 1 ] || return 1

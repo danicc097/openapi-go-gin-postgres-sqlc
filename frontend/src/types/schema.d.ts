@@ -170,7 +170,7 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
-    Activity: {
+    ActivityResponse: {
       activityID: number;
       /** Format: date-time */
       deletedAt?: string | null;
@@ -397,7 +397,7 @@ export interface components {
       projectID: number;
       workItemTypeID: number;
     };
-    Notification: {
+    NotificationResponse: {
       notification: components["schemas"]["DbNotification"];
       notificationID: number;
       read: boolean;
@@ -405,17 +405,17 @@ export interface components {
       userNotificationID: number;
     };
     PaginatedNotificationsResponse: {
-      items: components["schemas"]["Notification"][] | null;
+      items: components["schemas"]["NotificationResponse"][] | null;
       page: components["schemas"]["PaginationPage"];
     };
     PaginatedUsersResponse: {
-      items: components["schemas"]["User"][] | null;
+      items: components["schemas"]["UserResponse"][] | null;
       page: components["schemas"]["PaginationPage"];
     };
     PaginationPage: {
       nextCursor?: string;
     };
-    ProjectBoard: {
+    ProjectBoardResponse: {
       projectName: components["schemas"]["Project"];
     };
     ServicesMember: {
@@ -429,7 +429,7 @@ export interface components {
       workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
       workItemType?: components["schemas"]["DbWorkItemType"];
     };
-    Team: {
+    TeamResponse: {
       /** Format: date-time */
       createdAt: string;
       description: string;
@@ -463,7 +463,7 @@ export interface components {
       description?: string;
       name?: string;
     };
-    User: {
+    UserResponse: {
       age?: number | null;
       apiKey?: components["schemas"]["DbUserAPIKey"];
       /** Format: date-time */
@@ -485,7 +485,7 @@ export interface components {
       userID: components["schemas"]["DbUserID"];
       username: string;
     };
-    WorkItemComment: {
+    WorkItemCommentResponse: {
       /** Format: date-time */
       createdAt: string;
       message: string;
@@ -495,7 +495,7 @@ export interface components {
       workItemCommentID: number;
       workItemID: number;
     };
-    WorkItemTag: {
+    WorkItemTagResponse: {
       color: string;
       /** Format: date-time */
       deletedAt?: string | null;
@@ -504,7 +504,7 @@ export interface components {
       projectID: number;
       workItemTagID: number;
     };
-    WorkItemType: {
+    WorkItemTypeResponse: {
       color: string;
       description: string;
       name: string;
@@ -640,7 +640,7 @@ export interface components {
       ctx?: Record<string, never>;
     };
     UuidUUID: string;
-    WorkItem: components["schemas"]["DemoWorkItem"] | components["schemas"]["DemoTwoWorkItem"];
+    WorkItem: components["schemas"]["DemoWorkItemResponse"] | components["schemas"]["DemoTwoWorkItemResponse"];
     CreateWorkItemRequest: components["schemas"]["CreateDemoWorkItemRequest"] | components["schemas"]["CreateDemoTwoWorkItemRequest"];
     /**
      * @description is generated from projects table.
@@ -707,7 +707,7 @@ export interface components {
       userID: components["schemas"]["DbUserID"];
       workItemID?: number | null;
     };
-    TimeEntry: {
+    TimeEntryResponse: {
       activityID: number;
       comment: string;
       durationMinutes?: number | null;
@@ -728,7 +728,7 @@ export interface components {
       userID?: components["schemas"]["DbUserID"];
       workItemID?: number | null;
     };
-    DemoTwoWorkItem: {
+    DemoTwoWorkItemResponse: {
       /** Format: date-time */
       closedAt?: string | null;
       /** Format: date-time */
@@ -756,7 +756,7 @@ export interface components {
       workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
     };
-    DemoWorkItem: {
+    DemoWorkItemResponse: {
       /** Format: date-time */
       closedAt?: string | null;
       /** Format: date-time */
@@ -865,7 +865,7 @@ export interface components {
       workItemComments: boolean;
     };
     PaginatedDemoWorkItemsResponse: {
-      items: components["schemas"]["CacheDemoWorkItem"][] | null;
+      items: components["schemas"]["CacheDemoWorkItemResponse"][] | null;
       page: components["schemas"]["PaginationPage"];
     };
     GetCacheDemoWorkItemQueryParameters: {
@@ -874,7 +874,7 @@ export interface components {
     GetCurrentUserQueryParameters: {
       joins?: components["schemas"]["DbUserJoins"];
     };
-    CacheDemoWorkItem: {
+    CacheDemoWorkItemResponse: {
       /** Format: date-time */
       closedAt?: string | null;
       /** Format: date-time */
@@ -1053,7 +1053,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["Team"];
+          "application/json": components["schemas"]["TeamResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1083,7 +1083,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["Team"];
+          "application/json": components["schemas"]["TeamResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1144,7 +1144,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["Team"];
+          "application/json": components["schemas"]["TeamResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1175,7 +1175,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["WorkItemTag"];
+          "application/json": components["schemas"]["WorkItemTagResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1206,7 +1206,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["Activity"];
+          "application/json": components["schemas"]["ActivityResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1232,7 +1232,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["TimeEntry"];
+          "application/json": components["schemas"]["TimeEntryResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1262,7 +1262,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["TimeEntry"];
+          "application/json": components["schemas"]["TimeEntryResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1323,7 +1323,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["TimeEntry"];
+          "application/json": components["schemas"]["TimeEntryResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1353,7 +1353,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["Activity"];
+          "application/json": components["schemas"]["ActivityResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1414,7 +1414,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["Activity"];
+          "application/json": components["schemas"]["ActivityResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1444,7 +1444,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItemTag"];
+          "application/json": components["schemas"]["WorkItemTagResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1505,7 +1505,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItemTag"];
+          "application/json": components["schemas"]["WorkItemTagResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1536,7 +1536,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["WorkItemType"];
+          "application/json": components["schemas"]["WorkItemTypeResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1566,7 +1566,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItemType"];
+          "application/json": components["schemas"]["WorkItemTypeResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1627,7 +1627,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItemType"];
+          "application/json": components["schemas"]["WorkItemTypeResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1678,7 +1678,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["User"];
+          "application/json": components["schemas"]["UserResponse"];
         };
       };
     };
@@ -1752,7 +1752,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["User"];
+          "application/json": components["schemas"]["UserResponse"];
         };
       };
     };
@@ -1834,7 +1834,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["ProjectBoard"];
+          "application/json": components["schemas"]["ProjectBoardResponse"];
         };
       };
     };
@@ -1980,7 +1980,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["WorkItemComment"];
+          "application/json": components["schemas"]["WorkItemCommentResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -2015,7 +2015,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItemComment"];
+          "application/json": components["schemas"]["WorkItemCommentResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -2086,7 +2086,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItemComment"];
+          "application/json": components["schemas"]["WorkItemCommentResponse"];
         };
       };
       /** @description Unauthenticated */

@@ -63,7 +63,7 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 			return nil, nil
 		}
 
-		res = DemoWorkItem{
+		res = DemoWorkItemResponse{
 			WorkItemBase: fillBaseWorkItemResponse(workItem),
 			DemoWorkItem: *workItem.DemoWorkItemJoin,
 		}
@@ -75,7 +75,7 @@ func (h *StrictHandlers) CreateWorkitem(c *gin.Context, request CreateWorkitemRe
 			return nil, nil
 		}
 
-		res = DemoTwoWorkItem{
+		res = DemoTwoWorkItemResponse{
 			WorkItemBase:    fillBaseWorkItemResponse(workItem),
 			DemoTwoWorkItem: *workItem.DemoTwoWorkItemJoin,
 		}

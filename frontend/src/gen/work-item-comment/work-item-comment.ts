@@ -25,7 +25,7 @@ import type {
   CreateWorkItemCommentRequest,
   HTTPError,
   UpdateWorkItemCommentRequest,
-  WorkItemComment
+  WorkItemCommentResponse
 } from '.././model'
 import { customInstance } from '../../api/mutator';
 import type { ErrorType } from '../../api/mutator';
@@ -43,7 +43,7 @@ export const createWorkItemComment = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<WorkItemComment>(
+      return customInstance<WorkItemCommentResponse>(
       {url: `/work-item/${workItemID}/comment/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createWorkItemCommentRequest
@@ -97,7 +97,7 @@ export const getWorkItemComment = (
 ) => {
       
       
-      return customInstance<WorkItemComment>(
+      return customInstance<WorkItemCommentResponse>(
       {url: `/work-item/${workItemID}/comment/${workItemCommentID}`, method: 'GET', signal
     },
       options);
@@ -204,7 +204,7 @@ export const updateWorkItemComment = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<WorkItemComment>(
+      return customInstance<WorkItemCommentResponse>(
       {url: `/work-item/${workItemID}/comment/${workItemCommentID}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateWorkItemCommentRequest

@@ -25,7 +25,7 @@ import type {
   CreateProjectBoardRequest,
   DbProject,
   GetProjectWorkitemsParams,
-  ProjectBoard,
+  ProjectBoardResponse,
   ProjectConfig,
   WorkItem
 } from '.././model'
@@ -353,7 +353,7 @@ export const getProjectBoard = (
 ) => {
       
       
-      return customInstance<ProjectBoard>(
+      return customInstance<ProjectBoardResponse>(
       {url: `/project/${projectName}/board`, method: 'GET', signal
     },
       options);

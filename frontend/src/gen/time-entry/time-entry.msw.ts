@@ -15,17 +15,17 @@ import {
   http
 } from 'msw'
 import type {
-  TimeEntry
+  TimeEntryResponse
 } from '.././model'
 
-export const getCreateTimeEntryResponseMock = (overrideResponse: any = {}): TimeEntry => ({activityID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ActivityID, comment: faker.word.sample(), durationMinutes: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), start: (() => faker.date.past())(), teamID: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), timeEntryID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TimeEntryID, userID: faker.string.uuid() as EntityIDs.UserID, workItemID: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), ...overrideResponse})
+export const getCreateTimeEntryResponseMock = (overrideResponse: any = {}): TimeEntryResponse => ({activityID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ActivityID, comment: faker.word.sample(), durationMinutes: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), start: (() => faker.date.past())(), teamID: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), timeEntryID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TimeEntryID, userID: faker.string.uuid() as EntityIDs.UserID, workItemID: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), ...overrideResponse})
 
-export const getGetTimeEntryResponseMock = (overrideResponse: any = {}): TimeEntry => ({activityID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ActivityID, comment: faker.word.sample(), durationMinutes: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), start: (() => faker.date.past())(), teamID: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), timeEntryID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TimeEntryID, userID: faker.string.uuid() as EntityIDs.UserID, workItemID: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), ...overrideResponse})
+export const getGetTimeEntryResponseMock = (overrideResponse: any = {}): TimeEntryResponse => ({activityID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ActivityID, comment: faker.word.sample(), durationMinutes: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), start: (() => faker.date.past())(), teamID: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), timeEntryID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TimeEntryID, userID: faker.string.uuid() as EntityIDs.UserID, workItemID: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), ...overrideResponse})
 
-export const getUpdateTimeEntryResponseMock = (overrideResponse: any = {}): TimeEntry => ({activityID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ActivityID, comment: faker.word.sample(), durationMinutes: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), start: (() => faker.date.past())(), teamID: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), timeEntryID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TimeEntryID, userID: faker.string.uuid() as EntityIDs.UserID, workItemID: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), ...overrideResponse})
+export const getUpdateTimeEntryResponseMock = (overrideResponse: any = {}): TimeEntryResponse => ({activityID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ActivityID, comment: faker.word.sample(), durationMinutes: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), start: (() => faker.date.past())(), teamID: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), timeEntryID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.TimeEntryID, userID: faker.string.uuid() as EntityIDs.UserID, workItemID: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), ...overrideResponse})
 
 
-export const getCreateTimeEntryMockHandler = (overrideResponse?: TimeEntry) => {
+export const getCreateTimeEntryMockHandler = (overrideResponse?: TimeEntryResponse) => {
   return http.post('*/time-entry/', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getCreateTimeEntryResponseMock()),
@@ -39,7 +39,7 @@ export const getCreateTimeEntryMockHandler = (overrideResponse?: TimeEntry) => {
   })
 }
 
-export const getGetTimeEntryMockHandler = (overrideResponse?: TimeEntry) => {
+export const getGetTimeEntryMockHandler = (overrideResponse?: TimeEntryResponse) => {
   return http.get('*/time-entry/:timeEntryID', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetTimeEntryResponseMock()),
@@ -53,7 +53,7 @@ export const getGetTimeEntryMockHandler = (overrideResponse?: TimeEntry) => {
   })
 }
 
-export const getUpdateTimeEntryMockHandler = (overrideResponse?: TimeEntry) => {
+export const getUpdateTimeEntryMockHandler = (overrideResponse?: TimeEntryResponse) => {
   return http.patch('*/time-entry/:timeEntryID', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getUpdateTimeEntryResponseMock()),

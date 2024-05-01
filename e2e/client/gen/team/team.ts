@@ -6,7 +6,7 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { CreateTeamRequest } from '../model/createTeamRequest'
-import type { Team } from '../model/team'
+import type { TeamResponse } from '../model/teamResponse'
 import type { UpdateTeamRequest } from '../model/updateTeamRequest'
 import { customInstance } from '../../api/mutator'
 
@@ -21,7 +21,7 @@ export const createTeam = (
   createTeamRequest: CreateTeamRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<Team>(
+  return customInstance<TeamResponse>(
     {
       url: `/project/${projectName}/team/`,
       method: 'POST',
@@ -35,7 +35,7 @@ export const createTeam = (
  * @summary get team.
  */
 export const getTeam = (teamID: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<Team>({ url: `/team/${teamID}`, method: 'GET' }, options)
+  return customInstance<TeamResponse>({ url: `/team/${teamID}`, method: 'GET' }, options)
 }
 /**
  * @summary update team.
@@ -45,7 +45,7 @@ export const updateTeam = (
   updateTeamRequest: UpdateTeamRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<Team>(
+  return customInstance<TeamResponse>(
     {
       url: `/team/${teamID}`,
       method: 'PATCH',

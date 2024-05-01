@@ -92,7 +92,7 @@ export type Location1 = string[]
 export type Topic = 'AppDebug' | 'WorkItemUpdated' | 'TeamCreated' | 'GlobalAlerts'
 export type Topics = Topic[]
 export type UuidUUID = string
-export type WorkItem = DemoWorkItem | DemoTwoWorkItem
+export type WorkItem = DemoWorkItemResponse | DemoTwoWorkItemResponse
 export type CreateWorkItemRequest = CreateDemoWorkItemRequest | CreateDemoTwoWorkItemRequest
 export type DbWorkItemRole = string
 /**
@@ -128,7 +128,7 @@ export type PaginationFilterModes =
   | 'startsWith'
 export type PaginationFilter = PaginationFilterPrimitive | PaginationFilterArray
 
-export interface Activity {
+export interface ActivityResponse {
   activityID: number
   deletedAt?: string | null
   description: string
@@ -340,7 +340,7 @@ export interface DbWorkItemType {
   projectID: number
   workItemTypeID: number
 }
-export interface Notification {
+export interface NotificationResponse {
   notification: DbNotification
   notificationID: number
   read: boolean
@@ -348,17 +348,17 @@ export interface Notification {
   userNotificationID: number
 }
 export interface PaginatedNotificationsResponse {
-  items: Notification[] | null
+  items: NotificationResponse[] | null
   page: PaginationPage
 }
 export interface PaginationPage {
   nextCursor?: string
 }
 export interface PaginatedUsersResponse {
-  items: User[] | null
+  items: UserResponse[] | null
   page: PaginationPage
 }
-export interface User {
+export interface UserResponse {
   age?: number | null
   apiKey?: DbUserAPIKey
   createdAt: string
@@ -377,7 +377,7 @@ export interface User {
   userID: DbUserID
   username: string
 }
-export interface ProjectBoard {
+export interface ProjectBoardResponse {
   projectName: Project
 }
 export interface SharedWorkItemJoins {
@@ -391,7 +391,7 @@ export interface DbWorkItemM2MAssigneeWIA {
   role: WorkItemRole
   user: DbUser
 }
-export interface Team {
+export interface TeamResponse {
   createdAt: string
   description: string
   name: string
@@ -423,7 +423,7 @@ export interface UpdateWorkItemTypeRequest {
   description?: string
   name?: string
 }
-export interface WorkItemComment {
+export interface WorkItemCommentResponse {
   createdAt: string
   message: string
   updatedAt: string
@@ -431,7 +431,7 @@ export interface WorkItemComment {
   workItemCommentID: number
   workItemID: number
 }
-export interface WorkItemTag {
+export interface WorkItemTagResponse {
   color: string
   deletedAt?: string | null
   description: string
@@ -439,7 +439,7 @@ export interface WorkItemTag {
   projectID: number
   workItemTagID: number
 }
-export interface WorkItemType {
+export interface WorkItemTypeResponse {
   color: string
   description: string
   name: string
@@ -503,7 +503,7 @@ export interface UpdateUserAuthRequest {
   role?: Role
   scopes?: Scopes
 }
-export interface DemoWorkItem {
+export interface DemoWorkItemResponse {
   closedAt?: string | null
   createdAt: string
   deletedAt?: string | null
@@ -524,7 +524,7 @@ export interface DemoWorkItem {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
-export interface DemoTwoWorkItem {
+export interface DemoTwoWorkItemResponse {
   closedAt?: string | null
   createdAt: string
   deletedAt?: string | null
@@ -574,7 +574,7 @@ export interface CreateTimeEntryRequest {
   userID: DbUserID
   workItemID?: number | null
 }
-export interface TimeEntry {
+export interface TimeEntryResponse {
   activityID: number
   comment: string
   durationMinutes?: number | null
@@ -672,10 +672,10 @@ export interface DbUserJoins {
   workItemComments: boolean
 }
 export interface PaginatedDemoWorkItemsResponse {
-  items: CacheDemoWorkItem[] | null
+  items: CacheDemoWorkItemResponse[] | null
   page: PaginationPage
 }
-export interface CacheDemoWorkItem {
+export interface CacheDemoWorkItemResponse {
   closedAt?: string | null
   createdAt: string
   deletedAt?: string | null

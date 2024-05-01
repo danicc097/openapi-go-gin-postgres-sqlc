@@ -6,7 +6,7 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DemoWorkItem } from './demoWorkItem';
-import type { DemoTwoWorkItem } from './demoTwoWorkItem';
+import type { DemoWorkItemResponse } from './demoWorkItemResponse';
+import type { DemoTwoWorkItemResponse } from './demoTwoWorkItemResponse';
 
-export type WorkItem = DemoWorkItem | DemoTwoWorkItem;
+export type WorkItem = DemoWorkItemResponse | DemoTwoWorkItemResponse;

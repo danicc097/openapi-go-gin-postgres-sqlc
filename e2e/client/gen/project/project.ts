@@ -8,7 +8,7 @@
 import type { CreateProjectBoardRequest } from '../model/createProjectBoardRequest'
 import type { DbProject } from '../model/dbProject'
 import type { GetProjectWorkitemsParams } from '../model/getProjectWorkitemsParams'
-import type { ProjectBoard } from '../model/projectBoard'
+import type { ProjectBoardResponse } from '../model/projectBoardResponse'
 import type { ProjectConfig } from '../model/projectConfig'
 import type { WorkItem } from '../model/workItem'
 import { customInstance } from '../../api/mutator'
@@ -71,7 +71,7 @@ export const updateProjectConfig = (
  * @summary returns board data for a project
  */
 export const getProjectBoard = (projectName: 'demo' | 'demo_two', options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<ProjectBoard>({ url: `/project/${projectName}/board`, method: 'GET' }, options)
+  return customInstance<ProjectBoardResponse>({ url: `/project/${projectName}/board`, method: 'GET' }, options)
 }
 /**
  * @summary returns workitems for a project

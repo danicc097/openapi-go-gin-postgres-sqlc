@@ -7,7 +7,7 @@
  */
 import type { CreateWorkItemTagRequest } from '../model/createWorkItemTagRequest'
 import type { UpdateWorkItemTagRequest } from '../model/updateWorkItemTagRequest'
-import type { WorkItemTag } from '../model/workItemTag'
+import type { WorkItemTagResponse } from '../model/workItemTagResponse'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -21,7 +21,7 @@ export const createWorkItemTag = (
   createWorkItemTagRequest: CreateWorkItemTagRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItemTag>(
+  return customInstance<WorkItemTagResponse>(
     {
       url: `/project/${projectName}/work-item-tag/`,
       method: 'POST',
@@ -35,7 +35,7 @@ export const createWorkItemTag = (
  * @summary get workitemtag.
  */
 export const getWorkItemTag = (workItemTagID: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<WorkItemTag>({ url: `/work-item-tag/${workItemTagID}`, method: 'GET' }, options)
+  return customInstance<WorkItemTagResponse>({ url: `/work-item-tag/${workItemTagID}`, method: 'GET' }, options)
 }
 /**
  * @summary update workitemtag.
@@ -45,7 +45,7 @@ export const updateWorkItemTag = (
   updateWorkItemTagRequest: UpdateWorkItemTagRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItemTag>(
+  return customInstance<WorkItemTagResponse>(
     {
       url: `/work-item-tag/${workItemTagID}`,
       method: 'PATCH',

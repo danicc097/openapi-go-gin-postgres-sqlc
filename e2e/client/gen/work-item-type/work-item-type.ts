@@ -7,7 +7,7 @@
  */
 import type { CreateWorkItemTypeRequest } from '../model/createWorkItemTypeRequest'
 import type { UpdateWorkItemTypeRequest } from '../model/updateWorkItemTypeRequest'
-import type { WorkItemType } from '../model/workItemType'
+import type { WorkItemTypeResponse } from '../model/workItemTypeResponse'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -21,7 +21,7 @@ export const createWorkItemType = (
   createWorkItemTypeRequest: CreateWorkItemTypeRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItemType>(
+  return customInstance<WorkItemTypeResponse>(
     {
       url: `/project/${projectName}/work-item-type/`,
       method: 'POST',
@@ -35,7 +35,7 @@ export const createWorkItemType = (
  * @summary get workitemtype.
  */
 export const getWorkItemType = (workItemTypeID: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<WorkItemType>({ url: `/work-item-type/${workItemTypeID}`, method: 'GET' }, options)
+  return customInstance<WorkItemTypeResponse>({ url: `/work-item-type/${workItemTypeID}`, method: 'GET' }, options)
 }
 /**
  * @summary update workitemtype.
@@ -45,7 +45,7 @@ export const updateWorkItemType = (
   updateWorkItemTypeRequest: UpdateWorkItemTypeRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<WorkItemType>(
+  return customInstance<WorkItemTypeResponse>(
     {
       url: `/work-item-type/${workItemTypeID}`,
       method: 'PATCH',

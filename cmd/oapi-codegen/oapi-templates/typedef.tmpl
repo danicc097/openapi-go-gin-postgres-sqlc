@@ -1,7 +1,11 @@
 {{range .Types}}
 {{ if and ((should_exclude_type .TypeName))  -}}
 /* Ignoring existing struct (rest/models.go) {{.TypeName}} */
+<<<<<<< Updated upstream
 {{ else if and (or (is_rest_server_gen) (eq (gen_mode) "models")) (is_db_type .TypeName) -}}
+=======
+{{ else if or (is_rest_server_gen) (is_db_struct .TypeName) -}}
+>>>>>>> Stashed changes
 /* Skipping definition of db struct {{.TypeName}} */
 {{ else -}}
 {{ if .Schema.Description }}{{ toGoComment .Schema.Description .TypeName  }}{{ else }}// {{.TypeName}} defines the model for {{.JsonName}}.{{ end }}

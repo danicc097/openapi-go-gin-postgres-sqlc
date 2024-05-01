@@ -173,20 +173,36 @@ func newSpecReflector() *openapi3.Reflector {
 			if n := t.Name(); isDbType {
 				params.Schema.ExtraProperties = map[string]any{
 					"x-go-type": "db." + strings.TrimPrefix(n, "Db"),
+<<<<<<< Updated upstream
 					"x-go-type-import": map[string]any{
 						"name": "db",
 						"path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models",
+=======
+					"x-go-name": strings.TrimPrefix(n, "Db"),
+					"x-go-type-import": map[string]any{
+						"name": "db",
+						"path": "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db",
+>>>>>>> Stashed changes
 					},
 					"x-is-generated": true,
 				}
 			}
 			// same reasoning as above, must be checked in project script
+<<<<<<< Updated upstream
 			isRestType := strings.HasSuffix(t.PkgPath(), "/rest")
 			if n := t.Name(); isRestType {
 				params.Schema.ExtraProperties = map[string]any{
 					"x-go-name": strings.TrimPrefix(n, "Rest") + "Public",
 				}
 			}
+=======
+			// isRestType := strings.HasSuffix(t.PkgPath(), "/rest")
+			// if n := t.Name(); isRestType {
+			// 	params.Schema.ExtraProperties = map[string]any{
+			// 		"x-go-name": strings.TrimPrefix(n, "Rest") + "Public",
+			// 	}
+			// }
+>>>>>>> Stashed changes
 
 			var isCustomUUID bool
 			if t.Kind() == reflect.Struct && t.Field(0).Type == reflect.TypeOf(uuid.New()) {

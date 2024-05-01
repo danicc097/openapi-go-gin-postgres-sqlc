@@ -5,10 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { CacheDemoWorkItem } from './cacheDemoWorkItem'
+import type { CacheDemoWorkItemResponse } from './cacheDemoWorkItemResponse'
 import type { PaginationPage } from './paginationPage'
 
 export interface PaginatedDemoWorkItemsResponse {
-  items: CacheDemoWorkItem[] | null
+  items: CacheDemoWorkItemResponse[] | null
   page: PaginationPage
 }

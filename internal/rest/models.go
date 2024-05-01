@@ -27,26 +27,26 @@ type PaginationBaseResponse[T any] struct {
 	Items []T            `json:"items" required:"true"`
 }
 
-type PaginatedNotificationsResponse = PaginationBaseResponse[Notification]
+type PaginatedNotificationsResponse = PaginationBaseResponse[NotificationResponse]
 
-type PaginatedDemoWorkItemsResponse = PaginationBaseResponse[CacheDemoWorkItem]
+type PaginatedDemoWorkItemsResponse = PaginationBaseResponse[CacheDemoWorkItemResponse]
 
 /**
  *
  */
 
-type CacheDemoWorkItem struct {
-	models.CacheDemoWorkItem
+type CacheDemoWorkItemResponse struct {
+	db.CacheDemoWorkItem
 }
 
-type Notification struct {
-	models.UserNotification
-	Notification models.Notification `json:"notification" required:"true"` // notification_id clash
+type NotificationResponse struct {
+	db.UserNotification
+	Notification db.Notification `json:"notification" required:"true"` // notification_id clash
 }
 
 // User represents an OpenAPI schema response for a User.
-type User struct {
-	*models.User
+type UserResponse struct {
+	*db.User
 	// Role replaces db RoleRank
 	Role Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
 
@@ -92,10 +92,10 @@ type GetCacheDemoWorkItemQueryParameters struct {
 // panic: reflect: NumField of non-struct type rest.Users
 // should use below workaround as in paginated queries (all would be paginated queries in a way...)
 //
-//	type Users struct {
+//	type UsersResponse struct {
 //		Users []User `json:"users"`
 //	}
-type PaginatedUsersResponse = PaginationBaseResponse[User]
+type PaginatedUsersResponse = PaginationBaseResponse[UserResponse]
 
 // NOTE: keep in sync with base workitem getSharedDBOpts.
 type SharedWorkItemJoins struct {
@@ -112,19 +112,19 @@ type WorkItemBase struct {
 	ProjectName ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
 }
 
-type DemoWorkItem struct {
+type DemoWorkItemResponse struct {
 	WorkItemBase
 
 	DemoWorkItem models.DemoWorkItem `json:"demoWorkItem" required:"true"`
 }
-type DemoTwoWorkItem struct {
+type DemoTwoWorkItemResponse struct {
 	WorkItemBase
 
 	DemoTwoWorkItem models.DemoTwoWorkItem `json:"demoTwoWorkItem" required:"true"`
 }
 
-type ProjectBoard struct {
-	ProjectName ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
+type ProjectBoardResponse struct {
+	ProjectName Project `json:"projectName" ref:"#/components/schemas/Project" required:"true"`
 }
 
 type CreateProjectBoardRequest struct {
@@ -141,8 +141,8 @@ type CreateWorkItemTagRequest struct {
 type UpdateWorkItemTagRequest struct {
 	models.WorkItemTagUpdateParams
 }
-type WorkItemTag struct {
-	models.WorkItemTag
+type WorkItemTagResponse struct {
+	db.WorkItemTag
 	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
 type CreateWorkItemTypeRequest struct {
@@ -151,12 +151,12 @@ type CreateWorkItemTypeRequest struct {
 type UpdateWorkItemTypeRequest struct {
 	models.WorkItemTypeUpdateParams
 }
-type WorkItemType struct {
-	models.WorkItemType
+type WorkItemTypeResponse struct {
+	db.WorkItemType
 }
 
-type Team struct {
-	models.Team
+type TeamResponse struct {
+	db.Team
 	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
 
@@ -168,8 +168,8 @@ type UpdateTeamRequest struct {
 	models.TeamUpdateParams
 }
 
-type Activity struct {
-	models.Activity
+type ActivityResponse struct {
+	db.Activity
 	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
 
@@ -181,8 +181,8 @@ type UpdateActivityRequest struct {
 	models.ActivityUpdateParams
 }
 
-type TimeEntry struct {
-	models.TimeEntry
+type TimeEntryResponse struct {
+	db.TimeEntry
 }
 
 type CreateTimeEntryRequest struct {
@@ -203,8 +203,8 @@ type CreateDemoTwoWorkItemRequest struct {
 	services.DemoTwoWorkItemCreateParams
 }
 
-type WorkItemComment struct {
-	models.WorkItemComment
+type WorkItemCommentResponse struct {
+	db.WorkItemComment
 }
 
 type CreateWorkItemCommentRequest struct {
