@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -39,7 +39,7 @@ func NewTimeEntryWithPrometheus(base repos.TimeEntry, instanceName string) TimeE
 }
 
 // ByID implements repos.TimeEntry
-func (_d TimeEntryWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID, opts ...db.TimeEntrySelectConfigOption) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.TimeEntryID, opts ...models.TimeEntrySelectConfigOption) (tp1 *models.TimeEntry, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -53,7 +53,7 @@ func (_d TimeEntryWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.Tim
 }
 
 // Create implements repos.TimeEntry
-func (_d TimeEntryWithPrometheus) Create(ctx context.Context, d db.DBTX, params *db.TimeEntryCreateParams) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithPrometheus) Create(ctx context.Context, d models.DBTX, params *models.TimeEntryCreateParams) (tp1 *models.TimeEntry, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -67,7 +67,7 @@ func (_d TimeEntryWithPrometheus) Create(ctx context.Context, d db.DBTX, params 
 }
 
 // Delete implements repos.TimeEntry
-func (_d TimeEntryWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithPrometheus) Delete(ctx context.Context, d models.DBTX, id models.TimeEntryID) (tp1 *models.TimeEntry, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -81,7 +81,7 @@ func (_d TimeEntryWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.T
 }
 
 // Update implements repos.TimeEntry
-func (_d TimeEntryWithPrometheus) Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithPrometheus) Update(ctx context.Context, d models.DBTX, id models.TimeEntryID, params *models.TimeEntryUpdateParams) (tp1 *models.TimeEntry, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

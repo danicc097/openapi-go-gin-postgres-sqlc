@@ -6,8 +6,8 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { CreateProjectBoardRequest } from '../model/createProjectBoardRequest'
-import type { DbProject } from '../model/dbProject'
 import type { GetProjectWorkitemsParams } from '../model/getProjectWorkitemsParams'
+import type { ModelsProject } from '../model/modelsProject'
 import type { ProjectBoard } from '../model/projectBoard'
 import type { ProjectConfig } from '../model/projectConfig'
 import type { WorkItemResponse } from '../model/workItemResponse'
@@ -38,7 +38,7 @@ export const initializeProject = (
  * @summary returns board data for a project
  */
 export const getProject = (projectName: 'demo' | 'demo_two', options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<DbProject>({ url: `/project/${projectName}/`, method: 'GET' }, options)
+  return customInstance<ModelsProject>({ url: `/project/${projectName}/`, method: 'GET' }, options)
 }
 /**
  * @summary returns the project configuration

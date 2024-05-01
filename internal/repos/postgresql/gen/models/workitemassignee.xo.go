@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"strings"
 
-	
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -30,8 +29,8 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type WorkItemAssignee struct {
-	WorkItemID WorkItemID          `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                           // work_item_id
-	Assignee   UserID              `json:"assignee" db:"assignee" required:"true" nullable:"false"`                                 // assignee
+	WorkItemID WorkItemID   `json:"workItemID" db:"work_item_id" required:"true" nullable:"false"`                           // work_item_id
+	Assignee   UserID       `json:"assignee" db:"assignee" required:"true" nullable:"false"`                                 // assignee
 	Role       WorkItemRole `json:"role" db:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
 
 	WorkItemsJoin *[]WorkItemAssigneeM2MWorkItemWIA `json:"-" db:"work_item_assignee_work_items"` // M2M work_item_assignee
@@ -41,9 +40,9 @@ type WorkItemAssignee struct {
 
 // WorkItemAssigneeCreateParams represents insert params for 'public.work_item_assignee'.
 type WorkItemAssigneeCreateParams struct {
-	Assignee   UserID              `json:"assignee" required:"true" nullable:"false"`                                     // assignee
+	Assignee   UserID       `json:"assignee" required:"true" nullable:"false"`                                     // assignee
 	Role       WorkItemRole `json:"role" required:"true" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID WorkItemID          `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
+	WorkItemID WorkItemID   `json:"workItemID" required:"true" nullable:"false"`                                   // work_item_id
 }
 
 // WorkItemAssigneeParams represents common params for both insert and update of 'public.work_item_assignee'.
@@ -141,13 +140,13 @@ func WithWorkItemAssigneeJoin(joins WorkItemAssigneeJoins) WorkItemAssigneeSelec
 
 // WorkItemAssigneeM2MWorkItemWIA represents a M2M join against "public.work_item_assignee"
 type WorkItemAssigneeM2MWorkItemWIA struct {
-	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
+	WorkItem WorkItem     `json:"workItem" db:"work_items" required:"true"`
 	Role     WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
 // WorkItemAssigneeM2MAssigneeWIA represents a M2M join against "public.work_item_assignee"
 type WorkItemAssigneeM2MAssigneeWIA struct {
-	User User                `json:"user" db:"users" required:"true"`
+	User User         `json:"user" db:"users" required:"true"`
 	Role WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
@@ -236,9 +235,9 @@ const workItemAssigneeTableAssigneesGroupBySQL = `work_item_assignee.work_item_i
 
 // WorkItemAssigneeUpdateParams represents update params for 'public.work_item_assignee'.
 type WorkItemAssigneeUpdateParams struct {
-	Assignee   *UserID              `json:"assignee" nullable:"false"`                                     // assignee
+	Assignee   *UserID       `json:"assignee" nullable:"false"`                                     // assignee
 	Role       *WorkItemRole `json:"role" nullable:"false" ref:"#/components/schemas/WorkItemRole"` // role
-	WorkItemID *WorkItemID          `json:"workItemID" nullable:"false"`                                   // work_item_id
+	WorkItemID *WorkItemID   `json:"workItemID" nullable:"false"`                                   // work_item_id
 }
 
 // SetUpdateParams updates public.work_item_assignee struct fields with the specified params.

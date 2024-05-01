@@ -5,7 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbUserID } from './dbUserID'
+import type { ModelsUserID } from './modelsUserID'
 
 export interface UpdateTimeEntryRequest {
   activityID?: number
@@ -13,6 +13,6 @@ export interface UpdateTimeEntryRequest {
   durationMinutes?: number | null
   start?: Date
   teamID?: number | null
-  userID?: DbUserID
+  userID?: ModelsUserID
   workItemID?: number | null
 }

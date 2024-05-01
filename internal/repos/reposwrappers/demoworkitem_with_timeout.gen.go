@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // DemoWorkItemWithTimeout implements repos.DemoWorkItem interface instrumented with timeouts
@@ -37,7 +37,7 @@ func NewDemoWorkItemWithTimeout(base repos.DemoWorkItem, config DemoWorkItemWith
 }
 
 // ByID implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -47,7 +47,7 @@ func (_d DemoWorkItemWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.Wor
 }
 
 // Create implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTimeout) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithTimeout) Create(ctx context.Context, d models.DBTX, params repos.DemoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.CreateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.CreateTimeout)
@@ -57,7 +57,7 @@ func (_d DemoWorkItemWithTimeout) Create(ctx context.Context, d db.DBTX, params 
 }
 
 // Paginated implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTimeout) Paginated(ctx context.Context, d db.DBTX, cursor db.WorkItemID, opts ...db.CacheDemoWorkItemSelectConfigOption) (ca1 []db.CacheDemoWorkItem, err error) {
+func (_d DemoWorkItemWithTimeout) Paginated(ctx context.Context, d models.DBTX, cursor models.WorkItemID, opts ...models.CacheDemoWorkItemSelectConfigOption) (ca1 []models.CacheDemoWorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.PaginatedTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.PaginatedTimeout)
@@ -67,7 +67,7 @@ func (_d DemoWorkItemWithTimeout) Paginated(ctx context.Context, d db.DBTX, curs
 }
 
 // Update implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTimeout) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithTimeout) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params repos.DemoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
 	var cancelFunc func()
 	if _d.config.UpdateTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.UpdateTimeout)

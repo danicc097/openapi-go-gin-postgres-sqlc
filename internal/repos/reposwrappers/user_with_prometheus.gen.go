@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -39,7 +39,7 @@ func NewUserWithPrometheus(base repos.User, instanceName string) UserWithPrometh
 }
 
 // ByAPIKey implements repos.User
-func (_d UserWithPrometheus) ByAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) ByAPIKey(ctx context.Context, d models.DBTX, apiKey string) (up1 *models.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -53,7 +53,7 @@ func (_d UserWithPrometheus) ByAPIKey(ctx context.Context, d db.DBTX, apiKey str
 }
 
 // ByEmail implements repos.User
-func (_d UserWithPrometheus) ByEmail(ctx context.Context, d db.DBTX, email string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) ByEmail(ctx context.Context, d models.DBTX, email string, opts ...models.UserSelectConfigOption) (up1 *models.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -67,7 +67,7 @@ func (_d UserWithPrometheus) ByEmail(ctx context.Context, d db.DBTX, email strin
 }
 
 // ByExternalID implements repos.User
-func (_d UserWithPrometheus) ByExternalID(ctx context.Context, d db.DBTX, extID string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) ByExternalID(ctx context.Context, d models.DBTX, extID string, opts ...models.UserSelectConfigOption) (up1 *models.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -81,7 +81,7 @@ func (_d UserWithPrometheus) ByExternalID(ctx context.Context, d db.DBTX, extID 
 }
 
 // ByID implements repos.User
-func (_d UserWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.UserID, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.UserID, opts ...models.UserSelectConfigOption) (up1 *models.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -95,7 +95,7 @@ func (_d UserWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.UserID, 
 }
 
 // ByProject implements repos.User
-func (_d UserWithPrometheus) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID) (ua1 []db.User, err error) {
+func (_d UserWithPrometheus) ByProject(ctx context.Context, d models.DBTX, projectID models.ProjectID) (ua1 []models.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -109,7 +109,7 @@ func (_d UserWithPrometheus) ByProject(ctx context.Context, d db.DBTX, projectID
 }
 
 // ByTeam implements repos.User
-func (_d UserWithPrometheus) ByTeam(ctx context.Context, d db.DBTX, teamID db.TeamID) (ua1 []db.User, err error) {
+func (_d UserWithPrometheus) ByTeam(ctx context.Context, d models.DBTX, teamID models.TeamID) (ua1 []models.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -123,7 +123,7 @@ func (_d UserWithPrometheus) ByTeam(ctx context.Context, d db.DBTX, teamID db.Te
 }
 
 // ByUsername implements repos.User
-func (_d UserWithPrometheus) ByUsername(ctx context.Context, d db.DBTX, username string, opts ...db.UserSelectConfigOption) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) ByUsername(ctx context.Context, d models.DBTX, username string, opts ...models.UserSelectConfigOption) (up1 *models.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -137,7 +137,7 @@ func (_d UserWithPrometheus) ByUsername(ctx context.Context, d db.DBTX, username
 }
 
 // Create implements repos.User
-func (_d UserWithPrometheus) Create(ctx context.Context, d db.DBTX, params *db.UserCreateParams) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) Create(ctx context.Context, d models.DBTX, params *models.UserCreateParams) (up1 *models.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -151,7 +151,7 @@ func (_d UserWithPrometheus) Create(ctx context.Context, d db.DBTX, params *db.U
 }
 
 // CreateAPIKey implements repos.User
-func (_d UserWithPrometheus) CreateAPIKey(ctx context.Context, d db.DBTX, user *db.User) (up1 *db.UserAPIKey, err error) {
+func (_d UserWithPrometheus) CreateAPIKey(ctx context.Context, d models.DBTX, user *models.User) (up1 *models.UserAPIKey, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -165,7 +165,7 @@ func (_d UserWithPrometheus) CreateAPIKey(ctx context.Context, d db.DBTX, user *
 }
 
 // Delete implements repos.User
-func (_d UserWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.UserID) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) Delete(ctx context.Context, d models.DBTX, id models.UserID) (up1 *models.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -179,7 +179,7 @@ func (_d UserWithPrometheus) Delete(ctx context.Context, d db.DBTX, id db.UserID
 }
 
 // DeleteAPIKey implements repos.User
-func (_d UserWithPrometheus) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey string) (up1 *db.UserAPIKey, err error) {
+func (_d UserWithPrometheus) DeleteAPIKey(ctx context.Context, d models.DBTX, apiKey string) (up1 *models.UserAPIKey, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -193,7 +193,7 @@ func (_d UserWithPrometheus) DeleteAPIKey(ctx context.Context, d db.DBTX, apiKey
 }
 
 // Paginated implements repos.User
-func (_d UserWithPrometheus) Paginated(ctx context.Context, d db.DBTX, params repos.GetPaginatedUsersParams) (ua1 []db.User, err error) {
+func (_d UserWithPrometheus) Paginated(ctx context.Context, d models.DBTX, params repos.GetPaginatedUsersParams) (ua1 []models.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -207,7 +207,7 @@ func (_d UserWithPrometheus) Paginated(ctx context.Context, d db.DBTX, params re
 }
 
 // Update implements repos.User
-func (_d UserWithPrometheus) Update(ctx context.Context, d db.DBTX, id db.UserID, params *db.UserUpdateParams) (up1 *db.User, err error) {
+func (_d UserWithPrometheus) Update(ctx context.Context, d models.DBTX, id models.UserID, params *models.UserUpdateParams) (up1 *models.User, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

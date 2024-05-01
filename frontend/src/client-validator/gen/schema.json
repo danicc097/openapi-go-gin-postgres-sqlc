@@ -28,10 +28,10 @@
     "CreateDemoTwoWorkItemRequest": {
       "properties": {
         "base": {
-          "$ref": "#/definitions/DbWorkItemCreateParams"
+          "$ref": "#/definitions/ModelsWorkItemCreateParams"
         },
         "demoTwoProject": {
-          "$ref": "#/definitions/DbDemoTwoWorkItemCreateParams"
+          "$ref": "#/definitions/ModelsDemoTwoWorkItemCreateParams"
         },
         "members": {
           "items": {
@@ -63,10 +63,10 @@
     "CreateDemoWorkItemRequest": {
       "properties": {
         "base": {
-          "$ref": "#/definitions/DbWorkItemCreateParams"
+          "$ref": "#/definitions/ModelsWorkItemCreateParams"
         },
         "demoProject": {
-          "$ref": "#/definitions/DbDemoWorkItemCreateParams"
+          "$ref": "#/definitions/ModelsDemoWorkItemCreateParams"
         },
         "members": {
           "items": {
@@ -99,7 +99,7 @@
       "properties": {
         "tags": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemTagCreateParams"
+            "$ref": "#/definitions/ModelsWorkItemTagCreateParams"
           },
           "type": [
             "array",
@@ -108,7 +108,7 @@
         },
         "teams": {
           "items": {
-            "$ref": "#/definitions/DbTeamCreateParams"
+            "$ref": "#/definitions/ModelsTeamCreateParams"
           },
           "type": [
             "array",
@@ -146,7 +146,7 @@
           "minLength": 1
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "workItemID": {
           "type": "integer"
@@ -211,7 +211,7 @@
       "x-gen-struct": "CreateWorkItemTypeRequest",
       "x-is-generated": true
     },
-    "DbDemoTwoWorkItem": {
+    "ModelsDemoTwoWorkItem": {
       "properties": {
         "customDateForProject2": {
           "format": "date-time",
@@ -226,9 +226,11 @@
       "required": [
         "workItemID"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "DemoTwoWorkItem",
+      "x-is-generated": true
     },
-    "DbDemoTwoWorkItemCreateParams": {
+    "ModelsDemoTwoWorkItemCreateParams": {
       "properties": {
         "customDateForProject2": {
           "format": "date-time",
@@ -237,9 +239,11 @@
           ]
         }
       },
-      "type": "object"
+      "type": "object",
+      "x-go-type": "DemoTwoWorkItemCreateParams",
+      "x-is-generated": true
     },
-    "DbDemoWorkItem": {
+    "ModelsDemoWorkItem": {
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
@@ -271,10 +275,11 @@
         "reopened"
       ],
       "type": "object",
-      "x-gen-struct": "DbDemoWorkItem",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsDemoWorkItem",
+      "x-is-generated": true,
+      "x-go-type": "DemoWorkItem"
     },
-    "DbDemoWorkItemCreateParams": {
+    "ModelsDemoWorkItemCreateParams": {
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
@@ -301,9 +306,11 @@
         "ref",
         "reopened"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "DemoWorkItemCreateParams",
+      "x-is-generated": true
     },
-    "DbKanbanStep": {
+    "ModelsKanbanStep": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -341,10 +348,11 @@
         "timeTrackable"
       ],
       "type": "object",
-      "x-gen-struct": "DbKanbanStep",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsKanbanStep",
+      "x-is-generated": true,
+      "x-go-type": "KanbanStep"
     },
-    "DbNotification": {
+    "ModelsNotification": {
       "properties": {
         "body": {
           "type": "string",
@@ -376,10 +384,10 @@
           "$ref": "#/definitions/NotificationType"
         },
         "receiver": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "sender": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "title": {
           "type": "string",
@@ -395,9 +403,11 @@
         "sender",
         "notificationType"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "Notification",
+      "x-is-generated": true
     },
-    "DbProject": {
+    "ModelsProject": {
       "properties": {
         "boardConfig": {
           "$ref": "#/definitions/ProjectConfig"
@@ -434,10 +444,11 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "DbProject",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsProject",
+      "x-is-generated": true,
+      "x-go-type": "Project"
     },
-    "DbTeam": {
+    "ModelsTeam": {
       "properties": {
         "createdAt": {
           "format": "date-time",
@@ -474,9 +485,11 @@
         "createdAt",
         "updatedAt"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "Team",
+      "x-is-generated": true
     },
-    "DbTeamCreateParams": {
+    "ModelsTeamCreateParams": {
       "properties": {
         "description": {
           "type": "string",
@@ -491,9 +504,11 @@
         "description",
         "name"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "TeamCreateParams",
+      "x-is-generated": true
     },
-    "DbTimeEntry": {
+    "ModelsTimeEntry": {
       "properties": {
         "activityID": {
           "type": "integer"
@@ -524,7 +539,7 @@
           "type": "integer"
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "workItemID": {
           "type": [
@@ -541,10 +556,11 @@
         "start"
       ],
       "type": "object",
-      "x-gen-struct": "DbTimeEntry",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsTimeEntry",
+      "x-is-generated": true,
+      "x-go-type": "TimeEntry"
     },
-    "DbUser": {
+    "ModelsUser": {
       "properties": {
         "age": {
           "type": [
@@ -602,7 +618,7 @@
           ]
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "username": {
           "type": "string",
@@ -620,10 +636,11 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "DbUser",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsUser",
+      "x-is-generated": true,
+      "x-go-type": "User"
     },
-    "DbUserAPIKey": {
+    "ModelsUserAPIKey": {
       "properties": {
         "apiKey": {
           "type": "string",
@@ -636,7 +653,7 @@
           ]
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         }
       },
       "required": [
@@ -645,26 +662,27 @@
         "userID"
       ],
       "type": "object",
-      "x-gen-struct": "DbUserAPIKey",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsUserAPIKey",
+      "x-is-generated": true,
+      "x-go-type": "UserAPIKey"
     },
-    "DbUserID": {
+    "ModelsUserID": {
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
       "type": "string",
-      "x-go-type": "uuid.UUID",
+      "x-go-type": "UserID",
       "x-go-type-import": {
         "name": "uuid",
         "path": "github.com/google/uuid"
       },
       "x-is-generated": true
     },
-    "DbUserWIAUWorkItem": {
+    "ModelsUserWIAUWorkItem": {
       "properties": {
         "role": {
           "$ref": "#/definitions/WorkItemRole"
         },
         "user": {
-          "$ref": "#/definitions/DbUser"
+          "$ref": "#/definitions/ModelsUser"
         }
       },
       "required": [
@@ -673,7 +691,7 @@
       ],
       "type": "object"
     },
-    "DbWorkItem": {
+    "ModelsWorkItem": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -743,10 +761,11 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "DbWorkItem",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsWorkItem",
+      "x-is-generated": true,
+      "x-go-type": "WorkItem"
     },
-    "DbWorkItemComment": {
+    "ModelsWorkItemComment": {
       "properties": {
         "createdAt": {
           "format": "date-time",
@@ -765,7 +784,7 @@
           ]
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "workItemCommentID": {
           "type": "integer"
@@ -783,10 +802,11 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "DbWorkItemComment",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsWorkItemComment",
+      "x-is-generated": true,
+      "x-go-type": "WorkItemComment"
     },
-    "DbWorkItemCreateParams": {
+    "ModelsWorkItemCreateParams": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -831,9 +851,11 @@
         "title",
         "workItemTypeID"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "WorkItemCreateParams",
+      "x-is-generated": true
     },
-    "DbWorkItemTag": {
+    "ModelsWorkItemTag": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -869,10 +891,11 @@
         "color"
       ],
       "type": "object",
-      "x-gen-struct": "DbWorkItemTag",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsWorkItemTag",
+      "x-is-generated": true,
+      "x-go-type": "WorkItemTag"
     },
-    "DbWorkItemTagCreateParams": {
+    "ModelsWorkItemTagCreateParams": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -893,9 +916,11 @@
         "description",
         "name"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "WorkItemTagCreateParams",
+      "x-is-generated": true
     },
-    "DbWorkItemType": {
+    "ModelsWorkItemType": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -925,8 +950,9 @@
         "color"
       ],
       "type": "object",
-      "x-gen-struct": "DbWorkItemType",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsWorkItemType",
+      "x-is-generated": true,
+      "x-go-type": "WorkItemType"
     },
     "PaginatedNotificationsResponse": {
       "properties": {
@@ -1003,20 +1029,21 @@
           "$ref": "#/definitions/WorkItemRole"
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         }
       },
       "required": [
         "role",
         "userID"
       ],
-      "type": "object"
+      "type": "object",
+      "x-is-generated": true
     },
     "SharedWorkItemJoins": {
       "properties": {
         "members": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
+            "$ref": "#/definitions/ModelsWorkItemM2MAssigneeWIA"
           },
           "type": [
             "array",
@@ -1025,7 +1052,7 @@
         },
         "timeEntries": {
           "items": {
-            "$ref": "#/definitions/DbTimeEntry"
+            "$ref": "#/definitions/ModelsTimeEntry"
           },
           "type": [
             "array",
@@ -1034,7 +1061,7 @@
         },
         "workItemComments": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemComment"
+            "$ref": "#/definitions/ModelsWorkItemComment"
           },
           "type": [
             "array",
@@ -1043,7 +1070,7 @@
         },
         "workItemTags": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemTag"
+            "$ref": "#/definitions/ModelsWorkItemTag"
           },
           "type": [
             "array",
@@ -1051,7 +1078,7 @@
           ]
         },
         "workItemType": {
-          "$ref": "#/definitions/DbWorkItemType"
+          "$ref": "#/definitions/ModelsWorkItemType"
         }
       },
       "type": "object",
@@ -1093,7 +1120,7 @@
           "type": "string"
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "workItemID": {
           "type": "integer"
@@ -1144,7 +1171,7 @@
         "desc"
       ]
     },
-    "DbActivity": {
+    "ModelsActivity": {
       "properties": {
         "activityID": {
           "type": "integer"
@@ -1376,7 +1403,8 @@
         "preparer",
         "reviewer"
       ],
-      "description": "is generated from database enum 'work_item_role'."
+      "description": "is generated from database enum 'work_item_role'.",
+      "x-oapi-ignore": true
     },
     "UpdateUserRequest": {
       "description": "represents User data to update",
@@ -1484,7 +1512,7 @@
         }
       ]
     },
-    "DbActivityCreateParams": {
+    "ModelsActivityCreateParams": {
       "properties": {
         "description": {
           "type": "string",
@@ -1508,7 +1536,7 @@
       ],
       "type": "object"
     },
-    "DbWorkItemRole": {
+    "ModelsWorkItemRole": {
       "type": "string"
     },
     "NotificationType": {
@@ -1518,7 +1546,8 @@
       "enum": [
         "personal",
         "global"
-      ]
+      ],
+      "x-oapi-ignore": true
     },
     "DemoTwoWorkItemTypes": {
       "type": "string",
@@ -1538,11 +1567,11 @@
       "x-is-generated": true,
       "description": "is generated from work_item_types table."
     },
-    "DbWorkItemID": {},
-    "DbProjectID": {},
-    "DbWorkItemTypeID": {},
-    "DbNotificationID": {},
-    "DbUserNotification": {
+    "ModelsWorkItemID": {},
+    "ModelsProjectID": {},
+    "ModelsWorkItemTypeID": {},
+    "ModelsNotificationID": {},
+    "ModelsUserNotification": {
       "properties": {
         "notificationID": {
           "type": "integer"
@@ -1551,7 +1580,7 @@
           "type": "boolean"
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "userNotificationID": {
           "type": "integer"
@@ -1584,13 +1613,13 @@
       "x-is-generated": true,
       "description": "is generated from kanban_steps table."
     },
-    "DbUserWIAWorkItem": {
+    "ModelsUserWIAWorkItem": {
       "properties": {
         "role": {
           "$ref": "#/definitions/WorkItemRole"
         },
         "user": {
-          "$ref": "#/definitions/DbUser"
+          "$ref": "#/definitions/ModelsUser"
         }
       },
       "required": [
@@ -1599,20 +1628,22 @@
       ],
       "type": "object"
     },
-    "DbWorkItemM2MAssigneeWIA": {
+    "ModelsWorkItemM2MAssigneeWIA": {
       "properties": {
         "role": {
           "$ref": "#/definitions/WorkItemRole"
         },
         "user": {
-          "$ref": "#/definitions/DbUser"
+          "$ref": "#/definitions/ModelsUser"
         }
       },
       "required": [
         "user",
         "role"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "WorkItemM2MAssigneeWIA",
+      "x-is-generated": true
     },
     "CreateTimeEntryRequest": {
       "properties": {
@@ -1642,7 +1673,7 @@
           ]
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "workItemID": {
           "type": [
@@ -1688,7 +1719,7 @@
           ]
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "workItemID": {
           "type": [
@@ -1722,7 +1753,7 @@
           ]
         },
         "demoTwoWorkItem": {
-          "$ref": "#/definitions/DbDemoTwoWorkItem"
+          "$ref": "#/definitions/ModelsDemoTwoWorkItem"
         },
         "description": {
           "type": "string",
@@ -1733,7 +1764,7 @@
         },
         "members": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
+            "$ref": "#/definitions/ModelsWorkItemM2MAssigneeWIA"
           },
           "type": [
             "array",
@@ -1761,7 +1792,7 @@
         },
         "timeEntries": {
           "items": {
-            "$ref": "#/definitions/DbTimeEntry"
+            "$ref": "#/definitions/ModelsTimeEntry"
           },
           "type": [
             "array",
@@ -1780,7 +1811,7 @@
         },
         "workItemComments": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemComment"
+            "$ref": "#/definitions/ModelsWorkItemComment"
           },
           "type": [
             "array",
@@ -1792,7 +1823,7 @@
         },
         "workItemTags": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemTag"
+            "$ref": "#/definitions/ModelsWorkItemTag"
           },
           "type": [
             "array",
@@ -1800,7 +1831,7 @@
           ]
         },
         "workItemType": {
-          "$ref": "#/definitions/DbWorkItemType"
+          "$ref": "#/definitions/ModelsWorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -1845,7 +1876,7 @@
           ]
         },
         "demoWorkItem": {
-          "$ref": "#/definitions/DbDemoWorkItem"
+          "$ref": "#/definitions/ModelsDemoWorkItem"
         },
         "description": {
           "type": "string",
@@ -1856,7 +1887,7 @@
         },
         "members": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
+            "$ref": "#/definitions/ModelsWorkItemM2MAssigneeWIA"
           },
           "type": [
             "array",
@@ -1884,7 +1915,7 @@
         },
         "timeEntries": {
           "items": {
-            "$ref": "#/definitions/DbTimeEntry"
+            "$ref": "#/definitions/ModelsTimeEntry"
           },
           "type": [
             "array",
@@ -1903,7 +1934,7 @@
         },
         "workItemComments": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemComment"
+            "$ref": "#/definitions/ModelsWorkItemComment"
           },
           "type": [
             "array",
@@ -1915,7 +1946,7 @@
         },
         "workItemTags": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemTag"
+            "$ref": "#/definitions/ModelsWorkItemTag"
           },
           "type": [
             "array",
@@ -1923,7 +1954,7 @@
           ]
         },
         "workItemType": {
-          "$ref": "#/definitions/DbWorkItemType"
+          "$ref": "#/definitions/ModelsWorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -1976,7 +2007,7 @@
         },
         "members": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
+            "$ref": "#/definitions/ModelsWorkItemM2MAssigneeWIA"
           },
           "type": [
             "array",
@@ -2004,7 +2035,7 @@
         },
         "timeEntries": {
           "items": {
-            "$ref": "#/definitions/DbTimeEntry"
+            "$ref": "#/definitions/ModelsTimeEntry"
           },
           "type": [
             "array",
@@ -2023,7 +2054,7 @@
         },
         "workItemComments": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemComment"
+            "$ref": "#/definitions/ModelsWorkItemComment"
           },
           "type": [
             "array",
@@ -2035,7 +2066,7 @@
         },
         "workItemTags": {
           "items": {
-            "$ref": "#/definitions/DbWorkItemTag"
+            "$ref": "#/definitions/ModelsWorkItemTag"
           },
           "type": [
             "array",
@@ -2043,7 +2074,7 @@
           ]
         },
         "workItemType": {
-          "$ref": "#/definitions/DbWorkItemType"
+          "$ref": "#/definitions/ModelsWorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -2155,7 +2186,7 @@
           "description": "represents a cursor value"
         },
         "column": {
-          "description": "represents the JSON name of the db column",
+          "description": "represents the JSON name of the models column",
           "type": "string",
           "minLength": 1
         }
@@ -2195,7 +2226,7 @@
       ],
       "type": "string"
     },
-    "DbCacheDemoWorkItemJoins": {
+    "ModelsCacheDemoWorkItemJoins": {
       "properties": {
         "assignees": {
           "type": "boolean"
@@ -2228,9 +2259,11 @@
         "workItemComments",
         "workItemTags"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "CacheDemoWorkItemJoins",
+      "x-is-generated": true
     },
-    "DbUserJoins": {
+    "ModelsUserJoins": {
       "properties": {
         "assigneeWorkItems": {
           "type": "boolean"
@@ -2271,7 +2304,9 @@
         "assigneeWorkItems",
         "workItemComments"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "UserJoins",
+      "x-is-generated": true
     },
     "PaginatedDemoWorkItemsResponse": {
       "properties": {
@@ -2299,7 +2334,7 @@
     "GetCacheDemoWorkItemQueryParameters": {
       "properties": {
         "joins": {
-          "$ref": "#/definitions/DbCacheDemoWorkItemJoins"
+          "$ref": "#/definitions/ModelsCacheDemoWorkItemJoins"
         }
       },
       "type": "object",
@@ -2309,7 +2344,7 @@
     "GetCurrentUserQueryParameters": {
       "properties": {
         "joins": {
-          "$ref": "#/definitions/DbUserJoins"
+          "$ref": "#/definitions/ModelsUserJoins"
         }
       },
       "type": "object",
@@ -2412,7 +2447,7 @@
           ]
         },
         "apiKey": {
-          "$ref": "#/definitions/DbUserAPIKey"
+          "$ref": "#/definitions/ModelsUserAPIKey"
         },
         "createdAt": {
           "format": "date-time",
@@ -2456,7 +2491,7 @@
         },
         "projects": {
           "items": {
-            "$ref": "#/definitions/DbProject"
+            "$ref": "#/definitions/ModelsProject"
           },
           "type": [
             "array",
@@ -2471,7 +2506,7 @@
         },
         "teams": {
           "items": {
-            "$ref": "#/definitions/DbTeam"
+            "$ref": "#/definitions/ModelsTeam"
           },
           "type": [
             "array",
@@ -2485,7 +2520,7 @@
           ]
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "username": {
           "type": "string",
@@ -2526,7 +2561,7 @@
           ]
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "workItemCommentID": {
           "type": "integer"
@@ -2617,7 +2652,7 @@
           "type": "integer"
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "workItemID": {
           "type": [
@@ -2735,7 +2770,7 @@
     "NotificationResponse": {
       "properties": {
         "notification": {
-          "$ref": "#/definitions/DbNotification"
+          "$ref": "#/definitions/ModelsNotification"
         },
         "notificationID": {
           "type": "integer"
@@ -2744,7 +2779,7 @@
           "type": "boolean"
         },
         "userID": {
-          "$ref": "#/definitions/DbUserID"
+          "$ref": "#/definitions/ModelsUserID"
         },
         "userNotificationID": {
           "type": "integer"
@@ -2793,6 +2828,60 @@
       "type": "object",
       "x-gen-struct": "WorkItemTypeResponse",
       "x-is-generated": true
+    },
+    "ModelsProjectConfig": {
+      "properties": {
+        "fields": {
+          "items": {
+            "$ref": "#/definitions/ModelsProjectConfigField"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "header": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "visualization": {
+          "additionalProperties": {},
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "x-go-type": "ProjectConfig",
+      "x-is-generated": true
+    },
+    "ModelsProjectConfigField": {
+      "properties": {
+        "isEditable": {
+          "type": "boolean"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "showCollapsed": {
+          "type": "boolean"
+        }
+      },
+      "type": "object",
+      "x-go-type": "ProjectConfigField",
+      "x-is-generated": true
     }
   },
   "properties": {
@@ -2820,65 +2909,65 @@
     "CreateWorkItemTypeRequest": {
       "$ref": "#/definitions/CreateWorkItemTypeRequest"
     },
-    "DbDemoTwoWorkItem": {
-      "$ref": "#/definitions/DbDemoTwoWorkItem"
+    "ModelsDemoTwoWorkItem": {
+      "$ref": "#/definitions/ModelsDemoTwoWorkItem"
     },
-    "DbDemoTwoWorkItemCreateParams": {
-      "$ref": "#/definitions/DbDemoTwoWorkItemCreateParams"
+    "ModelsDemoTwoWorkItemCreateParams": {
+      "$ref": "#/definitions/ModelsDemoTwoWorkItemCreateParams"
     },
-    "DbDemoWorkItem": {
-      "$ref": "#/definitions/DbDemoWorkItem"
+    "ModelsDemoWorkItem": {
+      "$ref": "#/definitions/ModelsDemoWorkItem"
     },
-    "DbDemoWorkItemCreateParams": {
-      "$ref": "#/definitions/DbDemoWorkItemCreateParams"
+    "ModelsDemoWorkItemCreateParams": {
+      "$ref": "#/definitions/ModelsDemoWorkItemCreateParams"
     },
-    "DbKanbanStep": {
-      "$ref": "#/definitions/DbKanbanStep"
+    "ModelsKanbanStep": {
+      "$ref": "#/definitions/ModelsKanbanStep"
     },
-    "DbNotification": {
-      "$ref": "#/definitions/DbNotification"
+    "ModelsNotification": {
+      "$ref": "#/definitions/ModelsNotification"
     },
-    "DbProject": {
-      "$ref": "#/definitions/DbProject"
+    "ModelsProject": {
+      "$ref": "#/definitions/ModelsProject"
     },
-    "DbTeam": {
-      "$ref": "#/definitions/DbTeam"
+    "ModelsTeam": {
+      "$ref": "#/definitions/ModelsTeam"
     },
-    "DbTeamCreateParams": {
-      "$ref": "#/definitions/DbTeamCreateParams"
+    "ModelsTeamCreateParams": {
+      "$ref": "#/definitions/ModelsTeamCreateParams"
     },
-    "DbTimeEntry": {
-      "$ref": "#/definitions/DbTimeEntry"
+    "ModelsTimeEntry": {
+      "$ref": "#/definitions/ModelsTimeEntry"
     },
-    "DbUser": {
-      "$ref": "#/definitions/DbUser"
+    "ModelsUser": {
+      "$ref": "#/definitions/ModelsUser"
     },
-    "DbUserAPIKey": {
-      "$ref": "#/definitions/DbUserAPIKey"
+    "ModelsUserAPIKey": {
+      "$ref": "#/definitions/ModelsUserAPIKey"
     },
-    "DbUserID": {
-      "$ref": "#/definitions/DbUserID"
+    "ModelsUserID": {
+      "$ref": "#/definitions/ModelsUserID"
     },
-    "DbUserWIAUWorkItem": {
-      "$ref": "#/definitions/DbUserWIAUWorkItem"
+    "ModelsUserWIAUWorkItem": {
+      "$ref": "#/definitions/ModelsUserWIAUWorkItem"
     },
-    "DbWorkItem": {
-      "$ref": "#/definitions/DbWorkItem"
+    "ModelsWorkItem": {
+      "$ref": "#/definitions/ModelsWorkItem"
     },
-    "DbWorkItemComment": {
-      "$ref": "#/definitions/DbWorkItemComment"
+    "ModelsWorkItemComment": {
+      "$ref": "#/definitions/ModelsWorkItemComment"
     },
-    "DbWorkItemCreateParams": {
-      "$ref": "#/definitions/DbWorkItemCreateParams"
+    "ModelsWorkItemCreateParams": {
+      "$ref": "#/definitions/ModelsWorkItemCreateParams"
     },
-    "DbWorkItemTag": {
-      "$ref": "#/definitions/DbWorkItemTag"
+    "ModelsWorkItemTag": {
+      "$ref": "#/definitions/ModelsWorkItemTag"
     },
-    "DbWorkItemTagCreateParams": {
-      "$ref": "#/definitions/DbWorkItemTagCreateParams"
+    "ModelsWorkItemTagCreateParams": {
+      "$ref": "#/definitions/ModelsWorkItemTagCreateParams"
     },
-    "DbWorkItemType": {
-      "$ref": "#/definitions/DbWorkItemType"
+    "ModelsWorkItemType": {
+      "$ref": "#/definitions/ModelsWorkItemType"
     },
     "PaginatedNotificationsResponse": {
       "$ref": "#/definitions/PaginatedNotificationsResponse"
@@ -2916,8 +3005,8 @@
     "Direction": {
       "$ref": "#/definitions/Direction"
     },
-    "DbActivity": {
-      "$ref": "#/definitions/DbActivity"
+    "ModelsActivity": {
+      "$ref": "#/definitions/ModelsActivity"
     },
     "ProjectConfig": {
       "$ref": "#/definitions/ProjectConfig"
@@ -2970,11 +3059,11 @@
     "CreateWorkItemRequest": {
       "$ref": "#/definitions/CreateWorkItemRequest"
     },
-    "DbActivityCreateParams": {
-      "$ref": "#/definitions/DbActivityCreateParams"
+    "ModelsActivityCreateParams": {
+      "$ref": "#/definitions/ModelsActivityCreateParams"
     },
-    "DbWorkItemRole": {
-      "$ref": "#/definitions/DbWorkItemRole"
+    "ModelsWorkItemRole": {
+      "$ref": "#/definitions/ModelsWorkItemRole"
     },
     "NotificationType": {
       "$ref": "#/definitions/NotificationType"
@@ -2985,20 +3074,20 @@
     "DemoWorkItemTypes": {
       "$ref": "#/definitions/DemoWorkItemTypes"
     },
-    "DbWorkItemID": {
-      "$ref": "#/definitions/DbWorkItemID"
+    "ModelsWorkItemID": {
+      "$ref": "#/definitions/ModelsWorkItemID"
     },
-    "DbProjectID": {
-      "$ref": "#/definitions/DbProjectID"
+    "ModelsProjectID": {
+      "$ref": "#/definitions/ModelsProjectID"
     },
-    "DbWorkItemTypeID": {
-      "$ref": "#/definitions/DbWorkItemTypeID"
+    "ModelsWorkItemTypeID": {
+      "$ref": "#/definitions/ModelsWorkItemTypeID"
     },
-    "DbNotificationID": {
-      "$ref": "#/definitions/DbNotificationID"
+    "ModelsNotificationID": {
+      "$ref": "#/definitions/ModelsNotificationID"
     },
-    "DbUserNotification": {
-      "$ref": "#/definitions/DbUserNotification"
+    "ModelsUserNotification": {
+      "$ref": "#/definitions/ModelsUserNotification"
     },
     "DemoKanbanSteps": {
       "$ref": "#/definitions/DemoKanbanSteps"
@@ -3006,11 +3095,11 @@
     "DemoTwoKanbanSteps": {
       "$ref": "#/definitions/DemoTwoKanbanSteps"
     },
-    "DbUserWIAWorkItem": {
-      "$ref": "#/definitions/DbUserWIAWorkItem"
+    "ModelsUserWIAWorkItem": {
+      "$ref": "#/definitions/ModelsUserWIAWorkItem"
     },
-    "DbWorkItemM2MAssigneeWIA": {
-      "$ref": "#/definitions/DbWorkItemM2MAssigneeWIA"
+    "ModelsWorkItemM2MAssigneeWIA": {
+      "$ref": "#/definitions/ModelsWorkItemM2MAssigneeWIA"
     },
     "CreateTimeEntryRequest": {
       "$ref": "#/definitions/CreateTimeEntryRequest"
@@ -3054,11 +3143,11 @@
     "PaginationFilterModes": {
       "$ref": "#/definitions/PaginationFilterModes"
     },
-    "DbCacheDemoWorkItemJoins": {
-      "$ref": "#/definitions/DbCacheDemoWorkItemJoins"
+    "ModelsCacheDemoWorkItemJoins": {
+      "$ref": "#/definitions/ModelsCacheDemoWorkItemJoins"
     },
-    "DbUserJoins": {
-      "$ref": "#/definitions/DbUserJoins"
+    "ModelsUserJoins": {
+      "$ref": "#/definitions/ModelsUserJoins"
     },
     "PaginatedDemoWorkItemsResponse": {
       "$ref": "#/definitions/PaginatedDemoWorkItemsResponse"
@@ -3098,6 +3187,12 @@
     },
     "WorkItemTypeResponse": {
       "$ref": "#/definitions/WorkItemTypeResponse"
+    },
+    "ModelsProjectConfig": {
+      "$ref": "#/definitions/ModelsProjectConfig"
+    },
+    "ModelsProjectConfigField": {
+      "$ref": "#/definitions/ModelsProjectConfigField"
     }
   }
 }

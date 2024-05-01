@@ -5,33 +5,33 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbDemoTwoWorkItem } from './dbDemoTwoWorkItem'
-import type { DbWorkItemM2MAssigneeWIA } from './dbWorkItemM2MAssigneeWIA'
+import type { ModelsDemoTwoWorkItem } from './modelsDemoTwoWorkItem'
+import type { ModelsWorkItemM2MAssigneeWIA } from './modelsWorkItemM2MAssigneeWIA'
 import type { DemoTwoWorkItemResponseMetadata } from './demoTwoWorkItemResponseMetadata'
 import type { DemoTwoWorkItemResponseProjectName } from './demoTwoWorkItemResponseProjectName'
-import type { DbTimeEntry } from './dbTimeEntry'
-import type { DbWorkItemComment } from './dbWorkItemComment'
-import type { DbWorkItemTag } from './dbWorkItemTag'
-import type { DbWorkItemType } from './dbWorkItemType'
+import type { ModelsTimeEntry } from './modelsTimeEntry'
+import type { ModelsWorkItemComment } from './modelsWorkItemComment'
+import type { ModelsWorkItemTag } from './modelsWorkItemTag'
+import type { ModelsWorkItemType } from './modelsWorkItemType'
 
 export interface DemoTwoWorkItemResponse {
   closedAt?: Date | null
   createdAt: Date
   deletedAt?: Date | null
-  demoTwoWorkItem: DbDemoTwoWorkItem
+  demoTwoWorkItem: ModelsDemoTwoWorkItem
   description: string
   kanbanStepID: number
-  members?: DbWorkItemM2MAssigneeWIA[] | null
+  members?: ModelsWorkItemM2MAssigneeWIA[] | null
   metadata: DemoTwoWorkItemResponseMetadata
   projectName: DemoTwoWorkItemResponseProjectName
   targetDate: Date
   teamID: number | null
-  timeEntries?: DbTimeEntry[] | null
+  timeEntries?: ModelsTimeEntry[] | null
   title: string
   updatedAt: Date
-  workItemComments?: DbWorkItemComment[] | null
+  workItemComments?: ModelsWorkItemComment[] | null
   workItemID: number
-  workItemTags?: DbWorkItemTag[] | null
-  workItemType?: DbWorkItemType
+  workItemTags?: ModelsWorkItemTag[] | null
+  workItemType?: ModelsWorkItemType
   workItemTypeID: number
 }

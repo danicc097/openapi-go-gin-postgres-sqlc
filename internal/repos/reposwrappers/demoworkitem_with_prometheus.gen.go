@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
@@ -39,7 +39,7 @@ func NewDemoWorkItemWithPrometheus(base repos.DemoWorkItem, instanceName string)
 }
 
 // ByID implements repos.DemoWorkItem
-func (_d DemoWorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithPrometheus) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -53,7 +53,7 @@ func (_d DemoWorkItemWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.
 }
 
 // Create implements repos.DemoWorkItem
-func (_d DemoWorkItemWithPrometheus) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithPrometheus) Create(ctx context.Context, d models.DBTX, params repos.DemoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -67,7 +67,7 @@ func (_d DemoWorkItemWithPrometheus) Create(ctx context.Context, d db.DBTX, para
 }
 
 // Paginated implements repos.DemoWorkItem
-func (_d DemoWorkItemWithPrometheus) Paginated(ctx context.Context, d db.DBTX, cursor db.WorkItemID, opts ...db.CacheDemoWorkItemSelectConfigOption) (ca1 []db.CacheDemoWorkItem, err error) {
+func (_d DemoWorkItemWithPrometheus) Paginated(ctx context.Context, d models.DBTX, cursor models.WorkItemID, opts ...models.CacheDemoWorkItemSelectConfigOption) (ca1 []models.CacheDemoWorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"
@@ -81,7 +81,7 @@ func (_d DemoWorkItemWithPrometheus) Paginated(ctx context.Context, d db.DBTX, c
 }
 
 // Update implements repos.DemoWorkItem
-func (_d DemoWorkItemWithPrometheus) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithPrometheus) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params repos.DemoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

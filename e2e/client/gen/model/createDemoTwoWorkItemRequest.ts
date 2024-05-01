@@ -5,14 +5,14 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbWorkItemCreateParams } from './dbWorkItemCreateParams'
-import type { DbDemoTwoWorkItemCreateParams } from './dbDemoTwoWorkItemCreateParams'
+import type { ModelsWorkItemCreateParams } from './modelsWorkItemCreateParams'
+import type { ModelsDemoTwoWorkItemCreateParams } from './modelsDemoTwoWorkItemCreateParams'
 import type { ServicesMember } from './servicesMember'
 import type { CreateDemoTwoWorkItemRequestProjectName } from './createDemoTwoWorkItemRequestProjectName'
 
 export interface CreateDemoTwoWorkItemRequest {
-  base: DbWorkItemCreateParams
-  demoTwoProject: DbDemoTwoWorkItemCreateParams
+  base: ModelsWorkItemCreateParams
+  demoTwoProject: ModelsDemoTwoWorkItemCreateParams
   members: ServicesMember[]
   projectName: CreateDemoTwoWorkItemRequestProjectName
   tagIDs: number[]

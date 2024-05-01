@@ -6,8 +6,6 @@ package models
 
 import (
 	"fmt"
-
-	
 )
 
 type ColumnSimpleType string

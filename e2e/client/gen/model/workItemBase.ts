@@ -5,13 +5,13 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbWorkItemM2MAssigneeWIA } from './dbWorkItemM2MAssigneeWIA'
+import type { ModelsWorkItemM2MAssigneeWIA } from './modelsWorkItemM2MAssigneeWIA'
 import type { WorkItemBaseMetadata } from './workItemBaseMetadata'
 import type { ProjectName } from './projectName'
-import type { DbTimeEntry } from './dbTimeEntry'
-import type { DbWorkItemComment } from './dbWorkItemComment'
-import type { DbWorkItemTag } from './dbWorkItemTag'
-import type { DbWorkItemType } from './dbWorkItemType'
+import type { ModelsTimeEntry } from './modelsTimeEntry'
+import type { ModelsWorkItemComment } from './modelsWorkItemComment'
+import type { ModelsWorkItemTag } from './modelsWorkItemTag'
+import type { ModelsWorkItemType } from './modelsWorkItemType'
 
 export interface WorkItemBase {
   closedAt?: Date | null
@@ -19,17 +19,17 @@ export interface WorkItemBase {
   deletedAt?: Date | null
   description: string
   kanbanStepID: number
-  members?: DbWorkItemM2MAssigneeWIA[] | null
+  members?: ModelsWorkItemM2MAssigneeWIA[] | null
   metadata: WorkItemBaseMetadata
   projectName: ProjectName
   targetDate: Date
   teamID: number | null
-  timeEntries?: DbTimeEntry[] | null
+  timeEntries?: ModelsTimeEntry[] | null
   title: string
   updatedAt: Date
-  workItemComments?: DbWorkItemComment[] | null
+  workItemComments?: ModelsWorkItemComment[] | null
   workItemID: number
-  workItemTags?: DbWorkItemTag[] | null
-  workItemType?: DbWorkItemType
+  workItemTags?: ModelsWorkItemTag[] | null
+  workItemType?: ModelsWorkItemType
   workItemTypeID: number
 }

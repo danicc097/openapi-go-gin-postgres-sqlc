@@ -11,7 +11,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
-// QuerierWrapper implements db.Querier and wraps errors with the associated query name.
+// QuerierWrapper implements models.Querier and wraps errors with the associated query name.
 type QuerierWrapper struct{ models.Querier }
 
 // NewQuerierWrapper returns QuerierWrapper with wrapped pgx errors.

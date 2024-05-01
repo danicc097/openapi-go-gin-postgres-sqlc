@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -240,7 +239,7 @@ func WithWorkItemJoin(joins WorkItemJoins) WorkItemSelectConfigOption {
 
 // WorkItemM2MAssigneeWIA represents a M2M join against "public.work_item_assignee"
 type WorkItemM2MAssigneeWIA struct {
-	User User                `json:"user" db:"users" required:"true"`
+	User User         `json:"user" db:"users" required:"true"`
 	Role WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 

@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -36,7 +36,7 @@ func NewKanbanStepWithTracing(base repos.KanbanStep, instance string, spanDecora
 }
 
 // ByID implements repos.KanbanStep
-func (_d KanbanStepWithTracing) ByID(ctx context.Context, d db.DBTX, id db.KanbanStepID, opts ...db.KanbanStepSelectConfigOption) (kp1 *db.KanbanStep, err error) {
+func (_d KanbanStepWithTracing) ByID(ctx context.Context, d models.DBTX, id models.KanbanStepID, opts ...models.KanbanStepSelectConfigOption) (kp1 *models.KanbanStep, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.KanbanStep.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -61,7 +61,7 @@ func (_d KanbanStepWithTracing) ByID(ctx context.Context, d db.DBTX, id db.Kanba
 }
 
 // ByProject implements repos.KanbanStep
-func (_d KanbanStepWithTracing) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID, opts ...db.KanbanStepSelectConfigOption) (ka1 []db.KanbanStep, err error) {
+func (_d KanbanStepWithTracing) ByProject(ctx context.Context, d models.DBTX, projectID models.ProjectID, opts ...models.KanbanStepSelectConfigOption) (ka1 []models.KanbanStep, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.KanbanStep.ByProject")
 	defer func() {
 		if _d._spanDecorator != nil {

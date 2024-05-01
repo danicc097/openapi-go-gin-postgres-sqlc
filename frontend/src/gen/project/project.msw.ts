@@ -20,13 +20,13 @@ import {
   WorkItemRole
 } from '.././model'
 import type {
-  DbProject,
+  ModelsProject,
   ProjectBoard,
   ProjectConfig,
   WorkItemResponse
 } from '.././model'
 
-export const getGetProjectResponseMock = (overrideResponse: any = {}): DbProject => ({boardConfig: {fields: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({isEditable: faker.datatype.boolean(), isVisible: faker.datatype.boolean(), name: faker.word.sample(), path: faker.word.sample(), showCollapsed: faker.datatype.boolean(), ...overrideResponse})), header: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => (faker.word.sample())), visualization: {}, ...overrideResponse}, createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.helpers.arrayElement(Object.values(ProjectName)), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, updatedAt: (() => faker.date.past())(), ...overrideResponse})
+export const getGetProjectResponseMock = (overrideResponse: any = {}): ModelsProject => ({boardConfig: {fields: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({isEditable: faker.datatype.boolean(), isVisible: faker.datatype.boolean(), name: faker.word.sample(), path: faker.word.sample(), showCollapsed: faker.datatype.boolean(), ...overrideResponse})), header: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => (faker.word.sample())), visualization: {}, ...overrideResponse}, createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.helpers.arrayElement(Object.values(ProjectName)), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, updatedAt: (() => faker.date.past())(), ...overrideResponse})
 
 export const getGetProjectConfigResponseMock = (overrideResponse: any = {}): ProjectConfig => ({fields: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({isEditable: faker.datatype.boolean(), isVisible: faker.datatype.boolean(), name: faker.word.sample(), path: faker.word.sample(), showCollapsed: faker.datatype.boolean(), ...overrideResponse})), header: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => (faker.word.sample())), visualization: {}, ...overrideResponse})
 
@@ -53,7 +53,7 @@ export const getInitializeProjectMockHandler = () => {
   })
 }
 
-export const getGetProjectMockHandler = (overrideResponse?: DbProject) => {
+export const getGetProjectMockHandler = (overrideResponse?: ModelsProject) => {
   return http.get('*/project/:projectName/', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetProjectResponseMock()),

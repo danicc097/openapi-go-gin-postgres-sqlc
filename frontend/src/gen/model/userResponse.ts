@@ -6,16 +6,16 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { DbUserAPIKey } from './dbUserAPIKey';
-import type { DbProject } from './dbProject';
+import type { ModelsUserAPIKey } from './modelsUserAPIKey';
+import type { ModelsProject } from './modelsProject';
 import type { Role } from './role';
 import type { Scopes } from './scopes';
-import type { DbTeam } from './dbTeam';
-import type { DbUserID } from './dbUserID';
+import type { ModelsTeam } from './modelsTeam';
+import type { ModelsUserID } from './modelsUserID';
 
 export interface UserResponse {
   age?: number | null;
-  apiKey?: DbUserAPIKey;
+  apiKey?: ModelsUserAPIKey;
   createdAt: Date;
   deletedAt?: Date | null;
   email: string;
@@ -24,10 +24,10 @@ export interface UserResponse {
   hasGlobalNotifications: boolean;
   hasPersonalNotifications: boolean;
   lastName?: string | null;
-  projects?: DbProject[] | null;
+  projects?: ModelsProject[] | null;
   role: Role;
   scopes: Scopes;
-  teams?: DbTeam[] | null;
+  teams?: ModelsTeam[] | null;
   updatedAt: Date;
   userID: EntityIDs.UserID;
   username: string;

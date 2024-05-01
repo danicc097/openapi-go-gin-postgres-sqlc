@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -42,7 +41,7 @@ type User struct {
 	FullName                 *string       `json:"fullName" db:"full_name"`                                                                   // full_name
 	ExternalID               string        `json:"-" db:"external_id" nullable:"false"`                                                       // external_id
 	APIKeyID                 *UserAPIKeyID `json:"-" db:"api_key_id"`                                                                         // api_key_id
-	Scopes                   Scopes `json:"scopes" db:"scopes" required:"true" nullable:"false" ref:"#/components/schemas/Scopes"`     // scopes
+	Scopes                   Scopes        `json:"scopes" db:"scopes" required:"true" nullable:"false" ref:"#/components/schemas/Scopes"`     // scopes
 	RoleRank                 int           `json:"-" db:"role_rank" nullable:"false"`                                                         // role_rank
 	HasPersonalNotifications bool          `json:"hasPersonalNotifications" db:"has_personal_notifications" required:"true" nullable:"false"` // has_personal_notifications
 	HasGlobalNotifications   bool          `json:"hasGlobalNotifications" db:"has_global_notifications" required:"true" nullable:"false"`     // has_global_notifications
@@ -73,7 +72,7 @@ type UserCreateParams struct {
 	HasPersonalNotifications bool          `json:"hasPersonalNotifications" required:"true" nullable:"false"`                 // has_personal_notifications
 	LastName                 *string       `json:"lastName"`                                                                  // last_name
 	RoleRank                 int           `json:"-" nullable:"false"`                                                        // role_rank
-	Scopes                   Scopes `json:"scopes" required:"true" nullable:"false" ref:"#/components/schemas/Scopes"` // scopes
+	Scopes                   Scopes        `json:"scopes" required:"true" nullable:"false" ref:"#/components/schemas/Scopes"` // scopes
 	Username                 string        `json:"username" required:"true" nullable:"false"`                                 // username
 }
 
@@ -293,7 +292,7 @@ func WithUserJoin(joins UserJoins) UserSelectConfigOption {
 
 // UserM2MWorkItemWIA represents a M2M join against "public.work_item_assignee"
 type UserM2MWorkItemWIA struct {
-	WorkItem WorkItem            `json:"workItem" db:"work_items" required:"true"`
+	WorkItem WorkItem     `json:"workItem" db:"work_items" required:"true"`
 	Role     WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 
@@ -500,7 +499,7 @@ type UserUpdateParams struct {
 	HasPersonalNotifications *bool          `json:"hasPersonalNotifications" nullable:"false"`                 // has_personal_notifications
 	LastName                 **string       `json:"lastName"`                                                  // last_name
 	RoleRank                 *int           `json:"-" nullable:"false"`                                        // role_rank
-	Scopes                   *Scopes `json:"scopes" nullable:"false" ref:"#/components/schemas/Scopes"` // scopes
+	Scopes                   *Scopes        `json:"scopes" nullable:"false" ref:"#/components/schemas/Scopes"` // scopes
 	Username                 *string        `json:"username" nullable:"false"`                                 // username
 }
 

@@ -72,7 +72,9 @@
             "title",
             "workItemTypeID"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "WorkItemCreateParams",
+          "x-is-generated": true
         },
         "demoTwoProject": {
           "properties": {
@@ -83,7 +85,9 @@
               ]
             }
           },
-          "type": "object"
+          "type": "object",
+          "x-go-type": "DemoTwoWorkItemCreateParams",
+          "x-is-generated": true
         },
         "members": {
           "items": {
@@ -96,12 +100,13 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "is generated from database enum 'work_item_role'."
+                "description": "is generated from database enum 'work_item_role'.",
+                "x-oapi-ignore": true
               },
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -113,7 +118,8 @@
               "role",
               "userID"
             ],
-            "type": "object"
+            "type": "object",
+            "x-is-generated": true
           },
           "type": "array"
         },
@@ -191,7 +197,9 @@
             "title",
             "workItemTypeID"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "WorkItemCreateParams",
+          "x-is-generated": true
         },
         "demoProject": {
           "properties": {
@@ -220,7 +228,9 @@
             "ref",
             "reopened"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "DemoWorkItemCreateParams",
+          "x-is-generated": true
         },
         "members": {
           "items": {
@@ -233,12 +243,13 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "is generated from database enum 'work_item_role'."
+                "description": "is generated from database enum 'work_item_role'.",
+                "x-oapi-ignore": true
               },
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -250,7 +261,8 @@
               "role",
               "userID"
             ],
-            "type": "object"
+            "type": "object",
+            "x-is-generated": true
           },
           "type": "array"
         },
@@ -305,7 +317,9 @@
               "description",
               "name"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "WorkItemTagCreateParams",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -328,7 +342,9 @@
               "description",
               "name"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "TeamCreateParams",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -368,7 +384,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -438,7 +454,7 @@
       "x-gen-struct": "CreateWorkItemTypeRequest",
       "x-is-generated": true
     },
-    "DbDemoTwoWorkItem": {
+    "ModelsDemoTwoWorkItem": {
       "properties": {
         "customDateForProject2": {
           "format": "date-time",
@@ -453,9 +469,11 @@
       "required": [
         "workItemID"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "DemoTwoWorkItem",
+      "x-is-generated": true
     },
-    "DbDemoTwoWorkItemCreateParams": {
+    "ModelsDemoTwoWorkItemCreateParams": {
       "properties": {
         "customDateForProject2": {
           "format": "date-time",
@@ -464,9 +482,11 @@
           ]
         }
       },
-      "type": "object"
+      "type": "object",
+      "x-go-type": "DemoTwoWorkItemCreateParams",
+      "x-is-generated": true
     },
-    "DbDemoWorkItem": {
+    "ModelsDemoWorkItem": {
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
@@ -498,10 +518,11 @@
         "reopened"
       ],
       "type": "object",
-      "x-gen-struct": "DbDemoWorkItem",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsDemoWorkItem",
+      "x-is-generated": true,
+      "x-go-type": "DemoWorkItem"
     },
-    "DbDemoWorkItemCreateParams": {
+    "ModelsDemoWorkItemCreateParams": {
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
@@ -528,9 +549,11 @@
         "ref",
         "reopened"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "DemoWorkItemCreateParams",
+      "x-is-generated": true
     },
-    "DbKanbanStep": {
+    "ModelsKanbanStep": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -568,10 +591,11 @@
         "timeTrackable"
       ],
       "type": "object",
-      "x-gen-struct": "DbKanbanStep",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsKanbanStep",
+      "x-is-generated": true,
+      "x-go-type": "KanbanStep"
     },
-    "DbNotification": {
+    "ModelsNotification": {
       "properties": {
         "body": {
           "type": "string",
@@ -606,12 +630,13 @@
           "enum": [
             "personal",
             "global"
-          ]
+          ],
+          "x-oapi-ignore": true
         },
         "receiver": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -621,7 +646,7 @@
         "sender": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -642,9 +667,11 @@
         "sender",
         "notificationType"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "Notification",
+      "x-is-generated": true
     },
-    "DbProject": {
+    "ModelsProject": {
       "properties": {
         "boardConfig": {
           "properties": {
@@ -730,10 +757,11 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "DbProject",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsProject",
+      "x-is-generated": true,
+      "x-go-type": "Project"
     },
-    "DbTeam": {
+    "ModelsTeam": {
       "properties": {
         "createdAt": {
           "format": "date-time",
@@ -770,9 +798,11 @@
         "createdAt",
         "updatedAt"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "Team",
+      "x-is-generated": true
     },
-    "DbTeamCreateParams": {
+    "ModelsTeamCreateParams": {
       "properties": {
         "description": {
           "type": "string",
@@ -787,9 +817,11 @@
         "description",
         "name"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "TeamCreateParams",
+      "x-is-generated": true
     },
-    "DbTimeEntry": {
+    "ModelsTimeEntry": {
       "properties": {
         "activityID": {
           "type": "integer"
@@ -822,7 +854,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -844,10 +876,11 @@
         "start"
       ],
       "type": "object",
-      "x-gen-struct": "DbTimeEntry",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsTimeEntry",
+      "x-is-generated": true,
+      "x-go-type": "TimeEntry"
     },
-    "DbUser": {
+    "ModelsUser": {
       "properties": {
         "age": {
           "type": [
@@ -931,7 +964,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -954,10 +987,11 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "DbUser",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsUser",
+      "x-is-generated": true,
+      "x-go-type": "User"
     },
-    "DbUserAPIKey": {
+    "ModelsUserAPIKey": {
       "properties": {
         "apiKey": {
           "type": "string",
@@ -972,7 +1006,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -986,20 +1020,21 @@
         "userID"
       ],
       "type": "object",
-      "x-gen-struct": "DbUserAPIKey",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsUserAPIKey",
+      "x-is-generated": true,
+      "x-go-type": "UserAPIKey"
     },
-    "DbUserID": {
+    "ModelsUserID": {
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
       "type": "string",
-      "x-go-type": "uuid.UUID",
+      "x-go-type": "UserID",
       "x-go-type-import": {
         "name": "uuid",
         "path": "github.com/google/uuid"
       },
       "x-is-generated": true
     },
-    "DbUserWIAUWorkItem": {
+    "ModelsUserWIAUWorkItem": {
       "properties": {
         "role": {
           "title": "WorkItem role",
@@ -1009,7 +1044,8 @@
             "preparer",
             "reviewer"
           ],
-          "description": "is generated from database enum 'work_item_role'."
+          "description": "is generated from database enum 'work_item_role'.",
+          "x-oapi-ignore": true
         },
         "user": {
           "properties": {
@@ -1095,7 +1131,7 @@
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
-              "x-go-type": "uuid.UUID",
+              "x-go-type": "UserID",
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
@@ -1118,8 +1154,9 @@
             "updatedAt"
           ],
           "type": "object",
-          "x-gen-struct": "DbUser",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsUser",
+          "x-is-generated": true,
+          "x-go-type": "User"
         }
       },
       "required": [
@@ -1128,7 +1165,7 @@
       ],
       "type": "object"
     },
-    "DbWorkItem": {
+    "ModelsWorkItem": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -1198,10 +1235,11 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "DbWorkItem",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsWorkItem",
+      "x-is-generated": true,
+      "x-go-type": "WorkItem"
     },
-    "DbWorkItemComment": {
+    "ModelsWorkItemComment": {
       "properties": {
         "createdAt": {
           "format": "date-time",
@@ -1222,7 +1260,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -1245,10 +1283,11 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "DbWorkItemComment",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsWorkItemComment",
+      "x-is-generated": true,
+      "x-go-type": "WorkItemComment"
     },
-    "DbWorkItemCreateParams": {
+    "ModelsWorkItemCreateParams": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -1293,9 +1332,11 @@
         "title",
         "workItemTypeID"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "WorkItemCreateParams",
+      "x-is-generated": true
     },
-    "DbWorkItemTag": {
+    "ModelsWorkItemTag": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -1331,10 +1372,11 @@
         "color"
       ],
       "type": "object",
-      "x-gen-struct": "DbWorkItemTag",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsWorkItemTag",
+      "x-is-generated": true,
+      "x-go-type": "WorkItemTag"
     },
-    "DbWorkItemTagCreateParams": {
+    "ModelsWorkItemTagCreateParams": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -1355,9 +1397,11 @@
         "description",
         "name"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "WorkItemTagCreateParams",
+      "x-is-generated": true
     },
-    "DbWorkItemType": {
+    "ModelsWorkItemType": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -1387,8 +1431,9 @@
         "color"
       ],
       "type": "object",
-      "x-gen-struct": "DbWorkItemType",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsWorkItemType",
+      "x-is-generated": true,
+      "x-go-type": "WorkItemType"
     },
     "PaginatedNotificationsResponse": {
       "properties": {
@@ -1430,12 +1475,13 @@
                     "enum": [
                       "personal",
                       "global"
-                    ]
+                    ],
+                    "x-oapi-ignore": true
                   },
                   "receiver": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -1445,7 +1491,7 @@
                   "sender": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -1466,7 +1512,9 @@
                   "sender",
                   "notificationType"
                 ],
-                "type": "object"
+                "type": "object",
+                "x-go-type": "Notification",
+                "x-is-generated": true
               },
               "notificationID": {
                 "type": "integer"
@@ -1477,7 +1525,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -1549,7 +1597,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -1563,8 +1611,9 @@
                   "userID"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbUserAPIKey",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsUserAPIKey",
+                "x-is-generated": true,
+                "x-go-type": "UserAPIKey"
               },
               "createdAt": {
                 "format": "date-time",
@@ -1693,8 +1742,9 @@
                     "updatedAt"
                   ],
                   "type": "object",
-                  "x-gen-struct": "DbProject",
-                  "x-is-generated": true
+                  "x-gen-struct": "ModelsProject",
+                  "x-is-generated": true,
+                  "x-go-type": "Project"
                 },
                 "type": [
                   "array",
@@ -1779,7 +1829,9 @@
                     "createdAt",
                     "updatedAt"
                   ],
-                  "type": "object"
+                  "type": "object",
+                  "x-go-type": "Team",
+                  "x-is-generated": true
                 },
                 "type": [
                   "array",
@@ -1795,7 +1847,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -1885,12 +1937,13 @@
             "preparer",
             "reviewer"
           ],
-          "description": "is generated from database enum 'work_item_role'."
+          "description": "is generated from database enum 'work_item_role'.",
+          "x-oapi-ignore": true
         },
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -1902,7 +1955,8 @@
         "role",
         "userID"
       ],
-      "type": "object"
+      "type": "object",
+      "x-is-generated": true
     },
     "SharedWorkItemJoins": {
       "properties": {
@@ -1917,7 +1971,8 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "is generated from database enum 'work_item_role'."
+                "description": "is generated from database enum 'work_item_role'.",
+                "x-oapi-ignore": true
               },
               "user": {
                 "properties": {
@@ -2003,7 +2058,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -2026,15 +2081,18 @@
                   "updatedAt"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbUser",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsUser",
+                "x-is-generated": true,
+                "x-go-type": "User"
               }
             },
             "required": [
               "user",
               "role"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "WorkItemM2MAssigneeWIA",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -2075,7 +2133,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -2097,8 +2155,9 @@
               "start"
             ],
             "type": "object",
-            "x-gen-struct": "DbTimeEntry",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsTimeEntry",
+            "x-is-generated": true,
+            "x-go-type": "TimeEntry"
           },
           "type": [
             "array",
@@ -2127,7 +2186,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -2150,8 +2209,9 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemComment",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemComment",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemComment"
           },
           "type": [
             "array",
@@ -2195,8 +2255,9 @@
               "color"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemTag",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemTag",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemTag"
           },
           "type": [
             "array",
@@ -2233,8 +2294,9 @@
             "color"
           ],
           "type": "object",
-          "x-gen-struct": "DbWorkItemType",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsWorkItemType",
+          "x-is-generated": true,
+          "x-go-type": "WorkItemType"
         }
       },
       "type": "object",
@@ -2278,7 +2340,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -2334,7 +2396,7 @@
         "desc"
       ]
     },
-    "DbActivity": {
+    "ModelsActivity": {
       "properties": {
         "activityID": {
           "type": "integer"
@@ -2749,7 +2811,8 @@
         "preparer",
         "reviewer"
       ],
-      "description": "is generated from database enum 'work_item_role'."
+      "description": "is generated from database enum 'work_item_role'.",
+      "x-oapi-ignore": true
     },
     "UpdateUserRequest": {
       "description": "represents User data to update",
@@ -2924,8 +2987,9 @@
                 "reopened"
               ],
               "type": "object",
-              "x-gen-struct": "DbDemoWorkItem",
-              "x-is-generated": true
+              "x-gen-struct": "ModelsDemoWorkItem",
+              "x-is-generated": true,
+              "x-go-type": "DemoWorkItem"
             },
             "description": {
               "type": "string",
@@ -2945,7 +3009,8 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "is generated from database enum 'work_item_role'."
+                    "description": "is generated from database enum 'work_item_role'.",
+                    "x-oapi-ignore": true
                   },
                   "user": {
                     "properties": {
@@ -3031,7 +3096,7 @@
                       "userID": {
                         "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                         "type": "string",
-                        "x-go-type": "uuid.UUID",
+                        "x-go-type": "UserID",
                         "x-go-type-import": {
                           "name": "uuid",
                           "path": "github.com/google/uuid"
@@ -3054,15 +3119,18 @@
                       "updatedAt"
                     ],
                     "type": "object",
-                    "x-gen-struct": "DbUser",
-                    "x-is-generated": true
+                    "x-gen-struct": "ModelsUser",
+                    "x-is-generated": true,
+                    "x-go-type": "User"
                   }
                 },
                 "required": [
                   "user",
                   "role"
                 ],
-                "type": "object"
+                "type": "object",
+                "x-go-type": "WorkItemM2MAssigneeWIA",
+                "x-is-generated": true
               },
               "type": [
                 "array",
@@ -3128,7 +3196,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -3150,8 +3218,9 @@
                   "start"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbTimeEntry",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsTimeEntry",
+                "x-is-generated": true,
+                "x-go-type": "TimeEntry"
               },
               "type": [
                 "array",
@@ -3190,7 +3259,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -3213,8 +3282,9 @@
                   "updatedAt"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbWorkItemComment",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsWorkItemComment",
+                "x-is-generated": true,
+                "x-go-type": "WorkItemComment"
               },
               "type": [
                 "array",
@@ -3261,8 +3331,9 @@
                   "color"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbWorkItemTag",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsWorkItemTag",
+                "x-is-generated": true,
+                "x-go-type": "WorkItemTag"
               },
               "type": [
                 "array",
@@ -3299,8 +3370,9 @@
                 "color"
               ],
               "type": "object",
-              "x-gen-struct": "DbWorkItemType",
-              "x-is-generated": true
+              "x-gen-struct": "ModelsWorkItemType",
+              "x-is-generated": true,
+              "x-go-type": "WorkItemType"
             },
             "workItemTypeID": {
               "type": "integer"
@@ -3359,7 +3431,9 @@
               "required": [
                 "workItemID"
               ],
-              "type": "object"
+              "type": "object",
+              "x-go-type": "DemoTwoWorkItem",
+              "x-is-generated": true
             },
             "description": {
               "type": "string",
@@ -3379,7 +3453,8 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "is generated from database enum 'work_item_role'."
+                    "description": "is generated from database enum 'work_item_role'.",
+                    "x-oapi-ignore": true
                   },
                   "user": {
                     "properties": {
@@ -3465,7 +3540,7 @@
                       "userID": {
                         "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                         "type": "string",
-                        "x-go-type": "uuid.UUID",
+                        "x-go-type": "UserID",
                         "x-go-type-import": {
                           "name": "uuid",
                           "path": "github.com/google/uuid"
@@ -3488,15 +3563,18 @@
                       "updatedAt"
                     ],
                     "type": "object",
-                    "x-gen-struct": "DbUser",
-                    "x-is-generated": true
+                    "x-gen-struct": "ModelsUser",
+                    "x-is-generated": true,
+                    "x-go-type": "User"
                   }
                 },
                 "required": [
                   "user",
                   "role"
                 ],
-                "type": "object"
+                "type": "object",
+                "x-go-type": "WorkItemM2MAssigneeWIA",
+                "x-is-generated": true
               },
               "type": [
                 "array",
@@ -3562,7 +3640,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -3584,8 +3662,9 @@
                   "start"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbTimeEntry",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsTimeEntry",
+                "x-is-generated": true,
+                "x-go-type": "TimeEntry"
               },
               "type": [
                 "array",
@@ -3624,7 +3703,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -3647,8 +3726,9 @@
                   "updatedAt"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbWorkItemComment",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsWorkItemComment",
+                "x-is-generated": true,
+                "x-go-type": "WorkItemComment"
               },
               "type": [
                 "array",
@@ -3695,8 +3775,9 @@
                   "color"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbWorkItemTag",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsWorkItemTag",
+                "x-is-generated": true,
+                "x-go-type": "WorkItemTag"
               },
               "type": [
                 "array",
@@ -3733,8 +3814,9 @@
                 "color"
               ],
               "type": "object",
-              "x-gen-struct": "DbWorkItemType",
-              "x-is-generated": true
+              "x-gen-struct": "ModelsWorkItemType",
+              "x-is-generated": true,
+              "x-go-type": "WorkItemType"
             },
             "workItemTypeID": {
               "type": "integer"
@@ -3810,7 +3892,9 @@
                 "title",
                 "workItemTypeID"
               ],
-              "type": "object"
+              "type": "object",
+              "x-go-type": "WorkItemCreateParams",
+              "x-is-generated": true
             },
             "demoProject": {
               "properties": {
@@ -3839,7 +3923,9 @@
                 "ref",
                 "reopened"
               ],
-              "type": "object"
+              "type": "object",
+              "x-go-type": "DemoWorkItemCreateParams",
+              "x-is-generated": true
             },
             "members": {
               "items": {
@@ -3852,12 +3938,13 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "is generated from database enum 'work_item_role'."
+                    "description": "is generated from database enum 'work_item_role'.",
+                    "x-oapi-ignore": true
                   },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -3869,7 +3956,8 @@
                   "role",
                   "userID"
                 ],
-                "type": "object"
+                "type": "object",
+                "x-is-generated": true
               },
               "type": "array"
             },
@@ -3947,7 +4035,9 @@
                 "title",
                 "workItemTypeID"
               ],
-              "type": "object"
+              "type": "object",
+              "x-go-type": "WorkItemCreateParams",
+              "x-is-generated": true
             },
             "demoTwoProject": {
               "properties": {
@@ -3958,7 +4048,9 @@
                   ]
                 }
               },
-              "type": "object"
+              "type": "object",
+              "x-go-type": "DemoTwoWorkItemCreateParams",
+              "x-is-generated": true
             },
             "members": {
               "items": {
@@ -3971,12 +4063,13 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "is generated from database enum 'work_item_role'."
+                    "description": "is generated from database enum 'work_item_role'.",
+                    "x-oapi-ignore": true
                   },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -3988,7 +4081,8 @@
                   "role",
                   "userID"
                 ],
-                "type": "object"
+                "type": "object",
+                "x-is-generated": true
               },
               "type": "array"
             },
@@ -4021,7 +4115,7 @@
         }
       ]
     },
-    "DbActivityCreateParams": {
+    "ModelsActivityCreateParams": {
       "properties": {
         "description": {
           "type": "string",
@@ -4045,7 +4139,7 @@
       ],
       "type": "object"
     },
-    "DbWorkItemRole": {
+    "ModelsWorkItemRole": {
       "type": "string"
     },
     "NotificationType": {
@@ -4055,7 +4149,8 @@
       "enum": [
         "personal",
         "global"
-      ]
+      ],
+      "x-oapi-ignore": true
     },
     "DemoTwoWorkItemTypes": {
       "type": "string",
@@ -4075,11 +4170,11 @@
       "x-is-generated": true,
       "description": "is generated from work_item_types table."
     },
-    "DbWorkItemID": {},
-    "DbProjectID": {},
-    "DbWorkItemTypeID": {},
-    "DbNotificationID": {},
-    "DbUserNotification": {
+    "ModelsWorkItemID": {},
+    "ModelsProjectID": {},
+    "ModelsWorkItemTypeID": {},
+    "ModelsNotificationID": {},
+    "ModelsUserNotification": {
       "properties": {
         "notificationID": {
           "type": "integer"
@@ -4090,7 +4185,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -4128,7 +4223,7 @@
       "x-is-generated": true,
       "description": "is generated from kanban_steps table."
     },
-    "DbUserWIAWorkItem": {
+    "ModelsUserWIAWorkItem": {
       "properties": {
         "role": {
           "title": "WorkItem role",
@@ -4138,7 +4233,8 @@
             "preparer",
             "reviewer"
           ],
-          "description": "is generated from database enum 'work_item_role'."
+          "description": "is generated from database enum 'work_item_role'.",
+          "x-oapi-ignore": true
         },
         "user": {
           "properties": {
@@ -4224,7 +4320,7 @@
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
-              "x-go-type": "uuid.UUID",
+              "x-go-type": "UserID",
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
@@ -4247,8 +4343,9 @@
             "updatedAt"
           ],
           "type": "object",
-          "x-gen-struct": "DbUser",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsUser",
+          "x-is-generated": true,
+          "x-go-type": "User"
         }
       },
       "required": [
@@ -4257,7 +4354,7 @@
       ],
       "type": "object"
     },
-    "DbWorkItemM2MAssigneeWIA": {
+    "ModelsWorkItemM2MAssigneeWIA": {
       "properties": {
         "role": {
           "title": "WorkItem role",
@@ -4267,7 +4364,8 @@
             "preparer",
             "reviewer"
           ],
-          "description": "is generated from database enum 'work_item_role'."
+          "description": "is generated from database enum 'work_item_role'.",
+          "x-oapi-ignore": true
         },
         "user": {
           "properties": {
@@ -4353,7 +4451,7 @@
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
-              "x-go-type": "uuid.UUID",
+              "x-go-type": "UserID",
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
@@ -4376,15 +4474,18 @@
             "updatedAt"
           ],
           "type": "object",
-          "x-gen-struct": "DbUser",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsUser",
+          "x-is-generated": true,
+          "x-go-type": "User"
         }
       },
       "required": [
         "user",
         "role"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "WorkItemM2MAssigneeWIA",
+      "x-is-generated": true
     },
     "CreateTimeEntryRequest": {
       "properties": {
@@ -4416,7 +4517,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -4469,7 +4570,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -4522,7 +4623,9 @@
           "required": [
             "workItemID"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "DemoTwoWorkItem",
+          "x-is-generated": true
         },
         "description": {
           "type": "string",
@@ -4542,7 +4645,8 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "is generated from database enum 'work_item_role'."
+                "description": "is generated from database enum 'work_item_role'.",
+                "x-oapi-ignore": true
               },
               "user": {
                 "properties": {
@@ -4628,7 +4732,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -4651,15 +4755,18 @@
                   "updatedAt"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbUser",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsUser",
+                "x-is-generated": true,
+                "x-go-type": "User"
               }
             },
             "required": [
               "user",
               "role"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "WorkItemM2MAssigneeWIA",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -4725,7 +4832,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -4747,8 +4854,9 @@
               "start"
             ],
             "type": "object",
-            "x-gen-struct": "DbTimeEntry",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsTimeEntry",
+            "x-is-generated": true,
+            "x-go-type": "TimeEntry"
           },
           "type": [
             "array",
@@ -4787,7 +4895,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -4810,8 +4918,9 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemComment",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemComment",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemComment"
           },
           "type": [
             "array",
@@ -4858,8 +4967,9 @@
               "color"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemTag",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemTag",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemTag"
           },
           "type": [
             "array",
@@ -4896,8 +5006,9 @@
             "color"
           ],
           "type": "object",
-          "x-gen-struct": "DbWorkItemType",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsWorkItemType",
+          "x-is-generated": true,
+          "x-go-type": "WorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -4973,8 +5084,9 @@
             "reopened"
           ],
           "type": "object",
-          "x-gen-struct": "DbDemoWorkItem",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsDemoWorkItem",
+          "x-is-generated": true,
+          "x-go-type": "DemoWorkItem"
         },
         "description": {
           "type": "string",
@@ -4994,7 +5106,8 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "is generated from database enum 'work_item_role'."
+                "description": "is generated from database enum 'work_item_role'.",
+                "x-oapi-ignore": true
               },
               "user": {
                 "properties": {
@@ -5080,7 +5193,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -5103,15 +5216,18 @@
                   "updatedAt"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbUser",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsUser",
+                "x-is-generated": true,
+                "x-go-type": "User"
               }
             },
             "required": [
               "user",
               "role"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "WorkItemM2MAssigneeWIA",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -5177,7 +5293,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -5199,8 +5315,9 @@
               "start"
             ],
             "type": "object",
-            "x-gen-struct": "DbTimeEntry",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsTimeEntry",
+            "x-is-generated": true,
+            "x-go-type": "TimeEntry"
           },
           "type": [
             "array",
@@ -5239,7 +5356,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -5262,8 +5379,9 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemComment",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemComment",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemComment"
           },
           "type": [
             "array",
@@ -5310,8 +5428,9 @@
               "color"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemTag",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemTag",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemTag"
           },
           "type": [
             "array",
@@ -5348,8 +5467,9 @@
             "color"
           ],
           "type": "object",
-          "x-gen-struct": "DbWorkItemType",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsWorkItemType",
+          "x-is-generated": true,
+          "x-go-type": "WorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -5411,7 +5531,8 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "is generated from database enum 'work_item_role'."
+                "description": "is generated from database enum 'work_item_role'.",
+                "x-oapi-ignore": true
               },
               "user": {
                 "properties": {
@@ -5497,7 +5618,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -5520,15 +5641,18 @@
                   "updatedAt"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbUser",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsUser",
+                "x-is-generated": true,
+                "x-go-type": "User"
               }
             },
             "required": [
               "user",
               "role"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "WorkItemM2MAssigneeWIA",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -5594,7 +5718,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -5616,8 +5740,9 @@
               "start"
             ],
             "type": "object",
-            "x-gen-struct": "DbTimeEntry",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsTimeEntry",
+            "x-is-generated": true,
+            "x-go-type": "TimeEntry"
           },
           "type": [
             "array",
@@ -5656,7 +5781,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -5679,8 +5804,9 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemComment",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemComment",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemComment"
           },
           "type": [
             "array",
@@ -5727,8 +5853,9 @@
               "color"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemTag",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemTag",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemTag"
           },
           "type": [
             "array",
@@ -5765,8 +5892,9 @@
             "color"
           ],
           "type": "object",
-          "x-gen-struct": "DbWorkItemType",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsWorkItemType",
+          "x-is-generated": true,
+          "x-go-type": "WorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -6163,7 +6291,7 @@
           "description": "represents a cursor value"
         },
         "column": {
-          "description": "represents the JSON name of the db column",
+          "description": "represents the JSON name of the models column",
           "type": "string",
           "minLength": 1
         }
@@ -6310,7 +6438,7 @@
       ],
       "type": "string"
     },
-    "DbCacheDemoWorkItemJoins": {
+    "ModelsCacheDemoWorkItemJoins": {
       "properties": {
         "assignees": {
           "type": "boolean"
@@ -6343,9 +6471,11 @@
         "workItemComments",
         "workItemTags"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "CacheDemoWorkItemJoins",
+      "x-is-generated": true
     },
-    "DbUserJoins": {
+    "ModelsUserJoins": {
       "properties": {
         "assigneeWorkItems": {
           "type": "boolean"
@@ -6386,7 +6516,9 @@
         "assigneeWorkItems",
         "workItemComments"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "UserJoins",
+      "x-is-generated": true
     },
     "PaginatedDemoWorkItemsResponse": {
       "properties": {
@@ -6545,7 +6677,9 @@
             "workItemComments",
             "workItemTags"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "CacheDemoWorkItemJoins",
+          "x-is-generated": true
         }
       },
       "type": "object",
@@ -6595,7 +6729,9 @@
             "assigneeWorkItems",
             "workItemComments"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "UserJoins",
+          "x-is-generated": true
         }
       },
       "type": "object",
@@ -6712,7 +6848,7 @@
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
-              "x-go-type": "uuid.UUID",
+              "x-go-type": "UserID",
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
@@ -6726,8 +6862,9 @@
             "userID"
           ],
           "type": "object",
-          "x-gen-struct": "DbUserAPIKey",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsUserAPIKey",
+          "x-is-generated": true,
+          "x-go-type": "UserAPIKey"
         },
         "createdAt": {
           "format": "date-time",
@@ -6856,8 +6993,9 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-gen-struct": "DbProject",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsProject",
+            "x-is-generated": true,
+            "x-go-type": "Project"
           },
           "type": [
             "array",
@@ -6942,7 +7080,9 @@
               "createdAt",
               "updatedAt"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "Team",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -6958,7 +7098,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -7006,7 +7146,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -7104,7 +7244,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -7261,12 +7401,13 @@
               "enum": [
                 "personal",
                 "global"
-              ]
+              ],
+              "x-oapi-ignore": true
             },
             "receiver": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
-              "x-go-type": "uuid.UUID",
+              "x-go-type": "UserID",
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
@@ -7276,7 +7417,7 @@
             "sender": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
-              "x-go-type": "uuid.UUID",
+              "x-go-type": "UserID",
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
@@ -7297,7 +7438,9 @@
             "sender",
             "notificationType"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "Notification",
+          "x-is-generated": true
         },
         "notificationID": {
           "type": "integer"
@@ -7308,7 +7451,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -7361,6 +7504,79 @@
       ],
       "type": "object",
       "x-gen-struct": "WorkItemTypeResponse",
+      "x-is-generated": true
+    },
+    "ModelsProjectConfig": {
+      "properties": {
+        "fields": {
+          "items": {
+            "properties": {
+              "isEditable": {
+                "type": "boolean"
+              },
+              "isVisible": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "showCollapsed": {
+                "type": "boolean"
+              }
+            },
+            "type": "object",
+            "x-go-type": "ProjectConfigField",
+            "x-is-generated": true
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "header": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "visualization": {
+          "additionalProperties": {},
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "x-go-type": "ProjectConfig",
+      "x-is-generated": true
+    },
+    "ModelsProjectConfigField": {
+      "properties": {
+        "isEditable": {
+          "type": "boolean"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "showCollapsed": {
+          "type": "boolean"
+        }
+      },
+      "type": "object",
+      "x-go-type": "ProjectConfigField",
       "x-is-generated": true
     }
   },
@@ -7435,7 +7651,9 @@
             "title",
             "workItemTypeID"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "WorkItemCreateParams",
+          "x-is-generated": true
         },
         "demoTwoProject": {
           "properties": {
@@ -7446,7 +7664,9 @@
               ]
             }
           },
-          "type": "object"
+          "type": "object",
+          "x-go-type": "DemoTwoWorkItemCreateParams",
+          "x-is-generated": true
         },
         "members": {
           "items": {
@@ -7459,12 +7679,13 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "is generated from database enum 'work_item_role'."
+                "description": "is generated from database enum 'work_item_role'.",
+                "x-oapi-ignore": true
               },
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -7476,7 +7697,8 @@
               "role",
               "userID"
             ],
-            "type": "object"
+            "type": "object",
+            "x-is-generated": true
           },
           "type": "array"
         },
@@ -7554,7 +7776,9 @@
             "title",
             "workItemTypeID"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "WorkItemCreateParams",
+          "x-is-generated": true
         },
         "demoProject": {
           "properties": {
@@ -7583,7 +7807,9 @@
             "ref",
             "reopened"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "DemoWorkItemCreateParams",
+          "x-is-generated": true
         },
         "members": {
           "items": {
@@ -7596,12 +7822,13 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "is generated from database enum 'work_item_role'."
+                "description": "is generated from database enum 'work_item_role'.",
+                "x-oapi-ignore": true
               },
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -7613,7 +7840,8 @@
               "role",
               "userID"
             ],
-            "type": "object"
+            "type": "object",
+            "x-is-generated": true
           },
           "type": "array"
         },
@@ -7668,7 +7896,9 @@
               "description",
               "name"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "WorkItemTagCreateParams",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -7691,7 +7921,9 @@
               "description",
               "name"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "TeamCreateParams",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -7731,7 +7963,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -7801,7 +8033,7 @@
       "x-gen-struct": "CreateWorkItemTypeRequest",
       "x-is-generated": true
     },
-    "DbDemoTwoWorkItem": {
+    "ModelsDemoTwoWorkItem": {
       "properties": {
         "customDateForProject2": {
           "format": "date-time",
@@ -7816,9 +8048,11 @@
       "required": [
         "workItemID"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "DemoTwoWorkItem",
+      "x-is-generated": true
     },
-    "DbDemoTwoWorkItemCreateParams": {
+    "ModelsDemoTwoWorkItemCreateParams": {
       "properties": {
         "customDateForProject2": {
           "format": "date-time",
@@ -7827,9 +8061,11 @@
           ]
         }
       },
-      "type": "object"
+      "type": "object",
+      "x-go-type": "DemoTwoWorkItemCreateParams",
+      "x-is-generated": true
     },
-    "DbDemoWorkItem": {
+    "ModelsDemoWorkItem": {
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
@@ -7861,10 +8097,11 @@
         "reopened"
       ],
       "type": "object",
-      "x-gen-struct": "DbDemoWorkItem",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsDemoWorkItem",
+      "x-is-generated": true,
+      "x-go-type": "DemoWorkItem"
     },
-    "DbDemoWorkItemCreateParams": {
+    "ModelsDemoWorkItemCreateParams": {
       "properties": {
         "lastMessageAt": {
           "format": "date-time",
@@ -7891,9 +8128,11 @@
         "ref",
         "reopened"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "DemoWorkItemCreateParams",
+      "x-is-generated": true
     },
-    "DbKanbanStep": {
+    "ModelsKanbanStep": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -7931,10 +8170,11 @@
         "timeTrackable"
       ],
       "type": "object",
-      "x-gen-struct": "DbKanbanStep",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsKanbanStep",
+      "x-is-generated": true,
+      "x-go-type": "KanbanStep"
     },
-    "DbNotification": {
+    "ModelsNotification": {
       "properties": {
         "body": {
           "type": "string",
@@ -7969,12 +8209,13 @@
           "enum": [
             "personal",
             "global"
-          ]
+          ],
+          "x-oapi-ignore": true
         },
         "receiver": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -7984,7 +8225,7 @@
         "sender": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -8005,9 +8246,11 @@
         "sender",
         "notificationType"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "Notification",
+      "x-is-generated": true
     },
-    "DbProject": {
+    "ModelsProject": {
       "properties": {
         "boardConfig": {
           "properties": {
@@ -8093,10 +8336,11 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "DbProject",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsProject",
+      "x-is-generated": true,
+      "x-go-type": "Project"
     },
-    "DbTeam": {
+    "ModelsTeam": {
       "properties": {
         "createdAt": {
           "format": "date-time",
@@ -8133,9 +8377,11 @@
         "createdAt",
         "updatedAt"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "Team",
+      "x-is-generated": true
     },
-    "DbTeamCreateParams": {
+    "ModelsTeamCreateParams": {
       "properties": {
         "description": {
           "type": "string",
@@ -8150,9 +8396,11 @@
         "description",
         "name"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "TeamCreateParams",
+      "x-is-generated": true
     },
-    "DbTimeEntry": {
+    "ModelsTimeEntry": {
       "properties": {
         "activityID": {
           "type": "integer"
@@ -8185,7 +8433,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -8207,10 +8455,11 @@
         "start"
       ],
       "type": "object",
-      "x-gen-struct": "DbTimeEntry",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsTimeEntry",
+      "x-is-generated": true,
+      "x-go-type": "TimeEntry"
     },
-    "DbUser": {
+    "ModelsUser": {
       "properties": {
         "age": {
           "type": [
@@ -8294,7 +8543,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -8317,10 +8566,11 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "DbUser",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsUser",
+      "x-is-generated": true,
+      "x-go-type": "User"
     },
-    "DbUserAPIKey": {
+    "ModelsUserAPIKey": {
       "properties": {
         "apiKey": {
           "type": "string",
@@ -8335,7 +8585,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -8349,20 +8599,21 @@
         "userID"
       ],
       "type": "object",
-      "x-gen-struct": "DbUserAPIKey",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsUserAPIKey",
+      "x-is-generated": true,
+      "x-go-type": "UserAPIKey"
     },
-    "DbUserID": {
+    "ModelsUserID": {
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
       "type": "string",
-      "x-go-type": "uuid.UUID",
+      "x-go-type": "UserID",
       "x-go-type-import": {
         "name": "uuid",
         "path": "github.com/google/uuid"
       },
       "x-is-generated": true
     },
-    "DbUserWIAUWorkItem": {
+    "ModelsUserWIAUWorkItem": {
       "properties": {
         "role": {
           "title": "WorkItem role",
@@ -8372,7 +8623,8 @@
             "preparer",
             "reviewer"
           ],
-          "description": "is generated from database enum 'work_item_role'."
+          "description": "is generated from database enum 'work_item_role'.",
+          "x-oapi-ignore": true
         },
         "user": {
           "properties": {
@@ -8458,7 +8710,7 @@
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
-              "x-go-type": "uuid.UUID",
+              "x-go-type": "UserID",
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
@@ -8481,8 +8733,9 @@
             "updatedAt"
           ],
           "type": "object",
-          "x-gen-struct": "DbUser",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsUser",
+          "x-is-generated": true,
+          "x-go-type": "User"
         }
       },
       "required": [
@@ -8491,7 +8744,7 @@
       ],
       "type": "object"
     },
-    "DbWorkItem": {
+    "ModelsWorkItem": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -8561,10 +8814,11 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "DbWorkItem",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsWorkItem",
+      "x-is-generated": true,
+      "x-go-type": "WorkItem"
     },
-    "DbWorkItemComment": {
+    "ModelsWorkItemComment": {
       "properties": {
         "createdAt": {
           "format": "date-time",
@@ -8585,7 +8839,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -8608,10 +8862,11 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "DbWorkItemComment",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsWorkItemComment",
+      "x-is-generated": true,
+      "x-go-type": "WorkItemComment"
     },
-    "DbWorkItemCreateParams": {
+    "ModelsWorkItemCreateParams": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -8656,9 +8911,11 @@
         "title",
         "workItemTypeID"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "WorkItemCreateParams",
+      "x-is-generated": true
     },
-    "DbWorkItemTag": {
+    "ModelsWorkItemTag": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -8694,10 +8951,11 @@
         "color"
       ],
       "type": "object",
-      "x-gen-struct": "DbWorkItemTag",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsWorkItemTag",
+      "x-is-generated": true,
+      "x-go-type": "WorkItemTag"
     },
-    "DbWorkItemTagCreateParams": {
+    "ModelsWorkItemTagCreateParams": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -8718,9 +8976,11 @@
         "description",
         "name"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "WorkItemTagCreateParams",
+      "x-is-generated": true
     },
-    "DbWorkItemType": {
+    "ModelsWorkItemType": {
       "properties": {
         "color": {
           "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
@@ -8750,8 +9010,9 @@
         "color"
       ],
       "type": "object",
-      "x-gen-struct": "DbWorkItemType",
-      "x-is-generated": true
+      "x-gen-struct": "ModelsWorkItemType",
+      "x-is-generated": true,
+      "x-go-type": "WorkItemType"
     },
     "PaginatedNotificationsResponse": {
       "properties": {
@@ -8793,12 +9054,13 @@
                     "enum": [
                       "personal",
                       "global"
-                    ]
+                    ],
+                    "x-oapi-ignore": true
                   },
                   "receiver": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -8808,7 +9070,7 @@
                   "sender": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -8829,7 +9091,9 @@
                   "sender",
                   "notificationType"
                 ],
-                "type": "object"
+                "type": "object",
+                "x-go-type": "Notification",
+                "x-is-generated": true
               },
               "notificationID": {
                 "type": "integer"
@@ -8840,7 +9104,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -8912,7 +9176,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -8926,8 +9190,9 @@
                   "userID"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbUserAPIKey",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsUserAPIKey",
+                "x-is-generated": true,
+                "x-go-type": "UserAPIKey"
               },
               "createdAt": {
                 "format": "date-time",
@@ -9056,8 +9321,9 @@
                     "updatedAt"
                   ],
                   "type": "object",
-                  "x-gen-struct": "DbProject",
-                  "x-is-generated": true
+                  "x-gen-struct": "ModelsProject",
+                  "x-is-generated": true,
+                  "x-go-type": "Project"
                 },
                 "type": [
                   "array",
@@ -9142,7 +9408,9 @@
                     "createdAt",
                     "updatedAt"
                   ],
-                  "type": "object"
+                  "type": "object",
+                  "x-go-type": "Team",
+                  "x-is-generated": true
                 },
                 "type": [
                   "array",
@@ -9158,7 +9426,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -9248,12 +9516,13 @@
             "preparer",
             "reviewer"
           ],
-          "description": "is generated from database enum 'work_item_role'."
+          "description": "is generated from database enum 'work_item_role'.",
+          "x-oapi-ignore": true
         },
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -9265,7 +9534,8 @@
         "role",
         "userID"
       ],
-      "type": "object"
+      "type": "object",
+      "x-is-generated": true
     },
     "SharedWorkItemJoins": {
       "properties": {
@@ -9280,7 +9550,8 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "is generated from database enum 'work_item_role'."
+                "description": "is generated from database enum 'work_item_role'.",
+                "x-oapi-ignore": true
               },
               "user": {
                 "properties": {
@@ -9366,7 +9637,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -9389,15 +9660,18 @@
                   "updatedAt"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbUser",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsUser",
+                "x-is-generated": true,
+                "x-go-type": "User"
               }
             },
             "required": [
               "user",
               "role"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "WorkItemM2MAssigneeWIA",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -9438,7 +9712,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -9460,8 +9734,9 @@
               "start"
             ],
             "type": "object",
-            "x-gen-struct": "DbTimeEntry",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsTimeEntry",
+            "x-is-generated": true,
+            "x-go-type": "TimeEntry"
           },
           "type": [
             "array",
@@ -9490,7 +9765,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -9513,8 +9788,9 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemComment",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemComment",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemComment"
           },
           "type": [
             "array",
@@ -9558,8 +9834,9 @@
               "color"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemTag",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemTag",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemTag"
           },
           "type": [
             "array",
@@ -9596,8 +9873,9 @@
             "color"
           ],
           "type": "object",
-          "x-gen-struct": "DbWorkItemType",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsWorkItemType",
+          "x-is-generated": true,
+          "x-go-type": "WorkItemType"
         }
       },
       "type": "object",
@@ -9641,7 +9919,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -9697,7 +9975,7 @@
         "desc"
       ]
     },
-    "DbActivity": {
+    "ModelsActivity": {
       "properties": {
         "activityID": {
           "type": "integer"
@@ -10112,7 +10390,8 @@
         "preparer",
         "reviewer"
       ],
-      "description": "is generated from database enum 'work_item_role'."
+      "description": "is generated from database enum 'work_item_role'.",
+      "x-oapi-ignore": true
     },
     "UpdateUserRequest": {
       "description": "represents User data to update",
@@ -10287,8 +10566,9 @@
                 "reopened"
               ],
               "type": "object",
-              "x-gen-struct": "DbDemoWorkItem",
-              "x-is-generated": true
+              "x-gen-struct": "ModelsDemoWorkItem",
+              "x-is-generated": true,
+              "x-go-type": "DemoWorkItem"
             },
             "description": {
               "type": "string",
@@ -10308,7 +10588,8 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "is generated from database enum 'work_item_role'."
+                    "description": "is generated from database enum 'work_item_role'.",
+                    "x-oapi-ignore": true
                   },
                   "user": {
                     "properties": {
@@ -10394,7 +10675,7 @@
                       "userID": {
                         "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                         "type": "string",
-                        "x-go-type": "uuid.UUID",
+                        "x-go-type": "UserID",
                         "x-go-type-import": {
                           "name": "uuid",
                           "path": "github.com/google/uuid"
@@ -10417,15 +10698,18 @@
                       "updatedAt"
                     ],
                     "type": "object",
-                    "x-gen-struct": "DbUser",
-                    "x-is-generated": true
+                    "x-gen-struct": "ModelsUser",
+                    "x-is-generated": true,
+                    "x-go-type": "User"
                   }
                 },
                 "required": [
                   "user",
                   "role"
                 ],
-                "type": "object"
+                "type": "object",
+                "x-go-type": "WorkItemM2MAssigneeWIA",
+                "x-is-generated": true
               },
               "type": [
                 "array",
@@ -10491,7 +10775,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -10513,8 +10797,9 @@
                   "start"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbTimeEntry",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsTimeEntry",
+                "x-is-generated": true,
+                "x-go-type": "TimeEntry"
               },
               "type": [
                 "array",
@@ -10553,7 +10838,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -10576,8 +10861,9 @@
                   "updatedAt"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbWorkItemComment",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsWorkItemComment",
+                "x-is-generated": true,
+                "x-go-type": "WorkItemComment"
               },
               "type": [
                 "array",
@@ -10624,8 +10910,9 @@
                   "color"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbWorkItemTag",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsWorkItemTag",
+                "x-is-generated": true,
+                "x-go-type": "WorkItemTag"
               },
               "type": [
                 "array",
@@ -10662,8 +10949,9 @@
                 "color"
               ],
               "type": "object",
-              "x-gen-struct": "DbWorkItemType",
-              "x-is-generated": true
+              "x-gen-struct": "ModelsWorkItemType",
+              "x-is-generated": true,
+              "x-go-type": "WorkItemType"
             },
             "workItemTypeID": {
               "type": "integer"
@@ -10722,7 +11010,9 @@
               "required": [
                 "workItemID"
               ],
-              "type": "object"
+              "type": "object",
+              "x-go-type": "DemoTwoWorkItem",
+              "x-is-generated": true
             },
             "description": {
               "type": "string",
@@ -10742,7 +11032,8 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "is generated from database enum 'work_item_role'."
+                    "description": "is generated from database enum 'work_item_role'.",
+                    "x-oapi-ignore": true
                   },
                   "user": {
                     "properties": {
@@ -10828,7 +11119,7 @@
                       "userID": {
                         "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                         "type": "string",
-                        "x-go-type": "uuid.UUID",
+                        "x-go-type": "UserID",
                         "x-go-type-import": {
                           "name": "uuid",
                           "path": "github.com/google/uuid"
@@ -10851,15 +11142,18 @@
                       "updatedAt"
                     ],
                     "type": "object",
-                    "x-gen-struct": "DbUser",
-                    "x-is-generated": true
+                    "x-gen-struct": "ModelsUser",
+                    "x-is-generated": true,
+                    "x-go-type": "User"
                   }
                 },
                 "required": [
                   "user",
                   "role"
                 ],
-                "type": "object"
+                "type": "object",
+                "x-go-type": "WorkItemM2MAssigneeWIA",
+                "x-is-generated": true
               },
               "type": [
                 "array",
@@ -10925,7 +11219,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -10947,8 +11241,9 @@
                   "start"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbTimeEntry",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsTimeEntry",
+                "x-is-generated": true,
+                "x-go-type": "TimeEntry"
               },
               "type": [
                 "array",
@@ -10987,7 +11282,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -11010,8 +11305,9 @@
                   "updatedAt"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbWorkItemComment",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsWorkItemComment",
+                "x-is-generated": true,
+                "x-go-type": "WorkItemComment"
               },
               "type": [
                 "array",
@@ -11058,8 +11354,9 @@
                   "color"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbWorkItemTag",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsWorkItemTag",
+                "x-is-generated": true,
+                "x-go-type": "WorkItemTag"
               },
               "type": [
                 "array",
@@ -11096,8 +11393,9 @@
                 "color"
               ],
               "type": "object",
-              "x-gen-struct": "DbWorkItemType",
-              "x-is-generated": true
+              "x-gen-struct": "ModelsWorkItemType",
+              "x-is-generated": true,
+              "x-go-type": "WorkItemType"
             },
             "workItemTypeID": {
               "type": "integer"
@@ -11173,7 +11471,9 @@
                 "title",
                 "workItemTypeID"
               ],
-              "type": "object"
+              "type": "object",
+              "x-go-type": "WorkItemCreateParams",
+              "x-is-generated": true
             },
             "demoProject": {
               "properties": {
@@ -11202,7 +11502,9 @@
                 "ref",
                 "reopened"
               ],
-              "type": "object"
+              "type": "object",
+              "x-go-type": "DemoWorkItemCreateParams",
+              "x-is-generated": true
             },
             "members": {
               "items": {
@@ -11215,12 +11517,13 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "is generated from database enum 'work_item_role'."
+                    "description": "is generated from database enum 'work_item_role'.",
+                    "x-oapi-ignore": true
                   },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -11232,7 +11535,8 @@
                   "role",
                   "userID"
                 ],
-                "type": "object"
+                "type": "object",
+                "x-is-generated": true
               },
               "type": "array"
             },
@@ -11310,7 +11614,9 @@
                 "title",
                 "workItemTypeID"
               ],
-              "type": "object"
+              "type": "object",
+              "x-go-type": "WorkItemCreateParams",
+              "x-is-generated": true
             },
             "demoTwoProject": {
               "properties": {
@@ -11321,7 +11627,9 @@
                   ]
                 }
               },
-              "type": "object"
+              "type": "object",
+              "x-go-type": "DemoTwoWorkItemCreateParams",
+              "x-is-generated": true
             },
             "members": {
               "items": {
@@ -11334,12 +11642,13 @@
                       "preparer",
                       "reviewer"
                     ],
-                    "description": "is generated from database enum 'work_item_role'."
+                    "description": "is generated from database enum 'work_item_role'.",
+                    "x-oapi-ignore": true
                   },
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -11351,7 +11660,8 @@
                   "role",
                   "userID"
                 ],
-                "type": "object"
+                "type": "object",
+                "x-is-generated": true
               },
               "type": "array"
             },
@@ -11384,7 +11694,7 @@
         }
       ]
     },
-    "DbActivityCreateParams": {
+    "ModelsActivityCreateParams": {
       "properties": {
         "description": {
           "type": "string",
@@ -11408,7 +11718,7 @@
       ],
       "type": "object"
     },
-    "DbWorkItemRole": {
+    "ModelsWorkItemRole": {
       "type": "string"
     },
     "NotificationType": {
@@ -11418,7 +11728,8 @@
       "enum": [
         "personal",
         "global"
-      ]
+      ],
+      "x-oapi-ignore": true
     },
     "DemoTwoWorkItemTypes": {
       "type": "string",
@@ -11438,11 +11749,11 @@
       "x-is-generated": true,
       "description": "is generated from work_item_types table."
     },
-    "DbWorkItemID": {},
-    "DbProjectID": {},
-    "DbWorkItemTypeID": {},
-    "DbNotificationID": {},
-    "DbUserNotification": {
+    "ModelsWorkItemID": {},
+    "ModelsProjectID": {},
+    "ModelsWorkItemTypeID": {},
+    "ModelsNotificationID": {},
+    "ModelsUserNotification": {
       "properties": {
         "notificationID": {
           "type": "integer"
@@ -11453,7 +11764,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -11491,7 +11802,7 @@
       "x-is-generated": true,
       "description": "is generated from kanban_steps table."
     },
-    "DbUserWIAWorkItem": {
+    "ModelsUserWIAWorkItem": {
       "properties": {
         "role": {
           "title": "WorkItem role",
@@ -11501,7 +11812,8 @@
             "preparer",
             "reviewer"
           ],
-          "description": "is generated from database enum 'work_item_role'."
+          "description": "is generated from database enum 'work_item_role'.",
+          "x-oapi-ignore": true
         },
         "user": {
           "properties": {
@@ -11587,7 +11899,7 @@
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
-              "x-go-type": "uuid.UUID",
+              "x-go-type": "UserID",
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
@@ -11610,8 +11922,9 @@
             "updatedAt"
           ],
           "type": "object",
-          "x-gen-struct": "DbUser",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsUser",
+          "x-is-generated": true,
+          "x-go-type": "User"
         }
       },
       "required": [
@@ -11620,7 +11933,7 @@
       ],
       "type": "object"
     },
-    "DbWorkItemM2MAssigneeWIA": {
+    "ModelsWorkItemM2MAssigneeWIA": {
       "properties": {
         "role": {
           "title": "WorkItem role",
@@ -11630,7 +11943,8 @@
             "preparer",
             "reviewer"
           ],
-          "description": "is generated from database enum 'work_item_role'."
+          "description": "is generated from database enum 'work_item_role'.",
+          "x-oapi-ignore": true
         },
         "user": {
           "properties": {
@@ -11716,7 +12030,7 @@
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
-              "x-go-type": "uuid.UUID",
+              "x-go-type": "UserID",
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
@@ -11739,15 +12053,18 @@
             "updatedAt"
           ],
           "type": "object",
-          "x-gen-struct": "DbUser",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsUser",
+          "x-is-generated": true,
+          "x-go-type": "User"
         }
       },
       "required": [
         "user",
         "role"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "WorkItemM2MAssigneeWIA",
+      "x-is-generated": true
     },
     "CreateTimeEntryRequest": {
       "properties": {
@@ -11779,7 +12096,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -11832,7 +12149,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -11885,7 +12202,9 @@
           "required": [
             "workItemID"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "DemoTwoWorkItem",
+          "x-is-generated": true
         },
         "description": {
           "type": "string",
@@ -11905,7 +12224,8 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "is generated from database enum 'work_item_role'."
+                "description": "is generated from database enum 'work_item_role'.",
+                "x-oapi-ignore": true
               },
               "user": {
                 "properties": {
@@ -11991,7 +12311,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -12014,15 +12334,18 @@
                   "updatedAt"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbUser",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsUser",
+                "x-is-generated": true,
+                "x-go-type": "User"
               }
             },
             "required": [
               "user",
               "role"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "WorkItemM2MAssigneeWIA",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -12088,7 +12411,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -12110,8 +12433,9 @@
               "start"
             ],
             "type": "object",
-            "x-gen-struct": "DbTimeEntry",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsTimeEntry",
+            "x-is-generated": true,
+            "x-go-type": "TimeEntry"
           },
           "type": [
             "array",
@@ -12150,7 +12474,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -12173,8 +12497,9 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemComment",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemComment",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemComment"
           },
           "type": [
             "array",
@@ -12221,8 +12546,9 @@
               "color"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemTag",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemTag",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemTag"
           },
           "type": [
             "array",
@@ -12259,8 +12585,9 @@
             "color"
           ],
           "type": "object",
-          "x-gen-struct": "DbWorkItemType",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsWorkItemType",
+          "x-is-generated": true,
+          "x-go-type": "WorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -12336,8 +12663,9 @@
             "reopened"
           ],
           "type": "object",
-          "x-gen-struct": "DbDemoWorkItem",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsDemoWorkItem",
+          "x-is-generated": true,
+          "x-go-type": "DemoWorkItem"
         },
         "description": {
           "type": "string",
@@ -12357,7 +12685,8 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "is generated from database enum 'work_item_role'."
+                "description": "is generated from database enum 'work_item_role'.",
+                "x-oapi-ignore": true
               },
               "user": {
                 "properties": {
@@ -12443,7 +12772,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -12466,15 +12795,18 @@
                   "updatedAt"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbUser",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsUser",
+                "x-is-generated": true,
+                "x-go-type": "User"
               }
             },
             "required": [
               "user",
               "role"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "WorkItemM2MAssigneeWIA",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -12540,7 +12872,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -12562,8 +12894,9 @@
               "start"
             ],
             "type": "object",
-            "x-gen-struct": "DbTimeEntry",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsTimeEntry",
+            "x-is-generated": true,
+            "x-go-type": "TimeEntry"
           },
           "type": [
             "array",
@@ -12602,7 +12935,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -12625,8 +12958,9 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemComment",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemComment",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemComment"
           },
           "type": [
             "array",
@@ -12673,8 +13007,9 @@
               "color"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemTag",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemTag",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemTag"
           },
           "type": [
             "array",
@@ -12711,8 +13046,9 @@
             "color"
           ],
           "type": "object",
-          "x-gen-struct": "DbWorkItemType",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsWorkItemType",
+          "x-is-generated": true,
+          "x-go-type": "WorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -12774,7 +13110,8 @@
                   "preparer",
                   "reviewer"
                 ],
-                "description": "is generated from database enum 'work_item_role'."
+                "description": "is generated from database enum 'work_item_role'.",
+                "x-oapi-ignore": true
               },
               "user": {
                 "properties": {
@@ -12860,7 +13197,7 @@
                   "userID": {
                     "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                     "type": "string",
-                    "x-go-type": "uuid.UUID",
+                    "x-go-type": "UserID",
                     "x-go-type-import": {
                       "name": "uuid",
                       "path": "github.com/google/uuid"
@@ -12883,15 +13220,18 @@
                   "updatedAt"
                 ],
                 "type": "object",
-                "x-gen-struct": "DbUser",
-                "x-is-generated": true
+                "x-gen-struct": "ModelsUser",
+                "x-is-generated": true,
+                "x-go-type": "User"
               }
             },
             "required": [
               "user",
               "role"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "WorkItemM2MAssigneeWIA",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -12957,7 +13297,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -12979,8 +13319,9 @@
               "start"
             ],
             "type": "object",
-            "x-gen-struct": "DbTimeEntry",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsTimeEntry",
+            "x-is-generated": true,
+            "x-go-type": "TimeEntry"
           },
           "type": [
             "array",
@@ -13019,7 +13360,7 @@
               "userID": {
                 "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
                 "type": "string",
-                "x-go-type": "uuid.UUID",
+                "x-go-type": "UserID",
                 "x-go-type-import": {
                   "name": "uuid",
                   "path": "github.com/google/uuid"
@@ -13042,8 +13383,9 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemComment",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemComment",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemComment"
           },
           "type": [
             "array",
@@ -13090,8 +13432,9 @@
               "color"
             ],
             "type": "object",
-            "x-gen-struct": "DbWorkItemTag",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsWorkItemTag",
+            "x-is-generated": true,
+            "x-go-type": "WorkItemTag"
           },
           "type": [
             "array",
@@ -13128,8 +13471,9 @@
             "color"
           ],
           "type": "object",
-          "x-gen-struct": "DbWorkItemType",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsWorkItemType",
+          "x-is-generated": true,
+          "x-go-type": "WorkItemType"
         },
         "workItemTypeID": {
           "type": "integer"
@@ -13526,7 +13870,7 @@
           "description": "represents a cursor value"
         },
         "column": {
-          "description": "represents the JSON name of the db column",
+          "description": "represents the JSON name of the models column",
           "type": "string",
           "minLength": 1
         }
@@ -13673,7 +14017,7 @@
       ],
       "type": "string"
     },
-    "DbCacheDemoWorkItemJoins": {
+    "ModelsCacheDemoWorkItemJoins": {
       "properties": {
         "assignees": {
           "type": "boolean"
@@ -13706,9 +14050,11 @@
         "workItemComments",
         "workItemTags"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "CacheDemoWorkItemJoins",
+      "x-is-generated": true
     },
-    "DbUserJoins": {
+    "ModelsUserJoins": {
       "properties": {
         "assigneeWorkItems": {
           "type": "boolean"
@@ -13749,7 +14095,9 @@
         "assigneeWorkItems",
         "workItemComments"
       ],
-      "type": "object"
+      "type": "object",
+      "x-go-type": "UserJoins",
+      "x-is-generated": true
     },
     "PaginatedDemoWorkItemsResponse": {
       "properties": {
@@ -13908,7 +14256,9 @@
             "workItemComments",
             "workItemTags"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "CacheDemoWorkItemJoins",
+          "x-is-generated": true
         }
       },
       "type": "object",
@@ -13958,7 +14308,9 @@
             "assigneeWorkItems",
             "workItemComments"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "UserJoins",
+          "x-is-generated": true
         }
       },
       "type": "object",
@@ -14075,7 +14427,7 @@
             "userID": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
-              "x-go-type": "uuid.UUID",
+              "x-go-type": "UserID",
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
@@ -14089,8 +14441,9 @@
             "userID"
           ],
           "type": "object",
-          "x-gen-struct": "DbUserAPIKey",
-          "x-is-generated": true
+          "x-gen-struct": "ModelsUserAPIKey",
+          "x-is-generated": true,
+          "x-go-type": "UserAPIKey"
         },
         "createdAt": {
           "format": "date-time",
@@ -14219,8 +14572,9 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-gen-struct": "DbProject",
-            "x-is-generated": true
+            "x-gen-struct": "ModelsProject",
+            "x-is-generated": true,
+            "x-go-type": "Project"
           },
           "type": [
             "array",
@@ -14305,7 +14659,9 @@
               "createdAt",
               "updatedAt"
             ],
-            "type": "object"
+            "type": "object",
+            "x-go-type": "Team",
+            "x-is-generated": true
           },
           "type": [
             "array",
@@ -14321,7 +14677,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -14369,7 +14725,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -14467,7 +14823,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -14624,12 +14980,13 @@
               "enum": [
                 "personal",
                 "global"
-              ]
+              ],
+              "x-oapi-ignore": true
             },
             "receiver": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
-              "x-go-type": "uuid.UUID",
+              "x-go-type": "UserID",
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
@@ -14639,7 +14996,7 @@
             "sender": {
               "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
               "type": "string",
-              "x-go-type": "uuid.UUID",
+              "x-go-type": "UserID",
               "x-go-type-import": {
                 "name": "uuid",
                 "path": "github.com/google/uuid"
@@ -14660,7 +15017,9 @@
             "sender",
             "notificationType"
           ],
-          "type": "object"
+          "type": "object",
+          "x-go-type": "Notification",
+          "x-is-generated": true
         },
         "notificationID": {
           "type": "integer"
@@ -14671,7 +15030,7 @@
         "userID": {
           "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
           "type": "string",
-          "x-go-type": "uuid.UUID",
+          "x-go-type": "UserID",
           "x-go-type-import": {
             "name": "uuid",
             "path": "github.com/google/uuid"
@@ -14724,6 +15083,79 @@
       ],
       "type": "object",
       "x-gen-struct": "WorkItemTypeResponse",
+      "x-is-generated": true
+    },
+    "ModelsProjectConfig": {
+      "properties": {
+        "fields": {
+          "items": {
+            "properties": {
+              "isEditable": {
+                "type": "boolean"
+              },
+              "isVisible": {
+                "type": "boolean"
+              },
+              "name": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "showCollapsed": {
+                "type": "boolean"
+              }
+            },
+            "type": "object",
+            "x-go-type": "ProjectConfigField",
+            "x-is-generated": true
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "header": {
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "visualization": {
+          "additionalProperties": {},
+          "type": [
+            "object",
+            "null"
+          ]
+        }
+      },
+      "type": "object",
+      "x-go-type": "ProjectConfig",
+      "x-is-generated": true
+    },
+    "ModelsProjectConfigField": {
+      "properties": {
+        "isEditable": {
+          "type": "boolean"
+        },
+        "isVisible": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "showCollapsed": {
+          "type": "boolean"
+        }
+      },
+      "type": "object",
+      "x-go-type": "ProjectConfigField",
       "x-is-generated": true
     }
   }

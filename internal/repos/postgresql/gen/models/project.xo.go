@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -31,13 +30,13 @@ import (
 //   - "cardinality":<O2O|M2O|M2M> to generate/override joins explicitly. Only O2O is inferred.
 //   - "tags":<tags> to append literal struct tag strings.
 type Project struct {
-	ProjectID          ProjectID            `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                              // project_id
+	ProjectID          ProjectID     `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                              // project_id
 	Name               ProjectName   `json:"name" db:"name" required:"true" nullable:"false" ref:"#/components/schemas/ProjectName"`                  // name
-	Description        string               `json:"description" db:"description" required:"true" nullable:"false"`                                           // description
-	WorkItemsTableName string               `json:"-" db:"work_items_table_name" nullable:"false"`                                                           // work_items_table_name
+	Description        string        `json:"description" db:"description" required:"true" nullable:"false"`                                           // description
+	WorkItemsTableName string        `json:"-" db:"work_items_table_name" nullable:"false"`                                                           // work_items_table_name
 	BoardConfig        ProjectConfig `json:"boardConfig" db:"board_config" required:"true" nullable:"false" ref:"#/components/schemas/ProjectConfig"` // board_config
-	CreatedAt          time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                              // created_at
-	UpdatedAt          time.Time            `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                                              // updated_at
+	CreatedAt          time.Time     `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                                              // created_at
+	UpdatedAt          time.Time     `json:"updatedAt" db:"updated_at" required:"true" nullable:"false"`                                              // updated_at
 
 	ActivitiesJoin    *[]Activity     `json:"-" db:"activities"`           // M2O projects
 	KanbanStepsJoin   *[]KanbanStep   `json:"-" db:"kanban_steps"`         // M2O projects
@@ -51,9 +50,9 @@ type Project struct {
 // ProjectCreateParams represents insert params for 'public.projects'.
 type ProjectCreateParams struct {
 	BoardConfig        ProjectConfig `json:"boardConfig" required:"true" nullable:"false" ref:"#/components/schemas/ProjectConfig"` // board_config
-	Description        string               `json:"description" required:"true" nullable:"false"`                                          // description
+	Description        string        `json:"description" required:"true" nullable:"false"`                                          // description
 	Name               ProjectName   `json:"name" required:"true" nullable:"false" ref:"#/components/schemas/ProjectName"`          // name
-	WorkItemsTableName string               `json:"-" nullable:"false"`                                                                    // work_items_table_name
+	WorkItemsTableName string        `json:"-" nullable:"false"`                                                                    // work_items_table_name
 }
 
 // ProjectParams represents common params for both insert and update of 'public.projects'.
@@ -307,9 +306,9 @@ const projectTableWorkItemTypesGroupBySQL = `projects.project_id`
 // ProjectUpdateParams represents update params for 'public.projects'.
 type ProjectUpdateParams struct {
 	BoardConfig        *ProjectConfig `json:"boardConfig" nullable:"false" ref:"#/components/schemas/ProjectConfig"` // board_config
-	Description        *string               `json:"description" nullable:"false"`                                          // description
+	Description        *string        `json:"description" nullable:"false"`                                          // description
 	Name               *ProjectName   `json:"name" nullable:"false" ref:"#/components/schemas/ProjectName"`          // name
-	WorkItemsTableName *string               `json:"-" nullable:"false"`                                                    // work_items_table_name
+	WorkItemsTableName *string        `json:"-" nullable:"false"`                                                    // work_items_table_name
 }
 
 // SetUpdateParams updates public.projects struct fields with the specified params.

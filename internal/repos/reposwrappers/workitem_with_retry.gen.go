@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
@@ -34,7 +34,7 @@ func NewWorkItemWithRetry(base repos.WorkItem, logger *zap.SugaredLogger, retryC
 }
 
 // AssignTag implements repos.WorkItem
-func (_d WorkItemWithRetry) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) (err error) {
+func (_d WorkItemWithRetry) AssignTag(ctx context.Context, d models.DBTX, params *models.WorkItemWorkItemTagCreateParams) (err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryAssignTag")
 		if err != nil {
@@ -74,7 +74,7 @@ func (_d WorkItemWithRetry) AssignTag(ctx context.Context, d db.DBTX, params *db
 }
 
 // AssignUser implements repos.WorkItem
-func (_d WorkItemWithRetry) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssigneeCreateParams) (err error) {
+func (_d WorkItemWithRetry) AssignUser(ctx context.Context, d models.DBTX, params *models.WorkItemAssigneeCreateParams) (err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryAssignUser")
 		if err != nil {
@@ -114,7 +114,7 @@ func (_d WorkItemWithRetry) AssignUser(ctx context.Context, d db.DBTX, params *d
 }
 
 // ByID implements repos.WorkItem
-func (_d WorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithRetry) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryByID")
 		if err != nil {
@@ -154,7 +154,7 @@ func (_d WorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkItemI
 }
 
 // Delete implements repos.WorkItem
-func (_d WorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithRetry) Delete(ctx context.Context, d models.DBTX, id models.WorkItemID) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryDelete")
 		if err != nil {
@@ -194,7 +194,7 @@ func (_d WorkItemWithRetry) Delete(ctx context.Context, d db.DBTX, id db.WorkIte
 }
 
 // RemoveAssignedUser implements repos.WorkItem
-func (_d WorkItemWithRetry) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID db.UserID, workItemID db.WorkItemID) (err error) {
+func (_d WorkItemWithRetry) RemoveAssignedUser(ctx context.Context, d models.DBTX, memberID models.UserID, workItemID models.WorkItemID) (err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryRemoveAssignedUser")
 		if err != nil {
@@ -234,7 +234,7 @@ func (_d WorkItemWithRetry) RemoveAssignedUser(ctx context.Context, d db.DBTX, m
 }
 
 // RemoveTag implements repos.WorkItem
-func (_d WorkItemWithRetry) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) (err error) {
+func (_d WorkItemWithRetry) RemoveTag(ctx context.Context, d models.DBTX, tagID models.WorkItemTagID, workItemID models.WorkItemID) (err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryRemoveTag")
 		if err != nil {
@@ -274,7 +274,7 @@ func (_d WorkItemWithRetry) RemoveTag(ctx context.Context, d db.DBTX, tagID db.W
 }
 
 // Restore implements repos.WorkItem
-func (_d WorkItemWithRetry) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithRetry) Restore(ctx context.Context, d models.DBTX, id models.WorkItemID) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT WorkItemWithRetryRestore")
 		if err != nil {

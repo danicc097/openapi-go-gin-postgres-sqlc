@@ -23,8 +23,8 @@ import type {
 } from '@tanstack/react-query'
 import type {
   CreateProjectBoardRequest,
-  DbProject,
   GetProjectWorkitemsParams,
+  ModelsProject,
   ProjectBoard,
   ProjectConfig,
   WorkItemResponse
@@ -98,7 +98,7 @@ export const getProject = (
 ) => {
       
       
-      return customInstance<DbProject>(
+      return customInstance<ModelsProject>(
       {url: `/project/${projectName}/`, method: 'GET', signal
     },
       options);

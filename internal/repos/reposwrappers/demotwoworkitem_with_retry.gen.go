@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
@@ -34,7 +34,7 @@ func NewDemoTwoWorkItemWithRetry(base repos.DemoTwoWorkItem, logger *zap.Sugared
 }
 
 // ByID implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithRetry) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT DemoTwoWorkItemWithRetryByID")
 		if err != nil {
@@ -74,7 +74,7 @@ func (_d DemoTwoWorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id db.Wo
 }
 
 // Create implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithRetry) Create(ctx context.Context, d db.DBTX, params repos.DemoTwoWorkItemCreateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithRetry) Create(ctx context.Context, d models.DBTX, params repos.DemoTwoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT DemoTwoWorkItemWithRetryCreate")
 		if err != nil {
@@ -114,7 +114,7 @@ func (_d DemoTwoWorkItemWithRetry) Create(ctx context.Context, d db.DBTX, params
 }
 
 // Update implements repos.DemoTwoWorkItem
-func (_d DemoTwoWorkItemWithRetry) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoTwoWorkItemWithRetry) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params repos.DemoTwoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT DemoTwoWorkItemWithRetryUpdate")
 		if err != nil {

@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -282,7 +281,7 @@ func WithCacheDemoWorkItemJoin(joins CacheDemoWorkItemJoins) CacheDemoWorkItemSe
 
 // CacheDemoWorkItemM2MAssigneeWIA represents a M2M join against "public.work_item_assignee"
 type CacheDemoWorkItemM2MAssigneeWIA struct {
-	User User                `json:"user" db:"users" required:"true"`
+	User User         `json:"user" db:"users" required:"true"`
 	Role WorkItemRole `json:"role" db:"role" required:"true" ref:"#/components/schemas/WorkItemRole" `
 }
 

@@ -2327,8 +2327,8 @@ xo_generate_spec_helpers() {
 ")
   done
 
-  local start_pattern="# <<<--- GENERATED DB ANCHORS. DO NOT EDIT. --->>>"
-  local end_pattern="# <<<--- END OF ANCHORS DB GENERATION. DO NOT EDIT. --->>>"
+  local start_pattern="# <<<--- GENERATED MODELS ANCHORS. DO NOT EDIT. --->>>"
+  local end_pattern="# <<<--- END OF ANCHORS MODELS GENERATION. DO NOT EDIT. --->>>"
   local generated_anchors="$start_pattern
 $(join_by "" "${anchors[@]}")
 $end_pattern"

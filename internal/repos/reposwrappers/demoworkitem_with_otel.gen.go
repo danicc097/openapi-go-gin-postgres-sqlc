@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -36,7 +36,7 @@ func NewDemoWorkItemWithTracing(base repos.DemoWorkItem, instance string, spanDe
 }
 
 // ByID implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTracing) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithTracing) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoWorkItem.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -61,7 +61,7 @@ func (_d DemoWorkItemWithTracing) ByID(ctx context.Context, d db.DBTX, id db.Wor
 }
 
 // Create implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTracing) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithTracing) Create(ctx context.Context, d models.DBTX, params repos.DemoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoWorkItem.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -85,7 +85,7 @@ func (_d DemoWorkItemWithTracing) Create(ctx context.Context, d db.DBTX, params 
 }
 
 // Paginated implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTracing) Paginated(ctx context.Context, d db.DBTX, cursor db.WorkItemID, opts ...db.CacheDemoWorkItemSelectConfigOption) (ca1 []db.CacheDemoWorkItem, err error) {
+func (_d DemoWorkItemWithTracing) Paginated(ctx context.Context, d models.DBTX, cursor models.WorkItemID, opts ...models.CacheDemoWorkItemSelectConfigOption) (ca1 []models.CacheDemoWorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoWorkItem.Paginated")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -110,7 +110,7 @@ func (_d DemoWorkItemWithTracing) Paginated(ctx context.Context, d db.DBTX, curs
 }
 
 // Update implements repos.DemoWorkItem
-func (_d DemoWorkItemWithTracing) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithTracing) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params repos.DemoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.DemoWorkItem.Update")
 	defer func() {
 		if _d._spanDecorator != nil {

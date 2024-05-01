@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -36,7 +36,7 @@ func NewTimeEntryWithTracing(base repos.TimeEntry, instance string, spanDecorato
 }
 
 // ByID implements repos.TimeEntry
-func (_d TimeEntryWithTracing) ByID(ctx context.Context, d db.DBTX, id db.TimeEntryID, opts ...db.TimeEntrySelectConfigOption) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithTracing) ByID(ctx context.Context, d models.DBTX, id models.TimeEntryID, opts ...models.TimeEntrySelectConfigOption) (tp1 *models.TimeEntry, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.TimeEntry.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -61,7 +61,7 @@ func (_d TimeEntryWithTracing) ByID(ctx context.Context, d db.DBTX, id db.TimeEn
 }
 
 // Create implements repos.TimeEntry
-func (_d TimeEntryWithTracing) Create(ctx context.Context, d db.DBTX, params *db.TimeEntryCreateParams) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithTracing) Create(ctx context.Context, d models.DBTX, params *models.TimeEntryCreateParams) (tp1 *models.TimeEntry, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.TimeEntry.Create")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -85,7 +85,7 @@ func (_d TimeEntryWithTracing) Create(ctx context.Context, d db.DBTX, params *db
 }
 
 // Delete implements repos.TimeEntry
-func (_d TimeEntryWithTracing) Delete(ctx context.Context, d db.DBTX, id db.TimeEntryID) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithTracing) Delete(ctx context.Context, d models.DBTX, id models.TimeEntryID) (tp1 *models.TimeEntry, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.TimeEntry.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -109,7 +109,7 @@ func (_d TimeEntryWithTracing) Delete(ctx context.Context, d db.DBTX, id db.Time
 }
 
 // Update implements repos.TimeEntry
-func (_d TimeEntryWithTracing) Update(ctx context.Context, d db.DBTX, id db.TimeEntryID, params *db.TimeEntryUpdateParams) (tp1 *db.TimeEntry, err error) {
+func (_d TimeEntryWithTracing) Update(ctx context.Context, d models.DBTX, id models.TimeEntryID, params *models.TimeEntryUpdateParams) (tp1 *models.TimeEntry, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.TimeEntry.Update")
 	defer func() {
 		if _d._spanDecorator != nil {

@@ -8,7 +8,7 @@ import (
 	"context"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/trace"
@@ -36,7 +36,7 @@ func NewWorkItemWithTracing(base repos.WorkItem, instance string, spanDecorator 
 }
 
 // AssignTag implements repos.WorkItem
-func (_d WorkItemWithTracing) AssignTag(ctx context.Context, d db.DBTX, params *db.WorkItemWorkItemTagCreateParams) (err error) {
+func (_d WorkItemWithTracing) AssignTag(ctx context.Context, d models.DBTX, params *models.WorkItemWorkItemTagCreateParams) (err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.AssignTag")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -59,7 +59,7 @@ func (_d WorkItemWithTracing) AssignTag(ctx context.Context, d db.DBTX, params *
 }
 
 // AssignUser implements repos.WorkItem
-func (_d WorkItemWithTracing) AssignUser(ctx context.Context, d db.DBTX, params *db.WorkItemAssigneeCreateParams) (err error) {
+func (_d WorkItemWithTracing) AssignUser(ctx context.Context, d models.DBTX, params *models.WorkItemAssigneeCreateParams) (err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.AssignUser")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -82,7 +82,7 @@ func (_d WorkItemWithTracing) AssignUser(ctx context.Context, d db.DBTX, params 
 }
 
 // ByID implements repos.WorkItem
-func (_d WorkItemWithTracing) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTracing) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.ByID")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -107,7 +107,7 @@ func (_d WorkItemWithTracing) ByID(ctx context.Context, d db.DBTX, id db.WorkIte
 }
 
 // Delete implements repos.WorkItem
-func (_d WorkItemWithTracing) Delete(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTracing) Delete(ctx context.Context, d models.DBTX, id models.WorkItemID) (wp1 *models.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.Delete")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -131,7 +131,7 @@ func (_d WorkItemWithTracing) Delete(ctx context.Context, d db.DBTX, id db.WorkI
 }
 
 // RemoveAssignedUser implements repos.WorkItem
-func (_d WorkItemWithTracing) RemoveAssignedUser(ctx context.Context, d db.DBTX, memberID db.UserID, workItemID db.WorkItemID) (err error) {
+func (_d WorkItemWithTracing) RemoveAssignedUser(ctx context.Context, d models.DBTX, memberID models.UserID, workItemID models.WorkItemID) (err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.RemoveAssignedUser")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -155,7 +155,7 @@ func (_d WorkItemWithTracing) RemoveAssignedUser(ctx context.Context, d db.DBTX,
 }
 
 // RemoveTag implements repos.WorkItem
-func (_d WorkItemWithTracing) RemoveTag(ctx context.Context, d db.DBTX, tagID db.WorkItemTagID, workItemID db.WorkItemID) (err error) {
+func (_d WorkItemWithTracing) RemoveTag(ctx context.Context, d models.DBTX, tagID models.WorkItemTagID, workItemID models.WorkItemID) (err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.RemoveTag")
 	defer func() {
 		if _d._spanDecorator != nil {
@@ -179,7 +179,7 @@ func (_d WorkItemWithTracing) RemoveTag(ctx context.Context, d db.DBTX, tagID db
 }
 
 // Restore implements repos.WorkItem
-func (_d WorkItemWithTracing) Restore(ctx context.Context, d db.DBTX, id db.WorkItemID) (wp1 *db.WorkItem, err error) {
+func (_d WorkItemWithTracing) Restore(ctx context.Context, d models.DBTX, id models.WorkItemID) (wp1 *models.WorkItem, err error) {
 	ctx, _span := otel.Tracer(_d._instance).Start(ctx, "repos.WorkItem.Restore")
 	defer func() {
 		if _d._spanDecorator != nil {

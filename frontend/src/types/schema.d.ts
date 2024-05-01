@@ -176,22 +176,22 @@ export interface components {
       name: string;
     };
     CreateDemoTwoWorkItemRequest: {
-      base: components["schemas"]["DbWorkItemCreateParams"];
-      demoTwoProject: components["schemas"]["DbDemoTwoWorkItemCreateParams"];
+      base: components["schemas"]["ModelsWorkItemCreateParams"];
+      demoTwoProject: components["schemas"]["ModelsDemoTwoWorkItemCreateParams"];
       members: components["schemas"]["ServicesMember"][];
       projectName: components["schemas"]["ProjectName"];
       tagIDs: number[];
     };
     CreateDemoWorkItemRequest: {
-      base: components["schemas"]["DbWorkItemCreateParams"];
-      demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
+      base: components["schemas"]["ModelsWorkItemCreateParams"];
+      demoProject: components["schemas"]["ModelsDemoWorkItemCreateParams"];
       members: components["schemas"]["ServicesMember"][];
       projectName: components["schemas"]["ProjectName"];
       tagIDs: number[];
     };
     CreateProjectBoardRequest: {
-      tags?: components["schemas"]["DbWorkItemTagCreateParams"][] | null;
-      teams?: components["schemas"]["DbTeamCreateParams"][] | null;
+      tags?: components["schemas"]["ModelsWorkItemTagCreateParams"][] | null;
+      teams?: components["schemas"]["ModelsTeamCreateParams"][] | null;
     };
     CreateTeamRequest: {
       description: string;
@@ -199,7 +199,7 @@ export interface components {
     };
     CreateWorkItemCommentRequest: {
       message: string;
-      userID: components["schemas"]["DbUserID"];
+      userID: components["schemas"]["ModelsUserID"];
       workItemID: number;
     };
     CreateWorkItemTagRequest: {
@@ -212,16 +212,16 @@ export interface components {
       description: string;
       name: string;
     };
-    DbDemoTwoWorkItem: {
+    ModelsDemoTwoWorkItem: {
       /** Format: date-time */
       customDateForProject2?: string | null;
       workItemID: number;
     };
-    DbDemoTwoWorkItemCreateParams: {
+    ModelsDemoTwoWorkItemCreateParams: {
       /** Format: date-time */
       customDateForProject2?: string | null;
     };
-    DbDemoWorkItem: {
+    ModelsDemoWorkItem: {
       /** Format: date-time */
       lastMessageAt: string;
       line: string;
@@ -229,14 +229,14 @@ export interface components {
       reopened: boolean;
       workItemID: number;
     };
-    DbDemoWorkItemCreateParams: {
+    ModelsDemoWorkItemCreateParams: {
       /** Format: date-time */
       lastMessageAt: string;
       line: string;
       ref: string;
       reopened: boolean;
     };
-    DbKanbanStep: {
+    ModelsKanbanStep: {
       color: string;
       description: string;
       kanbanStepID: number;
@@ -245,7 +245,7 @@ export interface components {
       stepOrder: number;
       timeTrackable: boolean;
     };
-    DbNotification: {
+    ModelsNotification: {
       body: string;
       /** Format: date-time */
       createdAt: string;
@@ -253,11 +253,11 @@ export interface components {
       link?: string | null;
       notificationID: number;
       notificationType: components["schemas"]["NotificationType"];
-      receiver?: components["schemas"]["DbUserID"];
-      sender: components["schemas"]["DbUserID"];
+      receiver?: components["schemas"]["ModelsUserID"];
+      sender: components["schemas"]["ModelsUserID"];
       title: string;
     };
-    DbProject: {
+    ModelsProject: {
       boardConfig: components["schemas"]["ProjectConfig"];
       /** Format: date-time */
       createdAt: string;
@@ -267,7 +267,7 @@ export interface components {
       /** Format: date-time */
       updatedAt: string;
     };
-    DbTeam: {
+    ModelsTeam: {
       /** Format: date-time */
       createdAt: string;
       description: string;
@@ -277,11 +277,11 @@ export interface components {
       /** Format: date-time */
       updatedAt: string;
     };
-    DbTeamCreateParams: {
+    ModelsTeamCreateParams: {
       description: string;
       name: string;
     };
-    DbTimeEntry: {
+    ModelsTimeEntry: {
       activityID: number;
       comment: string;
       durationMinutes?: number | null;
@@ -289,10 +289,10 @@ export interface components {
       start: string;
       teamID?: number | null;
       timeEntryID: number;
-      userID: components["schemas"]["DbUserID"];
+      userID: components["schemas"]["ModelsUserID"];
       workItemID?: number | null;
     };
-    DbUser: {
+    ModelsUser: {
       age?: number | null;
       /** Format: date-time */
       createdAt: string;
@@ -307,22 +307,22 @@ export interface components {
       scopes: components["schemas"]["Scopes"];
       /** Format: date-time */
       updatedAt: string;
-      userID: components["schemas"]["DbUserID"];
+      userID: components["schemas"]["ModelsUserID"];
       username: string;
     };
-    DbUserAPIKey: {
+    ModelsUserAPIKey: {
       apiKey: string;
       /** Format: date-time */
       expiresOn: string;
-      userID: components["schemas"]["DbUserID"];
+      userID: components["schemas"]["ModelsUserID"];
     };
     /** @example cdb15f83-1c5d-4727-98d1-8924ccd1fc01 */
-    DbUserID: string;
-    DbUserWIAUWorkItem: {
+    ModelsUserID: string;
+    ModelsUserWIAUWorkItem: {
       role: components["schemas"]["WorkItemRole"];
-      user: components["schemas"]["DbUser"];
+      user: components["schemas"]["ModelsUser"];
     };
-    DbWorkItem: {
+    ModelsWorkItem: {
       /** Format: date-time */
       closedAt?: string | null;
       /** Format: date-time */
@@ -343,17 +343,17 @@ export interface components {
       workItemID: number;
       workItemTypeID: number;
     };
-    DbWorkItemComment: {
+    ModelsWorkItemComment: {
       /** Format: date-time */
       createdAt: string;
       message: string;
       /** Format: date-time */
       updatedAt: string;
-      userID: components["schemas"]["DbUserID"];
+      userID: components["schemas"]["ModelsUserID"];
       workItemCommentID: number;
       workItemID: number;
     };
-    DbWorkItemCreateParams: {
+    ModelsWorkItemCreateParams: {
       /** Format: date-time */
       closedAt?: string | null;
       description: string;
@@ -367,7 +367,7 @@ export interface components {
       title: string;
       workItemTypeID: number;
     };
-    DbWorkItemTag: {
+    ModelsWorkItemTag: {
       color: string;
       /** Format: date-time */
       deletedAt?: string | null;
@@ -376,12 +376,12 @@ export interface components {
       projectID: number;
       workItemTagID: number;
     };
-    DbWorkItemTagCreateParams: {
+    ModelsWorkItemTagCreateParams: {
       color: string;
       description: string;
       name: string;
     };
-    DbWorkItemType: {
+    ModelsWorkItemType: {
       color: string;
       description: string;
       name: string;
@@ -404,14 +404,14 @@ export interface components {
     };
     ServicesMember: {
       role: components["schemas"]["WorkItemRole"];
-      userID: components["schemas"]["DbUserID"];
+      userID: components["schemas"]["ModelsUserID"];
     };
     SharedWorkItemJoins: {
-      members?: components["schemas"]["DbWorkItemM2MAssigneeWIA"][] | null;
-      timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
-      workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
-      workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
-      workItemType?: components["schemas"]["DbWorkItemType"];
+      members?: components["schemas"]["ModelsWorkItemM2MAssigneeWIA"][] | null;
+      timeEntries?: components["schemas"]["ModelsTimeEntry"][] | null;
+      workItemComments?: components["schemas"]["ModelsWorkItemComment"][] | null;
+      workItemTags?: components["schemas"]["ModelsWorkItemTag"][] | null;
+      workItemType?: components["schemas"]["ModelsWorkItemType"];
     };
     UpdateActivityRequest: {
       description?: string;
@@ -424,7 +424,7 @@ export interface components {
     };
     UpdateWorkItemCommentRequest: {
       message?: string;
-      userID?: components["schemas"]["DbUserID"];
+      userID?: components["schemas"]["ModelsUserID"];
       workItemID?: number;
     };
     UpdateWorkItemTagRequest: {
@@ -439,7 +439,7 @@ export interface components {
     };
     /** @enum {string} */
     Direction: "asc" | "desc";
-    DbActivity: {
+    ModelsActivity: {
       activityID: number;
       description: string;
       isProductive: boolean;
@@ -568,13 +568,13 @@ export interface components {
     UuidUUID: string;
     WorkItemResponse: components["schemas"]["DemoWorkItemResponse"] | components["schemas"]["DemoTwoWorkItemResponse"];
     CreateWorkItemRequest: components["schemas"]["CreateDemoWorkItemRequest"] | components["schemas"]["CreateDemoTwoWorkItemRequest"];
-    DbActivityCreateParams: {
+    ModelsActivityCreateParams: {
       description: string;
       isProductive: boolean;
       name: string;
       projectID?: number;
     };
-    DbWorkItemRole: string;
+    ModelsWorkItemRole: string;
     /**
      * @description is generated from database enum 'notification_type'.
      * @enum {string}
@@ -590,14 +590,14 @@ export interface components {
      * @enum {string}
      */
     DemoWorkItemTypes: "Type 1";
-    DbWorkItemID: unknown;
-    DbProjectID: unknown;
-    DbWorkItemTypeID: unknown;
-    DbNotificationID: unknown;
-    DbUserNotification: {
+    ModelsWorkItemID: unknown;
+    ModelsProjectID: unknown;
+    ModelsWorkItemTypeID: unknown;
+    ModelsNotificationID: unknown;
+    ModelsUserNotification: {
       notificationID: number;
       read: boolean;
-      userID: components["schemas"]["DbUserID"];
+      userID: components["schemas"]["ModelsUserID"];
       userNotificationID: number;
     };
     /**
@@ -610,13 +610,13 @@ export interface components {
      * @enum {string}
      */
     DemoTwoKanbanSteps: "Received";
-    DbUserWIAWorkItem: {
+    ModelsUserWIAWorkItem: {
       role: components["schemas"]["WorkItemRole"];
-      user: components["schemas"]["DbUser"];
+      user: components["schemas"]["ModelsUser"];
     };
-    DbWorkItemM2MAssigneeWIA: {
+    ModelsWorkItemM2MAssigneeWIA: {
       role: components["schemas"]["WorkItemRole"];
-      user: components["schemas"]["DbUser"];
+      user: components["schemas"]["ModelsUser"];
     };
     CreateTimeEntryRequest: {
       activityID: number;
@@ -625,7 +625,7 @@ export interface components {
       /** Format: date-time */
       start: string;
       teamID?: number | null;
-      userID: components["schemas"]["DbUserID"];
+      userID: components["schemas"]["ModelsUserID"];
       workItemID?: number | null;
     };
     UpdateTimeEntryRequest: {
@@ -635,7 +635,7 @@ export interface components {
       /** Format: date-time */
       start?: string;
       teamID?: number | null;
-      userID?: components["schemas"]["DbUserID"];
+      userID?: components["schemas"]["ModelsUserID"];
       workItemID?: number | null;
     };
     DemoTwoWorkItemResponse: {
@@ -645,10 +645,10 @@ export interface components {
       createdAt: string;
       /** Format: date-time */
       deletedAt?: string | null;
-      demoTwoWorkItem: components["schemas"]["DbDemoTwoWorkItem"];
+      demoTwoWorkItem: components["schemas"]["ModelsDemoTwoWorkItem"];
       description: string;
       kanbanStepID: number;
-      members?: components["schemas"]["DbWorkItemM2MAssigneeWIA"][] | null;
+      members?: components["schemas"]["ModelsWorkItemM2MAssigneeWIA"][] | null;
       metadata: {
         [key: string]: unknown;
       };
@@ -656,14 +656,14 @@ export interface components {
       /** Format: date-time */
       targetDate: string;
       teamID: number | null;
-      timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
+      timeEntries?: components["schemas"]["ModelsTimeEntry"][] | null;
       title: string;
       /** Format: date-time */
       updatedAt: string;
-      workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
+      workItemComments?: components["schemas"]["ModelsWorkItemComment"][] | null;
       workItemID: number;
-      workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
-      workItemType?: components["schemas"]["DbWorkItemType"];
+      workItemTags?: components["schemas"]["ModelsWorkItemTag"][] | null;
+      workItemType?: components["schemas"]["ModelsWorkItemType"];
       workItemTypeID: number;
     };
     DemoWorkItemResponse: {
@@ -673,10 +673,10 @@ export interface components {
       createdAt: string;
       /** Format: date-time */
       deletedAt?: string | null;
-      demoWorkItem: components["schemas"]["DbDemoWorkItem"];
+      demoWorkItem: components["schemas"]["ModelsDemoWorkItem"];
       description: string;
       kanbanStepID: number;
-      members?: components["schemas"]["DbWorkItemM2MAssigneeWIA"][] | null;
+      members?: components["schemas"]["ModelsWorkItemM2MAssigneeWIA"][] | null;
       metadata: {
         [key: string]: unknown;
       };
@@ -684,14 +684,14 @@ export interface components {
       /** Format: date-time */
       targetDate: string;
       teamID: number | null;
-      timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
+      timeEntries?: components["schemas"]["ModelsTimeEntry"][] | null;
       title: string;
       /** Format: date-time */
       updatedAt: string;
-      workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
+      workItemComments?: components["schemas"]["ModelsWorkItemComment"][] | null;
       workItemID: number;
-      workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
-      workItemType?: components["schemas"]["DbWorkItemType"];
+      workItemTags?: components["schemas"]["ModelsWorkItemTag"][] | null;
+      workItemType?: components["schemas"]["ModelsWorkItemType"];
       workItemTypeID: number;
     };
     WorkItemBase: {
@@ -703,7 +703,7 @@ export interface components {
       deletedAt?: string | null;
       description: string;
       kanbanStepID: number;
-      members?: components["schemas"]["DbWorkItemM2MAssigneeWIA"][] | null;
+      members?: components["schemas"]["ModelsWorkItemM2MAssigneeWIA"][] | null;
       metadata: {
         [key: string]: unknown;
       };
@@ -711,14 +711,14 @@ export interface components {
       /** Format: date-time */
       targetDate: string;
       teamID: number | null;
-      timeEntries?: components["schemas"]["DbTimeEntry"][] | null;
+      timeEntries?: components["schemas"]["ModelsTimeEntry"][] | null;
       title: string;
       /** Format: date-time */
       updatedAt: string;
-      workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
+      workItemComments?: components["schemas"]["ModelsWorkItemComment"][] | null;
       workItemID: number;
-      workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
-      workItemType?: components["schemas"]["DbWorkItemType"];
+      workItemTags?: components["schemas"]["ModelsWorkItemTag"][] | null;
+      workItemType?: components["schemas"]["ModelsWorkItemType"];
       workItemTypeID: number;
     };
     PaginationFilterPrimitive: {
@@ -745,7 +745,7 @@ export interface components {
       direction: components["schemas"]["Direction"];
       /** @description represents a cursor value */
       value?: Record<string, unknown> | null;
-      /** @description represents the JSON name of the db column */
+      /** @description represents the JSON name of the models column */
       column: string;
     };
     GetPaginatedUsersQueryParameters: {
@@ -754,7 +754,7 @@ export interface components {
     };
     /** @enum {string} */
     PaginationFilterModes: "between" | "betweenInclusive" | "contains" | "empty" | "endsWith" | "equals" | "fuzzy" | "greaterThan" | "greaterThanOrEqualTo" | "lessThan" | "lessThanOrEqualTo" | "notEmpty" | "notEquals" | "startsWith";
-    DbCacheDemoWorkItemJoins: {
+    ModelsCacheDemoWorkItemJoins: {
       assignees: boolean;
       kanbanStep: boolean;
       team: boolean;
@@ -763,7 +763,7 @@ export interface components {
       workItemTags: boolean;
       workItemType: boolean;
     };
-    DbUserJoins: {
+    ModelsUserJoins: {
       assigneeWorkItems: boolean;
       memberProjects: boolean;
       memberTeams: boolean;
@@ -779,10 +779,10 @@ export interface components {
       page: components["schemas"]["PaginationPage"];
     };
     GetCacheDemoWorkItemQueryParameters: {
-      joins?: components["schemas"]["DbCacheDemoWorkItemJoins"];
+      joins?: components["schemas"]["ModelsCacheDemoWorkItemJoins"];
     };
     GetCurrentUserQueryParameters: {
-      joins?: components["schemas"]["DbUserJoins"];
+      joins?: components["schemas"]["ModelsUserJoins"];
     };
     /**
      * @description is generated from projects table.
@@ -810,7 +810,7 @@ export interface components {
     };
     UserResponse: {
       age?: number | null;
-      apiKey?: components["schemas"]["DbUserAPIKey"];
+      apiKey?: components["schemas"]["ModelsUserAPIKey"];
       /** Format: date-time */
       createdAt: string;
       /** Format: date-time */
@@ -821,13 +821,13 @@ export interface components {
       hasGlobalNotifications: boolean;
       hasPersonalNotifications: boolean;
       lastName?: string | null;
-      projects?: components["schemas"]["DbProject"][] | null;
+      projects?: components["schemas"]["ModelsProject"][] | null;
       role: components["schemas"]["Role"];
       scopes: components["schemas"]["Scopes"];
-      teams?: components["schemas"]["DbTeam"][] | null;
+      teams?: components["schemas"]["ModelsTeam"][] | null;
       /** Format: date-time */
       updatedAt: string;
-      userID: components["schemas"]["DbUserID"];
+      userID: components["schemas"]["ModelsUserID"];
       username: string;
     };
     WorkItemCommentResponse: {
@@ -836,7 +836,7 @@ export interface components {
       message: string;
       /** Format: date-time */
       updatedAt: string;
-      userID: components["schemas"]["DbUserID"];
+      userID: components["schemas"]["ModelsUserID"];
       workItemCommentID: number;
       workItemID: number;
     };
@@ -857,7 +857,7 @@ export interface components {
       start: string;
       teamID?: number | null;
       timeEntryID: number;
-      userID: components["schemas"]["DbUserID"];
+      userID: components["schemas"]["ModelsUserID"];
       workItemID?: number | null;
     };
     CacheDemoWorkItemResponse: {
@@ -887,10 +887,10 @@ export interface components {
       workItemTypeID: number;
     };
     NotificationResponse: {
-      notification: components["schemas"]["DbNotification"];
+      notification: components["schemas"]["ModelsNotification"];
       notificationID: number;
       read: boolean;
-      userID: components["schemas"]["DbUserID"];
+      userID: components["schemas"]["ModelsUserID"];
       userNotificationID: number;
     };
     WorkItemTypeResponse: {
@@ -899,6 +899,20 @@ export interface components {
       name: string;
       projectID: number;
       workItemTypeID: number;
+    };
+    ModelsProjectConfig: {
+      fields?: components["schemas"]["ModelsProjectConfigField"][] | null;
+      header?: string[] | null;
+      visualization?: {
+        [key: string]: unknown;
+      } | null;
+    };
+    ModelsProjectConfigField: {
+      isEditable?: boolean;
+      isVisible?: boolean;
+      name?: string;
+      path?: string;
+      showCollapsed?: boolean;
     };
   };
   responses: never;
@@ -1785,7 +1799,7 @@ export interface operations {
       /** @description Project. */
       200: {
         content: {
-          "application/json": components["schemas"]["DbProject"];
+          "application/json": components["schemas"]["ModelsProject"];
         };
       };
     };

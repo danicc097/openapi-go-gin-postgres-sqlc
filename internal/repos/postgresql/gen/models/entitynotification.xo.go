@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	
 	"github.com/jackc/pgconn"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
@@ -34,15 +33,15 @@ type EntityNotification struct {
 	EntityNotificationID EntityNotificationID `json:"entityNotificationID" db:"entity_notification_id" required:"true" nullable:"false"`   // entity_notification_id
 	ID                   string               `json:"id" db:"id" required:"true" nullable:"false"`                                         // id
 	Message              string               `json:"message" db:"message" required:"true" nullable:"false"`                               // message
-	Topic                Topics        `json:"topic" db:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"` // topic
+	Topic                Topics               `json:"topic" db:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"` // topic
 	CreatedAt            time.Time            `json:"createdAt" db:"created_at" required:"true" nullable:"false"`                          // created_at
 
 }
 
 // EntityNotificationCreateParams represents insert params for 'public.entity_notifications'.
 type EntityNotificationCreateParams struct {
-	ID      string        `json:"id" required:"true" nullable:"false"`                                      // id
-	Message string        `json:"message" required:"true" nullable:"false"`                                 // message
+	ID      string `json:"id" required:"true" nullable:"false"`                                      // id
+	Message string `json:"message" required:"true" nullable:"false"`                                 // message
 	Topic   Topics `json:"topic" required:"true" nullable:"false" ref:"#/components/schemas/Topics"` // topic
 }
 
@@ -171,8 +170,8 @@ func WithEntityNotificationHavingClause(conditions map[string][]any) EntityNotif
 
 // EntityNotificationUpdateParams represents update params for 'public.entity_notifications'.
 type EntityNotificationUpdateParams struct {
-	ID      *string        `json:"id" nullable:"false"`                                      // id
-	Message *string        `json:"message" nullable:"false"`                                 // message
+	ID      *string `json:"id" nullable:"false"`                                      // id
+	Message *string `json:"message" nullable:"false"`                                 // message
 	Topic   *Topics `json:"topic" nullable:"false" ref:"#/components/schemas/Topics"` // topic
 }
 

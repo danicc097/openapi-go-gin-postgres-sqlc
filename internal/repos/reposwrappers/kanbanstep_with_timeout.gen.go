@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 )
 
 // KanbanStepWithTimeout implements repos.KanbanStep interface instrumented with timeouts
@@ -33,7 +33,7 @@ func NewKanbanStepWithTimeout(base repos.KanbanStep, config KanbanStepWithTimeou
 }
 
 // ByID implements repos.KanbanStep
-func (_d KanbanStepWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.KanbanStepID, opts ...db.KanbanStepSelectConfigOption) (kp1 *db.KanbanStep, err error) {
+func (_d KanbanStepWithTimeout) ByID(ctx context.Context, d models.DBTX, id models.KanbanStepID, opts ...models.KanbanStepSelectConfigOption) (kp1 *models.KanbanStep, err error) {
 	var cancelFunc func()
 	if _d.config.ByIDTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByIDTimeout)
@@ -43,7 +43,7 @@ func (_d KanbanStepWithTimeout) ByID(ctx context.Context, d db.DBTX, id db.Kanba
 }
 
 // ByProject implements repos.KanbanStep
-func (_d KanbanStepWithTimeout) ByProject(ctx context.Context, d db.DBTX, projectID db.ProjectID, opts ...db.KanbanStepSelectConfigOption) (ka1 []db.KanbanStep, err error) {
+func (_d KanbanStepWithTimeout) ByProject(ctx context.Context, d models.DBTX, projectID models.ProjectID, opts ...models.KanbanStepSelectConfigOption) (ka1 []models.KanbanStep, err error) {
 	var cancelFunc func()
 	if _d.config.ByProjectTimeout > 0 {
 		ctx, cancelFunc = context.WithTimeout(ctx, _d.config.ByProjectTimeout)

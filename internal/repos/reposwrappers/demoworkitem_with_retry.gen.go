@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos"
-	db "github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/models"
 	"github.com/jackc/pgx/v5"
 	"go.uber.org/zap"
 )
@@ -34,7 +34,7 @@ func NewDemoWorkItemWithRetry(base repos.DemoWorkItem, logger *zap.SugaredLogger
 }
 
 // ByID implements repos.DemoWorkItem
-func (_d DemoWorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkItemID, opts ...db.WorkItemSelectConfigOption) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithRetry) ByID(ctx context.Context, d models.DBTX, id models.WorkItemID, opts ...models.WorkItemSelectConfigOption) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT DemoWorkItemWithRetryByID")
 		if err != nil {
@@ -74,7 +74,7 @@ func (_d DemoWorkItemWithRetry) ByID(ctx context.Context, d db.DBTX, id db.WorkI
 }
 
 // Create implements repos.DemoWorkItem
-func (_d DemoWorkItemWithRetry) Create(ctx context.Context, d db.DBTX, params repos.DemoWorkItemCreateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithRetry) Create(ctx context.Context, d models.DBTX, params repos.DemoWorkItemCreateParams) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT DemoWorkItemWithRetryCreate")
 		if err != nil {
@@ -114,7 +114,7 @@ func (_d DemoWorkItemWithRetry) Create(ctx context.Context, d db.DBTX, params re
 }
 
 // Paginated implements repos.DemoWorkItem
-func (_d DemoWorkItemWithRetry) Paginated(ctx context.Context, d db.DBTX, cursor db.WorkItemID, opts ...db.CacheDemoWorkItemSelectConfigOption) (ca1 []db.CacheDemoWorkItem, err error) {
+func (_d DemoWorkItemWithRetry) Paginated(ctx context.Context, d models.DBTX, cursor models.WorkItemID, opts ...models.CacheDemoWorkItemSelectConfigOption) (ca1 []models.CacheDemoWorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT DemoWorkItemWithRetryPaginated")
 		if err != nil {
@@ -154,7 +154,7 @@ func (_d DemoWorkItemWithRetry) Paginated(ctx context.Context, d db.DBTX, cursor
 }
 
 // Update implements repos.DemoWorkItem
-func (_d DemoWorkItemWithRetry) Update(ctx context.Context, d db.DBTX, id db.WorkItemID, params repos.DemoWorkItemUpdateParams) (wp1 *db.WorkItem, err error) {
+func (_d DemoWorkItemWithRetry) Update(ctx context.Context, d models.DBTX, id models.WorkItemID, params repos.DemoWorkItemUpdateParams) (wp1 *models.WorkItem, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT DemoWorkItemWithRetryUpdate")
 		if err != nil {
