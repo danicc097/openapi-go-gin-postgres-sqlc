@@ -2447,7 +2447,9 @@ $(join_by $'\n' "${invalid_schemas[@]}")"
     if ! [[ " ${existing_structs[*]} " =~ " $struct " ]]; then
       echo "Schema with x-gen-struct: $struct no longer exists. Deleting..."
       yq e "del(.components.schemas.$struct)" -i "$SPEC_PATH"
-      structs_to_generate=("${structs_to_generate[@]/$struct/}")
+      # this removes prefixes from all items instead...
+      # structs_to_generate=("${structs_to_generate[@]/$struct/}")
+      array.remove_element structs_to_generate "$struct"
     fi
   done
 
