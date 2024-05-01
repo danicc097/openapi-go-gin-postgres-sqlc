@@ -170,15 +170,6 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
-    Activity: {
-      activityID: number;
-      /** Format: date-time */
-      deletedAt?: string | null;
-      description: string;
-      isProductive: boolean;
-      name: string;
-      projectID: number;
-    };
     CreateActivityRequest: {
       description: string;
       isProductive: boolean;
@@ -397,19 +388,12 @@ export interface components {
       projectID: number;
       workItemTypeID: number;
     };
-    Notification: {
-      notification: components["schemas"]["DbNotification"];
-      notificationID: number;
-      read: boolean;
-      userID: components["schemas"]["DbUserID"];
-      userNotificationID: number;
-    };
     PaginatedNotificationsResponse: {
-      items: components["schemas"]["Notification"][] | null;
+      items: components["schemas"]["NotificationResponse"][] | null;
       page: components["schemas"]["PaginationPage"];
     };
     PaginatedUsersResponse: {
-      items: components["schemas"]["User"][] | null;
+      items: components["schemas"]["UserResponse"][] | null;
       page: components["schemas"]["PaginationPage"];
     };
     PaginationPage: {
@@ -428,16 +412,6 @@ export interface components {
       workItemComments?: components["schemas"]["DbWorkItemComment"][] | null;
       workItemTags?: components["schemas"]["DbWorkItemTag"][] | null;
       workItemType?: components["schemas"]["DbWorkItemType"];
-    };
-    Team: {
-      /** Format: date-time */
-      createdAt: string;
-      description: string;
-      name: string;
-      projectID: number;
-      teamID: number;
-      /** Format: date-time */
-      updatedAt: string;
     };
     UpdateActivityRequest: {
       description?: string;
@@ -462,54 +436,6 @@ export interface components {
       color?: string;
       description?: string;
       name?: string;
-    };
-    User: {
-      age?: number | null;
-      apiKey?: components["schemas"]["DbUserAPIKey"];
-      /** Format: date-time */
-      createdAt: string;
-      /** Format: date-time */
-      deletedAt?: string | null;
-      email: string;
-      firstName?: string | null;
-      fullName?: string | null;
-      hasGlobalNotifications: boolean;
-      hasPersonalNotifications: boolean;
-      lastName?: string | null;
-      projects?: components["schemas"]["DbProject"][] | null;
-      role: components["schemas"]["Role"];
-      scopes: components["schemas"]["Scopes"];
-      teams?: components["schemas"]["DbTeam"][] | null;
-      /** Format: date-time */
-      updatedAt: string;
-      userID: components["schemas"]["DbUserID"];
-      username: string;
-    };
-    WorkItemComment: {
-      /** Format: date-time */
-      createdAt: string;
-      message: string;
-      /** Format: date-time */
-      updatedAt: string;
-      userID: components["schemas"]["DbUserID"];
-      workItemCommentID: number;
-      workItemID: number;
-    };
-    WorkItemTag: {
-      color: string;
-      /** Format: date-time */
-      deletedAt?: string | null;
-      description: string;
-      name: string;
-      projectID: number;
-      workItemTagID: number;
-    };
-    WorkItemType: {
-      color: string;
-      description: string;
-      name: string;
-      projectID: number;
-      workItemTypeID: number;
     };
     /** @enum {string} */
     Direction: "asc" | "desc";
@@ -640,7 +566,7 @@ export interface components {
       ctx?: Record<string, never>;
     };
     UuidUUID: string;
-    WorkItem: components["schemas"]["DemoWorkItem"] | components["schemas"]["DemoTwoWorkItem"];
+    WorkItemResponse: components["schemas"]["DemoWorkItemResponse"] | components["schemas"]["DemoTwoWorkItemResponse"];
     CreateWorkItemRequest: components["schemas"]["CreateDemoWorkItemRequest"] | components["schemas"]["CreateDemoTwoWorkItemRequest"];
     DbActivityCreateParams: {
       description: string;
@@ -702,17 +628,6 @@ export interface components {
       userID: components["schemas"]["DbUserID"];
       workItemID?: number | null;
     };
-    TimeEntry: {
-      activityID: number;
-      comment: string;
-      durationMinutes?: number | null;
-      /** Format: date-time */
-      start: string;
-      teamID?: number | null;
-      timeEntryID: number;
-      userID: components["schemas"]["DbUserID"];
-      workItemID?: number | null;
-    };
     UpdateTimeEntryRequest: {
       activityID?: number;
       comment?: string;
@@ -723,7 +638,7 @@ export interface components {
       userID?: components["schemas"]["DbUserID"];
       workItemID?: number | null;
     };
-    DemoTwoWorkItem: {
+    DemoTwoWorkItemResponse: {
       /** Format: date-time */
       closedAt?: string | null;
       /** Format: date-time */
@@ -751,7 +666,7 @@ export interface components {
       workItemType?: components["schemas"]["DbWorkItemType"];
       workItemTypeID: number;
     };
-    DemoWorkItem: {
+    DemoWorkItemResponse: {
       /** Format: date-time */
       closedAt?: string | null;
       /** Format: date-time */
@@ -860,7 +775,7 @@ export interface components {
       workItemComments: boolean;
     };
     PaginatedDemoWorkItemsResponse: {
-      items: components["schemas"]["CacheDemoWorkItem"][] | null;
+      items: components["schemas"]["CacheDemoWorkItemResponse"][] | null;
       page: components["schemas"]["PaginationPage"];
     };
     GetCacheDemoWorkItemQueryParameters: {
@@ -869,7 +784,83 @@ export interface components {
     GetCurrentUserQueryParameters: {
       joins?: components["schemas"]["DbUserJoins"];
     };
-    CacheDemoWorkItem: {
+    /**
+     * @description is generated from projects table.
+     * @enum {string}
+     */
+    ProjectName: "demo" | "demo_two";
+    ActivityResponse: {
+      activityID: number;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      description: string;
+      isProductive: boolean;
+      name: string;
+      projectID: number;
+    };
+    TeamResponse: {
+      /** Format: date-time */
+      createdAt: string;
+      description: string;
+      name: string;
+      projectID: number;
+      teamID: number;
+      /** Format: date-time */
+      updatedAt: string;
+    };
+    UserResponse: {
+      age?: number | null;
+      apiKey?: components["schemas"]["DbUserAPIKey"];
+      /** Format: date-time */
+      createdAt: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      email: string;
+      firstName?: string | null;
+      fullName?: string | null;
+      hasGlobalNotifications: boolean;
+      hasPersonalNotifications: boolean;
+      lastName?: string | null;
+      projects?: components["schemas"]["DbProject"][] | null;
+      role: components["schemas"]["Role"];
+      scopes: components["schemas"]["Scopes"];
+      teams?: components["schemas"]["DbTeam"][] | null;
+      /** Format: date-time */
+      updatedAt: string;
+      userID: components["schemas"]["DbUserID"];
+      username: string;
+    };
+    WorkItemCommentResponse: {
+      /** Format: date-time */
+      createdAt: string;
+      message: string;
+      /** Format: date-time */
+      updatedAt: string;
+      userID: components["schemas"]["DbUserID"];
+      workItemCommentID: number;
+      workItemID: number;
+    };
+    WorkItemTagResponse: {
+      color: string;
+      /** Format: date-time */
+      deletedAt?: string | null;
+      description: string;
+      name: string;
+      projectID: number;
+      workItemTagID: number;
+    };
+    TimeEntryResponse: {
+      activityID: number;
+      comment: string;
+      durationMinutes?: number | null;
+      /** Format: date-time */
+      start: string;
+      teamID?: number | null;
+      timeEntryID: number;
+      userID: components["schemas"]["DbUserID"];
+      workItemID?: number | null;
+    };
+    CacheDemoWorkItemResponse: {
       /** Format: date-time */
       closedAt?: string | null;
       /** Format: date-time */
@@ -895,11 +886,20 @@ export interface components {
       workItemID: number;
       workItemTypeID: number;
     };
-    /**
-     * @description is generated from projects table.
-     * @enum {string}
-     */
-    ProjectName: "demo" | "demo_two";
+    NotificationResponse: {
+      notification: components["schemas"]["DbNotification"];
+      notificationID: number;
+      read: boolean;
+      userID: components["schemas"]["DbUserID"];
+      userNotificationID: number;
+    };
+    WorkItemTypeResponse: {
+      color: string;
+      description: string;
+      name: string;
+      projectID: number;
+      workItemTypeID: number;
+    };
   };
   responses: never;
   parameters: {
@@ -1053,7 +1053,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["Team"];
+          "application/json": components["schemas"]["TeamResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1083,7 +1083,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["Team"];
+          "application/json": components["schemas"]["TeamResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1144,7 +1144,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["Team"];
+          "application/json": components["schemas"]["TeamResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1175,7 +1175,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["WorkItemTag"];
+          "application/json": components["schemas"]["WorkItemTagResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1206,7 +1206,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["Activity"];
+          "application/json": components["schemas"]["ActivityResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1232,7 +1232,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["TimeEntry"];
+          "application/json": components["schemas"]["TimeEntryResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1262,7 +1262,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["TimeEntry"];
+          "application/json": components["schemas"]["TimeEntryResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1323,7 +1323,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["TimeEntry"];
+          "application/json": components["schemas"]["TimeEntryResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1353,7 +1353,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["Activity"];
+          "application/json": components["schemas"]["ActivityResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1414,7 +1414,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["Activity"];
+          "application/json": components["schemas"]["ActivityResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1444,7 +1444,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItemTag"];
+          "application/json": components["schemas"]["WorkItemTagResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1505,7 +1505,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItemTag"];
+          "application/json": components["schemas"]["WorkItemTagResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1536,7 +1536,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["WorkItemType"];
+          "application/json": components["schemas"]["WorkItemTypeResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1566,7 +1566,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItemType"];
+          "application/json": components["schemas"]["WorkItemTypeResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1627,7 +1627,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItemType"];
+          "application/json": components["schemas"]["WorkItemTypeResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -1678,7 +1678,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["User"];
+          "application/json": components["schemas"]["UserResponse"];
         };
       };
     };
@@ -1752,7 +1752,7 @@ export interface operations {
       /** @description ok */
       200: {
         content: {
-          "application/json": components["schemas"]["User"];
+          "application/json": components["schemas"]["UserResponse"];
         };
       };
     };
@@ -1854,7 +1854,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItem"];
+          "application/json": components["schemas"]["WorkItemResponse"];
         };
       };
     };
@@ -1870,7 +1870,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["WorkItem"];
+          "application/json": components["schemas"]["WorkItemResponse"];
         };
       };
     };
@@ -1890,7 +1890,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItem"];
+          "application/json": components["schemas"]["WorkItemResponse"];
         };
       };
     };
@@ -1926,7 +1926,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItem"];
+          "application/json": components["schemas"]["WorkItemResponse"];
         };
       };
     };
@@ -1980,7 +1980,7 @@ export interface operations {
       /** @description Success. */
       201: {
         content: {
-          "application/json": components["schemas"]["WorkItemComment"];
+          "application/json": components["schemas"]["WorkItemCommentResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -2015,7 +2015,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItemComment"];
+          "application/json": components["schemas"]["WorkItemCommentResponse"];
         };
       };
       /** @description Unauthenticated */
@@ -2086,7 +2086,7 @@ export interface operations {
       /** @description Success. */
       200: {
         content: {
-          "application/json": components["schemas"]["WorkItemComment"];
+          "application/json": components["schemas"]["WorkItemCommentResponse"];
         };
       };
       /** @description Unauthenticated */

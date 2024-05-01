@@ -25,7 +25,7 @@ import type {
   CreateWorkItemTypeRequest,
   HTTPError,
   UpdateWorkItemTypeRequest,
-  WorkItemType
+  WorkItemTypeResponse
 } from '.././model'
 import { customInstance } from '../../api/mutator';
 import type { ErrorType } from '../../api/mutator';
@@ -43,7 +43,7 @@ export const createWorkItemType = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<WorkItemType>(
+      return customInstance<WorkItemTypeResponse>(
       {url: `/project/${projectName}/work-item-type/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createWorkItemTypeRequest
@@ -96,7 +96,7 @@ export const getWorkItemType = (
 ) => {
       
       
-      return customInstance<WorkItemType>(
+      return customInstance<WorkItemTypeResponse>(
       {url: `/work-item-type/${workItemTypeID}`, method: 'GET', signal
     },
       options);
@@ -197,7 +197,7 @@ export const updateWorkItemType = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<WorkItemType>(
+      return customInstance<WorkItemTypeResponse>(
       {url: `/work-item-type/${workItemTypeID}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateWorkItemTypeRequest

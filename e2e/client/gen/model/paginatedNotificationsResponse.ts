@@ -5,10 +5,10 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { Notification } from './notification'
+import type { NotificationResponse } from './notificationResponse'
 import type { PaginationPage } from './paginationPage'
 
 export interface PaginatedNotificationsResponse {
-  items: Notification[] | null
+  items: NotificationResponse[] | null
   page: PaginationPage
 }

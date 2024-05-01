@@ -9,7 +9,7 @@ import type { GetPaginatedUsersParams } from '../model/getPaginatedUsersParams'
 import type { PaginatedUsersResponse } from '../model/paginatedUsersResponse'
 import type { UpdateUserAuthRequest } from '../model/updateUserAuthRequest'
 import type { UpdateUserRequest } from '../model/updateUserRequest'
-import type { User } from '../model/user'
+import type { UserResponse } from '../model/userResponse'
 import { customInstance } from '../../api/mutator'
 
 // eslint-disable-next-line
@@ -28,7 +28,7 @@ export const getPaginatedUsers = (
  * @summary returns the logged in user
  */
 export const getCurrentUser = (options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<User>({ url: `/user/me`, method: 'GET' }, options)
+  return customInstance<UserResponse>({ url: `/user/me`, method: 'GET' }, options)
 }
 /**
  * @summary updates user role and scopes by id
@@ -62,7 +62,7 @@ export const updateUser = (
   updateUserRequest: UpdateUserRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<User>(
+  return customInstance<UserResponse>(
     { url: `/user/${id}`, method: 'PATCH', headers: { 'Content-Type': 'application/json' }, data: updateUserRequest },
     options,
   )

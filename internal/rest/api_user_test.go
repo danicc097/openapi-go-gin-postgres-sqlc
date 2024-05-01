@@ -104,7 +104,7 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 
 		got, err := json.Marshal(res.JSON200)
 		require.NoError(t, err)
-		want, err := json.Marshal(&rest.User{
+		want, err := json.Marshal(&rest.UserResponse{
 			User:     ufixture.User,
 			Role:     rest.Role(role),
 			Teams:    ufixture.MemberTeamsJoin,

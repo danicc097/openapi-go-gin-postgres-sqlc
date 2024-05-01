@@ -1,6 +1,6 @@
 import _, { capitalize, concat, random, startCase, upperCase } from 'lodash'
 import React, { Fragment, forwardRef, memo, useEffect, useReducer, useState } from 'react'
-import type { Scope, Scopes, UpdateUserAuthRequest, User } from 'src/gen/model'
+import type { Scope, Scopes, UpdateUserAuthRequest, UserResponse } from 'src/gen/model'
 import { getContrastYIQ, roleColor, scopeColor } from 'src/utils/colors'
 import { joinWithAnd } from 'src/utils/format'
 
@@ -68,12 +68,12 @@ type RequiredUserAuthUpdateKeys = RequiredKeys<UpdateUserAuthRequest>
 const REQUIRED_USER_AUTH_UPDATE_KEYS: Record<RequiredUserAuthUpdateKeys, boolean> = {}
 
 interface SelectUserItemProps extends React.ComponentPropsWithoutRef<'div'> {
-  user: User
+  user: UserResponse
 }
 
 interface SelectRoleItemProps extends React.ComponentPropsWithoutRef<'div'> {
   label: string
-  value: User['role']
+  value: UserResponse['role']
 }
 
 const SelectRoleItem = ({ value }: SelectRoleItemProps) => {
@@ -85,7 +85,7 @@ const SelectRoleItem = ({ value }: SelectRoleItemProps) => {
 }
 
 export default function UserPermissionsPage() {
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null)
   const [userOptions, setUserOptions] = useState<Array<SelectUserItemProps> | null>(null)
   const { user } = useAuthenticatedUser()
 
@@ -424,8 +424,8 @@ function FormData() {
 interface CheckboxPanelProps {
   title: string
   scopes: Partial<typeof SCOPES>
-  user: User
-  userSelection: User
+  user: UserResponse
+  userSelection: UserResponse
 }
 
 const CheckboxPanel = ({ user, userSelection, title, scopes }: CheckboxPanelProps) => {

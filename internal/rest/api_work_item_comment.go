@@ -17,7 +17,7 @@ func (h *StrictHandlers) CreateWorkItemComment(c *gin.Context, request CreateWor
 		return nil, nil
 	}
 
-	res := WorkItemComment{
+	res := WorkItemCommentResponse{
 		WorkItemComment: *workItemComment,
 		// joins, if any
 	}
@@ -35,7 +35,7 @@ func (h *StrictHandlers) GetWorkItemComment(c *gin.Context, request GetWorkItemC
 		return nil, nil
 	}
 
-	res := WorkItemComment{
+	res := WorkItemCommentResponse{
 		WorkItemComment: *workItemComment,
 		// joins, if any
 	}
@@ -56,7 +56,7 @@ func (h *StrictHandlers) UpdateWorkItemComment(c *gin.Context, request UpdateWor
 		return nil, nil
 	}
 
-	res := WorkItemComment{
+	res := WorkItemCommentResponse{
 		WorkItemComment: *workItemComment,
 		// joins, if any
 	}

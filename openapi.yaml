@@ -512,7 +512,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Team'
+                $ref: '#/components/schemas/TeamResponse'
         !!merge <<: *x-error-response
       tags:
         - team
@@ -529,7 +529,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Team'
+                $ref: '#/components/schemas/TeamResponse'
         !!merge <<: *x-error-response
       tags:
         - team
@@ -551,7 +551,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Team'
+                $ref: '#/components/schemas/TeamResponse'
         !!merge <<: *x-error-response
       tags:
         - team
@@ -589,7 +589,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemTag'
+                $ref: '#/components/schemas/WorkItemTagResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemTag
@@ -615,7 +615,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Activity'
+                $ref: '#/components/schemas/ActivityResponse'
         !!merge <<: *x-error-response
       tags:
         - activity
@@ -636,7 +636,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TimeEntry'
+                $ref: '#/components/schemas/TimeEntryResponse'
         !!merge <<: *x-error-response
       tags:
         - timeEntry
@@ -653,7 +653,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TimeEntry'
+                $ref: '#/components/schemas/TimeEntryResponse'
         !!merge <<: *x-error-response
       tags:
         - timeEntry
@@ -675,7 +675,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TimeEntry'
+                $ref: '#/components/schemas/TimeEntryResponse'
         !!merge <<: *x-error-response
       tags:
         - timeEntry
@@ -704,7 +704,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Activity'
+                $ref: '#/components/schemas/ActivityResponse'
         !!merge <<: *x-error-response
       tags:
         - activity
@@ -729,7 +729,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Activity'
+                $ref: '#/components/schemas/ActivityResponse'
         !!merge <<: *x-error-response
       tags:
         - activity
@@ -761,7 +761,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemTag'
+                $ref: '#/components/schemas/WorkItemTagResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemTag
@@ -783,7 +783,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemTag'
+                $ref: '#/components/schemas/WorkItemTagResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemTag
@@ -818,7 +818,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemType'
+                $ref: '#/components/schemas/WorkItemTypeResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemType
@@ -835,7 +835,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemType'
+                $ref: '#/components/schemas/WorkItemTypeResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemType
@@ -857,7 +857,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemType'
+                $ref: '#/components/schemas/WorkItemTypeResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemType
@@ -911,7 +911,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserResponse'
           description: ok
       tags:
         - user
@@ -971,7 +971,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/UserResponse'
           description: ok
       tags:
         - user
@@ -1099,7 +1099,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItem'
+                $ref: '#/components/schemas/WorkItemResponse'
       tags:
         - project
   /work-item/:
@@ -1119,7 +1119,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItem'
+                $ref: '#/components/schemas/WorkItemResponse'
       tags:
         - workItem
   /work-item/{workItemID}/:
@@ -1135,7 +1135,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItem'
+                $ref: '#/components/schemas/WorkItemResponse'
       tags:
         - workItem
     patch:
@@ -1150,7 +1150,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItem'
+                $ref: '#/components/schemas/WorkItemResponse'
       tags:
         - workItem
     delete:
@@ -1214,7 +1214,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemComment'
+                $ref: '#/components/schemas/WorkItemCommentResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemComment
@@ -1232,7 +1232,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemComment'
+                $ref: '#/components/schemas/WorkItemCommentResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemComment
@@ -1257,7 +1257,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkItemComment'
+                $ref: '#/components/schemas/WorkItemCommentResponse'
         !!merge <<: *x-error-response
       tags:
         - workItemComment
@@ -1290,31 +1290,6 @@ components:
       style: simple
     UUID: *x-uuidParameter
   schemas:
-    Activity: # Generated schema. DO NOT EDIT.
-      properties:
-        activityID:
-          type: integer
-        deletedAt:
-          format: date-time
-          nullable: true
-          type: string
-        description:
-          type: string
-        isProductive:
-          type: boolean
-        name:
-          type: string
-        projectID:
-          type: integer
-      required:
-        - activityID
-        - projectID
-        - name
-        - description
-        - isProductive
-      type: object
-      x-gen-struct: Activity
-      x-is-generated: true
     CreateActivityRequest: # Generated schema. DO NOT EDIT.
       properties:
         description:
@@ -1915,32 +1890,11 @@ components:
       type: object
       x-gen-struct: DbWorkItemType
       x-is-generated: true
-    Notification: # Generated schema. DO NOT EDIT.
-      properties:
-        notification:
-          $ref: '#/components/schemas/DbNotification'
-        notificationID:
-          type: integer
-        read:
-          type: boolean
-        userID:
-          $ref: '#/components/schemas/DbUserID'
-        userNotificationID:
-          type: integer
-      required:
-        - userNotificationID
-        - notificationID
-        - read
-        - userID
-        - notification
-      type: object
-      x-gen-struct: Notification
-      x-is-generated: true
     PaginatedNotificationsResponse: # Generated schema. DO NOT EDIT.
       properties:
         items:
           items:
-            $ref: '#/components/schemas/Notification'
+            $ref: '#/components/schemas/NotificationResponse'
           nullable: true
           type: array
         page:
@@ -1955,7 +1909,7 @@ components:
       properties:
         items:
           items:
-            $ref: '#/components/schemas/User'
+            $ref: '#/components/schemas/UserResponse'
           nullable: true
           type: array
         page:
@@ -2019,32 +1973,6 @@ components:
       type: object
       x-gen-struct: SharedWorkItemJoins
       x-is-generated: true
-    Team: # Generated schema. DO NOT EDIT.
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-        teamID:
-          type: integer
-        updatedAt:
-          format: date-time
-          type: string
-      required:
-        - teamID
-        - projectID
-        - name
-        - description
-        - createdAt
-        - updatedAt
-      type: object
-      x-gen-struct: Team
-      x-is-generated: true
     UpdateActivityRequest: # Generated schema. DO NOT EDIT.
       properties:
         description:
@@ -2099,143 +2027,6 @@ components:
           type: string
       type: object
       x-gen-struct: UpdateWorkItemTypeRequest
-      x-is-generated: true
-    User: # Generated schema. DO NOT EDIT.
-      properties:
-        age:
-          nullable: true
-          type: integer
-        apiKey:
-          $ref: '#/components/schemas/DbUserAPIKey'
-        createdAt:
-          format: date-time
-          type: string
-        deletedAt:
-          format: date-time
-          nullable: true
-          type: string
-        email:
-          type: string
-        firstName:
-          nullable: true
-          type: string
-        fullName:
-          nullable: true
-          type: string
-        hasGlobalNotifications:
-          type: boolean
-        hasPersonalNotifications:
-          type: boolean
-        lastName:
-          nullable: true
-          type: string
-        projects:
-          items:
-            $ref: '#/components/schemas/DbProject'
-          nullable: true
-          type: array
-        role:
-          $ref: '#/components/schemas/Role'
-        scopes:
-          $ref: '#/components/schemas/Scopes'
-        teams:
-          items:
-            $ref: '#/components/schemas/DbTeam'
-          nullable: true
-          type: array
-        updatedAt:
-          format: date-time
-          type: string
-        userID:
-          $ref: '#/components/schemas/DbUserID'
-        username:
-          type: string
-      required:
-        - userID
-        - username
-        - email
-        - scopes
-        - hasPersonalNotifications
-        - hasGlobalNotifications
-        - createdAt
-        - updatedAt
-        - role
-      type: object
-      x-gen-struct: User
-      x-is-generated: true
-    WorkItemComment: # Generated schema. DO NOT EDIT.
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        message:
-          type: string
-        updatedAt:
-          format: date-time
-          type: string
-        userID:
-          $ref: '#/components/schemas/DbUserID'
-        workItemCommentID:
-          type: integer
-        workItemID:
-          type: integer
-      required:
-        - workItemCommentID
-        - workItemID
-        - userID
-        - message
-        - createdAt
-        - updatedAt
-      type: object
-      x-gen-struct: WorkItemComment
-      x-is-generated: true
-    WorkItemTag: # Generated schema. DO NOT EDIT.
-      properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
-          type: string
-        deletedAt:
-          format: date-time
-          nullable: true
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-        workItemTagID:
-          type: integer
-      required:
-        - workItemTagID
-        - projectID
-        - name
-        - description
-        - color
-      type: object
-      x-gen-struct: WorkItemTag
-      x-is-generated: true
-    WorkItemType: # Generated schema. DO NOT EDIT.
-      properties:
-        color:
-          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
-          type: string
-        description:
-          type: string
-        name:
-          type: string
-        projectID:
-          type: integer
-        workItemTypeID:
-          type: integer
-      required:
-        - workItemTypeID
-        - projectID
-        - name
-        - description
-        - color
-      type: object
-      x-gen-struct: WorkItemType
       x-is-generated: true
     Direction:
       type: string
@@ -2468,15 +2259,15 @@ components:
       x-go-type-import:
         name: uuid
         path: github.com/google/uuid
-    WorkItem:
+    WorkItemResponse:
       oneOf:
-        - $ref: '#/components/schemas/DemoWorkItem'
-        - $ref: '#/components/schemas/DemoTwoWorkItem'
+        - $ref: '#/components/schemas/DemoWorkItemResponse'
+        - $ref: '#/components/schemas/DemoTwoWorkItemResponse'
       discriminator:
         propertyName: projectName
         mapping:
-          demo: '#/components/schemas/DemoWorkItem'
-          demo_two: '#/components/schemas/DemoTwoWorkItem'
+          demo: '#/components/schemas/DemoWorkItemResponse'
+          demo_two: '#/components/schemas/DemoTwoWorkItemResponse'
       x-use-server-type: true
     CreateWorkItemRequest:
       oneOf:
@@ -2597,37 +2388,6 @@ components:
       type: object
       x-gen-struct: CreateTimeEntryRequest
       x-is-generated: true
-    TimeEntry:
-      properties:
-        activityID:
-          type: integer
-        comment:
-          type: string
-        durationMinutes:
-          nullable: true
-          type: integer
-        start:
-          format: date-time
-          type: string
-        teamID:
-          nullable: true
-          type: integer
-        timeEntryID:
-          type: integer
-        userID:
-          $ref: '#/components/schemas/DbUserID'
-        workItemID:
-          nullable: true
-          type: integer
-      required:
-        - timeEntryID
-        - activityID
-        - userID
-        - comment
-        - start
-      type: object
-      x-gen-struct: TimeEntry
-      x-is-generated: true
     UpdateTimeEntryRequest:
       properties:
         activityID:
@@ -2651,7 +2411,7 @@ components:
       type: object
       x-gen-struct: UpdateTimeEntryRequest
       x-is-generated: true
-    DemoTwoWorkItem:
+    DemoTwoWorkItemResponse:
       properties:
         closedAt:
           format: date-time
@@ -2726,9 +2486,9 @@ components:
         - projectName
         - demoTwoWorkItem
       type: object
-      x-gen-struct: DemoTwoWorkItem
+      x-gen-struct: DemoTwoWorkItemResponse
       x-is-generated: true
-    DemoWorkItem:
+    DemoWorkItemResponse:
       properties:
         closedAt:
           format: date-time
@@ -2803,7 +2563,7 @@ components:
         - projectName
         - demoWorkItem
       type: object
-      x-gen-struct: DemoWorkItem
+      x-gen-struct: DemoWorkItemResponse
       x-is-generated: true
     WorkItemBase: # Generated schema. DO NOT EDIT.
       properties:
@@ -3048,7 +2808,7 @@ components:
       properties:
         items:
           items:
-            $ref: '#/components/schemas/CacheDemoWorkItem'
+            $ref: '#/components/schemas/CacheDemoWorkItemResponse'
           nullable: true
           type: array
         page:
@@ -3073,7 +2833,209 @@ components:
       type: object
       x-gen-struct: GetCurrentUserQueryParameters
       x-is-generated: true
-    CacheDemoWorkItem: # Generated schema. DO NOT EDIT.
+    ProjectName: # Generated from projects table. DO NOT EDIT.
+      type: string
+      enum: ["demo", "demo_two"]
+      x-is-generated: true
+      description: is generated from projects table.
+    ActivityResponse:
+      properties:
+        activityID:
+          type: integer
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        description:
+          type: string
+        isProductive:
+          type: boolean
+        name:
+          type: string
+        projectID:
+          type: integer
+      required:
+        - activityID
+        - projectID
+        - name
+        - description
+        - isProductive
+      type: object
+      x-gen-struct: ActivityResponse
+      x-is-generated: true
+    TeamResponse:
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+        teamID:
+          type: integer
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - teamID
+        - projectID
+        - name
+        - description
+        - createdAt
+        - updatedAt
+      type: object
+      x-gen-struct: TeamResponse
+      x-is-generated: true
+    UserResponse:
+      properties:
+        age:
+          nullable: true
+          type: integer
+        apiKey:
+          $ref: '#/components/schemas/DbUserAPIKey'
+        createdAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        email:
+          type: string
+        firstName:
+          nullable: true
+          type: string
+        fullName:
+          nullable: true
+          type: string
+        hasGlobalNotifications:
+          type: boolean
+        hasPersonalNotifications:
+          type: boolean
+        lastName:
+          nullable: true
+          type: string
+        projects:
+          items:
+            $ref: '#/components/schemas/DbProject'
+          nullable: true
+          type: array
+        role:
+          $ref: '#/components/schemas/Role'
+        scopes:
+          $ref: '#/components/schemas/Scopes'
+        teams:
+          items:
+            $ref: '#/components/schemas/DbTeam'
+          nullable: true
+          type: array
+        updatedAt:
+          format: date-time
+          type: string
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        username:
+          type: string
+      required:
+        - userID
+        - username
+        - email
+        - scopes
+        - hasPersonalNotifications
+        - hasGlobalNotifications
+        - createdAt
+        - updatedAt
+        - role
+      type: object
+      x-gen-struct: UserResponse
+      x-is-generated: true
+    WorkItemCommentResponse:
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        message:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        workItemCommentID:
+          type: integer
+        workItemID:
+          type: integer
+      required:
+        - workItemCommentID
+        - workItemID
+        - userID
+        - message
+        - createdAt
+        - updatedAt
+      type: object
+      x-gen-struct: WorkItemCommentResponse
+      x-is-generated: true
+    WorkItemTagResponse:
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        deletedAt:
+          format: date-time
+          nullable: true
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+        workItemTagID:
+          type: integer
+      required:
+        - workItemTagID
+        - projectID
+        - name
+        - description
+        - color
+      type: object
+      x-gen-struct: WorkItemTagResponse
+      x-is-generated: true
+    TimeEntryResponse:
+      properties:
+        activityID:
+          type: integer
+        comment:
+          type: string
+        durationMinutes:
+          nullable: true
+          type: integer
+        start:
+          format: date-time
+          type: string
+        teamID:
+          nullable: true
+          type: integer
+        timeEntryID:
+          type: integer
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        workItemID:
+          nullable: true
+          type: integer
+      required:
+        - timeEntryID
+        - activityID
+        - userID
+        - comment
+        - start
+      type: object
+      x-gen-struct: TimeEntryResponse
+      x-is-generated: true
+    CacheDemoWorkItemResponse: # Generated schema. DO NOT EDIT.
       properties:
         closedAt:
           format: date-time
@@ -3133,13 +3095,51 @@ components:
         - createdAt
         - updatedAt
       type: object
-      x-gen-struct: CacheDemoWorkItem
+      x-gen-struct: CacheDemoWorkItemResponse
       x-is-generated: true
-    ProjectName: # Generated from projects table. DO NOT EDIT.
-      type: string
-      enum: ["demo", "demo_two"]
+    NotificationResponse: # Generated schema. DO NOT EDIT.
+      properties:
+        notification:
+          $ref: '#/components/schemas/DbNotification'
+        notificationID:
+          type: integer
+        read:
+          type: boolean
+        userID:
+          $ref: '#/components/schemas/DbUserID'
+        userNotificationID:
+          type: integer
+      required:
+        - userNotificationID
+        - notificationID
+        - read
+        - userID
+        - notification
+      type: object
+      x-gen-struct: NotificationResponse
       x-is-generated: true
-      description: is generated from projects table.
+    WorkItemTypeResponse: # Generated schema. DO NOT EDIT.
+      properties:
+        color:
+          pattern: ^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$
+          type: string
+        description:
+          type: string
+        name:
+          type: string
+        projectID:
+          type: integer
+        workItemTypeID:
+          type: integer
+      required:
+        - workItemTypeID
+        - projectID
+        - name
+        - description
+        - color
+      type: object
+      x-gen-struct: WorkItemTypeResponse
+      x-is-generated: true
   examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:

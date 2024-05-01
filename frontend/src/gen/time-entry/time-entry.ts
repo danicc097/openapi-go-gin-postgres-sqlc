@@ -24,7 +24,7 @@ import type {
 import type {
   CreateTimeEntryRequest,
   HTTPError,
-  TimeEntry,
+  TimeEntryResponse,
   UpdateTimeEntryRequest
 } from '.././model'
 import { customInstance } from '../../api/mutator';
@@ -42,7 +42,7 @@ export const createTimeEntry = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<TimeEntry>(
+      return customInstance<TimeEntryResponse>(
       {url: `/time-entry/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createTimeEntryRequest
@@ -95,7 +95,7 @@ export const getTimeEntry = (
 ) => {
       
       
-      return customInstance<TimeEntry>(
+      return customInstance<TimeEntryResponse>(
       {url: `/time-entry/${timeEntryID}`, method: 'GET', signal
     },
       options);
@@ -196,7 +196,7 @@ export const updateTimeEntry = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<TimeEntry>(
+      return customInstance<TimeEntryResponse>(
       {url: `/time-entry/${timeEntryID}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateTimeEntryRequest

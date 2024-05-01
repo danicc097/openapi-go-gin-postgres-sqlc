@@ -3760,7 +3760,7 @@ func (r DeleteActivityResponse) StatusCode() int {
 type GetActivityResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Activity
+	JSON200      *ActivityResponse
 	JSON4XX      *HTTPError
 }
 
@@ -3783,7 +3783,7 @@ func (r GetActivityResponse) StatusCode() int {
 type UpdateActivityResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Activity
+	JSON200      *ActivityResponse
 	JSON4XX      *HTTPError
 }
 
@@ -3980,7 +3980,7 @@ func (r GetProjectResponse) StatusCode() int {
 type CreateActivityResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *Activity
+	JSON201      *ActivityResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4089,7 +4089,7 @@ func (r InitializeProjectResponse) StatusCode() int {
 type CreateTeamResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *Team
+	JSON201      *TeamResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4112,7 +4112,7 @@ func (r CreateTeamResponse) StatusCode() int {
 type CreateWorkItemTagResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *WorkItemTag
+	JSON201      *WorkItemTagResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4135,7 +4135,7 @@ func (r CreateWorkItemTagResponse) StatusCode() int {
 type CreateWorkItemTypeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *WorkItemType
+	JSON201      *WorkItemTypeResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4158,7 +4158,7 @@ func (r CreateWorkItemTypeResponse) StatusCode() int {
 type GetProjectWorkitemsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *WorkItem
+	JSON200      *WorkItemResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -4202,7 +4202,7 @@ func (r DeleteTeamResponse) StatusCode() int {
 type GetTeamResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Team
+	JSON200      *TeamResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4225,7 +4225,7 @@ func (r GetTeamResponse) StatusCode() int {
 type UpdateTeamResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *Team
+	JSON200      *TeamResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4248,7 +4248,7 @@ func (r UpdateTeamResponse) StatusCode() int {
 type CreateTimeEntryResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *TimeEntry
+	JSON201      *TimeEntryResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4293,7 +4293,7 @@ func (r DeleteTimeEntryResponse) StatusCode() int {
 type GetTimeEntryResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *TimeEntry
+	JSON200      *TimeEntryResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4316,7 +4316,7 @@ func (r GetTimeEntryResponse) StatusCode() int {
 type UpdateTimeEntryResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *TimeEntry
+	JSON200      *TimeEntryResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4339,7 +4339,7 @@ func (r UpdateTimeEntryResponse) StatusCode() int {
 type GetCurrentUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *User
+	JSON200      *UserResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -4406,7 +4406,7 @@ func (r DeleteUserResponse) StatusCode() int {
 type UpdateUserResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *User
+	JSON200      *UserResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -4471,7 +4471,7 @@ func (r DeleteWorkItemTagResponse) StatusCode() int {
 type GetWorkItemTagResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *WorkItemTag
+	JSON200      *WorkItemTagResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4494,7 +4494,7 @@ func (r GetWorkItemTagResponse) StatusCode() int {
 type UpdateWorkItemTagResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *WorkItemTag
+	JSON200      *WorkItemTagResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4539,7 +4539,7 @@ func (r DeleteWorkItemTypeResponse) StatusCode() int {
 type GetWorkItemTypeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *WorkItemType
+	JSON200      *WorkItemTypeResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4562,7 +4562,7 @@ func (r GetWorkItemTypeResponse) StatusCode() int {
 type UpdateWorkItemTypeResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *WorkItemType
+	JSON200      *WorkItemTypeResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4585,7 +4585,7 @@ func (r UpdateWorkItemTypeResponse) StatusCode() int {
 type CreateWorkitemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *WorkItem
+	JSON201      *WorkItemResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -4651,7 +4651,7 @@ func (r DeleteWorkitemResponse) StatusCode() int {
 type GetWorkItemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *WorkItem
+	JSON200      *WorkItemResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -4673,7 +4673,7 @@ func (r GetWorkItemResponse) StatusCode() int {
 type UpdateWorkitemResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *WorkItem
+	JSON200      *WorkItemResponse
 }
 
 // Status returns HTTPResponse.Status
@@ -4695,7 +4695,7 @@ func (r UpdateWorkitemResponse) StatusCode() int {
 type CreateWorkItemCommentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *WorkItemComment
+	JSON201      *WorkItemCommentResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4740,7 +4740,7 @@ func (r DeleteWorkItemCommentResponse) StatusCode() int {
 type GetWorkItemCommentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *WorkItemComment
+	JSON200      *WorkItemCommentResponse
 	JSON4XX      *HTTPError
 }
 
@@ -4763,7 +4763,7 @@ func (r GetWorkItemCommentResponse) StatusCode() int {
 type UpdateWorkItemCommentResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *WorkItemComment
+	JSON200      *WorkItemCommentResponse
 	JSON4XX      *HTTPError
 }
 
@@ -5382,7 +5382,7 @@ func ParseGetActivityResponse(rsp *http.Response) (*GetActivityResponse, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Activity
+		var dest ActivityResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5415,7 +5415,7 @@ func ParseUpdateActivityResponse(rsp *http.Response) (*UpdateActivityResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Activity
+		var dest ActivityResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5629,7 +5629,7 @@ func ParseCreateActivityResponse(rsp *http.Response) (*CreateActivityResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest Activity
+		var dest ActivityResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5744,7 +5744,7 @@ func ParseCreateTeamResponse(rsp *http.Response) (*CreateTeamResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest Team
+		var dest TeamResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5777,7 +5777,7 @@ func ParseCreateWorkItemTagResponse(rsp *http.Response) (*CreateWorkItemTagRespo
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest WorkItemTag
+		var dest WorkItemTagResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5810,7 +5810,7 @@ func ParseCreateWorkItemTypeResponse(rsp *http.Response) (*CreateWorkItemTypeRes
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest WorkItemType
+		var dest WorkItemTypeResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5843,7 +5843,7 @@ func ParseGetProjectWorkitemsResponse(rsp *http.Response) (*GetProjectWorkitemsR
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest WorkItem
+		var dest WorkItemResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5893,7 +5893,7 @@ func ParseGetTeamResponse(rsp *http.Response) (*GetTeamResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Team
+		var dest TeamResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5926,7 +5926,7 @@ func ParseUpdateTeamResponse(rsp *http.Response) (*UpdateTeamResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Team
+		var dest TeamResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -5959,7 +5959,7 @@ func ParseCreateTimeEntryResponse(rsp *http.Response) (*CreateTimeEntryResponse,
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest TimeEntry
+		var dest TimeEntryResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6017,7 +6017,7 @@ func ParseGetTimeEntryResponse(rsp *http.Response) (*GetTimeEntryResponse, error
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest TimeEntry
+		var dest TimeEntryResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6050,7 +6050,7 @@ func ParseUpdateTimeEntryResponse(rsp *http.Response) (*UpdateTimeEntryResponse,
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest TimeEntry
+		var dest TimeEntryResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6083,7 +6083,7 @@ func ParseGetCurrentUserResponse(rsp *http.Response) (*GetCurrentUserResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest User
+		var dest UserResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6166,7 +6166,7 @@ func ParseUpdateUserResponse(rsp *http.Response) (*UpdateUserResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest User
+		var dest UserResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6232,7 +6232,7 @@ func ParseGetWorkItemTagResponse(rsp *http.Response) (*GetWorkItemTagResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest WorkItemTag
+		var dest WorkItemTagResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6265,7 +6265,7 @@ func ParseUpdateWorkItemTagResponse(rsp *http.Response) (*UpdateWorkItemTagRespo
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest WorkItemTag
+		var dest WorkItemTagResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6323,7 +6323,7 @@ func ParseGetWorkItemTypeResponse(rsp *http.Response) (*GetWorkItemTypeResponse,
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest WorkItemType
+		var dest WorkItemTypeResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6356,7 +6356,7 @@ func ParseUpdateWorkItemTypeResponse(rsp *http.Response) (*UpdateWorkItemTypeRes
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest WorkItemType
+		var dest WorkItemTypeResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6389,7 +6389,7 @@ func ParseCreateWorkitemResponse(rsp *http.Response) (*CreateWorkitemResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest WorkItem
+		var dest WorkItemResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6463,7 +6463,7 @@ func ParseGetWorkItemResponse(rsp *http.Response) (*GetWorkItemResponse, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest WorkItem
+		var dest WorkItemResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6488,7 +6488,7 @@ func ParseUpdateWorkitemResponse(rsp *http.Response) (*UpdateWorkitemResponse, e
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest WorkItem
+		var dest WorkItemResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6513,7 +6513,7 @@ func ParseCreateWorkItemCommentResponse(rsp *http.Response) (*CreateWorkItemComm
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest WorkItemComment
+		var dest WorkItemCommentResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6571,7 +6571,7 @@ func ParseGetWorkItemCommentResponse(rsp *http.Response) (*GetWorkItemCommentRes
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest WorkItemComment
+		var dest WorkItemCommentResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -6604,7 +6604,7 @@ func ParseUpdateWorkItemCommentResponse(rsp *http.Response) (*UpdateWorkItemComm
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest WorkItemComment
+		var dest WorkItemCommentResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

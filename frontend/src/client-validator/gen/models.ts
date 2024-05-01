@@ -92,7 +92,7 @@ export type Location1 = string[]
 export type Topic = 'AppDebug' | 'WorkItemUpdated' | 'TeamCreated' | 'GlobalAlerts'
 export type Topics = Topic[]
 export type UuidUUID = string
-export type WorkItem = DemoWorkItem | DemoTwoWorkItem
+export type WorkItemResponse = DemoWorkItemResponse | DemoTwoWorkItemResponse
 export type CreateWorkItemRequest = CreateDemoWorkItemRequest | CreateDemoTwoWorkItemRequest
 export type DbWorkItemRole = string
 /**
@@ -128,14 +128,6 @@ export type PaginationFilterModes =
   | 'startsWith'
 export type PaginationFilter = PaginationFilterPrimitive | PaginationFilterArray
 
-export interface Activity {
-  activityID: number
-  deletedAt?: string | null
-  description: string
-  isProductive: boolean
-  name: string
-  projectID: number
-}
 export interface CreateActivityRequest {
   description: string
   isProductive: boolean
@@ -340,25 +332,25 @@ export interface DbWorkItemType {
   projectID: number
   workItemTypeID: number
 }
-export interface Notification {
+export interface PaginatedNotificationsResponse {
+  items: NotificationResponse[] | null
+  page: PaginationPage
+}
+export interface NotificationResponse {
   notification: DbNotification
   notificationID: number
   read: boolean
   userID: DbUserID
   userNotificationID: number
 }
-export interface PaginatedNotificationsResponse {
-  items: Notification[] | null
-  page: PaginationPage
-}
 export interface PaginationPage {
   nextCursor?: string
 }
 export interface PaginatedUsersResponse {
-  items: User[] | null
+  items: UserResponse[] | null
   page: PaginationPage
 }
-export interface User {
+export interface UserResponse {
   age?: number | null
   apiKey?: DbUserAPIKey
   createdAt: string
@@ -391,14 +383,6 @@ export interface DbWorkItemM2MAssigneeWIA {
   role: WorkItemRole
   user: DbUser
 }
-export interface Team {
-  createdAt: string
-  description: string
-  name: string
-  projectID: number
-  teamID: number
-  updatedAt: string
-}
 export interface UpdateActivityRequest {
   description?: string
   isProductive?: boolean
@@ -422,29 +406,6 @@ export interface UpdateWorkItemTypeRequest {
   color?: string
   description?: string
   name?: string
-}
-export interface WorkItemComment {
-  createdAt: string
-  message: string
-  updatedAt: string
-  userID: DbUserID
-  workItemCommentID: number
-  workItemID: number
-}
-export interface WorkItemTag {
-  color: string
-  deletedAt?: string | null
-  description: string
-  name: string
-  projectID: number
-  workItemTagID: number
-}
-export interface WorkItemType {
-  color: string
-  description: string
-  name: string
-  projectID: number
-  workItemTypeID: number
 }
 export interface DbActivity {
   activityID: number
@@ -503,7 +464,7 @@ export interface UpdateUserAuthRequest {
   role?: Role
   scopes?: Scopes
 }
-export interface DemoWorkItem {
+export interface DemoWorkItemResponse {
   closedAt?: string | null
   createdAt: string
   deletedAt?: string | null
@@ -524,7 +485,7 @@ export interface DemoWorkItem {
   workItemType?: DbWorkItemType
   workItemTypeID: number
 }
-export interface DemoTwoWorkItem {
+export interface DemoTwoWorkItemResponse {
   closedAt?: string | null
   createdAt: string
   deletedAt?: string | null
@@ -571,16 +532,6 @@ export interface CreateTimeEntryRequest {
   durationMinutes?: number | null
   start: string
   teamID?: number | null
-  userID: DbUserID
-  workItemID?: number | null
-}
-export interface TimeEntry {
-  activityID: number
-  comment: string
-  durationMinutes?: number | null
-  start: string
-  teamID?: number | null
-  timeEntryID: number
   userID: DbUserID
   workItemID?: number | null
 }
@@ -672,10 +623,10 @@ export interface DbUserJoins {
   workItemComments: boolean
 }
 export interface PaginatedDemoWorkItemsResponse {
-  items: CacheDemoWorkItem[] | null
+  items: CacheDemoWorkItemResponse[] | null
   page: PaginationPage
 }
-export interface CacheDemoWorkItem {
+export interface CacheDemoWorkItemResponse {
   closedAt?: string | null
   createdAt: string
   deletedAt?: string | null
@@ -698,4 +649,53 @@ export interface GetCacheDemoWorkItemQueryParameters {
 }
 export interface GetCurrentUserQueryParameters {
   joins?: DbUserJoins
+}
+export interface ActivityResponse {
+  activityID: number
+  deletedAt?: string | null
+  description: string
+  isProductive: boolean
+  name: string
+  projectID: number
+}
+export interface TeamResponse {
+  createdAt: string
+  description: string
+  name: string
+  projectID: number
+  teamID: number
+  updatedAt: string
+}
+export interface WorkItemCommentResponse {
+  createdAt: string
+  message: string
+  updatedAt: string
+  userID: DbUserID
+  workItemCommentID: number
+  workItemID: number
+}
+export interface WorkItemTagResponse {
+  color: string
+  deletedAt?: string | null
+  description: string
+  name: string
+  projectID: number
+  workItemTagID: number
+}
+export interface TimeEntryResponse {
+  activityID: number
+  comment: string
+  durationMinutes?: number | null
+  start: string
+  teamID?: number | null
+  timeEntryID: number
+  userID: DbUserID
+  workItemID?: number | null
+}
+export interface WorkItemTypeResponse {
+  color: string
+  description: string
+  name: string
+  projectID: number
+  workItemTypeID: number
 }

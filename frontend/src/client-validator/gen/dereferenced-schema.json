@@ -2,43 +2,6 @@
   "type": "object",
   "title": "Schema",
   "definitions": {
-    "Activity": {
-      "properties": {
-        "activityID": {
-          "type": "integer"
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "isProductive": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "activityID",
-        "projectID",
-        "name",
-        "description",
-        "isProductive"
-      ],
-      "type": "object",
-      "x-gen-struct": "Activity",
-      "x-is-generated": true
-    },
     "CreateActivityRequest": {
       "properties": {
         "description": {
@@ -1427,112 +1390,6 @@
       "x-gen-struct": "DbWorkItemType",
       "x-is-generated": true
     },
-    "Notification": {
-      "properties": {
-        "notification": {
-          "properties": {
-            "body": {
-              "type": "string",
-              "minLength": 1
-            },
-            "createdAt": {
-              "format": "date-time",
-              "type": [
-                "object"
-              ]
-            },
-            "labels": {
-              "items": {
-                "type": "string"
-              },
-              "type": "array",
-              "minLength": 1
-            },
-            "link": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "notificationID": {
-              "type": "integer"
-            },
-            "notificationType": {
-              "description": "is generated from database enum 'notification_type'.",
-              "type": "string",
-              "x-is-generated": true,
-              "enum": [
-                "personal",
-                "global"
-              ]
-            },
-            "receiver": {
-              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-              "type": "string",
-              "x-go-type": "uuid.UUID",
-              "x-go-type-import": {
-                "name": "uuid",
-                "path": "github.com/google/uuid"
-              },
-              "x-is-generated": true
-            },
-            "sender": {
-              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-              "type": "string",
-              "x-go-type": "uuid.UUID",
-              "x-go-type-import": {
-                "name": "uuid",
-                "path": "github.com/google/uuid"
-              },
-              "x-is-generated": true
-            },
-            "title": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          "required": [
-            "notificationID",
-            "title",
-            "body",
-            "labels",
-            "createdAt",
-            "sender",
-            "notificationType"
-          ],
-          "type": "object"
-        },
-        "notificationID": {
-          "type": "integer"
-        },
-        "read": {
-          "type": "boolean"
-        },
-        "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
-          },
-          "x-is-generated": true
-        },
-        "userNotificationID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "userNotificationID",
-        "notificationID",
-        "read",
-        "userID",
-        "notification"
-      ],
-      "type": "object",
-      "x-gen-struct": "Notification",
-      "x-is-generated": true
-    },
     "PaginatedNotificationsResponse": {
       "properties": {
         "items": {
@@ -1639,7 +1496,7 @@
               "notification"
             ],
             "type": "object",
-            "x-gen-struct": "Notification",
+            "x-gen-struct": "NotificationResponse",
             "x-is-generated": true
           },
           "type": [
@@ -1962,7 +1819,7 @@
               "role"
             ],
             "type": "object",
-            "x-gen-struct": "User",
+            "x-gen-struct": "UserResponse",
             "x-is-generated": true
           },
           "type": [
@@ -2384,47 +2241,6 @@
       "x-gen-struct": "SharedWorkItemJoins",
       "x-is-generated": true
     },
-    "Team": {
-      "properties": {
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "teamID": {
-          "type": "integer"
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        }
-      },
-      "required": [
-        "teamID",
-        "projectID",
-        "name",
-        "description",
-        "createdAt",
-        "updatedAt"
-      ],
-      "type": "object",
-      "x-gen-struct": "Team",
-      "x-is-generated": true
-    },
     "UpdateActivityRequest": {
       "properties": {
         "description": {
@@ -2509,421 +2325,6 @@
       },
       "type": "object",
       "x-gen-struct": "UpdateWorkItemTypeRequest",
-      "x-is-generated": true
-    },
-    "User": {
-      "properties": {
-        "age": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
-        "apiKey": {
-          "properties": {
-            "apiKey": {
-              "type": "string",
-              "minLength": 1
-            },
-            "expiresOn": {
-              "format": "date-time",
-              "type": [
-                "object"
-              ]
-            },
-            "userID": {
-              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-              "type": "string",
-              "x-go-type": "uuid.UUID",
-              "x-go-type-import": {
-                "name": "uuid",
-                "path": "github.com/google/uuid"
-              },
-              "x-is-generated": true
-            }
-          },
-          "required": [
-            "apiKey",
-            "expiresOn",
-            "userID"
-          ],
-          "type": "object",
-          "x-gen-struct": "DbUserAPIKey",
-          "x-is-generated": true
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "email": {
-          "type": "string",
-          "minLength": 1
-        },
-        "firstName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "fullName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "hasGlobalNotifications": {
-          "type": "boolean"
-        },
-        "hasPersonalNotifications": {
-          "type": "boolean"
-        },
-        "lastName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "projects": {
-          "items": {
-            "properties": {
-              "boardConfig": {
-                "properties": {
-                  "fields": {
-                    "items": {
-                      "properties": {
-                        "isEditable": {
-                          "type": "boolean"
-                        },
-                        "isVisible": {
-                          "type": "boolean"
-                        },
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "path": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "showCollapsed": {
-                          "type": "boolean"
-                        }
-                      },
-                      "required": [
-                        "isEditable",
-                        "showCollapsed",
-                        "isVisible",
-                        "path",
-                        "name"
-                      ],
-                      "type": "object"
-                    },
-                    "type": "array"
-                  },
-                  "header": {
-                    "items": {
-                      "type": "string"
-                    },
-                    "type": "array"
-                  },
-                  "visualization": {
-                    "type": "object"
-                  }
-                },
-                "type": "object"
-              },
-              "createdAt": {
-                "format": "date-time",
-                "type": [
-                  "object"
-                ]
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "enum": [
-                  "demo",
-                  "demo_two"
-                ],
-                "x-is-generated": true,
-                "description": "is generated from projects table."
-              },
-              "projectID": {
-                "type": "integer"
-              },
-              "updatedAt": {
-                "format": "date-time",
-                "type": [
-                  "object"
-                ]
-              }
-            },
-            "required": [
-              "projectID",
-              "name",
-              "description",
-              "boardConfig",
-              "createdAt",
-              "updatedAt"
-            ],
-            "type": "object",
-            "x-gen-struct": "DbProject",
-            "x-is-generated": true
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "role": {
-          "type": "string",
-          "enum": [
-            "guest",
-            "user",
-            "advancedUser",
-            "manager",
-            "admin",
-            "superAdmin"
-          ],
-          "x-is-generated": true,
-          "description": "is generated from roles.json keys."
-        },
-        "scopes": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "project-member",
-              "users:read",
-              "users:write",
-              "users:delete",
-              "scopes:write",
-              "team-settings:write",
-              "project-settings:write",
-              "activity:create",
-              "activity:edit",
-              "activity:delete",
-              "work-item-tag:create",
-              "work-item-tag:edit",
-              "work-item-tag:delete",
-              "work-item:review",
-              "work-item-comment:create",
-              "work-item-comment:edit",
-              "work-item-comment:delete"
-            ],
-            "x-is-generated": true,
-            "description": "is generated from scopes.json keys."
-          }
-        },
-        "teams": {
-          "items": {
-            "properties": {
-              "createdAt": {
-                "format": "date-time",
-                "type": [
-                  "object"
-                ]
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              },
-              "teamID": {
-                "type": "integer"
-              },
-              "updatedAt": {
-                "format": "date-time",
-                "type": [
-                  "object"
-                ]
-              }
-            },
-            "required": [
-              "teamID",
-              "projectID",
-              "name",
-              "description",
-              "createdAt",
-              "updatedAt"
-            ],
-            "type": "object"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
-          },
-          "x-is-generated": true
-        },
-        "username": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "userID",
-        "username",
-        "email",
-        "scopes",
-        "hasPersonalNotifications",
-        "hasGlobalNotifications",
-        "createdAt",
-        "updatedAt",
-        "role"
-      ],
-      "type": "object",
-      "x-gen-struct": "User",
-      "x-is-generated": true
-    },
-    "WorkItemComment": {
-      "properties": {
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "message": {
-          "type": "string",
-          "minLength": 1
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
-          },
-          "x-is-generated": true
-        },
-        "workItemCommentID": {
-          "type": "integer"
-        },
-        "workItemID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemCommentID",
-        "workItemID",
-        "userID",
-        "message",
-        "createdAt",
-        "updatedAt"
-      ],
-      "type": "object",
-      "x-gen-struct": "WorkItemComment",
-      "x-is-generated": true
-    },
-    "WorkItemTag": {
-      "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string",
-          "minLength": 1
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "workItemTagID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemTagID",
-        "projectID",
-        "name",
-        "description",
-        "color"
-      ],
-      "type": "object",
-      "x-gen-struct": "WorkItemTag",
-      "x-is-generated": true
-    },
-    "WorkItemType": {
-      "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string",
-          "minLength": 1
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "workItemTypeID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemTypeID",
-        "projectID",
-        "name",
-        "description",
-        "color"
-      ],
-      "type": "object",
-      "x-gen-struct": "WorkItemType",
       "x-is-generated": true
     },
     "Direction": {
@@ -3469,7 +2870,7 @@
         "path": "github.com/google/uuid"
       }
     },
-    "WorkItem": {
+    "WorkItemResponse": {
       "oneOf": [
         {
           "properties": {
@@ -3920,7 +3321,7 @@
             "demoWorkItem"
           ],
           "type": "object",
-          "x-gen-struct": "DemoWorkItem",
+          "x-gen-struct": "DemoWorkItemResponse",
           "x-is-generated": true
         },
         {
@@ -4354,7 +3755,7 @@
             "demoTwoWorkItem"
           ],
           "type": "object",
-          "x-gen-struct": "DemoTwoWorkItem",
+          "x-gen-struct": "DemoTwoWorkItemResponse",
           "x-is-generated": true
         }
       ],
@@ -5039,64 +4440,6 @@
       "x-gen-struct": "CreateTimeEntryRequest",
       "x-is-generated": true
     },
-    "TimeEntry": {
-      "properties": {
-        "activityID": {
-          "type": "integer"
-        },
-        "comment": {
-          "type": "string",
-          "minLength": 1
-        },
-        "durationMinutes": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
-        "start": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "teamID": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
-        "timeEntryID": {
-          "type": "integer"
-        },
-        "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
-          },
-          "x-is-generated": true
-        },
-        "workItemID": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        }
-      },
-      "required": [
-        "timeEntryID",
-        "activityID",
-        "userID",
-        "comment",
-        "start"
-      ],
-      "type": "object",
-      "x-gen-struct": "TimeEntry",
-      "x-is-generated": true
-    },
     "UpdateTimeEntryRequest": {
       "properties": {
         "activityID": {
@@ -5144,7 +4487,7 @@
       "x-gen-struct": "UpdateTimeEntryRequest",
       "x-is-generated": true
     },
-    "DemoTwoWorkItem": {
+    "DemoTwoWorkItemResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -5575,10 +4918,10 @@
         "demoTwoWorkItem"
       ],
       "type": "object",
-      "x-gen-struct": "DemoTwoWorkItem",
+      "x-gen-struct": "DemoTwoWorkItemResponse",
       "x-is-generated": true
     },
-    "DemoWorkItem": {
+    "DemoWorkItemResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -6027,7 +5370,7 @@
         "demoWorkItem"
       ],
       "type": "object",
-      "x-gen-struct": "DemoWorkItem",
+      "x-gen-struct": "DemoWorkItemResponse",
       "x-is-generated": true
     },
     "WorkItemBase": {
@@ -7140,7 +6483,7 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-gen-struct": "CacheDemoWorkItem",
+            "x-gen-struct": "CacheDemoWorkItemResponse",
             "x-is-generated": true
           },
           "type": [
@@ -7259,7 +6602,534 @@
       "x-gen-struct": "GetCurrentUserQueryParameters",
       "x-is-generated": true
     },
-    "CacheDemoWorkItem": {
+    "ProjectName": {
+      "type": "string",
+      "enum": [
+        "demo",
+        "demo_two"
+      ],
+      "x-is-generated": true,
+      "description": "is generated from projects table."
+    },
+    "ActivityResponse": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activityID",
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
+      "type": "object",
+      "x-gen-struct": "ActivityResponse",
+      "x-is-generated": true
+    },
+    "TeamResponse": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        }
+      },
+      "required": [
+        "teamID",
+        "projectID",
+        "name",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-gen-struct": "TeamResponse",
+      "x-is-generated": true
+    },
+    "UserResponse": {
+      "properties": {
+        "age": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "apiKey": {
+          "properties": {
+            "apiKey": {
+              "type": "string",
+              "minLength": 1
+            },
+            "expiresOn": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "userID": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "x-is-generated": true
+            }
+          },
+          "required": [
+            "apiKey",
+            "expiresOn",
+            "userID"
+          ],
+          "type": "object",
+          "x-gen-struct": "DbUserAPIKey",
+          "x-is-generated": true
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "email": {
+          "type": "string",
+          "minLength": 1
+        },
+        "firstName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fullName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hasGlobalNotifications": {
+          "type": "boolean"
+        },
+        "hasPersonalNotifications": {
+          "type": "boolean"
+        },
+        "lastName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "projects": {
+          "items": {
+            "properties": {
+              "boardConfig": {
+                "properties": {
+                  "fields": {
+                    "items": {
+                      "properties": {
+                        "isEditable": {
+                          "type": "boolean"
+                        },
+                        "isVisible": {
+                          "type": "boolean"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "path": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "showCollapsed": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "isEditable",
+                        "showCollapsed",
+                        "isVisible",
+                        "path",
+                        "name"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "header": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "visualization": {
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
+              "createdAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "enum": [
+                  "demo",
+                  "demo_two"
+                ],
+                "x-is-generated": true,
+                "description": "is generated from projects table."
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              }
+            },
+            "required": [
+              "projectID",
+              "name",
+              "description",
+              "boardConfig",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object",
+            "x-gen-struct": "DbProject",
+            "x-is-generated": true
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "guest",
+            "user",
+            "advancedUser",
+            "manager",
+            "admin",
+            "superAdmin"
+          ],
+          "x-is-generated": true,
+          "description": "is generated from roles.json keys."
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "project-member",
+              "users:read",
+              "users:write",
+              "users:delete",
+              "scopes:write",
+              "team-settings:write",
+              "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
+              "work-item-tag:create",
+              "work-item-tag:edit",
+              "work-item-tag:delete",
+              "work-item:review",
+              "work-item-comment:create",
+              "work-item-comment:edit",
+              "work-item-comment:delete"
+            ],
+            "x-is-generated": true,
+            "description": "is generated from scopes.json keys."
+          }
+        },
+        "teams": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "teamID": {
+                "type": "integer"
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              }
+            },
+            "required": [
+              "teamID",
+              "projectID",
+              "name",
+              "description",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "username": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "userID",
+        "username",
+        "email",
+        "scopes",
+        "hasPersonalNotifications",
+        "hasGlobalNotifications",
+        "createdAt",
+        "updatedAt",
+        "role"
+      ],
+      "type": "object",
+      "x-gen-struct": "UserResponse",
+      "x-is-generated": true
+    },
+    "WorkItemCommentResponse": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "workItemCommentID": {
+          "type": "integer"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemCommentID",
+        "workItemID",
+        "userID",
+        "message",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-gen-struct": "WorkItemCommentResponse",
+      "x-is-generated": true
+    },
+    "WorkItemTagResponse": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTagID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTagID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-gen-struct": "WorkItemTagResponse",
+      "x-is-generated": true
+    },
+    "TimeEntryResponse": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeEntryID": {
+          "type": "integer"
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "timeEntryID",
+        "activityID",
+        "userID",
+        "comment",
+        "start"
+      ],
+      "type": "object",
+      "x-gen-struct": "TimeEntryResponse",
+      "x-is-generated": true
+    },
+    "CacheDemoWorkItemResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -7351,57 +7221,150 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "CacheDemoWorkItem",
+      "x-gen-struct": "CacheDemoWorkItemResponse",
       "x-is-generated": true
     },
-    "ProjectName": {
-      "type": "string",
-      "enum": [
-        "demo",
-        "demo_two"
+    "NotificationResponse": {
+      "properties": {
+        "notification": {
+          "properties": {
+            "body": {
+              "type": "string",
+              "minLength": 1
+            },
+            "createdAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "labels": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minLength": 1
+            },
+            "link": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "notificationID": {
+              "type": "integer"
+            },
+            "notificationType": {
+              "description": "is generated from database enum 'notification_type'.",
+              "type": "string",
+              "x-is-generated": true,
+              "enum": [
+                "personal",
+                "global"
+              ]
+            },
+            "receiver": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "x-is-generated": true
+            },
+            "sender": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "x-is-generated": true
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "notificationID",
+            "title",
+            "body",
+            "labels",
+            "createdAt",
+            "sender",
+            "notificationType"
+          ],
+          "type": "object"
+        },
+        "notificationID": {
+          "type": "integer"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "userNotificationID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "userNotificationID",
+        "notificationID",
+        "read",
+        "userID",
+        "notification"
       ],
-      "x-is-generated": true,
-      "description": "is generated from projects table."
+      "type": "object",
+      "x-gen-struct": "NotificationResponse",
+      "x-is-generated": true
+    },
+    "WorkItemTypeResponse": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTypeID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-gen-struct": "WorkItemTypeResponse",
+      "x-is-generated": true
     }
   },
   "properties": {
-    "Activity": {
-      "properties": {
-        "activityID": {
-          "type": "integer"
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "isProductive": {
-          "type": "boolean"
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "activityID",
-        "projectID",
-        "name",
-        "description",
-        "isProductive"
-      ],
-      "type": "object",
-      "x-gen-struct": "Activity",
-      "x-is-generated": true
-    },
     "CreateActivityRequest": {
       "properties": {
         "description": {
@@ -8790,112 +8753,6 @@
       "x-gen-struct": "DbWorkItemType",
       "x-is-generated": true
     },
-    "Notification": {
-      "properties": {
-        "notification": {
-          "properties": {
-            "body": {
-              "type": "string",
-              "minLength": 1
-            },
-            "createdAt": {
-              "format": "date-time",
-              "type": [
-                "object"
-              ]
-            },
-            "labels": {
-              "items": {
-                "type": "string"
-              },
-              "type": "array",
-              "minLength": 1
-            },
-            "link": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "notificationID": {
-              "type": "integer"
-            },
-            "notificationType": {
-              "description": "is generated from database enum 'notification_type'.",
-              "type": "string",
-              "x-is-generated": true,
-              "enum": [
-                "personal",
-                "global"
-              ]
-            },
-            "receiver": {
-              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-              "type": "string",
-              "x-go-type": "uuid.UUID",
-              "x-go-type-import": {
-                "name": "uuid",
-                "path": "github.com/google/uuid"
-              },
-              "x-is-generated": true
-            },
-            "sender": {
-              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-              "type": "string",
-              "x-go-type": "uuid.UUID",
-              "x-go-type-import": {
-                "name": "uuid",
-                "path": "github.com/google/uuid"
-              },
-              "x-is-generated": true
-            },
-            "title": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          "required": [
-            "notificationID",
-            "title",
-            "body",
-            "labels",
-            "createdAt",
-            "sender",
-            "notificationType"
-          ],
-          "type": "object"
-        },
-        "notificationID": {
-          "type": "integer"
-        },
-        "read": {
-          "type": "boolean"
-        },
-        "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
-          },
-          "x-is-generated": true
-        },
-        "userNotificationID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "userNotificationID",
-        "notificationID",
-        "read",
-        "userID",
-        "notification"
-      ],
-      "type": "object",
-      "x-gen-struct": "Notification",
-      "x-is-generated": true
-    },
     "PaginatedNotificationsResponse": {
       "properties": {
         "items": {
@@ -9002,7 +8859,7 @@
               "notification"
             ],
             "type": "object",
-            "x-gen-struct": "Notification",
+            "x-gen-struct": "NotificationResponse",
             "x-is-generated": true
           },
           "type": [
@@ -9325,7 +9182,7 @@
               "role"
             ],
             "type": "object",
-            "x-gen-struct": "User",
+            "x-gen-struct": "UserResponse",
             "x-is-generated": true
           },
           "type": [
@@ -9747,47 +9604,6 @@
       "x-gen-struct": "SharedWorkItemJoins",
       "x-is-generated": true
     },
-    "Team": {
-      "properties": {
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "teamID": {
-          "type": "integer"
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        }
-      },
-      "required": [
-        "teamID",
-        "projectID",
-        "name",
-        "description",
-        "createdAt",
-        "updatedAt"
-      ],
-      "type": "object",
-      "x-gen-struct": "Team",
-      "x-is-generated": true
-    },
     "UpdateActivityRequest": {
       "properties": {
         "description": {
@@ -9872,421 +9688,6 @@
       },
       "type": "object",
       "x-gen-struct": "UpdateWorkItemTypeRequest",
-      "x-is-generated": true
-    },
-    "User": {
-      "properties": {
-        "age": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
-        "apiKey": {
-          "properties": {
-            "apiKey": {
-              "type": "string",
-              "minLength": 1
-            },
-            "expiresOn": {
-              "format": "date-time",
-              "type": [
-                "object"
-              ]
-            },
-            "userID": {
-              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-              "type": "string",
-              "x-go-type": "uuid.UUID",
-              "x-go-type-import": {
-                "name": "uuid",
-                "path": "github.com/google/uuid"
-              },
-              "x-is-generated": true
-            }
-          },
-          "required": [
-            "apiKey",
-            "expiresOn",
-            "userID"
-          ],
-          "type": "object",
-          "x-gen-struct": "DbUserAPIKey",
-          "x-is-generated": true
-        },
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "email": {
-          "type": "string",
-          "minLength": 1
-        },
-        "firstName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "fullName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "hasGlobalNotifications": {
-          "type": "boolean"
-        },
-        "hasPersonalNotifications": {
-          "type": "boolean"
-        },
-        "lastName": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "projects": {
-          "items": {
-            "properties": {
-              "boardConfig": {
-                "properties": {
-                  "fields": {
-                    "items": {
-                      "properties": {
-                        "isEditable": {
-                          "type": "boolean"
-                        },
-                        "isVisible": {
-                          "type": "boolean"
-                        },
-                        "name": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "path": {
-                          "type": "string",
-                          "minLength": 1
-                        },
-                        "showCollapsed": {
-                          "type": "boolean"
-                        }
-                      },
-                      "required": [
-                        "isEditable",
-                        "showCollapsed",
-                        "isVisible",
-                        "path",
-                        "name"
-                      ],
-                      "type": "object"
-                    },
-                    "type": "array"
-                  },
-                  "header": {
-                    "items": {
-                      "type": "string"
-                    },
-                    "type": "array"
-                  },
-                  "visualization": {
-                    "type": "object"
-                  }
-                },
-                "type": "object"
-              },
-              "createdAt": {
-                "format": "date-time",
-                "type": [
-                  "object"
-                ]
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "enum": [
-                  "demo",
-                  "demo_two"
-                ],
-                "x-is-generated": true,
-                "description": "is generated from projects table."
-              },
-              "projectID": {
-                "type": "integer"
-              },
-              "updatedAt": {
-                "format": "date-time",
-                "type": [
-                  "object"
-                ]
-              }
-            },
-            "required": [
-              "projectID",
-              "name",
-              "description",
-              "boardConfig",
-              "createdAt",
-              "updatedAt"
-            ],
-            "type": "object",
-            "x-gen-struct": "DbProject",
-            "x-is-generated": true
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "role": {
-          "type": "string",
-          "enum": [
-            "guest",
-            "user",
-            "advancedUser",
-            "manager",
-            "admin",
-            "superAdmin"
-          ],
-          "x-is-generated": true,
-          "description": "is generated from roles.json keys."
-        },
-        "scopes": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "enum": [
-              "project-member",
-              "users:read",
-              "users:write",
-              "users:delete",
-              "scopes:write",
-              "team-settings:write",
-              "project-settings:write",
-              "activity:create",
-              "activity:edit",
-              "activity:delete",
-              "work-item-tag:create",
-              "work-item-tag:edit",
-              "work-item-tag:delete",
-              "work-item:review",
-              "work-item-comment:create",
-              "work-item-comment:edit",
-              "work-item-comment:delete"
-            ],
-            "x-is-generated": true,
-            "description": "is generated from scopes.json keys."
-          }
-        },
-        "teams": {
-          "items": {
-            "properties": {
-              "createdAt": {
-                "format": "date-time",
-                "type": [
-                  "object"
-                ]
-              },
-              "description": {
-                "type": "string",
-                "minLength": 1
-              },
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "projectID": {
-                "type": "integer"
-              },
-              "teamID": {
-                "type": "integer"
-              },
-              "updatedAt": {
-                "format": "date-time",
-                "type": [
-                  "object"
-                ]
-              }
-            },
-            "required": [
-              "teamID",
-              "projectID",
-              "name",
-              "description",
-              "createdAt",
-              "updatedAt"
-            ],
-            "type": "object"
-          },
-          "type": [
-            "array",
-            "null"
-          ]
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
-          },
-          "x-is-generated": true
-        },
-        "username": {
-          "type": "string",
-          "minLength": 1
-        }
-      },
-      "required": [
-        "userID",
-        "username",
-        "email",
-        "scopes",
-        "hasPersonalNotifications",
-        "hasGlobalNotifications",
-        "createdAt",
-        "updatedAt",
-        "role"
-      ],
-      "type": "object",
-      "x-gen-struct": "User",
-      "x-is-generated": true
-    },
-    "WorkItemComment": {
-      "properties": {
-        "createdAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "message": {
-          "type": "string",
-          "minLength": 1
-        },
-        "updatedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
-          },
-          "x-is-generated": true
-        },
-        "workItemCommentID": {
-          "type": "integer"
-        },
-        "workItemID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemCommentID",
-        "workItemID",
-        "userID",
-        "message",
-        "createdAt",
-        "updatedAt"
-      ],
-      "type": "object",
-      "x-gen-struct": "WorkItemComment",
-      "x-is-generated": true
-    },
-    "WorkItemTag": {
-      "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string",
-          "minLength": 1
-        },
-        "deletedAt": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "workItemTagID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemTagID",
-        "projectID",
-        "name",
-        "description",
-        "color"
-      ],
-      "type": "object",
-      "x-gen-struct": "WorkItemTag",
-      "x-is-generated": true
-    },
-    "WorkItemType": {
-      "properties": {
-        "color": {
-          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
-          "type": "string",
-          "minLength": 1
-        },
-        "description": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "projectID": {
-          "type": "integer"
-        },
-        "workItemTypeID": {
-          "type": "integer"
-        }
-      },
-      "required": [
-        "workItemTypeID",
-        "projectID",
-        "name",
-        "description",
-        "color"
-      ],
-      "type": "object",
-      "x-gen-struct": "WorkItemType",
       "x-is-generated": true
     },
     "Direction": {
@@ -10832,7 +10233,7 @@
         "path": "github.com/google/uuid"
       }
     },
-    "WorkItem": {
+    "WorkItemResponse": {
       "oneOf": [
         {
           "properties": {
@@ -11283,7 +10684,7 @@
             "demoWorkItem"
           ],
           "type": "object",
-          "x-gen-struct": "DemoWorkItem",
+          "x-gen-struct": "DemoWorkItemResponse",
           "x-is-generated": true
         },
         {
@@ -11717,7 +11118,7 @@
             "demoTwoWorkItem"
           ],
           "type": "object",
-          "x-gen-struct": "DemoTwoWorkItem",
+          "x-gen-struct": "DemoTwoWorkItemResponse",
           "x-is-generated": true
         }
       ],
@@ -12402,64 +11803,6 @@
       "x-gen-struct": "CreateTimeEntryRequest",
       "x-is-generated": true
     },
-    "TimeEntry": {
-      "properties": {
-        "activityID": {
-          "type": "integer"
-        },
-        "comment": {
-          "type": "string",
-          "minLength": 1
-        },
-        "durationMinutes": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
-        "start": {
-          "format": "date-time",
-          "type": [
-            "object"
-          ]
-        },
-        "teamID": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        },
-        "timeEntryID": {
-          "type": "integer"
-        },
-        "userID": {
-          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-          "type": "string",
-          "x-go-type": "uuid.UUID",
-          "x-go-type-import": {
-            "name": "uuid",
-            "path": "github.com/google/uuid"
-          },
-          "x-is-generated": true
-        },
-        "workItemID": {
-          "type": [
-            "integer",
-            "null"
-          ]
-        }
-      },
-      "required": [
-        "timeEntryID",
-        "activityID",
-        "userID",
-        "comment",
-        "start"
-      ],
-      "type": "object",
-      "x-gen-struct": "TimeEntry",
-      "x-is-generated": true
-    },
     "UpdateTimeEntryRequest": {
       "properties": {
         "activityID": {
@@ -12507,7 +11850,7 @@
       "x-gen-struct": "UpdateTimeEntryRequest",
       "x-is-generated": true
     },
-    "DemoTwoWorkItem": {
+    "DemoTwoWorkItemResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -12938,10 +12281,10 @@
         "demoTwoWorkItem"
       ],
       "type": "object",
-      "x-gen-struct": "DemoTwoWorkItem",
+      "x-gen-struct": "DemoTwoWorkItemResponse",
       "x-is-generated": true
     },
-    "DemoWorkItem": {
+    "DemoWorkItemResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -13390,7 +12733,7 @@
         "demoWorkItem"
       ],
       "type": "object",
-      "x-gen-struct": "DemoWorkItem",
+      "x-gen-struct": "DemoWorkItemResponse",
       "x-is-generated": true
     },
     "WorkItemBase": {
@@ -14503,7 +13846,7 @@
               "updatedAt"
             ],
             "type": "object",
-            "x-gen-struct": "CacheDemoWorkItem",
+            "x-gen-struct": "CacheDemoWorkItemResponse",
             "x-is-generated": true
           },
           "type": [
@@ -14622,7 +13965,534 @@
       "x-gen-struct": "GetCurrentUserQueryParameters",
       "x-is-generated": true
     },
-    "CacheDemoWorkItem": {
+    "ProjectName": {
+      "type": "string",
+      "enum": [
+        "demo",
+        "demo_two"
+      ],
+      "x-is-generated": true,
+      "description": "is generated from projects table."
+    },
+    "ActivityResponse": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "isProductive": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activityID",
+        "projectID",
+        "name",
+        "description",
+        "isProductive"
+      ],
+      "type": "object",
+      "x-gen-struct": "ActivityResponse",
+      "x-is-generated": true
+    },
+    "TeamResponse": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "teamID": {
+          "type": "integer"
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        }
+      },
+      "required": [
+        "teamID",
+        "projectID",
+        "name",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-gen-struct": "TeamResponse",
+      "x-is-generated": true
+    },
+    "UserResponse": {
+      "properties": {
+        "age": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "apiKey": {
+          "properties": {
+            "apiKey": {
+              "type": "string",
+              "minLength": 1
+            },
+            "expiresOn": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "userID": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "x-is-generated": true
+            }
+          },
+          "required": [
+            "apiKey",
+            "expiresOn",
+            "userID"
+          ],
+          "type": "object",
+          "x-gen-struct": "DbUserAPIKey",
+          "x-is-generated": true
+        },
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "email": {
+          "type": "string",
+          "minLength": 1
+        },
+        "firstName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fullName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hasGlobalNotifications": {
+          "type": "boolean"
+        },
+        "hasPersonalNotifications": {
+          "type": "boolean"
+        },
+        "lastName": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "projects": {
+          "items": {
+            "properties": {
+              "boardConfig": {
+                "properties": {
+                  "fields": {
+                    "items": {
+                      "properties": {
+                        "isEditable": {
+                          "type": "boolean"
+                        },
+                        "isVisible": {
+                          "type": "boolean"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "path": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "showCollapsed": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "isEditable",
+                        "showCollapsed",
+                        "isVisible",
+                        "path",
+                        "name"
+                      ],
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "header": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "visualization": {
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
+              "createdAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "enum": [
+                  "demo",
+                  "demo_two"
+                ],
+                "x-is-generated": true,
+                "description": "is generated from projects table."
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              }
+            },
+            "required": [
+              "projectID",
+              "name",
+              "description",
+              "boardConfig",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object",
+            "x-gen-struct": "DbProject",
+            "x-is-generated": true
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "guest",
+            "user",
+            "advancedUser",
+            "manager",
+            "admin",
+            "superAdmin"
+          ],
+          "x-is-generated": true,
+          "description": "is generated from roles.json keys."
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "project-member",
+              "users:read",
+              "users:write",
+              "users:delete",
+              "scopes:write",
+              "team-settings:write",
+              "project-settings:write",
+              "activity:create",
+              "activity:edit",
+              "activity:delete",
+              "work-item-tag:create",
+              "work-item-tag:edit",
+              "work-item-tag:delete",
+              "work-item:review",
+              "work-item-comment:create",
+              "work-item-comment:edit",
+              "work-item-comment:delete"
+            ],
+            "x-is-generated": true,
+            "description": "is generated from scopes.json keys."
+          }
+        },
+        "teams": {
+          "items": {
+            "properties": {
+              "createdAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "projectID": {
+                "type": "integer"
+              },
+              "teamID": {
+                "type": "integer"
+              },
+              "updatedAt": {
+                "format": "date-time",
+                "type": [
+                  "object"
+                ]
+              }
+            },
+            "required": [
+              "teamID",
+              "projectID",
+              "name",
+              "description",
+              "createdAt",
+              "updatedAt"
+            ],
+            "type": "object"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "username": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "userID",
+        "username",
+        "email",
+        "scopes",
+        "hasPersonalNotifications",
+        "hasGlobalNotifications",
+        "createdAt",
+        "updatedAt",
+        "role"
+      ],
+      "type": "object",
+      "x-gen-struct": "UserResponse",
+      "x-is-generated": true
+    },
+    "WorkItemCommentResponse": {
+      "properties": {
+        "createdAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "updatedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "workItemCommentID": {
+          "type": "integer"
+        },
+        "workItemID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemCommentID",
+        "workItemID",
+        "userID",
+        "message",
+        "createdAt",
+        "updatedAt"
+      ],
+      "type": "object",
+      "x-gen-struct": "WorkItemCommentResponse",
+      "x-is-generated": true
+    },
+    "WorkItemTagResponse": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "deletedAt": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTagID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTagID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-gen-struct": "WorkItemTagResponse",
+      "x-is-generated": true
+    },
+    "TimeEntryResponse": {
+      "properties": {
+        "activityID": {
+          "type": "integer"
+        },
+        "comment": {
+          "type": "string",
+          "minLength": 1
+        },
+        "durationMinutes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "start": {
+          "format": "date-time",
+          "type": [
+            "object"
+          ]
+        },
+        "teamID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timeEntryID": {
+          "type": "integer"
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "workItemID": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "timeEntryID",
+        "activityID",
+        "userID",
+        "comment",
+        "start"
+      ],
+      "type": "object",
+      "x-gen-struct": "TimeEntryResponse",
+      "x-is-generated": true
+    },
+    "CacheDemoWorkItemResponse": {
       "properties": {
         "closedAt": {
           "format": "date-time",
@@ -14714,17 +14584,147 @@
         "updatedAt"
       ],
       "type": "object",
-      "x-gen-struct": "CacheDemoWorkItem",
+      "x-gen-struct": "CacheDemoWorkItemResponse",
       "x-is-generated": true
     },
-    "ProjectName": {
-      "type": "string",
-      "enum": [
-        "demo",
-        "demo_two"
+    "NotificationResponse": {
+      "properties": {
+        "notification": {
+          "properties": {
+            "body": {
+              "type": "string",
+              "minLength": 1
+            },
+            "createdAt": {
+              "format": "date-time",
+              "type": [
+                "object"
+              ]
+            },
+            "labels": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "minLength": 1
+            },
+            "link": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "notificationID": {
+              "type": "integer"
+            },
+            "notificationType": {
+              "description": "is generated from database enum 'notification_type'.",
+              "type": "string",
+              "x-is-generated": true,
+              "enum": [
+                "personal",
+                "global"
+              ]
+            },
+            "receiver": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "x-is-generated": true
+            },
+            "sender": {
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+              "type": "string",
+              "x-go-type": "uuid.UUID",
+              "x-go-type-import": {
+                "name": "uuid",
+                "path": "github.com/google/uuid"
+              },
+              "x-is-generated": true
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "notificationID",
+            "title",
+            "body",
+            "labels",
+            "createdAt",
+            "sender",
+            "notificationType"
+          ],
+          "type": "object"
+        },
+        "notificationID": {
+          "type": "integer"
+        },
+        "read": {
+          "type": "boolean"
+        },
+        "userID": {
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+          "type": "string",
+          "x-go-type": "uuid.UUID",
+          "x-go-type-import": {
+            "name": "uuid",
+            "path": "github.com/google/uuid"
+          },
+          "x-is-generated": true
+        },
+        "userNotificationID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "userNotificationID",
+        "notificationID",
+        "read",
+        "userID",
+        "notification"
       ],
-      "x-is-generated": true,
-      "description": "is generated from projects table."
+      "type": "object",
+      "x-gen-struct": "NotificationResponse",
+      "x-is-generated": true
+    },
+    "WorkItemTypeResponse": {
+      "properties": {
+        "color": {
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "projectID": {
+          "type": "integer"
+        },
+        "workItemTypeID": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "workItemTypeID",
+        "projectID",
+        "name",
+        "description",
+        "color"
+      ],
+      "type": "object",
+      "x-gen-struct": "WorkItemTypeResponse",
+      "x-is-generated": true
     }
   }
 }

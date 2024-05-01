@@ -27,25 +27,25 @@ type PaginationBaseResponse[T any] struct {
 	Items []T            `json:"items" required:"true"`
 }
 
-type PaginatedNotificationsResponse = PaginationBaseResponse[Notification]
+type PaginatedNotificationsResponse = PaginationBaseResponse[NotificationResponse]
 
-type PaginatedDemoWorkItemsResponse = PaginationBaseResponse[CacheDemoWorkItem]
+type PaginatedDemoWorkItemsResponse = PaginationBaseResponse[CacheDemoWorkItemResponse]
 
 /**
  *
  */
 
-type CacheDemoWorkItem struct {
+type CacheDemoWorkItemResponse struct {
 	db.CacheDemoWorkItem
 }
 
-type Notification struct {
+type NotificationResponse struct {
 	db.UserNotification
 	Notification db.Notification `json:"notification" required:"true"` // notification_id clash
 }
 
-// User represents an OpenAPI schema response for a User.
-type User struct {
+// UserResponse represents an OpenAPI schema response for a UserResponse.
+type UserResponse struct {
 	*db.User
 	// Role replaces db RoleRank
 	Role Role `json:"role" ref:"#/components/schemas/Role" required:"true"`
@@ -95,7 +95,7 @@ type GetCacheDemoWorkItemQueryParameters struct {
 //	type Users struct {
 //		Users []User `json:"users"`
 //	}
-type PaginatedUsersResponse = PaginationBaseResponse[User]
+type PaginatedUsersResponse = PaginationBaseResponse[UserResponse]
 
 // NOTE: keep in sync with base workitem getSharedDBOpts.
 type SharedWorkItemJoins struct {
@@ -112,12 +112,12 @@ type WorkItemBase struct {
 	ProjectName ProjectName `json:"projectName" ref:"#/components/schemas/ProjectName" required:"true"`
 }
 
-type DemoWorkItem struct {
+type DemoWorkItemResponse struct {
 	WorkItemBase
 
 	DemoWorkItem db.DemoWorkItem `json:"demoWorkItem" required:"true"`
 }
-type DemoTwoWorkItem struct {
+type DemoTwoWorkItemResponse struct {
 	WorkItemBase
 
 	DemoTwoWorkItem db.DemoTwoWorkItem `json:"demoTwoWorkItem" required:"true"`
@@ -141,7 +141,7 @@ type CreateWorkItemTagRequest struct {
 type UpdateWorkItemTagRequest struct {
 	db.WorkItemTagUpdateParams
 }
-type WorkItemTag struct {
+type WorkItemTagResponse struct {
 	db.WorkItemTag
 	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
@@ -151,11 +151,11 @@ type CreateWorkItemTypeRequest struct {
 type UpdateWorkItemTypeRequest struct {
 	db.WorkItemTypeUpdateParams
 }
-type WorkItemType struct {
+type WorkItemTypeResponse struct {
 	db.WorkItemType
 }
 
-type Team struct {
+type TeamResponse struct {
 	db.Team
 	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
@@ -168,7 +168,7 @@ type UpdateTeamRequest struct {
 	db.TeamUpdateParams
 }
 
-type Activity struct {
+type ActivityResponse struct {
 	db.Activity
 	// NOTE: project join useless here, entities associated to project and do not need its own endpoint
 }
@@ -181,7 +181,7 @@ type UpdateActivityRequest struct {
 	db.ActivityUpdateParams
 }
 
-type TimeEntry struct {
+type TimeEntryResponse struct {
 	db.TimeEntry
 }
 
@@ -203,7 +203,7 @@ type CreateDemoTwoWorkItemRequest struct {
 	services.DemoTwoWorkItemCreateParams
 }
 
-type WorkItemComment struct {
+type WorkItemCommentResponse struct {
 	db.WorkItemComment
 }
 

@@ -5,7 +5,7 @@
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { Activity } from '../model/activity'
+import type { ActivityResponse } from '../model/activityResponse'
 import type { CreateActivityRequest } from '../model/createActivityRequest'
 import type { UpdateActivityRequest } from '../model/updateActivityRequest'
 import { customInstance } from '../../api/mutator'
@@ -21,7 +21,7 @@ export const createActivity = (
   createActivityRequest: CreateActivityRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<Activity>(
+  return customInstance<ActivityResponse>(
     {
       url: `/project/${projectName}/activity/`,
       method: 'POST',
@@ -35,7 +35,7 @@ export const createActivity = (
  * @summary get activity.
  */
 export const getActivity = (activityID: number, options?: SecondParameter<typeof customInstance>) => {
-  return customInstance<Activity>({ url: `/activity/${activityID}`, method: 'GET' }, options)
+  return customInstance<ActivityResponse>({ url: `/activity/${activityID}`, method: 'GET' }, options)
 }
 /**
  * @summary update activity.
@@ -45,7 +45,7 @@ export const updateActivity = (
   updateActivityRequest: UpdateActivityRequest,
   options?: SecondParameter<typeof customInstance>,
 ) => {
-  return customInstance<Activity>(
+  return customInstance<ActivityResponse>(
     {
       url: `/activity/${activityID}`,
       method: 'PATCH',

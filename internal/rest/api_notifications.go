@@ -21,9 +21,9 @@ func (h *StrictHandlers) GetPaginatedNotifications(c *gin.Context, request GetPa
 		nextCursor = fmt.Sprint(nn[len(nn)-1].UserNotificationID)
 	}
 
-	items := make([]Notification, len(nn))
+	items := make([]NotificationResponse, len(nn))
 	for i, un := range nn {
-		items[i] = Notification{
+		items[i] = NotificationResponse{
 			UserNotification: un,
 			Notification:     *un.NotificationJoin,
 		}

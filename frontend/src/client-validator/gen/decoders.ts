@@ -8,7 +8,6 @@ import addFormats from 'ajv-formats'
 import { Decoder } from './helpers'
 import { validateJson } from '../validate'
 import {
-  Activity,
   CreateActivityRequest,
   CreateDemoTwoWorkItemRequest,
   CreateDemoWorkItemRequest,
@@ -37,23 +36,17 @@ import {
   DbWorkItemTag,
   DbWorkItemTagCreateParams,
   DbWorkItemType,
-  Notification,
   PaginatedNotificationsResponse,
   PaginatedUsersResponse,
   PaginationPage,
   ProjectBoard,
   ServicesMember,
   SharedWorkItemJoins,
-  Team,
   UpdateActivityRequest,
   UpdateTeamRequest,
   UpdateWorkItemCommentRequest,
   UpdateWorkItemTagRequest,
   UpdateWorkItemTypeRequest,
-  User,
-  WorkItemComment,
-  WorkItemTag,
-  WorkItemType,
   Direction,
   DbActivity,
   ProjectConfig,
@@ -71,7 +64,7 @@ import {
   UpdateUserAuthRequest,
   ValidationError,
   UuidUUID,
-  WorkItem,
+  WorkItemResponse,
   CreateWorkItemRequest,
   DbActivityCreateParams,
   DbWorkItemRole,
@@ -88,10 +81,9 @@ import {
   DbUserWIAWorkItem,
   DbWorkItemM2MAssigneeWIA,
   CreateTimeEntryRequest,
-  TimeEntry,
   UpdateTimeEntryRequest,
-  DemoTwoWorkItem,
-  DemoWorkItem,
+  DemoTwoWorkItemResponse,
+  DemoWorkItemResponse,
   WorkItemBase,
   PaginationFilterPrimitive,
   PaginationFilterArray,
@@ -107,8 +99,16 @@ import {
   PaginatedDemoWorkItemsResponse,
   GetCacheDemoWorkItemQueryParameters,
   GetCurrentUserQueryParameters,
-  CacheDemoWorkItem,
   ProjectName,
+  ActivityResponse,
+  TeamResponse,
+  UserResponse,
+  WorkItemCommentResponse,
+  WorkItemTagResponse,
+  TimeEntryResponse,
+  CacheDemoWorkItemResponse,
+  NotificationResponse,
+  WorkItemTypeResponse,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -117,18 +117,6 @@ addFormats(ajv, { formats: ['int64', 'int32', 'binary', 'date-time', 'date'] })
 ajv.compile(jsonSchema)
 
 // Decoders
-export const ActivityDecoder: Decoder<Activity> = {
-  definitionName: 'Activity',
-  schemaRef: '#/definitions/Activity',
-
-  decode(json: unknown): Activity {
-    const schema = ajv.getSchema(ActivityDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ActivityDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ActivityDecoder.definitionName)
-  },
-}
 export const CreateActivityRequestDecoder: Decoder<CreateActivityRequest> = {
   definitionName: 'CreateActivityRequest',
   schemaRef: '#/definitions/CreateActivityRequest',
@@ -465,18 +453,6 @@ export const DbWorkItemTypeDecoder: Decoder<DbWorkItemType> = {
     return validateJson(json, schema, DbWorkItemTypeDecoder.definitionName)
   },
 }
-export const NotificationDecoder: Decoder<Notification> = {
-  definitionName: 'Notification',
-  schemaRef: '#/definitions/Notification',
-
-  decode(json: unknown): Notification {
-    const schema = ajv.getSchema(NotificationDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${NotificationDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, NotificationDecoder.definitionName)
-  },
-}
 export const PaginatedNotificationsResponseDecoder: Decoder<PaginatedNotificationsResponse> = {
   definitionName: 'PaginatedNotificationsResponse',
   schemaRef: '#/definitions/PaginatedNotificationsResponse',
@@ -549,18 +525,6 @@ export const SharedWorkItemJoinsDecoder: Decoder<SharedWorkItemJoins> = {
     return validateJson(json, schema, SharedWorkItemJoinsDecoder.definitionName)
   },
 }
-export const TeamDecoder: Decoder<Team> = {
-  definitionName: 'Team',
-  schemaRef: '#/definitions/Team',
-
-  decode(json: unknown): Team {
-    const schema = ajv.getSchema(TeamDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${TeamDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, TeamDecoder.definitionName)
-  },
-}
 export const UpdateActivityRequestDecoder: Decoder<UpdateActivityRequest> = {
   definitionName: 'UpdateActivityRequest',
   schemaRef: '#/definitions/UpdateActivityRequest',
@@ -619,54 +583,6 @@ export const UpdateWorkItemTypeRequestDecoder: Decoder<UpdateWorkItemTypeRequest
       throw new Error(`Schema ${UpdateWorkItemTypeRequestDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, UpdateWorkItemTypeRequestDecoder.definitionName)
-  },
-}
-export const UserDecoder: Decoder<User> = {
-  definitionName: 'User',
-  schemaRef: '#/definitions/User',
-
-  decode(json: unknown): User {
-    const schema = ajv.getSchema(UserDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${UserDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, UserDecoder.definitionName)
-  },
-}
-export const WorkItemCommentDecoder: Decoder<WorkItemComment> = {
-  definitionName: 'WorkItemComment',
-  schemaRef: '#/definitions/WorkItemComment',
-
-  decode(json: unknown): WorkItemComment {
-    const schema = ajv.getSchema(WorkItemCommentDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${WorkItemCommentDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, WorkItemCommentDecoder.definitionName)
-  },
-}
-export const WorkItemTagDecoder: Decoder<WorkItemTag> = {
-  definitionName: 'WorkItemTag',
-  schemaRef: '#/definitions/WorkItemTag',
-
-  decode(json: unknown): WorkItemTag {
-    const schema = ajv.getSchema(WorkItemTagDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${WorkItemTagDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, WorkItemTagDecoder.definitionName)
-  },
-}
-export const WorkItemTypeDecoder: Decoder<WorkItemType> = {
-  definitionName: 'WorkItemType',
-  schemaRef: '#/definitions/WorkItemType',
-
-  decode(json: unknown): WorkItemType {
-    const schema = ajv.getSchema(WorkItemTypeDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${WorkItemTypeDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, WorkItemTypeDecoder.definitionName)
   },
 }
 export const DirectionDecoder: Decoder<Direction> = {
@@ -873,16 +789,16 @@ export const UuidUUIDDecoder: Decoder<UuidUUID> = {
     return validateJson(json, schema, UuidUUIDDecoder.definitionName)
   },
 }
-export const WorkItemDecoder: Decoder<WorkItem> = {
-  definitionName: 'WorkItem',
-  schemaRef: '#/definitions/WorkItem',
+export const WorkItemResponseDecoder: Decoder<WorkItemResponse> = {
+  definitionName: 'WorkItemResponse',
+  schemaRef: '#/definitions/WorkItemResponse',
 
-  decode(json: unknown): WorkItem {
-    const schema = ajv.getSchema(WorkItemDecoder.schemaRef)
+  decode(json: unknown): WorkItemResponse {
+    const schema = ajv.getSchema(WorkItemResponseDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${WorkItemDecoder.definitionName} not found`)
+      throw new Error(`Schema ${WorkItemResponseDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, WorkItemDecoder.definitionName)
+    return validateJson(json, schema, WorkItemResponseDecoder.definitionName)
   },
 }
 export const CreateWorkItemRequestDecoder: Decoder<CreateWorkItemRequest> = {
@@ -1077,18 +993,6 @@ export const CreateTimeEntryRequestDecoder: Decoder<CreateTimeEntryRequest> = {
     return validateJson(json, schema, CreateTimeEntryRequestDecoder.definitionName)
   },
 }
-export const TimeEntryDecoder: Decoder<TimeEntry> = {
-  definitionName: 'TimeEntry',
-  schemaRef: '#/definitions/TimeEntry',
-
-  decode(json: unknown): TimeEntry {
-    const schema = ajv.getSchema(TimeEntryDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${TimeEntryDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, TimeEntryDecoder.definitionName)
-  },
-}
 export const UpdateTimeEntryRequestDecoder: Decoder<UpdateTimeEntryRequest> = {
   definitionName: 'UpdateTimeEntryRequest',
   schemaRef: '#/definitions/UpdateTimeEntryRequest',
@@ -1101,28 +1005,28 @@ export const UpdateTimeEntryRequestDecoder: Decoder<UpdateTimeEntryRequest> = {
     return validateJson(json, schema, UpdateTimeEntryRequestDecoder.definitionName)
   },
 }
-export const DemoTwoWorkItemDecoder: Decoder<DemoTwoWorkItem> = {
-  definitionName: 'DemoTwoWorkItem',
-  schemaRef: '#/definitions/DemoTwoWorkItem',
+export const DemoTwoWorkItemResponseDecoder: Decoder<DemoTwoWorkItemResponse> = {
+  definitionName: 'DemoTwoWorkItemResponse',
+  schemaRef: '#/definitions/DemoTwoWorkItemResponse',
 
-  decode(json: unknown): DemoTwoWorkItem {
-    const schema = ajv.getSchema(DemoTwoWorkItemDecoder.schemaRef)
+  decode(json: unknown): DemoTwoWorkItemResponse {
+    const schema = ajv.getSchema(DemoTwoWorkItemResponseDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${DemoTwoWorkItemDecoder.definitionName} not found`)
+      throw new Error(`Schema ${DemoTwoWorkItemResponseDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, DemoTwoWorkItemDecoder.definitionName)
+    return validateJson(json, schema, DemoTwoWorkItemResponseDecoder.definitionName)
   },
 }
-export const DemoWorkItemDecoder: Decoder<DemoWorkItem> = {
-  definitionName: 'DemoWorkItem',
-  schemaRef: '#/definitions/DemoWorkItem',
+export const DemoWorkItemResponseDecoder: Decoder<DemoWorkItemResponse> = {
+  definitionName: 'DemoWorkItemResponse',
+  schemaRef: '#/definitions/DemoWorkItemResponse',
 
-  decode(json: unknown): DemoWorkItem {
-    const schema = ajv.getSchema(DemoWorkItemDecoder.schemaRef)
+  decode(json: unknown): DemoWorkItemResponse {
+    const schema = ajv.getSchema(DemoWorkItemResponseDecoder.schemaRef)
     if (!schema) {
-      throw new Error(`Schema ${DemoWorkItemDecoder.definitionName} not found`)
+      throw new Error(`Schema ${DemoWorkItemResponseDecoder.definitionName} not found`)
     }
-    return validateJson(json, schema, DemoWorkItemDecoder.definitionName)
+    return validateJson(json, schema, DemoWorkItemResponseDecoder.definitionName)
   },
 }
 export const WorkItemBaseDecoder: Decoder<WorkItemBase> = {
@@ -1305,18 +1209,6 @@ export const GetCurrentUserQueryParametersDecoder: Decoder<GetCurrentUserQueryPa
     return validateJson(json, schema, GetCurrentUserQueryParametersDecoder.definitionName)
   },
 }
-export const CacheDemoWorkItemDecoder: Decoder<CacheDemoWorkItem> = {
-  definitionName: 'CacheDemoWorkItem',
-  schemaRef: '#/definitions/CacheDemoWorkItem',
-
-  decode(json: unknown): CacheDemoWorkItem {
-    const schema = ajv.getSchema(CacheDemoWorkItemDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${CacheDemoWorkItemDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, CacheDemoWorkItemDecoder.definitionName)
-  },
-}
 export const ProjectNameDecoder: Decoder<ProjectName> = {
   definitionName: 'ProjectName',
   schemaRef: '#/definitions/ProjectName',
@@ -1327,5 +1219,113 @@ export const ProjectNameDecoder: Decoder<ProjectName> = {
       throw new Error(`Schema ${ProjectNameDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, ProjectNameDecoder.definitionName)
+  },
+}
+export const ActivityResponseDecoder: Decoder<ActivityResponse> = {
+  definitionName: 'ActivityResponse',
+  schemaRef: '#/definitions/ActivityResponse',
+
+  decode(json: unknown): ActivityResponse {
+    const schema = ajv.getSchema(ActivityResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ActivityResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ActivityResponseDecoder.definitionName)
+  },
+}
+export const TeamResponseDecoder: Decoder<TeamResponse> = {
+  definitionName: 'TeamResponse',
+  schemaRef: '#/definitions/TeamResponse',
+
+  decode(json: unknown): TeamResponse {
+    const schema = ajv.getSchema(TeamResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${TeamResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, TeamResponseDecoder.definitionName)
+  },
+}
+export const UserResponseDecoder: Decoder<UserResponse> = {
+  definitionName: 'UserResponse',
+  schemaRef: '#/definitions/UserResponse',
+
+  decode(json: unknown): UserResponse {
+    const schema = ajv.getSchema(UserResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${UserResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, UserResponseDecoder.definitionName)
+  },
+}
+export const WorkItemCommentResponseDecoder: Decoder<WorkItemCommentResponse> = {
+  definitionName: 'WorkItemCommentResponse',
+  schemaRef: '#/definitions/WorkItemCommentResponse',
+
+  decode(json: unknown): WorkItemCommentResponse {
+    const schema = ajv.getSchema(WorkItemCommentResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${WorkItemCommentResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, WorkItemCommentResponseDecoder.definitionName)
+  },
+}
+export const WorkItemTagResponseDecoder: Decoder<WorkItemTagResponse> = {
+  definitionName: 'WorkItemTagResponse',
+  schemaRef: '#/definitions/WorkItemTagResponse',
+
+  decode(json: unknown): WorkItemTagResponse {
+    const schema = ajv.getSchema(WorkItemTagResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${WorkItemTagResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, WorkItemTagResponseDecoder.definitionName)
+  },
+}
+export const TimeEntryResponseDecoder: Decoder<TimeEntryResponse> = {
+  definitionName: 'TimeEntryResponse',
+  schemaRef: '#/definitions/TimeEntryResponse',
+
+  decode(json: unknown): TimeEntryResponse {
+    const schema = ajv.getSchema(TimeEntryResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${TimeEntryResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, TimeEntryResponseDecoder.definitionName)
+  },
+}
+export const CacheDemoWorkItemResponseDecoder: Decoder<CacheDemoWorkItemResponse> = {
+  definitionName: 'CacheDemoWorkItemResponse',
+  schemaRef: '#/definitions/CacheDemoWorkItemResponse',
+
+  decode(json: unknown): CacheDemoWorkItemResponse {
+    const schema = ajv.getSchema(CacheDemoWorkItemResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${CacheDemoWorkItemResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, CacheDemoWorkItemResponseDecoder.definitionName)
+  },
+}
+export const NotificationResponseDecoder: Decoder<NotificationResponse> = {
+  definitionName: 'NotificationResponse',
+  schemaRef: '#/definitions/NotificationResponse',
+
+  decode(json: unknown): NotificationResponse {
+    const schema = ajv.getSchema(NotificationResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${NotificationResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, NotificationResponseDecoder.definitionName)
+  },
+}
+export const WorkItemTypeResponseDecoder: Decoder<WorkItemTypeResponse> = {
+  definitionName: 'WorkItemTypeResponse',
+  schemaRef: '#/definitions/WorkItemTypeResponse',
+
+  decode(json: unknown): WorkItemTypeResponse {
+    const schema = ajv.getSchema(WorkItemTypeResponseDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${WorkItemTypeResponseDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, WorkItemTypeResponseDecoder.definitionName)
   },
 }

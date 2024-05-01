@@ -15,17 +15,17 @@ import {
   http
 } from 'msw'
 import type {
-  Activity
+  ActivityResponse
 } from '.././model'
 
-export const getCreateActivityResponseMock = (overrideResponse: any = {}): Activity => ({activityID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ActivityID, deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), isProductive: faker.datatype.boolean(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, ...overrideResponse})
+export const getCreateActivityResponseMock = (overrideResponse: any = {}): ActivityResponse => ({activityID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ActivityID, deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), isProductive: faker.datatype.boolean(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, ...overrideResponse})
 
-export const getGetActivityResponseMock = (overrideResponse: any = {}): Activity => ({activityID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ActivityID, deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), isProductive: faker.datatype.boolean(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, ...overrideResponse})
+export const getGetActivityResponseMock = (overrideResponse: any = {}): ActivityResponse => ({activityID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ActivityID, deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), isProductive: faker.datatype.boolean(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, ...overrideResponse})
 
-export const getUpdateActivityResponseMock = (overrideResponse: any = {}): Activity => ({activityID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ActivityID, deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), isProductive: faker.datatype.boolean(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, ...overrideResponse})
+export const getUpdateActivityResponseMock = (overrideResponse: any = {}): ActivityResponse => ({activityID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ActivityID, deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), description: faker.word.sample(), isProductive: faker.datatype.boolean(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, ...overrideResponse})
 
 
-export const getCreateActivityMockHandler = (overrideResponse?: Activity) => {
+export const getCreateActivityMockHandler = (overrideResponse?: ActivityResponse) => {
   return http.post('*/project/:projectName/activity/', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getCreateActivityResponseMock()),
@@ -39,7 +39,7 @@ export const getCreateActivityMockHandler = (overrideResponse?: Activity) => {
   })
 }
 
-export const getGetActivityMockHandler = (overrideResponse?: Activity) => {
+export const getGetActivityMockHandler = (overrideResponse?: ActivityResponse) => {
   return http.get('*/activity/:activityID', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetActivityResponseMock()),
@@ -53,7 +53,7 @@ export const getGetActivityMockHandler = (overrideResponse?: Activity) => {
   })
 }
 
-export const getUpdateActivityMockHandler = (overrideResponse?: Activity) => {
+export const getUpdateActivityMockHandler = (overrideResponse?: ActivityResponse) => {
   return http.patch('*/activity/:activityID', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getUpdateActivityResponseMock()),

@@ -15,17 +15,17 @@ import {
   http
 } from 'msw'
 import type {
-  WorkItemComment
+  WorkItemCommentResponse
 } from '.././model'
 
-export const getCreateWorkItemCommentResponseMock = (overrideResponse: any = {}): WorkItemComment => ({createdAt: (() => faker.date.past())(), message: faker.word.sample(), updatedAt: (() => faker.date.past())(), userID: faker.string.uuid() as EntityIDs.UserID, workItemCommentID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemCommentID, workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID, ...overrideResponse})
+export const getCreateWorkItemCommentResponseMock = (overrideResponse: any = {}): WorkItemCommentResponse => ({createdAt: (() => faker.date.past())(), message: faker.word.sample(), updatedAt: (() => faker.date.past())(), userID: faker.string.uuid() as EntityIDs.UserID, workItemCommentID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemCommentID, workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID, ...overrideResponse})
 
-export const getGetWorkItemCommentResponseMock = (overrideResponse: any = {}): WorkItemComment => ({createdAt: (() => faker.date.past())(), message: faker.word.sample(), updatedAt: (() => faker.date.past())(), userID: faker.string.uuid() as EntityIDs.UserID, workItemCommentID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemCommentID, workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID, ...overrideResponse})
+export const getGetWorkItemCommentResponseMock = (overrideResponse: any = {}): WorkItemCommentResponse => ({createdAt: (() => faker.date.past())(), message: faker.word.sample(), updatedAt: (() => faker.date.past())(), userID: faker.string.uuid() as EntityIDs.UserID, workItemCommentID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemCommentID, workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID, ...overrideResponse})
 
-export const getUpdateWorkItemCommentResponseMock = (overrideResponse: any = {}): WorkItemComment => ({createdAt: (() => faker.date.past())(), message: faker.word.sample(), updatedAt: (() => faker.date.past())(), userID: faker.string.uuid() as EntityIDs.UserID, workItemCommentID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemCommentID, workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID, ...overrideResponse})
+export const getUpdateWorkItemCommentResponseMock = (overrideResponse: any = {}): WorkItemCommentResponse => ({createdAt: (() => faker.date.past())(), message: faker.word.sample(), updatedAt: (() => faker.date.past())(), userID: faker.string.uuid() as EntityIDs.UserID, workItemCommentID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemCommentID, workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID, ...overrideResponse})
 
 
-export const getCreateWorkItemCommentMockHandler = (overrideResponse?: WorkItemComment) => {
+export const getCreateWorkItemCommentMockHandler = (overrideResponse?: WorkItemCommentResponse) => {
   return http.post('*/work-item/:workItemID/comment/', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getCreateWorkItemCommentResponseMock()),
@@ -39,7 +39,7 @@ export const getCreateWorkItemCommentMockHandler = (overrideResponse?: WorkItemC
   })
 }
 
-export const getGetWorkItemCommentMockHandler = (overrideResponse?: WorkItemComment) => {
+export const getGetWorkItemCommentMockHandler = (overrideResponse?: WorkItemCommentResponse) => {
   return http.get('*/work-item/:workItemID/comment/:workItemCommentID', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetWorkItemCommentResponseMock()),
@@ -53,7 +53,7 @@ export const getGetWorkItemCommentMockHandler = (overrideResponse?: WorkItemComm
   })
 }
 
-export const getUpdateWorkItemCommentMockHandler = (overrideResponse?: WorkItemComment) => {
+export const getUpdateWorkItemCommentMockHandler = (overrideResponse?: WorkItemCommentResponse) => {
   return http.patch('*/work-item/:workItemID/comment/:workItemCommentID', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getUpdateWorkItemCommentResponseMock()),

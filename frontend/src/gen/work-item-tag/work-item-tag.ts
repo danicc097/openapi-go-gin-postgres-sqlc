@@ -25,7 +25,7 @@ import type {
   CreateWorkItemTagRequest,
   HTTPError,
   UpdateWorkItemTagRequest,
-  WorkItemTag
+  WorkItemTagResponse
 } from '.././model'
 import { customInstance } from '../../api/mutator';
 import type { ErrorType } from '../../api/mutator';
@@ -43,7 +43,7 @@ export const createWorkItemTag = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<WorkItemTag>(
+      return customInstance<WorkItemTagResponse>(
       {url: `/project/${projectName}/work-item-tag/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createWorkItemTagRequest
@@ -96,7 +96,7 @@ export const getWorkItemTag = (
 ) => {
       
       
-      return customInstance<WorkItemTag>(
+      return customInstance<WorkItemTagResponse>(
       {url: `/work-item-tag/${workItemTagID}`, method: 'GET', signal
     },
       options);
@@ -197,7 +197,7 @@ export const updateWorkItemTag = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<WorkItemTag>(
+      return customInstance<WorkItemTagResponse>(
       {url: `/work-item-tag/${workItemTagID}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateWorkItemTagRequest

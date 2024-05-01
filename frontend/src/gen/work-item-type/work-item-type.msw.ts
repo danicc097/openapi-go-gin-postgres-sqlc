@@ -15,17 +15,17 @@ import {
   http
 } from 'msw'
 import type {
-  WorkItemType
+  WorkItemTypeResponse
 } from '.././model'
 
-export const getCreateWorkItemTypeResponseMock = (overrideResponse: any = {}): WorkItemType => ({color: faker.word.sample(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTypeID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTypeID, ...overrideResponse})
+export const getCreateWorkItemTypeResponseMock = (overrideResponse: any = {}): WorkItemTypeResponse => ({color: faker.word.sample(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTypeID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTypeID, ...overrideResponse})
 
-export const getGetWorkItemTypeResponseMock = (overrideResponse: any = {}): WorkItemType => ({color: faker.word.sample(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTypeID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTypeID, ...overrideResponse})
+export const getGetWorkItemTypeResponseMock = (overrideResponse: any = {}): WorkItemTypeResponse => ({color: faker.word.sample(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTypeID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTypeID, ...overrideResponse})
 
-export const getUpdateWorkItemTypeResponseMock = (overrideResponse: any = {}): WorkItemType => ({color: faker.word.sample(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTypeID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTypeID, ...overrideResponse})
+export const getUpdateWorkItemTypeResponseMock = (overrideResponse: any = {}): WorkItemTypeResponse => ({color: faker.word.sample(), description: faker.word.sample(), name: faker.word.sample(), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, workItemTypeID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemTypeID, ...overrideResponse})
 
 
-export const getCreateWorkItemTypeMockHandler = (overrideResponse?: WorkItemType) => {
+export const getCreateWorkItemTypeMockHandler = (overrideResponse?: WorkItemTypeResponse) => {
   return http.post('*/project/:projectName/work-item-type/', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getCreateWorkItemTypeResponseMock()),
@@ -39,7 +39,7 @@ export const getCreateWorkItemTypeMockHandler = (overrideResponse?: WorkItemType
   })
 }
 
-export const getGetWorkItemTypeMockHandler = (overrideResponse?: WorkItemType) => {
+export const getGetWorkItemTypeMockHandler = (overrideResponse?: WorkItemTypeResponse) => {
   return http.get('*/work-item-type/:workItemTypeID', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getGetWorkItemTypeResponseMock()),
@@ -53,7 +53,7 @@ export const getGetWorkItemTypeMockHandler = (overrideResponse?: WorkItemType) =
   })
 }
 
-export const getUpdateWorkItemTypeMockHandler = (overrideResponse?: WorkItemType) => {
+export const getUpdateWorkItemTypeMockHandler = (overrideResponse?: WorkItemTypeResponse) => {
   return http.patch('*/work-item-type/:workItemTypeID', async () => {
     await delay(200);
     return new HttpResponse(JSON.stringify(overrideResponse ? overrideResponse : getUpdateWorkItemTypeResponseMock()),

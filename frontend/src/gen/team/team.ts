@@ -24,7 +24,7 @@ import type {
 import type {
   CreateTeamRequest,
   HTTPError,
-  Team,
+  TeamResponse,
   UpdateTeamRequest
 } from '.././model'
 import { customInstance } from '../../api/mutator';
@@ -43,7 +43,7 @@ export const createTeam = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<Team>(
+      return customInstance<TeamResponse>(
       {url: `/project/${projectName}/team/`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createTeamRequest
@@ -96,7 +96,7 @@ export const getTeam = (
 ) => {
       
       
-      return customInstance<Team>(
+      return customInstance<TeamResponse>(
       {url: `/team/${teamID}`, method: 'GET', signal
     },
       options);
@@ -197,7 +197,7 @@ export const updateTeam = (
  options?: SecondParameter<typeof customInstance>,) => {
       
       
-      return customInstance<Team>(
+      return customInstance<TeamResponse>(
       {url: `/team/${teamID}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateTeamRequest

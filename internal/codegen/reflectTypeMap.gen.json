@@ -1,7 +1,7 @@
 {
   "rest": {
-    "PaginationBaseResponse[github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.Notification]": "PaginatedNotificationsResponse",
-    "PaginationBaseResponse[github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.CacheDemoWorkItem]": "PaginatedDemoWorkItemsResponse",
-    "PaginationBaseResponse[github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.User]": "PaginatedUsersResponse"
+    "PaginationBaseResponse[github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.NotificationResponse]": "PaginatedNotificationsResponse",
+    "PaginationBaseResponse[github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.CacheDemoWorkItemResponse]": "PaginatedDemoWorkItemsResponse",
+    "PaginationBaseResponse[github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest.UserResponse]": "PaginatedUsersResponse"
   }
 }

@@ -44,7 +44,7 @@ import {
   PaginationFilterModes,
   PaginationItems,
   Role,
-  User,
+  UserResponse,
 } from 'src/gen/model'
 import { getContrastYIQ, scopeColor } from 'src/utils/colors'
 import _, { lowerCase } from 'lodash'
@@ -67,7 +67,7 @@ import { MRT_Localization_EN } from 'mantine-react-table/locales/en/index.esm.mj
 import { useDeletedEntityFilter } from 'src/hooks/tables/useFilters'
 import ErrorCallout from 'src/components/Callout/ErrorCallout'
 
-type Column = MRT_ColumnDef<User>
+type Column = MRT_ColumnDef<UserResponse>
 
 type DefaultFilters = keyof typeof ENTITY_FIELDS.user
 

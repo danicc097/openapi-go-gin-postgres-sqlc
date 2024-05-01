@@ -27,7 +27,7 @@ import type {
   GetProjectWorkitemsParams,
   ProjectBoard,
   ProjectConfig,
-  WorkItem
+  WorkItemResponse
 } from '.././model'
 import { customInstance } from '../../api/mutator';
 import type { ErrorType } from '../../api/mutator';
@@ -455,7 +455,7 @@ export const getProjectWorkitems = (
 ) => {
       
       
-      return customInstance<WorkItem>(
+      return customInstance<WorkItemResponse>(
       {url: `/project/${projectName}/workitems`, method: 'GET',
         params, signal
     },

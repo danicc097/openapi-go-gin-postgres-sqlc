@@ -151,7 +151,7 @@ func TestHandlers_GetWorkItemComment(t *testing.T) {
 
 		got, err := json.Marshal(res.JSON200)
 		require.NoError(t, err)
-		want, err := json.Marshal(&rest.WorkItemComment{WorkItemComment: *workItemCommentf.WorkItemComment})
+		want, err := json.Marshal(&rest.WorkItemCommentResponse{WorkItemComment: *workItemCommentf.WorkItemComment})
 		require.NoError(t, err)
 
 		assert.JSONEqf(t, string(want), string(got), "") // ignore private JSON fields
