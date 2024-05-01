@@ -14,6 +14,7 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/models"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/pb/python-ml-app-protos/tfidf/v1/v1testing"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttesting"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 	redis "github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/assert"
@@ -63,7 +64,7 @@ func testMain(m *testing.M) int {
 
 type testServer struct {
 	server       *http.Server
-	client       *ClientWithResponses
+	client       *resttesting.ClientWithResponses
 	tp           *sdktrace.TracerProvider
 	spanRecorder *tracetest.SpanRecorder
 	event        *rest.EventServer
@@ -117,7 +118,7 @@ func runTestServer(t *testing.T, ctx context.Context, testPool *pgxpool.Pool, mi
 		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewServer")
 	}
 
-	client, err := NewTestClient(MustConstructInternalPath(""), srv.Httpsrv.Handler)
+	client, err := resttesting.NewTestClient(MustConstructInternalPath(""), srv.Httpsrv.Handler)
 	if err != nil {
 		return nil, internal.WrapErrorf(err, models.ErrorCodeUnknown, "NewTestClient")
 	}

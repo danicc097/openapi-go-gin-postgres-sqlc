@@ -860,7 +860,6 @@ x.gen.client-server() {
     exclude_schemas=$(printf ",\"%s\"" "${exclude_schemas_arr[@]}")
     exclude_schemas="[${exclude_schemas:1}]"
 
-    echo "exclude_schemas:${exclude_schemas[*]}"
     local models_config=$(
       cat <<EOF
 package: db
@@ -902,14 +901,16 @@ EOF
     )
     local test_client_config=$(
       cat <<EOF
-package: rest_test
+package: resttesting
 generate:
   client: true
-output: internal/rest/openapi_client_gen_test.go
+output: internal/rest/resttesting/openapi_client_gen.go
 test-client: true
 additional-imports:
   - alias: .
-    package: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest
+    package: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
+  - alias: db
+    package: github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/repos/postgresql/gen/db
 EOF
     )
     #  TODO: x-go-name for rest models created for gen/models should have suffix Public
@@ -928,7 +929,7 @@ EOF
     # TODO: remove once x-go-type in use for all db types.
     # models gen cannot be done if we have x-go-type...
     # sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_server.gen.go
-    sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/openapi_client_gen_test.go
+    sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/rest/resttesting/openapi_client_gen.go
     # db already imports models pkg
     # sed -i 's/ \*Db\([A-Z]\)/ \*db\.\1/g; s/\[\]Db\([A-Z]\)/\[\]db\.\1/g; s/ Db\([A-Z]\)/ db\.\1/g; s/ \(\(externalRef0\.\)\?Db\)\([A-Z]\)/ db\.\3/g' internal/models/openapi_types.gen.go
 

@@ -10,9 +10,10 @@ import (
 
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal"
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest"
+	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/rest/resttesting"
 )
 
-func ReqWithAPIKey(apiKey string) RequestEditorFn {
+func ReqWithAPIKey(apiKey string) resttesting.RequestEditorFn {
 	return func(ctx context.Context, req *http.Request) error {
 		req.Header.Add("Content-Type", "application/json")
 		req.Header.Add(rest.ApiKeyHeaderKey, apiKey)
