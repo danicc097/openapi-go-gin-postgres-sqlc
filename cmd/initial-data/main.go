@@ -155,7 +155,7 @@ func main() {
 	var teams []*db.Team
 
 	teamDemo, err := svc.Team.Create(ctx, pool, &db.TeamCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
+		ProjectID:   internal.ProjectIDByName[models.ProjectNameDemo],
 		Name:        "Team 1",
 		Description: "Team 1 description",
 	})
@@ -163,7 +163,7 @@ func main() {
 	teams = append(teams, teamDemo)
 
 	teamDemo2, err := svc.Team.Create(ctx, pool, &db.TeamCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
+		ProjectID:   internal.ProjectIDByName[models.ProjectNameDemoTwo],
 		Name:        "Team 2-1",
 		Description: "Team 2-1 description",
 	})
@@ -171,7 +171,7 @@ func main() {
 	teams = append(teams, teamDemo2)
 
 	team2Demo2, err := svc.Team.Create(ctx, pool, &db.TeamCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
+		ProjectID:   internal.ProjectIDByName[models.ProjectNameDemoTwo],
 		Name:        "Team 2-2",
 		Description: "Team 2-2 description",
 	})
@@ -200,18 +200,18 @@ func main() {
 	 **/
 	logger.Info("Creating activities...")
 
-	activity1, err := svc.Activity.Create(ctx, pool, models.ProjectDemo, &db.ActivityCreateParams{
+	activity1, err := svc.Activity.Create(ctx, pool, models.ProjectNameDemo, &db.ActivityCreateParams{
 		Name:         "Activity 1",
 		Description:  "Activity 1 description",
 		IsProductive: true,
 	})
 	handleError(err, activity1)
-	activity2, err := svc.Activity.Create(ctx, pool, models.ProjectDemo, &db.ActivityCreateParams{
+	activity2, err := svc.Activity.Create(ctx, pool, models.ProjectNameDemo, &db.ActivityCreateParams{
 		Name:        "Activity 2",
 		Description: "Activity 2 description",
 	})
 	handleError(err, activity2)
-	activity3, err := svc.Activity.Create(ctx, pool, models.ProjectDemo, &db.ActivityCreateParams{
+	activity3, err := svc.Activity.Create(ctx, pool, models.ProjectNameDemo, &db.ActivityCreateParams{
 		Name:        "Activity 3",
 		Description: "Activity 3 description",
 	})
@@ -224,7 +224,7 @@ func main() {
 	 **/
 	logger.Info("Creating workitem tags...")
 	wiTag1, err := svc.WorkItemTag.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
+		ProjectID:   internal.ProjectIDByName[models.ProjectNameDemo],
 		Name:        "Tag 1",
 		Description: "Tag 1 description",
 		Color:       "#be6cc4",
@@ -232,7 +232,7 @@ func main() {
 	handleError(err, wiTag1)
 
 	wiTag2, err := svc.WorkItemTag.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemo],
+		ProjectID:   internal.ProjectIDByName[models.ProjectNameDemo],
 		Name:        "Tag 2",
 		Description: "Tag 2 description",
 		Color:       "#29b8db",
@@ -240,7 +240,7 @@ func main() {
 	handleError(err, wiTag2)
 
 	wiTagDemo2_1, err := svc.WorkItemTag.Create(ctx, pool, superAdminCaller, &db.WorkItemTagCreateParams{
-		ProjectID:   internal.ProjectIDByName[models.ProjectDemoTwo],
+		ProjectID:   internal.ProjectIDByName[models.ProjectNameDemoTwo],
 		Name:        "Tag 1",
 		Description: "Tag 1 description",
 		Color:       "#be6cc4",

@@ -34,7 +34,7 @@ func TestKanbanStep_ByIndexedQueries(t *testing.T) {
 	nonUniqueTestCases := []filterTestCase[[]db.KanbanStep]{
 		{
 			name:       "id",
-			filter:     internal.ProjectIDByName[models.ProjectDemoTwo],
+			filter:     internal.ProjectIDByName[models.ProjectNameDemoTwo],
 			repoMethod: reflect.ValueOf(kanbanStepRepo.ByProject),
 			callback: func(t *testing.T, res []db.KanbanStep) {
 				found := false

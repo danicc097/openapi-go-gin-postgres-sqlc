@@ -32,7 +32,7 @@ import (
 //   - "tags":<tags> to append literal struct tag strings.
 type Project struct {
 	ProjectID          ProjectID            `json:"projectID" db:"project_id" required:"true" nullable:"false"`                                              // project_id
-	Name               models.Project       `json:"name" db:"name" required:"true" nullable:"false" ref:"#/components/schemas/Project"`                      // name
+	Name               models.ProjectName   `json:"name" db:"name" required:"true" nullable:"false" ref:"#/components/schemas/ProjectName"`                  // name
 	Description        string               `json:"description" db:"description" required:"true" nullable:"false"`                                           // description
 	WorkItemsTableName string               `json:"-" db:"work_items_table_name" nullable:"false"`                                                           // work_items_table_name
 	BoardConfig        models.ProjectConfig `json:"boardConfig" db:"board_config" required:"true" nullable:"false" ref:"#/components/schemas/ProjectConfig"` // board_config
@@ -52,7 +52,7 @@ type Project struct {
 type ProjectCreateParams struct {
 	BoardConfig        models.ProjectConfig `json:"boardConfig" required:"true" nullable:"false" ref:"#/components/schemas/ProjectConfig"` // board_config
 	Description        string               `json:"description" required:"true" nullable:"false"`                                          // description
-	Name               models.Project       `json:"name" required:"true" nullable:"false" ref:"#/components/schemas/Project"`              // name
+	Name               models.ProjectName   `json:"name" required:"true" nullable:"false" ref:"#/components/schemas/ProjectName"`          // name
 	WorkItemsTableName string               `json:"-" nullable:"false"`                                                                    // work_items_table_name
 }
 
@@ -60,7 +60,7 @@ type ProjectCreateParams struct {
 type ProjectParams interface {
 	GetBoardConfig() *models.ProjectConfig
 	GetDescription() *string
-	GetName() *models.Project
+	GetName() *models.ProjectName
 	GetWorkItemsTableName() *string
 }
 
@@ -80,11 +80,11 @@ func (p ProjectUpdateParams) GetDescription() *string {
 	return p.Description
 }
 
-func (p ProjectCreateParams) GetName() *models.Project {
+func (p ProjectCreateParams) GetName() *models.ProjectName {
 	x := p.Name
 	return &x
 }
-func (p ProjectUpdateParams) GetName() *models.Project {
+func (p ProjectUpdateParams) GetName() *models.ProjectName {
 	return p.Name
 }
 
@@ -308,7 +308,7 @@ const projectTableWorkItemTypesGroupBySQL = `projects.project_id`
 type ProjectUpdateParams struct {
 	BoardConfig        *models.ProjectConfig `json:"boardConfig" nullable:"false" ref:"#/components/schemas/ProjectConfig"` // board_config
 	Description        *string               `json:"description" nullable:"false"`                                          // description
-	Name               *models.Project       `json:"name" nullable:"false" ref:"#/components/schemas/Project"`              // name
+	Name               *models.ProjectName   `json:"name" nullable:"false" ref:"#/components/schemas/ProjectName"`          // name
 	WorkItemsTableName *string               `json:"-" nullable:"false"`                                                    // work_items_table_name
 }
 
@@ -575,7 +575,7 @@ func ProjectPaginated(ctx context.Context, db DB, cursor models.PaginationCursor
 // ProjectByName retrieves a row from 'public.projects' as a Project.
 //
 // Generated from index 'projects_name_key'.
-func ProjectByName(ctx context.Context, db DB, name models.Project, opts ...ProjectSelectConfigOption) (*Project, error) {
+func ProjectByName(ctx context.Context, db DB, name models.ProjectName, opts ...ProjectSelectConfigOption) (*Project, error) {
 	c := &ProjectSelectConfig{joins: ProjectJoins{}, filters: make(map[string][]any), having: make(map[string][]any)}
 
 	for _, o := range opts {

@@ -98,7 +98,7 @@ type User interface {
 // Projects are manually created on demand.
 // NOTE: Read-only. Managed via migrations.
 type Project interface {
-	ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (*db.Project, error)
+	ByName(ctx context.Context, d db.DBTX, name models.ProjectName, opts ...db.ProjectSelectConfigOption) (*db.Project, error)
 	ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...db.ProjectSelectConfigOption) (*db.Project, error)
 	IsTeamInProject(ctx context.Context, d db.DBTX, arg db.IsTeamInProjectParams) (bool, error)
 }

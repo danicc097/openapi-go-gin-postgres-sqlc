@@ -17,12 +17,12 @@ type CreateWorkItemFixture struct {
 }
 
 // CreateWorkItem creates a new random work item comment with the given configuration.
-func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, project models.Project, caller services.CtxUser, teamID db.TeamID) *CreateWorkItemFixture {
+func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, project models.ProjectName, caller services.CtxUser, teamID db.TeamID) *CreateWorkItemFixture {
 	var workItem *db.WorkItem
 	var err error
 
 	switch project {
-	case models.ProjectDemo:
+	case models.ProjectNameDemo:
 		p := postgresqlrandom.DemoWorkItemCreateParams(
 			postgresqlrandom.KanbanStepID(project),
 			postgresqlrandom.WorkItemTypeID(project),
@@ -32,7 +32,7 @@ func (ff *FixtureFactory) CreateWorkItem(ctx context.Context, project models.Pro
 			DemoWorkItemCreateParams: p,
 		})
 		require.NoError(ff.t, err)
-	case models.ProjectDemoTwo:
+	case models.ProjectNameDemoTwo:
 		p := postgresqlrandom.DemoTwoWorkItemCreateParams(
 			postgresqlrandom.KanbanStepID(project),
 			postgresqlrandom.WorkItemTypeID(project),

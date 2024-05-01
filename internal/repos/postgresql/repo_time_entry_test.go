@@ -19,7 +19,7 @@ func TestTimeEntry_ByIndexedQueries(t *testing.T) {
 	timeEntryRepo := postgresql.NewTimeEntry()
 
 	user := newRandomUser(t, testPool)
-	activity := newRandomActivity(t, testPool, models.ProjectDemo)
+	activity := newRandomActivity(t, testPool, models.ProjectNameDemo)
 
 	workItem := newRandomDemoWorkItem(t, testPool)
 	timeEntry := newRandomTimeEntry(t, testPool, activity.ActivityID, user.UserID, &workItem.WorkItemID, nil) // time entry associated to a workItem

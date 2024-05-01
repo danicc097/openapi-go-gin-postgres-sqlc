@@ -27,12 +27,12 @@ type FakeProject struct {
 		result1 *db.Project
 		result2 error
 	}
-	ByNameStub        func(context.Context, db.DBTX, models.Project, ...db.ProjectSelectConfigOption) (*db.Project, error)
+	ByNameStub        func(context.Context, db.DBTX, models.ProjectName, ...db.ProjectSelectConfigOption) (*db.Project, error)
 	byNameMutex       sync.RWMutex
 	byNameArgsForCall []struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 models.Project
+		arg3 models.ProjectName
 		arg4 []db.ProjectSelectConfigOption
 	}
 	byNameReturns struct {
@@ -129,13 +129,13 @@ func (fake *FakeProject) ByIDReturnsOnCall(i int, result1 *db.Project, result2 e
 	}{result1, result2}
 }
 
-func (fake *FakeProject) ByName(arg1 context.Context, arg2 db.DBTX, arg3 models.Project, arg4 ...db.ProjectSelectConfigOption) (*db.Project, error) {
+func (fake *FakeProject) ByName(arg1 context.Context, arg2 db.DBTX, arg3 models.ProjectName, arg4 ...db.ProjectSelectConfigOption) (*db.Project, error) {
 	fake.byNameMutex.Lock()
 	ret, specificReturn := fake.byNameReturnsOnCall[len(fake.byNameArgsForCall)]
 	fake.byNameArgsForCall = append(fake.byNameArgsForCall, struct {
 		arg1 context.Context
 		arg2 db.DBTX
-		arg3 models.Project
+		arg3 models.ProjectName
 		arg4 []db.ProjectSelectConfigOption
 	}{arg1, arg2, arg3, arg4})
 	stub := fake.ByNameStub
@@ -157,13 +157,13 @@ func (fake *FakeProject) ByNameCallCount() int {
 	return len(fake.byNameArgsForCall)
 }
 
-func (fake *FakeProject) ByNameCalls(stub func(context.Context, db.DBTX, models.Project, ...db.ProjectSelectConfigOption) (*db.Project, error)) {
+func (fake *FakeProject) ByNameCalls(stub func(context.Context, db.DBTX, models.ProjectName, ...db.ProjectSelectConfigOption) (*db.Project, error)) {
 	fake.byNameMutex.Lock()
 	defer fake.byNameMutex.Unlock()
 	fake.ByNameStub = stub
 }
 
-func (fake *FakeProject) ByNameArgsForCall(i int) (context.Context, db.DBTX, models.Project, []db.ProjectSelectConfigOption) {
+func (fake *FakeProject) ByNameArgsForCall(i int) (context.Context, db.DBTX, models.ProjectName, []db.ProjectSelectConfigOption) {
 	fake.byNameMutex.RLock()
 	defer fake.byNameMutex.RUnlock()
 	argsForCall := fake.byNameArgsForCall[i]

@@ -6,13 +6,13 @@
  * OpenAPI spec version: 2.0.0
  */
 import type { ProjectConfig } from './projectConfig'
-import type { Project } from './project'
+import type { ProjectName } from './projectName'
 
 export interface DbProject {
   boardConfig: ProjectConfig
   createdAt: Date
   description: string
-  name: Project
+  name: ProjectName
   projectID: number
   updatedAt: Date
 }

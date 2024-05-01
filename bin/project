@@ -504,7 +504,7 @@ sync_spec_with_db() {
   mapfile -t db_projects < <(docker.postgres.psql -d $POSTGRES_DB -c "select name from projects;" 2>/dev/null)
 
   [[ ${#db_projects[@]} -gt 0 ]] || err "No projects found in database $POSTGRES_DB"
-  replace_enum_in_spec "Project" db_projects "projects table"
+  replace_enum_in_spec "ProjectName" db_projects "projects table"
 
   for project in ${db_projects[@]}; do
     ### kanban steps
@@ -577,7 +577,7 @@ import (
 EOF
 
   mapfile -t projects_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "select project_id,name from projects;" 2>/dev/null)
-  generate_model_mappings_dicts Project db.ProjectID projects_rows
+  generate_model_mappings_dicts "Project" db.ProjectID projects_rows "Name"
 
   for project in ${db_projects[@]}; do
     mapfile -t kanban_steps_rows < <(docker.postgres.psql -d $POSTGRES_DB -c "
@@ -627,25 +627,26 @@ generate_model_mappings_dicts() {
   local prefix="$1"
   local idType="$2"
   local -n __arr="$3" # db rows
+  local prefix_suffix="$4"
   echo "var (
-	${prefix}NameByID = map[${idType}]models.${prefix}{
+	${prefix}NameByID = map[${idType}]models.${prefix}${prefix_suffix}{
   " >>$model_mappings_path
   for row in "${__arr[@]}"; do
     first=$(cut_first "$row" "|") # always safe
     mapfile -t arr <<<"${first}"
     local id="${arr[0]}"
     local name="${arr[1]}"
-    echo "${id}: models.${prefix}$(to_pascal "$name")," >>$model_mappings_path
+    echo "${id}: models.${prefix}${prefix_suffix}$(to_pascal "$name")," >>$model_mappings_path
   done
   echo "}
-	${prefix}IDByName = map[models.${prefix}]${idType}{
+	${prefix}IDByName = map[models.${prefix}${prefix_suffix}]${idType}{
   " >>$model_mappings_path
   for row in "${__arr[@]}"; do
     first=$(cut_first "$row" "|") # always safe
     mapfile -t arr <<<"${first}"
     local id="${arr[0]}"
     local name="${arr[1]}"
-    echo "models.${prefix}$(to_pascal "$name"): ${id}," >>$model_mappings_path
+    echo "models.${prefix}${prefix_suffix}$(to_pascal "$name"): ${id}," >>$model_mappings_path
   done
   echo "})
   " >>$model_mappings_path

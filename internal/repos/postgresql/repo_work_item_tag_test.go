@@ -15,14 +15,14 @@ func TestWorkItemTag_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
 	workItemTagRepo := postgresql.NewWorkItemTag()
-	workItemTag := newRandomWorkItemTag(t, testPool, internal.ProjectIDByName[models.ProjectDemo])
+	workItemTag := newRandomWorkItemTag(t, testPool, internal.ProjectIDByName[models.ProjectNameDemo])
 
 	uniqueTestCases := []filterTestCase[*db.WorkItemTag]{
 		{
 			name: "name",
 			filter: []any{
 				workItemTag.Name,
-				internal.ProjectIDByName[models.ProjectDemo],
+				internal.ProjectIDByName[models.ProjectNameDemo],
 			},
 			repoMethod: reflect.ValueOf(workItemTagRepo.ByName),
 			callback: func(t *testing.T, res *db.WorkItemTag) {

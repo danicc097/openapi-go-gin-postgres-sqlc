@@ -8,7 +8,7 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  */
 import type { DbWorkItemM2MAssigneeWIA } from './dbWorkItemM2MAssigneeWIA';
 import type { WorkItemBaseMetadata } from './workItemBaseMetadata';
-import type { Project } from './project';
+import type { ProjectName } from './projectName';
 import type { DbTimeEntry } from './dbTimeEntry';
 import type { DbWorkItemComment } from './dbWorkItemComment';
 import type { DbWorkItemTag } from './dbWorkItemTag';
@@ -22,7 +22,7 @@ export interface WorkItemBase {
   kanbanStepID: EntityIDs.KanbanStepID;
   members?: DbWorkItemM2MAssigneeWIA[] | null;
   metadata: WorkItemBaseMetadata;
-  projectName: Project;
+  projectName: ProjectName;
   targetDate: Date;
   teamID: EntityIDs.TeamID | null;
   timeEntries?: DbTimeEntry[] | null;

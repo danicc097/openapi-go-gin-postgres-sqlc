@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func newRandomActivity(t *testing.T, d db.DBTX, project models.Project) *db.Activity {
+func newRandomActivity(t *testing.T, d db.DBTX, project models.ProjectName) *db.Activity {
 	t.Helper()
 
 	activityRepo := postgresql.NewActivity()
@@ -39,8 +39,8 @@ func newRandomDemoWorkItem(t *testing.T, d db.DBTX) *db.WorkItem {
 	t.Helper()
 
 	dpwiRepo := postgresql.NewDemoWorkItem()
-	// project-specific workitem. for other randomized entities will accept models.Project
-	team := newRandomTeam(t, d, internal.ProjectIDByName[models.ProjectDemo])
+	// project-specific workitem. for other randomized entities will accept models.ProjectName
+	team := newRandomTeam(t, d, internal.ProjectIDByName[models.ProjectNameDemo])
 
 	kanbanStepID := internal.DemoKanbanStepsIDByName[testutil.RandomFrom(models.AllDemoKanbanStepsValues())]
 	workItemTypeID := internal.DemoWorkItemTypesIDByName[testutil.RandomFrom(models.AllDemoWorkItemTypesValues())]
@@ -81,8 +81,8 @@ func newRandomDemoTwoWorkItem(t *testing.T, d db.DBTX) *db.WorkItem {
 	t.Helper()
 
 	dpwiRepo := postgresql.NewDemoTwoWorkItem()
-	// project-specific workitem. for other randomized entities will accept models.Project
-	team := newRandomTeam(t, d, internal.ProjectIDByName[models.ProjectDemoTwo])
+	// project-specific workitem. for other randomized entities will accept models.ProjectName
+	team := newRandomTeam(t, d, internal.ProjectIDByName[models.ProjectNameDemoTwo])
 
 	kanbanStepID := internal.DemoTwoKanbanStepsIDByName[testutil.RandomFrom(models.AllDemoTwoKanbanStepsValues())]
 	workItemTypeID := internal.DemoTwoWorkItemTypesIDByName[testutil.RandomFrom(models.AllDemoTwoWorkItemTypesValues())]
@@ -121,16 +121,16 @@ func newRandomTimeEntry(t *testing.T, d db.DBTX, activityID db.ActivityID, userI
 	return te
 }
 
-func newRandomWorkItemComment(t *testing.T, d db.DBTX, project models.Project) *db.WorkItemComment {
+func newRandomWorkItemComment(t *testing.T, d db.DBTX, project models.ProjectName) *db.WorkItemComment {
 	t.Helper()
 
 	workItemCommentRepo := reposwrappers.NewWorkItemCommentWithRetry(postgresql.NewWorkItemComment(), testutil.NewLogger(t), 3, 200*time.Millisecond)
 
 	var workItemID db.WorkItemID
 	switch project {
-	case models.ProjectDemo:
+	case models.ProjectNameDemo:
 		workItemID = newRandomDemoWorkItem(t, d).WorkItemID
-	case models.ProjectDemoTwo:
+	case models.ProjectNameDemoTwo:
 		workItemID = newRandomDemoTwoWorkItem(t, d).WorkItemID
 	}
 

@@ -188,14 +188,14 @@ export interface components {
       base: components["schemas"]["DbWorkItemCreateParams"];
       demoTwoProject: components["schemas"]["DbDemoTwoWorkItemCreateParams"];
       members: components["schemas"]["ServicesMember"][];
-      projectName: components["schemas"]["Project"];
+      projectName: components["schemas"]["ProjectName"];
       tagIDs: number[];
     };
     CreateDemoWorkItemRequest: {
       base: components["schemas"]["DbWorkItemCreateParams"];
       demoProject: components["schemas"]["DbDemoWorkItemCreateParams"];
       members: components["schemas"]["ServicesMember"][];
-      projectName: components["schemas"]["Project"];
+      projectName: components["schemas"]["ProjectName"];
       tagIDs: number[];
     };
     CreateProjectBoardRequest: {
@@ -271,7 +271,7 @@ export interface components {
       /** Format: date-time */
       createdAt: string;
       description: string;
-      name: components["schemas"]["Project"];
+      name: components["schemas"]["ProjectName"];
       projectID: number;
       /** Format: date-time */
       updatedAt: string;
@@ -416,7 +416,7 @@ export interface components {
       nextCursor?: string;
     };
     ProjectBoard: {
-      projectName: components["schemas"]["Project"];
+      projectName: components["schemas"]["ProjectName"];
     };
     ServicesMember: {
       role: components["schemas"]["WorkItemRole"];
@@ -642,11 +642,6 @@ export interface components {
     UuidUUID: string;
     WorkItem: components["schemas"]["DemoWorkItem"] | components["schemas"]["DemoTwoWorkItem"];
     CreateWorkItemRequest: components["schemas"]["CreateDemoWorkItemRequest"] | components["schemas"]["CreateDemoTwoWorkItemRequest"];
-    /**
-     * @description is generated from projects table.
-     * @enum {string}
-     */
-    Project: "demo" | "demo_two";
     DbActivityCreateParams: {
       description: string;
       isProductive: boolean;
@@ -742,7 +737,7 @@ export interface components {
       metadata: {
         [key: string]: unknown;
       };
-      projectName: components["schemas"]["Project"];
+      projectName: components["schemas"]["ProjectName"];
       /** Format: date-time */
       targetDate: string;
       teamID: number | null;
@@ -770,7 +765,7 @@ export interface components {
       metadata: {
         [key: string]: unknown;
       };
-      projectName: components["schemas"]["Project"];
+      projectName: components["schemas"]["ProjectName"];
       /** Format: date-time */
       targetDate: string;
       teamID: number | null;
@@ -797,7 +792,7 @@ export interface components {
       metadata: {
         [key: string]: unknown;
       };
-      projectName: components["schemas"]["Project"];
+      projectName: components["schemas"]["ProjectName"];
       /** Format: date-time */
       targetDate: string;
       teamID: number | null;
@@ -900,6 +895,11 @@ export interface components {
       workItemID: number;
       workItemTypeID: number;
     };
+    /**
+     * @description is generated from projects table.
+     * @enum {string}
+     */
+    ProjectName: "demo" | "demo_two";
   };
   responses: never;
   parameters: {
@@ -907,7 +907,7 @@ export interface components {
      * @description Project name
      * @example demo
      */
-    ProjectName: components["schemas"]["Project"];
+    ProjectName: components["schemas"]["ProjectName"];
     /**
      * @description UUID identifier
      * @example 123e4567-e89b-12d3-a456-426614174000
@@ -943,7 +943,7 @@ export interface operations {
   Events: {
     parameters: {
       query: {
-        projectName: components["schemas"]["Project"];
+        projectName: components["schemas"]["ProjectName"];
         topics: components["schemas"]["Topics"];
       };
     };

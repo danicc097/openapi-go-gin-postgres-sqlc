@@ -56,7 +56,7 @@ func TestHandlers_DeleteWorkItemComment(t *testing.T) {
 				WithAPIKey: true,
 				Scopes:     tc.scopes,
 			})
-			requiredProject := models.ProjectDemo
+			requiredProject := models.ProjectNameDemo
 			teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
 			workItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(ufixture.User), teamf.TeamID)
 
@@ -85,7 +85,7 @@ func TestHandlers_CreateWorkItemComment(t *testing.T) {
 	t.Run("authenticated_user", func(t *testing.T) {
 		t.Parallel()
 
-		requiredProject := models.ProjectDemo
+		requiredProject := models.ProjectNameDemo
 
 		role := models.RoleUser
 		scopes := models.Scopes{models.ScopeWorkItemCommentCreate}
@@ -138,7 +138,7 @@ func TestHandlers_GetWorkItemComment(t *testing.T) {
 			WithAPIKey: true,
 			Scopes:     scopes,
 		})
-		requiredProject := models.ProjectDemo
+		requiredProject := models.ProjectNameDemo
 		teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
 		workItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(ufixture.User), teamf.TeamID)
 		workItemCommentf := ff.CreateWorkItemComment(context.Background(), ufixture.UserID, workItemf.WorkItemID)
@@ -170,7 +170,7 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)
 
-	requiredProject := models.ProjectDemo
+	requiredProject := models.ProjectNameDemo
 
 	teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
 	ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{
@@ -218,7 +218,7 @@ func TestHandlers_UpdateWorkItemComment(t *testing.T) {
 				Scopes:     []models.Scope{models.ScopeWorkItemCommentEdit},
 			})
 
-			requiredProject := models.ProjectDemo
+			requiredProject := models.ProjectNameDemo
 			teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
 			workItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(ufixture.User), teamf.TeamID)
 			workItemCommentf := ff.CreateWorkItemComment(context.Background(), *tc.body.UserID, *tc.body.WorkItemID)

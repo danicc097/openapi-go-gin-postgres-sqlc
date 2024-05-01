@@ -247,7 +247,7 @@ comment on column projects.work_items_table_name is '"properties":private';
 
 comment on column projects.board_config is '"type":models.ProjectConfig';
 
-comment on column projects.name is '"type":models.Project';
+comment on column projects.name is '"type":models.ProjectName';
 
 create table teams (
   team_id serial primary key

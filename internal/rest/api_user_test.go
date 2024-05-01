@@ -87,7 +87,7 @@ func TestHandlers_GetCurrentUser(t *testing.T) {
 		role := models.RoleAdvancedUser
 		scopes := models.Scopes{models.ScopeProjectSettingsWrite}
 
-		p := models.ProjectDemo
+		p := models.ProjectNameDemo
 		team1f := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: p})
 		team2f := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: p})
 		ufixture := ff.CreateUser(context.Background(), servicetestutil.CreateUserParams{

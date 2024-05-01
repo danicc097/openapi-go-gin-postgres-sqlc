@@ -150,7 +150,7 @@ func TestUser_ByIndexedQueries(t *testing.T) {
 	teamRepo := postgresql.NewTeam()
 	projectRepo := postgresql.NewProject()
 
-	project, err := projectRepo.ByName(ctx, testPool, models.ProjectDemo)
+	project, err := projectRepo.ByName(ctx, testPool, models.ProjectNameDemo)
 	require.NoError(t, err)
 
 	team := newRandomTeam(t, testPool, project.ProjectID)

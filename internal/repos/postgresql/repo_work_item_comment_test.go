@@ -18,7 +18,7 @@ import (
 func TestWorkItemComment_Update(t *testing.T) {
 	t.Parallel()
 
-	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectDemo)
+	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectNameDemo)
 
 	type args struct {
 		id     db.WorkItemCommentID
@@ -82,7 +82,7 @@ func TestWorkItemComment_Update(t *testing.T) {
 func TestWorkItemComment_Delete(t *testing.T) {
 	t.Parallel()
 
-	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectDemo)
+	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectNameDemo)
 
 	type args struct {
 		id db.WorkItemCommentID
@@ -124,7 +124,7 @@ func TestWorkItemComment_Delete(t *testing.T) {
 func TestWorkItemComment_ByIndexedQueries(t *testing.T) {
 	t.Parallel()
 
-	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectDemo)
+	workitemcomment := newRandomWorkItemComment(t, testPool, models.ProjectNameDemo)
 	logger := testutil.NewLogger(t)
 
 	workItemCommentRepo := reposwrappers.NewWorkItemCommentWithRetry(postgresql.NewWorkItemComment(), logger, 10, 65*time.Millisecond)
@@ -162,6 +162,6 @@ func TestWorkItemComment_Create(t *testing.T) {
 	t.Run("correct_workItemComment", func(t *testing.T) {
 		t.Parallel()
 
-		newRandomWorkItemComment(t, testPool, models.ProjectDemo)
+		newRandomWorkItemComment(t, testPool, models.ProjectNameDemo)
 	})
 }

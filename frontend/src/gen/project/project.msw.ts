@@ -15,7 +15,7 @@ import {
   http
 } from 'msw'
 import {
-  Project,
+  ProjectName,
   Scope,
   WorkItemRole
 } from '.././model'
@@ -26,11 +26,11 @@ import type {
   WorkItem
 } from '.././model'
 
-export const getGetProjectResponseMock = (overrideResponse: any = {}): DbProject => ({boardConfig: {fields: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({isEditable: faker.datatype.boolean(), isVisible: faker.datatype.boolean(), name: faker.word.sample(), path: faker.word.sample(), showCollapsed: faker.datatype.boolean(), ...overrideResponse})), header: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => (faker.word.sample())), visualization: {}, ...overrideResponse}, createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.helpers.arrayElement(Object.values(Project)), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, updatedAt: (() => faker.date.past())(), ...overrideResponse})
+export const getGetProjectResponseMock = (overrideResponse: any = {}): DbProject => ({boardConfig: {fields: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({isEditable: faker.datatype.boolean(), isVisible: faker.datatype.boolean(), name: faker.word.sample(), path: faker.word.sample(), showCollapsed: faker.datatype.boolean(), ...overrideResponse})), header: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => (faker.word.sample())), visualization: {}, ...overrideResponse}, createdAt: (() => faker.date.past())(), description: faker.word.sample(), name: faker.helpers.arrayElement(Object.values(ProjectName)), projectID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.ProjectID, updatedAt: (() => faker.date.past())(), ...overrideResponse})
 
 export const getGetProjectConfigResponseMock = (overrideResponse: any = {}): ProjectConfig => ({fields: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({isEditable: faker.datatype.boolean(), isVisible: faker.datatype.boolean(), name: faker.word.sample(), path: faker.word.sample(), showCollapsed: faker.datatype.boolean(), ...overrideResponse})), header: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => (faker.word.sample())), visualization: {}, ...overrideResponse})
 
-export const getGetProjectBoardResponseMock = (overrideResponse: any = {}): ProjectBoard => ({projectName: faker.helpers.arrayElement(Object.values(Project)), ...overrideResponse})
+export const getGetProjectBoardResponseMock = (overrideResponse: any = {}): ProjectBoard => ({projectName: faker.helpers.arrayElement(Object.values(ProjectName)), ...overrideResponse})
 
 export const getGetProjectWorkitemsResponseMock = (overrideResponse: any = {}): WorkItem => (faker.helpers.arrayElement([{closedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), createdAt: (() => faker.date.past())(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), demoWorkItem: {lastMessageAt: (() => faker.date.past())(), line: faker.word.sample(), ref: faker.word.sample(), reopened: faker.datatype.boolean(), workItemID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.WorkItemID, ...overrideResponse}, description: faker.word.sample(), kanbanStepID: faker.number.int({min: undefined, max: undefined}) as EntityIDs.KanbanStepID, members: Array.from({ length: faker.number.int({ min: 1, max: 10 }) }, (_, i) => i + 1).map(() => ({role: faker.helpers.arrayElement(Object.values(WorkItemRole)), user: {age: faker.helpers.arrayElement([faker.number.int({min: undefined, max: undefined}), null]), createdAt: (() => faker.date.past())(), deletedAt: faker.helpers.arrayElement([(() => faker.date.past())(), null]), email: faker.word.sample(), firstName: faker.helpers.arrayElement([faker.word.sample(), null]), fullName: faker.helpers.arrayElement([faker.word.sample(), null]), hasGlobalNotifications: faker.datatype.boolean(), hasPersonalNotifications: faker.datatype.boolean(), lastName: faker.helpers.arrayElement([faker.word.sample(), null]), scopes: faker.helpers.arrayElements(Object.values(Scope)), updatedAt: (() => faker.date.past())(), userID: faker.string.uuid() as EntityIDs.UserID, username: faker.word.sample(), ...overrideResponse}, ...overrideResponse})), metadata: (() => ({
               key: faker.string.sample()

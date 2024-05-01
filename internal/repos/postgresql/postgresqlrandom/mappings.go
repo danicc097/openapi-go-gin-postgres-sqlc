@@ -9,22 +9,22 @@ import (
 	"github.com/danicc097/openapi-go-gin-postgres-sqlc/internal/testutil"
 )
 
-func KanbanStepID(project models.Project) db.KanbanStepID {
+func KanbanStepID(project models.ProjectName) db.KanbanStepID {
 	switch project {
-	case models.ProjectDemo:
+	case models.ProjectNameDemo:
 		return internal.DemoKanbanStepsIDByName[testutil.RandomFrom(models.AllDemoKanbanStepsValues())]
-	case models.ProjectDemoTwo:
+	case models.ProjectNameDemoTwo:
 		return internal.DemoTwoKanbanStepsIDByName[testutil.RandomFrom(models.AllDemoTwoKanbanStepsValues())]
 	default:
 		panic(fmt.Sprintf("invalid project: %s", project))
 	}
 }
 
-func WorkItemTypeID(project models.Project) db.WorkItemTypeID {
+func WorkItemTypeID(project models.ProjectName) db.WorkItemTypeID {
 	switch project {
-	case models.ProjectDemo:
+	case models.ProjectNameDemo:
 		return internal.DemoWorkItemTypesIDByName[testutil.RandomFrom(models.AllDemoWorkItemTypesValues())]
-	case models.ProjectDemoTwo:
+	case models.ProjectNameDemoTwo:
 		return internal.DemoTwoWorkItemTypesIDByName[testutil.RandomFrom(models.AllDemoTwoWorkItemTypesValues())]
 	default:
 		panic(fmt.Sprintf("invalid project: %s", project))

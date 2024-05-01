@@ -11,7 +11,7 @@ import (
 )
 
 type CreateTeamParams struct {
-	Project models.Project
+	Project models.ProjectName
 }
 
 type CreateTeamFixture struct {

@@ -40,7 +40,7 @@ func TestTracing(t *testing.T) {
 		Scopes:     []models.Scope{models.ScopeWorkItemCommentDelete},
 	})
 
-	requiredProject := models.ProjectDemo
+	requiredProject := models.ProjectNameDemo
 	teamf := ff.CreateTeam(context.Background(), servicetestutil.CreateTeamParams{Project: requiredProject})
 	workItemf := ff.CreateWorkItem(context.Background(), requiredProject, *services.NewCtxUser(ufixture.User), teamf.TeamID)
 	workItemCommentf := ff.CreateWorkItemComment(context.Background(), ufixture.UserID, workItemf.WorkItemID)

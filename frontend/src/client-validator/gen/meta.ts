@@ -69,7 +69,6 @@ import {
   UuidUUID,
   WorkItem,
   CreateWorkItemRequest,
-  Project,
   DbActivityCreateParams,
   DbWorkItemRole,
   NotificationType,
@@ -105,6 +104,7 @@ import {
   GetCacheDemoWorkItemQueryParameters,
   GetCurrentUserQueryParameters,
   CacheDemoWorkItem,
+  ProjectName,
 } from './models'
 
 export const schemaDefinitions = {
@@ -218,7 +218,6 @@ export const schemaDefinitions = {
   UuidUUID: info<UuidUUID>('UuidUUID', '#/definitions/UuidUUID'),
   WorkItem: info<WorkItem>('WorkItem', '#/definitions/WorkItem'),
   CreateWorkItemRequest: info<CreateWorkItemRequest>('CreateWorkItemRequest', '#/definitions/CreateWorkItemRequest'),
-  Project: info<Project>('Project', '#/definitions/Project'),
   DbActivityCreateParams: info<DbActivityCreateParams>(
     'DbActivityCreateParams',
     '#/definitions/DbActivityCreateParams',
@@ -284,6 +283,7 @@ export const schemaDefinitions = {
     '#/definitions/GetCurrentUserQueryParameters',
   ),
   CacheDemoWorkItem: info<CacheDemoWorkItem>('CacheDemoWorkItem', '#/definitions/CacheDemoWorkItem'),
+  ProjectName: info<ProjectName>('ProjectName', '#/definitions/ProjectName'),
 }
 
 export interface SchemaInfo<T> {

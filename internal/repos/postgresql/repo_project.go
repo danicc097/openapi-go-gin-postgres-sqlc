@@ -41,7 +41,7 @@ func (u *Project) ByID(ctx context.Context, d db.DBTX, id db.ProjectID, opts ...
 	return project, nil
 }
 
-func (u *Project) ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (*db.Project, error) {
+func (u *Project) ByName(ctx context.Context, d db.DBTX, name models.ProjectName, opts ...db.ProjectSelectConfigOption) (*db.Project, error) {
 	project, err := db.ProjectByName(ctx, d, name, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not get project: %w", ParseDBErrorDetail(err))

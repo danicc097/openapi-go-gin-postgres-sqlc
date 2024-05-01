@@ -9,7 +9,7 @@ package services_test
 // 	t.Parallel()
 
 // 	proj := &db.Project{
-// 		Name: models.ProjectDemo,
+// 		Name: models.ProjectNameDemo,
 // 		BoardConfig: models.ProjectConfig{
 // 			Header: []string{"demoProject.ref", "workItemType"},
 // 			Fields: []models.ProjectConfigField{
@@ -35,7 +35,7 @@ package services_test
 // 	fakeProjectRepo.ByIDStub = func(ctx context.Context, d db.DBTX, i db.ProjectID, psco ...db.ProjectSelectConfigOption) (*db.Project, error) {
 // 		return proj, nil
 // 	}
-// 	fakeProjectRepo.ByNameStub = func(ctx context.Context, d db.DBTX, p models.Project, psco ...db.ProjectSelectConfigOption) (*db.Project, error) {
+// 	fakeProjectRepo.ByNameStub = func(ctx context.Context, d db.DBTX, p models.ProjectName, psco ...db.ProjectSelectConfigOption) (*db.Project, error) {
 // 		return proj, nil
 // 	}
 // 	fakeTeamRepo := &repostesting.FakeTeam{}
@@ -89,7 +89,7 @@ package services_test
 // 		t.Run(tc.name, func(t *testing.T) {
 // 			t.Parallel()
 
-// 			got, err := p.MergeConfigFields(context.Background(), &pgxpool.Pool{}, models.ProjectDemo, tc.args.update)
+// 			got, err := p.MergeConfigFields(context.Background(), &pgxpool.Pool{}, models.ProjectNameDemo, tc.args.update)
 // 			if (err != nil) && tc.error == "" {
 // 				t.Fatalf("unexpected error = %v", err)
 // 			}

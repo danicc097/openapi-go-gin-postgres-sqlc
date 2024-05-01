@@ -75,7 +75,7 @@ func (_d ProjectWithRetry) ByID(ctx context.Context, d db.DBTX, id db.ProjectID,
 }
 
 // ByName implements repos.Project
-func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithRetry) ByName(ctx context.Context, d db.DBTX, name models.ProjectName, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
 	if tx, ok := d.(pgx.Tx); ok {
 		_, err = tx.Exec(ctx, "SAVEPOINT ProjectWithRetryByName")
 		if err != nil {

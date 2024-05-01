@@ -73,7 +73,6 @@ import {
   UuidUUID,
   WorkItem,
   CreateWorkItemRequest,
-  Project,
   DbActivityCreateParams,
   DbWorkItemRole,
   NotificationType,
@@ -109,6 +108,7 @@ import {
   GetCacheDemoWorkItemQueryParameters,
   GetCurrentUserQueryParameters,
   CacheDemoWorkItem,
+  ProjectName,
 } from './models'
 import jsonSchema from './schema.json'
 
@@ -897,18 +897,6 @@ export const CreateWorkItemRequestDecoder: Decoder<CreateWorkItemRequest> = {
     return validateJson(json, schema, CreateWorkItemRequestDecoder.definitionName)
   },
 }
-export const ProjectDecoder: Decoder<Project> = {
-  definitionName: 'Project',
-  schemaRef: '#/definitions/Project',
-
-  decode(json: unknown): Project {
-    const schema = ajv.getSchema(ProjectDecoder.schemaRef)
-    if (!schema) {
-      throw new Error(`Schema ${ProjectDecoder.definitionName} not found`)
-    }
-    return validateJson(json, schema, ProjectDecoder.definitionName)
-  },
-}
 export const DbActivityCreateParamsDecoder: Decoder<DbActivityCreateParams> = {
   definitionName: 'DbActivityCreateParams',
   schemaRef: '#/definitions/DbActivityCreateParams',
@@ -1327,5 +1315,17 @@ export const CacheDemoWorkItemDecoder: Decoder<CacheDemoWorkItem> = {
       throw new Error(`Schema ${CacheDemoWorkItemDecoder.definitionName} not found`)
     }
     return validateJson(json, schema, CacheDemoWorkItemDecoder.definitionName)
+  },
+}
+export const ProjectNameDecoder: Decoder<ProjectName> = {
+  definitionName: 'ProjectName',
+  schemaRef: '#/definitions/ProjectName',
+
+  decode(json: unknown): ProjectName {
+    const schema = ajv.getSchema(ProjectNameDecoder.schemaRef)
+    if (!schema) {
+      throw new Error(`Schema ${ProjectNameDecoder.definitionName} not found`)
+    }
+    return validateJson(json, schema, ProjectNameDecoder.definitionName)
   },
 }

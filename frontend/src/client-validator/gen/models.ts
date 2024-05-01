@@ -14,7 +14,7 @@ export type DbUserID = string
 /**
  * is generated from projects table.
  */
-export type Project = 'demo' | 'demo_two'
+export type ProjectName = 'demo' | 'demo_two'
 /**
  * is generated from database enum 'notification_type'.
  */
@@ -145,7 +145,7 @@ export interface CreateDemoTwoWorkItemRequest {
   base: DbWorkItemCreateParams
   demoTwoProject: DbDemoTwoWorkItemCreateParams
   members: ServicesMember[]
-  projectName: Project
+  projectName: ProjectName
   tagIDs: number[]
 }
 export interface DbWorkItemCreateParams {
@@ -169,7 +169,7 @@ export interface CreateDemoWorkItemRequest {
   base: DbWorkItemCreateParams
   demoProject: DbDemoWorkItemCreateParams
   members: ServicesMember[]
-  projectName: Project
+  projectName: ProjectName
   tagIDs: number[]
 }
 export interface DbDemoWorkItemCreateParams {
@@ -245,7 +245,7 @@ export interface DbProject {
   boardConfig: ProjectConfig
   createdAt: string
   description: string
-  name: Project
+  name: ProjectName
   projectID: number
   updatedAt: string
 }
@@ -378,7 +378,7 @@ export interface User {
   username: string
 }
 export interface ProjectBoard {
-  projectName: Project
+  projectName: ProjectName
 }
 export interface SharedWorkItemJoins {
   members?: DbWorkItemM2MAssigneeWIA[] | null
@@ -512,7 +512,7 @@ export interface DemoWorkItem {
   kanbanStepID: number
   members?: DbWorkItemM2MAssigneeWIA[] | null
   metadata: {}
-  projectName: Project
+  projectName: ProjectName
   targetDate: string
   teamID: number | null
   timeEntries?: DbTimeEntry[] | null
@@ -533,7 +533,7 @@ export interface DemoTwoWorkItem {
   kanbanStepID: number
   members?: DbWorkItemM2MAssigneeWIA[] | null
   metadata: {}
-  projectName: Project
+  projectName: ProjectName
   targetDate: string
   teamID: number | null
   timeEntries?: DbTimeEntry[] | null
@@ -601,7 +601,7 @@ export interface WorkItemBase {
   kanbanStepID: number
   members?: DbWorkItemM2MAssigneeWIA[] | null
   metadata: {}
-  projectName: Project
+  projectName: ProjectName
   targetDate: string
   teamID: number | null
   timeEntries?: DbTimeEntry[] | null

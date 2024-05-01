@@ -6,8 +6,8 @@ import type * as EntityIDs from 'src/gen/entity-ids'
  * openapi-go-gin-postgres-sqlc
  * OpenAPI spec version: 2.0.0
  */
-import type { Project } from './project';
+import type { ProjectName } from './projectName';
 
 export interface ProjectBoard {
-  projectName: Project;
+  projectName: ProjectName;
 }

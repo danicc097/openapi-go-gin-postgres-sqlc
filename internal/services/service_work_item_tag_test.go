@@ -25,7 +25,7 @@ func TestWorkItemTag_Update(t *testing.T) {
 
 	logger := testutil.NewLogger(t)
 
-	requiredProject := models.ProjectDemo
+	requiredProject := models.ProjectNameDemo
 
 	svc := services.New(logger, services.CreateTestRepos(t), testPool)
 	ff := servicetestutil.NewFixtureFactory(t, testPool, svc)

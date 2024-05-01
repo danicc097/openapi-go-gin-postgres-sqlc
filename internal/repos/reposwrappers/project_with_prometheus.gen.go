@@ -54,7 +54,7 @@ func (_d ProjectWithPrometheus) ByID(ctx context.Context, d db.DBTX, id db.Proje
 }
 
 // ByName implements repos.Project
-func (_d ProjectWithPrometheus) ByName(ctx context.Context, d db.DBTX, name models.Project, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
+func (_d ProjectWithPrometheus) ByName(ctx context.Context, d db.DBTX, name models.ProjectName, opts ...db.ProjectSelectConfigOption) (pp1 *db.Project, err error) {
 	_since := time.Now()
 	defer func() {
 		result := "ok"

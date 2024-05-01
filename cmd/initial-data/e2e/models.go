@@ -26,5 +26,5 @@ type User struct {
 type Team struct {
 	TeamID      db.TeamID          `json:"teamID" tstype:"EntityIDs.TeamID"`
 	Name        string             `json:"name"`
-	ProjectName models.ProjectName `json:"projectName" tstype:"models.Project"`
+	ProjectName models.ProjectName `json:"projectName" tstype:"models.ProjectName"`
 }

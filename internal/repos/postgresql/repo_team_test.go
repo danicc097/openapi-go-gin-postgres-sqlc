@@ -23,7 +23,7 @@ func TestTeam_ByIndexedQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	project, err := projectRepo.ByName(ctx, testPool, models.ProjectDemo)
+	project, err := projectRepo.ByName(ctx, testPool, models.ProjectNameDemo)
 	require.NoError(t, err)
 
 	tcp := postgresqlrandom.TeamCreateParams(project.ProjectID)
@@ -58,7 +58,7 @@ func TestTeam_ByIndexedQueries(t *testing.T) {
 func TestTriggers_sync_user_projects(t *testing.T) {
 	t.Parallel()
 
-	projectID := internal.ProjectIDByName[models.ProjectDemo]
+	projectID := internal.ProjectIDByName[models.ProjectNameDemo]
 
 	t.Run("syncs user", func(t *testing.T) {
 		t.Parallel()
@@ -105,7 +105,7 @@ COMMIT;.
 func TestTriggers_sync_user_teams(t *testing.T) {
 	t.Parallel()
 
-	projectID := internal.ProjectIDByName[models.ProjectDemo]
+	projectID := internal.ProjectIDByName[models.ProjectNameDemo]
 
 	type params struct {
 		name      string

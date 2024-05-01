@@ -8,13 +8,13 @@ import (
 )
 
 var (
-	ProjectNameByID = map[db.ProjectID]models.Project{
-		1: models.ProjectDemo,
-		2: models.ProjectDemoTwo,
+	ProjectNameByID = map[db.ProjectID]models.ProjectName{
+		1: models.ProjectNameDemo,
+		2: models.ProjectNameDemoTwo,
 	}
-	ProjectIDByName = map[models.Project]db.ProjectID{
-		models.ProjectDemo:    1,
-		models.ProjectDemoTwo: 2,
+	ProjectIDByName = map[models.ProjectName]db.ProjectID{
+		models.ProjectNameDemo:    1,
+		models.ProjectNameDemoTwo: 2,
 	}
 )
 

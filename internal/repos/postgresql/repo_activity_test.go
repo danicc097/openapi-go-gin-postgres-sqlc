@@ -21,7 +21,7 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 
 	ctx := context.Background()
 
-	project, err := projectRepo.ByName(ctx, testPool, models.ProjectDemo)
+	project, err := projectRepo.ByName(ctx, testPool, models.ProjectNameDemo)
 	if err != nil {
 		t.Fatalf("projectRepo.ByName unexpected error = %v", err)
 	}
@@ -37,7 +37,7 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 			name: "name",
 			filter: []any{
 				activity.Name,
-				internal.ProjectIDByName[models.ProjectDemo],
+				internal.ProjectIDByName[models.ProjectNameDemo],
 			},
 			repoMethod: reflect.ValueOf(activityRepo.ByName),
 			callback: func(t *testing.T, res *db.Activity) {
@@ -61,10 +61,10 @@ func TestActivity_ByIndexedQueries(t *testing.T) {
 	nonUniqueTestCases := []filterTestCase[[]db.Activity]{
 		{
 			name:       "project_id",
-			filter:     internal.ProjectIDByName[models.ProjectDemo],
+			filter:     internal.ProjectIDByName[models.ProjectNameDemo],
 			repoMethod: reflect.ValueOf(activityRepo.ByProjectID),
 			callback: func(t *testing.T, res []db.Activity) {
-				assert.Equal(t, res[0].ProjectID, internal.ProjectIDByName[models.ProjectDemo])
+				assert.Equal(t, res[0].ProjectID, internal.ProjectIDByName[models.ProjectNameDemo])
 			},
 		},
 	}

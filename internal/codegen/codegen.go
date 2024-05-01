@@ -507,8 +507,8 @@ func (o *CodeGen) ensureHandlerMethodsExist() error {
 			if !contains(functions, opID) {
 				// NOTE: not worth syncing all opIDs to keep signature changes in sync, we get decent enough errors
 				// to handle bad interface implementations, such as
-				// have CreateTeam(*gin.Context, models.Project)
-				// want CreateTeam(*gin.Context, models.Project, int)
+				// have CreateTeam(*gin.Context, models.ProjectName)
+				// want CreateTeam(*gin.Context, models.ProjectName, int)
 				o.missingOperationIDImplementations[opID] = struct{}{}
 			}
 		}

@@ -414,7 +414,7 @@ paths:
         - name: projectName
           required: true
           schema:
-            $ref: '#/components/schemas/Project'
+            $ref: '#/components/schemas/ProjectName'
           in: query
         - name: topics
           required: true
@@ -1285,7 +1285,7 @@ components:
       name: projectName
       required: true
       schema:
-        $ref: '#/components/schemas/Project'
+        $ref: '#/components/schemas/ProjectName'
       example: demo
       style: simple
     UUID: *x-uuidParameter
@@ -1341,7 +1341,7 @@ components:
             $ref: '#/components/schemas/ServicesMember'
           type: array
         projectName:
-          $ref: '#/components/schemas/Project'
+          $ref: '#/components/schemas/ProjectName'
         tagIDs:
           items:
             type: integer
@@ -1366,7 +1366,7 @@ components:
             $ref: '#/components/schemas/ServicesMember'
           type: array
         projectName:
-          $ref: '#/components/schemas/Project'
+          $ref: '#/components/schemas/ProjectName'
         tagIDs:
           items:
             type: integer
@@ -1584,7 +1584,7 @@ components:
         description:
           type: string
         name:
-          $ref: '#/components/schemas/Project'
+          $ref: '#/components/schemas/ProjectName'
         projectID:
           type: integer
         updatedAt:
@@ -1976,7 +1976,7 @@ components:
     ProjectBoard: # Generated schema. DO NOT EDIT.
       properties:
         projectName:
-          $ref: '#/components/schemas/Project'
+          $ref: '#/components/schemas/ProjectName'
       required:
         - projectName
       type: object
@@ -2487,11 +2487,6 @@ components:
         mapping:
           demo: '#/components/schemas/CreateDemoWorkItemRequest'
           demo_two: '#/components/schemas/CreateDemoTwoWorkItemRequest'
-    Project: # Generated from projects table. DO NOT EDIT.
-      enum: ["demo", "demo_two"]
-      type: string
-      x-is-generated: true
-      description: is generated from projects table.
     DbActivityCreateParams:
       properties:
         description:
@@ -2684,7 +2679,7 @@ components:
           additionalProperties: {}
           type: object
         projectName:
-          $ref: '#/components/schemas/Project'
+          $ref: '#/components/schemas/ProjectName'
         targetDate:
           format: date-time
           type: string
@@ -2761,7 +2756,7 @@ components:
           additionalProperties: {}
           type: object
         projectName:
-          $ref: '#/components/schemas/Project'
+          $ref: '#/components/schemas/ProjectName'
         targetDate:
           format: date-time
           type: string
@@ -2836,7 +2831,7 @@ components:
           additionalProperties: {}
           type: object
         projectName:
-          $ref: '#/components/schemas/Project'
+          $ref: '#/components/schemas/ProjectName'
         targetDate:
           format: date-time
           type: string
@@ -3140,6 +3135,11 @@ components:
       type: object
       x-gen-struct: CacheDemoWorkItem
       x-is-generated: true
+    ProjectName: # Generated from projects table. DO NOT EDIT.
+      type: string
+      enum: ["demo", "demo_two"]
+      x-is-generated: true
+      description: is generated from projects table.
   examples: # Generated from internal structs. DO NOT EDIT.
     User:
       value:

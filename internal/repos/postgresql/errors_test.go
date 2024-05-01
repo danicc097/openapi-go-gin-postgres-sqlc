@@ -33,7 +33,7 @@ func TestUserFriendlyPgErrors(t *testing.T) {
 	t.Run("unique and foreign key violations show user-friendly errors", func(t *testing.T) {
 		t.Parallel()
 
-		ucp := postgresqlrandom.WorkItemTagCreateParams(internal.ProjectIDByName[models.ProjectDemo])
+		ucp := postgresqlrandom.WorkItemTagCreateParams(internal.ProjectIDByName[models.ProjectNameDemo])
 
 		want := want{
 			WorkItemTagCreateParams: *ucp,

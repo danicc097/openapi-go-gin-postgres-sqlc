@@ -24,18 +24,18 @@ func TestProject_ByIndexedQueries(t *testing.T) {
 	uniqueTestCases := []filterTestCase[*db.Project]{
 		{
 			name:       "id",
-			filter:     internal.ProjectIDByName[models.ProjectDemo],
+			filter:     internal.ProjectIDByName[models.ProjectNameDemo],
 			repoMethod: reflect.ValueOf(projectRepo.ByID),
 			callback: func(t *testing.T, res *db.Project) {
-				assert.Equal(t, res.ProjectID, internal.ProjectIDByName[models.ProjectDemo])
+				assert.Equal(t, res.ProjectID, internal.ProjectIDByName[models.ProjectNameDemo])
 			},
 		},
 		{
 			name:       "name",
-			filter:     models.ProjectDemo,
+			filter:     models.ProjectNameDemo,
 			repoMethod: reflect.ValueOf(projectRepo.ByName),
 			callback: func(t *testing.T, res *db.Project) {
-				assert.Equal(t, res.ProjectID, internal.ProjectIDByName[models.ProjectDemo])
+				assert.Equal(t, res.ProjectID, internal.ProjectIDByName[models.ProjectNameDemo])
 			},
 		},
 	}
@@ -49,7 +49,7 @@ func TestProject_BoardConfigUpdate(t *testing.T) {
 	t.Parallel()
 
 	projectRepo := postgresql.NewProject()
-	projectID := internal.ProjectIDByName[models.ProjectDemo]
+	projectID := internal.ProjectIDByName[models.ProjectNameDemo]
 
 	ctx := context.Background()
 

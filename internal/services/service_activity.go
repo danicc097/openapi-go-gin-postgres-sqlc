@@ -61,7 +61,7 @@ func (a *Activity) ByProjectID(ctx context.Context, d db.DBTX, projectID db.Proj
 }
 
 // Create creates a new activity.
-func (a *Activity) Create(ctx context.Context, d db.DBTX, projectName models.Project, params *db.ActivityCreateParams) (*db.Activity, error) {
+func (a *Activity) Create(ctx context.Context, d db.DBTX, projectName models.ProjectName, params *db.ActivityCreateParams) (*db.Activity, error) {
 	defer newOTelSpan().Build(ctx).End()
 
 	params.ProjectID = internal.ProjectIDByName[projectName]

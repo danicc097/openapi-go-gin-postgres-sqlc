@@ -9,10 +9,10 @@
 /**
  * is generated from projects table.
  */
-export type Project = typeof Project[keyof typeof Project]
+export type ProjectName = typeof ProjectName[keyof typeof ProjectName]
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
-export const Project = {
+export const ProjectName = {
   demo: 'demo',
   demo_two: 'demo_two',
 } as const

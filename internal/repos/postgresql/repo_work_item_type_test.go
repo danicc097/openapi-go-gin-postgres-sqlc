@@ -21,7 +21,7 @@ func TestWorkItemType_ByIndexedQueries(t *testing.T) {
 			name: "name",
 			filter: []any{
 				string(models.DemoWorkItemTypesType1),
-				internal.ProjectIDByName[models.ProjectDemo],
+				internal.ProjectIDByName[models.ProjectNameDemo],
 			},
 			repoMethod: reflect.ValueOf(workItemTypeRepo.ByName),
 			callback: func(t *testing.T, res *db.WorkItemType) {
